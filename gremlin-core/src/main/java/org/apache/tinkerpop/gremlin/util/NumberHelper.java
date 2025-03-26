@@ -28,10 +28,22 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
+    private static byte asByte(int arg) {
+        if (arg > Byte.MAX_VALUE || arg < Byte.MIN_VALUE)
+            throw new ArithmeticException("byte overflow");
+        return (byte) arg;
+    }
+
+    private static short asShort(int arg) {
+        if (arg > Short.MAX_VALUE || arg < Short.MIN_VALUE)
+            throw new ArithmeticException("short overflow");
+        return (short) arg;
+    }
+
     static final NumberHelper BYTE_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> (byte) (a.byteValue() + b.byteValue()),
-            (a, b) -> (byte) (a.byteValue() - b.byteValue()),
-            (a, b) -> (byte) (a.byteValue() * b.byteValue()),
+            (a, b) -> asByte(a.byteValue() + b.byteValue()),
+            (a, b) -> asByte(a.byteValue() - b.byteValue()),
+            (a, b) -> asByte(a.byteValue() * b.byteValue()),
             (a, b) -> (byte) (a.byteValue() / b.byteValue()),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -56,9 +68,9 @@ public final class NumberHelper {
             (a, b) -> Byte.compare(a.byteValue(), b.byteValue()));
 
     static final NumberHelper SHORT_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> (short) (a.shortValue() + b.shortValue()),
-            (a, b) -> (short) (a.shortValue() - b.shortValue()),
-            (a, b) -> (short) (a.shortValue() * b.shortValue()),
+            (a, b) -> asShort(a.shortValue() + b.shortValue()),
+            (a, b) -> asShort(a.shortValue() - b.shortValue()),
+            (a, b) -> asShort(a.shortValue() * b.shortValue()),
             (a, b) -> (short) (a.shortValue() / b.shortValue()),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -83,9 +95,9 @@ public final class NumberHelper {
             (a, b) -> Short.compare(a.shortValue(), b.shortValue()));
 
     static final NumberHelper INTEGER_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.intValue() + b.intValue(),
-            (a, b) -> a.intValue() - b.intValue(),
-            (a, b) -> a.intValue() * b.intValue(),
+            (a, b) -> Math.addExact(a.intValue(), b.intValue()),
+            (a, b) -> Math.subtractExact(a.intValue(), b.intValue()),
+            (a, b) -> Math.multiplyExact(a.intValue(), b.intValue()),
             (a, b) -> a.intValue() / b.intValue(),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -110,9 +122,9 @@ public final class NumberHelper {
             (a, b) -> Integer.compare(a.intValue(), b.intValue()));
 
     static final NumberHelper LONG_NUMBER_HELPER = new NumberHelper(
-            (a, b) -> a.longValue() + b.longValue(),
-            (a, b) -> a.longValue() - b.longValue(),
-            (a, b) -> a.longValue() * b.longValue(),
+            (a, b) -> Math.addExact(a.longValue(), b.longValue()),
+            (a, b) -> Math.subtractExact(a.longValue(), b.longValue()),
+            (a, b) -> Math.multiplyExact(a.longValue(), b.longValue()),
             (a, b) -> a.longValue() / b.longValue(),
             (a, b) -> {
                 if (isNumber(a)) {
@@ -559,6 +571,50 @@ public final class NumberHelper {
 
         final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
         return getHelper(clazz).cmp.apply(a, b);
+    }
+
+    /**
+     * Coerces the given number to the specified numeric type if it can fit into it.
+     * Otherwise, retains the original type.
+     *
+     * @param a the number to be coerced
+     * @param clazz the target numeric type class
+     * @return the coerced number in the specified type or the original type if it cannot fit
+     * @throws IllegalArgumentException if the specified numeric type is unsupported
+     */
+    public static Number coerceTo(final Number a, final Class<? extends Number> clazz) {
+        if (a.getClass().equals(clazz)) {
+            return a;
+        } else if (clazz.equals(Integer.class)) {
+            if (a.longValue() >= Integer.MIN_VALUE && a.longValue() <= Integer.MAX_VALUE) {
+                return a.intValue();
+            }
+        } else if (clazz.equals(Long.class)) {
+            return a.longValue();
+        } else if (clazz.equals(Float.class)) {
+            if (a.doubleValue() >= -Float.MAX_VALUE && a.doubleValue() <= Float.MAX_VALUE) {
+                return a.floatValue();
+            }
+        } else if (clazz.equals(Double.class)) {
+            return a.doubleValue();
+        } else if (clazz.equals(Byte.class)) {
+            if (a.longValue() >= Byte.MIN_VALUE && a.longValue() <= Byte.MAX_VALUE) {
+                return a.byteValue();
+            }
+        } else if (clazz.equals(Short.class)) {
+            if (a.longValue() >= Short.MIN_VALUE && a.longValue() <= Short.MAX_VALUE) {
+                return a.shortValue();
+            }
+        } else if (clazz.equals(BigInteger.class)) {
+            return NumberHelper.bigIntegerValue(a);
+        } else if (clazz.equals(BigDecimal.class)) {
+            return NumberHelper.bigDecimalValue(a);
+        } else {
+            throw new IllegalArgumentException("Unsupported numeric type: " + clazz);
+        }
+
+        // return as-is since it didn't fit the type we wanted to coerce to
+        return a;
     }
 
     private static NumberHelper getHelper(final Class<? extends Number> clazz) {

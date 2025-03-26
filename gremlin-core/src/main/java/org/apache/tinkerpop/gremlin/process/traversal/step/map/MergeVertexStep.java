@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -43,12 +44,12 @@ import static java.util.stream.Collectors.toList;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
+public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
 
 
@@ -57,6 +58,10 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
     }
 
     public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+        super(traversal, isStart, merge);
+    }
+
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> merge) {
         super(traversal, isStart, merge);
     }
 
@@ -93,11 +98,11 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
             vertices = IteratorUtils.peek(vertices, v -> {
 
                 // override current traverser with the matched Vertex so that the option() traversal can operate
-                // on it properly. this should only work this way for the start step form to retain the original
-                // behavior for 3.6.0 where you might do g.inject(Map).mergeV() and want that Map to pass through.
-                // in 4.x this will be rectified such that the vertex will always be promoted and you will be forced
-                // to select() the map if you did want the behavior.
-                if (isStart) traverser.set((S) v);
+                // on it properly. prior to 4.x this only worked for start steps, but now it works consistently
+                // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeV() where you
+                // could operate on the Map directly with the child traversal. from 4.x onward you will have to do
+                // something like g.inject(Map).as('a').mergeV().option(onMatch, select('a'))
+                traverser.set((S) v);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, Object> onMatchMap = materializeMap(traverser, onMatchTraversal);

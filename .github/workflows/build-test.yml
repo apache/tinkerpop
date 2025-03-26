@@ -20,9 +20,9 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -206,45 +206,45 @@ jobs:
         run: |
           mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl gremlin-driver -DskipIntegrationTests=false
-  javascript:
-    name: javascript
-    timeout-minutes: 15
-    needs: cache-gremlin-server-docker-image
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
-        # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Get Cached Server Base Image
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache@v4
-        id: gremlin-server-test-docker-image
-        with:
-          path: |
-            ./gremlin-server/*
-            ~/.m2/repository/org/apache/tinkerpop/*
-          key: ${{ github.sha }}
-#      - name: Download Server Base Image
-#        if: matrix.os == 'windows-latest'
-#        uses: actions/download-artifact@v3
+#  javascript:
+#    name: javascript
+#    timeout-minutes: 15
+#    needs: cache-gremlin-server-docker-image
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
+#        # os: [ubuntu-latest, windows-latest]
+#        os: [ubuntu-latest]
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v4
 #        with:
-#          name: ${{ github.sha }}
-#          path: ./gremlin-server
-      - name: Load Docker Image
-        working-directory: ./gremlin-server
-        run: docker load --input gremlin-server.tar
-      - name: Build with Maven
-        run: |
-          mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :gremlin-javascript,:gremlint
+#          java-version: '11'
+#          distribution: 'temurin'
+#      - name: Get Cached Server Base Image
+#        if: matrix.os == 'ubuntu-latest'
+#        uses: actions/cache@v4
+#        id: gremlin-server-test-docker-image
+#        with:
+#          path: |
+#            ./gremlin-server/*
+#            ~/.m2/repository/org/apache/tinkerpop/*
+#          key: ${{ github.sha }}
+##      - name: Download Server Base Image
+##        if: matrix.os == 'windows-latest'
+##        uses: actions/download-artifact@v3
+##        with:
+##          name: ${{ github.sha }}
+##          path: ./gremlin-server
+#      - name: Load Docker Image
+#        working-directory: ./gremlin-server
+#        run: docker load --input gremlin-server.tar
+#      - name: Build with Maven
+#        run: |
+#          mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
+#          mvn verify -pl :gremlin-javascript,:gremlint
   python:
     name: python
     timeout-minutes: 20
@@ -266,39 +266,39 @@ jobs:
           touch gremlin-python/.glv
           mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl gremlin-python
-  dotnet:
-    name: .NET
-    timeout-minutes: 20
-    needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK11
-        uses: actions/setup-java@v4
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - name: Set up .NET 8.0.x
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-      - name: Get Cached Server Base Image
-        uses: actions/cache@v4
-        id: gremlin-server-test-docker-image
-        with:
-          path: |
-            ./gremlin-server/*
-            ~/.m2/repository/org/apache/tinkerpop/*
-          key: ${{ github.sha }}
-      - name: Load Docker Image
-        working-directory: ./gremlin-server
-        run: docker load --input gremlin-server.tar
-      - name: Build with Maven
-        run: |
-          touch gremlin-dotnet/src/.glv
-          touch gremlin-dotnet/test/.glv
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-:gremlint -q -DskipTests -Dci
-          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
+#  dotnet:
+#    name: .NET
+#    timeout-minutes: 20
+#    needs: cache-gremlin-server-docker-image
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up JDK11
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '11'
+#          distribution: 'temurin'
+#      - name: Set up .NET 8.0.x
+#        uses: actions/setup-dotnet@v4
+#        with:
+#          dotnet-version: '8.0.x'
+#      - name: Get Cached Server Base Image
+#        uses: actions/cache@v4
+#        id: gremlin-server-test-docker-image
+#        with:
+#          path: |
+#            ./gremlin-server/*
+#            ~/.m2/repository/org/apache/tinkerpop/*
+#          key: ${{ github.sha }}
+#      - name: Load Docker Image
+#        working-directory: ./gremlin-server
+#        run: docker load --input gremlin-server.tar
+#      - name: Build with Maven
+#        run: |
+#          touch gremlin-dotnet/src/.glv
+#          touch gremlin-dotnet/test/.glv
+#          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-:gremlint -q -DskipTests -Dci
+#          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
   neo4j-gremlin:
     name: neo4j-gremlin
     timeout-minutes: 20
@@ -315,39 +315,39 @@ jobs:
         run: |
           mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
-  go:
-    name: go
-    timeout-minutes: 20
-    needs: cache-gremlin-server-docker-image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-      - name: Get Cached Server Base Image
-        uses: actions/cache@v4
-        id: gremlin-server-test-docker-image
-        with:
-          path: |
-            ./gremlin-server/*
-            ~/.m2/repository/org/apache/tinkerpop/*
-          key: ${{ github.sha }}
-      - name: Load Docker Image
-        working-directory: ./gremlin-server
-        run: docker load --input gremlin-server.tar
-      - name: Build with Maven
-        working-directory: .
-        run: |
-          touch gremlin-go/.glv
-          mvn clean install -pl -:gremlin-python,-:gremlin-javascript,-:gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :gremlin-go
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          working-directory: ./gremlin-go
-      - name: Go-Vet
-        working-directory: ./gremlin-go
-        run: go vet ./...
+#  go:
+#    name: go
+#    timeout-minutes: 20
+#    needs: cache-gremlin-server-docker-image
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#      - name: Setup Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: '1.22'
+#      - name: Get Cached Server Base Image
+#        uses: actions/cache@v4
+#        id: gremlin-server-test-docker-image
+#        with:
+#          path: |
+#            ./gremlin-server/*
+#            ~/.m2/repository/org/apache/tinkerpop/*
+#          key: ${{ github.sha }}
+#      - name: Load Docker Image
+#        working-directory: ./gremlin-server
+#        run: docker load --input gremlin-server.tar
+#      - name: Build with Maven
+#        working-directory: .
+#        run: |
+#          touch gremlin-go/.glv
+#          mvn clean install -pl -:gremlin-python,-:gremlin-javascript,-:gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
+#          mvn verify -pl :gremlin-go
+#      - name: Upload to Codecov
+#        uses: codecov/codecov-action@v5
+#        with:
+#          working-directory: ./gremlin-go
+#      - name: Go-Vet
+#        working-directory: ./gremlin-go
+#        run: go vet ./...

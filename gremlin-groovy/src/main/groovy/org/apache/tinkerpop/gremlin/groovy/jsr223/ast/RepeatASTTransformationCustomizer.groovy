@@ -31,7 +31,7 @@ import org.codehaus.groovy.transform.ASTTransformation
  * Overrides the single application of the specified global AST Transformation (which is how the base
  * {@code ASTTransformationCustomizer} works. That approach is not so helpful in the ScriptEngine where we want
  * each script to be treated as an independent source unit. This is a bit of a hack but the use case here is fairly
- * narrow (i.e. {@code VarAsBindingASTTransformation})
+ * narrow
  */
 class RepeatASTTransformationCustomizer extends ASTTransformationCustomizer {
     RepeatASTTransformationCustomizer(final ASTTransformation transformation) {

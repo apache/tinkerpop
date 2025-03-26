@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-javascript</artifactId>
     <name>Apache TinkerPop :: Gremlin Javascript</name>
@@ -223,7 +223,7 @@ limitations under the License.
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
                 <configuration>
-                    <file>src/main/javascript/gremlin-javascript/lib/utils.js</file>
+                    <file>src/main/javascript/gremlin-javascript/lib/utils.ts</file>
                     <replacements>
                         <replacement>
                             <token>gremlinVersion = '.*'</token>
@@ -238,8 +238,9 @@ limitations under the License.
         <!-- Test gremlin-javascript in Docker -->
         <profile>
             <id>glv-js</id>
+            <!-- TODO re-enable after gremlin-js is implemented -->
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <finalName>${project.artifactId}-${project.version}</finalName>
@@ -247,7 +248,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>1.2.1</version>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>run-tests</id>

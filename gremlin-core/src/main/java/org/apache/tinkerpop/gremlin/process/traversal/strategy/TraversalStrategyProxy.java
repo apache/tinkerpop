@@ -20,16 +20,20 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.tinkerpop.gremlin.language.grammar.TraversalStrategyVisitor;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
+import java.util.Collections;
 
 /**
- * This class is for use with {@link Bytecode} and for serialization purposes. It is not meant for direct use with
+ * This class is for use with {@link GremlinLang} and for serialization purposes. It is not meant for direct use with
  * {@link TraversalSource#withStrategies(TraversalStrategy[])}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,23 +41,50 @@ import java.io.Serializable;
 public final class TraversalStrategyProxy<T extends TraversalStrategy> implements Serializable, TraversalStrategy {
 
     private final Configuration configuration;
-    private final Class<T> strategyClass;
+    private final String strategyName;
 
-    public TraversalStrategyProxy(final T traversalStrategy) {
-        this((Class<T>) traversalStrategy.getClass(), traversalStrategy.getConfiguration());
+    public TraversalStrategyProxy(final String strategyName) {
+        this(strategyName, new MapConfiguration(Collections.EMPTY_MAP));
     }
 
-    public TraversalStrategyProxy(final Class<T> strategyClass, final Configuration configuration) {
+    public TraversalStrategyProxy(final String strategyName, final Configuration configuration) {
         this.configuration = configuration;
-        this.strategyClass = strategyClass;
+        this.strategyName = strategyName;
+    }
+
+    public TraversalStrategyProxy(final T traversalStrategy) {
+        this(traversalStrategy.getClass().getSimpleName(), traversalStrategy.getConfiguration());
+    }
+
+    /**
+     * @deprecated
+     * This constructor has been deprecated since 4.0.0 as TraversalStrategyProxy is now based around strategy names,
+     * instead of strategy classes. Use {@link TraversalStrategyProxy#TraversalStrategyProxy(String, Configuration)}
+     * instead.
+     */
+    @Deprecated
+    public TraversalStrategyProxy(final Class<T> strategyClass, final Configuration configuration) {
+        this(strategyClass.getSimpleName(), configuration);
     }
 
     public Configuration getConfiguration() {
         return this.configuration;
     }
 
+    public String getStrategyName() {
+        return this.strategyName;
+    }
+
+    /**
+     * @deprecated
+     * As of 4.0.0, TraversalStrategyProxy is now based around strategy names, instead of strategy classes. For
+     * compatibility, this method will attempt to lookup the strategy name in {@link TraversalStrategies.GlobalCache}.
+     * Use of {@link TraversalStrategyProxy#getStrategyName()} is preferred. If a class object is needed, users should
+     * utilize a mapping of strategy name to strategy class which is appropriate for their environment.
+     */
+    @Deprecated
     public Class<T> getStrategyClass() {
-        return this.strategyClass;
+        return (Class<T>) TraversalStrategies.GlobalCache.getRegisteredStrategyClass(strategyName).get();
     }
 
     @Override

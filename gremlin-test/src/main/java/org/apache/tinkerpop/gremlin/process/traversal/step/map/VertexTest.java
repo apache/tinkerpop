@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -276,6 +277,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore("g.E(Arrays.asList(e7, e11)) is not valid for gremlin-lang")
     @LoadGraphWith(MODERN)
     public void g_EXlistXe7_e11XX() {
         final Edge e7 = convertToEdge(graph, "marko", "knows", "vadas");

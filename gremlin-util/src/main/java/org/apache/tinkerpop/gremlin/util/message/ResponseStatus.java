@@ -18,26 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import java.util.Map;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ResponseStatus {
-    private final ResponseStatusCode code;
+    private final HttpResponseStatus code;
     private final String message;
-    private final Map<String, Object> attributes;
+    private final String exception;
 
-    public ResponseStatus(final ResponseStatusCode code, final String message, final Map<String, Object> attributes) {
+    public ResponseStatus(final HttpResponseStatus code, final String message, final String exception) {
         this.code = code;
         this.message = message;
-        this.attributes = attributes;
+        this.exception = exception;
     }
 
     /**
-     * Gets the {@link ResponseStatusCode} that describes how the server responded to the request.
+     * Gets the {@link HttpResponseStatus} that describes how the server responded to the request.
      */
-    public ResponseStatusCode getCode() {
+    public HttpResponseStatus getCode() {
         return code;
     }
 
@@ -49,11 +49,10 @@ public final class ResponseStatus {
     }
 
     /**
-     * Gets the meta-data related to the response.  If meta-data is returned it is to be considered specific to the
-     * "op" that is executed.  Not all "op" implementations will return meta-data.
+     * Gets the exception in case of error.
      */
-    public Map<String, Object> getAttributes() {
-        return attributes;
+    public String getException() {
+        return exception;
     }
 
     @Override
@@ -61,7 +60,7 @@ public final class ResponseStatus {
         return "ResponseStatus{" +
                 "code=" + code +
                 ", message='" + message + '\'' +
-                ", attributes=" + attributes +
+                ", exception=" + exception +
                 '}';
     }
 }

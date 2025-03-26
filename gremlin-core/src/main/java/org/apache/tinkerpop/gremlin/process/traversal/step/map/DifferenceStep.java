@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
@@ -36,15 +37,28 @@ import java.util.Set;
  */
 public final class DifferenceStep<S, E> extends ScalarMapStep<S, Set<?>> implements TraversalParent, ListFunction {
     private Traversal.Admin<S, E> valueTraversal;
-    private Object parameterItems;
+    private GValue<Object> parameterItems;
+
     public DifferenceStep(final Traversal.Admin traversal, final Object values) {
         super(traversal);
 
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
         } else {
-            parameterItems = values;
+            parameterItems = values instanceof GValue ? (GValue<Object>) values : GValue.of(null, values);
         }
+    }
+
+    public Traversal.Admin<S,E> getValueTraversal() {
+        return this.valueTraversal;
+    }
+
+    public Object getParameterItems() {
+        return parameterItems;
+    }
+
+    public GValue<Object> getParameterItemsGValue() {
+        return parameterItems;
     }
 
     @Override
@@ -53,7 +67,7 @@ public final class DifferenceStep<S, E> extends ScalarMapStep<S, Set<?>> impleme
     @Override
     protected Set<?> map(Traverser.Admin<S> traverser) {
         final Collection setA = convertTraverserToCollection(traverser);
-        final Collection setB = (null != valueTraversal) ? convertTraversalToCollection(traverser, valueTraversal) : convertArgumentToCollection(parameterItems);
+        final Collection setB = (null != valueTraversal) ? convertTraversalToCollection(traverser, valueTraversal) : convertArgumentToCollection(parameterItems.get());
         final Set differenceSet = new HashSet();
 
         for (Object element : setA) {

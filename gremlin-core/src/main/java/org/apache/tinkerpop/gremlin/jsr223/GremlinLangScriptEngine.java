@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinAntlrToJava;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
@@ -33,14 +31,17 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A {@link GremlinScriptEngine} implementation that evaluates Gremlin scripts using {@code gremlin-language}. As it
  * uses {@code gremlin-language} and thus the ANTLR parser, it is not capable of process arbitrary scripts as the
  * {@code GremlinGroovyScriptEngine} can and is therefore a more secure Gremlin evaluator. It is obviously restricted
  * to the capabilities of the ANTLR grammar so therefore syntax that includes things like lambdas are not supported.
- * For bytecode evaluation it simply uses the {@link JavaTranslator}.
  * <p/>
  * As an internal note, technically, this is an incomplete implementation of the {@link GremlinScriptEngine} in the
  * traditional sense as a drop-in replacement for something like the {@code GremlinGroovyScriptEngine}. As a result,
@@ -53,6 +54,8 @@ import java.util.Map;
 public class GremlinLangScriptEngine extends AbstractScriptEngine implements GremlinScriptEngine {
     private volatile GremlinScriptEngineFactory factory;
 
+    private final Function<Map<String, Object>, VariableResolver> variableResolverMaker;
+
     /**
      * Creates a new instance using no {@link Customizer}.
      */
@@ -61,6 +64,15 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     public GremlinLangScriptEngine(final Customizer... customizers) {
+        final List<Customizer> listOfCustomizers = Arrays.asList(customizers);
+
+        // this ScriptEngine really only supports the VariableResolverCustomizer to configure the VariableResolver
+        // and can't configure it more than once. first one wins
+        final Optional<Customizer> opt = listOfCustomizers.stream().filter(c -> c instanceof VariableResolverCustomizer).findFirst();
+        variableResolverMaker = opt.isPresent() ?
+                ((VariableResolverCustomizer) opt.get()).getVariableResolverMaker() :
+                VariableResolver.DirectVariableResolver::new;
+
     }
 
     @Override
@@ -76,27 +88,6 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
     }
 
     /**
-     * Bytecode is evaluated by the {@link JavaTranslator}.
-     */
-    @Override
-    public Traversal.Admin eval(final Bytecode bytecode, final Bindings bindings, final String traversalSource) throws ScriptException {
-        if (traversalSource.equals(HIDDEN_G))
-            throw new IllegalArgumentException("The traversalSource cannot have the name " + HIDDEN_G + " - it is reserved");
-
-        if (bindings.containsKey(HIDDEN_G))
-            throw new IllegalArgumentException("Bindings cannot include " + HIDDEN_G + " - it is reserved");
-
-        if (!bindings.containsKey(traversalSource))
-            throw new IllegalArgumentException("The bindings available to the ScriptEngine do not contain a traversalSource named: " + traversalSource);
-
-        final Object b = bindings.get(traversalSource);
-        if (!(b instanceof TraversalSource))
-            throw new IllegalArgumentException(traversalSource + " is of type " + b.getClass().getSimpleName() + " and is not an instance of TraversalSource");
-
-        return JavaTranslator.of((TraversalSource) b).translate(bytecode);
-    }
-
-    /**
      * Gremlin scripts evaluated by the grammar must be bound to "g" and should evaluate to a "g" in the
      * {@code ScriptContext} that is of type {@link TraversalSource}
      */
@@ -108,7 +99,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
 
         final Map<String, Object> m = context.getBindings(ScriptContext.ENGINE_SCOPE);
         final GremlinAntlrToJava antlr = new GremlinAntlrToJava((GraphTraversalSource) o,
-                new VariableResolver.DefaultVariableResolver(m));
+                variableResolverMaker.apply(m));
 
         try {
             return GremlinQueryParser.parse(script, antlr);

@@ -20,47 +20,35 @@ under the License.
 package gremlingo
 
 import (
-	"github.com/google/uuid"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequest(t *testing.T) {
-	t.Run("Test makeStringRequest() with custom requestID", func(t *testing.T) {
-		requestId := uuid.New()
-		r := makeStringRequest("g.V()", "g", "",
-			new(RequestOptionsBuilder).SetRequestId(requestId).Create())
-		assert.Equal(t, requestId, r.requestID)
-	})
-
 	t.Run("Test makeStringRequest() with no bindings", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "", *new(RequestOptions))
-		assert.NotNil(t, r.requestID)
-		assert.NotEqual(t, uuid.Nil, r.requestID)
+		r := makeStringRequest("g.V()", "g", *new(RequestOptions))
+		assert.Equal(t, "g.V()", r.gremlin)
+		assert.Equal(t, "g", r.fields["g"])
+		assert.Equal(t, "gremlin-lang", r.fields["language"])
+		assert.Nil(t, r.fields["bindings"])
 	})
 
 	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := makeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create())
-		assert.NotNil(t, r.requestID)
-		assert.NotEqual(t, uuid.Nil, r.requestID)
-		assert.Equal(t, 1234, r.args["evaluationTimeout"])
+		assert.Equal(t, 1234, r.fields["evaluationTimeout"])
 	})
 
 	t.Run("Test makeStringRequest() with custom batchSize", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := makeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetBatchSize(123).Create())
-		assert.NotNil(t, r.requestID)
-		assert.NotEqual(t, uuid.Nil, r.requestID)
-		assert.Equal(t, 123, r.args["batchSize"])
+		assert.Equal(t, 123, r.fields["batchSize"])
 	})
 
 	t.Run("Test makeStringRequest() with custom userAgent", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := makeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create())
-		assert.NotNil(t, r.requestID)
-		assert.NotEqual(t, uuid.Nil, r.requestID)
-		assert.Equal(t, "TestUserAgent", r.args["userAgent"])
+		assert.Equal(t, "TestUserAgent", r.fields["userAgent"])
 	})
 }

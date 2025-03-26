@@ -23,12 +23,10 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 class ResultSet:
 
-    def __init__(self, stream, request_id):
+    def __init__(self, stream):
         self._stream = stream
-        self._request_id = request_id
         self._done = None
         self._aggregate_to = None
-        self._status_attributes = {}
 
     @property
     def aggregate_to(self):
@@ -37,18 +35,6 @@ class ResultSet:
     @aggregate_to.setter
     def aggregate_to(self, val):
         self._aggregate_to = val
-
-    @property
-    def status_attributes(self):
-        return self._status_attributes
-
-    @status_attributes.setter
-    def status_attributes(self, val):
-        self._status_attributes = val
-
-    @property
-    def request_id(self):
-        return self._request_id
 
     @property
     def stream(self):

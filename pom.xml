@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.7.4-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -140,7 +140,6 @@ limitations under the License.
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
-        <module>gremlin-archetype</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
         <module>gremlin-util</module>
@@ -153,31 +152,32 @@ limitations under the License.
     <properties>
         <antlr4.version>4.9.1</antlr4.version>
         <caffeine.version>2.3.1</caffeine.version>
-        <commons.collections.version>3.2.2</commons.collections.version>
-        <commons.configuration.version>2.9.0</commons.configuration.version>
+        <commons.collections.version>4.4</commons.collections.version>
+        <commons.configuration.version>2.11.0</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.8.0</commons.io.version>
-        <commons.lang3.version>3.12.0</commons.lang3.version>
+        <commons.lang3.version>3.17.0</commons.lang3.version>
         <commons.text.version>1.10.0</commons.text.version>
         <cucumber.version>6.11.0</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
-        <groovy.version>4.0.23</groovy.version>
+        <groovy.version>4.0.25</groovy.version>
         <guice.version>4.2.3</guice.version>
-        <hadoop.version>3.3.3</hadoop.version>
+        <hadoop.version>3.4.1</hadoop.version>
         <hamcrest.version>2.2</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>3.3.1</javadoc-plugin.version>
         <javapoet.version>1.13.0</javapoet.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <junit.version>4.13.1</junit.version>
-        <kerby.version>2.0.1</kerby.version>
-        <logback.version>1.2.13</logback.version>
+        <kerby.version>2.0.3</kerby.version>
+        <logback.version>1.3.15</logback.version>
         <metrics.version>3.0.2</metrics.version>
         <mockito.version>3.10.0</mockito.version>
         <netty.version>4.1.101.Final</netty.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>2.0.16</slf4j.version>
         <snakeyaml.version>2.0</snakeyaml.version>
-        <spark.version>3.3.2</spark.version>
+        <spark.version>3.5.4</spark.version>
+        <awssdk.version>2.29.3</awssdk.version>
         <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -623,6 +623,7 @@ limitations under the License.
                         <argLine>
                             -Dlogback.configuration=${logback-test.properties}
                             -Dlog4j.configuration=${log4j-test.properties}
+                            -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                             -Dbuild.dir=${project.build.directory}
                             -Dis.testing=true -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                             ${jdk17JvmArgs}
@@ -651,6 +652,7 @@ limitations under the License.
                                 <argLine>
                                     -Dlogback.configuration=${logback-test.properties}
                                     -Dlog4j.configuration=${log4j-test.properties}
+                                    -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                     -Dhost=localhost -Dport=8182
                                     -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                     -Djava.net.preferIPv4Stack=true ${suresafeArgs}
@@ -700,7 +702,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
-                    <version>2.1.0</version>
+                    <version>4.1.1</version>
                     <configuration>
                         <targetBytecode>1.8</targetBytecode>
                     </configuration>
@@ -708,7 +710,7 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.6.0</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>
@@ -726,7 +728,7 @@ limitations under the License.
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.43.4</version>
+                    <version>0.45.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -766,15 +768,9 @@ limitations under the License.
                 <artifactId>commons-text</artifactId>
                 <version>${commons.text.version}</version>
             </dependency>
-            <!-- commons-configuration2 requires beanutils because we rely on file loaders -->
             <dependency>
-                <groupId>commons-beanutils</groupId>
-                <artifactId>commons-beanutils</artifactId>
-                <version>1.9.4</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
                 <version>${commons.collections.version}</version>
             </dependency>
             <dependency>
@@ -904,11 +900,6 @@ limitations under the License.
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
@@ -1506,8 +1497,8 @@ limitations under the License.
                                             <version>${commons.configuration.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
-                                            <groupId>commons-collections</groupId>
-                                            <artifactId>commons-collections</artifactId>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-collections4</artifactId>
                                             <version>${commons.collections.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
@@ -1622,11 +1613,6 @@ limitations under the License.
                                             <version>${groovy.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
-                                            <groupId>org.apache.groovy</groupId>
-                                            <artifactId>groovy-json</artifactId>
-                                            <version>${groovy.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
                                             <groupId>org.apache.commons</groupId>
                                             <artifactId>commons-lang3</artifactId>
                                             <version>${commons.lang3.version}</version>
@@ -1655,6 +1641,41 @@ limitations under the License.
                                             <groupId>org.yaml</groupId>
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-aws</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-client-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>auth</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>utils</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>protocol-core</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apiguardian</groupId>
+                                            <artifactId>apiguardian-api</artifactId>
+                                            <version>1.1.2</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
@@ -1799,8 +1820,8 @@ limitations under the License.
                                             <version>${netty.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
-                                            <groupId>commons-collections</groupId>
-                                            <artifactId>commons-collections</artifactId>
+                                            <groupId>org.apache.commons</groupId>
+                                            <artifactId>commons-collections4</artifactId>
                                             <version>${commons.collections.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
@@ -1821,11 +1842,6 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>org.apache.groovy</groupId>
                                             <artifactId>groovy-groovysh</artifactId>
-                                            <version>${groovy.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>org.apache.groovy</groupId>
-                                            <artifactId>groovy-json</artifactId>
                                             <version>${groovy.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
@@ -1862,6 +1878,36 @@ limitations under the License.
                                             <groupId>org.yaml</groupId>
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-aws</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-auth-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>http-client-spi</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>auth</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>utils</artifactId>
+                                            <version>${awssdk.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>software.amazon.awssdk</groupId>
+                                            <artifactId>protocol-core</artifactId>
+                                            <version>${awssdk.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
@@ -1935,6 +1981,7 @@ limitations under the License.
                             <argLine>
                                 -Dlogback.configuration=${logback-silent.properties}
                                 -Dlog4j.configuration=${log4j-silent.properties}
+                                -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true
                                 -Djava.net.preferIPv4Stack=true ${suresafeArgs}
                                 ${jdk17JvmArgs}
@@ -1961,7 +2008,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>3.0.0</version>
+                        <version>3.5.0</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
@@ -2043,6 +2090,7 @@ limitations under the License.
                         <configuration>
                             <argLine>@{surefireArgLine} -Dlogback.configuration=${logback-test.properties}
                                 -Dlog4j.configuration=${log4j-test.properties}
+                                -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
                                 -Djava.net.preferIPv4Stack=true
                             </argLine>
@@ -2054,6 +2102,7 @@ limitations under the License.
                         <configuration>
                             <argLine>@{failsafeArgLine} -Dlogback.configuration=${logback-test.properties}
                                 -Dlog4j.configuration=${log4j-test.properties} -Dhost=localhost -Dport=8182
+                                -Dslf4j.provider=ch.qos.logback.classic.spi.LogbackServiceProvider
                                 -Dbuild.dir=${project.build.directory} -Dis.testing=true ${suresafeArgs}
                                 -Djava.net.preferIPv4Stack=true
                             </argLine>

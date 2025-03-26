@@ -20,15 +20,14 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { byteBufferSerializer, intSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { byteBufferSerializer, intSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
-const buffer = require('buffer');
+import { constants } from 'buffer';
 
 describe(`GraphBinary.ByteBufferSerializer`, () => {
 
@@ -74,7 +73,7 @@ describe(`GraphBinary.ByteBufferSerializer`, () => {
   describe('#serialize', () => {
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
       if (v)
         v = from(v);
@@ -93,8 +92,8 @@ describe(`GraphBinary.ByteBufferSerializer`, () => {
     it.skip('should not error if buffer length is INT32_MAX');
 
     // Buffer.size limit depends on Node version and runtime, see https://nodejs.org/docs/latest/api/buffer.html#bufferconstantsmax_length
-    if (buffer.constants.MAX_LENGTH < intSerializer.INT32_MAX+1)
-      it.skip(`should error if buffer length is greater than INT32_MAX - cannot be tested due to buffer.constants.MAX_LENGTH=${buffer.constants.MAX_LENGTH} < INT32_MAX+1=${intSerializer.INT32_MAX+1}`);
+    if (constants.MAX_LENGTH < intSerializer.INT32_MAX+1)
+      it.skip(`should error if buffer length is greater than INT32_MAX - cannot be tested due to buffer.constants.MAX_LENGTH=${constants.MAX_LENGTH} < INT32_MAX+1=${intSerializer.INT32_MAX+1}`);
     else
       it('should error if buffer length is greater than INT32_MAX', () => assert.throws(
         () => byteBufferSerializer.serialize(Buffer.alloc(intSerializer.INT32_MAX+1)),
@@ -103,7 +102,7 @@ describe(`GraphBinary.ByteBufferSerializer`, () => {
   });
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -142,12 +141,12 @@ describe(`GraphBinary.ByteBufferSerializer`, () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
+      { v: new Traverser(), e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
       { v: [new Buffer([])],  e: false },
       { v: new Buffer([]),    e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( byteBufferSerializer.canBeUsedFor(v), e )
     ))
   );

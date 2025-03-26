@@ -20,23 +20,22 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const ioc = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { serializers } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser, P } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
-module.exports = ({ ID, name }) => {
+export default ({ ID, name }) => {
 
 describe(`GraphBinary.${name}Serializer`, () => {
 
   const type_code =  from([ID]);
   const value_flag = from([0x00]);
 
-  const serializer = ioc.serializers[ID];
+  const serializer = serializers[ID];
 
   const cases = [
     { v:undefined, fq:1, b:[ID,0x01],                                 av:null },
@@ -79,7 +78,7 @@ describe(`GraphBinary.${name}Serializer`, () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -95,7 +94,7 @@ describe(`GraphBinary.${name}Serializer`, () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -132,14 +131,14 @@ describe(`GraphBinary.${name}Serializer`, () => {
       { v: null,              e: false },
       { v: undefined,         e: false },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
-      { v: new t.P(),         e: false },
+      { v: new Traverser(), e: false },
+      { v: new P(),         e: false },
       { v: [],                e: false },
       { v: [0],               e: false },
-      { v: [new t.P()],       e: false },
+      { v: [new P()],       e: false },
       { v: [new Date()],      e: false },
       { v: new Date(),        e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( serializer.canBeUsedFor(v), e )
     ))
   );

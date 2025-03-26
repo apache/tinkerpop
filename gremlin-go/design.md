@@ -35,24 +35,19 @@ The entities are as follows, from the highest level to the lowest:
 
 A `Client` represents the entry point to interaction with a Gremlin-supported server. A URL parameter is required for construction, with additional configuration options such as HTTP headers and TLS configuration available.
 
-The `Client` has two main responsibilities:
-
-* Handles initialization and configuration.
-* Handles creation and allocation (i.e. pooling) of `connection` types.
-
 ##### Cardinalities
 
-* One `connectionPool
+* One `gremlinClient`
 
 ##### Lifecycle and States
 
 * The `Client` does not track or have any real state.
-* However, `Close()` can be invoked on a `Client` in order to close any instances of `connection` that in its current `connectionPool`.
+* However, `Close()` can be invoked on a `Client` in order to close any instances client resources.
 
 ```mermaid
 classDiagram
 	class Client
-	Client: pool connectionPool
+	Client: gremlinClient gremlinClient
 	Client: NewClient(host, configurations) Client
 	Client: Close()
 	Client: Submit(traversal) ResultSet
@@ -69,67 +64,15 @@ sequenceDiagram
 	
 ```
 
-#### connectionPool
+#### gremlinClient
 
-A `connectionPool` is a collection of `connection`. The implementation used is a `loadBalancingPool`. It attempts to evenly load balance traversals by delegating it to the least-busy connection in the pool. The `loadBalancingPool` has a maximum connection count, and a `newConnectionTheshold`, where if the currently least-used connection has reached, will trigger the creation of a new `connection` for use. If there are multiple `connection` that sit unused, all but one will be `closed` and removed from the pool.
-
-##### Cardinalities
-
-* Many `connection`
-
-##### Lifecycle and States
-
-* No states, but when `close()` in invoked, all `connection` have their respective `close()` method invoked asynchronously and are removed from the pool.
-
-#### connection
-
-A `connection` represents an individual communication component with a Gremlin Server. A `connection` has the sole responsibility of being the representation of a communication channel to a Gremlin Server, providing the interface for sending requests to said server, as well as holding response `ResultSet` instances to consume responses asynchronously until they are consumed.
-
-##### Cardinalities
-
-* One `protocol`
-* Multiple temporary instances of `ResultSet`
-
-##### Lifecycle and States
-
-* States
-  * `initialized`
-  * `established`
-  * `closed`
-  * `closedDueToError`
-* When `close()` is invoked, set the state to `closed` and also invoke `close()` on the `protocol`.
-
-```mermaid
-classDiagram
-	class connection
-	connection: protocol *protocol
-	connection: results "map[string]ResultSet"
-	connection: state connectionState
-	connection: close()
-	connection: createConnection(host)
-	connection: write(request) ResultSet
-```
-
-```mermaid
-sequenceDiagram
-	Client->>connection(Pool): write()
-	connection->>protocol: write(ResultSet)
-	protocol-->>connection(Pool): ResultSet
-	loop Readloop
-		protocol->>protocol: Async population of ResultSet
-	end
-	connection-->>Client: ResultSet
-	
-```
-
-#### protocol
-
-The `protocol` entity handles invoking serialization and deserialization of data, as well as handling the lifecycle of raw data passed to and received from the `transporter` layer. Upon creation, an instance of `protocol` starts a `goroutine` to asynchronously read and populate data into a  `ResultSet` that is owned by the parent `connection`.
+The `gremlinClient` entity handles invoking serialization and deserialization of data, as well as handling the lifecycle of raw data passed to and received from the `httpTransporter` layer. Upon sending a request, an instance of `gremlinClient` starts a `goroutine` to asynchronously read and populate data into a  `ResultSet`.
 
 ##### Cardinalities
 
 * One `transporter`
 * One `serializer`
+* One `http.Client`
 
 ##### Lifecycle and States
 
@@ -139,24 +82,26 @@ The `protocol` entity handles invoking serialization and deserialization of data
 
 ```mermaid
 classDiagram
-	class protocol
-	protocol: transporter *transporter
-	protocol: serializer *serializer
-	protocol: close()
-	protocol: write(request)
-	protocol: readLoop(map[string]ResultSet)
+	class gremlinClient
+	gremlinClient: httpClient *http.Client
+	gremlinClient: serializer *serializer
+	gremlinClient: connSettings *connectionSettings
+	gremlinClient: close()
+	gremlinClient: send(request)
+	gremlinClient: receive(rs ResultSet, msg []byte)
 ```
 
 ```mermaid
 sequenceDiagram
-	connection->>protocol: write(request)
-	protocol->>serializer: serializeMessage(request)
-	serializer-->>protocol: bytes
-	protocol->>transporter: Write(bytes)
-	transporter-->>protocol: response
-	protocol->>serializer: deserializeMessage(response)
-	serializer-->>protocol: population of ResultSet
-	protocol-->>connection: population of ResultSet
+    client->>gremlinClient: send(request)
+    gremlinClient-->>client: ResultSet
+	gremlinClient->>serializer: serializeMessage(request)
+	serializer-->>gremlinClient: bytes
+	gremlinClient->>httpTransporter: Write(bytes)
+	gremlinClient->>httpTransporter: Read()
+	httpTransporter-->>gremlinClient: bytes
+    gremlinClient->>serializer: deserializeMessage(response)
+    gremlinClient-->>gremlinClient: population of ResultSet
 	
 
 ```
@@ -180,27 +125,9 @@ classDiagram
 	serializer: deserializeMessage([]byte) response
 ```
 
-#### transporter
+#### httpTransporter
 
-The `transporter` is an interface that describes the lowest-level methods that are required for sending and receiving requests, which implementing types are ones that are implementations of network protocols. The default implementation used for Gremlin-Go is [Gorilla WebSocket](https://github.com/gorilla/websocket), a Go implementation of the WebSocket protocol.
-
-##### Cardinalities (Gorilla)
-
-* None
-
-##### Lifecycle and States
-
-* The `transporter` interface requires method `close()`, which closes the network protocol depending on its implementation.
-
-```mermaid
-classDiagram
-	class transporter
-	transporter: Connect()
-	transporter: Write([]byte)
-	transporter: Read([]byte)
-	transporter: Close()
-	transporter: IsClosed() bool
-```
+The `httpTransporter` is responsible for sending and receiving bytes to/from the server. It is intended for one `httpTransporter` to be instantiated per http request and response.
 
 #### Result
 

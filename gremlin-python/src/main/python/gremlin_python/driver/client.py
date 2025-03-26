@@ -19,11 +19,9 @@
 import logging
 import warnings
 import queue
-import re
 from concurrent.futures import ThreadPoolExecutor
 
 from gremlin_python.driver import connection, protocol, request, serializer
-from gremlin_python.process import traversal
 
 log = logging.getLogger("gremlinpython")
 
@@ -38,69 +36,51 @@ except ImportError:
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
+# TODO: remove session, update connection pooling, etc.
 class Client:
 
     def __init__(self, url, traversal_source, protocol_factory=None,
                  transport_factory=None, pool_size=None, max_workers=None,
-                 message_serializer=None, username="", password="",
-                 kerberized_service="", headers=None, session=None,
-                 enable_user_agent_on_connect=True, enable_compression=False,
-                 **transport_kwargs):
+                 request_serializer=serializer.GraphBinarySerializersV4(),
+                 response_serializer=None, interceptors=None, auth=None,
+                 headers=None, enable_user_agent_on_connect=True,
+                 bulk_results=False, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
-
-        # check via url that we are using http protocol
-        self._use_http = re.search('^http', url)
 
         self._closed = False
         self._url = url
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
+        self._bulk_results = bulk_results
         self._traversal_source = traversal_source
-        self._enable_compression = enable_compression
-        if not self._use_http and "max_content_length" not in transport_kwargs:
+        if "max_content_length" not in transport_kwargs:
             transport_kwargs["max_content_length"] = 10 * 1024 * 1024
-        if message_serializer is None:
-            message_serializer = serializer.GraphBinarySerializersV1()
+        if response_serializer is None:
+            response_serializer = serializer.GraphBinarySerializersV4()
 
-        self._message_serializer = message_serializer
-        self._username = username
-        self._password = password
-        self._session = session
-        self._session_enabled = (session is not None and session != "")
+        self._auth = auth
+        self._response_serializer = response_serializer
+
         if transport_factory is None:
             try:
-                from gremlin_python.driver.aiohttp.transport import (
-                    AiohttpTransport, AiohttpHTTPTransport)
+                from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
             except ImportError:
                 raise Exception("Please install AIOHTTP or pass "
                                 "custom transport factory")
             else:
                 def transport_factory():
-                    if self._use_http:
-                        return AiohttpHTTPTransport(**transport_kwargs)
-                    else:
-                        return AiohttpTransport(enable_compression=enable_compression, **transport_kwargs)
+                    if self._protocol_factory is None:
+                        self._protocol_factory = protocol_factory
+                    return AiohttpHTTPTransport(**transport_kwargs)
         self._transport_factory = transport_factory
+
         if protocol_factory is None:
             def protocol_factory():
-                if self._use_http:
-                    return protocol.GremlinServerHTTPProtocol(
-                        self._message_serializer,
-                        username=self._username,
-                        password=self._password)
-                else:
-                    return protocol.GremlinServerWSProtocol(
-                        self._message_serializer,
-                        username=self._username,
-                        password=self._password,
-                        kerberized_service=kerberized_service,
-                        max_content_length=transport_kwargs["max_content_length"])
+                return protocol.GremlinServerHTTPProtocol(
+                    request_serializer, response_serializer, auth=self._auth,
+                    interceptors=interceptors)
         self._protocol_factory = protocol_factory
-        if self._session_enabled:
-            if pool_size is None:
-                pool_size = 1
-            elif pool_size != 1:
-                raise Exception("PoolSize must be 1 on session mode!")
+
         if pool_size is None:
             pool_size = 8
         self._pool_size = pool_size
@@ -117,6 +97,9 @@ class Client:
     @property
     def available_pool_size(self):
         return self._pool.qsize()
+    
+    def response_serializer(self):
+        return self._response_serializer
 
     @property
     def executor(self):
@@ -140,25 +123,12 @@ class Client:
         if self._closed:
             return
 
-        if self._session_enabled:
-            self._close_session()
         log.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
         self._closed = True
-
-    def _close_session(self):
-        message = request.RequestMessage(
-            processor='session', op='close',
-            args={'session': str(self._session)})
-        conn = self._pool.get(True)
-        try:
-            write_result_set = conn.write(message).result()
-            return write_result_set.all().result()  # wait for _receive() to finish
-        except protocol.GremlinServerError:
-            pass
 
     def _get_connection(self):
         protocol = self._protocol_factory()
@@ -182,25 +152,30 @@ class Client:
             raise Exception("Client is closed")
 
         log.debug("message '%s'", str(message))
-        args = {'gremlin': message, 'aliases': {'g': self._traversal_source}}
-        processor = ''
-        op = 'eval'
-        if isinstance(message, traversal.Bytecode):
-            op = 'bytecode'
-            processor = 'traversal'
+        fields = {'g': self._traversal_source}
 
+        # TODO: bindings is now part of request_options, evaluate the need to keep it separate in python.
+        #  Note this bindings parameter only applies to string script submissions
         if isinstance(message, str) and bindings:
-            args['bindings'] = bindings
+            fields['bindings'] = bindings
 
-        if self._session_enabled:
-            args['session'] = str(self._session)
-            processor = 'session'
-
-        if isinstance(message, traversal.Bytecode) or isinstance(message, str):
-            log.debug("processor='%s', op='%s', args='%s'", str(processor), str(op), str(args))
-            message = request.RequestMessage(processor=processor, op=op, args=args)
+        if isinstance(message, str):
+            log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
+            message = request.RequestMessage(fields=fields, gremlin=message)
 
         conn = self._pool.get(True)
         if request_options:
-            message.args.update(request_options)
+            message.fields.update({token: request_options[token] for token in request.Tokens
+                                   if token in request_options and token != 'bindings'})
+            if 'bindings' in request_options:
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['bindings'])
+                else:
+                    message.fields['bindings'] = request_options['bindings']
+            if 'params' in request_options:
+                if 'bindings' in message.fields:
+                    message.fields['bindings'].update(request_options['params'])
+                else:
+                    message.fields['bindings'] = request_options['params']
+
         return conn.write(message)

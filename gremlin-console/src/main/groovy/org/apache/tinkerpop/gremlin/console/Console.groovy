@@ -22,24 +22,19 @@ import groovy.cli.picocli.CliBuilder
 import groovy.cli.picocli.OptionAccessor
 import jline.TerminalFactory
 import jline.console.history.FileHistory
-
 import org.apache.groovy.groovysh.ExitNotification
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.groovy.groovysh.InteractiveShellRunner
 import org.apache.groovy.groovysh.commands.SetCommand
-import org.apache.tinkerpop.gremlin.console.commands.BytecodeCommand
 import org.apache.tinkerpop.gremlin.console.commands.ClsCommand
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.apache.tinkerpop.gremlin.console.commands.InstallCommand
 import org.apache.tinkerpop.gremlin.console.commands.PluginCommand
-import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
-import org.apache.tinkerpop.gremlin.console.commands.SubmitCommand
 import org.apache.tinkerpop.gremlin.console.commands.UninstallCommand
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.jsr223.CoreGremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin
 import org.apache.tinkerpop.gremlin.jsr223.ImportCustomizer
-import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Failure
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement
@@ -53,7 +48,6 @@ import org.codehaus.groovy.tools.shell.IO
 import org.fusesource.jansi.Ansi
 import sun.misc.Signal
 import sun.misc.SignalHandler
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -80,7 +74,7 @@ class Console {
             io.out.println()
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "\\,,,/"))
             io.out.println("         " + Colorizer.render(Preferences.gremlinColor, "(o o)"))
-            io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(3)-oOOo-----"))
+            io.out.println("" + Colorizer.render(Preferences.gremlinColor, "-----oOOo-(" + Gremlin.majorVersion() + ")-oOOo-----"))
         }
 
         final Mediator mediator = new Mediator(this)
@@ -108,9 +102,6 @@ class Console {
         groovy.register(new UninstallCommand(groovy, mediator))
         groovy.register(new InstallCommand(groovy, mediator))
         groovy.register(new PluginCommand(groovy, mediator))
-        groovy.register(new RemoteCommand(groovy, mediator))
-        groovy.register(new SubmitCommand(groovy, mediator))
-        groovy.register(new BytecodeCommand(groovy, mediator))
         groovy.register(new ClsCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
@@ -145,16 +136,22 @@ class Console {
                 def pluggedIn = new PluggedIn((GremlinPlugin) plugin, groovy, io, false)
 
                 mediator.availablePlugins.put(plugin.class.name, pluggedIn)
+                pluggedIn.activate()
             }
         }
 
         // if there are active plugins then initialize them in the order that they are listed
         activePlugins.each { pluginName ->
             def pluggedIn = mediator.availablePlugins[pluginName]
-            pluggedIn.activate()
 
-            if (!io.quiet)
-                io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
+            if (pluggedIn != null) {
+                pluggedIn.activate()
+
+                if (!io.quiet)
+                    io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
+            } else if (!io.quiet) {
+                    io.out.println(Colorizer.render(Preferences.infoColor, "invalid plugin: " + pluginName))
+            }
         }
 
         // remove any "uninstalled" plugins from plugin state as it means they were installed, activated, but not
@@ -388,12 +385,7 @@ class Console {
                         io.err.print(line.trim())
                         io.err.println()
                         if (line.trim().equals("y") || line.trim().equals("Y")) {
-                            if (err instanceof RemoteException && err.remoteStackTrace.isPresent()) {
-                                io.err.print(err.remoteStackTrace.get())
-                                io.err.flush()
-                            } else {
-                                e.printStackTrace(io.err)
-                            }
+                            e.printStackTrace(io.err)
                         }
                     } else {
                         e.printStackTrace(io.err)

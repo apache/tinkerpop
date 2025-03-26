@@ -20,28 +20,27 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { enumSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { enumSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { barrier, cardinality, column, direction, operator, order, pick, pop, scope, t, EnumValue } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
 describe('GraphBinary.EnumSerializer', () => {
 
   const types = [
-    { name: 'Barrier',     code: from([0x13]), enum: t.barrier },
-    { name: 'Cardinality', code: from([0x16]), enum: t.cardinality },
-    { name: 'Column',      code: from([0x17]), enum: t.column },
-    { name: 'Direction',   code: from([0x18]), enum: t.direction },
-    { name: 'Operator',    code: from([0x19]), enum: t.operator },
-    { name: 'Order',       code: from([0x1A]), enum: t.order },
-    { name: 'Pick',        code: from([0x1B]), enum: t.pick },
-    { name: 'Pop',         code: from([0x1C]), enum: t.pop },
-    { name: 'Scope',       code: from([0x1F]), enum: t.scope },
-    { name: 'T',           code: from([0x20]), enum: t.t },
+    { name: 'Barrier',     code: from([0x13]), enum: barrier },
+    { name: 'Cardinality', code: from([0x16]), enum: cardinality },
+    { name: 'Column',      code: from([0x17]), enum: column },
+    { name: 'Direction',   code: from([0x18]), enum: direction },
+    { name: 'Operator',    code: from([0x19]), enum: operator },
+    { name: 'Order',       code: from([0x1A]), enum: order },
+    { name: 'Pick',        code: from([0x1B]), enum: pick },
+    { name: 'Pop',         code: from([0x1C]), enum: pop },
+    { name: 'Scope',       code: from([0x1F]), enum: scope },
+    { name: 'T',           code: from([0x20]), enum: t },
   ];
   const value_flag = from([0x00]);
 
@@ -81,9 +80,9 @@ describe('GraphBinary.EnumSerializer', () => {
     types.forEach((type) => describe(`${type.name}`, () =>
       cases
       .filter(({des}) => !des)
-      .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+      .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
         b = from(b);
-        v = new t.EnumValue(type.name, v);
+        v = new EnumValue(type.name, v);
 
         // when fq is under control
         if (fq !== undefined) {
@@ -102,7 +101,7 @@ describe('GraphBinary.EnumSerializer', () => {
 
   describe('#deserialize', () => {
     types.forEach((type) => describe(`${type.name}`, () =>
-      cases.forEach(({ v, fq, b, B, av, err }, i) => it(utils.des_title({i,b}), () => {
+      cases.forEach(({ v, fq, b, B, av, err }, i) => it(des_title({i,b}), () => {
         if (B)
           b = B;
         if (Array.isArray(b)) {
@@ -125,7 +124,7 @@ describe('GraphBinary.EnumSerializer', () => {
         if (av !== undefined)
           v = av;
         if (v !== undefined && v !== null)
-          v = new t.EnumValue(type.name, v);
+          v = new EnumValue(type.name, v);
         const len = b.length;
 
         // when fq is under control
@@ -154,7 +153,7 @@ describe('GraphBinary.EnumSerializer', () => {
 
   describe('#canBeUsedFor', () => {
     it('should error if type name is not supported', () => assert.throws(
-      () => enumSerializer.canBeUsedFor(new t.EnumValue('UnknownType', 'asc')),
+      () => enumSerializer.canBeUsedFor(new EnumValue('UnknownType', 'asc')),
       { message: /typeName=UnknownType is not supported/ }
     ));
 
@@ -163,8 +162,8 @@ describe('GraphBinary.EnumSerializer', () => {
       { v: null,                        e: false },
       { v: undefined,                   e: false },
       { v: {},                          e: false },
-      { v: new t.EnumValue('Barrier'),  e: true  },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+      { v: new EnumValue('Barrier'),  e: true  },
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( enumSerializer.canBeUsedFor(v), e )
     ));
   });

@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -29,9 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -44,7 +41,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.inside;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.lt;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.V;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and;
@@ -67,7 +63,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class InlineFilterStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin original;
@@ -80,7 +75,7 @@ public class InlineFilterStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(InlineFilterStrategy.instance());
 

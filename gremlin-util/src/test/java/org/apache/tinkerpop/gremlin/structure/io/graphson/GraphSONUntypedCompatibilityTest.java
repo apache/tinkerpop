@@ -20,11 +20,8 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractUntypedCompatibilityTest;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV2;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV4;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractGraphSONMessageSerializerV4;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -40,25 +37,12 @@ import java.util.Arrays;
 @RunWith(Parameterized.class)
 public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibilityTest {
 
-    private static final ObjectMapper mapperV1 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV1.instance()).
+    private static final ObjectMapper mapperV4 = GraphSONMapper.build().
+            addRegistry(TinkerIoRegistryV4.instance()).
             typeInfo(TypeInfo.NO_TYPES).
-            addCustomModule(new AbstractGraphSONMessageSerializerV1.GremlinServerModule()).
-            version(GraphSONVersion.V1_0).create().createMapper();
-
-    private static final ObjectMapper mapperV2 = GraphSONMapper.build().
-                    addRegistry(TinkerIoRegistryV2.instance()).
-                    typeInfo(TypeInfo.NO_TYPES).
-                    addCustomModule(GraphSONXModuleV2.build()).
-                    addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
-                    version(GraphSONVersion.V2_0).create().createMapper();
-
-    private static final ObjectMapper mapperV3 = GraphSONMapper.build().
-            addRegistry(TinkerIoRegistryV3.instance()).
-            typeInfo(TypeInfo.NO_TYPES).
-            addCustomModule(GraphSONXModuleV3.build()).
-            addCustomModule(new AbstractGraphSONMessageSerializerV2.GremlinServerModule()).
-            version(GraphSONVersion.V3_0).create().createMapper();
+            addCustomModule(GraphSONXModuleV4.build()).
+            addCustomModule(new AbstractGraphSONMessageSerializerV4.GremlinServerModuleV4()).
+        version(GraphSONVersion.V4_0).create().createMapper();
 
     private static final String testCaseDataPath = root.getPath() + File.separator + "test-case-data" + File.separator
             + "io" + File.separator + "graphson";
@@ -70,9 +54,7 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
     @Parameterized.Parameters(name = "expect({0})")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"v1-no-types", mapperV1 },
-                {"v2-no-types", mapperV2 },
-                {"v3-no-types", mapperV3 },
+                {"v4-no-types", mapperV4 },
         });
     }
 
@@ -90,7 +72,7 @@ public class GraphSONUntypedCompatibilityTest extends AbstractUntypedCompatibili
     @Override
     protected byte[] readFromResource(final String resource) throws IOException {
         final String testResource = resource + "-" + compatibility + ".json";
-        return IOUtils.toByteArray(getClass().getResourceAsStream(testResource));
+        return IOUtils.toByteArray(GraphSONResourceAccess.class.getResourceAsStream(testResource));
     }
 
     @Override

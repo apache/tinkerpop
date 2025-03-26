@@ -54,6 +54,7 @@ traversal strategies may not function properly.
 
 [[transactions]]
 == Traversal Transactions
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled in this beta release.
 
 image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction]
 represents a unit of work to execute against the database. A traversals unit of work is affected by usage convention
@@ -63,9 +64,9 @@ demonstrated as follows:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withEmbedded(graph);
+GraphTraversalSource g = traversal().with(graph);
 // or
-GraphTraversalSource g = traversal().withRemote(conn);
+GraphTraversalSource g = traversal().with(conn);
 
 Transaction tx = g.tx();
 
@@ -93,7 +94,7 @@ instances that are bound to the same transaction, therefore:
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withRemote(conn);
+GraphTraversalSource g = traversal().with(conn);
 Transaction tx1 = g.tx();
 Transaction tx2 = g.tx();
 
@@ -220,7 +221,7 @@ using this method.
 ----
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> g = traversal().withEmbedded(graph)
+gremlin> g = traversal().with(graph)
 ==>graphtraversalsource[neo4jgraph[community single [/tmp/neo4j]], standard]
 gremlin> graph.features()
 ==>FEATURES
@@ -276,13 +277,16 @@ Graph API and thus also the transactional model described in the <<tx-embedded,e
 script can have the ability to execute multiple transactions per request with complete control provided to the
 developer to commit or rollback transactions as needed.
 
+IMPORTANT: 4.0.0-beta.1 Release - Transactions are currently disabled in this beta release.
+
 There are two methods for sending scripts to Gremlin Server: sessionless and session-based. With sessionless requests
 there will always be an attempt to close the transaction at the end of the request with a commit if there are no errors
 or a rollback if there is a failure. It is therefore unnecessary to close transactions manually within scripts
 themselves. By default, session-based requests do not have this quality. The transaction will be held open on the
 server until the user closes it manually. There is an option to have automatic transaction management for sessions.
-More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section and
-the <<sessions,Considering Sessions>> Section.
+More information on this topic can be found in the <<considering-transactions,Considering Transactions>> Section.
+
+IMPORTANT: 4.0.0-beta.1 Release - Sessions have been removed. All scripts are now sessionless.
 
 [[tx-rgp]]
 === Remote Gremlin Providers
@@ -852,9 +856,9 @@ made more salient on a larger graph. Therefore, the example below leverages the 
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
-g = traversal().withEmbedded(graph).withoutStrategies(LazyBarrierStrategy) <1>
+g = traversal().with(graph).withoutStrategies(LazyBarrierStrategy) <1>
 clockWithResult(1){g.V().both().both().both().count().next()} <2>
 clockWithResult(1){g.V().repeat(both()).times(3).count().next()} <3>
 clockWithResult(1){g.V().both().barrier().both().barrier().both().barrier().count().next()} <4>
@@ -875,7 +879,7 @@ optimization scenario with the added benefit of reducing the risk of an out-of-m
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = traversal().withEmbedded(graph)  <1>
+g = traversal().with(graph)  <1>
 g.io('data/grateful-dead.xml').read().iterate()
 clockWithResult(1){g.V().both().both().both().count().next()}
 g.V().both().both().both().count().iterate().toString()  <2>
@@ -938,9 +942,10 @@ on a step-by-step level and thus, as discussed in their respective section of th
 * <<aggregate-step, `aggregate()`>>: aggregate all objects into a set but only store their `by()`-modulated values.
 * <<cyclicpath-step, `cyclicPath()`>>: filter if the traverser's path is cyclic given `by()`-modulation.
 * <<dedup-step, `dedup()`>>: dedup on the results of a `by()`-modulation.
+* <<format-step, `format()`>>: transform a traverser provided to the step by way of the `by()` modulator before it is processed by it.
 * <<group-step, `group()`>>: create group keys and values according to `by()`-modulation.
 * <<groupcount-step,`groupCount()`>>: count those groups where the group keys are the result of `by()`-modulation.
-* <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it processed by it.
+* <<math-step, `math()`>>: transform a traverser provided to the step by way of the `by()` modulator before it is processed by it.
 * <<order-step, `order()`>>: order the objects by the results of a `by()`-modulation.
 * <<path-step, `path()`>>: get the path of the traverser where each path element is `by()`-modulated.
 * <<project-step, `project()`>>: project a map of results given various `by()`-modulations off the current object.
@@ -966,7 +971,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`by(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#by(org.apache.tinkerpop.gremlin.process.traversal.Traversal,java.util.Comparator)++[`by(Traversal,Comparator)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/T.html++[`T`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Order.html++[`Order`],
+<<a-note-on-maps>>
 
 [[call-step]]
 === Call Step
@@ -1243,7 +1249,7 @@ that supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().
   connectedComponent().
     with(ConnectedComponent.propertyName, 'component').
@@ -1412,8 +1418,8 @@ g.V().elementMap('name')
 g.V().dedup().by(label).values('name')
 ----
 
-Finally, if `dedup()` is provided an array of strings, then it will ensure that the de-duplication is not with respect
-to the current traverser object, but to the path history of the traverser.
+If `dedup()` is provided an array of strings, then it will ensure that the de-duplication is not with respect to the
+current traverser object, but to the path history of the traverser.
 
 [gremlin-groovy,modern]
 ----
@@ -1426,6 +1432,37 @@ g.V().as('a').both().as('b').both().as('c').
 
 <1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
 <2> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are filtered.
+
+The `dedup()` step can work on many different types of objects. One object in particular can need a bit of explanation.
+If you use `dedup()` on a `Path` object there is a chance that you may get some unexpected results. Consider the
+following example which forcibly generates duplicate path results in the first traversal and in the second applies
+`dedup()` to remove them:
+
+[gremlin-groovy,modern]
+----
+g.V().union(out().path(), out().path())
+g.V().union(out().path(), out().path()).dedup()
+----
+
+The `dedup()` step checks the equality of the paths by examining the equality of the objects on the `Path` (in this case
+vertices), but also on any path labels. In the prior example, there weren't any path labels so `dedup()` behaved as
+expected. In the next example, note the difference in the results if a label is added for one `Path` but not the other:
+
+[gremlin-groovy,modern]
+----
+g.V().union(out().as('x').path(), out().path())
+g.V().union(out().as('x').path(), out().path()).dedup()
+----
+
+The prior example shows how `dedup()` does not have the same effect when a path label is in place. In this contrived
+example the answer is simple: remove the `as('x')`. If in the real world, it is not possible to remove the label, the
+workaround is to deconstruct the `Path` into a `List` to drop the label. In this way, `dedup()` is just comparing `List`
+objects and the objects in the `Path`.
+
+[gremlin-groovy,modern]
+----
+g.V().union(out().as('x').path(), out().path()).map(unfold().fold()).dedup()
+----
 
 *Additional References*
 
@@ -1452,6 +1489,21 @@ g.V().values("name").fold().difference(__.V().limit(2).values("name").fold())
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#difference(java.lang.Object)++[`difference(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`Semantics`]
+
+[[discard-step]]
+=== Discard Step
+
+The `discard()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
+that are executed remotely where returning results is not useful and the traversal is only meant to generate
+side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
+the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
+quietly used by the `iterate()` terminal step which appends `discard()` to the traversal before actually cycling through
+results.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#discard()++[`discard()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
 
 [[disjunct-step]]
 === Disjunct Step
@@ -2479,7 +2531,7 @@ songs which Jerry Garcia has both sung and written (using the Grateful Dead grap
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().match(
         __.as('a').has('name', 'Garcia'),
@@ -2878,13 +2930,6 @@ g.E().elementMap()
 <1> Create three dogs.
 <2> Stream the edge maps into `mergeE()` steps.
 
-WARNING: There is a bit of an inconsistency present when `mergeE()` is used as a start step versus when it is used
-mid-traversal. As a start step, `mergeE()` will promote the currently created or matched `Edge` to the child traversal,
-allowing you to directly update it like `option(onMatch, property('k', 'v').constant([:]))`. However, when `mergeE()` is
-used mid-traversal, the `Edge` is not promoted to the child traversal and the incoming traverser is used instead. Such
-behavior is essentially blocked to prevent accidental misuse and will result in an exception at execution time that will
-have a message like, "The incoming traverser for MergeEdgeStep cannot be an Element".
-
 The `mergeE` step can be combined with the `mergeV` step (or any other step producing a `Vertex`) using the
 `Merge.outV` and `Merge.inV` option modulators. These options can be used to "late-bind" the `OUT` and `IN`
 vertices in the main merge argument and in the `onCreate` argument:
@@ -2920,7 +2965,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(java.util.Map)++[`mergeE(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeE(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeE(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-e-step++[`Semantics`]
 
 [[mergevertex-step]]
 === MergeVertex Step
@@ -3097,15 +3142,15 @@ contains additional information that will be applied if an existing vertex is fo
 
 [gremlin-groovy]
 ----
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1)). <1>
-  option(Merge.onCreate,range(local,1,2)). <2>
-  option(Merge.onMatch,tail(local)) <3>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1)). <1>
+  option(Merge.onCreate, select('m').range(local,1,2)). <2>
+  option(Merge.onMatch, select('m').tail(local)) <3>
 g.V(400).valueMap().with(WithOptions.tokens)
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1)).
-  option(Merge.onCreate,range(local,1,2)).
-  option(Merge.onMatch,tail(local))  <4>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1)).
+  option(Merge.onCreate, select('m').range(local,1,2)).
+  option(Merge.onMatch, select('m').tail(local))  <4>
 g.V(400).valueMap().with(WithOptions.tokens)  <5>
 ----
 
@@ -3115,20 +3160,13 @@ g.V(400).valueMap().with(WithOptions.tokens)  <5>
 <4> Pixel exists now, so we will take this option.
 <5> The `updated` property has now been added.
 
-WARNING: There is a bit of an inconsistency present when `mergeV()` is used as a start step versus when it is used
-mid-traversal. As a start step, `mergeV()` will promote the currently created or matched `Vertex` to the child
-traversal, allowing you to directly update it like `option(onMatch, property('k', 'v').constant([:]))`. However, when
-`mergeV()` is used mid-traversal, the `Vertex` is not promoted to the child traversal and the incoming traverser is used
-instead. Such behavior is essentially blocked to prevent accidental misuse and will result in an exception at execution
-time that will have a message like, "The incoming traverser for MergeVertexStep cannot be an Element".
-
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV()++[`mergeV()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(java.util.Map)++[`mergeV(Map)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#mergeV(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`mergeV(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Merge.html++[`Merge`],
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_mergee++[Semantics]
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#merge-v-step++[`Semantics`]
 
 [[min-step]]
 === Min Step
@@ -3169,19 +3207,26 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[none-step]]
 === None Step
 
-The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
-that are executed remotely where returning results is not useful and the traversal is only meant to generate
-side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
-the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
-quietly used by the `iterate()` terminal step which appends `none()` to the traversal before actually cycling through
-results.
+It is possible to filter list traversers using `none()`-step (*filter*). Every item in the list will be tested against
+the supplied predicate and if none of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
 
-NOTE: As of release 4.0.0, `none()` will be renamed to `discard()`.
+
+NOTE: Prior to release 4.0.0, `none()` was a traversal discarding step primarily used by <<iterate-step,`iterate()`>>. This step has
+since been renamed to <<discard-step,`discard()`>>
+
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().none(gt(25)) <1>
+----
+
+<1> Return the list of ages only if no one's age is greater than 25.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none()++[`none()`]
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#none(org.apache.tinkerpop.gremlin.process.traversal.P)++[`none(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
 
 [[not-step]]
 === Not Step
@@ -3377,7 +3422,7 @@ supports `GraphComputer` (OLAP).
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().pageRank().with(PageRank.propertyName, 'friendRank').values('pageRank')
 g.V().hasLabel('person').
   pageRank().
@@ -3395,7 +3440,7 @@ The <<explain-step,`explain()`>>-step can be used to understand how the traversa
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().hasLabel('person').
   pageRank().
     with(PageRank.edges, __.outE('knows')).
@@ -3516,7 +3561,7 @@ IMPORTANT: The `peerPressure()`-step is a `VertexComputing`-step and as such, ca
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().peerPressure().with(PeerPressure.propertyName, 'cluster').values('cluster')
 g.V().hasLabel('person').
   peerPressure().
@@ -3708,7 +3753,7 @@ Finally, an example is provided using `PageRankVertexProgram` which doesn't use 
 
 [gremlin-groovy,modern]
 ----
-g = traversal().withEmbedded(graph).withComputer()
+g = traversal().with(graph).withComputer()
 g.V().hasLabel('person').
   program(PageRankVertexProgram.build().property('rank').create(graph)).
     order().by('rank', asc).
@@ -3936,8 +3981,8 @@ an adjacent vertex's properties or edges.
 
 *Additional References*
 
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`]
-
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#repeat(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`repeat(Traversal)`],
+<<emit-step, emit>>, <<times-step, times()>>, <<until-step,until()>>,
 link:++https://tinkerpop.apache.org/docs/x.y.z/recipes/#looping++[`Looping Recipes`]
 
 [[replace-step]]
@@ -4195,7 +4240,7 @@ ranking.
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
       order(local).by(values,desc).limit(local, 5)
@@ -4209,7 +4254,7 @@ Similarly, for extracting the values from a path or map.
 
 [gremlin-groovy]
 ----
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.io('data/grateful-dead.xml').read().iterate()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
@@ -4282,7 +4327,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`select(Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#select(org.apache.tinkerpop.gremlin.process.traversal.Pop,org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`select(Pop,Traversal)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/structure/Column.html++[`Column`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Pop.html++[`Pop`],
+<<a-note-on-maps>>
 
 [[shortestpath-step]]
 === ShortestPath step
@@ -4451,8 +4497,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[split-step]]
 === Split Step
 The `split()`-step (*map*) returns a list of strings created by splitting the incoming string traverser around the
-matches of the given separator. A null separator will split the string by whitespaces. Null values from the incoming
-traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
+matches of the given separator. A null separator will split the string by whitespaces. An empty string separator will split on each character.
+Null values from the incoming traversers are not processed and remain as null when returned. If the incoming traverser is a non-String value then an
 IllegalArgumentException will be thrown.
 
 [gremlin-groovy,modern]
@@ -4460,12 +4506,14 @@ IllegalArgumentException will be thrown.
 g.inject("that", "this", "test", null).split("h") <1>
 g.V().hasLabel("person").values("name").split("a") <2>
 g.inject("helloworld", "hello world", "hello   world").split(null) <3>
-g.V().hasLabel("person").values("name").fold().split(local, "a") <4>
+g.inject("hello", "world", null).split("") <4>
+g.V().hasLabel("person").values("name").fold().split(local, "a") <5>
 ----
 <1> Split the strings by "h".
 <2> Split person names by "a".
 <3> Splitting by null will split by whitespaces.
-<4> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list of results.
+<4> Splitting by "" will split by each character.
+<5> Use `Scope.local` to operate on individual string elements inside incoming list, which will return a list of results.
 
 *Additional References*
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#split(java.lang.String)++[`split(String)`]
@@ -4484,7 +4532,7 @@ The following example demonstrates how to produce the "knows" subgraph:
 [gremlin-groovy,modern]
 ----
 subGraph = g.E().hasLabel('knows').subgraph('subGraph').cap('subGraph').next() <1>
-sg = traversal().withEmbedded(subGraph)
+sg = traversal().with(subGraph)
 sg.E() <2>
 ----
 
@@ -4496,7 +4544,7 @@ A more common subgraphing use case is to get all of the graph structure surround
 [gremlin-groovy,modern]
 ----
 subGraph = g.V(3).repeat(__.inE().subgraph('subGraph').outV()).times(3).cap('subGraph').next()  <1>
-sg = traversal().withEmbedded(subGraph)
+sg = traversal().with(subGraph)
 sg.E()
 ----
 
@@ -4517,8 +4565,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-traversal().withEmbedded(t.sideEffects.get('knowsG')).E()
-traversal().withEmbedded(t.sideEffects.get('createdG')).E()
+traversal().with(t.sideEffects.get('knowsG')).E()
+traversal().with(t.sideEffects.get('createdG')).E()
 ----
 
 TinkerGraph is the ideal (and default) `Graph` into which a subgraph is extracted as it's fast, in-memory, and supports
@@ -4693,6 +4741,17 @@ yield `false`.
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#timeLimit(long)++[`timeLimit(long)`]
+
+[[times-step]]
+=== Times Step
+
+The `times`-step is not an actual step, but is instead a step modulator for `<<repeat-step,repeat()>>` (find more
+documentation on the `times()` there).
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#times(int)++[`until(Predicate)`],
+`<<emit-step,emit()>>`, `<<repeat-step,repeat()>>`, `<<until-step,until()>>`
 
 [[to-step]]
 === To Step
@@ -5161,6 +5220,60 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write()++[`write()`]
 
+[[traversal-parameterization]]
+== Traversal Parameterization
+
+A subset of gremlin steps are able to accept parameterized arguments also known as GValues. GValues can be used to
+provide protection against gremlin-injection attacks in cases where untrusted and unsanitized inputs must be passed as
+step arguments. Additionally, use of GValues may offer performance benefits in certain environments by making use of
+some query caching capabilities. Note that the reference implementation of the gremlin language and `gremlin-server` do
+not have such a query caching mechanism, and thus will not see any performance improvements through parameterization. Users
+should consult the documentation of their specific graph system details of potential performance benefits via parameterization.
+
+NOTE: There are unique considerations regarding parameters when using `gremlin-groovy` scripts. Groovy allows for parameterization
+at arbitrary points in the query in addition to the subset of parameterizable steps documented here. Groovy is also bound by
+a comparatively slow script compilation, which makes parameterization essential for performant execution of `gremlin-groovy` scripts.
+
+[cols="1,1"]
+|===
+|Step | Parameterizable arguments
+
+|<<addedge-step,addE()>> | String edgeLabel
+|<<addvertex-step,addV()>> | String vertexLabel
+|<<vertex-steps,both()>> | String...edgeLabels
+|<<vertex-steps,bothE()>> | String...edgeLabels
+|<<call-step,call()>> | Map params
+|<<coin-step,coin()>> | double probability
+|<<combine-step,combine()>> | Object values
+|<<conjoin-step,conjoin()>> | String delimiter
+|<<constant-step,constant()>> | E e/value
+|<<difference-step,difference()>> | Object values
+|<<disjunct-step,disjunct()>> | Object values
+|<<from-step,from()>> | Vertex fromVertex
+|<<has-step,has()>> | String label
+|<<has-step,hasLabel()>> | String label, String... labels
+|<<vertex-steps,in()>> | String...edgeLabels
+|<<vertex-steps,inE()>> | String...edgeLabels
+|<<intersect-step,intersect()>> | Object values
+|<<limit-step,limit()>> | Long limit
+|<<merge-step,merge()>> | Object values
+|<<mergeedge-step,mergeE()>> | Map searchCreate
+|<<mergevertex-step,mergeV()>> | Map searchCreate
+|<<option-step,option()>> | M token, Map m
+|<<vertex-steps,out()>> | String...edgeLabels
+|<<vertex-steps,outE()>> | String...edgeLabels
+|<<product-step,product()>> | Object values
+|<<range-step,range()>> | Long low, Long high
+|<<skip-step,skip()>> | Long limit
+|<<tail-step,tail()>> | Long limit
+|<<to-step,to()>> | String... edgeLabels, Vertex toVertex
+|<<vertex-steps,toE()>> | String...edgeLabels
+|===
+
+*Additional References*
+
+<<gremlin-java-gvalue,Java>>, <<gremlin-python-gvalue,Python>>, <<parameterized-scripts,Server>>
+
 [[a-note-on-predicates]]
 == A Note on Predicates
 
@@ -5240,6 +5353,79 @@ binding, not to the explicit string value.
 ----
 g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+[[a-note-on-maps]]
+== A Note on Maps
+
+Many steps in Gremlin return `Map`-based results. Commonly used steps like <<project-step, `project()`>>,
+<<group-step, 'group()'>>, and <<select-step, `select()`>> are just some examples of steps that fall into this category.
+When working with `Map` results there are a couple of important things to know.
+
+First, it is important to recognize that there is a bit of a difference in behavior that occurs when using
+<<unfold-step,unfold()>> on a `Map` in embedded contexts versus remote contexts. In embedded contexts, an unfolded `Map`
+becomes its composite `Map.Entry` objects as is typical in Java. The following example demonstrates the basic name/value
+pairs that returned:
+
+[gremlin-groovy,modern]
+----
+g.V().valueMap('name','age').unfold()
+----
+
+In remote contexts, an unfolded `Map` becomes `Map.Entry` on the server as in the embedded case, but is returned to the
+application as a `Map` with one entry. The slight difference in notation in Gremlin Console is shown in the following
+remote example:
+
+[source,text]
+----
+gremlin> g.V().valueMap('name','age').unfold()
+==>[name:[marko]]
+==>[age:[29]]
+==>[name:[vadas]]
+==>[age:[27]]
+==>[name:[lop]]
+==>[name:[josh]]
+==>[age:[32]]
+==>[name:[ripple]]
+==>[name:[peter]]
+==>[age:[35]]
+----
+
+The primary reason for this difference lies in the fact that Gremlin Language Variants, like Python and Go, do not have
+a native `Map.Entry` concept that can be used. The most universal data structure across programming languages is the
+`Map` itself. It is important to note that this transformation from `Map.Entry` to `Map` only applies to results
+received on the client-side. In other words, if a step was to follow `unfold()` in the prior example, it would be
+dealing with `Map.Entry` and not a `Map`, so Gremlin semantics should remain consistent on the server side.
+
+The second issues to consider with steps that return a `Map` is that access keys on a `Map` is not always as consistent
+as expected. The issue is best demonstrated in some examples:
+
+[source,text]
+----
+// note that elements can be grouped by(id), but that same pattern can't be applied to get
+// a T.id in a Map
+gremlin> g.V().hasLabel('person').both().group().by(id)
+==>[1:[v[1],v[1]],2:[v[2]],3:[v[3],v[3],v[3]],4:[v[4]],5:[v[5]]]
+gremlin> g.V().hasLabel('person').both().elementMap().group().by(id)
+TokenTraversal support of java.util.LinkedHashMap does not allow selection by id
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+
+// note that select() can't be used if the key is a non-string
+gremlin> g.V().hasLabel('person').both().group().by('age').select(32)
+No signature of method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.select() is applicable for argument types: (Integer) values: [32]
+Possible solutions: reset(), collect(), sleep(long), collect(groovy.lang.Closure), inject(groovy.lang.Closure), split(groovy.lang.Closure)
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+----
+
+While this problem might be solved in future versions, the workaround for both cases is to use
+<<constant-step,constant()>> as shown in the following example:
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').both().group().by(constant(id))
+g.V().hasLabel('person').both().group().by('age').select(constant(32))
 ----
 
 [[a-note-on-barrier-steps]]
@@ -5591,7 +5777,7 @@ g.withStrategies(EdgeLabelVerificationStrategy(throwException=true))
 
 === ElementIdStrategy
 
-`ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as TinkerGraph,
+`ElementIdStrategy` provides control over element identifiers. Some Graph implementations, such as `TinkerGraph`,
 allow specification of custom identifiers when creating elements:
 
 [gremlin-groovy]
@@ -5601,16 +5787,17 @@ v = g.addV().property(id,'42a').next()
 g.V('42a')
 ----
 
-Other `Graph` implementations, such as Neo4j, generate element identifiers automatically and cannot be assigned.
+Other `Graph` implementations generate element identifiers automatically and cannot be assigned.
 As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indices
-under the hood.
+under the hood. Note that this demonstration is using `TinkerGraph` for convenience, however in practice
+`ElementIdStrategy` offers little value in a `Graph` which allows custom identifiers.
 
 [gremlin-groovy]
 ----
-graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
-g = traversal().withEmbedded(graph).withStrategies(strategy)
+g = traversal().withEmbedded(TinkerGraph.open()).withStrategies(strategy)
 g.addV().property(id, '42a').id()
+g.V().elementMap()
 ----
 
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph
@@ -5644,7 +5831,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*
 graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
-g = traversal().withEmbedded(graph).withStrategies(strategy)
+g = traversal().with(graph).withStrategies(strategy)
 g.addV().property('name','stephen')
 g.V().has('name','stephen').
   property(list, 'location', 'centreville', 'startTime', 1990, 'endTime', 2000).
@@ -5700,9 +5887,9 @@ The best way to understand `PartitionStrategy` is via example.
 graph = TinkerFactory.createModern()
 strategyA = new PartitionStrategy(partitionKey: "_partition", writePartition: "a", readPartitions: ["a"])
 strategyB = new PartitionStrategy(partitionKey: "_partition", writePartition: "b", readPartitions: ["b"])
-gA = traversal().withEmbedded(graph).withStrategies(strategyA)
+gA = traversal().with(graph).withStrategies(strategyA)
 gA.addV() // this vertex has a property of {_partition:"a"}
-gB = traversal().withEmbedded(graph).withStrategies(strategyB)
+gB = traversal().with(graph).withStrategies(strategyB)
 gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
@@ -5861,7 +6048,7 @@ these steps that make use of randomness to return results.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.V().as('a').values('location').as('b').  <1>
   select('a','b').by('name').by()
 g = g.withStrategies(new SubgraphStrategy(vertexProperties: hasNot('endTime'))) <2>
@@ -5904,7 +6091,7 @@ non-location property.
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = traversal().withEmbedded(graph).withStrategies(SubgraphStrategy.build().
+g = traversal().with(graph).withStrategies(SubgraphStrategy.build().
   vertices(or(hasNot('location'),properties('location').count().is(gt(3)))).
   edges(hasLabel('develops')).
   vertexProperties(or(hasLabel(neq('location')),hasNot('endTime'))).create())
@@ -5999,158 +6186,57 @@ example is found on StackOverflow written in Java, but the programming language 
 Fortunately, TinkerPop has developed `Translator` infrastructure that will convert Gremlin from one programming
 language syntax to another.
 
-The functionality relevant to most users is actually a sub-function of `Translator` infrastructure and is more
-specifically a `ScriptTranslator` which takes Gremlin `Bytecode` of a traversal and generates a `String` representation
-of that `Bytecode` in the programming language syntax that the `ScriptTranslator` instance supports. The translation
-therefore allows Gremlin to be converted from the host programming language of the `Translator` to another.
+The `GremlinTranslator` class is capable of translating `gremlin-lang` syntax scripts into any of the following
+gremlin language syntaxes: Java, Python, .Net, Go, JavaScript, Groovy. There is additionally a special anonymizing
+translator which strips out arguments which could potentially contain sensitive information.
 
-The following translators are available, where the first column identifies the host programming language and the
-columns represent the language that Gremlin can be generated in:
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator;
+import org.apache.tinkerpop.gremlin.language.translator.Translator;
 
-[width="100%",cols="<,^,^,^,^,^,^",options="header"]
-|=========================================================
-| |Java |Groovy |Javascript |.NET |Python |Go
-|*Java* |- |X |X |X |X |X
-|*Groovy* | |X |X | |X |
-|*Javascript* | |X |- | | |
-|*.NET* | |X | |- | |
-|*Python*  | |X | | |- |
-|*Go* | |X | | | |-
-|=========================================================
+// Java
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.JAVA).getTranslated();
+// Returns: "g.V().hasLabel(\"person\", \"software\", \"class\")"
 
-Each programming language has its own API for translation, but the pattern is quite similar from one to the next:
+// Python
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.PYTHON).getTranslated();
+// Returns: "g.V().has_label('person', 'software', 'class')"
 
-WARNING: While `Translator` implementations have been around for some time, they are still in their early stages from
-an interface perspective. API changes may occur in the near future.
+// .Net
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.DOTNET).getTranslated();
+// Returns: "g.V().HasLabel(\"person\", \"software\", \"class\")"
+
+// Go
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.GO).getTranslated();
+// Returns: "g.V().HasLabel(\"person\", \"software\", \"class\")"
+
+// JavaScript
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.JAVASCRIPT).getTranslated();
+// Returns: "g.V().hasLabel(\"person\", \"software\", \"class\")"
+
+// Groovy
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.GROOVY).getTranslated();
+// Returns: "g.V().hasLabel('person', 'software', 'class')"
+
+// Anonymized
+GremlinTranslator.translate("g.V().hasLabel('person', 'software', 'class')", Translator.ANONYMIZED).getTranslated();
+// Returns: "g.V().hasLabel(string0, string1, string2)"
+----
+
+Each GLV is capable of producing a `gremlin-lang` script from a Traversal, which can be fed into `GremlinTranslator` to
+convert into any of the supported syntaxes. Each GLV has a unique interface, but the pattern is quite similar from one
+to the next:
 
 [source,java,tab]
 ----
-// gremlin-core module
-import org.apache.tinkerpop.gremlin.process.traversal.translator.*;
-
-GraphTraversalSource g = ...;
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(in("knows")).
-                                values("age").
-                                map(Lambda.function("it.get() + 1"));
-
-Translator.ScriptTranslator groovyTranslator = GroovyTranslator.of("g");
-System.out.println(groovyTranslator.translate(t).getScript());
-// OUTPUT: g.V().has("person","name","marko").where(__.in("knows")).values("age").map({it.get() + 1})
-
-Translator.ScriptTranslator dotnetTranslator = DotNetTranslator.of("g");
-System.out.println(dotnetTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person","name","marko").Where(__.In("knows")).Values<object>("age").Map<object>(Lambda.Groovy("it.get() + 1"))
-
-Translator.ScriptTranslator pythonTranslator = PythonTranslator.of("g");
-System.out.println(pythonTranslator.translate(t).getScript());
-// OUTPUT: g.V().has('person','name','marko').where(__.in_('knows')).age.map(lambda: "it.get() + 1")
-
-Translator.ScriptTranslator javascriptTranslator = JavascriptTranslator.of("g");
-System.out.println(javascriptTranslator.translate(t).getScript());
-// OUTPUT: g.V().has("person","name","marko").where(__.in_("knows")).values("age").map(() => "it.get() + 1")
-
-Translator.ScriptTranslator golangTranslator = GolangTranslator.of("g");
-System.out.println(golangTranslator.translate(t).getScript());
-// OUTPUT: g.V().Has("person", "name", "marko").Where(gremlingo.T__.In("knows")).Values("age").Map(&gremlingo.Lambda{Script:"it.get() + 1", Language:""})
-----
-[source,javascript]
-----
-const g = ...;
-const t = g.V().has("person","name","marko").
-            where(in_("knows")).
-            values("age");
-
-// Groovy
-const translator = new gremlin.process.Translator('g');
-console.log(translator.translate(t));
-// OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+GraphTraversal t = g.V().hasLabel("person");
+String script = t.asAdmin().getGremlinLang().getGremlin();
+// Returns: "g.V().hasLabel(\"person\")"
 ----
 [source,python]
 ----
-from gremlin_python.process.translator import *
-
-g = ...
-t = (g.V().has('person','name','marko').
-          where(__.in_("knows")).
-          values("age"))
-
-# Groovy
-translator = Translator().of('g');
-print(translator.translate(t.bytecode));
-# OUTPUT: g.V().has('person','name','marko').where(__.in('knows')).values('age')
+t = g.V().has_label('person')
+script = t.gremlin_lang.get_gremlin()
+# Returns: "g.V().hasLabel('person')"
 ----
-[source,csharp]
-----
-var g = ...;
-var t = g.V().Has("person", "name", "marko").Where(In("knows")).Values<int>("age");
-
-// Groovy
-var translator = GroovyTranslator.Of("g");
-Console.WriteLine(translator.Translate(t));
-// OUTPUT: g.V().has('person', 'name', 'marko').where(__.in('knows')).values('age')
-----
-[source,go]
-----
-g := ...
-t := g.V().Has("person", "name", "marko").
-	Where(T__.In("knows")).
-	Values("age")
-
-// Groovy
-translator := NewTranslator("g")
-print(translator.Translate(t.Bytecode))
-// OUTPUT: g.V().has('person','name','marko').where(in('knows')).values('age')
-----
-
-The JVM-based translator has the added option of parameter extraction, where the translation process will attempt to
-identify opportunities to generate an output that would replace constant values with parameters. The parameters would
-then be extracted and returned as part of the `Script` object:
-
-[source,java]
-----
-Traversal<Vertex,Integer> t = g.V().has("person","name","marko").
-                                where(__.in("knows")).
-                                values("age");
-// specify true to attempt parameter extraction
-Translator.ScriptTranslator translator = GroovyTranslator.of("g", true);
-Script s = translator.translate(t);
-System.out.println(s.getScript());
-// OUTPUT: g.V().has(_args_0,_args_1,_args_2).where(__.in(_args_3)).values(_args_4)
-System.out.println(s.parameters);
-// OUTPUT: Optional[{_args_0=person, _args_2=marko, _args_1=name, _args_4=age, _args_3=knows}]
-----
-
-The `GroovyTranslator` can take a `TypeTranslator` argument which allows some customization of how types get
-converted to script form. The `DefaultTypeTranslator` is used if a specific implementation is not specified. A built-in
-alternative to this implementation is the `LanguageTypeTranslator` which will prefer use of the Gremlin language
-`datetime()` function rather than the JVM specific `Date` and `Timestamp` conversions. This translator can be helpful
-when generating scripts that will be sent to Gremlin Server or Remote Graph Providers supporting the `datetime()` form.
-
-The `PythonTranslator` can take a `TypeTranslator` argument to disable the syntactic sugar which the default translator
-applies to converted queries. The `DefaultTypeTranslator` is used if a specific implementation is not specified.
-
-[source,java]
-----
-Traversal<Vertex,String> t = g.V().range(0, 10).has("person","name","marko").
-                                limit(2).
-                                values("name");
-// default translator
-Translator.ScriptTranslator translator = PythonTranslator.of("g");
-String defaultQueryTranslation = translator.translate(t)
-System.out.println(defaultQueryTranslation);
-// OUTPUT: g.V()[0:10].has('person','name','marko')[0:2].name
-
-// no synantic sugar translator
-Translator.ScriptTranslator noSugarTranslator = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(false));
-String noSugarTranslation = noSugarTranslator.translate(t)
-System.out.println(noSugarTranslation);
-// OUTPUT: g.V().range_(0,10).has('person','name','marko').limit(2).values('name')
-
-// With parameter extraction
-Translator.ScriptTranslator noSugarTranslatorWithParameters = PythonTranslator.of("g", new PythonTranslator.NoSugarTranslator(true));
-String noSugarTranslationWithParameters = noSugarTranslatorWithParameters.translate(t)
-System.out.println(noSugarTranslationWithParameters);
-// OUTPUT: g.V().range_(0,10).has(_args_0,_args_1,_args_2).limit(2).values(_args_1)
-----
-

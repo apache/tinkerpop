@@ -20,33 +20,32 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Answers.RETURNS_DEEP_STUBS;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -150,5 +149,32 @@ public class GraphTraversalSourceTest {
         final GraphTraversalSource g = mockG; // traversal().withRemote(...)
         final List<Object> l = g.V().values("name").order().by(Order.shuffle).limit(3).toList();
         assertThat(l, containsInAnyOrder("peter", "lop", "josh"));
+    }
+
+    @Test
+    public void shouldContainReuseableGremlinLang() {
+        final Pattern paramPatter = Pattern.compile("xx\\d+");
+        assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
+        g.with("a", "1").V();
+        assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
+        g.with("b", "2").V();
+        assertThat(g.getGremlinLang().getOptionsStrategies().isEmpty(), is(true));
+
+        assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
+        GremlinLang lang = g.V(GValue.of("xx1", 11)).asAdmin().getGremlinLang();
+        assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
+        assertThat(lang.getParameters().size(), is(1));
+        assertThat(lang.getParameters().values(), containsInAnyOrder(11));
+        Matcher paramMatcher = paramPatter.matcher(lang.getGremlin());
+        paramMatcher.find();
+        assertThat(lang.getParameters().keySet(), containsInAnyOrder(paramMatcher.group()));
+
+        lang = g.V(GValue.of("xx2", 22)).asAdmin().getGremlinLang();
+        assertThat(g.getGremlinLang().getParameters().isEmpty(), is(true));
+        assertThat(lang.getParameters().size(), is(1));
+        assertThat(lang.getParameters().values(), containsInAnyOrder(22));
+        paramMatcher = paramPatter.matcher(lang.getGremlin());
+        paramMatcher.find();
+        assertThat(lang.getParameters().keySet(), containsInAnyOrder(paramMatcher.group()));
     }
 }

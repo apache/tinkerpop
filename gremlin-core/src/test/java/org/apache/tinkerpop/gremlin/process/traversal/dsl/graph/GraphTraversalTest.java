@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -32,15 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
@@ -53,9 +47,8 @@ public class GraphTraversalTest {
     private static final Logger logger = LoggerFactory.getLogger(GraphTraversalTest.class);
     private static final GraphTraversalSource g = traversal().withEmbedded(EmptyGraph.instance());
 
-    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "read", "write", "with", "option", "iterate", "to", "from", "profile", "pageRank", "connectedComponent", "peerPressure", "shortestPath", "program", "none"));
+    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "read", "write", "with", "option", "iterate", "to", "from", "profile", "pageRank", "connectedComponent", "peerPressure", "shortestPath", "program", "discard"));
     private static Set<String> NO_ANONYMOUS = new HashSet<>(Arrays.asList("start", "__"));
-    private static Set<String> IGNORES_BYTECODE = new HashSet<>(Arrays.asList("asAdmin", "read", "write", "iterate"));
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldFailPropertyWithNullVertexId() {
@@ -142,112 +135,21 @@ public class GraphTraversalTest {
     }
 
     @Test
-    public void shouldGenerateCorrespondingBytecodeFromGraphTraversalMethods() throws Exception {
-        final long seed = System.currentTimeMillis();
-        final Random random = new Random(seed);
-        logger.info("***RANDOM*** GraphTraversalTest.shouldGenerateCorrespondingBytecodeFromGraphTraversalMethods - seed is {}", seed);
-
-        for (Method stepMethod : GraphTraversal.class.getMethods()) {
-            if (Traversal.class.isAssignableFrom(stepMethod.getReturnType()) && !IGNORES_BYTECODE.contains(stepMethod.getName())) {
-                final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>();
-                Object[] arguments = new Object[stepMethod.getParameterCount()];
-                final List<Object> list = new ArrayList<>();
-                boolean doTest = true;
-                ///
-                if (stepMethod.getName().equals("by"))
-                    traversal.order();
-                else if (stepMethod.getName().equals("with"))
-                    randomPossibleStep(random, traversal,
-                            GraphTraversal::V, GraphTraversal::shortestPath, GraphTraversal::pageRank,
-                            GraphTraversal::connectedComponent, GraphTraversal::peerPressure, t -> t.addE("link"),
-                            GraphTraversal::addV);
-                else if (stepMethod.getName().equals("option"))
-                    traversal.branch(__.identity().out(randomString(random)));
-                else if (stepMethod.getName().equals("to") || stepMethod.getName().equals("from"))
-                    traversal.addE(randomString(random));
-
-                if (stepMethod.getName().equals("range")) {
-                    if (Scope.class.isAssignableFrom(stepMethod.getParameterTypes()[0])) {
-                        list.add(arguments[0] = Scope.local);
-                        list.add(arguments[1] = (long) (Math.abs(random.nextInt(10))));
-                        list.add(arguments[2] = (long) (Math.abs(random.nextInt(10) + 100)));
-                    } else {
-                        list.add(arguments[0] = (long) (Math.abs(random.nextInt(10))));
-                        list.add(arguments[1] = (long) (Math.abs(random.nextInt(10) + 100)));
-                    }
-                } else if (stepMethod.getName().equals("math")) {
-                    list.add(arguments[0] = random.nextInt(100) + " + " + random.nextInt(100));
-                } else if (stepMethod.getName().equals("project")) {
-                    // project has two arguments [String, String[]]
-                    list.add(arguments[0] = randomString(random));
-                    arguments[1] = new String[random.nextInt(10) + 1];
-                    for (int j = 0; j < ((String[]) arguments[1]).length; j++) {
-                        ((String[]) arguments[1])[j] = arguments[0] + randomString(random); // adds argument[0] to avoid getting its duplicate in argument[1]
-                    }
-                    // remove duplicates in argument[1] if any
-                    arguments[1] = Arrays.stream((String[]) arguments[1]).distinct().toArray(String[]::new);
-                    list.addAll(Arrays.asList((String[]) arguments[1]));
-                } else {
-                    for (int i = 0; i < stepMethod.getParameterTypes().length; i++) {
-                        final Class<?> type = stepMethod.getParameterTypes()[i];
-                        if (int.class.isAssignableFrom(type))
-                            list.add(arguments[i] = Math.abs(random.nextInt(100)));
-                        else if (long.class.isAssignableFrom(type))
-                            list.add(arguments[i] = (long) (Math.abs(random.nextInt(100))));
-                        else if (double.class.isAssignableFrom(type))
-                            list.add(arguments[i] = Math.abs(random.nextDouble()));
-                        else if (String.class.isAssignableFrom(type))
-                            list.add(arguments[i] = randomString(random));
-                        else if (boolean.class.isAssignableFrom(type))
-                            list.add(arguments[i] = random.nextBoolean());
-                        else if (String[].class.isAssignableFrom(type)) {
-                            arguments[i] = new String[random.nextInt(10) + 1];
-                            for (int j = 0; j < ((String[]) arguments[i]).length; j++) {
-                                list.add(((String[]) arguments[i])[j] = randomString(random));
-                            }
-                        } else if (Traversal.class.isAssignableFrom(type))
-                            list.add(arguments[i] = __.out(randomString(random)).in(randomString(random)).groupCount(randomString(random)));
-                        else if (Traversal[].class.isAssignableFrom(type)) {
-                            arguments[i] = new Traversal[random.nextInt(5) + 1];
-                            for (int j = 0; j < ((Traversal[]) arguments[i]).length; j++) {
-                                list.add(((Traversal[]) arguments[i])[j] = __.as(randomString(random)).out(randomString(random)).both(randomString(random)).has(randomString(random)).store(randomString(random)));
-                            }
-                        } else if (P.class.isAssignableFrom(type))
-                            list.add(arguments[i] = P.gte(stepMethod.getName().contains("where") ? randomString(random) : random.nextInt()));
-                        else if (Enum.class.isAssignableFrom(type))
-                            list.add(arguments[i] = type.getEnumConstants()[0]);
-                        else {
-                            // System.out.println(type);
-                            doTest = false;
-                            break;
-                        }
-                    }
-                }
-                if (doTest) {
-                    stepMethod.invoke(traversal, arguments);
-                    // System.out.print(stepMethod.getName() + "---");
-                    final Bytecode.Instruction instruction = traversal.getBytecode().getStepInstructions().get(traversal.getBytecode().getStepInstructions().size() - 1);
-                    // System.out.println(instruction);
-                    assertEquals(stepMethod.getName(), instruction.getOperator());
-                    assertEquals(list.size(), instruction.getArguments().length);
-                    for (int i = 0; i < list.size(); i++) {
-                        assertEquals(list.get(i) instanceof Traversal ? ((Traversal) list.get(i)).asAdmin().getBytecode() : list.get(i), instruction.getArguments()[i]);
-                    }
-                }
-            }
-        }
+    public void hasIdShouldUnrollListOfIds() {
+        assertEquals(g.V().hasId(1,2,3,4,5,6,7,8),
+                g.V().hasId(new Integer[]{1, 2, 3}, new Integer[]{4, 5}, Arrays.asList(6, 7), 8));
     }
 
-    private static void randomPossibleStep(final Random random, final GraphTraversal t, final Consumer<GraphTraversal>... possible) {
-        possible[random.nextInt(possible.length)].accept(t);
-    }
-
-    private static String randomString(final Random random) {
-        String s = "";
-        for (int i = 0; i < random.nextInt(10) + 1; i++) {
-            s = (s + (char) (random.nextInt(100) + 1)).trim();
-        }
-        final String temp = "" + random.nextBoolean();
-        return temp.substring(temp.length() - (random.nextInt(2) + 1)) + s.replace("\"", "x").replace(",", "y").replace("'", "z");
+    @Test
+    public void hasIdShouldUnrollGValueListOfIds() {
+        assertEquals(
+                g.V().hasId(
+                        GValue.ofInteger(null, 1), GValue.ofInteger(null, 2), GValue.ofInteger(null, 3),
+                        GValue.ofInteger(null, 4), GValue.ofInteger(null, 5), GValue.ofInteger(null, 6),
+                        GValue.ofInteger(null, 7), GValue.ofInteger("d", 8)
+                ),
+                g.V().hasId(
+                        GValue.of("a", new Integer[]{1, 2, 3}), GValue.of("b", new Integer[]{4, 5}),
+                        GValue.of("c", Arrays.asList(6, 7)), GValue.ofInteger("d", 8)));
     }
 }

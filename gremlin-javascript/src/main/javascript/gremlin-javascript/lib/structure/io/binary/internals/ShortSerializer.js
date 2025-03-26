@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class ShortSerializer {
+export default class ShortSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.SHORT] = this;
@@ -98,4 +97,4 @@ module.exports = class ShortSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

@@ -32,10 +32,9 @@ Feature: Step - hasId()
 
   Scenario: g_V_hasIdXwithinXemptyXX_count
     Given the modern graph
-    And using the parameter xx1 of P.within("l[]")
     And the traversal of
     """
-    g.V().hasId(xx1).count()
+    g.V().hasId(P.within([])).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -44,10 +43,9 @@ Feature: Step - hasId()
 
   Scenario: g_V_hasIdXwithoutXemptyXX_count
     Given the modern graph
-    And using the parameter xx1 of P.without("l[]")
     And the traversal of
     """
-    g.V().hasId(xx1).count()
+    g.V().hasId(P.without([])).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -56,10 +54,9 @@ Feature: Step - hasId()
 
   Scenario: g_V_notXhasIdXwithinXemptyXXX_count
     Given the modern graph
-    And using the parameter xx1 of P.within("l[]")
     And the traversal of
     """
-    g.V().not(__.hasId(xx1)).count()
+    g.V().not(__.hasId(P.within([]))).count()
     """
     When iterated to list
     Then the result should be unordered
@@ -95,6 +92,35 @@ Feature: Step - hasId()
     Then the result should be unordered
       | result |
       | v[vadas] |
+
+  Scenario: g_V_hasIdXmarkovar_vadasvarX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And the traversal of
+      """
+      g.V().hasId(vid1, vid2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+
+  Scenario: g_V_hasIdXmarkovar_vadasvar_petervarX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "l[v[vadas].id,v[peter].id]"
+    And the traversal of
+      """
+      g.V().hasId(vid1, vid2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[peter] |
 
   Scenario: g_V_hasIdX2AsString_nullX
     Given the modern graph
@@ -147,10 +173,10 @@ Feature: Step - hasId()
 
   Scenario: g_V_in_hasIdXneqX1XX
     Given the modern graph
-    And using the parameter xx1 of P.neq("v[marko].id")
+    And using the parameter xx1 defined as "v[marko].id"
     And the traversal of
     """
-    g.V().in().hasId(xx1)
+    g.V().in().hasId(P.neq(xx1))
     """
     When iterated to list
     Then the result should be unordered
@@ -158,6 +184,7 @@ Feature: Step - hasId()
       | v[josh] |
       | v[josh] |
       | v[peter] |
+
   Scenario: g_VX1X_out_hasIdX2X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

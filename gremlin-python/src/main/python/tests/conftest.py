@@ -18,58 +18,46 @@
 #
 
 import concurrent.futures
+from json import dumps
 import os
 import ssl
 import pytest
-import socket
 import logging
 import queue
 
-import yaml
-
+from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
-from gremlin_python.driver import serializer
-from gremlin_python.driver.driver_remote_connection import (
-    DriverRemoteConnection)
-from gremlin_python.driver.protocol import GremlinServerWSProtocol
-from gremlin_python.driver.serializer import (
-    GraphSONMessageSerializer, GraphSONSerializersV2d0, GraphSONSerializersV3d0,
-    GraphBinarySerializersV1)
-from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTTPTransport
+from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
+from gremlin_python.driver.protocol import GremlinServerHTTPProtocol
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+from gremlin_python.driver.auth import basic, sigv4
 
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
-gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'wss://localhost:{}/gremlin')
-gremlin_socket_server_url = os.environ.get('GREMLIN_SOCKET_SERVER_URL', 'ws://localhost:{}/gremlin')
-gremlin_socket_server_config_path = os.environ.get("GREMLIN_SOCKET_SERVER_CONFIG_PATH",
-                                                   "../../../../../../gremlin-tools/gremlin-socket-server/conf/"
-                                                   "test-ws-gremlin.yaml")
-kerberos_hostname = os.environ.get('KRB_HOSTNAME', socket.gethostname())
+"""HTTP server testing variables"""
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/gremlin')
+gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'https://localhost:{}/gremlin')
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
-kerberos_url = gremlin_server_url.format(45942)
 
-kerberized_service = 'test-service@{}'.format(kerberos_hostname)
-gremlin_server_url_http = os.environ.get('GREMLIN_SERVER_URL_HTTP', 'http://localhost:{}/')
-gremlin_basic_auth_url_http = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL_HTTP', 'https://localhost:{}/')
-anonymous_url_http = gremlin_server_url_http.format(45940)
-basic_url_http = gremlin_basic_auth_url_http.format(45941)
 verbose_logging = False
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
 
-
+"""
+Tests below are for the HTTP server with GraphBinaryV4
+"""
 @pytest.fixture
 def connection(request):
-    protocol = GremlinServerWSProtocol(
-        GraphSONMessageSerializer(),
-        username='stephen', password='password')
+    protocol = GremlinServerHTTPProtocol(
+        GraphBinarySerializersV4(), GraphBinarySerializersV4(),
+        auth=basic('stephen', 'password'))
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
         conn = Connection(anonymous_url, 'gmodern', protocol,
-                          lambda: AiohttpTransport(), executor, pool)
+                          lambda: AiohttpHTTPTransport(), executor, pool)
     except OSError:
         executor.shutdown()
         pytest.skip('Gremlin Server is not running')
@@ -96,68 +84,16 @@ def client(request):
         return client
 
 
-@pytest.fixture
-def gremlin_socket_server_serializer(socket_server_settings):
-    if socket_server_settings["SERIALIZER"] == "GraphBinaryV1":
-        return serializer.GraphBinarySerializersV1()
-    elif socket_server_settings["SERIALIZER"] == "GraphSONV2":
-        return serializer.GraphSONSerializersV2d0()
-    elif socket_server_settings["SERIALIZER"] == "GraphSONV3":
-        return serializer.GraphSONSerializersV3d0()
-    else:
-        return serializer.GraphBinarySerializersV1()
-
-
-@pytest.fixture
-def socket_server_client(request, socket_server_settings, gremlin_socket_server_serializer):
-    marker = request.node.get_closest_marker("client_kwargs")
-    client_kwargs = marker.args[0] if marker is not None else dict()
-    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
-    try:
-        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer, **client_kwargs)
-    except OSError:
-        pytest.skip('Gremlin Socket Server is not running')
-    else:
-        def fin():
-            client.close()
-
-        request.addfinalizer(fin)
-        return client
-
-
-@pytest.fixture
-def socket_server_client_no_user_agent(request, socket_server_settings, gremlin_socket_server_serializer):
-    url = gremlin_socket_server_url.format(socket_server_settings["PORT"])
-    try:
-        client = Client(url, 'g', pool_size=1, message_serializer=gremlin_socket_server_serializer,
-                        enable_user_agent_on_connect=False)
-    except OSError:
-        pytest.skip('Gremlin Socket Server is not running')
-    else:
-        def fin():
-            client.close()
-
-        request.addfinalizer(fin)
-        return client
-
-
-@pytest.fixture
-def socket_server_settings():
-    with open(gremlin_socket_server_config_path, mode="rb") as file:
-        settings = yaml.safe_load(file)
-    return settings
-
-@pytest.fixture(params=['basic', 'kerberos'])
+@pytest.fixture(params=['basic'])
 def authenticated_client(request):
     try:
         if request.param == 'basic':
             # turn off certificate verification for testing purposes only
             ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_opts.verify_mode = ssl.CERT_NONE
-            client = Client(basic_url, 'gmodern', username='stephen', password='password',
-                            transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
-        elif request.param == 'kerberos':
-            client = Client(kerberos_url, 'gmodern', kerberized_service=kerberized_service)
+            client = Client(basic_url, 'gmodern',
+                            auth=basic('stephen', 'password'),
+                            transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
@@ -170,18 +106,22 @@ def authenticated_client(request):
         return client
 
 
-@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+@pytest.fixture
+def graphbinary_serializer_v4(request):
+    return GraphBinarySerializersV4()
+
+
+@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
 def remote_connection(request):
     try:
-        if request.param == 'graphbinaryv1':
+        if request.param == 'graphbinaryv4':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                                 message_serializer=serializer.GraphBinarySerializersV1())
-        elif request.param == 'graphsonv2':
+                                                 request_serializer=serializer.GraphBinarySerializersV4(),
+                                                 response_serializer=serializer.GraphBinarySerializersV4())
+        elif request.param == 'graphsonv4':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
-        elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+                                                 request_serializer=serializer.GraphSONSerializersV4(),
+                                                 response_serializer=serializer.GraphSONSerializersV4())
         else:
             raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
@@ -194,18 +134,15 @@ def remote_connection(request):
         return remote_conn
 
 
-@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
+@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
 def remote_connection_crew(request):
     try:
-        if request.param == 'graphbinaryv1':
+        if request.param == 'graphbinaryv4':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew')
+        elif request.param == 'graphsonv4':
             remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
-                                                 message_serializer=serializer.GraphBinarySerializersV1())
-        elif request.param == 'graphsonv2':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
-        elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
-                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+                                                 request_serializer=serializer.GraphSONSerializersV4(),
+                                                 response_serializer=serializer.GraphSONSerializersV4())
         else:
             raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
@@ -218,31 +155,8 @@ def remote_connection_crew(request):
         return remote_conn
 
 
-@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
-def remote_transaction_connection(request):
-    try:
-        if request.param == 'graphbinaryv1':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
-                                                 message_serializer=serializer.GraphBinarySerializersV1())
-        elif request.param == 'graphsonv2':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
-        elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gtx',
-                                                 message_serializer=serializer.GraphSONSerializersV3d0())
-        else:
-            raise ValueError("Invalid serializer option - " + request.param)
-    except OSError:
-        pytest.skip('Gremlin Server is not running')
-    else:
-        def fin():
-            remote_conn.close()
-
-        request.addfinalizer(fin)
-        return remote_conn
-
-
-@pytest.fixture(params=['basic', 'kerberos'])
+# TODO: revisit once testing for multiple types of auth is enabled
+@pytest.fixture(params=['basic'])
 def remote_connection_authenticated(request):
     try:
         if request.param == 'basic':
@@ -250,92 +164,7 @@ def remote_connection_authenticated(request):
             ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
-                                                 username='stephen', password='password',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0(),
-                                                 transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
-        elif request.param == 'kerberos':
-            remote_conn = DriverRemoteConnection(kerberos_url, 'gmodern', kerberized_service=kerberized_service,
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
-        else:
-            raise ValueError("Invalid authentication option - " + request.param)
-    except OSError:
-        pytest.skip('Gremlin Server is not running')
-    else:
-        def fin():
-            remote_conn.close()
-
-        request.addfinalizer(fin)
-        return remote_conn
-
-
-@pytest.fixture
-def remote_connection_graphsonV2(request):
-    try:
-        remote_conn = DriverRemoteConnection(anonymous_url,
-                                             message_serializer=serializer.GraphSONSerializersV2d0())
-    except OSError:
-        pytest.skip('Gremlin Server is not running')
-    else:
-        def fin():
-            remote_conn.close()
-
-        request.addfinalizer(fin)
-        return remote_conn
-
-
-@pytest.fixture
-def graphson_serializer_v2(request):
-    return GraphSONSerializersV2d0()
-
-
-@pytest.fixture
-def graphson_serializer_v3(request):
-    return GraphSONSerializersV3d0()
-
-
-@pytest.fixture
-def graphbinary_serializer_v1(request):
-    return GraphBinarySerializersV1()
-
-
-@pytest.fixture(params=['graphsonv2', 'graphsonv3', 'graphbinaryv1'])
-def remote_connection_http(request):
-    try:
-        if request.param == 'graphbinaryv1':
-            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
-                                                 message_serializer=serializer.GraphBinarySerializersV1())
-        elif request.param == 'graphsonv2':
-            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0())
-        elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(anonymous_url_http, 'gmodern',
-                                                 message_serializer=serializer.GraphSONSerializersV3d0())
-        else:
-            raise ValueError("Invalid serializer option - " + request.param)
-    except OSError:
-        pytest.skip('Gremlin Server is not running')
-    else:
-        def fin():
-            remote_conn.close()
-
-        request.addfinalizer(fin)
-        return remote_conn
-
-
-"""
-# The WsAndHttpChannelizer somehow does not distinguish the ssl handlers so authenticated https remote connection will
-# only work with HttpChannelizer that is currently not in the testing set up, thus this is commented out for now
-
-@pytest.fixture(params=['basic'])
-def remote_connection_http_authenticated(request):
-    try:
-        if request.param == 'basic':
-            # turn off certificate verification for testing purposes only
-            ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-            ssl_opts.verify_mode = ssl.CERT_NONE
-            remote_conn = DriverRemoteConnection(basic_url_http, 'gmodern',
-                                                 username='stephen', password='password',
-                                                 message_serializer=serializer.GraphSONSerializersV2d0(),
+                                                 auth=basic('stephen', 'password'),
                                                  transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
         else:
             raise ValueError("Invalid authentication option - " + request.param)
@@ -347,18 +176,13 @@ def remote_connection_http_authenticated(request):
 
         request.addfinalizer(fin)
         return remote_conn
-"""
 
 
-@pytest.fixture(params=['graphsonv3', 'graphbinaryv1'])
-def invalid_alias_remote_connection_http(request):
+@pytest.fixture(params=['graphbinaryv4'])
+def invalid_alias_remote_connection(request):
     try:
-        if request.param == 'graphbinaryv1':
-            remote_conn = DriverRemoteConnection(anonymous_url_http, 'does_not_exist',
-                                                 message_serializer=serializer.GraphBinarySerializersV1())
-        elif request.param == 'graphsonv3':
-            remote_conn = DriverRemoteConnection(anonymous_url_http, 'does_not_exist',
-                                                 message_serializer=serializer.GraphSONSerializersV3d0())
+        if request.param == 'graphbinaryv4':
+            remote_conn = DriverRemoteConnection(anonymous_url, 'does_not_exist')
         else:
             raise ValueError("Invalid serializer option - " + request.param)
     except OSError:
@@ -369,3 +193,41 @@ def invalid_alias_remote_connection_http(request):
 
         request.addfinalizer(fin)
         return remote_conn
+
+
+@pytest.fixture()
+def remote_connection_with_interceptor(request):
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                             request_serializer=None,
+                                             interceptors=json_interceptor)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
+
+
+@pytest.fixture()
+def client_with_interceptor(request):
+    try:
+        client = Client(anonymous_url, 'gmodern', request_serializer=None,
+                        response_serializer=GraphBinarySerializersV4(),
+                        interceptors=json_interceptor)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            client.close()
+
+        request.addfinalizer(fin)
+        return client
+
+
+def json_interceptor(request):
+        request['headers']['content-type'] = "application/json"
+        request['payload'] = dumps({"gremlin": "g.inject(2)", "g": "g"})
+        return request

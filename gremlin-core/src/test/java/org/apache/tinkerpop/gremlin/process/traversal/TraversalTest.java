@@ -135,7 +135,7 @@ public class TraversalTest {
 
     @Test
     public void shouldOnlyAllowAnonymousChildren() {
-        final GraphTraversalSource g = traversal().withGraph(EmptyGraph.instance());
+        final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
         g.V(1).addE("self").to(__.V(1));
         try {
             g.V(1).addE("self").to(g.V(1));
@@ -271,8 +271,8 @@ public class TraversalTest {
         }
 
         @Override
-        public Bytecode getBytecode() {
-            return new Bytecode();
+        public GremlinLang getGremlinLang() {
+            return new GremlinLang();
         }
 
         @Override

@@ -21,19 +21,15 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnectionException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -81,12 +77,12 @@ public final class RemoteStep<S, E> extends AbstractStep<S, E> {
     }
 
     /**
-     * Submits the traversal asynchronously to a "remote" using {@link RemoteConnection#submitAsync(Bytecode)}.
+     * Submits the traversal asynchronously to a "remote" using {@link RemoteConnection#submitAsync(GremlinLang)}.
      */
     public CompletableFuture<Traversal<?, E>> promise() {
         try {
             if (null == traversalFuture.get()) {
-                traversalFuture.set(this.remoteConnection.submitAsync(this.traversal.getBytecode()).<Traversal<?, E>>thenApply(t -> {
+                traversalFuture.set(this.remoteConnection.submitAsync(this.traversal.getGremlinLang()).<Traversal<?, E>>thenApply(t -> {
                     this.remoteTraversal = (RemoteTraversal<?, E>) t;
                     return traversal;
                 }));

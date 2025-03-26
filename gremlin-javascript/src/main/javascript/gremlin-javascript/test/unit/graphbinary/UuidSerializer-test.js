@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { uuidSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
+import { ser_title, des_title } from './utils.js';
+import assert from 'assert';
+import { uuidSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 const { from, concat } = Buffer;
 
@@ -89,7 +88,7 @@ describe('GraphBinary.UuidSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, fq, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, fq, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
 
       // when fq is under control
@@ -105,7 +104,7 @@ describe('GraphBinary.UuidSerializer', () => {
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, fq, na, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, fq, na, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 

@@ -54,16 +54,16 @@ with many new features that have been proposed. Here is a rough outline of where
 major breaking features lined for 4.0, and additional features lined up for minor versions.
 Additional details on each feature can be found in the Appendix.
 
-=== 4.0 Milestone Release (2024Q4)
+=== 4.0.0-beta.1 Release (2024Q4)
 As discussed in the link:https://lists.apache.org/thread/hh58k28qy49lb9k7b9j4mnqvpxj0xf85[DISCUSS thread], we are looking
-to release a milestone build of what is done so far to gather feedback.
+to release a beta build of what is done so far to gather feedback.
 
-This milestone would roughly offer the opportunity to try Gremlin Server HTTP with the revised GraphSON and GraphBinary
+This beta would roughly offer the opportunity to try Gremlin Server HTTP with the revised GraphSON and GraphBinary
 serialization formats for TinkerPop 4.0, using Java and Python drivers. These drivers will initially continue to support
 GraphSON as it can help with debugging (given its human-readable format)  and offers wider serialization options for users
 in these early days, we should expect to just have GraphBinary support for drivers in the future for simplicity.
 
-This milestone release would include the following list of features for preview:
+This beta release would include the following list of features for preview:
 
 * <<http-support>>
 ** Replacement of WebSocket with HTTP/1.1 (link:https://lists.apache.org/thread/vfs1j9ycb8voxwc00gdzfmlg2gghx3n1[DISCUSS thread])
@@ -160,9 +160,10 @@ story.
 [width="100%",cols="3,10,2,^1",options="header"]
 |=========================================================
 |Proposal |Description |Targets |Resolved
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |4.0.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |Future |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-transaction-4[Proposal 4] |TinkerGraph Transaction Support |3.7.0 |Y
 |=========================================================
 
 = Appendix

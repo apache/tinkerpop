@@ -118,7 +118,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         final Step newStep;
         if (step instanceof VertexStep) {
             final VertexStep vs = (VertexStep) step;
-            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
+            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabelsGValue());
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());

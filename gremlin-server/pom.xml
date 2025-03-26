@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-server</artifactId>
     <name>Apache TinkerPop :: Gremlin Server</name>
@@ -32,7 +32,7 @@ limitations under the License.
         -->
         <maven.exec.skip>false</maven.exec.skip> <!-- default -->
         <skipImageBuild>${maven.exec.skip}</skipImageBuild>
-        <docker.platforms>linux/amd64,linux/arm64/v8</docker.platforms>
+        <docker.platforms>linux/amd64,linux/arm64/v8,linux/arm64</docker.platforms>
     </properties>
     <dependencies>
         <dependency>
@@ -51,8 +51,8 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -180,7 +180,7 @@ limitations under the License.
             <plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
-                <version>1.2.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>build-image</id>

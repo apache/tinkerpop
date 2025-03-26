@@ -43,18 +43,6 @@ import static org.junit.Assert.fail;
 public class ClientWithOptionsIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     @Test
-    public void shouldTimeOutAliasedClientSendingBytecode() {
-        final Cluster cluster = TestClientFactory.build().create();
-        final Client client = cluster.connect().alias("ggrateful");
-        final GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
-        final GraphTraversal traversal = g.with("evaluationTimeout", 1).V().both().both().both();
-        assertThrows(ExecutionException.class, () -> {
-            final List<Result> res = client.submit(traversal).all().get();
-            fail("Failed to time out. Result: " + res);
-        });
-    }
-
-    @Test
     public void shouldTimeOutnonAliasedClientSendingByteCode() {
         final Cluster cluster = TestClientFactory.build().create();
         final Client client = cluster.connect();

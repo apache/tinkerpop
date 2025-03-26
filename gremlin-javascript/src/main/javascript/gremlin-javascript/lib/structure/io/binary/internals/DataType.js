@@ -20,7 +20,6 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
 /**
  * Represents a GraphBinary data type.
@@ -96,4 +95,4 @@ const DataType = {
   UNSPECIFIED_NULL: 0xfe,
 };
 
-module.exports = DataType;
+export default DataType;

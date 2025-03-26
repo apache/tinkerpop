@@ -30,6 +30,7 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-empty.properties}
 scriptEngines: {
+  gremlin-lang: {},
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
@@ -38,9 +39,6 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample-secure.groovy]}}}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}            # application/json
-processors:
-  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
-  - { className: org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor}
 metrics: {
   consoleReporter: {enabled: true, interval: 180000},
   csvReporter: {enabled: true, interval: 180000, fileName: /tmp/gremlin-server-metrics.csv},
@@ -50,7 +48,7 @@ strictTransactionManagement: false
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192
-maxContentLength: 10485760
+maxRequestContentLength: 10485760
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768

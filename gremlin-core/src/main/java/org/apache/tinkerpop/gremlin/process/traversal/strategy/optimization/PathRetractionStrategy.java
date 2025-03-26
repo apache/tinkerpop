@@ -27,13 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -140,7 +136,7 @@ public final class PathRetractionStrategy extends AbstractTraversalStrategy<Trav
                         !(currentStep instanceof Barrier) &&
                         !(currentStep.getNextStep() instanceof Barrier) &&
                         !(currentStep.getTraversal().getParent() instanceof MatchStep) &&
-                        !(currentStep.getNextStep() instanceof NoneStep) &&
+                        !(currentStep.getNextStep() instanceof DiscardStep) &&
                         !(currentStep.getNextStep() instanceof EmptyStep))
                     TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, this.standardBarrierSize), currentStep, traversal);
             }

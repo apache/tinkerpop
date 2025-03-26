@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -55,7 +53,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class FilterRankingStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     public static Iterable<Object[]> data() {
         return generateTestParameters();
@@ -72,7 +69,7 @@ public class FilterRankingStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(FilterRankingStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {

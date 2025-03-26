@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var count = g.V().Count().Next();
@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person"),
                         edges: __.HasLabel("created")));
 
@@ -67,7 +67,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var count = g.V().Label().Dedup().Count().Next();
@@ -80,7 +80,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")));
 
             var label = g.V().Label().Dedup().Next();
@@ -93,7 +93,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var count = g.V().Count().Next();
@@ -106,7 +106,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(edges: __.Limit<object>(0)));
 
             var count = g.E().Count().Next();
@@ -119,7 +119,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var label = g.V().Label().Dedup().Next();
@@ -132,7 +132,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal()
-                    .WithRemote(connection)
+                    .With(connection)
                     .WithStrategies(new SubgraphStrategy(vertices: __.Has("name", "marko")));
 
             var name = g.V().Values<string>("name").Next();
@@ -144,7 +144,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_V_Count_Next_WithComputer()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection).WithComputer();
+            var g = AnonymousTraversalSource.Traversal().With(connection).WithComputer();
 
             var count = g.V().Count().Next();
 
@@ -155,7 +155,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void g_E_Count_Next_WithComputer()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection).WithComputer();
+            var g = AnonymousTraversalSource.Traversal().With(connection).WithComputer();
 
             var count = g.E().Count().Next();
 
@@ -166,7 +166,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public async Task ShouldThrowWhenModifyingTraversalSourceWithReadOnlyStrategy()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection).WithStrategies(new ReadOnlyStrategy());
+            var g = AnonymousTraversalSource.Traversal().With(connection).WithStrategies(new ReadOnlyStrategy());
 
             await Assert.ThrowsAsync<ResponseException>(async () => await g.AddV("person").Promise(t => t.Next()));
         }
@@ -175,7 +175,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void WithoutStrategiesShouldNeutralizeWithStrategy()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection)
+            var g = AnonymousTraversalSource.Traversal().With(connection)
                 .WithStrategies(new SubgraphStrategy(vertices: __.HasLabel("person")))
                 .WithoutStrategies(typeof(SubgraphStrategy));
 

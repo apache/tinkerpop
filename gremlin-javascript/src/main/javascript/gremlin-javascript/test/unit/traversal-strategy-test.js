@@ -17,10 +17,8 @@
  *  under the License.
  */
 
-'use strict';
-
-const assert = require('assert');
-const { TraversalStrategies, OptionsStrategy, ConnectiveStrategy } = require('../../lib/process/traversal-strategy');
+import assert from 'assert';
+import { TraversalStrategies, OptionsStrategy, ConnectiveStrategy } from '../../lib/process/traversal-strategy.js';
 
 describe('TraversalStrategies', function () {
 

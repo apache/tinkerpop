@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +41,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class MatchPredicateStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin original;
@@ -56,7 +53,7 @@ public class MatchPredicateStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(MatchPredicateStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {

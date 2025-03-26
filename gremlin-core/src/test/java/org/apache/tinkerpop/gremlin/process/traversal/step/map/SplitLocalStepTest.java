@@ -42,6 +42,7 @@ public class SplitLocalStepTest extends StepTest {
     public void testReturnTypes() {
         assertArrayEquals(new String[]{"h", "llo"}, __.__("hello").split(Scope.local, "e").next().toArray());
         assertArrayEquals(new String[]{"ab", "bc"}, __.__("abc|abc").split(Scope.local, "c|a").next().toArray());
+        assertArrayEquals(new String[]{"t","e","s","t"}, __.__("test").split(Scope.local, "").next().toArray());
 
         List<List<String>> resList = new ArrayList<>();
         resList.add(Arrays.asList("helloworld"));

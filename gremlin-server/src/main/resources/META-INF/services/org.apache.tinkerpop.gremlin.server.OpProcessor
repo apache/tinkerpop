@@ -1,3 +1,0 @@
-org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor
-org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor
-org.apache.tinkerpop.gremlin.server.op.traversal.TraversalOpProcessor

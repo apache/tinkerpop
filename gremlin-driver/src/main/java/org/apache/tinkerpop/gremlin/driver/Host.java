@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -49,8 +48,7 @@ public final class Host {
     Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
-        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl,
-                cluster.getChannelizer());
+        this.hostUri = makeUriFromAddress(address, cluster.getPath(), cluster.connectionPoolSettings().enableSsl);
         hostLabel = String.format("Host{address=%s, hostUri=%s}", address, hostUri);
     }
 
@@ -113,13 +111,8 @@ public final class Host {
         makeAvailable();
     }
 
-    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl, final String channelizerClass) {
-        final Channelizer channelizer;
-        try {
-            channelizer = (Channelizer) Class.forName(channelizerClass).newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Invalid Channelizer instance: %s", channelizerClass));
-        }
+    private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
+        final Channelizer channelizer = new Channelizer.HttpChannelizer();
 
         try {
             final String scheme = channelizer.getScheme(ssl);
@@ -134,13 +127,13 @@ public final class Host {
         return hostLabel;
     }
 
-    public static interface Listener {
-        public void onAvailable(final Host host);
+    public interface Listener {
+        void onAvailable(final Host host);
 
-        public void onUnavailable(final Host host);
+        void onUnavailable(final Host host);
 
-        public void onNew(final Host host);
+        void onNew(final Host host);
 
-        public void onRemove(final Host host);
+        void onRemove(final Host host);
     }
 }

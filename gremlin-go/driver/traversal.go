@@ -76,7 +76,7 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.Bytecode.AddStep("none"); err != nil {
+		if err := t.Bytecode.AddStep("discard"); err != nil {
 			r <- err
 			return
 		}
@@ -651,6 +651,25 @@ var WithOptions = withOptions{
 	Indexer: "~tinkerpop.index.indexer",
 	List:    0,
 	Map:     1,
+}
+
+type ioconfig struct {
+	Graphson string
+	Gryo     string
+	Graphml  string
+	Reader   string
+	Writer   string
+	Registry string
+}
+
+// IO holds configuration options to be passed to the GraphTraversal.ioconfig.
+var IO = ioconfig{
+	Graphson: "graphson",
+	Gryo:     "gryo",
+	Graphml:  "graphml",
+	Reader:   "~tinkerpop.ioconfig.reader",
+	Writer:   "~tinkerpop.ioconfig.writer",
+	Registry: "~tinkerpop.ioconfig.registry",
 }
 
 // Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables

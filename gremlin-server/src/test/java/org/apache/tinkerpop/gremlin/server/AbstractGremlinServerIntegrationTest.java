@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizerIntegrateTest;
-import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.junit.After;
@@ -105,10 +102,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
         } else {
             final Settings oSettings = overrideSettings(settings);
 
-            if (shouldTestUnified()) {
-                oSettings.channelizer = UnifiedChannelizer.class.getName();
-            }
-
             ServerTestHelper.rewritePathsInGremlinServerSettings(oSettings);
             if (GREMLIN_SERVER_EPOLL) {
                 oSettings.useEpollEventLoop = true;
@@ -131,10 +124,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
             overriddenSettings.useEpollEventLoop = true;
         }
 
-        if (shouldTestUnified()) {
-            overriddenSettings.channelizer = UnifiedChannelizer.class.getName();
-        }
-
         this.server = new GremlinServer(overriddenSettings);
 
         return server.start();
@@ -155,15 +144,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
         if (server != null) {
             server.stop().join();
         }
-
-        // reset the OpLoader processors so that they can get reconfigured on startup - Settings may have changed
-        // between tests
-        OpLoader.reset();
-    }
-
-    protected boolean isUsingUnifiedChannelizer() {
-        return server.getServerGremlinExecutor().
-                getSettings().channelizer.equals(UnifiedChannelizer.class.getName());
     }
 
     public static boolean deleteDirectory(final File directory) {
@@ -186,12 +166,5 @@ public abstract class AbstractGremlinServerIntegrationTest {
     protected static void useTinkerTransactionGraph(final Settings settings) {
         logger.info("Running transactional tests using TinkerTransactionGraph");
         settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
-    }
-
-    private boolean shouldTestUnified() {
-        // ignore all tests in the UnifiedChannelizerIntegrateTest package as they are already rigged to test
-        // over the various channelizer implementations
-        return Boolean.parseBoolean(System.getProperty("testUnified", "false")) &&
-                !this.getClass().getPackage().equals(UnifiedChannelizerIntegrateTest.class.getPackage());
     }
 }

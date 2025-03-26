@@ -20,47 +20,28 @@ package org.apache.tinkerpop.gremlin.structure.io;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Pick;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Column;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.MonthDay;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,9 +54,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory.detach;
 
 /**
  * Defines the supported types for IO and the versions (and configurations) to which they apply and are tested.
@@ -96,163 +78,117 @@ public class Model {
         final GraphTraversalSource g = graph.traversal();
 
         // IMPORTANT - the "title" or name of the Entry needs to be unique
+        addCoreEntry(Double.MAX_VALUE, "max-double");
+        addCoreEntry(Double.MIN_VALUE, "min-double");
+        addCoreEntry(-Double.MAX_VALUE, "neg-max-double");
+        addCoreEntry(-Double.MIN_VALUE, "neg-min-double");
+        addCoreEntry(Double.NaN, "nan-double");
+        addCoreEntry(Double.POSITIVE_INFINITY, "pos-inf-double");
+        addCoreEntry(Double.NEGATIVE_INFINITY, "neg-inf-double");
+        addCoreEntry(-0.0, "neg-zero-double");
 
-        addCoreEntry(File.class, "Class", "");
-        addCoreEntry(new Date(1481750076295L), "Date");
-        addCoreEntry(100.00d, "Double");
-        addCoreEntry(100.00f, "Float", "");
-        addCoreEntry(100, "Integer");
-        addCoreEntry(Arrays.asList(1,"person", true), "List", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.");
-        addCoreEntry(100L, "Long", "");
+        addCoreEntry(Float.MAX_VALUE, "max-float");
+        addCoreEntry(Float.MIN_VALUE, "min-float");
+        addCoreEntry(-Float.MAX_VALUE, "neg-max-float");
+        addCoreEntry(-Float.MIN_VALUE, "neg-min-float");
+        addCoreEntry(Float.NaN, "nan-float");
+        addCoreEntry(Float.POSITIVE_INFINITY, "pos-inf-float");
+        addCoreEntry(Float.NEGATIVE_INFINITY, "neg-inf-float");
+        addCoreEntry(-0.0f, "neg-zero-float");
+
+        addCoreEntry(Integer.MAX_VALUE, "max-int");
+        addCoreEntry(Integer.MIN_VALUE, "min-int");
+
+        addCoreEntry(Long.MAX_VALUE, "max-long");
+        addCoreEntry(Long.MIN_VALUE, "min-long");
+
+        addCoreEntry(Arrays.asList(1, "person", true, null), "var-type-list", "List is used to distinguish between different collection types as JSON is not explicit enough for all of Gremlin's requirements.");
+        addCoreEntry(Collections.EMPTY_LIST, "empty-list");
 
         final Map<Object,Object> map = new HashMap<>();
         map.put("test", 123);
-        map.put(new Date(1481750076295L), "red");
-        map.put(Arrays.asList(1,2,3), new Date(1481750076295L));
-        addCoreEntry(map, "Map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.");
+        map.put(OffsetDateTime.ofInstant(Instant.ofEpochMilli(1481295L), ZoneOffset.UTC), "red");
+        map.put(Arrays.asList(1,2,3), OffsetDateTime.ofInstant(Instant.ofEpochMilli(1481295L), ZoneOffset.UTC));
+        map.put(null, null);
+        addCoreEntry(map, "var-type-map", "Map is redefined so that to provide the ability to allow for non-String keys, which is not possible in JSON.");
+        addCoreEntry(Collections.EMPTY_MAP, "empty-map");
 
-        addCoreEntry(new HashSet<>(Arrays.asList(1,"person", true)), "Set", "Allows a JSON collection to behave as a Set.");
-        addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "");
-        addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
+        addCoreEntry(new HashSet<>(Arrays.asList(2, "person", true, null)), "var-type-set", "Allows a JSON collection to behave as a Set.");
+        addCoreEntry(Collections.EMPTY_SET, "empty-set");
 
-        addGraphStructureEntry(graph.edges().next(), "Edge", "");
-        addGraphStructureEntry(g.V().out().out().path().next(), "Path", "");
-        addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "");
-        addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
-        addGraphStructureEntry(graph.vertices().next(), "Vertex", "");
-        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
+        addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "specified-uuid");
+        addCoreEntry(new UUID(0, 0), "nil-uuid");
 
-        addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
-        addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
+        addCoreEntry(Direction.OUT, "out-direction", "");
+        addCoreEntry(T.id, "id-t", "");
+
+        addCoreEntry('a', "single-byte-char", "");
+        addCoreEntry('\u03A9', "multi-byte-char", "");
+
+        addEntry("Core", () -> null, "unspecified-null", "");
+
+        addCoreEntry(true, "true-boolean", "");
+        addCoreEntry(false, "false-boolean", "");
+
+        addCoreEntry("abc", "single-byte-string", "");
+        addCoreEntry("abc\u0391\u0392\u0393", "mixed-string", "");
+
+        addCoreEntry(g.V(10).out().tree().next(), "traversal-tree", "");
+
+        addGraphStructureEntry(graph.edges().next(), "traversal-edge", "");
+        addGraphStructureEntry(DetachedFactory.detach(graph.edges().next(), false), "no-prop-edge", "");
+
+        addGraphStructureEntry(detach(g.V().out().out().path().next(), false), "traversal-path", "");
+        addGraphStructureEntry(EmptyPath.instance(), "empty-path", "");
+        addGraphStructureEntry(detach(g.V().out().out().path().next(), true), "prop-path", "");
+
+        addGraphStructureEntry(graph.edges().next().properties().next(), "edge-property", "");
+        addGraphStructureEntry(new DetachedProperty<>("", null), "null-property", "");
+
+        addGraphStructureEntry(graph, "tinker-graph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
+
+        addGraphStructureEntry(graph.vertices().next(), "traversal-vertex", "");
+        addGraphStructureEntry(DetachedFactory.detach(graph.vertices().next(), false), "no-prop-vertex", "");
+
+        addGraphStructureEntry(graph.vertices().next().properties().next(), "traversal-vertexproperty", "");
+        final Map<String,Object> metaProperties = new HashMap<>();
+        metaProperties.put("a", "b");
+        addGraphStructureEntry(new DetachedVertexProperty<>(1, "person", "stephen", metaProperties), "meta-vertexproperty", "");
+        final Set<Object> setProperty = new HashSet<>();
+        setProperty.add("stephen");
+        setProperty.add("marko");
+        addGraphStructureEntry(new DetachedVertexProperty<>(1, "person", setProperty, metaProperties), "set-cardinality-vertexproperty", "");
 
         final BulkSet<String> bulkSet = new BulkSet<>();
         bulkSet.add("marko", 1);
         bulkSet.add("josh", 2);
-        addGraphProcessEntry(bulkSet, "BulkSet", "");
+        addGraphProcessEntry(bulkSet, "var-bulklist", "");
+        addGraphProcessEntry(new BulkSet(), "empty-bulklist", "");
 
-        addGraphProcessEntry(g.V().hasLabel("person").out().in().tree().asAdmin().getBytecode(), "Bytecode", "The following `Bytecode` example represents the traversal of `g.V().hasLabel('person').out().in().tree()`. Obviously the serialized `Bytecode` woudl be quite different for the endless variations of commands that could be used together in the Gremlin language.");
-        addGraphProcessEntry(VertexProperty.Cardinality.list, "Cardinality", "");
-        addGraphProcessEntry(Column.keys, "Column", "");
-        addGraphProcessEntry(Direction.OUT, "Direction", "");
-        addGraphProcessEntry(Operator.sum, "Operator", "");
-        addGraphProcessEntry(Order.shuffle, "Order", "");
-        addGraphProcessEntry(Pick.any, "Pick", "");
-        addGraphProcessEntry(Pop.all, "Pop", "");
-        addGraphProcessEntry(org.apache.tinkerpop.gremlin.util.function.Lambda.function("{ it.get() }"), "Lambda", "");
-        final TraversalMetrics tm = createStaticTraversalMetrics();
-        final MutableMetrics metrics = new MutableMetrics(tm.getMetrics("7.0.0()"));
-        metrics.addNested(new MutableMetrics(tm.getMetrics("3.0.0()")));
-        addGraphProcessEntry(metrics, "Metrics", "");
-        addGraphProcessEntry(P.gt(0), "P", "");
-        addGraphProcessEntry(P.within(1), "P within", "");
-        addGraphProcessEntry(P.without(1,2), "P without", "");
-        addGraphProcessEntry(P.gt(0).and(P.lt(10)), "P and", "");
-        addGraphProcessEntry(P.gt(0).or(P.within(-1, -10, -100)), "P or", "");
-        addGraphProcessEntry(Scope.local, "Scope", "");
-        addGraphProcessEntry(T.label, "T", "");
-        // TextP was only added at 3.4.0 and is not supported with untyped GraphSON of any sort
-        addGraphProcessEntry(TextP.containing("ark"), "TextP", "");
-        addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "");
-        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "");
+        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "vertex-traverser", "");
+        addGraphProcessEntry(g.V().both().barrier().asAdmin().nextTraverser(), "bulked-traverser", "");
+        addGraphProcessEntry(EmptyTraverser.instance(), "empty-traverser", "");
 
-        final Map<String,Object> requestBindings = new HashMap<>();
-        requestBindings.put("x", 1);
+        addExtendedEntry(new BigDecimal("123.456789987654321123456789987654321"), "pos-bigdecimal", "");
+        addExtendedEntry(new BigDecimal("-123.456789987654321123456789987654321"), "neg-bigdecimal", "");
 
-        final Map<String,Object> requestAliases = new HashMap<>();
-        requestAliases.put("g", "social");
+        addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "pos-biginteger", "");
+        addExtendedEntry(new BigInteger("-123456789987654321123456789987654321"), "neg-biginteger", "");
 
-        RequestMessage requestMessage;
-        requestMessage = RequestMessage.build("authentication").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("saslMechanism", "PLAIN", "sasl", "AHN0ZXBocGhlbgBwYXNzd29yZA==").create();
-        addRequestMessageEntry(requestMessage, "Authentication Response", "The following `RequestMessage` is an example of the response that should be made to a SASL-based authentication challenge.");
-        requestMessage = RequestMessage.build("eval").processor("session").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "session", "unique-session-identifier").create();
-        addRequestMessageEntry(requestMessage, "Session Eval", "The following `RequestMessage` is an example of a simple session request for a script evaluation with parameters.");
-        requestMessage = RequestMessage.build("eval").processor("session").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases, "session","unique-session-identifier").create();
-        addRequestMessageEntry(requestMessage, "Session Eval Aliased", "The following `RequestMessage` is an example of a session request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
-        requestMessage = RequestMessage.build("close").processor("session").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("session", "unique-session-identifier").create();
-        addRequestMessageEntry(requestMessage, "Session Close", "The following `RequestMessage` is an example of a request to close a session.");
-        requestMessage = RequestMessage.build("eval").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "g.V(x)", "bindings", requestBindings, "language", "gremlin-groovy").create();
-        addRequestMessageEntry(requestMessage, "Sessionless Eval", "The following `RequestMessage` is an example of a simple sessionless request for a script evaluation with parameters.");
-        requestMessage = RequestMessage.build("eval").
-                overrideRequestId(UUID.fromString("cb682578-9d92-4499-9ebc-5c6aa73c5397")).
-                add("gremlin", "social.V(x)", "bindings", requestBindings, "language", "gremlin-groovy", "aliases", requestAliases).create();
-        addRequestMessageEntry(requestMessage, "Sessionless Eval Aliased", "The following `RequestMessage` is an example of a sessionless request for a script evaluation with an alias that binds the `TraversalSource` of \"g\" to \"social\".");
+        addExtendedEntry(Byte.MAX_VALUE, "max-byte", "");
+        addExtendedEntry(Byte.MIN_VALUE, "min-byte", "");
 
-        ResponseMessage responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-                code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.AUTHENTICATE).create();
-        addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).");
-        responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
-                code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.SUCCESS).
-                result(Collections.singletonList(graph.vertices().next())).create();
-        addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
-        
-        addExtendedEntry(new BigDecimal(new BigInteger("123456789987654321123456789987654321")), "BigDecimal", "");
-        addExtendedEntry(new BigInteger("123456789987654321123456789987654321"), "BigInteger", "");
-        addExtendedEntry(new Byte("1"), "Byte", "");
-        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes()), "ByteBuffer", "");
-        addExtendedEntry("x".charAt(0), "Char", "");
-        addExtendedEntry(Duration.ofDays(5), "Duration","The following example is a `Duration` of five days.");
-        try {
-            addEntry("Extended", InetAddress.getByName("localhost"), "InetAddress", "");
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        addExtendedEntry(Instant.parse("2016-12-14T16:39:19.349Z"), "Instant", "");
-        addExtendedEntry(LocalDate.of(2016, 1, 1), "LocalDate", "");
-        addExtendedEntry(LocalDateTime.of(2016, 1, 1, 12, 30), "LocalDateTime", "");
-        addExtendedEntry(LocalTime.of(12, 30, 45), "LocalTime", "");
-        addExtendedEntry(MonthDay.of(1, 1), "MonthDay", "");
-        addExtendedEntry(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"), "OffsetDateTime", "");
-        addExtendedEntry(OffsetTime.parse("10:15:30+01:00"), "OffsetTime", "");
-        addExtendedEntry(Period.of(1, 6, 15), "Period", "The following example is a `Period` of one year, six months and fifteen days.");
-        addExtendedEntry(new Short("100"), "Short", "");
-        addExtendedEntry(Year.of(2016), "Year", "The following example is of the `Year` \"2016\".");
-        addExtendedEntry(YearMonth.of(2016, 6), "YearMonth", "The following example is a `YearMonth` of \"June 2016\"");
-        addExtendedEntry(ZonedDateTime.of(2016, 12, 23, 12, 12, 24, 36, ZoneId.of("GMT+2")), "ZonedDateTime", "");
-        addExtendedEntry(ZoneOffset.ofHoursMinutesSeconds(3, 6, 9), "ZoneOffset", "The following example is a `ZoneOffset` of three hours, six minutes, and nine seconds.");
-    }
+        addExtendedEntry(ByteBuffer.wrap(new byte[0]), "empty-binary", "");
+        addEntry("Extended", () -> java.nio.ByteBuffer.wrap("some bytes for you".getBytes(StandardCharsets.UTF_8)), "str-binary", "");
 
-    private static DefaultTraversalMetrics createStaticTraversalMetrics() {
-        // based on g.V().hasLabel("person").out().out().tree().profile().next()
-        final List<MutableMetrics> traversalMutableMetrics = new ArrayList<>();
-        final MutableMetrics m7 = new MutableMetrics("7.0.0()", "TinkerGraphStep(vertex,[~label.eq(person)])");
-        m7.setDuration(100, TimeUnit.MILLISECONDS);
-        m7.setCount("traverserCount", 4);
-        m7.setCount("elementCount", 4);
-        m7.setAnnotation("percentDur", 25.0d);
-        traversalMutableMetrics.add(m7);
+        addExtendedEntry(Duration.ZERO, "zero-duration","The following example is a zero `Duration`");
+        addExtendedEntry(ChronoUnit.FOREVER.getDuration(), "forever-duration","");
 
-        final MutableMetrics m2 = new MutableMetrics("2.0.0()", "VertexStep(OUT,vertex)");
-        m2.setDuration(100, TimeUnit.MILLISECONDS);
-        m2.setCount("traverserCount", 13);
-        m2.setCount("elementCount", 13);
-        m2.setAnnotation("percentDur", 25.0d);
-        traversalMutableMetrics.add(m2);
+        addExtendedEntry(OffsetDateTime.MAX, "max-offsetdatetime", "");
+        addExtendedEntry(OffsetDateTime.MIN, "min-offsetdatetime", "");
 
-        final MutableMetrics m3 = new MutableMetrics("3.0.0()", "VertexStep(OUT,vertex)");
-        m3.setDuration(100, TimeUnit.MILLISECONDS);
-        m3.setCount("traverserCount", 7);
-        m3.setCount("elementCount", 7);
-        m3.setAnnotation("percentDur", 25.0d);
-        traversalMutableMetrics.add(m3);
-
-        final MutableMetrics m4 = new MutableMetrics("4.0.0()", "TreeStep");
-        m4.setDuration(100, TimeUnit.MILLISECONDS);
-        m4.setCount("traverserCount", 1);
-        m4.setCount("elementCount", 1);
-        m4.setAnnotation("percentDur", 25.0d);
-        traversalMutableMetrics.add(m4);
-
-        return new DefaultTraversalMetrics(4000, traversalMutableMetrics);
+        addExtendedEntry(Short.MIN_VALUE, "min-short", "");
+        addExtendedEntry(Short.MAX_VALUE, "max-short", "");
     }
 
     public static Model instance() {

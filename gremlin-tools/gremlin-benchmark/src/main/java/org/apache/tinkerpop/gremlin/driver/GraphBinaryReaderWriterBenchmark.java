@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -56,21 +56,21 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
         public Buffer bytecodeBuffer1 = bufferFactory.create(allocator.buffer(2048));
         public Buffer bytecodeBuffer2 = bufferFactory.create(allocator.buffer(2048));
         public Buffer pBuffer1 = bufferFactory.create(allocator.buffer(2048));
-        public final Bytecode bytecode1 = new Bytecode();
+        public final GremlinLang gremlinLang1 = new GremlinLang();
 
         public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
 
-        public Bytecode bytecode2;
+        public GremlinLang gremlinLang2;
 
         @Setup(Level.Trial)
         public void doSetup() throws IOException {
-            bytecode1.addStep("V");
-            bytecode1.addStep("values", "name");
-            bytecode1.addStep("tail", 5);
+            gremlinLang1.addStep("V");
+            gremlinLang1.addStep("values", "name");
+            gremlinLang1.addStep("tail", 5);
 
             Graph g = TinkerGraph.open();
 
-            bytecode2 = g.traversal()
+            gremlinLang2 = g.traversal()
                     .addV("person")
                     .property("name1", 1)
                     .property("name2", UUID.randomUUID())
@@ -78,10 +78,10 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
                     .property("name4", BigInteger.valueOf(33343455342245L))
                     .property("name5", "kjlkdnvlkdrnvldnvndlrkvnlhkjdkgkrtnlkndblknlknonboirnlkbnrtbonrobinokbnrklnbkrnblktengotrngotkrnglkt")
                     .property("name6", Instant.now())
-                    .asAdmin().getBytecode();
+                    .asAdmin().getGremlinLang();
 
-            writer.writeValue(bytecode1, bytecodeBuffer1, false);
-            writer.writeValue(bytecode2, bytecodeBuffer2, false);
+            writer.writeValue(gremlinLang1, bytecodeBuffer1, false);
+            writer.writeValue(gremlinLang2, bytecodeBuffer2, false);
             writer.writeValue(P.between(1, 2), pBuffer1, false);
         }
 
@@ -104,22 +104,22 @@ public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
 
     @Benchmark
     public void writeBytecode1(BenchmarkState state) throws IOException {
-        writer.writeValue(state.bytecode1, state.bufferWrite, false);
+        writer.writeValue(state.gremlinLang1, state.bufferWrite, false);
     }
 
     @Benchmark
     public void writeBytecode2(BenchmarkState state) throws IOException {
-        writer.writeValue(state.bytecode2, state.bufferWrite, false);
+        writer.writeValue(state.gremlinLang2, state.bufferWrite, false);
     }
 
     @Benchmark
     public void readBytecode1(BenchmarkState state) throws IOException {
-        reader.readValue(state.bytecodeBuffer1, Bytecode.class, false);
+        reader.readValue(state.bytecodeBuffer1, GremlinLang.class, false);
     }
 
     @Benchmark
     public void readBytecode2(BenchmarkState state) throws IOException {
-        reader.readValue(state.bytecodeBuffer2, Bytecode.class, false);
+        reader.readValue(state.bytecodeBuffer2, GremlinLang.class, false);
     }
 
     @Benchmark

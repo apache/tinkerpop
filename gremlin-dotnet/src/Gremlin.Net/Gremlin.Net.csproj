@@ -27,7 +27,7 @@ limitations under the License.
 
   <PropertyGroup Label="Package">
     <!-- do not edit the version directly - maven updates it automatically -->
-    <Version>3.7.4-SNAPSHOT</Version>
+    <Version>4.0.0-SNAPSHOT</Version>
     <Title>Gremlin.Net</Title>
     <Authors>Apache TinkerPop</Authors>
     <Description>Gremlin.Net for Apache TinkerPop™ is a language variant and driver for .NET.
@@ -75,7 +75,7 @@ NOTE that versions suffixed with "-rc" are considered release candidates (i.e. p
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="Polly" Version="8.4.2" />
+    <PackageReference Include="Polly" Version="8.5.1" />
   </ItemGroup>
     
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

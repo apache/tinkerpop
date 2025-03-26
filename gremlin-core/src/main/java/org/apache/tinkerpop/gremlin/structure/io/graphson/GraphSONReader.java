@@ -177,7 +177,7 @@ public final class GraphSONReader implements GraphReader {
                              final Direction attachEdgesOfThisDirection) throws IOException {
         // graphson v3 has special handling for generic Map instances, by forcing to linkedhashmap (which is probably
         // what it should have been anyway) stargraph format can remain unchanged across all versions
-        final Map<String, Object> vertexData = version == GraphSONVersion.V3_0 ?
+        final Map<String, Object> vertexData = ((version == GraphSONVersion.V3_0) || (version == GraphSONVersion.V4_0)) ?
                 mapper.readValue(inputStream, linkedHashMapTypeReference) : mapper.readValue(inputStream, mapTypeReference);
         final StarGraph starGraph = StarGraphGraphSONDeserializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());

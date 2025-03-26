@@ -18,16 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
-import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
-import org.apache.tinkerpop.gremlin.server.op.session.Session;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.AttributeKey;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.javatuples.Pair;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * Keys used in the various handlers to store state in the pipeline.
@@ -41,32 +38,22 @@ public final class StateKey {
     /**
      * The key for the current serializer requested by the client.
      */
-    public static final AttributeKey<MessageSerializer<?>> SERIALIZER = AttributeKey.valueOf("serializer");
+    public static final AttributeKey<Pair<String, MessageSerializer<?>>> SERIALIZER = AttributeKey.valueOf("serializer");
 
     /**
-     * The key to indicate if the serializer should use its binary format.
+     * The key for the current request headers.
      */
-    public static final AttributeKey<Boolean> USE_BINARY = AttributeKey.valueOf("useBinary");
+    public static final AttributeKey<HttpHeaders> REQUEST_HEADERS = AttributeKey.valueOf("requestHeaders");
 
     /**
-     * The key for the current {@link Session} object.
+     * The key for the current request ID.
      */
-    public static final AttributeKey<Session> SESSION = AttributeKey.valueOf("session");
+    public static final AttributeKey<UUID> REQUEST_ID = AttributeKey.valueOf("requestId");
 
     /**
-     * The key for the current SASL negotiator.
+     * The key for whether a {@link io.netty.handler.codec.http.HttpResponse} has been sent for the current response.
      */
-    public static final AttributeKey<Authenticator.SaslNegotiator> NEGOTIATOR = AttributeKey.valueOf("negotiator");
-
-    /**
-     * The key for the current request.
-     */
-    public static final AttributeKey<RequestMessage> REQUEST_MESSAGE = AttributeKey.valueOf("request");
-
-    /**
-     * The key for the deferred requests.
-     */
-    public static final AttributeKey<Pair<LocalDateTime, List<RequestMessage>>> DEFERRED_REQUEST_MESSAGES = AttributeKey.valueOf("deferredRequests");
+    public static final AttributeKey<Boolean> HTTP_RESPONSE_SENT = AttributeKey.valueOf("responseSent");
 
     /**
      * The key for the current {@link AuthenticatedUser}.

@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -106,7 +106,7 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
 
     /**
      * Constructs a new instance and is bound to an {@link EmptyGraph}. This form of construction is helpful for
-     * generating {@link Bytecode} or for various forms of testing. {@link Traversal} instances constructed from this
+     * generating {@link GremlinLang} or for various forms of testing. {@link Traversal} instances constructed from this
      * form will not be capable of iterating. Assumes that "g" is the name of the {@link GraphTraversalSource}.
      */
     public GremlinAntlrToJava() {

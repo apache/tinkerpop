@@ -20,11 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.junit.Test;
@@ -45,7 +43,6 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Parameterized.class)
 public class ComputerVerificationStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -70,7 +67,7 @@ public class ComputerVerificationStrategyTest {
 
     @Test
     public void shouldBeVerifiedIllegal() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
 
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(ComputerVerificationStrategy.instance());

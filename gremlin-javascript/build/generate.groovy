@@ -17,52 +17,17 @@
  * under the License.
  */
 
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph
-import org.apache.tinkerpop.gremlin.process.traversal.translator.JavascriptTranslator
-import org.apache.tinkerpop.gremlin.jsr223.ScriptCustomizer
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.AmbiguousMethodASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.VarAsBindingASTTransformation
-import org.apache.tinkerpop.gremlin.groovy.jsr223.ast.RepeatASTTransformationCustomizer
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCustomizer
-import org.codehaus.groovy.control.customizers.CompilationCustomizer
+import org.apache.tinkerpop.gremlin.language.translator.GremlinTranslator
+import org.apache.tinkerpop.gremlin.language.translator.Translator
 import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 
-import javax.script.SimpleBindings
 import java.nio.file.Paths
-
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal
-
-// getting an exception like:
-// > InvocationTargetException: javax.script.ScriptException: groovy.lang.MissingMethodException: No signature of
-// > method: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal.mergeE() is applicable for
-// > argument types: (String) values: [4ffdea36-4a0e-4681-acba-e76875d1b25b]
-// usually means bindings are not being extracted properly by VarAsBindingASTTransformation which typically happens
-// when a step is taking an argument that cannot properly resolve to the type required by the step itself. there are
-// special cases in that VarAsBindingASTTransformation class which might need to be adjusted. Editing the
-// GremlinGroovyScriptEngineTest#shouldProduceBindingsForVars() with the failing step and argument can typically make
-// this issue relatively easy to debug and enforce.
-//
-// getting an exception like:
-// > Ambiguous method overloading for method org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource#mergeV.
-// likely requires changes to the AmbiguousMethodASTTransformation which forces a call to a particular method overload
-// and usually relates to use of null where the type isn't clear
 
 // file is overwritten on each generation
 radishGremlinFile = new File("${projectBaseDir}/gremlin-javascript/src/main/javascript/gremlin-javascript/test/cucumber/gremlin.js")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
 gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())
-
-gremlinGroovyScriptEngine = new GremlinGroovyScriptEngine(
-        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new AmbiguousMethodASTTransformation()) },
-        (GroovyCustomizer) { -> new RepeatASTTransformationCustomizer(new VarAsBindingASTTransformation()) }
-)
-
-translator = JavascriptTranslator.of('g')
-g = traversal().withEmbedded(EmptyGraph.instance())
-bindings = new SimpleBindings()
-bindings.put('g', g)
 
 radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine('/*\n' +
@@ -89,9 +54,9 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("//********************************************************************************\n\n")
 
     writer.writeLine(
-                    'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
-                    'const traversalModule = require(\'../../lib/process/traversal\');\n' +
-                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
+                    'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
+                    'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
+                    'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } from \'../../lib/process/traversal-strategy.js\';\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +
@@ -104,6 +69,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     '    from_: traversalModule.direction.out,\n' +
                     '    to: traversalModule.direction.in\n' +
                     '};\n' +
+                    'const IO = traversalModule.IO;\n' +
                     'const DT = traversalModule.dt;\n' +
                     'const Merge = traversalModule.merge;\n' +
                     'const P = traversalModule.P;\n' +
@@ -117,35 +83,33 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     'const WithOptions = traversalModule.withOptions\n'
     )
 
-    // Groovy can't process certain null oriented calls because it gets confused with the right overload to call
-    // at runtime. using this approach for now as these are the only such situations encountered so far. a better
-    // solution may become necessary as testing of nulls expands.
+    // some traversals may require a static translation if the translator can't handle them for some reason
     def staticTranslate = [:]
     // SAMPLE: g_injectXnull_nullX: "    g_injectXnull_nullX: [function({g}) { return g.inject(null,null) }], ",
 
     writer.writeLine('const gremlins = {')
     gremlins.each { k,v ->
-        if (staticTranslate.containsKey(k)) {
+        // skipping lambdas until we decide for sure that they are out in 4.x
+        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')} || v.any { it.contains('c1')}) {
+            writer.writeLine("    '${k}': [],  // skipping as it contains a lambda")
+        } else if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
             writer.write("    ")
             writer.write(k)
             writer.write(": [")
-            def collected = v.collect {
-                def t = gremlinGroovyScriptEngine.eval(it, bindings)
-                [t, t.bytecode.bindings.keySet()]
-            }
-            def uniqueBindings = collected.collect { it[1] }.flatten().unique()
+            def collected = v.collect { GremlinTranslator.translate(it, Translator.JAVASCRIPT) }
+            def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
             def gremlinItty = collected.iterator()
             while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()[0]
+                def t = gremlinItty.next()
                 writer.write("function({g")
                 if (!uniqueBindings.isEmpty()) {
                     writer.write(", ")
                     writer.write(uniqueBindings.join(", "))
                 }
                 writer.write("}) { return ")
-                writer.write(translator.translate(t.bytecode).script)
+                writer.write(t.getTranslated())
                 writer.write(" }")
                 if (gremlinItty.hasNext()) writer.write(', ')
             }
@@ -154,7 +118,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     }
     writer.writeLine('}\n')
 
-    writer.writeLine('exports.gremlin = gremlins')
+    writer.writeLine('export const gremlin = gremlins')
 }
 
 

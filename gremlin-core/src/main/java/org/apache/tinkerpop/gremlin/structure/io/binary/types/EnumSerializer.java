@@ -45,18 +45,9 @@ import java.util.function.Function;
  */
 public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
 
-    public static final EnumSerializer<SackFunctions.Barrier> BarrierSerializer = new EnumSerializer<>(DataType.BARRIER, SackFunctions.Barrier::valueOf);
-    public static final EnumSerializer<VertexProperty.Cardinality> CardinalitySerializer = new EnumSerializer<>(DataType.CARDINALITY, VertexProperty.Cardinality::valueOf);
-    public static final EnumSerializer<Column> ColumnSerializer = new EnumSerializer<>(DataType.COLUMN, Column::valueOf);
     public static final EnumSerializer<Direction> DirectionSerializer = new EnumSerializer<>(DataType.DIRECTION, Direction::valueOf);
-    public static final EnumSerializer<DT> DTSerializer = new EnumSerializer<>(DataType.DT, DT::valueOf);
-    public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
-    public static final EnumSerializer<Operator> OperatorSerializer = new EnumSerializer<>(DataType.OPERATOR, Operator::valueOf);
-    public static final EnumSerializer<Order> OrderSerializer = new EnumSerializer<>(DataType.ORDER, Order::valueOf);
-    public static final EnumSerializer<Pick> PickSerializer = new EnumSerializer<>(DataType.PICK, Pick::valueOf);
-    public static final EnumSerializer<Pop> PopSerializer = new EnumSerializer<>(DataType.POP, Pop::valueOf);
-    public static final EnumSerializer<Scope> ScopeSerializer = new EnumSerializer<>(DataType.SCOPE, Scope::valueOf);
     public static final EnumSerializer<T> TSerializer = new EnumSerializer<>(DataType.T, T::valueOf);
+    public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
 
     private final Function<String, E> readFunc;
 

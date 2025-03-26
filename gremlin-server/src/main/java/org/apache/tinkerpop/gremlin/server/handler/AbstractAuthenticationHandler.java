@@ -30,14 +30,6 @@ public abstract class AbstractAuthenticationHandler extends ChannelInboundHandle
     protected final Authenticator authenticator;
     protected final Authorizer authorizer;
 
-    /**
-     * @deprecated As of release 3.5.0, replaced by {@link #AbstractAuthenticationHandler(Authenticator, Authorizer)}.
-     */
-    @Deprecated
-    public AbstractAuthenticationHandler(final Authenticator authenticator) {
-        this(authenticator, null);
-    }
-
     public AbstractAuthenticationHandler(final Authenticator authenticator, final Authorizer authorizer) {
         this.authenticator = authenticator;
         this.authorizer = authorizer;

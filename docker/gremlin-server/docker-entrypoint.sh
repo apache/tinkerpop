@@ -43,9 +43,9 @@ echo "##########################################################################
 echo IP is $IP
 echo
 echo Available Gremlin Server instances:
-echo "ws://${IP}:45940/gremlin with anonymous access"
-echo "ws://${IP}:45941/gremlin with basic authentication (stephen/password)"
-echo "ws://${IP}:45942/gremlin with kerberos authentication (stephen/password)"
+echo "http://${IP}:45940/gremlin with anonymous access"
+echo "http://${IP}:45941/gremlin with basic authentication (stephen/password)"
+echo "http://${IP}:45942/gremlin with kerberos authentication (stephen/password)"
 echo
 echo "See docker/gremlin-server/docker-entrypoints.sh for transcripts per GLV."
 echo "#############################################################################"
@@ -59,14 +59,7 @@ dos2unix /opt/gremlin-server/bin/gremlin-server.conf
 
 /opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration.yaml &
 
-/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml &
-
-java -cp /opt/gremlin-test/apache-tinkerpop-gremlin-test-${GREMLIN_SERVER_VERSION}-jar-with-dependencies.jar \
-     -Dlogback.configurationFile="file:/opt/gremlin-server/conf/logback.xml" \
-     org.apache.tinkerpop.gremlin.server.KdcFixture /opt/gremlin-server &
-
-export JAVA_OPTIONS="-Xms512m -Xmx4096m -Djava.security.krb5.conf=/opt/gremlin-server/target/kdc/krb5.conf"
-/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-krb5.yaml
+/opt/gremlin-server/bin/gremlin-server.sh ${TINKERPOP_HOME}/conf/gremlin-server-integration-secure.yaml
 
 
 #######################################################################

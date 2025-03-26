@@ -27,7 +27,7 @@ import (
 )
 
 /**
- * User Agent body to be sent in web socket handshake
+ * User Agent header to be sent in the http request
  * Has the form of:
  * [Application Name] [GLV Name]/[Version] [Language Runtime Version] [OS]/[Version] [CPU Architecture]
  * Note: Go does not have any builtin functionality to detect the OS version, therefore OS version will always be
@@ -37,7 +37,7 @@ var userAgent string
 
 const userAgentHeader = "User-Agent"
 
-const gremlinVersion = "3.7.4-SNAPSHOT" // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = "4.0.0-SNAPSHOT" // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 func init() {
 	applicationName := "NotAvailable"

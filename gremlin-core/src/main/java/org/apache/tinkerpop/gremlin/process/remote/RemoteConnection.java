@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.remote;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
@@ -49,11 +49,11 @@ public interface RemoteConnection extends AutoCloseable {
     }
 
     /**
-     * Submits {@link Traversal} {@link Bytecode} to a server and returns a promise of a {@link RemoteTraversal}.
+     * Submits {@link Traversal} {@link GremlinLang} to a server and returns a promise of a {@link RemoteTraversal}.
      * The {@link RemoteTraversal} is an abstraction over two types of results that can be returned as part of the
      * response from the server: the results of the {@link Traversal} itself and the side-effects that it produced.
      */
-    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
+    public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException;
 
     /**
      * Create a {@link RemoteConnection} from a {@code Configuration} object. The configuration must contain a

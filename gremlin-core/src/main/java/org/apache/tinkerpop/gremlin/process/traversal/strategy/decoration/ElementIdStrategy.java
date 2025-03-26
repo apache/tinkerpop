@@ -62,6 +62,8 @@ import java.util.function.Supplier;
  */
 public final class ElementIdStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
+    public static final ElementIdStrategy INSTANCE = ElementIdStrategy.build().create();
+
     private final String idPropertyKey;
 
     private final Supplier<Object> idMaker;
@@ -92,11 +94,12 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
             // note that it is then only necessary to replace the step if the id is a non-element.  other tests
             // in the suite validate that items in getIds() is uniform so it is ok to just test the first item
             // in the list.
-            if (graphStep.getIds().length > 0 && !(graphStep.getIds()[0] instanceof Element)) {
+            final Object[] ids = graphStep.getIdsAsValues();
+            if (ids.length > 0 && !(ids[0] instanceof Element)) {
                 if (graphStep instanceof HasContainerHolder)
-                    ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds()))));
+                    ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, P.within(Arrays.asList(ids))));
                 else
-                    TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds())))), graphStep, traversal);
+                    TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, P.within(Arrays.asList(ids)))), graphStep, traversal);
                 graphStep.clearIds();
             }
         }
@@ -127,9 +130,11 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
     }
 
     public final static class Builder {
+        private static final Supplier<Object> DEFAULT_ID_MAKER = () -> UUID.randomUUID().toString();
+
         private String idPropertyKey = "__id";
 
-        private Supplier<Object> idMaker = () -> UUID.randomUUID().toString();
+        private Supplier<Object> idMaker = DEFAULT_ID_MAKER;
 
         private Builder() {
         }
@@ -173,7 +178,15 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         final Map<String, Object> map = new HashMap<>();
         map.put(STRATEGY, ElementIdStrategy.class.getCanonicalName());
         map.put(ID_PROPERTY_KEY, this.idPropertyKey);
-        map.put(ID_MAKER, this.idMaker);
+        // The idMaker is not serializable. The default idMaker is excluded from the configuration to allow for remote
+        // serialization. Custom idMakers are only supported in the config for embedded usages.
+        if (!idMaker.equals(Builder.DEFAULT_ID_MAKER)) {
+            map.put(ID_MAKER, this.idMaker);
+        }
         return new MapConfiguration(map);
+    }
+
+    public static ElementIdStrategy instance() {
+        return INSTANCE;
     }
 }

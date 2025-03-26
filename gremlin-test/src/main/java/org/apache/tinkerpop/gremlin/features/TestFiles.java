@@ -67,7 +67,6 @@ public class TestFiles {
 
             final List<String> scriptResources = Arrays.asList(
                     "tinkerpop-classic.txt",
-                    "script-input.groovy",
                     "script-output.groovy",
                     "grateful-dead.txt",
                     "script-input-grateful-dead.groovy",

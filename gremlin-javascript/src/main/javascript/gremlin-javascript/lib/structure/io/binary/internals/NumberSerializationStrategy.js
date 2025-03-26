@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
 // Based on GraphSON NumberSerializer.serialize().
 // It's tested by AnySerializer.serialize() tests.
-module.exports = class NumberSerializationStrategy {
+export default class NumberSerializationStrategy {
   constructor(ioc) {
     this.ioc = ioc;
   }
@@ -65,4 +64,4 @@ module.exports = class NumberSerializationStrategy {
       return this.ioc.bigIntegerSerializer.serialize(item, fullyQualifiedFormat);
     }
   }
-};
+}

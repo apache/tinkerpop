@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -38,23 +37,20 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -110,7 +106,6 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
         assertEquals(2, traversal.asAdmin().getSideEffects().<BulkSet>get("x").size());
         assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("ripple"));
         assertTrue(traversal.asAdmin().getSideEffects().<BulkSet>get("x").contains("lop"));
-        assertEquals(Traversal.Symbols.none, traversal.asAdmin().getBytecode().getStepInstructions().get(traversal.asAdmin().getBytecode().getStepInstructions().size()-1).getOperator());
     }
 
     @Test

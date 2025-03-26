@@ -78,7 +78,7 @@ create an empty TinkerGraph as follows:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()                 <1>
-g = traversal().withEmbedded(graph)        <2>
+g = traversal().with(graph)        <2>
 ----
 
 <1> Creates the `Graph` instance that is the API to the
@@ -115,7 +115,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-properties[vertex
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createModern()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 ----
 
 image:grateful-gremlin.png[float=right,width=110] As you might have noticed from the diagrams of these graphs or from
@@ -128,7 +128,7 @@ However, if you find that a larger graph might be helpful, there is another opti
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createGratefulDead()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 ----
 
 The Grateful Dead graph ships with the Gremlin Console and the data can be found in several formats (along with the
@@ -160,7 +160,7 @@ addition to the ones provided by TinkerPop. You can also request help on a speci
 
 [gremlin-groovy]
 ----
-:help :remote
+:help :plugin
 ----
 
 The Gremlin Console can also provide you with code help via auto-complete functionality. Use the `<TAB>` key to
@@ -409,7 +409,7 @@ the data of the "person" vertices in the graph:
 [gremlin-groovy]
 ----
 graph = TinkerFactory.createTheCrew()
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 
 g.V().hasLabel('person').valueMap()
 ----

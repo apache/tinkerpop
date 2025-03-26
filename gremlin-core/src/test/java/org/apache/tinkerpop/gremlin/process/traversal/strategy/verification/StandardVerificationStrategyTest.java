@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
@@ -37,8 +35,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -46,7 +44,6 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
  */
 @RunWith(Parameterized.class)
 public class StandardVerificationStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() throws Exception {
@@ -71,13 +68,13 @@ public class StandardVerificationStrategyTest {
 
     @Test
     public void shouldBeVerified() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         final Traversal copy = copyAndConfigureTraversal(traversal);
 
         if (legalTraversal) {
             copy.asAdmin().applyStrategies();
 
-            // try to also apply strategies with iterate() so that a NoneStep is added - for consistency sake we want
+            // try to also apply strategies with iterate() so that a DiscardStep is added - for consistency sake we want
             // to be able to run a profile and get no result back with this.
             final Traversal forIteration = copyAndConfigureTraversal(traversal);
             forIteration.iterate();

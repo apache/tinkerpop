@@ -5,7 +5,7 @@
     <parent>
         <artifactId>gremlin-tools</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,18 +33,8 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>${groovy.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-json</artifactId>
             <version>${groovy.version}</version>
             <optional>true</optional>
         </dependency>
@@ -117,7 +107,7 @@
             <plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
-                <version>1.2.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>build-image</id>

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -62,7 +63,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     private ServiceCallContext ctx;
     private String serviceName;
     private Service<S, E> service;
-    private Map staticParams;
+    private GValue<Map> staticParams;
     private Traversal.Admin<S,Map> mapTraversal;
     private Parameters parameters;
 
@@ -74,20 +75,29 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service) {
-        this(traversal, isStart, service, null);
+        this(traversal, isStart, service, (Map) null);
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final Map staticParams) {
+        this(traversal, isStart, service, GValue.ofMap(null, staticParams));
+    }
+
+    public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final GValue<Map> staticParams) {
         this(traversal, isStart, service, staticParams, null);
     }
 
     public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final Map staticParams,
                     final Traversal.Admin<S, Map> mapTraversal) {
+        this(traversal, isStart, service, GValue.ofMap(null, staticParams), mapTraversal);
+    }
+
+    public CallStep(final Traversal.Admin traversal, final boolean isStart, final String service, final GValue<Map> staticParams,
+                    final Traversal.Admin<S, Map> mapTraversal) {
         super(traversal);
 
         this.isStart = isStart;
         this.serviceName = service;
-        this.staticParams = staticParams == null ? new LinkedHashMap() : staticParams;
+        this.staticParams = staticParams == null || staticParams.isNull() ? GValue.ofMap(staticParams.getName(), new LinkedHashMap()) : staticParams;
         this.mapTraversal = mapTraversal == null ? null : integrateChild(mapTraversal);
         this.parameters = new Parameters();
         this.ctx = new ServiceCallContext(traversal, this);
@@ -95,11 +105,15 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
 
     protected Service<S, E> service() {
         // throws exception for unrecognized service
-        return service != null ? service : (service = getServiceRegistry().get(serviceName, isStart, staticParams));
+        return service != null ? service : (service = getServiceRegistry().get(serviceName, isStart, staticParams.get()));
     }
 
     public String getServiceName() {
         return serviceName;
+    }
+
+    public GValue<Map> getStaticParams() {
+        return staticParams;
     }
 
     @Override
@@ -199,7 +213,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            return Collections.unmodifiableMap(this.staticParams);
+            return Collections.unmodifiableMap(this.staticParams.get());
         }
 
         return getMergedParams(new DummyTraverser(this.traversal.getTraverserGenerator()));
@@ -208,11 +222,11 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     protected Map getMergedParams(final Traverser.Admin<S> traverser) {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            return Collections.unmodifiableMap(this.staticParams);
+            return Collections.unmodifiableMap(this.staticParams.get());
         }
 
         // merge dynamic with static params
-        final Map params = new LinkedHashMap(this.staticParams);
+        final Map params = new LinkedHashMap(this.staticParams.get());
         if (mapTraversal != null) params.putAll(TraversalUtil.apply(traverser, mapTraversal));
         final Object[] kvs = this.parameters.getKeyValues(traverser);
         for (int i = 0; i < kvs.length; i += 2) {
@@ -225,7 +239,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     protected Map getMergedParams(final TraverserSet<S> traverserSet) {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            return Collections.unmodifiableMap(this.staticParams);
+            return Collections.unmodifiableMap(this.staticParams.get());
         }
 
         /*
@@ -302,7 +316,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     public String toString() {
         final ArrayList args = new ArrayList();
         args.add(serviceName);
-        if (!staticParams.isEmpty())
+        if (!staticParams.get().isEmpty())
             args.add(staticParams);
         if (mapTraversal != null)
             args.add(mapTraversal);
@@ -314,8 +328,8 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     @Override
     public int hashCode() {
         int hashCode = super.hashCode() ^ Objects.hashCode(this.serviceName);
-        if (!staticParams.isEmpty())
-            hashCode ^= staticParams.hashCode();
+        if (!staticParams.get().isEmpty())
+            hashCode ^= staticParams.get().hashCode();
         if (mapTraversal != null)
             hashCode ^= mapTraversal.hashCode();
         if (!parameters.isEmpty())

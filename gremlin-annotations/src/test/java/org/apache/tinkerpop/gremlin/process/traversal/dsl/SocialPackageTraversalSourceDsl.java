@@ -48,7 +48,7 @@ public class SocialPackageTraversalSourceDsl extends GraphTraversalSource {
     public GraphTraversal<Vertex, Vertex> persons(String... names) {
         GraphTraversalSource clone = this.clone();
 
-        clone.getBytecode().addStep(GraphTraversal.Symbols.V);
+        clone.getGremlinLang().addStep(GraphTraversal.Symbols.V);
         GraphTraversal<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         traversal.asAdmin().addStep(new GraphStep<>(traversal.asAdmin(), Vertex.class, true));
 

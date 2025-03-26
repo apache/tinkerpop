@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-go</artifactId>
     <name>Apache TinkerPop :: Gremlin Go</name>
@@ -86,9 +86,10 @@ limitations under the License.
             <id>glv-go</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>.glv</exists>
-                </file>
+                <!-- TODO re-enable after gremlin-go is implemented -->
+<!--                <file>-->
+<!--                    <exists>.glv</exists>-->
+<!--                </file>-->
             </activation>
             <build>
                 <directory>${basedir}/target</directory>
@@ -97,7 +98,7 @@ limitations under the License.
                     <plugin>
                         <artifactId>exec-maven-plugin</artifactId>
                         <groupId>org.codehaus.mojo</groupId>
-                        <version>1.2.1</version>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>run-tests</id>

@@ -1,0 +1,16 @@
+{
+  "id" : 13,
+  "label" : [ "develops" ],
+  "type" : "edge",
+  "inV" : {
+    "id" : 10,
+    "label" : [ "software" ]
+  },
+  "outV" : {
+    "id" : 1,
+    "label" : [ "person" ]
+  },
+  "properties" : {
+    "since" : [ 2009 ]
+  }
+}

@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const t = require('../../../../process/traversal');
+import { Buffer } from 'buffer';
+import { TextP } from '../../../../process/traversal.js';
 
-module.exports = class TextPSerializer {
+export default class TextPSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.TEXTP] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof t.TextP;
+    return value instanceof TextP;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -127,15 +126,15 @@ module.exports = class TextPSerializer {
       cursor = cursor.slice(values_len);
 
       if (values.length < 1) {
-        return { v: new t.TextP(''), len };
+        return { v: new TextP(''), len };
       }
 
       let v;
-      const TextP_static = t.TextP[name];
+      const TextP_static = TextP[name];
       if (typeof TextP_static === 'function') {
         v = TextP_static(...values); // it's better to follow existing logic which may depend on an operator name
       } else {
-        v = new t.TextP(name, ...values);
+        v = new TextP(name, ...values);
       }
 
       return { v, len };
@@ -143,4 +142,4 @@ module.exports = class TextPSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

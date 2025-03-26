@@ -70,14 +70,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
         public void CleanEmptyData()
         {
-            var g = Traversal().WithRemote(GetByGraphName("empty").Connection);
+            var g = Traversal().With(GetByGraphName("empty").Connection);
             g.V().Drop().Iterate();
         }
 
         public void ReloadEmptyData()
         {
             var graphData = _dataPerGraph["empty"];
-            var g = Traversal().WithRemote(graphData.Connection);
+            var g = Traversal().With(graphData.Connection);
             graphData.Vertices = GetVertices(g);
             graphData.Edges = GetEdges(g);
             graphData.VertexProperties = GetVertexProperties(g);
@@ -99,7 +99,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             return GraphNames.Select(name =>
             {
                 var connection = _connectionFactory.CreateRemoteConnection($"g{name}");
-                var g = Traversal().WithRemote(connection);
+                var g = Traversal().With(connection);
                 return new ScenarioDataPerGraph(name, connection, GetVertices(g), GetEdges(g), GetVertexProperties(g));
             }).ToDictionary(x => x.Name);
         }

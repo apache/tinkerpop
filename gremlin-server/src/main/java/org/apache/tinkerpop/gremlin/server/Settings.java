@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -28,13 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.authz.Authorizer;
-import org.apache.tinkerpop.gremlin.server.channel.UnifiedChannelizer;
-import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
+import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.server.handler.AbstractAuthenticationHandler;
-import org.apache.tinkerpop.gremlin.server.handler.Session;
 import org.apache.tinkerpop.gremlin.server.util.DefaultGraphManager;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -42,6 +40,7 @@ import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -53,10 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.UUID;
-
-import javax.net.ssl.TrustManager;
 
 /**
  * Server settings as configured by a YAML file.
@@ -68,9 +64,9 @@ public class Settings {
     private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
     public Settings() {
-        // setup some sensible defaults like gremlin-groovy
+        // setup some sensible defaults like gremlin-lang
         scriptEngines = new HashMap<>();
-        scriptEngines.put("gremlin-groovy", new ScriptEngineSettings());
+        scriptEngines.put("gremlin-lang", new ScriptEngineSettings());
     }
 
     /**
@@ -109,7 +105,7 @@ public class Settings {
     public int threadPoolBoss = 1;
 
     /**
-     * Time in milliseconds to wait for a request (script or bytecode) to complete execution. Defaults to 30000.
+     * Time in milliseconds to wait for a request to complete execution. Defaults to 30000.
      */
     public long evaluationTimeout = 30000L;
 
@@ -139,12 +135,11 @@ public class Settings {
     public int maxChunkSize = 8192;
 
     /**
-     * The maximum length of the aggregated content for a message.  Works in concert with {@link #maxChunkSize} where
+     * The maximum length of the aggregated content for a request message.  Works in concert with {@link #maxChunkSize} where
      * chunked requests are accumulated back into a single message.  A request exceeding this size will
-     * return a 413 - Request Entity Too Large status code.  A response exceeding this size will raise an internal
-     * exception.
+     * return a 413 - Request Entity Too Large status code.
      */
-    public int maxContentLength = 1024 * 1024 * 10;
+    public int maxRequestContentLength = 1024 * 1024 * 10;
 
     /**
      * Maximum number of request components that can be aggregated for a message.
@@ -192,7 +187,7 @@ public class Settings {
     /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
-    public String channelizer = WebSocketChannelizer.class.getName();
+    public String channelizer = HttpChannelizer.class.getName();
 
     /**
      * The full class name of the {@link GraphManager} to use in Gremlin Server.
@@ -205,55 +200,15 @@ public class Settings {
      * will be processed by this thread pool. If the threads are exhausted, the requests will queue to the size
      * specified by this value after which they will begin to reject the requests.
      * <p/>
-     * This value should be taken in account with the {@link #maxSessionTaskQueueSize} which is related in some
-     * respects. A request that starts a new {@link Session} is handled by this queue, but additional requests to a
-     * created {@link Session} will queue separately given that setting per session.
-     * <p/>
      * By default this value is set to 8192.
      */
     public int maxWorkQueueSize = 8192;
 
     /**
-     * Maximum size that an individual {@link Session} can queue requests before starting to reject them. Note that this
-     * configuration only applies to the {@link UnifiedChannelizer}. By default this value is set to 4096.
-     *
-     * @see #maxWorkQueueSize
-     */
-    public int maxSessionTaskQueueSize = 4096;
-
-    /**
      * Maximum number of parameters that can be passed on a request. Larger numbers may impact performance for scripts.
-     * The default is 16 and this setting only applies to the {@link UnifiedChannelizer}.
+     * The default is 16 and this setting only applies to the {@link org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer}.
      */
     public int maxParameters = 16;
-
-    /**
-     * The time in milliseconds that a {@link UnifiedChannelizer} session can exist. This value cannot be extended
-     * beyond this value irrespective of the number of requests and their individual timeouts. Requests must complete
-     * within this time frame. If this timeout is reached while there is a running evaluation, there will be an attempt
-     * to interrupt it which will result in a timeout error to the client. If there are existing requests enqueued for
-     * the session when this timeout is reached, those requests will not be executed and will be closed with server
-     * errors. Open transactions will be issued a rollback. The default is 10 minutes.
-     */
-    public long sessionLifetimeTimeout = 600000;
-
-    /**
-     * Enable the global function cache for sessions when using the {@link UnifiedChannelizer}. This setting is only
-     * relevant when {@link #useGlobalFunctionCacheForSessions} is {@code false}. When {@link true} it means that
-     * functions created in one request to a session remain available on the next request to that session.
-     */
-    public boolean useGlobalFunctionCacheForSessions = true;
-
-    /**
-     * When {@code true} and using the {@link UnifiedChannelizer} the same engine that will be used to server
-     * sessionless requests will also be use to serve sessions. The default value of {@code true} is recommended as
-     * it reduces the amount of object creation required for each session and should generally lead to better
-     * performance especially if the expectation is that there will be many sessions being created and destroyed
-     * rapidly. Setting this value to {@code false} is mostly present to support specific use cases that may require
-     * each session having its own engine or to match previous functionality provided by the older channelizers
-     * produced prior to 3.5.0.
-     */
-    public boolean useCommonEngineForSessions = true;
 
     /**
      * Configured metrics for Gremlin Server.
@@ -290,22 +245,6 @@ public class Settings {
      * Enable audit logging of authenticated users and gremlin evaluation requests.
      */
     public Boolean enableAuditLog = false;
-
-    /**
-     * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
-     * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
-     */
-    public List<ProcessorSettings> processors = new ArrayList<>();
-
-    /**
-     * Find the {@link ProcessorSettings} related to the specified class. If there are multiple entries then only the
-     * first is returned.
-     */
-    public Optional<ProcessorSettings> optionalProcessor(final Class<? extends OpProcessor> clazz) {
-        return processors.stream()
-                .filter(p -> p.className.equals(clazz.getCanonicalName()))
-                .findFirst();
-    }
 
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);
@@ -344,7 +283,6 @@ public class Settings {
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
         settingsDescription.addPropertyParameters("plugins", String.class);
-        settingsDescription.addPropertyParameters("processors", ProcessorSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
@@ -400,23 +338,6 @@ public class Settings {
         final Constructor constructor = createDefaultYamlConstructor();
         final Yaml yaml = new Yaml(constructor);
         return yaml.loadAs(stream, Settings.class);
-    }
-
-    /**
-     * Custom configurations for any {@link OpProcessor} implementations.  These settings will not be relevant
-     * unless the referenced {@link OpProcessor} is actually loaded via {@link ServiceLoader}.
-     */
-    public static class ProcessorSettings {
-        /**
-         * The fully qualified class name of an {@link OpProcessor} implementation.
-         */
-        public String className;
-
-        /**
-         * A set of configurations as expected by the {@link OpProcessor}.  Consult the documentation of the
-         * {@link OpProcessor} for information on what these configurations should be.
-         */
-        public Map<String, Object> config;
     }
 
     /**

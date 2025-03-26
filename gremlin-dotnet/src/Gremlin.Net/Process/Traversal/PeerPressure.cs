@@ -35,6 +35,13 @@ namespace Gremlin.Net.Process.Traversal
             public const String propertyName = "~tinkerpop.peerPressure.propertyName";
         
             public const String times = "~tinkerpop.peerPressure.times";
+
+            public const String Edges = "~tinkerpop.peerPressure.edges";
+
+            public const String PropertyName = "~tinkerpop.peerPressure.propertyName";
+
+            public const String Times = "~tinkerpop.peerPressure.times";
+
         
     }
 

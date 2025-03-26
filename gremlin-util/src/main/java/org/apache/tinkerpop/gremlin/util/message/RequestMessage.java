@@ -19,144 +19,149 @@
 package org.apache.tinkerpop.gremlin.util.message;
 
 import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
- * The model for a request message sent to the server.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * The model for a request message in the HTTP body that is sent to the server beginning in 4.0.0.
  */
 public final class RequestMessage {
-    /**
-     * An "invalid" message.  Used internally only.
-     */
-    public static final RequestMessage INVALID = new RequestMessage(Tokens.OPS_INVALID);
+    private String gremlin;
+    private Map<String, Object> fields;
 
-    private final UUID requestId;
-    private final String op;
-    private final String processor;
-    private final Map<String, Object> args;
+    private RequestMessage(final String gremlin, final Map<String, Object> fields) {
+        if (null == gremlin) throw new IllegalArgumentException("RequestMessage requires gremlin argument");
 
-    private RequestMessage(final UUID requestId, final String op, final String processor, final Map<String, Object> args) {
-        this.requestId = requestId;
-        this.op = op;
-        this.processor = processor;
-        this.args = Optional.ofNullable(args).orElse(new HashMap<>());
+        this.gremlin = gremlin;
+        this.fields = fields;
+
+        this.fields.putIfAbsent(Tokens.ARGS_LANGUAGE, "gremlin-lang");
     }
 
     /**
      * Empty constructor for serialization.
      */
-    private RequestMessage() {
-        this(null);
-    }
+    private RequestMessage() { }
 
-    private RequestMessage(final String op) {
-        this(null, op, null, null);
-    }
-
-    /**
-     * The id of the current request and is used to track the message within Gremlin Server and in its response.  This
-     * value should be unique per request made.
-     */
-    public UUID getRequestId() {
-        return requestId;
-    }
-
-    /**
-     * The operation or command to perform as defined by a particular Processor.
-     */
-    public String getOp() {
-        return op;
-    }
-
-    /**
-     * The name of the Processor that should handle the {@link #op}.  Defaults to the standard processor if
-     * not specified.
-     */
-    public String getProcessor() {
-        return processor;
-    }
-
-    /**
-     * A {@link Map} of arguments that are supplied to the {@link #op}.  Each {@link #op} accepts different argument,
-     * so consult the documentation for a particular one to understand what is expected.
-     */
-    public Map<String, Object> getArgs() {
-        return args;
-    }
-
-    public <T> Optional<T> optionalArgs(final String key) {
-        final Object o = args.get(key);
+    public <T> Optional<T> optionalField(final String key) {
+        final Object o = fields.get(key);
         return o == null ? Optional.empty() : Optional.of((T) o);
     }
 
-    public <T> T getArg(final String key) {
-        return (T) args.get(key);
+    public <T> T getField(final String key) {
+        return (T) fields.get(key);
     }
 
-    public <T> T getArgOrDefault(final String key, final T def) {
-        return (T) optionalArgs(key).orElse(def);
+    public <T> T getFieldOrDefault(final String key, final T def) {
+        return (T) optionalField(key).orElse(def);
+    }
+
+    public String getGremlin() {
+        return gremlin;
+    }
+
+    public Map<String, Object> getFields() {
+        return Collections.unmodifiableMap(fields);
+    }
+
+    public RequestMessage trimMessage(int size) {
+        gremlin = gremlin.substring(0, size) + "...";
+        return this;
     }
 
     public static Builder from(final RequestMessage msg) {
-        final Builder builder = build(msg.op)
-                .overrideRequestId(msg.requestId)
-                .processor(msg.processor);
-        msg.args.forEach(builder::addArg);
+        final Builder builder = build(msg.gremlin);
+        builder.fields.putAll(msg.getFields());
+        if (msg.getFields().containsKey(Tokens.ARGS_BINDINGS)) {
+            builder.addBindings((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS));
+        }
         return builder;
     }
 
-    public static Builder build(final String op) {
-        return new Builder(op);
+    public static Builder from(final RequestMessage msg, final String gremlin) {
+        final Builder builder = build(gremlin);
+        builder.fields.putAll(msg.getFields());
+        if (msg.getFields().containsKey(Tokens.ARGS_BINDINGS)) {
+            builder.addBindings((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS));
+        }
+        return builder;
+    }
+
+    @Override
+    public String toString() {
+        return "RequestMessage{" +
+                ", fields=" + fields +
+                ", gremlin=" + gremlin +
+                '}';
+    }
+
+    public static Builder build(final String gremlin) {
+        return new Builder(gremlin);
     }
 
     /**
      * Builder class for {@link RequestMessage}.
      */
     public static final class Builder {
-        public static final String OP_PROCESSOR_NAME = "";
-        private UUID requestId;
-        private String op;
-        private String processor = OP_PROCESSOR_NAME;
-        private Map<String, Object> args = new HashMap<>();
+        private final String gremlin;
+        private final Map<String, Object> bindings = new HashMap<>();
+        private final Map<String, Object> fields = new HashMap<>(); // Only allow certain items to be added to prevent breaking changes.
 
-        private Builder(final String op) {
-            this.op = op;
+        private Builder(final String gremlin) {
+            this.gremlin = gremlin;
         }
 
-        /**
-         * If this value is not set in the builder then the {@link RequestMessage#processor} defaults to
-         * the standard op processor (empty string).
-         *
-         * @param processor the name of the processor
-         */
-        public Builder processor(final String processor) {
-            this.processor = processor;
+        public Builder addLanguage(final String language) {
+            Objects.requireNonNull(language, "language argument cannot be null.");
+            this.fields.put(Tokens.ARGS_LANGUAGE, language);
             return this;
         }
 
-        /**
-         * Override the request identifier with a specified one, otherwise the {@link Builder} will randomly generate
-         * a {@link UUID}.
-         */
-        public Builder overrideRequestId(final UUID requestId) {
-            this.requestId = requestId;
+        public Builder addBinding(final String key, final Object val) {
+            bindings.put(key, val);
             return this;
         }
 
-        public Builder addArg(final String key, final Object val) {
-            args.put(key, val);
+        public Builder addBindings(final Map<String, Object> otherBindings) {
+            Objects.requireNonNull(otherBindings, "bindings argument cannot be null.");
+            this.bindings.putAll(otherBindings);
             return this;
         }
 
-        public Builder add(final Object... keyValues) {
-            args.putAll(ElementHelper.asMap(keyValues));
+        public Builder addG(final String g) {
+            Objects.requireNonNull(g, "g argument cannot be null.");
+            this.fields.put(Tokens.ARGS_G, g);
+            return this;
+        }
+
+        public Builder addChunkSize(final int chunkSize) {
+            this.fields.put(Tokens.ARGS_BATCH_SIZE, chunkSize);
+            return this;
+        }
+
+        public Builder addMaterializeProperties(final String materializeProps) {
+            Objects.requireNonNull(materializeProps, "materializeProps argument cannot be null.");
+            if (!materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_TOKENS) && !materializeProps.equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
+                throw new IllegalArgumentException("materializeProperties argument must be either token or all.");
+            }
+
+            this.fields.put(Tokens.ARGS_MATERIALIZE_PROPERTIES, materializeProps);
+            return this;
+        }
+
+        public Builder addTimeoutMillis(final long timeout) {
+            if (timeout < 0) throw new IllegalArgumentException("timeout argument cannot be negative.");
+
+            this.fields.put(Tokens.TIMEOUT_MS, timeout);
+            return this;
+        }
+
+        public Builder addBulkResults(final boolean bulking) {
+            this.fields.put(Tokens.BULK_RESULTS, String.valueOf(bulking));
             return this;
         }
 
@@ -164,17 +169,8 @@ public final class RequestMessage {
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage create() {
-            return new RequestMessage(null == requestId ? UUID.randomUUID() : requestId, op, processor, args);
+            this.fields.put(Tokens.ARGS_BINDINGS, bindings);
+            return new RequestMessage(gremlin, fields);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "RequestMessage{" +
-                ", requestId=" + requestId +
-                ", op='" + op + '\'' +
-                ", processor='" + processor + '\'' +
-                ", args=" + args +
-                '}';
     }
 }

@@ -26,12 +26,12 @@ setup(
     name='gremlinconsoletest',
     test_suite="tests",
     setup_requires=[
-        'pytest-runner==5.2',
-        'importlib-metadata<3.0.0'
+        'pytest-runner==6.0.0',
+        'importlib-metadata<5.0.0'
     ],
     tests_require=[
-        'pytest>=4.6.4,<5.0.0',
-        'mock>=3.0.5,<4.0.0',
-        'pexpect==4.8.0'
+        'pytest>=4.6.4,<7.2.0',
+        'mock>=3.0.5,<5.1.0',
+        'pexpect==4.9.0'
     ]
 )

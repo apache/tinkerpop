@@ -48,7 +48,9 @@ install_requires = [
     'aiohttp>=3.8.0,<4.0.0',
     'aenum>=1.4.5,<4.0.0',
     'isodate>=0.6.0,<1.0.0',
-    'async-timeout>=4.0.3,<5.0.0'
+    'boto3',
+    'botocore',
+    'async-timeout>=4.0.3,<5.0; python_version < "3.11"',
 ]
 
 setup(
@@ -78,7 +80,7 @@ setup(
     ],
     install_requires=install_requires,
     extras_require={
-        'kerberos': 'kerberos>=1.3.0,<2.0.0',    # Does not install in Microsoft Windows
+        'kerberos': 'kerberos>=1.3.0,<2.0.0; sys_platform != "win32"',  # Does not install in Microsoft Windows
         'ujson': 'ujson>=2.0.0'
     },
     classifiers=[

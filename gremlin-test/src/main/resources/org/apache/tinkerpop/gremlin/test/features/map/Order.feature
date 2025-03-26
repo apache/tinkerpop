@@ -100,24 +100,6 @@ Feature: Step - order()
       | d[0.4].d |
       | d[0.2].d |
 
-  Scenario: g_V_order_byXname_a1_b1X_byXname_b2_a2X_name
-    Given the modern graph
-    And using the parameter c1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
-    And using the parameter c2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
-    And the traversal of
-      """
-      g.V().order().by("name", c1).by("name", c2).values("name")
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | marko  |
-      | vadas  |
-      | peter  |
-      | ripple |
-      | josh   |
-      | lop    |
-
   Scenario: g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX
     Given the modern graph
     And the traversal of

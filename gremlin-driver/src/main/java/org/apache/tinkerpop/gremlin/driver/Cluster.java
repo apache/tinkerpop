@@ -18,28 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelOption;
-import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.driver.auth.Auth;
+import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -59,6 +60,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +71,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -78,9 +79,10 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Cluster {
+    public static final String SERIALIZER_INTERCEPTOR_NAME = "serializer";
     private static final Logger logger = LoggerFactory.getLogger(Cluster.class);
 
-    private Manager manager;
+    private final Manager manager;
 
     private Cluster(final Builder builder) {
         this.manager = new Manager(builder);
@@ -92,23 +94,7 @@ public final class Cluster {
     }
 
     /**
-     * Creates a {@link Client.ClusteredClient} instance to this {@code Cluster}, meaning requests will be routed to
-     * one or more servers (depending on the cluster configuration), where each request represents the entirety of a
-     * transaction.  A commit or rollback (in case of error) is automatically executed at the end of the request.
-     * <p/>
-     * Note that calling this method does not imply that a connection is made to the server itself at this point.
-     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
-     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
-     * submitted or can be directly initialized via {@link Client#init()}.
-     */
-    public <T extends Client> T connect() {
-        final Client client = new Client.ClusteredClient(this, Client.Settings.build().create());
-        manager.trackClient(client);
-        return (T) client;
-    }
-
-    /**
-     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
      * single request.  The transactions are managed by the user and must be committed or rolled-back manually.
@@ -121,11 +107,11 @@ public final class Cluster {
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
     public <T extends Client> T connect(final String sessionId) {
-        return connect(sessionId, false);
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
-     * Creates a {@link Client.SessionedClient} instance to this {@code Cluster}, meaning requests will be routed to
+     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
      * single request.  If {@code manageTransactions} is set to {@code false} then transactions are managed by the
@@ -141,19 +127,14 @@ public final class Cluster {
      * @param manageTransactions enables auto-transactions when set to true
      */
     public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
-        final Client.SessionSettings sessionSettings = Client.SessionSettings.build()
-                .manageTransactions(manageTransactions)
-                .sessionId(sessionId).create();
-        final Client.Settings settings = Client.Settings.build().useSession(sessionSettings).create();
-        return connect(settings);
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
      * Creates a new {@link Client} based on the settings provided.
      */
-    public <T extends Client> T connect(final Client.Settings settings) {
-        final Client client = settings.getSession().isPresent() ? new Client.SessionedClient(this, settings) :
-                new Client.ClusteredClient(this, settings);
+    public <T extends Client> T connect() {
+        final Client client = new Client.ClusteredClient(this);
         manager.trackClient(client);
         return (T) client;
     }
@@ -171,6 +152,10 @@ public final class Cluster {
         return new Builder(address);
     }
 
+    public static Builder build(final RequestInterceptor serializingInterceptor) {
+        return new Builder(serializingInterceptor);
+    }
+
     public static Builder build(final File configurationFile) throws FileNotFoundException {
         final Settings settings = Settings.read(new FileInputStream(configurationFile));
         return getBuilderFromSettings(settings);
@@ -178,14 +163,13 @@ public final class Cluster {
 
     private static Builder getBuilderFromSettings(final Settings settings) {
         final List<String> addresses = settings.hosts;
-        if (addresses.size() == 0)
+        if (addresses.isEmpty())
             throw new IllegalStateException("At least one value must be specified to the hosts setting");
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
                 .path(settings.path)
                 .enableSsl(settings.connectionPool.enableSsl)
-                .keepAliveInterval(settings.connectionPool.keepAliveInterval)
                 .keyStore(settings.connectionPool.keyStore)
                 .keyStorePassword(settings.connectionPool.keyStorePassword)
                 .keyStoreType(settings.connectionPool.keyStoreType)
@@ -199,28 +183,18 @@ public final class Cluster {
                 .workerPoolSize(settings.workerPoolSize)
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
                 .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
-                .channelizer(settings.connectionPool.channelizer)
-                .maxContentLength(settings.connectionPool.maxContentLength)
+                .maxResponseContentLength(settings.connectionPool.maxResponseContentLength)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
-                .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
-                .minInProcessPerConnection(settings.connectionPool.minInProcessPerConnection)
-                .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
-                .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
-                .minConnectionPoolSize(settings.connectionPool.minSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
+                .idleConnectionTimeoutMillis(settings.connectionPool.idleConnectionTimeout)
                 .enableUserAgentOnConnect(settings.enableUserAgentOnConnect)
-                .enableCompression(settings.enableCompression)
+                .bulkResults(settings.bulkResults)
                 .validationRequest(settings.connectionPool.validationRequest);
 
-        if (settings.username != null && settings.password != null)
-            builder.credentials(settings.username, settings.password);
-
-        if (settings.jaasEntry != null)
-            builder.jaasEntry(settings.jaasEntry);
-
-        if (settings.protocol != null)
-            builder.protocol(settings.protocol);
+        if (!settings.auth.type.isEmpty()) {
+            builder.auth(Auth.from(settings.auth));
+        }
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -315,20 +289,6 @@ public final class Cluster {
     }
 
     /**
-     * Size of the pool for handling request/response operations.
-     */
-    public int getNioPoolSize() {
-        return manager.nioPoolSize;
-    }
-
-    /**
-     * Size of the pool for handling background work.
-     */
-    public int getWorkerPoolSize() {
-        return manager.workerPoolSize;
-    }
-
-    /**
      * Get the {@link MessageSerializer} MIME types supported.
      */
     public String[] getSerializers() {
@@ -343,47 +303,10 @@ public final class Cluster {
     }
 
     /**
-     * Gets the minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
-     * for closing on return to the {@link ConnectionPool}.
-     */
-    public int getMinInProcessPerConnection() {
-        return manager.connectionPoolSettings.minInProcessPerConnection;
-    }
-
-    /**
-     * Gets the maximum number of in-flight requests that can occur on a {@link Connection}.
-     */
-    public int getMaxInProcessPerConnection() {
-        return manager.connectionPoolSettings.maxInProcessPerConnection;
-    }
-
-    /**
-     * Gets the maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
-     */
-    public int maxSimultaneousUsagePerConnection() {
-        return manager.connectionPoolSettings.maxSimultaneousUsagePerConnection;
-    }
-
-    /**
-     * Gets the minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
-     * under consideration for closing.
-     */
-    public int minSimultaneousUsagePerConnection() {
-        return manager.connectionPoolSettings.minSimultaneousUsagePerConnection;
-    }
-
-    /**
      * Gets the maximum size that the {@link ConnectionPool} can grow.
      */
     public int maxConnectionPoolSize() {
         return manager.connectionPoolSettings.maxSize;
-    }
-
-    /**
-     * Gets the minimum size of the {@link ConnectionPool}.
-     */
-    public int minConnectionPoolSize() {
-        return manager.connectionPoolSettings.minSize;
     }
 
     /**
@@ -408,41 +331,17 @@ public final class Cluster {
     }
 
     /**
-     * Gets the maximum size in bytes of any request sent to the server.
+     * Gets the maximum size in bytes of any request received from the server.
      */
-    public int getMaxContentLength() {
-        return manager.connectionPoolSettings.maxContentLength;
+    public long getMaxResponseContentLength() {
+        return manager.connectionPoolSettings.maxResponseContentLength;
     }
 
     /**
-     * Gets the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+     * Get time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
      */
-    public String getChannelizer() {
-        return manager.connectionPoolSettings.channelizer;
-    }
-
-    /**
-     * Gets time in milliseconds to wait between retries when attempting to reconnect to a dead host.
-     */
-    public int getReconnectInterval() {
-        return manager.connectionPoolSettings.reconnectInterval;
-    }
-
-    /**
-     * Gets time in milliseconds to wait after the last message is sent over a connection before sending a keep-alive
-     * message to the server.
-     */
-    public long getKeepAliveInterval() {
-        return manager.connectionPoolSettings.keepAliveInterval;
-    }
-
-    /**
-     * Gets time duration of time in milliseconds provided for connection setup to complete which includes WebSocket
-     * handshake and SSL handshake. Beyond this duration an exception would be thrown if the handshake is not complete
-     * by then.
-     */
-    public long getConnectionSetupTimeout() {
-        return manager.connectionPoolSettings.connectionSetupTimeoutMillis;
+    public long getIdleConnectionTimeout() {
+        return manager.connectionPoolSettings.idleConnectionTimeout;
     }
 
     /**
@@ -474,8 +373,8 @@ public final class Cluster {
         return manager.serializer;
     }
 
-    UnaryOperator<FullHttpRequest> getRequestInterceptor() {
-        return manager.interceptor;
+    List<Pair<String, ? extends RequestInterceptor>> getRequestInterceptors() {
+        return manager.interceptors;
     }
 
     ScheduledExecutorService executor() {
@@ -496,10 +395,6 @@ public final class Cluster {
 
     LoadBalancingStrategy loadBalancingStrategy() {
         return manager.loadBalancingStrategy;
-    }
-
-    AuthProperties authProperties() {
-        return manager.authProps;
     }
 
     RequestMessage.Builder validationRequest() {
@@ -580,32 +475,27 @@ public final class Cluster {
     }
 
     /**
-     * Checks if cluster is configured to use per-message deflate compression
+     * Checks if cluster is configured to bulk results
      */
-    public boolean enableCompression() {
-        return manager.enableCompression();
+    public boolean isBulkResultsEnabled() {
+        return manager.isBulkResultsEnabled();
     }
 
     public final static class Builder {
-        private List<InetAddress> addresses = new ArrayList<>();
+        private static int INTERCEPTOR_NOT_FOUND = -1;
+
+        private final List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private String path = "/gremlin";
         private MessageSerializer<?> serializer = null;
         private int nioPoolSize = Runtime.getRuntime().availableProcessors();
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
-        private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
         private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
-        private int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
-        private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
-        private int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        private long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
-        private long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-        private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private String keyStore = null;
         private String keyStorePassword = null;
@@ -619,18 +509,25 @@ public final class Cluster {
         private boolean sslSkipCertValidation = false;
         private SslContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
-        private UnaryOperator<FullHttpRequest> interceptor = HandshakeInterceptor.NO_OP;
-        private AuthProperties authProps = new AuthProperties();
+        private LinkedList<Pair<String, ? extends RequestInterceptor>> interceptors = new LinkedList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+        private long idleConnectionTimeoutMillis = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
-        private boolean enableCompression = true;
+        private boolean bulkResults = false;
 
         private Builder() {
-            // empty to prevent direct instantiation
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
+                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
         }
 
         private Builder(final String address) {
             addContactPoint(address);
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
+                    new PayloadSerializingInterceptor(new GraphBinaryMessageSerializerV4()));
+        }
+
+        private Builder(final RequestInterceptor bodySerializer) {
+            addInterceptor(SERIALIZER_INTERCEPTOR_NAME, bodySerializer);
         }
 
         /**
@@ -702,15 +599,6 @@ public final class Cluster {
          */
         public Builder sslContext(final SslContext sslContext) {
             this.sslContext = sslContext;
-            return this;
-        }
-
-        /**
-         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to
-         * zero to disable this feature.
-         */
-        public Builder keepAliveInterval(final long keepAliveInterval) {
-            this.keepAliveInterval = keepAliveInterval;
             return this;
         }
 
@@ -793,66 +681,10 @@ public final class Cluster {
         }
 
         /**
-         * The minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
-         * for closing on return to the {@link ConnectionPool}.
-         */
-        public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
-            this.minInProcessPerConnection = minInProcessPerConnection;
-            return this;
-        }
-
-        /**
-         * The maximum number of in-flight requests that can occur on a {@link Connection}. This represents an
-         * indication of how busy a {@link Connection} is allowed to be.  This number is linked to the
-         * {@link #maxSimultaneousUsagePerConnection} setting, but is slightly different in that it refers to
-         * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
-         * be borrowed once to have multiple requests executed against it.  This number controls the maximum
-         * number of requests whereas {@link #maxSimultaneousUsagePerConnection} controls the times borrowed.
-         */
-        public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
-            this.maxInProcessPerConnection = maxInProcessPerConnection;
-            return this;
-        }
-
-        /**
-         * The maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
-         * This represents an indication of how busy a {@link Connection} is allowed to be.  Set too large and the
-         * {@link Connection} may queue requests too quickly, rather than wait for an available {@link Connection}
-         * or create a fresh one.  If set too small, the {@link Connection} will show as busy very quickly thus
-         * forcing waits for available {@link Connection} instances in the pool when there is more capacity available.
-         */
-        public Builder maxSimultaneousUsagePerConnection(final int maxSimultaneousUsagePerConnection) {
-            this.maxSimultaneousUsagePerConnection = maxSimultaneousUsagePerConnection;
-            return this;
-        }
-
-        /**
-         * The minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
-         * under consideration for closing.  If a {@link Connection} is not busy and the
-         * {@link #minConnectionPoolSize} is exceeded, then there is no reason to keep that connection open.  Set
-         * too large and {@link Connection} that isn't busy will continue to consume resources when it is not being
-         * used.  Set too small and {@link Connection} instances will be destroyed when the driver might still be
-         * busy.
-         */
-        public Builder minSimultaneousUsagePerConnection(final int minSimultaneousUsagePerConnection) {
-            this.minSimultaneousUsagePerConnection = minSimultaneousUsagePerConnection;
-            return this;
-        }
-
-        /**
          * The maximum size that the {@link ConnectionPool} can grow.
          */
         public Builder maxConnectionPoolSize(final int maxSize) {
             this.maxConnectionPoolSize = maxSize;
-            return this;
-        }
-
-        /**
-         * The minimum size of the {@link ConnectionPool}.  When the {@link Client} is started, {@link Connection}
-         * objects will be initially constructed to this size.
-         */
-        public Builder minConnectionPoolSize(final int minSize) {
-            this.minConnectionPoolSize = minSize;
             return this;
         }
 
@@ -883,27 +715,11 @@ public final class Cluster {
         }
 
         /**
-         * The maximum size in bytes of any request sent to the server.   This number should not exceed the same
-         * setting defined on the server.
+         * The maximum size in bytes of any response received from the server.
          */
-        public Builder maxContentLength(final int maxContentLength) {
-            this.maxContentLength = maxContentLength;
+        public Builder maxResponseContentLength(final long maxResponseContentLength) {
+            this.maxResponseContentLength = maxResponseContentLength;
             return this;
-        }
-
-        /**
-         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
-         */
-        public Builder channelizer(final String channelizerClass) {
-            this.channelizer = channelizerClass;
-            return this;
-        }
-
-        /**
-         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
-         */
-        public Builder channelizer(final Class channelizerClass) {
-            return channelizer(channelizerClass.getName());
         }
 
         /**
@@ -934,57 +750,82 @@ public final class Cluster {
         }
 
         /**
-         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
-         * to its being sent to the server.
-         * @deprecated As of release 3.6.6, replaced with {@link #requestInterceptor(RequestInterceptor)}.
+         * Adds a {@link RequestInterceptor} after another one that will allow manipulation of the {@code HttpRequest}
+         * prior to its being sent to the server.
          */
-        @Deprecated
-        public Builder handshakeInterceptor(final HandshakeInterceptor interceptor) {
-            // when this deprecated method is removed, the interceptor can have its type promoted from
-            // UnaryOperator<FullHttpRequest> to RequestInterceptor
-            this.interceptor = interceptor;
+        public Builder addInterceptorAfter(final String priorInterceptorName, final String nameOfInterceptor,
+                                           final RequestInterceptor interceptor) {
+            final int index = getInterceptorIndex(priorInterceptorName);
+            if (INTERCEPTOR_NOT_FOUND == index) {
+                throw new IllegalArgumentException(priorInterceptorName + " interceptor not found");
+            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
+            }
+            interceptors.add(index + 1, Pair.of(nameOfInterceptor, interceptor));
+
             return this;
         }
 
         /**
-         * Specifies an {@link HandshakeInterceptor} that will allow manipulation of the {@code FullHttpRequest} prior
-         * to its being sent to the server. For websockets the interceptor is only called on the handshake.
+         * Adds a {@link RequestInterceptor} before another one that will allow manipulation of the {@code HttpRequest}
+         * prior to its being sent to the server.
          */
-        public Builder requestInterceptor(final RequestInterceptor interceptor) {
-            this.interceptor = interceptor;
+        public Builder addInterceptorBefore(final String subsequentInterceptorName, final String nameOfInterceptor,
+                                            final RequestInterceptor interceptor) {
+            final int index = getInterceptorIndex(subsequentInterceptorName);
+            if (INTERCEPTOR_NOT_FOUND == index) {
+                throw new IllegalArgumentException(subsequentInterceptorName + " interceptor not found");
+            } else if (getInterceptorIndex(nameOfInterceptor) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(nameOfInterceptor + " interceptor already exists");
+            } else if (index == 0) {
+                interceptors.addFirst(Pair.of(nameOfInterceptor, interceptor));
+            } else {
+                interceptors.add(index - 1, Pair.of(nameOfInterceptor, interceptor));
+            }
+
             return this;
         }
 
         /**
-         * Specifies parameters for authentication to Gremlin Server.
+         * Adds a {@link RequestInterceptor} to the end of the list that will allow manipulation of the
+         * {@code HttpRequest} prior to its being sent to the server.
          */
-        public Builder authProperties(final AuthProperties authProps) {
-            this.authProps = authProps;
+        public Builder addInterceptor(final String name, final RequestInterceptor interceptor) {
+            if (getInterceptorIndex(name) != INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(name + " interceptor already exists");
+            }
+            interceptors.add(Pair.of(name, interceptor));
             return this;
         }
 
         /**
-         * Sets the {@link AuthProperties.Property#USERNAME} and {@link AuthProperties.Property#PASSWORD} properties
-         * for authentication to Gremlin Server.
+         * Removes a {@link RequestInterceptor} from the list. This can be used to remove the default interceptors that
+         * aren't needed.
          */
-        public Builder credentials(final String username, final String password) {
-            authProps = authProps.with(AuthProperties.Property.USERNAME, username).with(AuthProperties.Property.PASSWORD, password);
+        public Builder removeInterceptor(final String name) {
+            final int index = getInterceptorIndex(name);
+            if (index == INTERCEPTOR_NOT_FOUND) {
+                throw new IllegalArgumentException(name + " interceptor not found");
+            }
+            interceptors.remove(index);
             return this;
         }
 
-        /**
-         * Sets the {@link AuthProperties.Property#PROTOCOL} properties for authentication to Gremlin Server.
-         */
-        public Builder protocol(final String protocol) {
-            this.authProps = authProps.with(AuthProperties.Property.PROTOCOL, protocol);
-            return this;
+        private int getInterceptorIndex(final String name) {
+            for (int i = 0; i < interceptors.size(); i++) {
+                if (interceptors.get(i).getLeft().equals(name)) {
+                    return i;
+                }
+            }
+
+            return INTERCEPTOR_NOT_FOUND;
         }
 
         /**
-         * Sets the {@link AuthProperties.Property#JAAS_ENTRY} properties for authentication to Gremlin Server.
+         * Adds an Auth {@link RequestInterceptor} to the end of list of interceptors.
          */
-        public Builder jaasEntry(final String jaasEntry) {
-            this.authProps = authProps.with(AuthProperties.Property.JAAS_ENTRY, jaasEntry);
+        public Builder auth(final Auth auth) {
+            addInterceptor(auth.getClass().getSimpleName().toLowerCase() + "-auth", auth);
             return this;
         }
 
@@ -1031,6 +872,14 @@ public final class Cluster {
         }
 
         /**
+         * Sets the time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+         */
+        public Builder idleConnectionTimeoutMillis(final long idleConnectionTimeoutMillis) {
+            this.idleConnectionTimeoutMillis = idleConnectionTimeoutMillis;
+            return this;
+        }
+
+        /**
          * Configures whether cluster will send a user agent during
          * web socket handshakes
          * @param enableUserAgentOnConnect true enables the useragent. false disables the useragent.
@@ -1041,10 +890,11 @@ public final class Cluster {
         }
 
         /**
-         * Configures use of per-message deflate compression. Defaults to true.
+         * Configures whether cluster will enable result bulking to optimize performance.
+         * @param bulkResults true enables bulking.
          */
-        public Builder enableCompression(final boolean enableCompression) {
-            this.enableCompression = enableCompression;
+        public Builder bulkResults(final boolean bulkResults) {
+            this.bulkResults = bulkResults;
             return this;
         }
 
@@ -1053,8 +903,8 @@ public final class Cluster {
         }
 
         public Cluster create() {
-            if (addresses.size() == 0) addContactPoint("localhost");
-            if (null == serializer) serializer = Serializers.GRAPHBINARY_V1.simpleInstance();
+            if (addresses.isEmpty()) addContactPoint("localhost");
+            if (null == serializer) serializer = Serializers.GRAPHBINARY_V4.simpleInstance();
             return new Cluster(this);
         }
     }
@@ -1092,10 +942,9 @@ public final class Cluster {
         private final MessageSerializer<?> serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
-        private final AuthProperties authProps;
         private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessage.Builder> validationRequest;
-        private final UnaryOperator<FullHttpRequest> interceptor;
+        private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
 
         /**
          * Thread pool for requests.
@@ -1117,7 +966,7 @@ public final class Cluster {
         private final int port;
         private final String path;
         private final boolean enableUserAgentOnConnect;
-        private final boolean enableCompression;
+        private final boolean bulkResults;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -1127,22 +976,16 @@ public final class Cluster {
             validateBuilder(builder);
 
             this.loadBalancingStrategy = builder.loadBalancingStrategy;
-            this.authProps = builder.authProps;
             this.contactPoints = builder.getContactPoints();
-            this.interceptor = builder.interceptor;
+            this.interceptors = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
-            this.enableCompression = builder.enableCompression;
+            this.bulkResults = builder.bulkResults;
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
-            connectionPoolSettings.maxInProcessPerConnection = builder.maxInProcessPerConnection;
-            connectionPoolSettings.minInProcessPerConnection = builder.minInProcessPerConnection;
-            connectionPoolSettings.maxSimultaneousUsagePerConnection = builder.maxSimultaneousUsagePerConnection;
-            connectionPoolSettings.minSimultaneousUsagePerConnection = builder.minSimultaneousUsagePerConnection;
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
-            connectionPoolSettings.minSize = builder.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
-            connectionPoolSettings.maxContentLength = builder.maxContentLength;
+            connectionPoolSettings.maxResponseContentLength = builder.maxResponseContentLength;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;
@@ -1155,10 +998,9 @@ public final class Cluster {
             connectionPoolSettings.sslCipherSuites = builder.sslCipherSuites;
             connectionPoolSettings.sslEnabledProtocols = builder.sslEnabledProtocols;
             connectionPoolSettings.sslSkipCertValidation = builder.sslSkipCertValidation;
-            connectionPoolSettings.keepAliveInterval = builder.keepAliveInterval;
-            connectionPoolSettings.channelizer = builder.channelizer;
             connectionPoolSettings.validationRequest = builder.validationRequest;
             connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
+            connectionPoolSettings.idleConnectionTimeout = builder.idleConnectionTimeoutMillis;
 
             sslContextOptional = Optional.ofNullable(builder.sslContext);
 
@@ -1183,39 +1025,15 @@ public final class Cluster {
 
             // we distinguish between the hostScheduler and the connectionScheduler because you can end in deadlock
             // if all the possible jobs the driver allows for go to a single thread pool.
-            this.connectionScheduler = new ScheduledThreadPoolExecutor(contactPoints.size() + 1,
+            this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
-            validationRequest = () -> RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, builder.validationRequest);
+            validationRequest = () -> RequestMessage.build(builder.validationRequest);
         }
 
         private void validateBuilder(final Builder builder) {
-            if (builder.minInProcessPerConnection < 0)
-                throw new IllegalArgumentException("minInProcessPerConnection must be greater than or equal to zero");
-
-            if (builder.maxInProcessPerConnection < 1)
-                throw new IllegalArgumentException("maxInProcessPerConnection must be greater than zero");
-
-            if (builder.minInProcessPerConnection > builder.maxInProcessPerConnection)
-                throw new IllegalArgumentException("maxInProcessPerConnection cannot be less than minInProcessPerConnection");
-
-            if (builder.minSimultaneousUsagePerConnection < 0)
-                throw new IllegalArgumentException("minSimultaneousUsagePerConnection must be greater than or equal to zero");
-
-            if (builder.maxSimultaneousUsagePerConnection < 1)
-                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection must be greater than zero");
-
-            if (builder.minSimultaneousUsagePerConnection > builder.maxSimultaneousUsagePerConnection)
-                throw new IllegalArgumentException("maxSimultaneousUsagePerConnection cannot be less than minSimultaneousUsagePerConnection");
-
-            if (builder.minConnectionPoolSize < 0)
-                throw new IllegalArgumentException("minConnectionPoolSize must be greater than or equal to zero");
-
             if (builder.maxConnectionPoolSize < 1)
                 throw new IllegalArgumentException("maxConnectionPoolSize must be greater than zero");
-
-            if (builder.minConnectionPoolSize > builder.maxConnectionPoolSize)
-                throw new IllegalArgumentException("maxConnectionPoolSize cannot be less than minConnectionPoolSize");
 
             if (builder.maxWaitForConnection < 1)
                 throw new IllegalArgumentException("maxWaitForConnection must be greater than zero");
@@ -1223,8 +1041,8 @@ public final class Cluster {
             if (builder.maxWaitForClose < 1)
                 throw new IllegalArgumentException("maxWaitForClose must be greater than zero");
 
-            if (builder.maxContentLength < 1)
-                throw new IllegalArgumentException("maxContentLength must be greater than zero");
+            if (builder.maxResponseContentLength < 0)
+                throw new IllegalArgumentException("maxResponseContentLength must be greater than or equal to zero");
 
             if (builder.reconnectInterval < 1)
                 throw new IllegalArgumentException("reconnectInterval must be greater than zero");
@@ -1241,12 +1059,11 @@ public final class Cluster {
             if (builder.connectionSetupTimeoutMillis < 1)
                 throw new IllegalArgumentException("connectionSetupTimeoutMillis must be greater than zero");
 
-            try {
-                Class.forName(builder.channelizer);
-            } catch (Exception ex) {
-                throw new IllegalArgumentException("The channelizer specified [" + builder.channelizer +
-                        "] could not be instantiated - it should be the fully qualified classname of a Channelizer implementation available on the classpath", ex);
-            }
+            // zero value will disable idle connection detection
+            // non-zero will be converted to seconds so any value between 1 and 999 is invalid as it will be less than 1 second
+            if (builder.idleConnectionTimeoutMillis != 0 && builder.idleConnectionTimeoutMillis < 1000)
+                throw new IllegalArgumentException("idleConnectionTimeoutMillis must be zero or greater than or equal to 1000");
+
         }
 
         synchronized void init() {
@@ -1328,10 +1145,10 @@ public final class Cluster {
         }
 
         /**
-         * Checks if cluster is configured to use per-message deflate compression
+         * Checks if cluster is configured to send bulked results
          */
-        public boolean enableCompression() {
-            return enableCompression;
+        public boolean isBulkResultsEnabled() {
+            return bulkResults;
         }
     }
 }

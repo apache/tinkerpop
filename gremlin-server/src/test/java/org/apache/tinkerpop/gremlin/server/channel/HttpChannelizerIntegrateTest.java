@@ -22,7 +22,7 @@ import org.apache.http.NoHttpResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.Settings;
 
-import org.apache.tinkerpop.gremlin.server.handler.SaslAndHttpBasicAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -78,7 +78,7 @@ public class HttpChannelizerIntegrateTest extends AbstractGremlinServerChanneliz
         final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
         final Map<String,Object> authConfig = new HashMap<>();
         authSettings.authenticator = SimpleAuthenticator.class.getName();
-        authSettings.authenticationHandler = SaslAndHttpBasicAuthenticationHandler.class.getName();
+        authSettings.authenticationHandler = HttpBasicAuthenticationHandler.class.getName();
         authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
         authSettings.config = authConfig;
 

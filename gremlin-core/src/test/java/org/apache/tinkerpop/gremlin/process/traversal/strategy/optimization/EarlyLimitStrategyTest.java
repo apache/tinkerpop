@@ -19,14 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +41,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class EarlyLimitStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter()
     public Traversal.Admin original;
@@ -56,7 +53,7 @@ public class EarlyLimitStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin();
         final TraversalStrategies strategies = new DefaultTraversalStrategies();
         strategies.addStrategies(EarlyLimitStrategy.instance());
         for (final TraversalStrategy strategy : this.otherStrategies) {
@@ -77,8 +74,8 @@ public class EarlyLimitStrategyTest {
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {__.out().valueMap().limit(1), __.out().limit(1).valueMap(), Collections.emptyList()},
-                {__.out().limit(5).valueMap().range(5, 10), __.start().out().none(), Collections.emptyList()},
-                {__.out().limit(5).valueMap().range(6, 10), __.start().out().none(), Collections.emptyList()},
+                {__.out().limit(5).valueMap().range(5, 10), __.start().out().discard(), Collections.emptyList()},
+                {__.out().limit(5).valueMap().range(6, 10), __.start().out().discard(), Collections.emptyList()},
                 {__.V().out().valueMap().limit(1), __.V().out().limit(1).valueMap(), Collections.singleton(LazyBarrierStrategy.instance())},
                 {__.out().out().limit(1).in().in(), __.out().out().limit(1).in().barrier(LazyBarrierStrategy.MAX_BARRIER_SIZE).in(), Collections.singleton(LazyBarrierStrategy.instance())},
                 {__.out().has("name","marko").limit(1).in().in(), __.out().has("name","marko").limit(1).in().in(), Collections.emptyList()},
@@ -92,12 +89,12 @@ public class EarlyLimitStrategyTest {
                 {__.out().map(__.identity()).map(__.identity()).range(50, -1).map(__.identity()).map(__.identity()).range(10, 60), __.out().range(60, 110).map(__.identity()).map(__.identity()).map(__.identity()).map(__.identity()), Collections.emptyList()},
                 {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(10, -1), __.out().range(60, 100).map(__.identity()).map(__.identity()).map(__.identity()).map(__.identity()), Collections.emptyList()},
                 {__.out().map(__.identity()).map(__.identity()).range(50, 100).as("a").map(__.identity()).map(__.identity()).range(10, -1).as("b"), __.out().range(60, 100).map(__.identity()).map(__.identity()).as("a").map(__.identity()).map(__.identity()).as("b"), Collections.emptyList()},
-                {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(50, -1), __.out().none(), Collections.emptyList()},
-                {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(60, -1), __.out().none(), Collections.emptyList()},
-                {__.out().map(__.identity()).map(__.identity()).range(50, 100).as("a").map(__.identity()).map(__.identity()).range(60, -1).as("b"), __.out().none(), Collections.emptyList()},
-                {__.out().range(50, 100).store("a").range(50, -1), __.out().range(50, 100).store("a").none(), Collections.emptyList()},
-                {__.out().range(50, 100).store("a").range(50, -1).cap("a"), ((GraphTraversal) __.out().range(50, 100).store("a").none()).cap("a"), Collections.emptyList()},
-                {__.out().range(50, 100).map(__.identity()).range(50, -1).profile(), __.out().none().profile(), Collections.singleton(ProfileStrategy.instance())},
+                {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(50, -1), __.out().discard(), Collections.emptyList()},
+                {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(60, -1), __.out().discard(), Collections.emptyList()},
+                {__.out().map(__.identity()).map(__.identity()).range(50, 100).as("a").map(__.identity()).map(__.identity()).range(60, -1).as("b"), __.out().discard(), Collections.emptyList()},
+                {__.out().range(50, 100).store("a").range(50, -1), __.out().range(50, 100).store("a").discard(), Collections.emptyList()},
+                {__.out().range(50, 100).store("a").range(50, -1).cap("a"), ((GraphTraversal) __.out().range(50, 100).store("a").discard()).cap("a"), Collections.emptyList()},
+                {__.out().range(50, 100).map(__.identity()).range(50, -1).profile(), __.out().discard().profile(), Collections.singleton(ProfileStrategy.instance())},
                 {__.out().store("a").limit(10), __.out().limit(10).store("a"), Collections.emptyList()},
                 {__.out().aggregate("a").limit(10), __.out().aggregate("a").limit(10), Collections.emptyList()},
                 {__.V().branch(__.label()).option("person", __.out("knows").valueMap().limit(1)).option("software", __.out("created").valueMap().limit(2).fold()),

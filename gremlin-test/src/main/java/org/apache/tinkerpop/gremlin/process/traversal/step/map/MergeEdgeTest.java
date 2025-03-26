@@ -122,7 +122,7 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
             traversal.next();
             fail("Should have failed as vertices are not created");
         } catch (Exception ex) {
-            assertThat(ex.getMessage(), endsWith("Vertex id could not be resolved from mergeE: 100"));
+            assertThat(ex.getMessage(), endsWith("Vertex does not exist for mergeE: 100"));
         }
         assertEquals(0, IteratorUtils.count(g.E()));
     }

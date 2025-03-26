@@ -56,7 +56,7 @@ for (relation in relations) {
           from("p${relation.from}").
           to("p${relation.to}")
 } ; []
-traversalAsString = org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator.of("g").translate(t.bytecode).getScript() ; []
+traversalAsString = traversalAsString = t.gremlinLang.getGremlin() ; []
 [ "Traversal String Length": traversalAsString.length()
 , "Traversal Preview": traversalAsString.replaceFirst(/^(.{104}).*(.{64})$/, '$1 ... $2') ]
 ----

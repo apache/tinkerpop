@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
@@ -135,45 +133,6 @@ public final class GryoSerializersV1 {
         }
     }
 
-    public final static class BytecodeSerializer implements SerializerShim<Bytecode> {
-        @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode bytecode) {
-            writeInstructions(kryo, output, bytecode.getSourceInstructions());
-            writeInstructions(kryo, output, bytecode.getStepInstructions());
-        }
-
-        @Override
-        public <I extends InputShim> Bytecode read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode> clazz) {
-            final Bytecode bytecode = new Bytecode();
-            final int sourceInstructionCount = input.readInt();
-            for (int ix = 0; ix < sourceInstructionCount; ix++) {
-                final String operator = input.readString();
-                final Object[] args = operator.equals(TraversalSource.Symbols.withoutStrategies) ?
-                        kryo.readObject(input, Class[].class) :
-                        kryo.readObject(input, Object[].class);
-                bytecode.addSource(operator, args);
-            }
-
-            final int stepInstructionCount = input.readInt();
-            for (int ix = 0; ix < stepInstructionCount; ix++) {
-                final String operator = input.readString();
-                final Object[] args = kryo.readObject(input, Object[].class);
-                bytecode.addStep(operator, args);
-            }
-
-            return bytecode;
-        }
-
-        private static <O extends OutputShim> void writeInstructions(final KryoShim<?, O> kryo, final O output,
-                                                                     final List<Bytecode.Instruction> instructions) {
-            output.writeInt(instructions.size());
-            for (Bytecode.Instruction inst : instructions) {
-                output.writeString(inst.getOperator());
-                kryo.writeObject(output, inst.getArguments());
-            }
-        }
-    }
-
     public final static class PSerializer implements SerializerShim<P> {
         @Override
         public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final P p) {
@@ -280,21 +239,6 @@ public final class GryoSerializersV1 {
                 return new Lambda.OneArgLambda<>(script, language);
             else
                 return new Lambda.TwoArgLambda<>(script, language);
-        }
-    }
-
-    public final static class BindingSerializer implements SerializerShim<Bytecode.Binding> {
-        @Override
-        public <O extends OutputShim> void write(final KryoShim<?, O> kryo, final O output, final Bytecode.Binding binding) {
-            output.writeString(binding.variable());
-            kryo.writeClassAndObject(output, binding.value());
-        }
-
-        @Override
-        public <I extends InputShim> Bytecode.Binding read(final KryoShim<I, ?> kryo, final I input, final Class<Bytecode.Binding> clazz) {
-            final String var = input.readString();
-            final Object val = kryo.readClassAndObject(input);
-            return new Bytecode.Binding(var, val);
         }
     }
 

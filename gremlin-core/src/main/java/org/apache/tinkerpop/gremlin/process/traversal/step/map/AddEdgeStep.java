@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -55,6 +57,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
+        super(traversal);
+        this.parameters.set(this, T.label, GValue.of(null, edgeLabel));
+    }
+
+    public AddEdgeStep(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
         super(traversal);
         this.parameters.set(this, T.label, edgeLabel);
     }
@@ -96,7 +103,10 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        Object literalOrVar = this.parameters.get(traverser, T.label, () -> GValue.of(null, Edge.DEFAULT_LABEL)).get(0);
+        final GValue<String> edgeLabel = literalOrVar instanceof String ?
+                GValue.ofString(null, (String) literalOrVar) :
+                (GValue<String>) literalOrVar;
 
         final Object theTo;
         try {
@@ -107,7 +117,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theTo instanceof Vertex))
+        if (!GValue.instanceOf(theTo, GType.VERTEX))
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theTo ? "null" : theTo.getClass().getSimpleName()));
@@ -121,13 +131,13 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theFrom instanceof Vertex))
+        if (!GValue.instanceOf(theFrom, GType.VERTEX))
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
                     null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
 
-        Vertex toVertex = (Vertex) theTo;
-        Vertex fromVertex = (Vertex) theFrom;
+        Vertex toVertex = GValue.getFrom(theTo);
+        Vertex fromVertex = GValue.getFrom(theFrom);
 
         if (toVertex instanceof Attachable)
             toVertex = ((Attachable<Vertex>) toVertex)
@@ -136,7 +146,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
             fromVertex = ((Attachable<Vertex>) fromVertex)
                     .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
 
-        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+        final Edge edge = fromVertex.addEdge(edgeLabel.get(), toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
         EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
         return edge;
     }

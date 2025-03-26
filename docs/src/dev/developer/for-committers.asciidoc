@@ -64,7 +64,7 @@ TinkerPop also has a link:https://the-asf.slack.com/archives/CUBJ577EW[Slack cha
 about the project among contributors, though it must be kept in mind that project discussion and decisions must occur
 on the dev mailing list mentioned above.
 
-Occasionally, online meetings via video conference are held. These meetings are schedule via the dev mailing list
+Occasionally, online meetings via video conference are held. These meetings are scheduled via the dev mailing list
 about a week before they are to occur to find a day and time that is available for those interested in attending.
 On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link).
 At that point, all who are interested can attend.  Meeting minutes should be
@@ -142,7 +142,7 @@ TinkerPop has several release branches:
 * `3.5-dev` - 3.5.x (no longer maintained)
 * `3.6-dev` - 3.6.x (no longer maintained)
 * `3.7-dev` - 3.7.x (non-breaking bug fixes and enhancements)
-* `master` - 4.x (current development)
+* `master` - 4.x.x (current development)
 
 The branch description above that reads "non-breaking bug fixes and enhancements" simply means that within that release
 line (i.e. patch version) changes should not alter existing behavior, introduce new APIs, change serialization formats,
@@ -154,9 +154,9 @@ it is likely an acceptable change within that branch.
 Changes to earlier branches should merge forward toward `master` (e.g. `3.7-dev` should merge to `master`). Please read
 more about this process in the <<pull-requests, Pull Requests>> section.
 
-As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize a four-digit
-version that starts with a "1" (e.g. `3.6.0.1`). The branching strategy for a partial release requires that a `-dev`
-branch be created with the three digit prefix.
+As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize the third "patch" digit
+version that starts with a "1" (e.g. `4.0.1`). The branching strategy for a partial release requires that a `-dev`
+branch be created with the two digit prefix (e.g. 4.0-dev).
 
 Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
 It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
@@ -171,8 +171,8 @@ Developers should remove their own branches when they are no longer needed.
 
 Tags are used for milestones, release candidates, and approved <<versioning,partial and complete releases>>. Tags for a
 complete release are simply defined by the three-digit version number. Tags for a partial release, should be prefixed
-by the individual language relevant to that release. For example, if there is an initial partial release for `3.6.0`
-on `gremlin-python` then the tag should be `3.6.0.1-python`.
+by the individual language relevant to that release. For example, if there is an initial partial release for `4.0.0`
+on `gremlin-python` then the tag should be `4.0.1-python`.
 
 Please refrain from creating arbitrary tags, as they produce permanent clutter.
 
@@ -213,7 +213,7 @@ this property set.
 affect users or providers.  This label is important when organizing release notes.
 ** The "deprecation" label which is assigned to an issue that includes changes to deprecate a portion of the API.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
-which that particular issue will completed. This is a field usually only set by committers and should only be set
+which that particular issue will be completed. This is a field usually only set by committers and should only be set
 when the issue is being closed with a completed disposition (e.g. "Done", "Fixed", etc.).
 * The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
 tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
@@ -563,6 +563,9 @@ tag when one is necessary will cause provider tests to fail:
 
 * `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `true` (meaning that it can store `null` values).
+* `@DisallowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
+`false` (meaning that it cannot store `null` values).
+* `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
 * `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the
@@ -575,6 +578,8 @@ tries to reference inaccessible properties that are on elements only available b
 `GraphComputer`.
 * `@GraphComputerVerificationStarGraphExceeded` - The scenario itself is not written to support `GraphComputer` because
 the traversal does not mind the star graph limitation.
+* `@GremlinGroovyNotSupported` - The scenario uses `gremlin-lang` syntax which is incompatible with `gremlin-groovy` and
+cannot be resolved with the groovy translator. This is typically for scenarios using ambiguously-types `null` parameters.
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
 * `@MultiProperties` - The scenario makes use of multi-properties.
@@ -583,15 +588,17 @@ best example of this sort of test would be one that uses the remote `Lambda` syn
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
-* `@With*` - The scenario uses some `with()` based configuration like strategies:
+* `@With*` - The scenario uses some `with()` based configuration like strategies. This includes but is not limited to the following:
 ** `@WithPartitionStrategy`
 ** `@WithProductiveByStrategy`
 ** `@WithReadOnlyStrategy`
 ** `@WithSeedStrategy`
 ** `@WithSubgraphStrategy`
 
-Tag filters can be applied to Intellij at execution time by adding a system properties of
-`-Dcucumber.filter.tags=<step-filter>`.
+Tag filters can be applied to Intellij at execution time by adding a system property of
+`-Dcucumber.filter.tags=<tag-expression>`. In addition, the scenarios that pass the `<tag-expression>` can be further
+filtered by name with `-Dcucumber.filter.name=<scenario-regex>`. Note that these settings will override those
+configured by `CucumberOptions` on "*FeatureTest" setups.
 
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests
@@ -698,7 +705,7 @@ require a review.
 
 * You are responsible for a release and need to manipulate files accordingly for the release.
 ** `Gremlin.version()`, CHANGELOG dates, `pom.xml` version bumps, etc.
-* You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
+* You are doing a minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
 ** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
 ** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
 
@@ -835,7 +842,7 @@ The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `po
 `pom.xml` file of any module, build `gremlin-driver`, Gremlin Console and Gremlin Server and examine the contents of
 the binary distributions:
 
-* target/gremlin-driver-x.y.z-uber.jar
+* target/gremlin-driver-x.y.z-shaded.jar
 * target/gremlin-console-x.y.z-uber.jar
 * target/apache-tinkerpop-gremlin-console-x.y.z-distribution.zip
 * target/apache-tinkerpop-gremlin-server-x.y.z-distribution.zip

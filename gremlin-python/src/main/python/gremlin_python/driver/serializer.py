@@ -20,8 +20,10 @@
 import base64
 import logging
 import struct
-import uuid
 import io
+
+from gremlin_python.process.traversal import Traverser
+
 try:
     import ujson as json
     if int(json.__version__[0]) < 2:
@@ -29,72 +31,16 @@ try:
 except ImportError:
     import json
 
-from gremlin_python.structure.io import graphbinaryV1
-from gremlin_python.structure.io import graphsonV2d0
-from gremlin_python.structure.io import graphsonV3d0
+from gremlin_python.structure.io import graphbinaryV4, graphsonV4
+from gremlin_python.structure.io.util import Marker
 
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
+"""
+GraphSONV4
+"""
 
-class Processor:
-    """Base class for OpProcessor serialization system."""
-
-    def __init__(self, writer):
-        self._writer = writer
-
-    def get_op_args(self, op, args):
-        op_method = getattr(self, op, None)
-        if not op_method:
-            raise Exception("Processor does not support op: {}".format(op))
-        return op_method(args)
-
-
-class Standard(Processor):
-
-    def authentication(self, args):
-        return args
-
-    def eval(self, args):
-        return args
-
-
-class Session(Processor):
-
-    def authentication(self, args):
-        return args
-
-    def eval(self, args):
-        return args
-
-    def close(self, args):
-        return args
-
-    def bytecode(self, args):
-        gremlin = args['gremlin']
-        args['gremlin'] = self._writer.to_dict(gremlin)
-        aliases = args.get('aliases', '')
-        if not aliases:
-            aliases = {'g': 'g'}
-        args['aliases'] = aliases
-        return args
-
-
-class Traversal(Processor):
-
-    def authentication(self, args):
-        return args
-
-    def bytecode(self, args):
-        gremlin = args['gremlin']
-        args['gremlin'] = self._writer.to_dict(gremlin)
-        aliases = args.get('aliases', '')
-        if not aliases:
-            aliases = {'g': 'g'}
-        args['aliases'] = aliases
-        return args
-
-
-class GraphSONMessageSerializer(object):
+class GraphSONSerializersV4(object):
     """
     Message serializer for GraphSON. Allow users to pass custom reader,
     writer, and version kwargs for custom serialization. Otherwise,
@@ -102,9 +48,9 @@ class GraphSONMessageSerializer(object):
     """
 
     # KEEP TRACK OF CURRENT DEFAULTS
-    DEFAULT_READER_CLASS = graphsonV3d0.GraphSONReader
-    DEFAULT_WRITER_CLASS = graphsonV3d0.GraphSONWriter
-    DEFAULT_VERSION = b"application/vnd.gremlin-v3.0+json"
+    DEFAULT_READER_CLASS = graphsonV4.GraphSONReader
+    DEFAULT_WRITER_CLASS = graphsonV4.GraphSONWriter
+    DEFAULT_VERSION = b"application/vnd.gremlin-v4.0+json"
 
     def __init__(self, reader=None, writer=None, version=None):
         if not version:
@@ -115,80 +61,49 @@ class GraphSONMessageSerializer(object):
         self._graphson_reader = reader
         if not writer:
             writer = self.DEFAULT_WRITER_CLASS()
-        self.standard = Standard(writer)
-        self.traversal = Traversal(writer)
-        self.session = Session(writer)
+        self._graphson_writer = writer
 
     @property
     def version(self):
         """Read only property"""
         return self._version
 
-    def get_processor(self, processor):
-        processor = getattr(self, processor, None)
-        if not processor:
-            raise Exception("Unknown processor")
-        return processor
-
-    def serialize_message(self, request_id, request_message):
-        processor = request_message.processor
-        op = request_message.op
-        args = request_message.args
-        if not processor:
-            processor_obj = self.get_processor('standard')
-        else:
-            processor_obj = self.get_processor(processor)
-        args = processor_obj.get_op_args(op, args)
-        message = self.build_message(request_id, processor, op, args)
+    def serialize_message(self, request_message):
+        message = self.build_message(request_message.fields, request_message.gremlin)
         return message
 
-    def build_message(self, request_id, processor, op, args):
+    def build_message(self, fields, gremlin):
         message = {
-            'requestId': {'@type': 'g:UUID', '@value': request_id},
-            'processor': processor,
-            'op': op,
-            'args': args
+            'gremlin': gremlin  # gremlin wil always be a gremlin lang string script
         }
-        return self.finalize_message(message, b"\x21", self.version)
+        for k, v in fields.items():
+            message[k] = self._graphson_writer.to_dict(v)
+        return self.finalize_message(message)
 
-    def finalize_message(self, message, mime_len, mime_type):
+    def finalize_message(self, message):
         message = json.dumps(message)
-        message = b''.join([mime_len, mime_type, message.encode('utf-8')])
         return message
 
-    def deserialize_message(self, message):
-        # for parsing string message via HTTP connections
-        msg = json.loads(message if isinstance(message, str) else message.decode('utf-8'))
-        return self._graphson_reader.to_object(msg)
+    def deserialize_message(self, message, is_first_chunk=False):
+        if is_first_chunk:
+            msg = json.loads(message if isinstance(message, str) else message.decode('utf-8'))
+            return self._graphson_reader.to_object(msg)
+        else:
+            # graphSON does not stream, all results are aggregated inside the first chunk
+            return ""
 
-
-class GraphSONSerializersV2d0(GraphSONMessageSerializer):
-    """Message serializer for GraphSON 2.0"""
-    def __init__(self):
-        reader = graphsonV2d0.GraphSONReader()
-        writer = graphsonV2d0.GraphSONWriter()
-        version = b"application/vnd.gremlin-v2.0+json"
-        super(GraphSONSerializersV2d0, self).__init__(reader, writer, version)
-
-
-class GraphSONSerializersV3d0(GraphSONMessageSerializer):
-    """Message serializer for GraphSON 3.0"""
-    def __init__(self):
-        reader = graphsonV3d0.GraphSONReader()
-        writer = graphsonV3d0.GraphSONWriter()
-        version = b"application/vnd.gremlin-v3.0+json"
-        super(GraphSONSerializersV3d0, self).__init__(reader, writer, version)
-
-
-class GraphBinarySerializersV1(object):
-    DEFAULT_READER_CLASS = graphbinaryV1.GraphBinaryReader
-    DEFAULT_WRITER_CLASS = graphbinaryV1.GraphBinaryWriter
-    DEFAULT_VERSION = b"application/vnd.graphbinary-v1.0"
+"""
+GraphBinaryV4
+"""
+class GraphBinarySerializersV4(object):
+    DEFAULT_READER_CLASS = graphbinaryV4.GraphBinaryReader
+    DEFAULT_WRITER_CLASS = graphbinaryV4.GraphBinaryWriter
+    DEFAULT_VERSION = b"application/vnd.graphbinary-v4.0"
 
     max_int64 = 0xFFFFFFFFFFFFFFFF
     header_struct = struct.Struct('>b32sBQQ')
     header_pack = header_struct.pack
-    int_pack = graphbinaryV1.int32_pack
+    int_pack = graphbinaryV4.int32_pack
     int32_unpack = struct.Struct(">i").unpack
 
     def __init__(self, reader=None, writer=None, version=None):
@@ -201,94 +116,95 @@ class GraphBinarySerializersV1(object):
         if not writer:
             writer = self.DEFAULT_WRITER_CLASS()
         self._graphbinary_writer = writer
-        self.standard = Standard(writer)
-        self.traversal = Traversal(writer)
-        self.session = Session(writer)
+        self._bulked = False
 
     @property
     def version(self):
         """Read only property"""
         return self._version
 
-    def get_processor(self, processor):
-        processor = getattr(self, processor, None)
-        if not processor:
-            raise Exception("Unknown processor")
-        return processor
-
-    def serialize_message(self, request_id, request_message):
-        processor = request_message.processor
-        op = request_message.op
-        args = request_message.args
-        if not processor:
-            processor_obj = self.get_processor('standard')
-        else:
-            processor_obj = self.get_processor(processor)
-        args = processor_obj.get_op_args(op, args)
-        message = self.build_message(request_id, processor, op, args)
+    def serialize_message(self, request_message):
+        message = self.build_message(request_message.fields, request_message.gremlin)
         return message
 
-    def build_message(self, request_id, processor, op, args):
+    def build_message(self, fields, gremlin):
         message = {
-            'requestId': request_id,
-            'processor': processor,
-            'op': op,
-            'args': args
+            'fields': fields,
+            'gremlin': gremlin
         }
-        return self.finalize_message(message, 0x20, self.version)
+        return self.finalize_message(message)
 
-    def finalize_message(self, message, mime_len, mime_type):
+    def finalize_message(self, message):
         ba = bytearray()
 
-        request_id = uuid.UUID(str(message['requestId']))
-        ba.extend(self.header_pack(mime_len, mime_type, 0x81,
-                                   (request_id.int >> 64) & self.max_int64, request_id.int & self.max_int64))
-
-        op_bytes = message['op'].encode("utf-8")
-        ba.extend(self.int_pack(len(op_bytes)))
-        ba.extend(op_bytes)
-
-        processor_bytes = message['processor'].encode("utf-8")
-        ba.extend(self.int_pack(len(processor_bytes)))
-        ba.extend(processor_bytes)
-
-        args = message["args"]
-        ba.extend(self.int_pack(len(args)))
-        for k, v in args.items():
+        ba.extend(graphbinaryV4.uint8_pack(0x81))
+        fields = message["fields"]
+        ba.extend(self.int_pack(len(fields)))
+        for k, v in fields.items():
             self._graphbinary_writer.to_dict(k, ba)
+            self._graphbinary_writer.to_dict(v, ba)
 
-            # processor_obj.get_op_args in serialize_message() seems to already handle bytecode. in python 3
-            # because bytearray isn't bound to a type in graphbinary it falls through the writeObject() and
-            # just works but python 2 bytearray is bound to ByteBufferType so it writes DataType.bytebuffer
-            # rather than DataType.bytecode and the server gets confused. special casing this for now until
-            # it can be refactored
-            if k == "gremlin" and isinstance(v, bytearray):
-                ba.extend(v)
-            else:
-                self._graphbinary_writer.to_dict(v, ba)
+        gremlin = message['gremlin']
+        # TODO: hack to remove type code from gremlin value for V4 message format, writer doesn't seem to have a way to
+        #  write value directly by passing serializer types, check back when removing bytecode
+        gremlin_ba = bytearray()
+        self._graphbinary_writer.to_dict(gremlin, gremlin_ba)
+        ba.extend(gremlin_ba[2:])
 
         return bytes(ba)
 
-    def deserialize_message(self, message):
+    def deserialize_message(self, message, is_first_chunk=False):
+        if len(message) == 0:
+            return {'status': {'code': 204},
+                    'result': {'meta': {},
+                               'data': []}}
+
         # for parsing string message via HTTP connections
         b = io.BytesIO(base64.b64decode(message) if isinstance(message, str) else message)
 
-        b.read(1)  # version
+        if is_first_chunk:
+            b.read(1)  # version
+            self._bulked = b.read(1)[0] == 0x01
 
-        request_id = str(self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.uuid))
-        status_code = self.int32_unpack(b.read(4))[0]
-        status_msg = self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.string)
-        status_attrs = self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.map, nullable=False)
-        meta_attrs = self._graphbinary_reader.to_object(b, graphbinaryV1.DataType.map, nullable=False)
-        result = self._graphbinary_reader.to_object(b)
+        result, readable = self.read_payload(b)
+        if not readable:
+            return {
+                'result': {'meta': {},
+                           'data': result}
+            }
+        status_code = self.int32_unpack(b.read(4))[0]  # status code
+        status_msg = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
+        status_ex = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.string, nullable=True)
+        # meta_attrs = self._graphbinary_reader.to_object(b, graphbinaryV4.DataType.map, nullable=False)
 
         b.close()
 
-        msg = {'requestId': request_id,
-               'status': {'code': status_code,
+        msg = {'status': {'code': status_code,
                           'message': status_msg,
-                          'attributes': status_attrs},
-               'result': {'meta': meta_attrs,
+                          'exception': status_ex},
+               'result': {'meta': {},
                           'data': result}}
 
         return msg
+
+    def read_payload(self, buffer):
+        results = []
+        readable = True
+        while buffer.readable():  # find method or way to access readable bytes without using buffer.getvalue()
+            if buffer.tell() == len(buffer.getvalue()):
+                readable = False
+                break
+            if self._bulked:
+                item = self._graphbinary_reader.to_object(buffer)
+                if item == Marker.end_of_stream():
+                    self._bulked = False  # no more data expected, reset bulked flag
+                    break
+                bulk = self._graphbinary_reader.to_object(buffer)
+                results.append(Traverser(item, bulk))
+            else:
+                data = self._graphbinary_reader.to_object(buffer)
+                if data == Marker.end_of_stream():
+                    break
+                results.append(data)
+
+        return results, readable

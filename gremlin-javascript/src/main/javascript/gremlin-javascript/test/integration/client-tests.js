@@ -17,19 +17,17 @@
  *  under the License.
  */
 
-'use strict';
-
-const assert = require('assert');
-const Bytecode = require('../../lib/process/bytecode');
-const graphModule = require('../../lib/structure/graph');
-const helper = require('../helper');
-const t = require('../../lib/process/traversal');
+import assert from 'assert';
+import Bytecode from '../../lib/process/bytecode.js';
+import { Vertex } from '../../lib/structure/graph.js';
+import { getClient } from '../helper.js';
+import { cardinality } from '../../lib/process/traversal.js';
 
 let client;
 
 describe('Client', function () {
   before(function () {
-    client = helper.getClient('gmodern');
+    client = getClient('gmodern');
     return client.open();
   });
   after(function () {
@@ -41,7 +39,7 @@ describe('Client', function () {
         .then(function (result) {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
-          assert.ok(result.first().object instanceof graphModule.Vertex);
+          assert.ok(result.first().object instanceof Vertex);
         });
     });
     it('should send and parse a script', function () {
@@ -49,7 +47,7 @@ describe('Client', function () {
         .then(function (result) {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
-          assert.ok(result.first() instanceof graphModule.Vertex);
+          assert.ok(result.first() instanceof Vertex);
         });
     });
     it('should send and parse a script with bindings', function () {
@@ -60,7 +58,7 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script with non-native javascript bindings', function () {
-      return client.submit('card.class.simpleName + ":" + card', { card: t.cardinality.set } )
+      return client.submit('card.class.simpleName + ":" + card', { card: cardinality.set } )
         .then(function (result) {
           assert.ok(result);
           assert.strictEqual(result.first(), 'Cardinality:set');
@@ -81,7 +79,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           let age, name
           if (vertex.properties instanceof Array) {
             age = vertex.properties[1]
@@ -101,7 +99,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
         });
     });
@@ -112,7 +110,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           let age, name
           if (vertex.properties instanceof Array) {
             age = vertex.properties[1]
@@ -132,13 +130,13 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
         });
     });
 
     it('should handle VertexProperties properties for gremlin request', async function () {
-      const crewClient = helper.getClient('gcrew');
+      const crewClient = getClient('gcrew');
       await crewClient.open();
 
       const result = await crewClient.submit('g.V(7)');
@@ -153,7 +151,7 @@ describe('Client', function () {
     });
 
     it('should handle VertexProperties properties for bytecode request', async function () {
-      const crewClient = helper.getClient('gcrew');
+      const crewClient = getClient('gcrew');
       await crewClient.open();
 
       const result = await crewClient.submit(new Bytecode().addStep('V', [7]));
@@ -180,7 +178,7 @@ describe('Client', function () {
       readable.on('end', () => {
         assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
         assert.strictEqual(output.length, 3);
-        assert.ok(output[0] instanceof graphModule.Vertex);
+        assert.ok(output[0] instanceof Vertex);
         done();
       })
     });
@@ -197,7 +195,7 @@ describe('Client', function () {
 
       assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
       assert.strictEqual(output.length, 3);
-      assert.ok(output[0] instanceof graphModule.Vertex);
+      assert.ok(output[0] instanceof Vertex);
     });
 
     it("should get error for malformed requestId for script stream", async () => {
@@ -249,7 +247,7 @@ describe('Client', function () {
     });
 
     it("should reject pending traversal promises if connection closes", async () => {
-      const closingClient = helper.getClient('gmodern');
+      const closingClient = getClient('gmodern');
       await closingClient.open();
       const timeout = 10000;
       const startTime = Date.now();
@@ -273,7 +271,7 @@ describe('Client', function () {
     });
 
     it("should end streams on traversals if connection closes", async () => {
-      const closingClient = helper.getClient('gmodern');
+      const closingClient = getClient('gmodern');
       await closingClient.open();
       let isRejected = false;
 
@@ -294,7 +292,7 @@ describe('Client', function () {
 });
 
 function assertVertexProperties(vertex) {
-  assert.ok(vertex instanceof graphModule.Vertex);
+  assert.ok(vertex instanceof Vertex);
   let locations;
   if (vertex.properties instanceof Array) {
     locations = vertex.properties.filter(p => p.key == 'location');

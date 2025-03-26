@@ -24,13 +24,31 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class MapSerializer extends SimpleTypeSerializer<Map> {
+
     public MapSerializer() {
         super(DataType.MAP);
+    }
+
+    @Override
+    public Map readValue(final Buffer buffer, final GraphBinaryReader context, final boolean nullable) throws IOException {
+        if (nullable) {
+            final byte valueFlag = buffer.readByte();
+            if ((valueFlag & 1) == 1) {
+                return null;
+            }
+            if ((valueFlag & 2) == 2) {
+                return readValue(buffer, context);
+            }
+
+        }
+
+        return readMap(buffer, context);
     }
 
     @Override
@@ -38,6 +56,17 @@ public class MapSerializer extends SimpleTypeSerializer<Map> {
         final int length = buffer.readInt();
 
         final Map<Object,Object> result = new LinkedHashMap<>(length);
+        for (int i = 0; i < length; i++) {
+            result.put(context.read(buffer), context.read(buffer));
+        }
+
+        return result;
+    }
+
+    private Map readMap(final Buffer buffer, final GraphBinaryReader context) throws IOException {
+        final int length = buffer.readInt();
+
+        final Map<Object,Object> result = new HashMap<>(length);
         for (int i = 0; i < length; i++) {
             result.put(context.read(buffer), context.read(buffer));
         }

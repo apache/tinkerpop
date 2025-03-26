@@ -29,20 +29,17 @@ services:
     ports:
       - "45940:45940"
       - "45941:45941"
-      - "45942:45942"
       - "4588:4588"
     volumes:
       - ${HOME}/.groovy:/root/.groovy
       - ${HOME}/.m2:/root/.m2
       - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
     healthcheck:
-      test: [ "CMD-SHELL", "apk add curl && curl -f http://localhost:45940?gremlin=100-1" ]
+      test: [ "CMD-SHELL", "apk add curl && curl -X POST -d {\"gremlin\":\"100-1\"} http://localhost:45940" ]
       interval: 30s
       timeout: 10s
       retries: 30
       start_period: 30s
-    depends_on:
-      - gremlin-socket-server
 
   gremlin-python-integration-tests:
     container_name: gremlin-python-integration-tests
@@ -50,32 +47,27 @@ services:
     volumes:
       - ${BUILD_DIR:-./src/main/python}:/python_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/python_app/gremlin-test/features
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary:/python_app/gremlin-test/graphbinary
+      - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphson:/python_app/gremlin-test/graphson
       - ../docker/gremlin-test-server:/python_app/gremlin-test-server
-      - ../gremlin-tools/gremlin-socket-server/conf:/python_app/gremlin-socket-server/conf/
-
     environment:
       - DEBIAN_FRONTEND=noninteractive
-      - KRB5_CONFIG=./gremlin-test-server/krb5.conf
-      - KRB5CCNAME=./test-tkt.cc
-      - GREMLIN_SERVER_URL=ws://gremlin-server-test-python:{}/gremlin
-      - GREMLIN_SERVER_BASIC_AUTH_URL=wss://gremlin-server-test-python:{}/gremlin
-      - GREMLIN_SERVER_URL_HTTP=http://gremlin-server-test-python:{}/
-      - GREMLIN_SERVER_BASIC_AUTH_URL_HTTP=https://gremlin-server-test-python:{}/
-      - KRB_HOSTNAME=${KRB_HOSTNAME:-gremlin-server-test}
+      - GREMLIN_SERVER_URL=http://gremlin-server-test-python:{}/gremlin
+      - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test-python:{}/gremlin
+      - IO_TEST_DIRECTORY=/python_app/gremlin-test/graphbinary/
+      - IO_TEST_DIRECTORY_GRAPHSON=/python_app/gremlin-test/graphson/
       - VERSION=${VERSION}
-      - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-python:{}/gremlin
-      - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/python_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
     working_dir: /python_app
     command: >
-      bash -c "apt-get update && apt-get -y install libkrb5-dev krb5-user
-      && echo 'password' | kinit stephen
-      && klist
-      && pip install wheel radish-bdd PyHamcrest aenum isodate kerberos
+      bash -c "pip install wheel radish-bdd PyHamcrest aenum isodate
       && python3 ./setup.py build
       && python3 ./setup.py test
       && python3 ./setup.py install
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0';
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json';
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-python:
@@ -92,9 +84,3 @@ services:
     command: >
       bash -c "python3 setup.py sdist bdist_wheel;
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
-
-  gremlin-socket-server:
-    container_name: gremlin-socket-server-python
-    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
-    ports:
-      - "45943:45943"

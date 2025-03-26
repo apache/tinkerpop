@@ -23,16 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,7 +65,6 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(Parameterized.class)
 public class PathRetractionStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     /**
      * Always need LazyBarrierStrategy because it will trigger barrier() additions in PathRetractionStrategy.
@@ -92,7 +88,7 @@ public class PathRetractionStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
+        final String repr = original.getGremlinLang().getGremlin("__");
         for (final TraversalStrategies currentStrategies : this.strategies) {
             final Traversal.Admin<?, ?> currentTraversal = this.original.clone();
             currentTraversal.setStrategies(currentStrategies);

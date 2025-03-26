@@ -18,22 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
+import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_BATCH_SIZE;
+import static org.apache.tinkerpop.gremlin.util.Tokens.BULK_RESULTS;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_EVAL_TIMEOUT;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_G;
+import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_LANGUAGE;
 import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_MATERIALIZE_PROPERTIES;
-import static org.apache.tinkerpop.gremlin.util.Tokens.ARGS_USER_AGENT;
-import static org.apache.tinkerpop.gremlin.util.Tokens.REQUEST_ID;
 
 /**
  * Options that can be supplied on a per request basis.
@@ -44,32 +43,26 @@ public final class RequestOptions {
 
     public static final RequestOptions EMPTY = RequestOptions.build().create();
 
-    private final Map<String,String> aliases;
+    private final String graphOrTraversalSource;
     private final Map<String, Object> parameters;
     private final Integer batchSize;
     private final Long timeout;
-    private final UUID overrideRequestId;
-    private final String userAgent;
     private final String language;
     private final String materializeProperties;
+    private final String bulkResults;
 
     private RequestOptions(final Builder builder) {
-        this.aliases = builder.aliases;
+        this.graphOrTraversalSource = builder.graphOrTraversalSource;
         this.parameters = builder.parameters;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
-        this.overrideRequestId = builder.overrideRequestId;
-        this.userAgent = builder.userAgent;
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
+        this.bulkResults = builder.bulkResults;
     }
 
-    public Optional<UUID> getOverrideRequestId() {
-        return Optional.ofNullable(overrideRequestId);
-    }
-
-    public Optional<Map<String, String>> getAliases() {
-        return Optional.ofNullable(aliases);
+    public Optional<String> getG() {
+        return Optional.ofNullable(graphOrTraversalSource);
     }
 
     public Optional<Map<String, Object>> getParameters() {
@@ -84,59 +77,60 @@ public final class RequestOptions {
         return Optional.ofNullable(timeout);
     }
 
-    public Optional<String> getUserAgent() {
-        return Optional.ofNullable(userAgent);
-    }
-
     public Optional<String> getLanguage() {
         return Optional.ofNullable(language);
     }
 
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
+    public Optional<String> getBulkResults() { return Optional.ofNullable(bulkResults); }
+
     public static Builder build() {
         return new Builder();
     }
 
-    public static RequestOptions getRequestOptions(final Bytecode bytecode) {
-        final Iterator<OptionsStrategy> itty = BytecodeHelper.findStrategies(bytecode, OptionsStrategy.class);
-        final Builder builder = RequestOptions.build();
+    public static RequestOptions getRequestOptions(final GremlinLang gremlinLang) {
+        final Iterator<OptionsStrategy> itty = gremlinLang.getOptionsStrategies().iterator();
+        final RequestOptions.Builder builder = RequestOptions.build();
         while (itty.hasNext()) {
             final OptionsStrategy optionsStrategy = itty.next();
-            final Map<String,Object> options = optionsStrategy.getOptions();
+            final Map<String, Object> options = optionsStrategy.getOptions();
             if (options.containsKey(ARGS_EVAL_TIMEOUT))
                 builder.timeout(((Number) options.get(ARGS_EVAL_TIMEOUT)).longValue());
-            if (options.containsKey(REQUEST_ID))
-                builder.overrideRequestId((UUID) options.get(REQUEST_ID));
             if (options.containsKey(ARGS_BATCH_SIZE))
                 builder.batchSize(((Number) options.get(ARGS_BATCH_SIZE)).intValue());
-            if (options.containsKey(ARGS_USER_AGENT))
-                builder.userAgent((String) options.get(ARGS_USER_AGENT));
             if (options.containsKey(ARGS_MATERIALIZE_PROPERTIES))
                 builder.materializeProperties((String) options.get(ARGS_MATERIALIZE_PROPERTIES));
+            if (options.containsKey(ARGS_LANGUAGE))
+                builder.language((String) options.get(ARGS_LANGUAGE));
+            if (options.containsKey(BULK_RESULTS))
+                builder.bulkResults((boolean) options.get(BULK_RESULTS));
+        }
+        // request the server to bulk results by default when using DRC through request options
+        if (builder.bulkResults == null)
+            builder.bulkResults(true);
+
+        final Map<String, Object> parameters = gremlinLang.getParameters();
+        if (parameters != null && !parameters.isEmpty()) {
+            parameters.forEach(builder::addParameter);
         }
         return builder.create();
     }
 
     public static final class Builder {
-        private Map<String,String> aliases = null;
+        private String graphOrTraversalSource = null;
         private Map<String, Object> parameters = null;
         private Integer batchSize = null;
         private Long timeout = null;
-        private UUID overrideRequestId = null;
-        private String userAgent = null;
         private String materializeProperties = null;
         private String language = null;
-        private boolean maintainStateAfterException = false;
+        private String bulkResults = null;
 
         /**
          * The aliases to set on the request.
          */
-        public Builder addAlias(final String aliasName, final String actualName) {
-            if (null == aliases)
-                aliases = new HashMap<>();
-
-            aliases.put(aliasName, actualName);
+        public Builder addG(final String graphOrTraversalSource) {
+            this.graphOrTraversalSource = graphOrTraversalSource;
             return this;
         }
 
@@ -147,15 +141,15 @@ public final class RequestOptions {
             if (null == parameters)
                 parameters = new HashMap<>();
 
-            parameters.put(name, value);
-            return this;
-        }
+            if (ARGS_G.equals(name)) {
+                this.graphOrTraversalSource = (String) value;
+            }
 
-        /**
-         * Overrides the identifier to be sent on the request.
-         */
-        public Builder overrideRequestId(final UUID overrideRequestId) {
-            this.overrideRequestId = overrideRequestId;
+            if (ARGS_LANGUAGE.equals(name)) {
+                this.language = (String) value;
+            }
+
+            parameters.put(name, value);
             return this;
         }
 
@@ -179,14 +173,6 @@ public final class RequestOptions {
         }
 
         /**
-         * Sets the userAgent identifier to be sent on the request.
-         */
-        public Builder userAgent(final String userAgent) {
-            this.userAgent = userAgent;
-            return this;
-        }
-
-        /**
          * Sets the language identifier to be sent on the request.
          */
         public Builder language(final String language) {
@@ -202,9 +188,16 @@ public final class RequestOptions {
             return this;
         }
 
+        /**
+         * Sets the bulkResults flag to be sent on the request. A value of turn will enable server to bulk results.
+         */
+        public Builder bulkResults(final boolean bulking) {
+            this.bulkResults = String.valueOf(bulking);
+            return this;
+        }
+
         public RequestOptions create() {
             return new RequestOptions(this);
         }
-
     }
 }

@@ -24,7 +24,7 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
-    private final static String gremlinVersion = "3.7.4-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+    private final static String gremlinVersion = "4.0.0-SNAPSHOT"; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
     private Gremlin() {
     }
@@ -36,6 +36,11 @@ public final class Gremlin {
     public static String version() {
         return gremlinVersion;
     }
+
+    /**
+     * Gets the current major version of tinkerpop.
+     */
+    public static String majorVersion() { return version().split("\\.")[0]; }
 
     public static void main(final String[] arguments) throws IOException {
         System.out.println("gremlin " + version());

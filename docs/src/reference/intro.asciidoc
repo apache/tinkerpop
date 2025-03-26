@@ -219,10 +219,10 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 gremlin> graph = TinkerFactory.createModern() // <1>
 ==>tinkergraph[vertices:6 edges:6]
-gremlin> g = traversal().withEmbedded(graph)        // <2>
+gremlin> g = traversal().with(graph)        // <2>
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> g.V().has('name','marko').out('knows').values('name') // <3>
 ==>vadas
@@ -330,7 +330,7 @@ named "g":
 
 [source,java]
 ----
-GraphTraversalSource g = traversal().withEmbedded(graph);
+GraphTraversalSource g = traversal().with(graph);
 List<Vertex> vertices = g.V().toList()
 ----
 
@@ -364,18 +364,15 @@ image:rexster-character-3.png[width=125,float=left] A JVM-based graph may be hos
 <<gremlin-server,Gremlin Server>>. Gremlin Server exposes the graph as an endpoint to which different clients can
 connect, essentially providing a remote GTM. Gremlin Server supports multiple methods for clients to interface with it:
 
-* Websockets with a link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[custom sub-protocol]
-** String-based Gremlin scripts
-** Bytecode-based Gremlin traversals
-* HTTP for string-based scripts
+* link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_api[HTTP] for string-based scripts (both
+gremlin-lang and gremlin-groovy)
 
-Users are encouraged to use the bytecode-based approach with websockets because it allows them to write Gremlin
-in the language of their choice. Connecting looks somewhat similar to the <<connecting-embedded, embedded>> approach
-in that there is a need to create a `GraphTraversalSource`. In the embedded approach, the means for that object's
-creation is derived from a `Graph` object which spawns it. In this case, however, the `Graph` instance exists only on
-the server which means that there is no `Graph` instance to create locally. The approach is to instead create a
-`GraphTraversalSource` anonymously with `AnonymousTraversalSource` and then apply some "remote" options that describe
-the location of the Gremlin Server to connect to:
+Connecting looks somewhat similar to the <<connecting-embedded, embedded>> approach in that there is a need to create a
+`GraphTraversalSource`. In the embedded approach, the means for that object's creation is derived from a `Graph` object
+which spawns it. In this case, however, the `Graph` instance exists only on the server which means that there is no
+`Graph` instance to create locally. The approach is to instead create a `GraphTraversalSource` anonymously with
+`AnonymousTraversalSource` and then apply some "remote" options that describe the location of the Gremlin Server to
+connect to:
 
 [source,java,tab]
 ----
@@ -385,7 +382,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 // gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-GraphTraversalSource g = traversal().withRemote(
+GraphTraversalSource g = traversal().with(
                 DriverRemoteConnection.using("localhost", 8182));
 ----
 [source,groovy]
@@ -396,37 +393,15 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 // gremlin-core module
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
-def g = traversal().withRemote(
+def g = traversal().with(
                 DriverRemoteConnection.using('localhost', 8182))
-----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceUsing]
-
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=traversalSourceCreation]
-----
-[source,javascript]
-----
-const traversal = gremlin.process.AnonymousTraversalSource.traversal;
-
-const g = traversal().withRemote(
-                new DriverRemoteConnection('ws://localhost:8182/gremlin'));
 ----
 [source,python]
 ----
 from gremlin_python.process.anonymous_traversal_source import traversal
 
-g = traversal().withRemote(
+g = traversal().with(
           DriverRemoteConnection('ws://localhost:8182/gremlin'))
-----
-[source,go]
-----
-import (
-	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
-)
-
-remote, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
-g := gremlingo.Traversal_().WithRemote(remote)
 ----
 
 As shown in the embedded approach in the previous section, once "g" is defined, writing Gremlin is structurally and
@@ -447,6 +422,9 @@ has two such formats that it uses with link:https://tinkerpop.apache.org/docs/x.
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON]. Users should prefer GraphBinary when available
 in the programming language being used.
 
+IMPORTANT: 4.0.0-beta.1 Release - There is temporary support for GraphSON in the Java driver which will help with
+testing, but it is expected that the drivers will only support GraphBinary when 4.0 is fully released.
+
 A good example is the `subgraph()`-step which returns a `Graph` instance as its result. The subgraph returned from
 the server can be deserialized into an actual `Graph` instance on the client, which then means it is possible to
 spawn a `GraphTraversalSource` from that to do local Gremlin traversals on the client-side. For non-JVM
@@ -454,9 +432,11 @@ spawn a `GraphTraversalSource` from that to do local Gremlin traversals on the c
 no GTM to process Gremlin so there isn't much that can be done with such a result.
 
 The second point is related to this issue. As there is no GTM, there is no "structure" API and thus graph elements like
-`Vertex` and `Edge` are "references" only. A "reference" means that they only contain the `id` and `label` of the
+`Vertex` and `Edge` are usually "references". A "reference" means that they only contain the `id` and `label` of the
 element and not the properties. To be consistent, even JVM-based languages hold this limitation when talking to a
-remote Gremlin Server.
+remote Gremlin Server. However, you can alternatively get a "detached" element when using the `all` option for
+`materializeProperties`. In this case, the element will contain all of its properties, but will not be connected to any
+other element.
 
 IMPORTANT: Most SQL developers would not write a query as `SELECT * FROM table`. They would instead write the
 individual names of the fields they wanted in place of the wildcard. Writing "good" Gremlin is no different with this
@@ -465,15 +445,17 @@ regard. Prefer explicit property key names in Gremlin unless it is completely im
 The third and final point involves transactions. Under this model, one traversal is equivalent to a single transaction
 and there is no way in TinkerPop to string together multiple traversals into the same transaction.
 
+IMPORTANT: 4.0.0-beta.1 Release - Remote transactions are not supported in this beta.
+
 [[connecting-rgp]]
 === Remote Gremlin Provider
 
 Remote Gremlin Providers (RGPs) are showing up more and more often in the graph database space. In TinkerPop terms,
 this category of graph providers is defined by those who simply support the Gremlin language. Typically, these are
-server-based graphs, often cloud-based, which accept Gremlin scripts or bytecode as a request and return results.
-They will often implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would
-with Gremlin Server. Therefore, the typical connection approach is identical to the method of connection presented in
-the <<connecting-gremlin-server,previous section>> with the exact same caveats pointed out toward the end.
+server-based graphs, often cloud-based, which accept Gremlin scripts as a request and return results. They will often
+implement Gremlin Server protocols, which enables TinkerPop drivers to connect to them as they would with Gremlin
+Server. Therefore, the typical connection approach is identical to the method of connection presented in the
+<<connecting-gremlin-server,previous section>> with the exact same caveats pointed out toward the end.
 
 Despite leveraging TinkerPop protocols and drivers as being typical, RGPs are not required to do so to be considered
 TinkerPop-enabled. RGPs may well have their own drivers and protocols that may plug into
@@ -496,33 +478,17 @@ v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
 ----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinAdds]
-----
 [source,java]
 ----
 Vertex v1 = g.addV("person").property("name","marko").next();
 Vertex v2 = g.addV("person").property("name","stephen").next();
 g.V(v1).addE("knows").to(v2).property("weight",0.75).iterate();
 ----
-[source,javascript]
-----
-const v1 = g.addV('person').property('name','marko').next();
-const v2 = g.addV('person').property('name','stephen').next();
-g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate();
-----
 [source,python]
 ----
 v1 = g.addV('person').property('name','marko').next()
 v2 = g.addV('person').property('name','stephen').next()
 g.V(v1).addE('knows').to(v2).property('weight',0.75).iterate()
-----
-[source,go]
-----
-v1, err := g.AddV("person").Property("name", "marko").Next()
-v2, err := g.AddV("person").Property("name", "stephen").Next()
-g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate()
 ----
 
 The first two lines add a vertex each with the vertex label of "person" and the associated "name" property. The third
@@ -541,29 +507,15 @@ Retrieving this data is also a just writing a Gremlin statement:
 marko = g.V().has('person','name','marko').next()
 peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
 ----
-[source,csharp]
-----
-include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/IntroTests.cs[tags=basicGremlinMarkoKnows]
-----
 [source,java]
 ----
 Vertex marko = g.V().has("person","name","marko").next()
 List<Vertex> peopleMarkoKnows = g.V().has("person","name","marko").out("knows").toList()
 ----
-[source,javascript]
-----
-const marko = g.V().has('person','name','marko').next()
-const peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
-----
 [source,python]
 ----
 marko = g.V().has('person','name','marko').next()
 peopleMarkoKnows = g.V().has('person','name','marko').out('knows').toList()
-----
-[source,go]
-----
-marko, err := g.V().Has("person", "name", "marko").Next()
-peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").ToList()
 ----
 
 In all these examples presented so far there really isn't a lot of difference in how the Gremlin itself looks. There
@@ -611,7 +563,7 @@ therefore recommended that users avoid usage of methods like `Graph.addVertex()`
 prefer use of Gremlin with `g.addV()` or `g.V(1).properties()`.
 
 Outside of considering these points, the best practice for ensuring the greatest level of compatibility across graphs
-is to avoid <<connecting-embedded,embedded>> mode and stick to the bytecode based approaches explained in the
+is to avoid <<connecting-embedded,embedded>> mode and stick to the traversal-based approaches explained in the
 <<connecting-gremlin-server,Gremlin Server>> and the <<connecting-rgp,RGP>> sections above. It creates the least
 opportunity to stray from the agnostic path as anything that can be done with those two modes also works in embedded
 mode. If using embedded mode, simply write code as though the `Graph` instance is "remote" and not local to the JVM.

@@ -1346,6 +1346,39 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[[none-step]]
+=== none()
+
+*Description:* Filters array data from the Traversal Stream if none of the array's items match the supplied predicate.
+
+*Syntax:* `none(P predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `predicate` - The predicate to use to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
+will be filtered out of the Traversal Stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/NoneStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#none-step[reference]
+
 [[product-step]]
 === product()
 
@@ -1484,7 +1517,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#rTrim-step[reference]
 *Arguments:*
 
 * `separator` - The string character(s) used as delimiter to split the input string. Nullable, a null separator will split on
-whitespaces.
+whitespaces. An empty string separator will split on each character.
 * `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
 The `global` scope will operate on individual string traverser. The `local` scope will operate on list traverser with string elements inside.
 

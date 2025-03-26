@@ -20,12 +20,11 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const utils = require('./utils');
-const assert = require('assert');
-const { unspecifiedNullSerializer } = require('../../../lib/structure/io/binary/GraphBinary');
-const t = require('../../../lib/process/traversal');
+import { ser_title, des_title, cbuf_title } from './utils.js';
+import assert from 'assert';
+import { unspecifiedNullSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
+import { Traverser } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
@@ -57,14 +56,14 @@ describe('GraphBinary.UnspecifiedNullSerializer', () => {
   describe('#serialize', () =>
     cases
     .filter(({des}) => !des)
-    .forEach(({ v, b }, i) => it(utils.ser_title({i,v}), () => {
+    .forEach(({ v, b }, i) => it(ser_title({i,v}), () => {
       b = from(b);
       assert.deepEqual( unspecifiedNullSerializer.serialize(v), b );
     }))
   );
 
   describe('#deserialize', () =>
-    cases.forEach(({ v, b, av, err }, i) => it(utils.des_title({i,b}), () => {
+    cases.forEach(({ v, b, av, err }, i) => it(des_title({i,b}), () => {
       if (Array.isArray(b))
         b = from(b);
 
@@ -89,12 +88,12 @@ describe('GraphBinary.UnspecifiedNullSerializer', () => {
       { v: null,              e: true },
       { v: undefined,         e: true },
       { v: {},                e: false },
-      { v: new t.Traverser(), e: false },
+      { v: new Traverser(), e: false },
       { v: [],                e: false },
       { v: [{}],              e: false },
       { v: [new Map()],       e: false },
       { v: new Map(),         e: false },
-    ].forEach(({ v, e }, i) => it(utils.cbuf_title({i,v}), () =>
+    ].forEach(({ v, e }, i) => it(cbuf_title({i,v}), () =>
       assert.strictEqual( unspecifiedNullSerializer.canBeUsedFor(v), e )
     ))
   );

@@ -22,6 +22,7 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-empty.properties}
 scriptEngines: {
+  gremlin-lang: {},
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
@@ -38,6 +39,6 @@ strictTransactionManagement: false
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192
-maxContentLength: 10485760
+maxRequestContentLength: 10485760
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64

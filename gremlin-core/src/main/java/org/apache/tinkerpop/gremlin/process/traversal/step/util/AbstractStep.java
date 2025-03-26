@@ -228,5 +228,4 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         }
         return traverser;
     }
-
 }

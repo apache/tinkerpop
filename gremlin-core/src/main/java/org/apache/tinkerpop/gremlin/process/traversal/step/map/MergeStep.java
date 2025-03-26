@@ -18,399 +18,124 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
 /**
- * Abstract base class for the {@code mergeV/E()} implementations.
+ * A map step that returns the merger of the traverser and the provided arguments without duplicates. This is commonly
+ * known as a union.
  */
-public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C> {
+public final class MergeStep<S, E> extends ScalarMapStep<S, E> implements TraversalParent, ListFunction {
+    private Traversal.Admin<S, E> valueTraversal;
+    private GValue<Object> parameterItems;
 
-    protected final boolean isStart;
-    protected boolean first = true;
-    protected Traversal.Admin<S, Map> mergeTraversal;
-    protected Traversal.Admin<S, Map> onCreateTraversal = null;
-    protected Traversal.Admin<S, Map<String, ?>> onMatchTraversal = null;
-
-    protected CallbackRegistry<Event> callbackRegistry;
-
-    private Parameters parameters = new Parameters();
-
-    protected boolean usesPartitionStrategy;
-
-    public MergeStep(final Traversal.Admin traversal, final boolean isStart) {
-        this(traversal, isStart, new IdentityTraversal<>());
-    }
-
-    public MergeStep(final Traversal.Admin traversal, final boolean isStart, final Map mergeMap) {
-        this(traversal, isStart, new ConstantTraversal<>(mergeMap));
-        validate(mergeMap, false);
-    }
-
-    public MergeStep(final Traversal.Admin traversal, final boolean isStart, 
-                     final Traversal.Admin mergeTraversal) {
+    public MergeStep(final Traversal.Admin traversal, final Object values) {
         super(traversal);
-        this.isStart = isStart;
-        this.mergeTraversal = integrateChild(mergeTraversal);
 
-        // determines if this step uses PartitionStrategy. it's not great that merge needs to know about a particular
-        // strategy but if it doesn't then it can't determine if Parameters are being used properly or not. to not have
-        // this check seems to invite problems. in some sense, this is not the first time steps have had to know more
-        // about strategies than is probably preferred - EventStrategy comes to mind
-        this.usesPartitionStrategy = TraversalHelper.getRootTraversal(traversal).
-                getStrategies().getStrategy(PartitionStrategy.class).isPresent();
+        if (values instanceof Traversal) {
+            valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
+        } else if (values instanceof GValue){
+            parameterItems = (GValue<Object>) values;
+        } else {
+            parameterItems = GValue.of(null, values);
+        }
     }
 
-    /**
-     * Gets the traversal that will be used to provide the {@code Map} that will be used to search for elements.
-     * This {@code Map} also will be used as the default data set to be used to create the element if the search is not
-     * successful.
-     */
-    public Traversal.Admin<S, Map> getMergeTraversal() {
-        return mergeTraversal;
+    public Traversal.Admin<S, E> getValueTraversal() {
+        return valueTraversal;
     }
 
-    /**
-     * Gets the traversal that will be used to provide the {@code Map} that will be used to create elements that
-     * do not match the search criteria of {@link #getMergeTraversal()}.
-     */
-    public Traversal.Admin<S, Map> getOnCreateTraversal() {
-        return onCreateTraversal;
+    public Object getParameterItems() {
+        return parameterItems;
     }
 
-    /**
-     * Gets the traversal that will be used to provide the {@code Map} that will be used to modify elements that
-     * match the search criteria of {@link #getMergeTraversal()}.
-     */
-    public Traversal.Admin<S, Map<String, ?>> getOnMatchTraversal() {
-        return onMatchTraversal;
-    }
-
-    /**
-     * Determines if this is a start step.
-     */
-    public boolean isStart() {
-        return isStart;
-    }
-
-    /**
-     * Determine if this is the first pass through {@link #processNextStart()}.
-     */
-    public boolean isFirst() {
-        return first;
-    }
-
-    public CallbackRegistry<Event> getCallbackRegistry() {
-        return callbackRegistry;
+    public GValue<Object> getParameterItemsGValue() {
+        return parameterItems;
     }
 
     @Override
-    public void addChildOption(final Merge token, final Traversal.Admin<S, C> traversalOption) {
-        if (token == Merge.onCreate) {
-            this.onCreateTraversal = this.integrateChild(traversalOption);
-        } else if (token == Merge.onMatch) {
-            // add a guard rail to ensure that the incoming object is not an Element. this will prevent
-            // a possibly inadvertent mutation of the graph if you did something like g.V().mergeE(). for
-            // 3.x we won't allow this behavior at all but in 4.x we will make it consistent like it will
-            // be in 4.x
-            if (!isStart && traversalOption != null && !(traversalOption instanceof ConstantTraversal)) {
-                traversalOption.addStep(0, new GuardRailStep<>(traversalOption, getClass().getSimpleName()));
+    public String getStepName() { return "merge"; }
+
+    @Override
+    protected E map(final Traverser.Admin<S> traverser) {
+        final S incoming = traverser.get();
+
+        final Map mapA = (incoming instanceof Map) ? (Map) incoming : null;
+        if (mapA != null) {
+            final Object mapB = (valueTraversal != null) ? TraversalUtil.apply(traverser, valueTraversal) : parameterItems.get();
+            if (!(mapB instanceof Map)) {
+                throw new IllegalArgumentException(
+                        String.format(
+                                "%s step expected provided argument to evaluate to a Map, encountered %s",
+                                getStepName(),
+                                mapB.getClass()));
             }
 
-            this.onMatchTraversal = this.integrateChild(traversalOption);
+            final Map mergedMap = new HashMap(mapA);
+            mergedMap.putAll((Map) mapB);
+            return (E) mergedMap;
         } else {
-            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
+            final Collection listA = convertTraverserToCollection(traverser);
+
+            if (parameterItems != null && parameterItems.get() instanceof Map) {
+                throw new IllegalArgumentException(getStepName() + " step type mismatch: expected argument to be Iterable but got Map");
+            }
+            final Collection listB =
+                    (null != valueTraversal)
+                            ? convertTraversalToCollection(traverser, valueTraversal)
+                            : convertArgumentToCollection(parameterItems.get());
+
+            final Set elements = new HashSet();
+
+            elements.addAll(listA);
+            elements.addAll(listB);
+
+            return (E) elements;
         }
     }
 
     @Override
-    public <S, C> List<Traversal.Admin<S, C>> getLocalChildren() {
-        final List<Traversal.Admin<S, C>> children = new ArrayList<>();
-        if (mergeTraversal != null) children.add((Traversal.Admin<S, C>) mergeTraversal);
-        if (onMatchTraversal != null) children.add((Traversal.Admin<S, C>) onMatchTraversal);
-        if (onCreateTraversal != null) children.add((Traversal.Admin<S, C>) onCreateTraversal);
-        return children;
-    }
-
-    /**
-     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}. Using this
-     * with {@link GraphTraversal#with(String,Object)} will have an ill effect of simply acting like a call to
-     * {@link GraphTraversal#property(Object, Object, Object...)}. No mutating steps currently support use of
-     * {@link GraphTraversal#with(String,Object)} so perhaps it's best to not start with that now.
-     */
-    @Override
-    public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
+        return (null == valueTraversal) ? Collections.emptyList() : Collections.singletonList(valueTraversal);
     }
 
     @Override
-    public Parameters getParameters() {
-        return this.parameters;
-    }
+    public Set<TraverserRequirement> getRequirements() { return this.getSelfAndChildRequirements(); }
 
-    public boolean isUsingPartitionStrategy() {
-        return usesPartitionStrategy;
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        if (valueTraversal != null) { this.integrateChild(this.valueTraversal); }
     }
 
     @Override
-    protected Traverser.Admin<E> processNextStart() {
-        // when it's a start step a traverser needs to be created to kick off the traversal.
-        if (isStart && first) {
-            first = false;
-            generateTraverser(false);
+    public MergeStep<S, E> clone() {
+        final MergeStep<S, E> clone = (MergeStep<S, E>) super.clone();
+        if (null != this.valueTraversal) {
+            clone.valueTraversal = this.valueTraversal.clone();
+        } else {
+            clone.parameterItems = this.parameterItems;
         }
-        return super.processNextStart();
-    }
-
-    private void generateTraverser(final Object o) {
-        final TraverserGenerator generator = this.getTraversal().getTraverserGenerator();
-        this.addStart(generator.generate(o, (Step) this, 1L));
-    }
-
-    protected Graph getGraph() {
-        return this.getTraversal().getGraph().get();
-    }
-
-    @Override
-    public CallbackRegistry<Event> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        return clone;
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        if (mergeTraversal != null)
-            result ^= mergeTraversal.hashCode();
-        if (onCreateTraversal != null)
-            result ^= onCreateTraversal.hashCode();
-        if (onMatchTraversal != null)
-            result ^= onMatchTraversal.hashCode();
-        return result;
+        return Objects.hash(result, valueTraversal, parameterItems);
     }
-
-    @Override
-    public void reset() {
-        super.reset();
-        first = true;
-        mergeTraversal.reset();
-        if (onCreateTraversal != null) onCreateTraversal.reset();
-        if (onMatchTraversal != null) onMatchTraversal.reset();
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements();
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, mergeTraversal, onCreateTraversal, onMatchTraversal);
-    }
-
-    @Override
-    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
-        super.setTraversal(parentTraversal);
-        this.integrateChild(mergeTraversal);
-        this.integrateChild(onCreateTraversal);
-        this.integrateChild(onMatchTraversal);
-    }
-
-    @Override
-    public MergeStep<S, E, C> clone() {
-        final MergeStep<S, E, C> clone = (MergeStep<S, E, C>) super.clone();
-        clone.mergeTraversal = mergeTraversal.clone();
-        clone.onCreateTraversal = onCreateTraversal != null ? onCreateTraversal.clone() : null;
-        clone.onMatchTraversal = onMatchTraversal != null ? onMatchTraversal.clone() : null;
-        return clone;
-    }
-
-    protected void validate(final Map map, final boolean ignoreTokens) {
-        final Set allowedTokens = getAllowedTokens();
-        validate(map, ignoreTokens, allowedTokens, this instanceof MergeVertexStep ? "mergeV" : "mergeE");
-    }
-
-    protected static void validate(final Map map, final boolean ignoreTokens, final Set allowedTokens, final String op) {
-        if (null == map) return;
-
-        ((Map<?,?>) map).entrySet().forEach(e -> {
-            final Object k = e.getKey();
-            final Object v = e.getValue();
-
-            if (v == null) {
-                throw new IllegalArgumentException(String.format("%s() does not allow null Map values - check: %s", op, k));
-            }
-
-            if (ignoreTokens) {
-                if (!(k instanceof String)) {
-                    throw new IllegalArgumentException(String.format("option(onMatch) expects keys in Map to be of String - check: %s", k));
-                } else {
-                    ElementHelper.validateProperty((String) k, v);
-                }
-            } else {
-                if (!(k instanceof String) && !allowedTokens.contains(k)) {
-                    throw new IllegalArgumentException(String.format(
-                            "%s() and option(onCreate) args expect keys in Map to be either String or %s - check: %s",
-                            op, allowedTokens, k));
-                }
-                if (k == T.label) {
-                    if (!(v instanceof String)) {
-                        throw new IllegalArgumentException(String.format(
-                                "%s() and option(onCreate) args expect T.label value to be of String - found: %s", op,
-                                v.getClass().getSimpleName()));
-                    } else {
-                        ElementHelper.validateLabel((String) v);
-                    }
-                }
-                if (k == Direction.OUT && v instanceof Merge && v != Merge.outV) {
-                    throw new IllegalArgumentException(String.format("Only Merge.outV token may be used for Direction.OUT, found: %s", v));
-                }
-                if (k == Direction.IN && v instanceof Merge && v != Merge.inV) {
-                    throw new IllegalArgumentException(String.format("Only Merge.inV token may be used for Direction.IN, found: %s", v));
-                }
-                if (k instanceof String) {
-                    ElementHelper.validateProperty((String) k, v);
-                }
-            }
-        });
-    }
-
-    /**
-     * Prohibit overrides to the existence criteria (id/label/from/to) in onCreate.
-     */
-    protected void validateNoOverrides(final Map<?,?> mergeMap, final Map<?,?> onCreateMap) {
-        for (final Map.Entry e : onCreateMap.entrySet()) {
-            final Object k = e.getKey();
-            final Object v = e.getValue();
-            if (mergeMap.containsKey(k) && !Objects.equals(v, mergeMap.get(k))) {
-                throw new IllegalArgumentException(String.format(
-                        "option(onCreate) cannot override values from merge() argument: (%s, %s)", k, v));
-            }
-        }
-    }
-
-    /**
-     * null Map == empty Map
-     */
-    protected Map materializeMap(final Traverser.Admin<S> traverser, Traversal.Admin<S, ?> mapTraversal) {
-        Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
-
-        // PartitionStrategy uses parameters as a mechanism for setting the partition key. trying to be as specific
-        // as possible here wrt parameters usage to avoid misuse
-        if (usesPartitionStrategy) {
-            map = null == map ? new LinkedHashMap() : map;
-            for (Map.Entry<Object, List<Object>> entry : parameters.getRaw().entrySet()) {
-                final Object k = entry.getKey();
-                final List<Object> v = entry.getValue();
-                map.put(k, v.get(0));
-            }
-        }
-
-        return map == null ? new LinkedHashMap() : map;
-    }
-
-    /**
-     * Translate the Map into a g.V() traversal against the supplied graph. Graph providers will presumably optimize
-     * this traversal to use whatever indices are present and appropriate for efficiency.
-     *
-     * Callers are responsible for closing this iterator when finished.
-     */
-    protected CloseableIterator<Vertex> searchVertices(final Map search) {
-        if (search == null)
-            return CloseableIterator.empty();
-
-        final Graph graph = getGraph();
-        final Object id = search.get(T.id);
-        final String label = (String) search.get(T.label);
-
-        GraphTraversal t = searchVerticesTraversal(graph, id);
-        t = searchVerticesLabelConstraint(t, label);
-        t = searchVerticesPropertyConstraints(t, search);
-
-        // this should auto-close the underlying traversal
-        return CloseableIterator.of(t);
-    }
-
-    protected GraphTraversal searchVerticesTraversal(final Graph graph, final Object id) {
-        return id != null ? graph.traversal().V(id) : graph.traversal().V();
-    }
-
-    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final String label) {
-        return label != null ? t.hasLabel(label) : t;
-    }
-
-    protected GraphTraversal searchVerticesPropertyConstraints(GraphTraversal t, final Map search) {
-        for (final Map.Entry e : ((Map<?,?>) search).entrySet()) {
-            final Object k = e.getKey();
-            if (!(k instanceof String)) continue;
-            t = t.has((String) k, e.getValue());
-        }
-        return t;
-    }
-
-    @Override
-    protected abstract Iterator<E> flatMap(final Traverser.Admin<S> traverser);
-
-    protected abstract Set getAllowedTokens();
-
-    /**
-     * Guard rail to ensure that the incoming object is not an {@link Element}.
-     */
-    public static class GuardRailStep<S, E> extends ScalarMapStep<S, E> {
-        private final String stepType;
-
-        public GuardRailStep(final Traversal.Admin traversal, final String stepType) {
-            super(traversal);
-            this.stepType = stepType;
-        }
-
-        @Override
-        protected E map(final Traverser.Admin<S> t) {
-            if (t.get() instanceof Element) {
-                throw new IllegalArgumentException(
-                        String.format("The incoming traverser for %s cannot be an Element", stepType));
-            }
-            return (E) t.get();
-        }
-
-        @Override
-        public String toString() {
-            return StringFactory.stepString(this);
-        }
-    }
-
 }

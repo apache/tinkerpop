@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/language"
 )
@@ -34,12 +33,9 @@ const mapDataOrder2 = "[32 97 112 112 108 105 99 97 116 105 111 110 47 118 110 1
 
 func TestSerializer(t *testing.T) {
 	t.Run("test serialized request message", func(t *testing.T) {
-		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
 		testRequest := request{
-			requestID: u,
-			op:        "eval",
-			processor: "",
-			args:      map[string]interface{}{"gremlin": "g.V().count()", "aliases": map[string]interface{}{"g": "g"}},
+			gremlin: "g.V().count()",
+			fields: map[string]interface{}{"aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		serialized, _ := serializer.serializeMessage(&testRequest)
@@ -57,8 +53,6 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, "fb252a4a-75dd-47bf-b74e-5635000c8464", response.responseID.String())
 		assert.Equal(t, uint16(200), response.responseStatus.code)
 		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{"host": "/127.0.0.1:62035"}, response.responseStatus.attributes)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
 		assert.Equal(t, []interface{}{int64(0)}, response.responseResult.data)
 	})
 
@@ -74,21 +68,15 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, "45de2837-5f3e-4bf9-8685-9b852b97dd44", response.responseID.String())
 		assert.Equal(t, uint16(200), response.responseStatus.code)
 		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{"host": "/10.244.0.33:51470"}, response.responseStatus.attributes)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
 		assert.NotNil(t, response.responseResult.data)
 	})
 }
 
 func TestSerializerFailures(t *testing.T) {
 	t.Run("test convertArgs failure", func(t *testing.T) {
-		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
 		testRequest := request{
-			requestID: u,
-			op:        "traversal",
-			processor: "",
-			// Invalid Input in args, so should fail
-			args: map[string]interface{}{"invalidInput": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
+			// Invalid Input in fields, so should fail
+			fields: map[string]interface{}{"invalidInput": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		resp, err := serializer.serializeMessage(&testRequest)

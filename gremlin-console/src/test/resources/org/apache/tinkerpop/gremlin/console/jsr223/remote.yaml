@@ -17,4 +17,4 @@
 
 hosts: [localhost]
 port: 45940
-serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
+serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}

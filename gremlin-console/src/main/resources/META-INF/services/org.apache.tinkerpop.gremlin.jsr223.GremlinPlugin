@@ -1,3 +1,2 @@
-org.apache.tinkerpop.gremlin.console.jsr223.DriverGremlinPlugin
-org.apache.tinkerpop.gremlin.console.jsr223.GephiGremlinPlugin
+org.apache.tinkerpop.gremlin.console.jsr223.RemoteGremlinPlugin
 org.apache.tinkerpop.gremlin.console.jsr223.UtilitiesGremlinPlugin

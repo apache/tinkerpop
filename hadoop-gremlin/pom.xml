@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
@@ -52,12 +52,20 @@ limitations under the License.
             <version>${hadoop.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.jline</groupId>
+                    <artifactId>jline</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>ch.qos.reload4j</groupId>
                     <artifactId>reload4j</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -101,6 +109,11 @@ limitations under the License.
         </dependency>
         <!-- hadoop-client conflict resolution -->
         <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>3.22.0</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.reload4j</groupId>
             <artifactId>reload4j</artifactId>
             <version>1.2.19</version>
@@ -128,7 +141,7 @@ limitations under the License.
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.8.1</version>
+            <version>9.30.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -138,7 +151,7 @@ limitations under the License.
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
+            <version>1.3.4</version>
         </dependency>
         <!-- use jackson 2.13.5 to fit better with spark where Scala module 2.13.4 requires Jackson Databind version >= 2.13.0 and < 2.14.0 -->
         <dependency>

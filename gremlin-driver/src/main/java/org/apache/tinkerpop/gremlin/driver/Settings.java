@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
@@ -41,10 +41,10 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class Settings {
+public final class Settings {
 
     /**
-     * The port of the Gremlin Server to connect to which defaults to {@code 8192}. The same port will be applied for
+     * The port of the Gremlin Server to connect to which defaults to {@code 8182}. The same port will be applied for
      * all {@link #hosts}.
      */
     public int port = 8182;
@@ -71,6 +71,11 @@ final class Settings {
     public ConnectionPoolSettings connectionPool = new ConnectionPoolSettings();
 
     /**
+     * Settings for authentication.
+     */
+    public AuthSettings auth = new AuthSettings();
+
+    /**
      * The size of the thread pool defaulted to the number of available processors.
      */
     public int nioPoolSize = Runtime.getRuntime().availableProcessors();
@@ -81,34 +86,14 @@ final class Settings {
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
     /**
-     * The username to submit on requests that require authentication.
-     */
-    public String username = null;
-
-    /**
-     * The password to submit on requests that require authentication.
-     */
-    public String password = null;
-
-    /**
-     * The JAAS to submit on requests that require authentication.
-     */
-    public String jaasEntry = null;
-
-    /**
-     * The JAAS protocol to submit on requests that require authentication.
-     */
-    public String protocol = null;
-
-    /**
      * Toggles if user agent should be sent in web socket handshakes.
      */
     public boolean enableUserAgentOnConnect = true;
 
     /**
-     * Configures use of per-message deflate compression. Defaults to true.
+     * Toggles if result from server is bulked. Default is false.
      */
-    public boolean enableCompression = true;
+    public boolean bulkResults = false;
 
     /**
      * Read configuration from a file into a new {@link Settings} object.
@@ -144,23 +129,11 @@ final class Settings {
         if (conf.containsKey("workerPoolSize"))
             settings.workerPoolSize = conf.getInt("workerPoolSize");
 
-        if (conf.containsKey("username"))
-            settings.username = conf.getString("username");
-
-        if (conf.containsKey("password"))
-            settings.password = conf.getString("password");
-
-        if (conf.containsKey("jaasEntry"))
-            settings.jaasEntry = conf.getString("jaasEntry");
-
-        if (conf.containsKey("protocol"))
-            settings.protocol = conf.getString("protocol");
-
         if (conf.containsKey("enableUserAgentOnConnect"))
             settings.enableUserAgentOnConnect = conf.getBoolean("enableUserAgentOnConnect");
 
-        if (conf.containsKey("enableCompression"))
-            settings.enableCompression = conf.getBoolean("enableCompression");
+        if (conf.containsKey("bulkResults"))
+            settings.bulkResults = conf.getBoolean("bulkResults");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
@@ -184,9 +157,6 @@ final class Settings {
         final Configuration connectionPoolConf = conf.subset("connectionPool");
         if (IteratorUtils.count(connectionPoolConf.getKeys()) > 0) {
             final ConnectionPoolSettings cpSettings = new ConnectionPoolSettings();
-
-            if (connectionPoolConf.containsKey("channelizer"))
-                cpSettings.channelizer = connectionPoolConf.getString("channelizer");
 
             if (connectionPoolConf.containsKey("enableSsl"))
                 cpSettings.enableSsl = connectionPoolConf.getBoolean("enableSsl");
@@ -220,23 +190,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("sslSkipCertValidation"))
                 cpSettings.sslSkipCertValidation = connectionPoolConf.getBoolean("sslSkipCertValidation");
 
-            if (connectionPoolConf.containsKey("minSize"))
-                cpSettings.minSize = connectionPoolConf.getInt("minSize");
-
             if (connectionPoolConf.containsKey("maxSize"))
                 cpSettings.maxSize = connectionPoolConf.getInt("maxSize");
-
-            if (connectionPoolConf.containsKey("minSimultaneousUsagePerConnection"))
-                cpSettings.minSimultaneousUsagePerConnection = connectionPoolConf.getInt("minSimultaneousUsagePerConnection");
-
-            if (connectionPoolConf.containsKey("maxSimultaneousUsagePerConnection"))
-                cpSettings.maxSimultaneousUsagePerConnection = connectionPoolConf.getInt("maxSimultaneousUsagePerConnection");
-
-            if (connectionPoolConf.containsKey("maxInProcessPerConnection"))
-                cpSettings.maxInProcessPerConnection = connectionPoolConf.getInt("maxInProcessPerConnection");
-
-            if (connectionPoolConf.containsKey("minInProcessPerConnection"))
-                cpSettings.minInProcessPerConnection = connectionPoolConf.getInt("minInProcessPerConnection");
 
             if (connectionPoolConf.containsKey("maxWaitForConnection"))
                 cpSettings.maxWaitForConnection = connectionPoolConf.getInt("maxWaitForConnection");
@@ -244,8 +199,8 @@ final class Settings {
             if (connectionPoolConf.containsKey("maxWaitForClose"))
                 cpSettings.maxWaitForClose = connectionPoolConf.getInt("maxWaitForClose");
 
-            if (connectionPoolConf.containsKey("maxContentLength"))
-                cpSettings.maxContentLength = connectionPoolConf.getInt("maxContentLength");
+            if (connectionPoolConf.containsKey("maxResponseContentLength"))
+                cpSettings.maxResponseContentLength = connectionPoolConf.getInt("maxResponseContentLength");
 
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
@@ -253,16 +208,32 @@ final class Settings {
             if (connectionPoolConf.containsKey("resultIterationBatchSize"))
                 cpSettings.resultIterationBatchSize = connectionPoolConf.getInt("resultIterationBatchSize");
 
-            if (connectionPoolConf.containsKey("keepAliveInterval"))
-                cpSettings.keepAliveInterval = connectionPoolConf.getLong("keepAliveInterval");
-
             if (connectionPoolConf.containsKey("validationRequest"))
                 cpSettings.validationRequest = connectionPoolConf.getString("validationRequest");
 
             if (connectionPoolConf.containsKey("connectionSetupTimeoutMillis"))
                 cpSettings.connectionSetupTimeoutMillis = connectionPoolConf.getLong("connectionSetupTimeoutMillis");
 
+            if (connectionPoolConf.containsKey("idleConnectionTimeout"))
+                cpSettings.idleConnectionTimeout = connectionPoolConf.getLong("idleConnectionTimeout");
+
             settings.connectionPool = cpSettings;
+        }
+
+        final Configuration authConf = conf.subset("auth");
+        if (IteratorUtils.count(authConf.getKeys()) > 0) {
+            final AuthSettings authSettings = new AuthSettings();
+
+            if (authConf.containsKey("type"))
+                authSettings.type = authConf.getString("type");
+
+            if (authConf.containsKey("username"))
+                authSettings.username = authConf.getString("username");
+
+            if (authConf.containsKey("password"))
+                authSettings.password = authConf.getString("password");
+
+            settings.auth = authSettings;
         }
 
         return settings;
@@ -330,45 +301,9 @@ final class Settings {
         public boolean sslSkipCertValidation = false;
 
         /**
-         * The minimum size of a connection pool for a {@link Host}. By default this is set to 2.
-         */
-        public int minSize = ConnectionPool.MIN_POOL_SIZE;
-
-        /**
-         * The maximum size of a connection pool for a {@link Host}. By default this is set to 8.
+         * The maximum size of a connection pool for a {@link Host}. By default this is set to 128.
          */
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
-
-        /**
-         * Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to
-         * zero to disable this feature.
-         */
-        public long keepAliveInterval = Connection.KEEP_ALIVE_INTERVAL;
-
-        /**
-         * A connection under low use can be destroyed. This setting determines the threshold for determining when
-         * that connection can be released and is defaulted to 8.
-         */
-        public int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-
-        /**
-         * If a connection is over used, then it might mean that is necessary to expand the pool by adding a new
-         * connection.  This setting determines the threshold for a connections over use and is defaulted to 16
-         */
-        public int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
-
-        /**
-         * The maximum number of requests in flight on a connection where the default is 4.
-         */
-        public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
-
-        /**
-         * A connection has available in-process requests which is calculated by subtracting the number of current
-         * in-flight requests on a connection and subtracting that from the {@link #maxInProcessPerConnection}. When
-         * that number drops below this configuration setting, the connection is recommended for replacement. The
-         * default for this setting is 1.
-         */
-        public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
 
         /**
          * The amount of time in milliseconds to wait for a new connection before timing out where the default value
@@ -384,10 +319,10 @@ final class Settings {
         public int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
 
         /**
-         * The maximum length in bytes that a message can be sent to the server. This number can be no greater than
-         * the setting of the same name in the server configuration. The default value is 65536.
+         * The maximum length in bytes of a response message that can be received from the server. The default value is
+         * {@link Integer#MAX_VALUE}.
          */
-        public int maxContentLength = Connection.MAX_CONTENT_LENGTH;
+        public long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is
@@ -402,16 +337,9 @@ final class Settings {
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
 
         /**
-         * The constructor for the channel that connects to the server. This value should be the fully qualified
-         * class name of a Gremlin Driver {@link Channelizer} implementation.  By default this value is set to
-         * {@link Channelizer.WebSocketChannelizer}.
-         */
-        public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
-
-        /**
          * A valid Gremlin script that can be used to test remote operations.
          */
-        public String validationRequest = "''";
+        public String validationRequest = "g.inject(0)";
 
         /**
          * Duration of time in milliseconds provided for connection setup to complete which includes WebSocket
@@ -419,15 +347,23 @@ final class Settings {
          * complete by then.
          */
         public long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
+
+        /**
+         * Time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes.
+         * Note that while this value is to be provided as milliseconds it will resolve to
+         * second precision. Set this value to 0 to disable this feature.
+         */
+        public long idleConnectionTimeout = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
+
     }
 
     public static class SerializerSettings {
         /**
          * The fully qualified class name of the {@link MessageSerializer} that will be used to communicate with the
          * server. Note that the serializer configured on the client should be supported by the server configuration.
-         * By default the setting is configured to {@link GraphBinaryMessageSerializerV1}.
+         * By default the setting is configured to {@link GraphBinaryMessageSerializerV4}.
          */
-        public String className = GraphBinaryMessageSerializerV1.class.getCanonicalName();
+        public String className = GraphBinaryMessageSerializerV4.class.getCanonicalName();
 
         /**
          * The configuration for the specified serializer with the {@link #className}.
@@ -440,5 +376,30 @@ final class Settings {
             Optional.ofNullable(config).ifPresent(c -> serializer.configure(c, null));
             return serializer;
         }
+    }
+
+    public static class AuthSettings {
+        /**
+         * Type of Auth to submit on requests that require authentication.
+         */
+        public String type = "";
+        /**
+         * The username to submit on requests that require authentication.
+         */
+        public String username = null;
+        /**
+         * The password to submit on requests that require authentication.
+         */
+        public String password = null;
+
+        /**
+         * The region setting for sigv4 authentication.
+         */
+        public String region = null;
+
+        /**
+         * The service name setting for sigv4 authentication.
+         */
+        public String serviceName = null;
     }
 }

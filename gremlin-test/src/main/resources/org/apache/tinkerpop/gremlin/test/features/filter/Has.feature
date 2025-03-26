@@ -64,6 +64,19 @@ Feature: Step - has()
       | result |
       | v[marko] |
 
+  Scenario: g_VX1X_hasXname_markovarX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter xx1 defined as "marko"
+    And the traversal of
+      """
+      g.V(vid1).has("name", xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
   Scenario: g_VX2X_hasXname_markoX
     Given the modern graph
     And using the parameter vid1 defined as "v[vadas].id"
@@ -140,6 +153,19 @@ Feature: Step - has()
     When iterated to list
     Then the result should be empty
 
+  Scenario: g_V_hasXpersonvar_age_gt_30X
+    Given the modern graph
+    And using the parameter xx1 defined as "person"
+    And the traversal of
+      """
+      g.V().has(xx1, "age", P.gt(30))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[peter] |
+      | v[josh] |
+
   Scenario: g_VX4X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid4 defined as "v[josh].id"
@@ -200,6 +226,30 @@ Feature: Step - has()
     And the traversal of
     """
     g.V().has("person", "name", "marko").values("age")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+
+  Scenario: g_V_hasXperson_name_markovarX_age
+    Given the modern graph
+    And using the parameter xx1 defined as "marko"
+    And the traversal of
+    """
+    g.V().has("person", "name", xx1).values("age")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+
+  Scenario: g_V_hasXpersonvar_name_markoX_age
+    Given the modern graph
+    And using the parameter xx1 defined as "person"
+    And the traversal of
+    """
+    g.V().has(xx1, "name", "marko").values("age")
     """
     When iterated to list
     Then the result should be unordered

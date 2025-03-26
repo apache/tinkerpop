@@ -36,7 +36,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public async Task ShouldSupportRemoteTransactionsCommit()
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
+            var g = AnonymousTraversalSource.Traversal().With(_connection);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
@@ -60,7 +60,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         [Fact]
         public async Task ShouldSupportRemoteTransactionsRollback()
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
+            var g = AnonymousTraversalSource.Traversal().With(_connection);
             var tx = g.Tx();
             var gtx = tx.Begin();
             await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate()).ConfigureAwait(false);
@@ -86,7 +86,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         private void EmptyGraph()
         {
-            var g = AnonymousTraversalSource.Traversal().WithRemote(_connection);
+            var g = AnonymousTraversalSource.Traversal().With(_connection);
             g.V().Drop().Iterate();
         }
     }

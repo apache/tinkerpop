@@ -18,31 +18,33 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
 public class TextPlainMessageSerializerTest {
-
     @Test
     public void shouldProducePlainText() throws Exception {
         final Map<String, Object> m = new HashMap<>();
-        final ResponseMessage msg = ResponseMessage.build(UUID.randomUUID()).
+        final ResponseMessage msg = ResponseMessage.build().
+                code(HttpResponseStatus.OK).
                 result(Arrays.asList(1, new DetachedVertex(100, "person", m), java.awt.Color.RED)).create();
 
         final TextPlainMessageSerializer messageSerializer = new TextPlainMessageSerializer();
-        final String output = messageSerializer.serializeResponseAsString(msg, ByteBufAllocator.DEFAULT);
+        final ByteBuf output = messageSerializer.serializeResponseAsBinary(msg, ByteBufAllocator.DEFAULT);
         final String exp = "==>1" + System.lineSeparator() +
-                           "==>v[100]" + System.lineSeparator() +
-                           "==>java.awt.Color[r=255,g=0,b=0]";
-        assertEquals(exp, output);
+                "==>v[100]" + System.lineSeparator() +
+                "==>java.awt.Color[r=255,g=0,b=0]";
+        assertEquals(exp, output.toString(CharsetUtil.UTF_8));
     }
 }

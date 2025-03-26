@@ -20,12 +20,11 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const { valueKey, LambdaSerializer: GraphsonLambdaSerializer } = require('../../type-serializers');
+import { Buffer } from 'buffer';
+import { valueKey, LambdaSerializer as GraphsonLambdaSerializer } from '../../type-serializers.js';
 
-module.exports = class LambdaSerializer {
+export default class LambdaSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     // this.ioc.serializers[ioc.DataType.LAMBDA] = this; // it's not expected to be deserialized
@@ -68,4 +67,4 @@ module.exports = class LambdaSerializer {
 
     return Buffer.concat(bufs);
   }
-};
+}

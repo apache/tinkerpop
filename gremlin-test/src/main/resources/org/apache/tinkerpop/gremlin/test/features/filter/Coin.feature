@@ -34,6 +34,23 @@ Feature: Step - coin()
       | v[ripple] |
       | v[peter]  |
 
+  Scenario: g_V_coinX1varX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[1.0].d"
+    And the traversal of
+      """
+      g.V().coin(xx1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter]  |
+
   Scenario: g_V_coinX0X
     Given the modern graph
     And the traversal of

@@ -83,7 +83,7 @@ class TestConsole(object):
         child.expect("==>2\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._send(child, "z")
-        child.expect("==>argument=\[x, -i, =, --color, -D\]\r\n")
+        child.expect("==>argument=\\[x, -i, =, --color, -D\\]\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._close(child)
 
@@ -97,7 +97,7 @@ class TestConsole(object):
         child.expect("==>2\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._send(child, "z")
-        child.expect("==>argument=\[x, -i, =, --color, -D\]\r\n")
+        child.expect("==>argument=\\[x, -i, =, --color, -D\\]\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._close(child)
 
@@ -111,7 +111,7 @@ class TestConsole(object):
         child.expect("==>2\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._send(child, "z")
-        child.expect("==>argument=\[x, -i, =, --color, -D\]\r\n")
+        child.expect("==>argument=\\[x, -i, =, --color, -D\\]\r\n")
         TestConsole._expect_prompt(child)
         TestConsole._close(child)
 
@@ -122,7 +122,7 @@ class TestConsole(object):
 
     def test_just_dash_e_file_not_found(self):
         child = pexpect.spawn(TestConsole.gremlinsh + "-e=x-printed.script")
-        child.expect("Gremlin file not found at \[=x-printed.script\]\.\r\n")
+        child.expect("Gremlin file not found at \\[=x-printed.script\\]\\.\r\n")
         child.expect(pexpect.EOF)
 
     def test_just_dash_dash_execute(self):
@@ -144,21 +144,21 @@ class TestConsole(object):
         child = pexpect.spawn(TestConsole.gremlinsh + "-e y-printed.script 1 2 3 -e x-printed.script -e \"z-printed.script x -e = --color -D\"")
         child.expect("6\r\n")
         child.expect("2\r\n")
-        child.expect("argument=\[x, -e, =, --color, -D\]\r\n")
+        child.expect("argument=\\[x, -e, =, --color, -D\\]\r\n")
         TestConsole._close(child)
 
     def test_dash_dash_execute_multiple_scripts(self):
         child = pexpect.spawn(TestConsole.gremlinsh + "--execute y-printed.script 1 2 3 --execute x-printed.script --execute \"z-printed.script x -e = --color -D\"")
         child.expect("6\r\n")
         child.expect("2\r\n")
-        child.expect("argument=\[x, -e, =, --color, -D\]\r\n")
+        child.expect("argument=\\[x, -e, =, --color, -D\\]\r\n")
         TestConsole._close(child)
 
     def test_mixed_execute_long_short_opts_with_multiple_scripts(self):
         child = pexpect.spawn(TestConsole.gremlinsh + "--execute y-printed.script 1 2 3 -e x-printed.script --execute \"z-printed.script x -e = --color -D\"")
         child.expect("6\r\n")
         child.expect("2\r\n")
-        child.expect("argument=\[x, -e, =, --color, -D\]\r\n")
+        child.expect("argument=\\[x, -e, =, --color, -D\\]\r\n")
         TestConsole._close(child)
 
     def test_no_mix_dash_i_and_dash_e(self):
@@ -175,9 +175,9 @@ class TestConsole(object):
     def _expect_gremlin_header(child):
         # skip/read the Gremlin graphics
         child.expect("\r\n")
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
-        child.expect(["plugin activated: tinkerpop.server", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
+        child.expect(["plugin activated: tinkerpop.remote", "plugin activated: tinkerpop.utilities", "plugin activated: tinkerpop.tinkergraph"])
         TestConsole._expect_prompt(child)
 
     @staticmethod

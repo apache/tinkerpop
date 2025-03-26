@@ -62,7 +62,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
                "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
                "not @GraphComputerVerificationInjectionNotSupported and " +
                "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
-               "not @TinkerServiceRegistry",
+               "not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @WithElementIdStrategy",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
@@ -161,6 +161,11 @@ public class SparkGraphFeatureIntegrateTest {
                 put(Constants.SPARK_KRYO_REGISTRATOR, GryoRegistrator.class.getCanonicalName());
                 put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
             }};
+        }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
         }
     }
 

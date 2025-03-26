@@ -68,7 +68,7 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 }
 
 func scenarioUrl() string {
-	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "ws://localhost:45940/gremlin")
+	return getEnvOrDefaultString("GREMLIN_SERVER_URL", "http://localhost:45940/gremlin")
 }
 
 func NewCucumberWorld() *CucumberWorld {
@@ -106,7 +106,7 @@ func (t *CucumberWorld) loadAllDataGraph() {
 			if err != nil {
 				panic(fmt.Sprintf("Failed to create connection '%v'", err))
 			}
-			g := gremlingo.Traversal_().WithRemote(connection)
+			g := gremlingo.Traversal_().With(connection)
 			t.graphDataMap[name] = &DataGraph{
 				name:             name,
 				connection:       connection,
@@ -127,7 +127,7 @@ func (t *CucumberWorld) loadEmptyDataGraph() {
 
 func (t *CucumberWorld) reloadEmptyData() {
 	graphData := t.getDataGraphFromMap("empty")
-	g := gremlingo.Traversal_().WithRemote(graphData.connection)
+	g := gremlingo.Traversal_().With(graphData.connection)
 	graphData.vertices = getVertices(g)
 	graphData.edges = getEdges(g)
 }

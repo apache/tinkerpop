@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const g = require('../../../graph');
+import { Buffer } from 'buffer';
+import { Edge, Vertex } from '../../../graph.js';
 
-module.exports = class EdgeSerializer {
+export default class EdgeSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.EDGE] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof g.Edge;
+    return value instanceof Edge;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -201,16 +200,13 @@ module.exports = class EdgeSerializer {
       }
       cursor = cursor.slice(properties_len);
 
-      const v = new g.Edge(
-        id,
-        new g.Vertex(outVId, outVLabel, null),
-        label,
-        new g.Vertex(inVId, inVLabel, null),
-        properties,
-      );
+      // null properties are deserialized into empty lists
+      const edge_props = properties ? properties : [];
+
+      const v = new Edge(id, new Vertex(outVId, outVLabel, null), label, new Vertex(inVId, inVLabel, null), edge_props);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

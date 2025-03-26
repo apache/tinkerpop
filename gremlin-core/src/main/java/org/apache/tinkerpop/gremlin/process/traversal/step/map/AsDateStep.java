@@ -20,18 +20,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,25 +37,25 @@ import java.util.Set;
  *
  * @author Valentyn Kahamlyk
  */
-public final class AsDateStep<S> extends ScalarMapStep<S, Date> {
+public final class AsDateStep<S> extends ScalarMapStep<S, OffsetDateTime> {
 
     public AsDateStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Date map(final Traverser.Admin<S> traverser) {
+    protected OffsetDateTime map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
         if (object == null)
-            throw new IllegalArgumentException("Can't parse null as Date.");
-        if (object instanceof Date)
-            return (Date) object;
+            throw new IllegalArgumentException("Can't parse null as DateTime.");
+        if (object instanceof OffsetDateTime)
+            return (OffsetDateTime) object;
         if (object instanceof Byte || object instanceof Short || object instanceof Integer || object instanceof Long)
             // numbers handled as milliseconds since January 1, 1970, 00:00:00 GMT.
-            return new Date(((Number) object).longValue());
+            return OffsetDateTime.ofInstant(Instant.ofEpochMilli(((Number) object).longValue()), ZoneOffset.UTC);
         if (object instanceof BigInteger) {
             try {
-                return new Date(((BigInteger) object).longValueExact());
+                return OffsetDateTime.ofInstant(Instant.ofEpochMilli(((BigInteger) object).longValueExact()), ZoneOffset.UTC);
             } catch (ArithmeticException ae) {
                 throw new IllegalArgumentException("Can't parse " + object + " as Date.");
             }
@@ -68,11 +66,11 @@ public final class AsDateStep<S> extends ScalarMapStep<S, Date> {
                 return DatetimeHelper.parse((String) object);
             }
             catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Can't parse " + object + " as Date.");
+                throw new IllegalArgumentException("Can't parse " + object + " as OffsetDateTime.");
             }
         }
 
-        throw new IllegalArgumentException("Can't parse " + object.getClass().getName() + " as Date.");
+        throw new IllegalArgumentException("Can't parse " + object.getClass().getName() + " as OffsetDateTime.");
     }
 
     @Override

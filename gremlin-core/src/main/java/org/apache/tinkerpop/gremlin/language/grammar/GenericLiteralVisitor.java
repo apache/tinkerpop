@@ -31,12 +31,14 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
@@ -84,8 +86,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Parse a Date based literal context and return the Date.
      */
-    public Date parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
-        return (Date) visitDateLiteral(dateLiteral);
+    public OffsetDateTime parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
+        return (OffsetDateTime) visitDateLiteral(dateLiteral);
     }
 
     /**
@@ -138,16 +140,16 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Parse a string literal varargs, and return an string array
+     * Parse a string literal varargs, and return a string array
      */
-    public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
-        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
+    public String[] parseStringVarargsLiterals(final GremlinParser.StringLiteralVarargsLiteralsContext varargsContext) {
+        if (varargsContext == null || varargsContext.stringNullableLiteral() == null) {
             return new String[0];
         }
-        return varargsContext.stringNullableArgument()
+        return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
+                .map(antlr.genericVisitor::parseString)
                 .toArray(String[]::new);
     }
 
@@ -296,6 +298,15 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         }
     }
 
+    @Override
+    public Object visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+        final Set<Object> result = new HashSet<>(ctx.getChildCount() / 2);
+        for (GremlinParser.GenericLiteralContext ic : ctx.genericLiteral()) {
+            result.add(antlr.genericVisitor.visitGenericLiteral(ic));
+        }
+        return result;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -333,8 +344,12 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 key = visitTraversalDirection((GremlinParser.TraversalDirectionContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralCollectionContext) {
                 key = visitGenericLiteralCollection((GremlinParser.GenericLiteralCollectionContext) kctx);
+            } else if (kctx instanceof GremlinParser.GenericLiteralSetContext) {
+                key = visitGenericLiteralSet((GremlinParser.GenericLiteralSetContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralMapContext) {
                 key = visitGenericLiteralMap((GremlinParser.GenericLiteralMapContext) kctx);
+            } else if (kctx instanceof GremlinParser.KeywordContext) {
+                key = ((GremlinParser.KeywordContext) kctx).getText();
             } else if (kctx instanceof TerminalNode) {
                 key = ((TerminalNode) kctx).getText();
             } else {
@@ -348,8 +363,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
 
         return literalMap;
     }
-
-
 
     /**
      * {@inheritDoc}
@@ -461,7 +474,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             // parse D/d suffix as Double
             return new Double(floatLiteral);
         } else {
-            return new BigDecimal(floatLiteral);
+            return new Double(floatLiteral);
         }
     }
 
@@ -642,5 +655,19 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             return null;
         else
             return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
+    }
+
+    @Override
+    public Object[] visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) {
+        if (ctx == null) {
+            return new Object[0];
+        }
+        return ctx.children
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(p -> p instanceof GremlinParser.StringNullableArgumentContext)
+                .map(p -> (GremlinParser.StringNullableArgumentContext) p)
+                .map(antlr.argumentVisitor::visitStringNullableArgument)
+                .toArray(Object[]::new);
     }
 }

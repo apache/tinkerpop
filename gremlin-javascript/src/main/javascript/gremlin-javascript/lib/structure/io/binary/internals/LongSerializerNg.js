@@ -20,14 +20,13 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
 // TODO: it's based on BigInt native JavaScript type to completely support
 // 64 bits integers, but for backward compatibility with current GraphSON
 // implementation we do not use this for now. Consider its removal.
-module.exports = class LongSerializerNg {
+export default class LongSerializerNg {
   constructor(ioc) {
     this.ioc = ioc;
     // this.ioc.serializers[ioc.DataType.LONG] = this; // disabled, see AnySerializer.deserialize()
@@ -101,4 +100,4 @@ module.exports = class LongSerializerNg {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

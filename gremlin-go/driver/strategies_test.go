@@ -35,7 +35,7 @@ func getModernGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Co
 		})
 	assert.Nil(t, err)
 	assert.NotNil(t, remote)
-	g := Traversal_().WithRemote(remote)
+	g := Traversal_().With(remote)
 
 	return g
 }

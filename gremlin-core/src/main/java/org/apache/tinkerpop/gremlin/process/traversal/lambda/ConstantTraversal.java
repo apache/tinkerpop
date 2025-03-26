@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.util.Objects;
 
@@ -29,15 +30,23 @@ import java.util.Objects;
  */
 public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
-    private final E end;
+    private final GValue<E> end;
 
     public ConstantTraversal(final E end) {
-        this.end = end;
+        this.end = null == end ? GValue.of(null, null) : GValue.of(null, end);
+    }
+
+    public ConstantTraversal(final GValue<E> end) {
+        this.end = null == end ? GValue.of(null, null) : end;
     }
 
     @Override
     public E next() {
-        return this.end;
+        return this.end.get();
+    }
+
+    public GValue<E> getEnd() {
+        return end;
     }
 
     @Override

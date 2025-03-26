@@ -92,11 +92,10 @@ Feature: Step - where()
 
   Scenario: g_withSideEffectXa_josh_peterX_VX1X_outXcreatedX_inXcreatedX_name_whereXwithinXaXX
     Given the modern graph
-    And using the parameter xx1 defined as "l[josh,peter]"
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.withSideEffect("a", xx1).V(vid1).out("created").in("created").values("name").where(P.within("a"))
+      g.withSideEffect("a", ["josh","peter"]).V(vid1).out("created").in("created").values("name").where(P.within("a"))
       """
     When iterated to list
     Then the result should be unordered

@@ -26,18 +26,14 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.junit.Test;
 
-import javax.script.Bindings;
-import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngineSuite.ENGINE_TO_TEST;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
@@ -50,92 +46,6 @@ import static org.junit.Assume.assumeThat;
  */
 public class GremlinEnabledScriptEngineTest {
     private static final GremlinScriptEngineManager manager = new DefaultGremlinScriptEngineManager();
-
-    @Test
-    public void shouldEvalBytecode() throws Exception {
-        final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal();
-
-        // purposefully use "x" to match the name of the traversal source binding for "x" below and
-        // thus tests the alias added for "x"
-        final GraphTraversal t = getTraversalWithLambda(g);
-
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("x", g);
-
-        final Traversal evald = scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
-
-        assertTraversals(t, evald);
-
-        assertThat(manager.getBindings().containsKey(GremlinScriptEngine.HIDDEN_G), is(false));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotAllowBytecodeEvalWithAliasInBindings() throws Exception {
-        final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal();
-
-        // purposefully use "x" to match the name of the traversal source binding for "x" below and
-        // thus tests the alias added for "x"
-        final GraphTraversal t = getTraversalWithLambda(g);
-
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("x", g);
-        bindings.put(GremlinScriptEngine.HIDDEN_G, g);
-
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotAllowBytecodeEvalWithAliasAsTraversalSource() throws Exception {
-        final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal();
-
-        // purposefully use "x" to match the name of the traversal source binding for "x" below and
-        // thus tests the alias added for "x"
-        final GraphTraversal t = getTraversalWithLambda(g);
-
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("x", g);
-
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, GremlinScriptEngine.HIDDEN_G);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotAllowBytecodeEvalWithMissingBinding() throws Exception {
-        final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal();
-
-        // purposefully use "x" to match the name of the traversal source binding for "x" below and
-        // thus tests the alias added for "x"
-        final GraphTraversal t = getTraversalWithLambda(g);
-
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("z", g);
-
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotAllowBytecodeEvalWithInvalidBinding() throws Exception {
-        final GremlinScriptEngine scriptEngine = manager.getEngineByName(ENGINE_TO_TEST);
-        final Graph graph = EmptyGraph.instance();
-        final GraphTraversalSource g = graph.traversal();
-
-        // purposefully use "x" to match the name of the traversal source binding for "x" below and
-        // thus tests the alias added for "x"
-        final GraphTraversal t = getTraversalWithLambda(g);
-
-        final Bindings bindings = new SimpleBindings();
-        bindings.put("z", g);
-        bindings.put("x", "invalid-binding-for-x-given-x-should-be-traversal-source");
-
-        scriptEngine.eval(t.asAdmin().getBytecode(), bindings, "x");
-    }
 
     @Test
     public void shouldGetEngineByName() throws Exception {

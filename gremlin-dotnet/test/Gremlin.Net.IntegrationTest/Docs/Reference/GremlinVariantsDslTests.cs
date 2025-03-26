@@ -43,7 +43,7 @@ namespace Gremlin.Net.IntegrationTest.Docs.Reference
         {
 // tag::dslExamples[]
 var connection = new DriverRemoteConnection(new GremlinClient(new GremlinServer("localhost", 8182)));
-var social = Traversal().WithRemote(connection);
+var social = Traversal().With(connection);
 
 social.Persons("marko").Knows("josh");
 social.Persons("marko").YoungestFriendsAge();
@@ -55,7 +55,7 @@ social.Persons().Filter(CreatedAtLeast(2)).Count();
         public void ShouldUseDsl() 
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var social = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var social = AnonymousTraversalSource.Traversal().With(connection);
 
             Assert.NotNull(social.Persons("marko").Knows("josh").Next());
             Assert.Equal(27, social.Persons("marko").YoungestFriendsAge().Next());

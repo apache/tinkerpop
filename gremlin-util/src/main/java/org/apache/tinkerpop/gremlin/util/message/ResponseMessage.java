@@ -18,36 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tinkerpop.gremlin.util.Tokens;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.List;
 
 /**
+ * The model for a response message that is sent to the server beginning in 4.0.0. ResponseMessage is designed to be
+ * streamed back the client in parts so depending on the state of the transfer, certain parts may be null at different
+ * times.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ResponseMessage {
-
-    /**
-     * The current request that generated this response.
-     */
-    private final UUID requestId;
     private final ResponseStatus responseStatus;
     private final ResponseResult responseResult;
 
-    private ResponseMessage(final UUID requestId, final ResponseStatus responseStatus,
+    private ResponseMessage(final ResponseStatus responseStatus,
                             final ResponseResult responseResult) {
-        this.requestId = requestId;
         this.responseResult = responseResult;
         this.responseStatus = responseStatus;
-    }
-
-    public UUID getRequestId() {
-        return requestId;
     }
 
     public ResponseStatus getStatus() {
@@ -61,38 +51,61 @@ public final class ResponseMessage {
     @Override
     public String toString() {
         return "ResponseMessage{" +
-                "requestId=" + requestId +
                 ", status=" + responseStatus +
                 ", result=" + responseResult +
                 '}';
     }
 
-    public static Builder build(final RequestMessage requestMessage) {
-        return new Builder(requestMessage);
+    public static class ResponseMessageHeader {
+        private final ResponseMessage responseMessage;
+        private final boolean typed;
+
+        public ResponseMessageHeader(final ResponseMessage responseMessage, final boolean typed) {
+            this.responseMessage = responseMessage;
+            this.typed = typed;
+        }
+
+        public ResponseMessage getResponseMessage() {
+            return responseMessage;
+        }
+
+        public boolean getTyped() {
+            return typed;
+        }
     }
 
-    public static Builder build(final UUID requestId) {
-        return new Builder(requestId);
+    public static class ResponseMessageFooter {
+        private final ResponseMessage responseMessage;
+        private final boolean typed;
+
+        public ResponseMessageFooter(final ResponseMessage responseMessage, final boolean typed) {
+            this.responseMessage = responseMessage;
+            this.typed = typed;
+        }
+
+        public ResponseMessage getResponseMessage() {
+            return responseMessage;
+        }
+
+        public boolean getTyped() {
+            return typed;
+        }
+    }
+
+    public static Builder build() {
+        return new Builder();
     }
 
     public final static class Builder {
+        private HttpResponseStatus code = null;
+        private List<Object> result = Collections.emptyList();
+        private boolean bulked = false;
+        private String statusMessage = null;
+        private String exception = null;
 
-        private final UUID requestId;
-        private ResponseStatusCode code = ResponseStatusCode.SUCCESS;
-        private Object result = null;
-        private String statusMessage = "";
-        private Map<String, Object> attributes = Collections.emptyMap();
-        private Map<String, Object> metaData = Collections.emptyMap();
+        private Builder() { }
 
-        private Builder(final RequestMessage requestMessage) {
-            this.requestId = requestMessage.getRequestId();
-        }
-
-        private Builder(final UUID requestId) {
-            this.requestId = requestId;
-        }
-
-        public Builder code(final ResponseStatusCode code) {
+        public Builder code(final HttpResponseStatus code) {
             this.code = code;
             return this;
         }
@@ -102,39 +115,29 @@ public final class ResponseMessage {
             return this;
         }
 
-        public Builder statusAttributes(final Map<String, Object> attributes) {
-            this.attributes = attributes;
+        public Builder exception(final String exception) {
+            this.exception = exception;
             return this;
         }
 
-        public Builder statusAttributeException(final Throwable ex) {
-            statusAttribute(Tokens.STATUS_ATTRIBUTE_EXCEPTIONS, IteratorUtils.asList(
-                    IteratorUtils.map(ExceptionUtils.getThrowableList(ex), t -> t.getClass().getName())));
-            statusAttribute(Tokens.STATUS_ATTRIBUTE_STACK_TRACE, ExceptionUtils.getStackTrace(ex));
-            return this;
-        }
-
-        public Builder statusAttribute(final String key, final Object value) {
-            if (this.attributes == Collections.EMPTY_MAP)
-                attributes = new HashMap<>();
-            attributes.put(key, value);
-            return this;
-        }
-
-        public Builder result(final Object result) {
+        public Builder result(final List<Object> result) {
             this.result = result;
             return this;
         }
 
-        public Builder responseMetaData(final Map<String, Object> metaData) {
-            this.metaData = metaData;
+        public Builder bulked(final boolean bulked) {
+            this.bulked = bulked;
             return this;
         }
 
         public ResponseMessage create() {
-            final ResponseResult responseResult = new ResponseResult(result, metaData);
-            final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, attributes);
-            return new ResponseMessage(requestId, responseStatus, responseResult);
+            final ResponseResult responseResult = new ResponseResult(result, bulked);
+            // skip null values
+            if (code == null && statusMessage == null) {
+                return new ResponseMessage(null, responseResult);
+            }
+            final ResponseStatus responseStatus = new ResponseStatus(code, statusMessage, exception);
+            return new ResponseMessage(responseStatus, responseResult);
         }
     }
 }

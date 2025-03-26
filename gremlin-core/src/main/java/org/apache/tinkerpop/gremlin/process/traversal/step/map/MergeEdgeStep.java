@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -52,12 +53,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 /**
  * Implementation for the {@code mergeE()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
+public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
     private Traversal.Admin<S, Object> outVTraversal = null;
@@ -68,6 +69,10 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
     }
 
     public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+        super(traversal, isStart, merge);
+    }
+
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> merge) {
         super(traversal, isStart, merge);
     }
 
@@ -272,11 +277,11 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             edges = IteratorUtils.peek(edges, e -> {
 
                 // override current traverser with the matched Edge so that the option() traversal can operate
-                // on it properly. this should only work this way for the start step form to retain the original
-                // behavior for 3.6.0 where you might do g.inject(Map).mergeE() and want that Map to pass through.
-                // in 4.x this will be rectified such that the edge will always be promoted and you will be forced
-                // to select() the map if you did want the behavior.
-                if (isStart) traverser.set((S) e);
+                // on it properly. prior to 4.x this only worked for start steps, but now it works consistently
+                // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeE() where you
+                // could operate on the Map directly with the child traversal. from 4.x onward you will have to do
+                // something like g.inject(Map).as('a').mergeE().option(onMatch, select('a'))
+                traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);
@@ -389,7 +394,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             return tryAttachVertex(v);
         }
         throw new IllegalArgumentException(
-                String.format("Vertex could not be resolved from mergeE: %s", o));
+                String.format("Vertex does not exist for mergeE: %s", o));
     }
 
     /*
@@ -404,7 +409,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         try (CloseableIterator<Vertex> it = CloseableIterator.of(getGraph().vertices(arg))) {
             if (!it.hasNext())
                 throw new IllegalArgumentException(
-                        String.format("Vertex id could not be resolved from mergeE: %s", arg));
+                        String.format("Vertex does not exist for mergeE: %s", arg));
             return it.next();
         }
     }
@@ -419,7 +424,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
                 return ((Attachable<Vertex>) v).attach(Attachable.Method.get(getGraph()));
             } catch (IllegalStateException ise) {
                 throw new IllegalArgumentException(
-                        String.format("Vertex could not be resolved from mergeE: %s", v));
+                        String.format("Vertex does not exist for mergeE: %s", v));
             }
         } else {
             return v;

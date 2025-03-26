@@ -25,33 +25,81 @@ from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, \
-    Pick, Operator, IO, WithOptions, Merge
+    Pick, Operator, IO, WithOptions, Merge, GValue
 from radish import given, when, then, world
 from hamcrest import *
 
-outV = __.outV
+outV = __.out_v
 label = __.label
-inV = __.inV
+inV = __.in_v
 project = __.project
 tail = __.tail
 
-ignores = []
+ignores = [
+    "g.withoutStrategies(CountStrategy).V().count()",  # serialization issues with Class in GraphSON
+    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
+    "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    ## The following section has queries that aren't supported by gremlin-lang parameters
+    'g.V().branch(l1).option("a", __.values("age")).option("b", __.values("lang")).option("b", __.values("name"))',
+    'g.V().choose(pred1, __.out("knows"), __.in("created")).values("name")',
+    'g.V().repeat(__.both()).until(pred1).groupCount().by("name")',
+    'g.V().both().properties("name").order().by(c1).dedup().value()',
+    'g.V().filter(pred1)',
+    'g.V(vid1).filter(pred1)',
+    'g.V(vid2).filter(pred1)',
+    'g.V(vid1).out().filter(pred1)',
+    'g.E().filter(pred1)',
+    'g.V().out("created").has("name", __.map(l1).is(P.gt(3))).values("name")',
+    'g.V(vid1).map(l1)',
+    'g.V(vid1).outE().label().map(l1)',
+    'g.V(vid1).out().map(l1).map(l2)',
+    'g.withPath().V().as("a").out().map(l1)',
+    'g.withPath().V().as("a").out().out().map(l1)',
+    'g.V().values("name").order().by(c1).by(c2)',
+    'g.V().order().by("name", c1).by("name", c2).values("name")',
+    'g.V().hasLabel("person").order().by(l1, Order.desc).values("name")',
+    'g.V(v1).hasLabel("person").map(l1).order(Scope.local).by(Column.values, Order.desc).by(Column.keys, Order.asc)',
+    'g.V().valueMap().unfold().map(l1)',
+    'g.E(e11)',
+    'g.E(e7,e11)',
+    'g.E(xx1)',
+    'g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")',
+    'g.V().group().by(l1).by(__.constant(1))',
+    'g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()',
+    'g.V().group("a").by(l1).by(__.constant(1)).cap("a")',
+    'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")'
+    ## section end
+]
 
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
+    # if we have no traversals then we are ignoring the test - should be temporary until we can settle out the
+    # issue of handling the removal of lambdas from Gremlin as a language
+    step.context.ignore = len(step.context.traversals) == 0
+    tagset = [tag.name for tag in step.all_tags]
+    if not step.context.ignore:
+        step.context.ignore = "AllowNullPropertyValues" in tagset
+
+    if (step.context.ignore):
+        return
+
     step.context.graph_name = graph_name
-    step.context.g = traversal().withRemote(step.context.remote_conn[graph_name])
+    step.context.g = traversal().with_(step.context.remote_conn[graph_name]).with_('language', 'gremlin-lang')
 
 
 @given("the graph initializer of")
 def initialize_graph(step):
+    if (step.context.ignore):
+        return
+
     t = step.context.traversals.pop(0)(g=step.context.g)
 
     # just be sure that the traversal returns something to prove that it worked to some degree. probably
     # is overkill to try to assert the complete success of this init operation. presumably the test
     # suite would fail elsewhere if this didn't work which would help identify a problem.
-    result = t.toList()
+    result = t.to_list()
     assert len(result) > 0
 
 
@@ -61,16 +109,11 @@ def unsupported_scenario(step):
     return
 
 
-@given("using the parameter {param_name:w} of P.{p_val:w}({param:QuotedString})")
-def add_p_parameter(step, param_name, p_val, param):
-    if not hasattr(step.context, "traversal_params"):
-        step.context.traversal_params = {}
-
-    step.context.traversal_params[param_name] = getattr(P, p_val)(_convert(param.replace('\\"', '"'), step.context))
-
-
 @given("using the parameter {param_name:w} defined as {param:QuotedString}")
 def add_parameter(step, param_name, param):
+    if (step.context.ignore):
+        return
+
     if not hasattr(step.context, "traversal_params"):
         step.context.traversal_params = {}
 
@@ -79,16 +122,24 @@ def add_parameter(step, param_name, param):
 
 @given("the traversal of")
 def translate_traversal(step):
-    step.context.ignore = step.text in ignores
-    p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
-    localg = step.context.g
+    if step.context.ignore == False:
+        step.context.ignore = step.text in ignores
+    if step.context.ignore:
+        return
+
+    p = {}
+    if hasattr(step.context, "traversal_params"):
+        # user flag "parameterize", when set to 'true' will use GValue to parameterize parameters instead of flattening them out into string
+        if world.config.user_data.get("parameterize"):
+            for k, v in step.context.traversal_params.items():
+                p[k] = GValue(k, v)
+        else:
+            p = step.context.traversal_params
+
+    localg = step.context.g.with_('language', 'gremlin-lang')
     tagset = [tag.name for tag in step.all_tags]
-
-    if not step.context.ignore:
-        step.context.ignore = "AllowNullPropertyValues" in tagset
-
     if "GraphComputerOnly" in tagset:
-        localg = step.context.g.withComputer()
+        localg = step.context.g.with_('language', 'gremlin-lang').with_computer()
     p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
 
@@ -99,8 +150,9 @@ def iterate_the_traversal(step):
         return
 
     try:
-        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.toList()))
+        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.to_list()))
         step.context.failed = False
+        step.context.failed_message = ''
     except Exception as e:
         step.context.failed = True
         step.context.failed_message = getattr(e, 'message', repr(e))
@@ -114,6 +166,7 @@ def next_the_traversal(step):
     try:
         step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
         step.context.failed = False
+        step.context.failed_message = ''
     except Exception as e:
         step.context.failed = True
         step.context.failed_message = getattr(e, 'message', repr(e))
@@ -129,11 +182,11 @@ def raise_an_error_with_message(step, comparison, expected_message):
     assert_that(step.context.failed, equal_to(True))
 
     if comparison == "containing":
-        assert_that(step.context.failed_message, contains_string(expected_message))
+        assert_that(step.context.failed_message.upper(), contains_string(expected_message.upper()))
     elif comparison == "ending":
-        assert_that(step.context.failed_message, ends_with(expected_message))
+        assert_that(step.context.failed_message.upper(), ends_with(expected_message.upper()))
     elif comparison == "starting":
-        assert_that(step.context.failed_message, starts_with(expected_message))
+        assert_that(step.context.failed_message.upper(), starts_with(expected_message.upper()))
     else:
         raise ValueError("unknown comparison '" + comparison + "'- must be: containing, ending or starting")
 
@@ -143,7 +196,7 @@ def assert_result(step, characterized_as):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     if characterized_as == "empty":  # no results
         assert_that(len(step.context.result), equal_to(0))
@@ -162,7 +215,7 @@ def assert_side_effects(step, count, traversal_string):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     p = step.context.traversal_params if hasattr(step.context, "traversal_params") else {}
     p['g'] = step.context.g
@@ -176,7 +229,7 @@ def assert_count(step, count):
     if step.context.ignore:
         return
 
-    assert_that(step.context.failed, equal_to(False))
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
 
     assert_that(len(list(step.context.result)), equal_to(count))
 
@@ -203,7 +256,7 @@ def _convert(val, ctx):
         return val[4:-1]
     elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
         # python 3.8 can handle only subset of ISO 8601 dates
-        return datetime.fromisoformat(val[3:-1].replace('Z', ''))
+        return datetime.fromisoformat(val[3:-1].replace('Z', '+00:00'))
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf

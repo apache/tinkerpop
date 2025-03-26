@@ -18,22 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface Failure {
-
-    static Translator.ScriptTranslator TRANSLATOR = GroovyTranslator.of("");
 
     String getMessage();
 
@@ -79,13 +74,13 @@ public interface Failure {
         }
 
         // removes the starting period so that "__.out()" simply presents as "out()"
-        lines.add(String.format("Traversal> %s", TRANSLATOR.translate(getTraversal()).getScript().substring(1)));
+        lines.add(String.format("Traversal> %s", getTraversal().getGremlinLang().getGremlin().substring(1)));
 
         // not sure there is a situation where fail() would be used where it was not wrapped in a parent,
         // but on the odd case that it is it can be handled
         if (parentStep != EmptyStep.instance()) {
             lines.add(String.format("Parent   > %s [%s]",
-                    parentStep.getClass().getSimpleName(), TRANSLATOR.translate(parentStep.getTraversal()).getScript().substring(1)));
+                    parentStep.getClass().getSimpleName(), getTraversal().getGremlinLang().getGremlin().substring(1)));
         }
 
         lines.add(String.format("Metadata > %s", getMetadata()));

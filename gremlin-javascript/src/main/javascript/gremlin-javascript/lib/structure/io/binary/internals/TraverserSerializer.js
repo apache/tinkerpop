@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const t = require('../../../../process/traversal');
+import { Buffer } from 'buffer';
+import { Traverser } from '../../../../process/traversal.js';
 
-module.exports = class TraverserSerializer {
+export default class TraverserSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.TRAVERSER] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof t.Traverser;
+    return value instanceof Traverser;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -115,10 +114,10 @@ module.exports = class TraverserSerializer {
       }
       cursor = cursor.slice(value_len);
 
-      const v = new t.Traverser(value, bulk);
+      const v = new Traverser(value, bulk);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

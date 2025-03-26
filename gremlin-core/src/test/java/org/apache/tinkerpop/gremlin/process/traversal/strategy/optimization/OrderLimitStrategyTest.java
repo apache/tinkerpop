@@ -20,12 +20,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -42,7 +40,6 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class OrderLimitStrategyTest {
-    private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
 
     @Parameterized.Parameter(value = 0)
     public Traversal.Admin traversal;
@@ -59,7 +56,7 @@ public class OrderLimitStrategyTest {
 
     @Test
     public void doTest() {
-        final String repr = translator.translate(traversal.getBytecode()).getScript();
+        final String repr = traversal.getGremlinLang().getGremlin();
         traversal.asAdmin().setParent(new TraversalVertexProgramStep(EmptyTraversal.instance(), EmptyTraversal.instance())); // trick it
         applyOrderLimitStrategyStrategy(traversal);
         assertEquals(repr, limit, TraversalHelper.getFirstStepOfAssignableClass(OrderGlobalStep.class, traversal.asAdmin()).get().getLimit());

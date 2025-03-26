@@ -18,28 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Pick;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.TextP;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -50,78 +34,40 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigIntegerSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BindingSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BulkSetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteBufferSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteCodeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CharSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ClassSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EnumSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.GraphSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.InetAddressSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.InstantSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LambdaSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.ListSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalDateSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalDateTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MetricsSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MonthDaySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetDateTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PeriodSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalExplanationSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalMetricsSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalStrategySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraverserSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.YearMonthSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ZoneOffsetSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ZonedDateTimeSerializer;
-import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.MonthDay;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -143,11 +89,9 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Integer.class, SingleTypeSerializer.IntSerializer),
             new RegistryEntry<>(Long.class, SingleTypeSerializer.LongSerializer),
             new RegistryEntry<>(String.class, new StringSerializer()),
-            new RegistryEntry<>(Date.class, DateSerializer.DateSerializer),
-            new RegistryEntry<>(Timestamp.class, DateSerializer.TimestampSerializer),
-            new RegistryEntry<>(Class.class, new ClassSerializer()),
             new RegistryEntry<>(Double.class, SingleTypeSerializer.DoubleSerializer),
             new RegistryEntry<>(Float.class, SingleTypeSerializer.FloatSerializer),
+            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),  // needs to register before list so ListSerializer is registered as LIST by overwrite
             new RegistryEntry<>(List.class, new ListSerializer()),
             new RegistryEntry<>(Map.class, new MapSerializer()),
             new RegistryEntry<>(Set.class, new SetSerializer()),
@@ -158,37 +102,17 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Property.class, new PropertySerializer()),
             new RegistryEntry<>(Graph.class, new GraphSerializer()),
             new RegistryEntry<>(Vertex.class, new VertexSerializer()),
-            new RegistryEntry<>(SackFunctions.Barrier.class, EnumSerializer.BarrierSerializer),
-            new RegistryEntry<>(Bytecode.Binding.class, new BindingSerializer()),
-            new RegistryEntry<>(Bytecode.class, new ByteCodeSerializer()),
-            new RegistryEntry<>(VertexProperty.Cardinality.class, EnumSerializer.CardinalitySerializer),
-            new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
-            new RegistryEntry<>(DT.class, EnumSerializer.DTSerializer),
-            new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
-            new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
-            new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
-            new RegistryEntry<>(Pick.class, EnumSerializer.PickSerializer),
-            new RegistryEntry<>(Pop.class, EnumSerializer.PopSerializer),
-            new RegistryEntry<>(Lambda.class, new LambdaSerializer()),
-            new RegistryEntry<>(P.class, new PSerializer<>(DataType.P, P.class)),
-            new RegistryEntry<>(AndP.class, new PSerializer<>(DataType.P, AndP.class)),
-            new RegistryEntry<>(OrP.class, new PSerializer<>(DataType.P, OrP.class)),
-            new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
-            new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
-            new RegistryEntry<>(Traverser.class, new TraverserSerializer()),
+            new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),
             new RegistryEntry<>(ByteBuffer.class, new ByteBufferSerializer()),
             new RegistryEntry<>(Short.class, SingleTypeSerializer.ShortSerializer),
             new RegistryEntry<>(Boolean.class, SingleTypeSerializer.BooleanSerializer),
-            new RegistryEntry<>(TraversalStrategy.class, new TraversalStrategySerializer()),
-            new RegistryEntry<>(BulkSet.class, new BulkSetSerializer()),
             new RegistryEntry<>(Tree.class, new TreeSerializer()),
-            new RegistryEntry<>(Metrics.class, new MetricsSerializer()),
-            new RegistryEntry<>(TraversalMetrics.class, new TraversalMetricsSerializer()),
+            new RegistryEntry<>(Marker.class, SingleTypeSerializer.MarkerSerializer),
 
             // TransformSerializer implementations
             new RegistryEntry<>(Map.Entry.class, new MapEntrySerializer()),
@@ -196,22 +120,7 @@ public class TypeSerializerRegistry {
 
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
-            new RegistryEntry<>(InetAddress.class, new InetAddressSerializer()),
-            new RegistryEntry<>(Inet4Address.class, new InetAddressSerializer<>()),
-            new RegistryEntry<>(Inet6Address.class, new InetAddressSerializer<>()),
-            new RegistryEntry<>(Instant.class, new InstantSerializer()),
-            new RegistryEntry<>(LocalDate.class, new LocalDateSerializer()),
-            new RegistryEntry<>(LocalTime.class, new LocalTimeSerializer()),
-            new RegistryEntry<>(LocalDateTime.class, new LocalDateTimeSerializer()),
-            new RegistryEntry<>(MonthDay.class, new MonthDaySerializer()),
-            new RegistryEntry<>(OffsetDateTime.class, new OffsetDateTimeSerializer()),
-            new RegistryEntry<>(OffsetTime.class, new OffsetTimeSerializer()),
-            new RegistryEntry<>(Period.class, new PeriodSerializer()),
-            new RegistryEntry<>(Year.class, SingleTypeSerializer.YearSerializer),
-            new RegistryEntry<>(YearMonth.class, new YearMonthSerializer()),
-            new RegistryEntry<>(ZonedDateTime.class, new ZonedDateTimeSerializer()),
-            new RegistryEntry<>(ZoneOffset.class, new ZoneOffsetSerializer())
-
+            new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer())
     };
 
     public static final TypeSerializerRegistry INSTANCE = build().create();

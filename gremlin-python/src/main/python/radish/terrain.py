@@ -29,7 +29,7 @@ label = __.label
 inV = __.in_v
 project = __.project
 tail = __.tail
-gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
+gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)
 
 @before.all
@@ -75,7 +75,7 @@ def prepare_traversal_source(scenario):
     remote = __create_remote("ggraph")
     scenario.context.remote_conn["empty"] = remote
     scenario.context.traversals = world.gremlins.get(scenario.sentence, None)
-    g = traversal().withRemote(remote)
+    g = traversal().with_(remote)
     g.V().drop().iterate()
 
 
@@ -94,11 +94,15 @@ def __create_remote(server_graph_name):
     if not("serializer" in world.config.user_data):
         raise ValueError('test configuration requires setting of --user-data="serializer={mime-type}"')
 
-    if world.config.user_data["serializer"] == "application/vnd.gremlin-v3.0+json":
-        s = serializer.GraphSONSerializersV3d0()
-    elif world.config.user_data["serializer"] == "application/vnd.graphbinary-v1.0":
-        s = serializer.GraphBinarySerializersV1()
+    if world.config.user_data["serializer"] == "application/vnd.graphbinary-v4.0":
+        s = serializer.GraphBinarySerializersV4()
+    elif world.config.user_data["serializer"] == "application/vnd.gremlin-v4.0+json":
+        s = serializer.GraphSONSerializersV4()
     else:
         raise ValueError('serializer not found - ' + world.config.user_data["serializer"])
 
-    return DriverRemoteConnection(test_no_auth_url, server_graph_name, message_serializer=s)
+    bulking = world.config.user_data["bulking"] == "true" if "bulking" in world.config.user_data else False
+
+    return DriverRemoteConnection(test_no_auth_url, server_graph_name,
+                                  request_serializer=s, response_serializer=s,
+                                  bulk_results=bulking)

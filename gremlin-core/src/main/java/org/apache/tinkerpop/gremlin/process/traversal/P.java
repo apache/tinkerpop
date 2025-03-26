@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
@@ -74,7 +77,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public boolean test(final V testValue) {
-        return this.biPredicate.test(testValue, this.value);
+        // this might be a bunch of GValue that need to be resolved. zomg
+        if (this.value instanceof List) {
+            return this.biPredicate.test(testValue, (V) ((List) this.value).stream().map(GValue::valueOf).collect(Collectors.toList()));
+        } else {
+            return this.biPredicate.test(testValue, (V) GValue.valueOf(this.value));
+        }
     }
 
     @Override

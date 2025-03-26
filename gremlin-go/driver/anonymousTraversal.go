@@ -21,7 +21,12 @@ package gremlingo
 
 // AnonymousTraversalSource interface for generating anonymous traversals.
 type AnonymousTraversalSource interface {
+	// With used to set the DriverRemoteConnection within the AnonymousTraversalSource
+	With(drc *DriverRemoteConnection) *GraphTraversalSource
+
 	// WithRemote used to set the DriverRemoteConnection within the AnonymousTraversalSource
+	//
+	// Deprecated: WithRemote replaced by With
 	WithRemote(drc *DriverRemoteConnection) *GraphTraversalSource
 }
 
@@ -31,7 +36,14 @@ type anonymousTraversalSource struct {
 
 var traversalSource = &anonymousTraversalSource{}
 
+// With used to set the DriverRemoteConnection within the AnonymousTraversalSource.
+func (ats *anonymousTraversalSource) With(drc *DriverRemoteConnection) *GraphTraversalSource {
+	return NewDefaultGraphTraversalSource().WithRemote(drc)
+}
+
 // WithRemote used to set the DriverRemoteConnection within the AnonymousTraversalSource.
+//
+// Deprecated: WithRemote replaced by With
 func (ats *anonymousTraversalSource) WithRemote(drc *DriverRemoteConnection) *GraphTraversalSource {
 	return NewDefaultGraphTraversalSource().WithRemote(drc)
 }
@@ -105,6 +117,8 @@ type AnonymousTraversal interface {
 	Dedup(args ...interface{}) *GraphTraversal
 	// Difference adds the difference step to the GraphTraversal.
 	Difference(args ...interface{}) *GraphTraversal
+	// Discard adds the discard step to the GraphTraversal.
+	Discard(args ...interface{}) *GraphTraversal
 	// Disjunct adds the disjunct step to the GraphTraversal.
 	Disjunct(args ...interface{}) *GraphTraversal
 	// Drop adds the drop step to the GraphTraversal.
@@ -487,6 +501,11 @@ func (anonymousTraversal *anonymousTraversal) Dedup(args ...interface{}) *GraphT
 // Difference adds the difference step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Difference(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Difference(args...)
+}
+
+// Discard adds the discard step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Discard(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Discard(args...)
 }
 
 // Disjunct adds the disjunct step to the GraphTraversal.

@@ -19,15 +19,28 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
@@ -37,14 +50,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Matc
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.MultiMap;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,15 +80,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * A {@link Traversal} maintains a set of {@link TraversalStrategy} instances within a TraversalStrategies object.
- * TraversalStrategies are responsible for compiling a traversal prior to its execution.
+ * A {@link Traversal} maintains a set of {@link TraversalStrategy} instances within a {@code }TraversalStrategies}
+ * object. Of particular importance is the {@link GlobalCache} which maintains a set of default strategies to be applied
+ * and a registry of available strategies.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface TraversalStrategies extends Serializable, Cloneable, Iterable<TraversalStrategy<?>> {
 
-    static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
+    static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(
+            TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class,
+            TraversalStrategy.ProviderOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class,
+            TraversalStrategy.VerificationStrategy.class));
 
     /**
      * Return an immutable list of the {@link TraversalStrategy} instances.
@@ -214,6 +236,38 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
         private static final Map<Class<? extends Graph>, TraversalStrategies> GRAPH_CACHE = new HashMap<>();
         private static final Map<Class<? extends GraphComputer>, TraversalStrategies> GRAPH_COMPUTER_CACHE = new HashMap<>();
 
+        /**
+         * A register of the simple names for all strategies.
+         */
+        private static final Map<String, Class<? extends TraversalStrategy>> GLOBAL_REGISTRY = new HashMap<String, Class<? extends TraversalStrategy>>() {{
+            // decorations
+            put(ConnectiveStrategy.class.getSimpleName(), ConnectiveStrategy.class);
+            put(ElementIdStrategy.class.getSimpleName(), ElementIdStrategy.class);
+            put(EventStrategy.class.getSimpleName(), EventStrategy.class);
+            put(HaltedTraverserStrategy.class.getSimpleName(), HaltedTraverserStrategy.class);
+            put(OptionsStrategy.class.getSimpleName(), OptionsStrategy.class);
+            put(PartitionStrategy.class.getSimpleName(), PartitionStrategy.class);
+            put(SeedStrategy.class.getSimpleName(), SeedStrategy.class);
+            put(SubgraphStrategy.class.getSimpleName(), SubgraphStrategy.class);
+            put(VertexProgramStrategy.class.getSimpleName(), VertexProgramStrategy.class);
+
+            // finalization
+            put(MatchAlgorithmStrategy.class.getSimpleName(), MatchAlgorithmStrategy.class);
+            put(ReferenceElementStrategy.class.getSimpleName(), ReferenceElementStrategy.class);
+
+            // optimizations
+            put(ProductiveByStrategy.class.getSimpleName(), ProductiveByStrategy.class);
+            put(PathRetractionStrategy.class.getSimpleName(), PathRetractionStrategy.class);
+            put(RepeatUnrollStrategy.class.getSimpleName(), RepeatUnrollStrategy.class);
+
+            // verification
+            put(EdgeLabelVerificationStrategy.class.getSimpleName(), EdgeLabelVerificationStrategy.class);
+            put(LambdaRestrictionStrategy.class.getSimpleName(), LambdaRestrictionStrategy.class);
+            put(ReadOnlyStrategy.class.getSimpleName(), ReadOnlyStrategy.class);
+            put(ReservedKeysVerificationStrategy.class.getSimpleName(), ReservedKeysVerificationStrategy.class);
+            put(VertexProgramRestrictionStrategy.class.getSimpleName(), VertexProgramRestrictionStrategy.class);
+        }};
+
         static {
             final TraversalStrategies graphStrategies = new DefaultTraversalStrategies();
             graphStrategies.addStrategies(
@@ -232,8 +286,8 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
                     StandardVerificationStrategy.instance());
-            GRAPH_CACHE.put(Graph.class, graphStrategies);
-            GRAPH_CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
+            registerStrategies(Graph.class, graphStrategies);
+            registerStrategies(EmptyGraph.class, new DefaultTraversalStrategies());
 
             /////////////////////
 
@@ -245,9 +299,14 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     PathProcessorStrategy.instance(),
                     ComputerFinalizationStrategy.instance(),
                     ComputerVerificationStrategy.instance());
-            GRAPH_COMPUTER_CACHE.put(GraphComputer.class, graphComputerStrategies);
+            registerStrategies(GraphComputer.class, graphComputerStrategies);
         }
 
+        /**
+         * Register a set of strategies for a particular graph or graph computer class. This is typically done by the
+         * graph or graph computer class itself when it is loaded. Strategy names should be globally unique and are
+         * added to the {@link #GLOBAL_REGISTRY} such that duplicates will overwrite the previous registration.
+         */
         public static void registerStrategies(final Class graphOrGraphComputerClass, final TraversalStrategies traversalStrategies) {
             if (Graph.class.isAssignableFrom(graphOrGraphComputerClass))
                 GRAPH_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
@@ -255,6 +314,37 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                 GRAPH_COMPUTER_CACHE.put(graphOrGraphComputerClass, traversalStrategies);
             else
                 throw new IllegalArgumentException("The TraversalStrategies.GlobalCache only supports Graph and GraphComputer strategy caching: " + graphOrGraphComputerClass.getCanonicalName());
+
+            // add the strategies in the traversalStrategy to the global registry
+            traversalStrategies.toList().forEach(strategy -> GLOBAL_REGISTRY.put(strategy.getClass().getSimpleName(), strategy.getClass()));
+        }
+
+        /**
+         * Registers a strategy by its simple name, but does not cache an instance of it. Choose this method if you
+         * don't want the strategy to be included as part of the default strategy set, but do want it available to
+         * the grammar when parsing Gremlin.
+         */
+        public static void registerStrategy(final Class<? extends TraversalStrategy> clazz) {
+            GLOBAL_REGISTRY.put(clazz.getSimpleName(), clazz);
+        }
+
+        /**
+         * Unregisters a strategy by its simple name. If the strategy is not in the registry then the grammar cannot
+         * reference it which means that it cannot be removed from execution using
+         * {{@link GraphTraversalSource#withoutStrategies(Class[])}}.
+         */
+        public static void unregisterStrategy(final Class<? extends TraversalStrategy> clazz) {
+            GLOBAL_REGISTRY.remove(clazz.getSimpleName());
+        }
+
+        /**
+         * Looks up a strategy by its simple name.
+         */
+        public static Optional<? extends Class<? extends TraversalStrategy>> getRegisteredStrategyClass(final String strategyName) {
+            if (GLOBAL_REGISTRY.containsKey(strategyName))
+                return Optional.of(GLOBAL_REGISTRY.get(strategyName));
+
+            return Optional.empty();
         }
 
         public static TraversalStrategies getStrategies(final Class graphOrGraphComputerClass) {

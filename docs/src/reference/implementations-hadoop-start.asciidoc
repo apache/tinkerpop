@@ -48,7 +48,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -59,7 +59,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -148,7 +148,7 @@ which is the OLAP Gremlin machine.
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 hdfs.ls()
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = traversal().withEmbedded(graph)
+g = traversal().with(graph)
 g.V().count()
 g.V().out().out().values('name')
 g.V().group().by{it.value('name')[1]}.by('name').next()
@@ -177,7 +177,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph
@@ -189,7 +189,7 @@ $ bin/gremlin.sh
 
          \,,,/
          (o o)
------oOOo-(3)-oOOo-----
+-----oOOo-(4)-oOOo-----
 plugin activated: tinkerpop.server
 plugin activated: tinkerpop.utilities
 plugin activated: tinkerpop.tinkergraph

@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -113,14 +113,14 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                             (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
                                     (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
 
-                // NoneStep, EmptyStep signify the end of the traversal where no barriers are really going to be
+                // DiscardStep, EmptyStep signify the end of the traversal where no barriers are really going to be
                 // helpful after that. ProfileSideEffectStep means the traversal had profile() called on it and if
                 // we don't account for that a barrier will inject at the end of the traversal where it wouldn't
                 // be otherwise. LazyBarrierStrategy executes before the finalization strategy of ProfileStrategy
                 // so additionally injected ProfileSideEffectStep instances should not have effect here.
                 if (foundFlatMap && !labeledPath &&
                         !(step.getNextStep() instanceof Barrier) &&
-                        !(step.getNextStep() instanceof NoneStep) &&
+                        !(step.getNextStep() instanceof DiscardStep) &&
                         !(step.getNextStep() instanceof EmptyStep) &&
                         !(step.getNextStep() instanceof ProfileSideEffectStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);

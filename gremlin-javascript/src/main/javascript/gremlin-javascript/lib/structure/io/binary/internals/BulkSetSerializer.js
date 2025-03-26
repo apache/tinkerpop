@@ -20,11 +20,10 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class BulkSetSerializer {
+export default class BulkSetSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.BULKSET] = this;
@@ -123,4 +122,4 @@ module.exports = class BulkSetSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

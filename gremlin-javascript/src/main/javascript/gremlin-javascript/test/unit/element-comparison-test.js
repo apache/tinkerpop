@@ -17,11 +17,11 @@
  *  under the License.
  */
 
-const chai = require('chai')
-const { expect } = require('chai');
-const { VertexProperty, Property, Vertex, Edge, Path } = require('../../lib/structure/graph');
-const { deepMembersById, compareElements, opt } = require('../cucumber/element-comparison');
-const deepEqual = require('deep-eql');
+import chai from 'chai';
+import { expect } from 'chai';
+import { VertexProperty, Property, Vertex, Edge, Path } from '../../lib/structure/graph.js';
+import { deepMembersById, opt } from '../cucumber/element-comparison.js';
+import deepEqual from 'deep-eql';
 
 chai.use(function (chai, chaiUtils) {
   chai.Assertion.overwriteMethod('members', function (_super) {

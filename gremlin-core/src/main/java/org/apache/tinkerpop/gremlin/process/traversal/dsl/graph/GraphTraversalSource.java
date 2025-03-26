@@ -22,11 +22,12 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.strategy.decoration.RemoteStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
@@ -67,7 +68,7 @@ public class GraphTraversalSource implements TraversalSource {
     protected transient RemoteConnection connection;
     protected final Graph graph;
     protected TraversalStrategies strategies;
-    protected Bytecode bytecode = new Bytecode();
+    protected GremlinLang gremlinLang = new GremlinLang();
 
     ////////////////
 
@@ -116,8 +117,8 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     @Override
-    public Bytecode getBytecode() {
-        return this.bytecode;
+    public GremlinLang getGremlinLang() {
+        return this.gremlinLang;
     }
 
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
@@ -125,7 +126,7 @@ public class GraphTraversalSource implements TraversalSource {
         try {
             final GraphTraversalSource clone = (GraphTraversalSource) super.clone();
             clone.strategies = this.strategies.clone();
-            clone.bytecode = this.bytecode.clone();
+            clone.gremlinLang = this.gremlinLang.clone();
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -292,14 +293,14 @@ public class GraphTraversalSource implements TraversalSource {
             return this;
         final GraphTraversalSource clone = this.clone();
         RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.ONE_BULK);
-        clone.bytecode.addSource(Symbols.withBulk, useBulk);
+        clone.gremlinLang.addSource(Symbols.withBulk, useBulk);
         return clone;
     }
 
     public GraphTraversalSource withPath() {
         final GraphTraversalSource clone = this.clone();
         RequirementsStrategy.addRequirements(clone.getStrategies(), TraverserRequirement.PATH);
-        clone.bytecode.addSource(Symbols.withPath);
+        clone.gremlinLang.addSource(Symbols.withPath);
         return clone;
     }
 
@@ -314,7 +315,7 @@ public class GraphTraversalSource implements TraversalSource {
     public GraphTraversal<Vertex, Vertex> addV(final String vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabel);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
     }
@@ -328,7 +329,7 @@ public class GraphTraversalSource implements TraversalSource {
     public GraphTraversal<Vertex, Vertex> addV(final Traversal<?, String> vertexLabelTraversal) {
         if (null == vertexLabelTraversal) throw new IllegalArgumentException("vertexLabelTraversal cannot be null");
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, vertexLabelTraversal));
     }
@@ -340,9 +341,23 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Vertex, Vertex> addV() {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addV);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStep(traversal, (String) null));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
+     * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
+     *
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
+        if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
     }
 
     /**
@@ -352,7 +367,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> addE(final String label) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addE, label);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStep(traversal, label));
     }
@@ -364,9 +379,21 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> addE(final Traversal<?, String> edgeLabelTraversal) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
+     *
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> addE(final GValue<String> label) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new AddEdgeStartStep(traversal, label));
     }
 
     /**
@@ -380,7 +407,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Vertex, Vertex> mergeV(final Map<Object, Object> searchCreate) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
     }
@@ -397,13 +424,29 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, Vertex> mergeV(final Traversal<?, Map<Object, Object>> searchCreate) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<S, Vertex> traversal = new DefaultGraphTraversal<>(clone);
 
         final MergeVertexStep<S> step = null == searchCreate ? new MergeVertexStep(traversal, true, (Map) null) :
                 new MergeVertexStep(traversal, true, searchCreate.asAdmin());
 
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Vertex} using a
+     * {@code Map} as an argument. The {@code Map} represents search criteria and will match each of the supplied
+     * key/value pairs where the keys may be {@code String} property values or a value of {@link T}. If a match is not
+     * made it will use that search criteria to create the new {@link Vertex}.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
     }
 
     /**
@@ -415,7 +458,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> mergeE(final Map<?, Object> searchCreate) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
     }
@@ -429,7 +472,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public GraphTraversal<Edge, Edge> mergeE(final Traversal<?, Map<Object, Object>> searchCreate) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
 
         final MergeEdgeStep step = null == searchCreate ? new MergeEdgeStep(traversal, true,  (Map) null) :
@@ -439,13 +482,27 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} by doing a merge (i.e. upsert) style operation for an {@link Edge} using a
+     * {@code Map} as an argument.
+     *
+     * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
+        final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} starting it with arbitrary values.
      */
     public <S> GraphTraversal<S, S> inject(S... starts) {
         // a single null is [null]
         final S[] s = null == starts ? (S[]) new Object[] { null } : starts;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.inject, s);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.inject, s);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new InjectStep<S>(traversal, s));
     }
@@ -460,7 +517,7 @@ public class GraphTraversalSource implements TraversalSource {
         // a single null is [null]
         final Object[] ids = null == vertexIds ? new Object[] { null } : vertexIds;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.V, ids);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, ids));
     }
@@ -475,7 +532,7 @@ public class GraphTraversalSource implements TraversalSource {
         // a single null is [null]
         final Object[] ids = null == edgeIds ? new Object[] { null } : edgeIds;
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
     }
@@ -487,7 +544,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call() {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.call);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStep<>(traversal, true));
     }
@@ -500,7 +557,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.call, service);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStep<>(traversal, true, service));
     }
@@ -515,7 +572,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service, final Map params) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStep<>(traversal, true, service, params));
     }
@@ -530,7 +587,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service, final Traversal<S, Map> childTraversal) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, childTraversal);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service) :
                 new CallStep(traversal, true, service, new LinkedHashMap(), childTraversal.asAdmin());
@@ -550,11 +607,41 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> call(final String service, final Map params, final Traversal<S, Map> childTraversal) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         final CallStep<S,S> step = null == childTraversal ? new CallStep(traversal, true, service, params) :
                 new CallStep(traversal, true, service, params, childTraversal.asAdmin());
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with the specified
+     * static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with values produced by the specified service call with the specified
+     * static parameters.
+     *
+     * @param service the name of the service call
+     * @param params static parameter map (no nested traversals)
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params, final Traversal<S, Map> childTraversal) {
+        final GraphTraversalSource clone = GraphTraversalSource.this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
+        final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
 
     /**
@@ -566,7 +653,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> union(final Traversal<?, S>... unionTraversals) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.union, unionTraversals);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.union, unionTraversals);
         final GraphTraversal.Admin traversal = new DefaultGraphTraversal(clone);
         final UnionStep<?, S> step = new UnionStep<>(traversal, true, Arrays.copyOf(unionTraversals, unionTraversals.length, Traversal.Admin[].class));
         return traversal.addStep(step);
@@ -588,7 +675,7 @@ public class GraphTraversalSource implements TraversalSource {
      */
     public <S> GraphTraversal<S, S> io(final String file) {
         final GraphTraversalSource clone = this.clone();
-        clone.bytecode.addStep(GraphTraversal.Symbols.io, file);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.io, file);
         final GraphTraversal.Admin<S,S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new IoStep<S>(traversal, file));
     }
@@ -600,13 +687,7 @@ public class GraphTraversalSource implements TraversalSource {
         if (null == this.connection)
             return this.graph.tx();
         else {
-            // prevent child transactions and let the current Transaction object be bound to the
-            // TraversalSource that spawned it
-            final Transaction tx = this.connection.tx();
-            if (tx == Transaction.NO_OP && this.connection instanceof Transaction)
-                return (Transaction) this.connection;
-            else
-                return tx;
+            throw new UnsupportedOperationException("TinkerPop 4 does not yet support remote transactions");
         }
 
     }

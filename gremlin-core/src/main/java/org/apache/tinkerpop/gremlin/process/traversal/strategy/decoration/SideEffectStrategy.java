@@ -22,11 +22,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.javatuples.Triplet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BinaryOperator;
@@ -60,7 +62,13 @@ public final class SideEffectStrategy extends AbstractTraversalStrategy<Traversa
             strategy = cloneStrategy;
             traversalStrategies.addStrategies(strategy);
         }
-        strategy.sideEffects.add(new Triplet<>(key, value instanceof Supplier ? (Supplier) value : new ConstantSupplier<>(value), reducer));
+
+        // don't want the GValue to leak beyond strategy application or else the Supplier will start producing it
+        // during execution
+        strategy.sideEffects.add(new Triplet<>(key, (Supplier & Serializable) (() -> {
+            Object initialValue = value instanceof Supplier ? ((Supplier) value).get() : value;
+            return GValue.valueOf(initialValue);
+        }), reducer));
     }
 
     public boolean contains(final String sideEffectKey) {

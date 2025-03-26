@@ -14,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import uuid
 import queue
 from concurrent.futures import Future
 
@@ -26,7 +25,8 @@ __author__ = 'David M. Brown (davebshow@gmail.com)'
 class Connection:
 
     def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool, headers=None, enable_user_agent_on_connect=True):
+                 executor, pool, headers=None, enable_user_agent_on_connect=True,
+                 bulk_results=False):
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
@@ -35,11 +35,14 @@ class Connection:
         self._executor = executor
         self._transport = None
         self._pool = pool
-        self._results = {}
+        self._result_set = None
         self._inited = False
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
             self.__add_header(useragent.userAgentHeader, useragent.userAgent)
+        self._bulk_results = bulk_results
+        if self._bulk_results:
+            self.__add_header("bulkResults", "true")
 
     def connect(self):
         if self._transport:
@@ -56,17 +59,11 @@ class Connection:
     def write(self, request_message):
         if not self._inited:
             self.connect()
-        if request_message.args.get("requestId"):
-            request_id = str(request_message.args.get("requestId"))
-            uuid.UUID(request_id)  # Checks for proper UUID or else server will return an error.
-        else:
-            request_id = str(uuid.uuid4())
-        result_set = resultset.ResultSet(queue.Queue(), request_id)
-        self._results[request_id] = result_set
+        self._result_set = resultset.ResultSet(queue.Queue())
         # Create write task
         future = Future()
         future_write = self._executor.submit(
-            self._protocol.write, request_id, request_message)
+            self._protocol.write, request_message)
 
         def cb(f):
             try:
@@ -77,21 +74,26 @@ class Connection:
             else:
                 # Start receive task
                 done = self._executor.submit(self._receive)
-                result_set.done = done
-                future.set_result(result_set)
+                self._result_set.done = done
+                future.set_result(self._result_set)
 
         future_write.add_done_callback(cb)
         return future
 
     def _receive(self):
         try:
-            while True:
-                data = self._transport.read()
-                status_code = self._protocol.data_received(data, self._results)
-                if status_code != 206:
-                    break
+            '''
+            GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
+             deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
+            '''
+            self._protocol.data_received_aggregate(self._transport.read(), self._result_set)
+            # re-enable streaming after graphSON removal
+            # self._transport.read(self.stream_chunk)
         finally:
             self._pool.put_nowait(self)
+
+    def stream_chunk(self, chunk_data, read_completed=None, http_req_resp=None):
+        self._protocol.data_received(chunk_data, self._result_set, read_completed, http_req_resp)
 
     def __add_header(self, key, value):
         if self._headers is None:

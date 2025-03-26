@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.simple;
 
-import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
@@ -33,19 +32,19 @@ import java.util.function.Consumer;
 public interface SimpleClient extends Closeable {
 
     public default void submit(final String gremlin, final Consumer<ResponseMessage> callback) throws Exception {
-        submit(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create(), callback);
+        submit(RequestMessage.build(gremlin).create(), callback);
     }
 
     public void submit(final RequestMessage requestMessage, final Consumer<ResponseMessage> callback) throws Exception;
 
     public default List<ResponseMessage> submit(final String gremlin) throws Exception {
-        return submit(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create());
+        return submit(RequestMessage.build(gremlin).create());
     }
 
     public List<ResponseMessage> submit(final RequestMessage requestMessage) throws Exception;
 
     public default CompletableFuture<List<ResponseMessage>> submitAsync(final String gremlin) throws Exception {
-        return submitAsync(RequestMessage.build(Tokens.OPS_EVAL).addArg(Tokens.ARGS_GREMLIN, gremlin).create());
+        return submitAsync(RequestMessage.build(gremlin).create());
     }
 
     public CompletableFuture<List<ResponseMessage>> submitAsync(final RequestMessage requestMessage) throws Exception;

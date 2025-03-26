@@ -1,0 +1,24 @@
+{
+  "@type" : "g:Edge",
+  "@value" : {
+    "id" : {
+      "@type" : "g:Int32",
+      "@value" : 13
+    },
+    "label" : [ "develops" ],
+    "inV" : {
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 10
+      },
+      "label" : [ "software" ]
+    },
+    "outV" : {
+      "id" : {
+        "@type" : "g:Int32",
+        "@value" : 1
+      },
+      "label" : [ "person" ]
+    }
+  }
+}

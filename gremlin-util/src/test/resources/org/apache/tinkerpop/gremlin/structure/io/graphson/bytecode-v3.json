@@ -1,6 +1,0 @@
-{
-  "@type" : "g:Bytecode",
-  "@value" : {
-    "step" : [ [ "V" ], [ "hasLabel", "person" ], [ "out" ], [ "in" ], [ "tree" ] ]
-  }
-}

@@ -37,17 +37,11 @@ class RemoteConnection(object, metaclass=abc.ABCMeta):
         return self._traversal_source
 
     @abc.abstractmethod
-    def submit(self, bytecode):
+    def submit(self, gremlin_lang):
         pass
 
     def is_closed(self):
         raise Exception('is_closed() must be implemented')
-
-    def is_session_bound(self):
-        return False
-
-    def create_session(self):
-        raise Exception('createSession() must be implemented');
 
     def commit(self):
         raise Exception('commit() must be implemented')
@@ -75,10 +69,10 @@ class RemoteStrategy(traversal.TraversalStrategy):
 
     def apply(self, traversal):
         if traversal.traversers is None:
-            remote_traversal = self.remote_connection.submit(traversal.bytecode)
+            remote_traversal = self.remote_connection.submit(traversal.gremlin_lang)
             traversal.remote_results = remote_traversal
             traversal.traversers = remote_traversal.traversers
 
     def apply_async(self, traversal):
         if traversal.traversers is None:
-            traversal.remote_results = self.remote_connection.submit_async(traversal.bytecode)
+            traversal.remote_results = self.remote_connection.submit_async(traversal.gremlin_lang)

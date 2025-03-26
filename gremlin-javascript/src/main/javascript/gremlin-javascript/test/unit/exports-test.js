@@ -20,10 +20,9 @@
 /**
  * @author Jorge Bay Gondra
  */
-'use strict';
 
-const assert = require('assert');
-const glvModule = require('../../');
+import assert from 'assert';
+import * as glvModule from '../../lib/index.js';
 
 describe('API', function () {
   it('should export fields under process', function () {

@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
-import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
@@ -33,7 +34,7 @@ import java.util.function.Function;
  */
 public class IndexedTraverserSet<S,I> extends TraverserSet<S> {
 
-    private final MultiValueMap index = new MultiValueMap();
+    private final MultiValuedMap<I,Traverser.Admin<S>> index = new ArrayListValuedHashMap<>();
     private final Function<S,I> indexingFunction;
 
     public IndexedTraverserSet(final Function<S, I> indexingFunction) {
@@ -70,7 +71,7 @@ public class IndexedTraverserSet<S,I> extends TraverserSet<S> {
      * @return
      */
     public Collection<Traverser.Admin<S>> get(final I k) {
-        final Collection<Traverser.Admin<S>> c = index.getCollection(k);
+        final Collection<Traverser.Admin<S>> c = index.get(k);
 
         // if remove() is called on this class, then the MultiValueMap *may* (javadoc wasn't clear
         // what the expectation was - used the word "typically") return an empty list if the last
@@ -87,7 +88,7 @@ public class IndexedTraverserSet<S,I> extends TraverserSet<S> {
     @Override
     public Traverser.Admin<S> remove() {
         final Traverser.Admin<S> removed = super.remove();
-        index.remove(indexingFunction.apply(removed.get()), removed);
+        index.removeMapping(indexingFunction.apply(removed.get()), removed);
         return removed;
     }
 
@@ -97,7 +98,7 @@ public class IndexedTraverserSet<S,I> extends TraverserSet<S> {
             throw new IllegalArgumentException("The object to remove must be traverser");
 
         final boolean removed = super.remove(traverser);
-        if (removed) index.remove(indexingFunction.apply(((Traverser.Admin<S>) traverser).get()), traverser);
+        if (removed) index.removeMapping(indexingFunction.apply(((Traverser.Admin<S>) traverser).get()), traverser);
         return removed;
     }
 

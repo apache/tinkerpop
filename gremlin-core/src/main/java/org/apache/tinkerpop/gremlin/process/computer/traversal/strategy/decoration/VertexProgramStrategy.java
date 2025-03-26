@@ -104,7 +104,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         // wrap all non-VertexComputing steps into a TraversalVertexProgramStep
         currentStep = traversal.getStartStep();
         while (!(currentStep instanceof EmptyStep)) {
-            final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>(traversal.getBytecode());
+            final Traversal.Admin<?, ?> computerTraversal = new DefaultTraversal<>(traversal.getGremlinLang());
             final Step<?, ?> firstLegalOLAPStep = getFirstLegalOLAPStep(currentStep);
             final Step<?, ?> lastLegalOLAPStep = getLastLegalOLAPStep(currentStep);
             if (!(firstLegalOLAPStep instanceof EmptyStep)) {

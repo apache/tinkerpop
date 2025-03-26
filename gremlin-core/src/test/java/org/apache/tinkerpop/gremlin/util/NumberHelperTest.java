@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import org.javatuples.Quartet;
+import org.javatuples.Triplet;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -38,6 +39,7 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.sub;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -95,6 +97,21 @@ public class NumberHelperTest {
                     // BIG DECIMAL
                     new Quartet<>(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class)
             );
+
+    private final static List<Triplet<Number, Number, String>> OVERFLOW_CASES = Arrays.asList(
+            new Triplet<>(Integer.MAX_VALUE, 1, "add"),
+            new Triplet<>(Integer.MIN_VALUE, 1, "sub"),
+            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul"),
+            new Triplet<>(Long.MAX_VALUE, 1L, "add"),
+            new Triplet<>(Long.MIN_VALUE, 1L, "sub"),
+            new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul"),
+            new Triplet<>(Byte.MAX_VALUE, (byte)100, "add"),
+            new Triplet<>(Byte.MIN_VALUE, (byte)100, "sub"),
+            new Triplet<>((byte)100, (byte)100, "mul"),
+            new Triplet<>(Short.MAX_VALUE, (short)100, "add"),
+            new Triplet<>(Short.MIN_VALUE, (short)100, "sub"),
+            new Triplet<>(Short.MAX_VALUE, (short)100, "mul")
+    );
 
     @Test
     public void shouldReturnHighestCommonNumberClass() {
@@ -441,5 +458,121 @@ public class NumberHelperTest {
             assertEquals(-1, compare(null, one).intValue());
             assertEquals(1, compare(one, null).intValue());
         }
+    }
+
+    @Test
+    public void shouldThrowArithmeticExceptionOnOverflow() {
+        for (final Triplet<Number, Number, String> q : OVERFLOW_CASES) {
+            try {
+                switch (q.getValue2()) {
+                    case "add":
+                        add(q.getValue0(), q.getValue1());
+                    case "sub":
+                        sub(q.getValue0(), q.getValue1());
+                    case "mul":
+                        mul(q.getValue0(), q.getValue1());
+                }
+                fail("ArithmeticException expected");
+            }
+            catch (ArithmeticException ex) {
+                // expected
+            }
+        }
+    }
+
+    @Test
+    public void shouldCoerceToReturnSameInstanceForSameClass() {
+        final Integer value = 42;
+        assertEquals(value, NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToByte() {
+        final Integer value = 42;
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToShort() {
+        final Integer value = 42;
+        assertEquals(Short.valueOf((short) 42), NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToLong() {
+        final Integer value = 42;
+        assertEquals(Long.valueOf(42L), NumberHelper.coerceTo(value, Long.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToFloat() {
+        final Integer value = 42;
+        assertEquals(Float.valueOf(42.0f), NumberHelper.coerceTo(value, Float.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToDouble() {
+        final Integer value = 42;
+        assertEquals(Double.valueOf(42.0), NumberHelper.coerceTo(value, Double.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToBigInteger() {
+        final Integer value = 42;
+        assertEquals(BigInteger.valueOf(42), NumberHelper.coerceTo(value, BigInteger.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToBigDecimal() {
+        final Integer value = 42;
+        assertEquals(BigDecimal.valueOf(42), NumberHelper.coerceTo(value, BigDecimal.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInByte() {
+        final Integer value = 128;
+        assertEquals(value, NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInShort() {
+        final Integer value = 32768;
+        assertEquals(value, NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInInteger() {
+        final Long value = 2147483648L;
+        assertEquals(value, NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToRetainOriginalTypeIfCannotFitInFloat() {
+        final Double value = Double.MAX_VALUE;
+        assertEquals(value, NumberHelper.coerceTo(value, Float.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToByteIfCanFit() {
+        final Integer value = 42;
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.coerceTo(value, Byte.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToShortIfCanFit() {
+        final Integer value = 42;
+        assertEquals(Short.valueOf((short) 42), NumberHelper.coerceTo(value, Short.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToIntegerIfCanFit() {
+        final Long value = 42L;
+        assertEquals(Integer.valueOf(42), NumberHelper.coerceTo(value, Integer.class));
+    }
+
+    @Test
+    public void shouldCoerceToConvertToFloatIfCanFit() {
+        final Double value = 42.0;
+        assertEquals(Float.valueOf(42.0f), NumberHelper.coerceTo(value, Float.class));
     }
 }

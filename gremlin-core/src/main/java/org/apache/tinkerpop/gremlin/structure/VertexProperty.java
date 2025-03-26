@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 

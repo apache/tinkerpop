@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
@@ -37,7 +38,7 @@ import java.util.Set;
  */
 public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implements TraversalParent, ListFunction {
     private Traversal.Admin<S, E> valueTraversal;
-    private Object parameterItems;
+    private GValue<Object> parameterItems;
 
     public CombineStep(final Traversal.Admin traversal, final Object values) {
         super(traversal);
@@ -45,7 +46,7 @@ public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implement
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
         } else {
-            parameterItems = values;
+            parameterItems = values instanceof GValue ? (GValue<Object>) values : GValue.of(null, values);
         }
     }
 
@@ -53,9 +54,9 @@ public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implement
     public String getStepName() { return "combine"; }
 
     @Override
-    protected List<?> map(Traverser.Admin<S> traverser) {
+    protected List<?> map(final Traverser.Admin<S> traverser) {
         final Collection listA = convertTraverserToCollection(traverser);
-        final Collection listB = (null != valueTraversal) ? convertTraversalToCollection(traverser, valueTraversal) : convertArgumentToCollection(parameterItems);
+        final Collection listB = (null != valueTraversal) ? convertTraversalToCollection(traverser, valueTraversal) : convertArgumentToCollection(parameterItems.get());
 
         final List combined = new ArrayList(listA);
         combined.addAll(listB);
@@ -68,7 +69,11 @@ public final class CombineStep<S, E> extends ScalarMapStep<S, List<?>> implement
         return (null == valueTraversal) ? Collections.emptyList() : Collections.singletonList(valueTraversal);
     }
 
-    public Object getParameterItems() {
+    public Object getParameter() {
+        return parameterItems.get();
+    }
+
+    public GValue<Object> getParameterItems() {
         return parameterItems;
     }
 

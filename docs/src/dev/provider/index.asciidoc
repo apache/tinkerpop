@@ -580,28 +580,28 @@ include::../../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Dev/Pr
 ==== RemoteConnection Implementations
 
 A `RemoteConnection` is an interface that is important for usage on traversal sources configured using the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[withRemote()] option. A `Traversal`
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#connecting-via-drivers[with()] option. A `Traversal`
 that is generated from that source will apply a `RemoteStrategy` which will inject a `RemoteStep` to its end. That
-step will then send the `Bytecode` of the `Traversal` over the `RemoteConnection` to get the results that it will
+step will then send the `GremlinLang` of the `Traversal` over the `RemoteConnection` to get the results that it will
 iterate.
 
 There is one method to implement on `RemoteConnection`:
 
 [source,java]
-public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final Bytecode bytecode) throws RemoteConnectionException;
+public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException;
 
 Note that it returns a `RemoteTraversal`. This interface should also be implemented and in most cases implementers can
 simply extend the `AbstractRemoteTraversal`.
 
 TinkerPop provides the `DriverRemoteConnection` as a useful and
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-driver/src/main/java/org/apache/tinkerpop/gremlin/driver/remote[example implementation].
-`DriverRemoteConnection` serializes the `Traversal` as Gremlin bytecode and then submits it for remote processing on
-Gremlin Server. Gremlin Server rebinds the `Traversal` to a configured `Graph` instance and then iterates the results
-back as it would normally do.
+`DriverRemoteConnection` serializes the `Traversal` as GremlinLang and then submits it for remote processing on
+Gremlin Server. Gremlin Server parses the script into a `Traversal` to a configured `Graph` instance and then iterates
+the results back as it would normally do.
 
 Implementing `RemoteConnection` is not something routinely done for those implementing `gremlin-core`. It is only
 something required if there is a need to exploit remote traversal submission. If a graph provider has a "graph server"
-similar to Gremlin Server that can accept bytecode-based requests on its own protocol, then that would be one example
+similar to Gremlin Server that can accept traversal-based requests on its own protocol, then that would be one example
 of a reason to implement this interface.
 
 [[bulk-import-export]]
@@ -658,6 +658,9 @@ from the rigors of the JVM Structure and Process Suites in favor of Gherkin. Ove
 Suites will be deprecated and removed.
 
 ==== JVM Test Suite
+
+IMPORTANT: 4.0.0-beta.1 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
+forward providers should focus on implementing the <<gherkin-tests-suite>> as opposed to the JVM suite.
 
 The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. To implement these tests,
 provide test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g.
@@ -971,19 +974,15 @@ extensible nature of Gremlin Server, it is difficult to provide an authoritative
 It is however possible to describe the core communication protocol using the standard out-of-the-box configuration
 which should provide enough information to develop a driver for a specific language.
 
-image::gremlin-server-flow.png[width=300,float=right]
+Gremlin Server is distributed with a configuration that utilizes HTTP with a custom API.  Under this configuration,
+Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then streams back the results in
+HTTP chunks.
 
-Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSocket]
-with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script,
-evaluates that script and then streams back the results.  The notion of "streaming" is depicted in the diagram to the
-right.
-
-The diagram shows an incoming request to process the Gremlin script of `g.V()`.  Gremlin Server evaluates that script,
-getting an `Iterator` of vertices as a result, and steps through each `Vertex` within it.  The vertices are batched
-together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each
-"response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely
-best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for
-the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
+Let's use the incoming request to process the Gremlin script of `g.V()` as an example.  Gremlin Server evaluates that 
+script, getting an `Iterator` of vertices as a result, and steps through each `Vertex` within it.  The vertices are
+batched together into an HTTP chunk.  Each response is serialized given the requested serializer type (GraphBinary is
+recommended) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result
+to be iterated, before sending back a response.  It will send the responses as they are realized.
 
 This approach allows for the processing of large result sets without having to serialize the entire result into memory
 for the response.  It places a bit of a burden on the developer of the driver however, because it becomes necessary to
@@ -992,340 +991,231 @@ Server returns for a single request.  Again, this description of Gremlin Server'
 out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a
 particular language or style of processing.
 
-It is recommended but not required that a driver include a `User-Agent` header as part of any web socket
-handshake request to Gremlin Server. Gremlin Server uses the user agent in building usage metrics
-as well as debugging. The standard format for connection user agents is:
+NOTE: TinkerPop provides a test server which may be useful for testing drivers. Details can be found
+link:https://tinkerpop.apache.org/docs/current/dev/developer/#gremlin-socket-server-tests[here]
 
+It is recommended but not required that a driver include a `User-Agent` header as part of any HTTP request to Gremlin
+Server. Gremlin Server uses the user agent in building usage metrics as well as debugging. The standard format for
+connection user agents is:
+
+[[user-agent-format]]
 `"[Application Name] [GLV Name].[Version] [Language Runtime Version] [OS].[Version] [CPU Architecture]"`
 For example:
 `"MyTestApplication Gremlin-Java.3.5.4 11.0.16.1 Mac_OS_X.12.6.1 aarch64"`
 
+The following section provides an in-depth description of the TinkerPop HTTP API.  The HTTP API is used for
+communicating the requests and responses that were described earlier.
+
+=== HTTP API
+
+This section describes the TinkerPop HTTP API which should be implemented by both graph system providers and graph
+driver providers. There is only one endpoint that currently needs to be supported which is `POST /gremlin`. This
+endpoint is a Gremlin evaluator which takes in a Gremlin script request and responds with the serialized results. The
+formats below use a bit of pseudo-JSON to help represent request and response bodies. The actual format of the request
+and response bodies will be determined by the serializers defined via the "Accept" and "Content-Type" headers. As a
+result, a generic type definition in this document like "number" could translate to a "long" for a serializer that
+supports types like GraphBinary.
+
+==== HTTP Request
+
 To formulate a request to Gremlin Server, a `RequestMessage` needs to be constructed.  The `RequestMessage` is a
-generalized representation of a request that carries a set of "standard" values in addition to optional ones that are
-dependent on the operation being performed.  A `RequestMessage` has these fields:
+generalized representation of a request. This message can be serialized in any fashion that is supported by Gremlin
+Server, which by default is GraphBinary. An HTTP request that contains a `RequestMessage` has the following form:
+
+[source,text]
+----
+POST /gremlin HTTP/1.1
+Accept: <mimetype>
+Content-Type: <mimetype>
+Gremlin-Hints: <hints>
+
+{
+  "gremlin": string,
+  "timeoutMs": number,
+  "bindings": object,
+  "g": string,
+  "language" : string,
+  "materializeProperties": string,
+  "bulkResults": boolean
+}
+----
+
+An actual, complete request might look like the following:
+
+[source,text]
+----
+POST /gremlin HTTP/1.1
+content-length: 61
+host: 127.0.0.1
+content-type: application/vnd.gremlin-v4.0+json
+accept-encoding: deflate
+accept: application/vnd.graphbinary-v4.0
+user-agent: NotAvailable Gremlin-Java.4.0.0 11.0.25 Windows_11.10.0 amd64
+{
+    "gremlin": "g.V()",
+    "language": "gremlin-lang"
+}
+----
+
+===== Expected Request HTTP Headers
+
+[width="100%",cols="3,10,3,3",options="header"]
+|=========================================================
+|Name |Description |Required |Default
+|Accept |Serializer MIME types supported for the response. Must be a mimetype (see <<serializers>>). |No |`application/vnd.gremlin-v4.0+json;types=false`
+|Accept-Encoding |The requested compression algorithm of the response. Valid values: `deflate`. |No |N/A
+|Authorization |Header used with Basic authorization. |No |N/A
+|Content-Length |The size of the payload |Yes |N/A
+|Content-Type |The MIME type of the serialized body |No |None
+|Gremlin-Hints |A semi-colon separated list of key/value pair metadata that could be helpful to the server in processing a particular request in some way. Must be a hints (see table below). |No |N/A
+|User-Agent |The user agent. Follow the format specified by <<user-agent-format, user agent format>>. |No |<<user-agent-format, user agent format>>
+|=========================================================
+
+===== Request Header Value Options
+
+[width="100%",cols="2,10",options="header"]
+|=========================================================
+|Name |Options
+|mimetype |A MIME type listed in <<serializers>>.
+|hints | mutations: yes, no, unknown - Indicates if the Gremlin contains steps that can mutate the graph.
+|=========================================================
+
+The body of the request should be a `RequestMessage` which is a `Map`. The `RequestMessage` should be serialized using
+the serializer specified by the `Content-Type` header. The following are the key value pairs allowed in a
+`RequestMessage`:
+
+===== Request Message Format
+
+[width="100%",cols="3,10,3,3",options="header"]
+|=========================================================
+|Key |Description |Value |Required
+|gremlin |The Gremlin query to execute. |String containing script |Yes
+|timeoutMs |The maximum time a query is allowed to execute in milliseconds. |Number between 0 and 2^31-1 |No
+|bindings |A map used during query execution. Its usage depends on "language". For "gremlin-groovy", these are the variable bindings. For "gremlin-lang", these are the parameter bindings. |Object (Map) |No
+|g |The name of the graph traversal source to which the query applies. Default: "g" |String containing traversal source name |No
+|language |The name of the ScriptEngine to use to parse the gremlin query. Default: "gremlin-lang" |String containing ScriptEngine name |No
+|materializeProperties |Whether to include all properties for results. One of "tokens" or "all". |String |No
+|bulkResults |Whether the results should be bulked by the server (only applies to GraphBinary) |Boolean |No
+|=========================================================
+
+==== HTTP Response
+
+When Gremlin Server receives that request, it will decode it given the "mime type", and execute it using the
+`ScriptEngine` specified by the `language` field.  In this case, it will evaluate the script `g.V(x).out()` using the
+`bindings` supplied in the `args` and stream back the results in HTTP chunks. When the chunks are combined, they will
+form a single `ResponseMessage`.  The HTTP response containing the `ResponseMessage` has the following form:
+
+[source,text]
+----
+HTTP/1.1 200
+Content-type: <mimetype>
+Transfer-Encoding: chunked
+Gremlin-RequestId: <uuid>
+{
+  "result": list,
+  "status": object
+}
+----
+
+NOTE: While this response message is expected for all serialized responses, there may be some errors that are not
+serialized. In that case, the `Content-Type` of the response should be `application/json` and the JSON should contain a
+`message` key.
+
+===== Response Message Format
+
+[width="100%",cols="2,10a",options="header"]
+|=========================================================
+|Key |Description
+|result |A map that contains the result data.
+[width="100%",cols="3,10,3,3",options="header"]
+!=========================================================
+!Name !Description !Required !Default
+!data !A list of result objects. !Array !Yes
+!=========================================================
+|status |A map that contains the status of the result.
+[width="100%",cols="3,10,3,3",options="header"]
+!=========================================================
+!Name !Description !Required !Default
+!code !The actual <<http-status-codes,status code>> of the result. !Number !Yes
+!exception !A class of exception if an error occurred. !String !No
+!message !The error message if an error occurred. !String !No
+!=========================================================
+|=========================================================
+
+===== Expected Response HTTP Headers
+
+[width="100%",cols="3,10,3,3",options="header"]
+|=========================================================
+|Name |Description |Required |Default
+|Content-Type |The MIME type of the serialized body which is based on the request's `Accept` header. May also be "application/json". |Yes |N/A
+|Gremlin-RequestId |The server generated UUID that is used as a request ID. |Yes |N/A
+|Transfer-Encoding |The server should attempt to chunk all responses. |No |"chunked"
+|=========================================================
+
+===== Response Header Value Options
 
 [width="100%",cols="3,10",options="header"]
 |=========================================================
-|Key |Description
-|requestId |A link:http://en.wikipedia.org/wiki/Globally_unique_identifier[UUID] representing the unique identification for the request.
-|op |The name of the "operation" to execute based on the available `OpProcessor` configured in the Gremlin Server.  To evaluate a script, use `eval`.
-|processor |The name of the `OpProcessor` to utilize. The default `OpProcessor` for evaluating scripts is unnamed and therefore script evaluation purposes, this value can be an empty string.
-|args |A `Map` of arbitrary parameters to pass to Gremlin Server.  The requirements for the contents of this `Map` are dependent on the `op` selected.
+|Name |Options
+|mimetype |A MIME type listed in <<serializers>>.
+|uuid |A randomly generated UUID string.
 |=========================================================
 
-This message can be serialized in any fashion that is supported by Gremlin Server.  New serialization methods can
-be plugged in by implementing a `ServiceLoader` enabled `MessageSerializer`, however Gremlin Server provides for
-JSON serialization by default which will be good enough for purposes of most developers building drivers.
-A `RequestMessage` to evaluate a script with variable bindings looks like this in JSON:
+[[http-status-codes]]
+===== Response Status Codes
 
-[source,js]
-----
-{ "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
-  "op":"eval",
-  "processor":"",
-  "args":{"gremlin":"g.V(x).out()",
-          "bindings":{"x":1},
-          "language":"gremlin-groovy"}}
-----
+The following table details the HTTP status codes that Gremlin Server will send:
 
-The above JSON represents the "body" of the request to send to Gremlin Server. When sending this "body" over
-WebSocket, Gremlin Server can accept a packet frame using a "text" (1) or a "binary" (2) opcode. Using "text"
-is a bit more limited in that Gremlin Server will always process the body of that request as JSON.  Generally speaking
-"text" is just for testing purposes.
-
-The preferred method for sending requests to Gremlin Server is to use the "binary" opcode.  In this case, a "header"
-will need be sent in addition to to the "body".  The "header" basically consists of a "mime type" so that Gremlin
-Server knows how to deserialize the `RequestMessage`. So, the actual byte array sent to Gremlin Server would be
-formatted as follows:
-
-image::gremlin-server-request.png[]
-
-The first byte represents the length of the "mime type" string value that follows.  Given the default configuration of
-Gremlin Server, this value should be set to `application/json`.  The "payload" represents the JSON message above
-encoded as bytes.
-
-NOTE: Gremlin Server will only accept masked packets as it pertains to a WebSocket packet header construction.
-
-When Gremlin Server receives that request, it will decode it given the "mime type", pass it to the requested
-`OpProcessor` which will execute the `op` defined in the message.  In this case, it will evaluate the script
-`g.V(x).out()` using the `bindings` supplied in the `args` and stream back the results in a series of
-`ResponseMessages`.  A `ResponseMessage` looks like this:
-
-[width="100%",cols="3,10",options="header"]
-|=========================================================
-|Key |Description
-|requestId |The identifier of the `RequestMessage` that generated this `ResponseMessage`.
-|status | The `status` contains a `Map` of three keys: `code` which refers to a `ResultCode` that is somewhat analogous to an link:http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html[HTTP status code], `attributes` that represent a `Map` of protocol-level information, and `message` which is just a human-readable `String` usually associated with errors.
-|result | The `result` contains a `Map` of two keys: `data` which refers to the actual data returned from the server (the type of data is determined by the operation requested) and `meta` which is a `Map` of meta-data related to the response.
-|=========================================================
-
-In this case the `ResponseMessage` returned to the client would look something like this:
-
-[source,js]
-----
-{"result":{"data":[{"id": 2,"label": "person","type": "vertex","properties": [
-  {"id": 2, "value": "vadas", "label": "name"},
-  {"id": 3, "value": 27, "label": "age"}]},
-  ], "meta":{}},
- "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
- "status":{"code":206,"attributes":{},"message":""}}
-----
-
-Gremlin Server is capable of streaming results such that additional responses will arrive over the WebSocket connection until
-the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode`
-of `206`. Termination of the stream will be marked by a final `200` status code.  Note that all messages without a
-`206` represent terminating conditions for a request.  The following table details the various status codes that
-Gremlin Server will send:
-
-[width="100%",cols="2,2,9",options="header"]
+[width="100%",cols="1,3,9",options="header"]
 |=========================================================
 |Code |Name |Description
 |200 |SUCCESS |The server successfully processed a request to completion - there are no messages remaining in this stream.
 |204 |NO CONTENT |The server processed the request but there is no result to return (e.g. an `Iterator` with no elements) - there are no messages remaining in this stream.
 |206 |PARTIAL CONTENT |The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
+|400 |BAD REQUEST |There was a problem with the HTTP request.
 |401 |UNAUTHORIZED |The request attempted to access resources that the requesting user did not have access to.
 |403 |FORBIDDEN |The server could authenticate the request, but will not fulfill it.
-|407 |AUTHENTICATE |A challenge from the server for the client to authenticate its request.
-|497 |REQUEST ERROR SERIALIZATION |The request message contained an object that was not serializable.
-|498 |REQUEST ERROR MALFORMED REQUEST |The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
-|499 |REQUEST ERROR INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
-|500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
-|595 |SERVER ERROR FAIL STEP | A server error that is produced when the `fail()` step is triggered. The returned exception will include information consistent with the `Failure` interface.
-|596 |SERVER ERROR TEMPORARY |A server error occurred, but it was temporary in nature and therefore the client is free to retry it's request as-is with the potential for success.
-|597 |SERVER ERROR EVALUATION |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
-|598 |SERVER ERROR TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
-|599 |SERVER ERROR SERIALIZATION |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
+|404 |NOT FOUND |The server was unable to find the requested resource.
+|405 |METHOD NOT ALLOWED |The request used an unsupported method. The server only supports POST.
+|413 |REQUEST ENTITY TOO LARGE |The request was too large or the query could not be compiled due to size limitations.
+|500 |INTERNAL SERVER ERROR |A general server error occurred that prevented the request from being processed.
+|505 |HTTP VERSION NOT SUPPORTED |A server error indicating that an unsupported version of HTTP is being used. Only HTTP/1.1 is supported.
 |=========================================================
 
-NOTE: Please refer to the link:https://tinkerpop.apache.org/docs/x.y.z/dev/io[IO Reference Documentation] for more
-examples of `RequestMessage` and `ResponseMessage` instances.
+===== Trailing Headers
 
-NOTE: Tinkerpop provides a test server which may be useful for testing drivers. Details can be found
-link:https://tinkerpop.apache.org/docs/current/dev/developer/#gremlin-socket-server-tests[here]
+Error responses will have trailing headers in addition to the status object in the response body. This information is
+duplicated and should be the same, so graph driver providers should use whichever is easier for them. The trailers,
+however, will only contain the `Status` and `Exception` without the `Message`.
 
-=== OpProcessors Arguments
+==== HTTP Examples
 
-The following sections define a non-exhaustive list of available operations and arguments for embedded `OpProcessors`
-(i.e. ones packaged with Gremlin Server).
+For examples of actual requests and responses, take a look at the IO documentation for
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_requestmessage[GraphSON requests] and
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#_responsemessage[GraphSON responses].
 
-==== Common
+=== HTTP Request Interceptor
 
-All `OpProcessor` instances support these arguments.
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|batchSize |Int |When the result is an iterator this value defines the number of iterations each `ResponseMessage` should contain - overrides the `resultIterationBatchSize` server setting.
-|=========================================================
-
-==== Standard OpProcessor
-
-The "standard" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin.
-Requests made to this `OpProcessor` are "sessionless" in the sense that a request must encapsulate the entirety
-of a transaction.  There is no state maintained between requests.  A transaction is started when the script is first
-evaluated and is committed when the script completes (or rolled back if an error occurred).
-
-[width="100%",cols="3,10a",options="header"]
-|=========================================================
-|Key |Description
-|processor |As this is the default `OpProcessor` this value can be set to an empty string.
-|op |[width="100%",cols="3,10",options="header"]
-!=========================================================
-!Key !Description
-!`authentication` !A request that contains the response to a server challenge for authentication.
-!`eval` !Evaluate a Gremlin script provided as a `String`.
-!=========================================================
-|=========================================================
-
-**`authentication` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
-|saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
-|=========================================================
-
-**`eval` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|gremlin |String | *Required* The Gremlin script to evaluate.
-|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`).
-|aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
-be aliased to different variable names for purposes of the current request.  The value represents the name of the
-global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
-example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
-to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|evaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
-|=========================================================
-
-==== Session OpProcessor
-
-The "session" `OpProcessor` handles requests for the primary function of Gremlin Server - executing Gremlin. It is
-like the "standard" `OpProcessor`, but instead maintains state between sessions and allows the option to leave all
-transaction management up to the calling client.  It is important that clients that open sessions, commit or roll
-them back, however Gremlin Server will try to clean up such things when a session is killed that has been abandoned.
-It is important to consider that a session can only be maintained with a single machine.  In the event that multiple
-Gremlin Server are deployed, session state is not shared among them.
-
-[width="100%",cols="3,10a",options="header"]
-|=========================================================
-|Key |Description
-|processor |This value should be set to `session`
-|op |
-[cols="3,10",options="header"]
-!=========================================================
-!Key !Description
-!`authentication` !A request that contains the response to a server challenge for authentication.
-!`eval` !Evaluate a Gremlin script provided as a `String`.
-!`close` !Deprecated. Gremlin-Server will only return a `NO CONTENT` message.
-|=========================================================
-
-NOTE: The "close" message related to sessions was deprecated as of 3.3.11. Closing sessions now relies on closing the connections. The function to accept `close` message on the server was removed
-in 3.5.0, but has been added back as of 3.5.2. Servers wishing to be compatible with older versions of the driver need only send back a `NO_CONTENT` for
-this message (which is what Gremlin Server does as of 3.5.0). Drivers wishing to be compatible with servers prior to
-3.3.11 may continue to send the message on calls to `close()`, otherwise such code can be removed.
-
-**`authentication` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|saslMechanism |String | The SASL mechanism: `PLAIN` or `GSSAPI`. Note that it is up to the server implementation to use or disregard this setting (default implementation in Gremlin Server ignores it).
-|sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
-|=========================================================
-
-**`eval` operation arguments**
-
-[width="100%",options="header"]
-|=========================================================
-|Key |Type |Description
-|gremlin |String | *Required* The Gremlin script to evaluate.
-|session |String | *Required* The session identifier for the current session - typically this value should be a UUID (the session will be created if it doesn't exist).
-|manageTransaction |Boolean |When set to `true` the transaction for the current request is auto-committed or rolled-back as are done with sessionless requests - defaulted to `false`.
-|bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script.
-|evaluationTimeout |Long |An override for the server setting that determines the maximum time to wait for a script to execute on the server.
-|language |String |The flavor of Gremlin used (e.g. `gremlin-groovy`)
-|aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
-be aliased to different variable names for purposes of the current request.  The value represents the name the
-global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
-example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
-to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
-|=========================================================
-
-**`close` operation arguments**
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|session |String | *Required* The session identifier for the session to close.
-|force |Boolean | Determines if the session should be force closed when the client is closed. Force closing will not
-attempt to close open transactions from existing running jobs and leave it to the underlying graph to decided how to
-proceed with those orphaned transactions. Setting this to `true` tends to lead to faster close operation and release
-of resources which can be desirable if Gremlin Server has a long session timeout and a long script evaluation timeout
-as attempts to close long run jobs can occur more rapidly. If not provided, this value is `false`.
-|=========================================================
-
-==== Traversal OpProcessor
-
-Both the Standard and Session OpProcessors allow for Gremlin scripts to be submitted to the server. The
-`TraversalOpProcessor` however allows Gremlin `Bytecode` to be submitted to the server. Supporting this `OpProcessor`
-makes it possible for a link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variant]
-to submit a `Traversal` directly to Gremlin Server in the native language of the GLV without having to use a script in
-a different language.
-
-Unlike Standard and Session OpProcessors, the Traversal OpProcessor does not simply return the results of the
-`Traversal`. It instead returns `Traverser` objects which allows the client to take advantage of
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#barrier-step[bulking]. To describe this interaction more
-directly, the returned `Traverser` will represent some value from the `Traversal` result and the number of times it
-is represented in the full stream of results. So, if a `Traversal` happens to return the same vertex twenty times
-it won't return twenty instances of the same object. It will return one in `Traverser` with the `bulk` value set to
-twenty. Under this model, the amount of processing and network overhead can be reduced considerably.
-
-To demonstrate consider this example:
-
-[gremlin-groovy]
-----
-cluster = Cluster.open()
-client = cluster.connect()
-aliased = client.alias("g")
-g = traversal().withEmbedded(org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph.instance())     <1>
-rs = aliased.submit(g.V().both().barrier().both().barrier()).all().get()                    <2>
-aliased.submit(g.V().both().barrier().both().barrier().count()).all().get().get(0).getInt() <3>
-rs.collect{[value: it.getObject().get(), bulk: it.getObject().bulk()]}                      <4>
-----
-
-<1> All commands through this step are just designed to demonstrate bulking with Gremlin Server and don't represent
-a real-world way that this feature would be used.
-<2> Submit a `Traversal` that happens to ensure that the server uses bulking. Note that a `Traverser` is returned
-and that there are only six results.
-<3> In actuality, however, if this same `Traversal` is iterated there are thirty results. Without bulking, the previous
-request would have sent back thirty traversers.
-<4> Note that the sum of the bulk of each `Traverser` is thirty.
-
-The full iteration of a `Traversal` is thus left to the client. It must interpret the bulk on the `Traverser` and
-unroll it to represent the actual number of times it exists when iterated. The unrolling is typically handled
-directly within TinkerPop's remote traversal implementations.
-
-[width="100%",cols="3,10a",options="header"]
-|=========================================================
-|Key |Description
-|processor |This value should be set to `traversal`
-|op |
-[cols="3,10",options="header"]
-!=========================================================
-!Key !Description
-!`authentication` !A request that contains the response to a server challenge for authentication.
-!`bytecode` !A request that contains the `Bytecode` representation of a `Traversal`.
-|=========================================================
-
-**`authentication` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|sasl |String | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server and is Base64 encoded.
-|=========================================================
-
-**`bytecode` operation arguments**
-
-[width="100%",cols="2,2,9",options="header"]
-|=========================================================
-|Key |Type |Description
-|gremlin |String | *Required* The `Bytecode` representation of a `Traversal`.
-|aliases |Map | *Required* A map with a single key/value pair that refers to a globally bound `TraversalSource` object
-to be aliased to different variable names for purposes of the current request.  The value represents the name of the
-global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
-example, if the Gremlin Server defines two `TraversalSource` instances named `g1`, it would be possible
-to send an alias pair with key of "g" and value of "g1" and thus allow the script to refer to "g1" simply as "g". Note
-that unlike users of `alias` in other contexts, in this case, the key can *only* be set to "g" and there can be only
-one key value pair present (since only one `Traversal` is being submitted, there is no sense to having more than a
-single alias).
-|=========================================================
+A graph driver may support HTTP request intercepting which provides a means for the user of your graph driver to update
+the headers and body of the HTTP request before it is sent to the server.  This enables use cases where a graph system
+provider's server implementation has additional capabilities that aren't included in the base Gremlin Server.  Although
+every graph system provider is expected to support the protocol defined by the TinkerPop HTTP API, this doesn't
+preclude them from including additional functionality.  Be aware that if you choose to not provide this functionality,
+then your graph driver may not have access to some graph provider's features, or, possibly, it may not be able to
+connect at all.
 
 === Authentication and Authorization
 
-Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based]
-authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with
-in order to authenticate.  Gremlin Server supports the "PLAIN" SASL mechanism, which is a cleartext
-password system, for all link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-drivers-variants[Gremlin Language Variants].
-Other SASL mechanisms supported for selected clients are listed in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#security[security section of the Gremlin Server reference documentation].
+By default, Gremlin Server only supports
+link:https://en.wikipedia.org/wiki/Basic_access_authentication[basic HTTP authentication].  This is handled by the
+`HttpBasicAuthenticationHandler` which is the only `AbstractAuthenticationHandler` provided with the Gremlin Server. 
+Other common HTTP authentication schemes that are sent via an HTTP header can be supported by implementing a custom
+`AbstractAuthenticationHandler`.  Because the communication protocol is HTTP/1.1, authentication should be header-based
+and should not include negotiation.
 
-When authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`.  The
-request is saved on the server and a `AUTHENTICATE` challenge response (status code `407`) is returned to the client.
-
-The client will detect the `AUTHENTICATE` and respond with an `authentication` for the `op` and an `arg` named `sasl`.
-In case of the "PLAIN" SASL mechanism the `arg` contains the password.  The password should be either, an encoded
-sequence of UTF-8 bytes, delimited by 0 (US-ASCII NUL), where the form is : `<NUL>username<NUL>password`, or a Base64
-encoded string of the former (which in this instance would be `AHVzZXJuYW1lAHBhc3N3b3Jk`).  Should Gremlin Server be
-able to authenticate with the provided credentials, the server will return the results of the original request as it
-normally does without authentication.  If it cannot authenticate given the challenge response from the client, it will
-return `UNAUTHORIZED` (status code `401`).
-
-NOTE: Gremlin Server does not support the "authorization identity" as described in link:https://tools.ietf.org/html/rfc4616[RFC4616].
+When basic authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`. 
+The request is examined for an `Authorization` header. If one doesn't exist then "401 Unauthorized" error response is
+returned.
 
 In addition to authenticating users at the start of a connection, Gremlin Server allows providers to authorize users on
 a per request basis. If
@@ -1341,6 +1231,39 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#security[reference docum
 NOTE: While Gremlin Server supports this authorization feature it is not a feature that TinkerPop requires of graph
 providers as part of the agreement between client and server.
 
+[[serializers]]
+=== Serializers
+
+In order to serialize and deserialize the requests and responses, your graph driver will need to implement
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphbinary[GraphBinary]. The Gremlin Server is capable of
+returning both GraphBinary and GraphSON, however, GraphBinary is a more compact format which can lead to increased
+performance as fewer bytes need to be sent through the wire. For this reason, drivers only need to support GraphBinary.
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/io/#graphson[GraphSON] can be used by applications that only support JSON serialization.
+
+The following table lists the serializers supported by the Gremlin Server and their MIME types. These MIME types should
+be used in the `Content-Type` and `Accept` HTTP headers.
+
+[width="100%",cols="3,5,5",options="header"]
+|=========================================================
+|Name |Description |MIME type
+|Untyped GraphSON 4.0 |A JSON-based graph format |application/vnd.gremlin-v4.0+json;types=false
+|Typed GraphSON 4.0 |A JSON-based graph format with embedded type information used for serialization |application/vnd.gremlin-v4.0+json;types=true
+|GraphBinary 4.0 |A binary graph format |application/vnd.graphbinary-v4.0
+|=========================================================
+
+==== IO Tests
+
+The IO test suite is a collection of files that contain the expected outcome of serialization of certain types. These
+tests can be used to determine if a particular serializer has been correctly implemented. In general, a driver should
+be able to "round trip" each of these types. That is, it should be able to both read from and write to those exact same
+bytes. Not all programming languages provide library types that will match the specification of the corresponding type
+defined by the serializer. In this case, it is not possible to completely round trip that type and you may skip that
+test. The GraphBinary test files can be found
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary[here].
+The link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-util/src/test/java/org/apache/tinkerpop/gremlin/structure/io/AbstractTypedCompatibilityTest.java:[Java implementation]
+can be used as a reference on how these files can be used and its
+link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-util/src/test/java/org/apache/tinkerpop/gremlin/structure/io/Model.java[model]
+shows the Java representation of those files.
 
 [[gremlin-plugins]]
 == Gremlin Plugins

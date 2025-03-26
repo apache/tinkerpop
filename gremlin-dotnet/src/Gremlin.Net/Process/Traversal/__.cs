@@ -117,7 +117,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> all adds the all step to that traversal.
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the all step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> All(P? predicate)
         {
@@ -135,7 +135,7 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> any adds the any step to that traversal.
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the any step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Any(P? predicate)
         {
@@ -468,6 +468,14 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, object> Difference(object differenceObject)
         {
             return new GraphTraversal<object, object>().Difference(differenceObject);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the discard step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Discard()
+        {
+            return new GraphTraversal<object, object>().Discard();
         }
 
         /// <summary>
@@ -1097,6 +1105,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the none step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> None(P? predicate)
+        {
+            return new GraphTraversal<object, object>().None(predicate);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the not step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Not(ITraversal notTraversal)
@@ -1230,6 +1246,14 @@ namespace Gremlin.Net.Process.Traversal
             return keyValues is { Length: 0 }
                 ? new GraphTraversal<object, object>().Property(key, value)
                 : new GraphTraversal<object, object>().Property(key, value, keyValues);            
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the property step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> Property(IDictionary<object, object> map)
+        {
+            return new GraphTraversal<object, object>().Property(map);
         }
 
         /// <summary>

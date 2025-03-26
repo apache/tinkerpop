@@ -18,20 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
-import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
-import org.apache.tinkerpop.gremlin.util.Tokens;
+import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
+import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
@@ -43,7 +41,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinServerSslIntegrateTest.class);
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -156,7 +158,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
 
         try {
             // this should return "nothing" - there should be no exception
-            assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("g.inject('test')").one().getString());
         } finally {
             cluster.close();
         }
@@ -164,19 +166,18 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldEnableWebSocketSsl() throws Exception {
-        try (SimpleClient client = TestClientFactory.createSSLWebSocketClient()) {
-            final Map<Object, Object> bindings = new HashMap<>();
+        try (SimpleClient client = TestClientFactory.createSSLSimpleHttpClient()) {
+            final Map<String, Object> bindings = new HashMap<>();
             bindings.put("x", 123);
             bindings.put("y", 123);
-            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
-                    .addArg(Tokens.ARGS_GREMLIN, "x+y")
-                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final RequestMessage request = RequestMessage.build("x+y")
+                    .addBindings(bindings).addLanguage("gremlin-groovy").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 System.out.println(result.getStatus());
-                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
-                    pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() &&
+                if (result.getStatus().getCode() != HttpResponseStatus.PARTIAL_CONTENT) {
+                    pass.set(HttpResponseStatus.OK == result.getStatus().getCode() &&
                             (((int) ((List) result.getResult().getData()).get(0) == 246)));
                 }
                 latch.countDown();
@@ -200,7 +201,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
 
         try {
             // this should return "nothing" - there should be no exception
-            assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("g.inject('test')").one().getString());
         } finally {
             cluster.close();
         }
@@ -212,12 +213,12 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            client.submit("'test'").one();
+            client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl is enabled on the server but not on client");
         } catch(Exception x) {
-            assertThat(x, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(RuntimeException.class));
+            assertThat(root.getMessage(), containsString("The server may be expecting SSL to be enabled"));
         } finally {
             cluster.close();
         }
@@ -230,7 +231,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("g.inject('test')").one().getString());
         } finally {
             cluster.close();
         }
@@ -243,7 +244,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("g.inject('test')").one().getString());
         } finally {
             cluster.close();
         }
@@ -256,12 +257,10 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            client.submit("'test'").one();
+            client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client auth is enabled on the server but client does not have a cert");
         } catch (Exception x) {
-            assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
+            assertSslException(x, "bad_certificate");
         } finally {
             cluster.close();
         }
@@ -274,12 +273,10 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            client.submit("'test'").one();
+            client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client auth is enabled on the server but does not trust client's cert");
         } catch (Exception x) {
-            assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
+            assertSslException(x, "bad_certificate");
         } finally {
             cluster.close();
         }
@@ -292,12 +289,10 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            client.submit("'test'").one();
+            client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
-            assertThat(x, instanceOf(NoHostAvailableException.class));
-            final Throwable root = ExceptionHelper.getRootCause(x);
-            assertThat(root, instanceOf(SSLException.class));
+            assertSslException(x ,"protocol_version");
         } finally {
             cluster.close();
         }
@@ -310,10 +305,9 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            client.submit("'test'").one();
+            client.submit("g.inject('test')").one();
             fail("Should throw exception because ssl client requires TLSv1.2 whereas server supports only TLSv1.1");
         } catch (Exception x) {
-            assertThat(x, instanceOf(NoHostAvailableException.class));
             final Throwable root = ExceptionHelper.getRootCause(x);
             assertThat(root, instanceOf(SSLException.class));
         } finally {
@@ -330,7 +324,7 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client = cluster.connect();
 
         try {
-            assertEquals("test", client.submit("'test'").one().getString());
+            assertEquals("test", client.submit("g.inject('test')").one().getString());
         } finally {
             cluster.close();
         }
@@ -342,9 +336,16 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
         final Client client2 = cluster2.connect();
 
         try {
-            assertEquals("test", client2.submit("'test'").one().getString());
+            assertEquals("test", client2.submit("g.inject('test')").one().getString());
         } finally {
             cluster2.close();
         }
+    }
+
+    private static void assertSslException(Exception x, String expectedSubstring) {
+        logger.warn("Exception caught: {}", x.getMessage(), x);
+        final Throwable root = ExceptionHelper.getRootCause(x);
+        assertThat(root, instanceOf(SSLException.class));
+        assertThat(root.getMessage(), containsString(expectedSubstring));
     }
 }

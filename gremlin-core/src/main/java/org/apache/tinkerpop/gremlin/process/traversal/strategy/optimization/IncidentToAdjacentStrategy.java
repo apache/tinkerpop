@@ -110,7 +110,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      * @param step2     the vertex-emitting step to replace
      */
     private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
-        final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabelsGValue());
         for (final String label : (Iterable<String>) step2.getLabels()) {
             newStep.addLabel(label);
         }

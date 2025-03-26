@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -66,6 +67,11 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     public AddEdgeStartStep(final Traversal.Admin traversal, final Traversal<?, String> edgeLabelTraversal) {
         super(traversal);
         this.parameters.set(this, T.label, edgeLabelTraversal);
+    }
+
+    public AddEdgeStartStep(final Traversal.Admin traversal, final GValue<String> edgeLabel) {
+        super(traversal);
+        this.parameters.set(this, T.label, edgeLabel.get());
     }
 
     @Override

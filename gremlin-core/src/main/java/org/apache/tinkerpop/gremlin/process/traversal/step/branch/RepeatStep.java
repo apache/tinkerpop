@@ -160,6 +160,9 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     public RepeatStep<S> clone() {
+        if (null == this.repeatTraversal)
+            throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
+
         final RepeatStep<S> clone = (RepeatStep<S>) super.clone();
         clone.repeatTraversal = this.repeatTraversal.clone();
         if (null != this.untilTraversal)
@@ -179,9 +182,14 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.repeatTraversal.hashCode();
+        int result = super.hashCode();
         result ^= Boolean.hashCode(this.untilFirst);
         result ^= Boolean.hashCode(this.emitFirst) << 1;
+
+        // not a normal state, but prevents NPE during strategy application allowing the better
+        // user-friendly error message to show up at iteration
+        if (this.repeatTraversal != null)
+            result ^= this.repeatTraversal.hashCode();
         if (this.loopName != null)
             result ^= this.loopName.hashCode();
         if (this.untilTraversal != null)

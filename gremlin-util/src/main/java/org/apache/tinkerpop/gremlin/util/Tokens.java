@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -31,19 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 public final class Tokens {
     private Tokens() {}
 
-    public static final String OPS_AUTHENTICATION = "authentication";
-    public static final String OPS_BYTECODE = "bytecode";
-    public static final String OPS_EVAL = "eval";
-    public static final String OPS_INVALID = "invalid";
-    public static final String OPS_CLOSE = "close";
-
     /**
-     * The key for the unique identifier of the request.
-     */
-    public static final String REQUEST_ID = "requestId";
-
-    /**
-     * Argument name that allows definition of the number of iterations each {@link ResponseMessage} should contain -
+     * Argument name that allows definition of the number of iterations each HTTP chunk should contain -
      * overrides the @{code resultIterationBatchSize} server setting.
      */
     public static final String ARGS_BATCH_SIZE = "batchSize";
@@ -58,8 +45,7 @@ public final class Tokens {
      * Argument name that allows definition of alias names for {@link Graph} and {@link TraversalSource} objects on
      * the remote system.
      */
-    public static final String ARGS_ALIASES = "aliases";
-    public static final String ARGS_FORCE = "force";
+    public static final String ARGS_G = "g";
 
     /**
      * Argument name that corresponds to the Gremlin to evaluate.
@@ -76,9 +62,7 @@ public final class Tokens {
      * request to execute on the server.
      */
     public static final String ARGS_EVAL_TIMEOUT = "evaluationTimeout";
-    public static final String ARGS_HOST = "host";
-    public static final String ARGS_SESSION = "session";
-    public static final String ARGS_MANAGE_TRANSACTION = "manageTransaction";
+
     /**
      * The name of the argument that allows to control the serialization of properties on the server.
      */
@@ -90,6 +74,7 @@ public final class Tokens {
      */
 
     public static final String MATERIALIZE_PROPERTIES_ALL = "all";
+
     /**
      * The name of the value denoting that only `ID` and `Label` of Element should be returned.
      * Should be used with {@code ARGS_MATERIALIZE_PROPERTIES}
@@ -97,51 +82,18 @@ public final class Tokens {
     public static final String MATERIALIZE_PROPERTIES_TOKENS = "tokens";
 
     /**
-     * Argument name that is intended to be used with a session which when its value is {@code true} makes it so
-     * that a processing error or request timeout will not close the session, but leave it to continue processing in
-     * whatever state it may hold. This argument only applies to the {@code UnifiedChannelizer}.
+     * The key for the per request server-side timeout in milliseconds.
      */
-    public static final String ARGS_MAINTAIN_STATE_AFTER_EXCEPTION = "maintainStateAfterException";
-    public static final String ARGS_SASL = "sasl";
-    public static final String ARGS_SASL_MECHANISM = "saslMechanism";
+    public static final String TIMEOUT_MS = "timeoutMs";
+
+    /**
+     * The key for server to bulk result as a form of optimization for driver requests.
+     */
+    public static final String BULK_RESULTS = "bulkResults";
 
     /**
      * A value that is a custom string that the user can pass to a server that might accept it for purpose of
      * identifying the kind of client it came from.
      */
     public static final String ARGS_USER_AGENT = "userAgent";
-
-    public static final String VAL_TRAVERSAL_SOURCE_ALIAS = "g";
-
-    /**
-     * The value of this key holds a string representation of the data held by a {@link Failure} as produced by
-     * {@link Failure#format()}.
-     */
-    public static final String STATUS_ATTRIBUTE_FAIL_STEP_MESSAGE = "failStepMessage";
-
-    /**
-     * Refers to the hierarchy of exception names for a particular exception thrown on the server.
-     */
-    public static final String STATUS_ATTRIBUTE_EXCEPTIONS = "exceptions";
-
-    /**
-     * Refers to the stacktrace for an exception thrown on the server
-     */
-    public static final String STATUS_ATTRIBUTE_STACK_TRACE = "stackTrace";
-
-    /**
-     * A {@link ResultSet#statusAttributes()} key for user-facing warnings.
-     * <p>
-     * Implementations that set this key should consider using one of
-     * these two recommended value types:
-     * <ul>
-     *     <li>A {@code List} implementation containing
-     *     references for which {@code String#valueOf(Object)} produces
-     *     a meaningful return value.  For example, a list of strings.</li>
-     *     <li>Otherwise, any single non-list object for which
-     *     {@code String#valueOf(Object)} produces a meaningful return value.
-     *     For example, a string.</li>
-     * </ul>
-     */
-    public static final String STATUS_ATTRIBUTE_WARNINGS = "warnings";
 }

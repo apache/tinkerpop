@@ -18,7 +18,7 @@
 host: 0.0.0.0
 port: 45940
 evaluationTimeout: 30000
-channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
+channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
   graph: conf/tinkergraph-service.properties,
   immutable: conf/tinkergraph-service.properties,
@@ -38,14 +38,9 @@ scriptEngines: {
                org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
                org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/generate-all.groovy]}}}}
 serializers:
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2] }}
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV1, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1] }}
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1 }
-  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
-processors:
-  - { className: org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor, config: { sessionTimeout: 28800000 }}
-  - { className: org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor, config: {}}
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}            # application/json
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }                                                                                                           # application/vnd.graphbinary-v1.0
+  - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4, config: { serializeResultToString: true }}
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 gremlinPool: 8
@@ -55,7 +50,7 @@ keepAliveInterval: 0
 maxInitialLineLength: 4096
 maxHeaderSize: 8192
 maxChunkSize: 8192
-maxContentLength: 10485760
+maxRequestContentLength: 10485760
 maxAccumulationBufferComponents: 1024
 resultIterationBatchSize: 64
 writeBufferLowWaterMark: 32768

@@ -71,11 +71,12 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Edge.class);
         Iterator<Edge> iterator;
+        final Object[] resolvedIds = this.getIdsAsValues();
         // ids are present, filter on them first
-        if (null == this.ids)
+        if (null == resolvedIds)
             iterator = Collections.emptyIterator();
-        else if (this.ids.length > 0)
-            iterator = this.iteratorList(graph.edges(this.ids));
+        else if (resolvedIds.length > 0)
+            iterator = this.iteratorList(graph.edges(resolvedIds));
         else
             iterator = null == indexedContainer ?
                     this.iteratorList(graph.edges()) :
@@ -93,11 +94,12 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         Iterator<? extends Vertex> iterator;
+        final Object[] resolvedIds = this.getIdsAsValues();
         // ids are present, filter on them first
-        if (null == this.ids)
+        if (null == resolvedIds)
             iterator = Collections.emptyIterator();
-        else if (this.ids.length > 0)
-            iterator = this.iteratorList(graph.vertices(this.ids));
+        else if (resolvedIds.length > 0)
+            iterator = this.iteratorList(graph.vertices(resolvedIds));
         else
             iterator = (null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :

@@ -20,19 +20,18 @@
 /**
  * @author Igor Ostapenko
  */
-'use strict';
 
-const { Buffer } = require('buffer');
-const g = require('../../../graph');
+import { Buffer } from 'buffer';
+import { Path } from '../../../graph.js';
 
-module.exports = class PathSerializer {
+export default class PathSerializer {
   constructor(ioc) {
     this.ioc = ioc;
     this.ioc.serializers[ioc.DataType.PATH] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof g.Path;
+    return value instanceof Path;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -115,10 +114,10 @@ module.exports = class PathSerializer {
       }
       cursor = cursor.slice(objects_len);
 
-      const v = new g.Path(labels, objects);
+      const v = new Path(labels, objects);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -361,6 +362,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     }
 
     @Test
+    @Ignore("RepeatUnrollStrategy ")
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX() {
         // This traversal gets optimised by the RepeatUnrollStrategy

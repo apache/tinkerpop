@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <artifactId>tinkerpop</artifactId>
         <groupId>org.apache.tinkerpop</groupId>
-        <version>3.7.4-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>gremlin-annotations</artifactId>
@@ -57,7 +57,7 @@ limitations under the License.
         <dependency>
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
-            <version>0.19</version>
+            <version>0.21.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

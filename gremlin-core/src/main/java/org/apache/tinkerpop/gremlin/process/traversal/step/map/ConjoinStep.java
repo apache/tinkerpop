@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
 
@@ -34,11 +35,15 @@ import java.util.Set;
  * A map step that returns the result of joining every element in the traverser using the delimiter argument.
  */
 public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements ListFunction {
-    private String delimiter;
+    private GValue<String> delimiter;
 
     public ConjoinStep(final Traversal.Admin traversal, final String delimiter) {
+        this(traversal, GValue.of(null, delimiter));
+    }
+
+    public ConjoinStep(final Traversal.Admin traversal, final GValue<String> delimiter) {
         super(traversal);
-        if (null == delimiter) { throw new IllegalArgumentException("Input delimiter to conjoin step can't be null."); }
+        if (null == delimiter || null == delimiter.get()) { throw new IllegalArgumentException("Input delimiter to conjoin step can't be null."); }
         this.delimiter = delimiter;
     }
 
@@ -46,7 +51,7 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
     public String getStepName() { return "conjoin"; }
 
     @Override
-    protected String map(Traverser.Admin<S> traverser) {
+    protected String map(final Traverser.Admin<S> traverser) {
         final Collection elements = convertTraverserToCollection(traverser);
         if (elements.isEmpty()) { return ""; }
 
@@ -54,12 +59,12 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
 
         for (Object elem : elements) {
             if (elem != null) {
-                joinResult.append(String.valueOf(elem)).append(delimiter);
+                joinResult.append(elem).append(delimiter.get());
             }
         }
 
         if (joinResult.length() != 0) {
-            joinResult.delete(joinResult.length() - delimiter.length(), joinResult.length());
+            joinResult.delete(joinResult.length() - delimiter.get().length(), joinResult.length());
             return joinResult.toString();
         } else {
             return null;
@@ -67,6 +72,10 @@ public final class ConjoinStep<S> extends ScalarMapStep<S, String> implements Li
     }
 
     public String getDelimiter() {
+        return this.delimiter.get();
+    }
+
+    public GValue<String> getDelimiterGValue() {
         return this.delimiter;
     }
 

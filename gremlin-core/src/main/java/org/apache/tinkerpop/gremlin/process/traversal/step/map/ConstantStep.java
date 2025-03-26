@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -29,29 +30,36 @@ import java.util.Set;
 
 public class ConstantStep<S, E> extends ScalarMapStep<S, E> {
 
-    private final E constant;
+    private final GValue<E> constant;
 
     public ConstantStep(final Traversal.Admin traversal, final E constant) {
+        this(traversal, constant instanceof GValue ? (GValue) constant : GValue.of(null, constant));
+    }
+
+    public ConstantStep(final Traversal.Admin traversal, final GValue<E> constant) {
         super(traversal);
-        this.constant = constant;
+        this.constant = null == constant ? GValue.of(null, null) : constant;
     }
 
     public E getConstant() {
+        return this.constant.get();
+    }
+    public GValue<E> getConstantGValue() {
         return this.constant;
     }
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        return this.constant;
+        return this.constant.get();
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.constant);
+        return StringFactory.stepString(this, this.constant.get());
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(this.constant);
+        return super.hashCode() ^ Objects.hashCode(this.constant.get());
     }
 }

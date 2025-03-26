@@ -20,11 +20,11 @@ package org.apache.tinkerpop.gremlin.server.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.ser.MessageTextSerializer;
-import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +34,7 @@ import java.util.function.Function;
  * A highly use-case specific serializer that only has context for HTTP where results simply need to be converted
  * to string in a line by line fashion for text based returns.
  */
-public class TextPlainMessageSerializer implements MessageTextSerializer<Function<Object, String>> {
+public class TextPlainMessageSerializer extends AbstractMessageSerializer<Function<Object, String>> {
 
     @Override
     public Function<Object, String> getMapper() {
@@ -42,26 +42,49 @@ public class TextPlainMessageSerializer implements MessageTextSerializer<Functio
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        final String payload = serializeResponseAsString(responseMessage, allocator);
-        final ByteBuf encodedMessage = allocator.buffer(payload.length());
-        encodedMessage.writeCharSequence(payload, CharsetUtil.UTF_8);
-
-        return encodedMessage;
+    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
+        return (responseMessage.getStatus().getCode() == HttpResponseStatus.OK)
+                ? convertStringData(responseMessage.getResult().getData(), false, allocator)
+                : convertErrorString(responseMessage.getStatus().getMessage(), allocator);
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        throw new UnsupportedOperationException("text/plain does not produce binary");
+    public ByteBuf writeHeader(ResponseMessage responseMessage, ByteBufAllocator allocator) {
+        return convertStringData(responseMessage.getResult().getData(), false, allocator);
     }
 
     @Override
-    public RequestMessage deserializeRequest(final ByteBuf msg) throws SerializationException {
+    public ByteBuf writeChunk(Object aggregate, ByteBufAllocator allocator) {
+        return convertStringData((List<Object>) aggregate, true, allocator);
+    }
+
+    @Override
+    public ByteBuf writeFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
+        return convertStringData(responseMessage.getResult().getData(), true, allocator);
+    }
+
+    @Override
+    public ByteBuf writeErrorFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
+        return convertErrorString(System.lineSeparator() + responseMessage.getStatus().getMessage(), allocator);
+    }
+
+    @Override
+    public ResponseMessage readChunk(ByteBuf byteBuf, boolean isFirstChunk) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
+    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
+        throw new UnsupportedOperationException("text/plain does not produce binary");
+    }
+
+    @Override
+    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) {
+        throw new UnsupportedOperationException("text/plain does not have deserialization functions");
+    }
+
+    @Override
+    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
@@ -70,33 +93,27 @@ public class TextPlainMessageSerializer implements MessageTextSerializer<Functio
         return new String[] { "text/plain" };
     }
 
-    @Override
-    public String serializeResponseAsString(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    private ByteBuf convertStringData(final List<Object> data, final boolean addStartingSeparator, final ByteBufAllocator allocator) {
         final StringBuilder sb = new StringBuilder();
 
+        if (addStartingSeparator) sb.append(System.lineSeparator());
         // this should only serialize success conditions so all should have data in List form
-        final List<Object> data = (List<Object>) responseMessage.getResult().getData();
         for (int ix = 0; ix < data.size(); ix ++) {
             sb.append("==>");
             sb.append(data.get(ix));
             if (ix < data.size() - 1)
                 sb.append(System.lineSeparator());
         }
-        return sb.toString();
+
+        final ByteBuf encodedMessage = allocator.buffer(sb.length());
+        encodedMessage.writeCharSequence(sb.toString(), CharsetUtil.UTF_8);
+
+        return encodedMessage;
     }
 
-    @Override
-    public String serializeRequestAsString(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException {
-        throw new UnsupportedOperationException("text/plain does not have any need to serialize requests");
-    }
-
-    @Override
-    public RequestMessage deserializeRequest(final String msg) throws SerializationException {
-        throw new UnsupportedOperationException("text/plain does not have deserialization functions");
-    }
-
-    @Override
-    public ResponseMessage deserializeResponse(final String msg) throws SerializationException {
-        throw new UnsupportedOperationException("text/plain does not have deserialization functions");
+    private ByteBuf convertErrorString(final String error, final ByteBufAllocator allocator) {
+        final ByteBuf encodedMessage = allocator.buffer(error.length());
+        encodedMessage.writeCharSequence(error, CharsetUtil.UTF_8);
+        return encodedMessage;
     }
 }

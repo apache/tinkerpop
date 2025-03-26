@@ -20,12 +20,12 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 
 /**
- * A {@link RemoteTraversal} is returned from {@link RemoteConnection#submitAsync(Bytecode)}. It is iterated from
+ * A {@link RemoteTraversal} is returned from {@link RemoteConnection#submitAsync(GremlinLang)}. It is iterated from
  * within {@link RemoteStep} using {@link #nextTraverser()}. Implementations should typically be given a "result" from
  * a remote source where the traversal was executed. The "result" should be an iterator which preferably has its data
  * bulked.

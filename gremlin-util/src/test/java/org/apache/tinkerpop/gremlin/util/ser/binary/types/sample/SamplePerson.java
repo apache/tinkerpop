@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser.binary.types.sample;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
@@ -26,9 +26,9 @@ import java.util.Objects;
  */
 public class SamplePerson {
     private final String name;
-    private final Date birthDate;
+    private final OffsetDateTime birthDate;
 
-    SamplePerson(final String name, final Date birthDate) {
+    SamplePerson(final String name, final OffsetDateTime birthDate) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(birthDate);
 
@@ -40,7 +40,7 @@ public class SamplePerson {
         return name;
     }
 
-    public Date getBirthDate() {
+    public OffsetDateTime getBirthDate() {
         return birthDate;
     }
 }

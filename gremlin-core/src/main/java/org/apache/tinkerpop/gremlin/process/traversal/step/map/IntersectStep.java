@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ListFunction;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 public final class IntersectStep<S, E> extends ScalarMapStep<S, Set<?>> implements TraversalParent, ListFunction {
     private Traversal.Admin<S, E> valueTraversal;
-    private Object parameterItems;
+    private GValue<Object> parameterItems;
 
     public IntersectStep(final Traversal.Admin traversal, final Object values) {
         super(traversal);
@@ -44,7 +45,7 @@ public final class IntersectStep<S, E> extends ScalarMapStep<S, Set<?>> implemen
         if (values instanceof Traversal) {
             valueTraversal = integrateChild(((Traversal<S, E>) values).asAdmin());
         } else {
-            parameterItems = values;
+            parameterItems = values instanceof GValue ? (GValue<Object>) values : GValue.of(null, values);
         }
     }
 
@@ -53,16 +54,20 @@ public final class IntersectStep<S, E> extends ScalarMapStep<S, Set<?>> implemen
     }
 
     public Object getParameterItems() {
-        return this.parameterItems;
+        return parameterItems;
+    }
+
+    public GValue<Object> getParameterItemsGValue() {
+        return parameterItems;
     }
 
     @Override
     public String getStepName() { return "intersect"; }
 
     @Override
-    protected Set<?> map(Traverser.Admin<S> traverser) {
+    protected Set<?> map(final Traverser.Admin<S> traverser) {
         final Set setA = convertTraverserToSet(traverser);
-        final Collection setB = (null != valueTraversal) ? convertTraversalToCollection(traverser, this.valueTraversal) : convertArgumentToCollection(parameterItems);
+        final Collection setB = (null != valueTraversal) ? convertTraversalToCollection(traverser, this.valueTraversal) : convertArgumentToCollection(parameterItems.get());
         final Set intersection = new HashSet();
 
         for (Object element : setB) {

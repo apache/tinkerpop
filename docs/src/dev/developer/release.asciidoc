@@ -112,6 +112,12 @@ and communicating with other members of the community.
 . Fourteen days before release, issue an email to the dev mailing list to remind the community of the pending release.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
+. Prior to the start of code freeze, consider any minor non-breaking dependency updates. The following commands or tools
+may be useful to list available updates:
+- `mvn versions:display-dependency-updates -DallowMajorUpdates=false`
+- `go list -m -u all`
+- `npm-check-updates`
+- `dotnet-check-updates`
 . Seven days before release, announce the code freeze on the dev mailing list to remind the community that the branch
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
@@ -318,7 +324,10 @@ the help of a PMC member for those steps.
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
 .. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
 .. `pushd gremlin-console/bin; ln -fs ../target/apache-tinkerpop-gremlin-console-xx.yy.zz-SNAPSHOT-standalone/bin/gremlin.sh gremlin.sh; popd`
-.. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version.
+.. Update CHANGELOG and upgrade docs to have the appropriate headers for the next version. If a major line will no longer be under development, archive the CHANGELOG entries for it as follows:
+... Create a new `changelog-x.x.x.asciidoc` in the `docs/archive/changelogs` folder.
+... Copy all CHANGELOG entries of the major version into the file (refer to previous files).
+... Replace the CHANGELOG entries under each minor releases with an archived notice containing link to the archived changelog file (refer to previous links inside CHANGELOG).
 .. `mvn clean install -DskipTests` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. `mvn deploy -DskipTests` - deploy the new `SNAPSHOT`
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally and then `bin/publish-docs.sh <username>`

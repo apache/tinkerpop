@@ -18,18 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
-import org.apache.tinkerpop.gremlin.server.Channelizer;
 
 import java.net.InetAddress;
 import java.util.Map;
 
 /**
- * Provides methods related to authentication of a request.  Implementations should provide a SASL based
- * authentication method, but a handler can choose to use the {@link #authenticate(Map)} method directly if
- * required for protocols that don't easily support SASL.
+ * Provides methods related to authentication of a request.  A handler should use the {@link #authenticate(Map)}
+ * method directly. SASL isn't currently supported but the interface remains available for custom server implementations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -65,6 +64,9 @@ public interface Authenticator {
      * Performs the actual SASL negotiation for a single authentication attempt.
      * SASL is stateful, so a new instance should be used for each attempt.
      * Non-trivial implementations may delegate to an instance of {@link javax.security.sasl.SaslServer}
+     *
+     * NOTE: This interface is no longer used by default in the Gremlin Server. It remains here for use with custom
+     *       server implementations.
      */
     public interface SaslNegotiator
     {
@@ -77,8 +79,8 @@ public interface Authenticator {
          * finished. If so, an {@link AuthenticatedUser} is obtained by calling {@link #getAuthenticatedUser()} and
          * that user associated with the active connection. If the negotiation is not yet complete,
          * the byte[] is returned to the client as a further challenge in an
-         * {@link ResponseMessage} with {@link ResponseStatusCode#AUTHENTICATE}. This continues until the negotiation
-         * does complete or an error is encountered.
+         * {@link ResponseMessage} with {@link HttpResponseStatus#PROXY_AUTHENTICATION_REQUIRED}. This continues until
+         * the negotiation does complete or an error is encountered.
          */
         public byte[] evaluateResponse(final byte[] clientResponse) throws AuthenticationException;
 

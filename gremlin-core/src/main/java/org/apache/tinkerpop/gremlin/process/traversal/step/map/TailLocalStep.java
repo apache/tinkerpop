@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -36,9 +37,13 @@ import java.util.Set;
  */
 public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
 
-    private final long limit;
+    private final GValue<Long> limit;
 
     public TailLocalStep(final Traversal.Admin traversal, final long limit) {
+        this(traversal, GValue.ofLong(null, limit));
+    }
+
+    public TailLocalStep(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
     }
@@ -55,19 +60,19 @@ public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
                                 start instanceof Path ? ((Path) start).size() :
                                         start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
                                                 IteratorUtils.count(IteratorUtils.asIterator(start));
-        final long low = high - this.limit;
+        final long low = high - this.limit.get();
         final S result = RangeLocalStep.applyRange(start, low, high);
         return result;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.limit);
+        return StringFactory.stepString(this, this.limit.get());
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.limit);
+        return super.hashCode() ^ Long.hashCode(this.limit.get());
     }
 
     @Override

@@ -3,80 +3,84 @@ updates:
   - package-ecosystem: "nuget"
     directory: "/gremlin-dotnet"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
+      interval: "monthly"
+    target-branch: "master"
     labels:
       - ".NET"
       - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "pip"
     directory: "/gremlin-python/src/main/python"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
+      interval: "monthly"
+    target-branch: "master"
     labels:
       - "python"
       - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "npm"
     directory: "/gremlin-javascript/src/main/javascript/gremlin-javascript"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
+      interval: "monthly"
+    target-branch: "master"
     labels:
       - "javascript"
       - "dependencies"
     ignore:
-      - dependency-name: "prettier"
-        update-types: ["version-update:semver-patch"]
+      - update-types: ["version-update:semver-patch", "version-update:semver-minor"]
+        dependency-name: "*"
   - package-ecosystem: "npm"
     directory: "/gremlint"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
-    labels:
-      - "gremlint"
-      - "dependencies"
-    ignore:
-      - dependency-name: "prettier"
-        update-types: [ "version-update:semver-patch" ]
-      - dependency-name: "@types/node"
-        update-types: [ "version-update:semver-patch" ]
-  - package-ecosystem: "npm"
-    directory: "/docs/gremlint"
-    schedule:
-      interval: "daily"
+      interval: "monthly"
     target-branch: "master"
     labels:
       - "gremlint"
       - "dependencies"
     ignore:
-      - dependency-name: "prettier"
-        update-types: [ "version-update:semver-patch" ]
-      - dependency-name: "@types/*"
-        update-types: [ "version-update:semver-patch" ]
-      - dependency-name: "styled-components"
-        update-types: [ "version-update:semver-patch" ]
-      - dependency-name: "@testing-library/jest-dom"
-        update-types: [ "version-update:semver-patch" ]
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
+  - package-ecosystem: "npm"
+    directory: "/docs/gremlint"
+    schedule:
+      interval: "monthly"
+    target-branch: "master"
+    labels:
+      - "site"
+      - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
+      interval: "monthly"
+    target-branch: "master"
     labels:
       - "go"
       - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: "daily"
-    target-branch: "3.5-dev"
+      interval: "monthly"
+    target-branch: "master"
     labels:
       - "java"
       - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "3.5-dev"
+    target-branch: "3.7-dev"
     labels:
       - "dependencies"

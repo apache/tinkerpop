@@ -18,25 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.DT;
-import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Array;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
 
 public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
 
@@ -50,143 +39,15 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Wrapper to visit function for boolean.
-     */
-    public boolean parseBoolean(final GremlinParser.BooleanArgumentContext ctx) {
-        return (boolean) visitBooleanArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for integer types.
-     */
-    public Number parseNumber(final GremlinParser.IntegerArgumentContext ctx) {
-        return (Number) visitIntegerArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for float types.
-     */
-    public Number parseNumber(final GremlinParser.FloatArgumentContext ctx) {
-        return (Number) visitFloatArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for string types.
-     */
-    public String parseString(final GremlinParser.StringArgumentContext ctx) {
-        return (String) visitStringArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for Date type.
-     */
-    public Date parseDate(final GremlinParser.DateArgumentContext ctx) {
-        return (Date) visitDateArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for object types.
-     */
-    public Object parseObject(final GremlinParser.GenericLiteralArgumentContext ctx) {
-        return visitGenericLiteralArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Direction} types.
-     */
-    public Direction parseDirection(final GremlinParser.TraversalDirectionArgumentContext ctx) {
-        return (Direction) visitTraversalDirectionArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Vertex} types.
-     */
-    public Vertex parseVertex(final GremlinParser.StructureVertexArgumentContext ctx) {
-        return (Vertex) visitStructureVertexArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Order} types.
-     */
-    public Order parseOrder(final GremlinParser.TraversalOrderArgumentContext ctx) {
-        return (Order) visitTraversalOrderArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Scope} types.
-     */
-    public Scope parseScope(final GremlinParser.TraversalScopeArgumentContext ctx) {
-        return (Scope) visitTraversalScopeArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link T} types.
-     */
-    public T parseT(final GremlinParser.TraversalTokenArgumentContext ctx) {
-        return (T) visitTraversalTokenArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link VertexProperty.Cardinality} types.
-     */
-    public VertexProperty.Cardinality parseCardinality(final GremlinParser.TraversalCardinalityArgumentContext ctx) {
-        return (VertexProperty.Cardinality) visitTraversalCardinalityArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Merge} types.
-     */
-    public Merge parseMerge(final GremlinParser.TraversalMergeArgumentContext ctx) {
-        return (Merge) visitTraversalMergeArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Pop} types.
-     */
-    public Pop parsePop(final GremlinParser.TraversalPopArgumentContext ctx) {
-        return (Pop) visitTraversalPopArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link DT} types.
-     */
-    public DT parseDT(final GremlinParser.TraversalDTArgumentContext ctx) {
-        return (DT) visitTraversalDTArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@link Pop} types.
-     */
-    public Column parseColumn(final GremlinParser.TraversalColumnArgumentContext ctx) {
-        return (Column) visitTraversalColumnArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@code Function} types like {@link T} and {@link Column}.
-     */
-    public Function parseFunction(final GremlinParser.TraversalFunctionArgumentContext ctx) {
-        return (Function) visitTraversalFunctionArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@code Comparator} types like {@link Order}.
-     */
-    public Comparator parseComparator(final GremlinParser.TraversalComparatorArgumentContext ctx) {
-        return (Comparator) visitTraversalComparatorArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@code Map} types.
-     */
-    public Map parseMap(final GremlinParser.GenericLiteralMapArgumentContext ctx) {
-        return (Map) visitGenericLiteralMapArgument(ctx);
-    }
-
-    /**
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) {
-        return (Map) visitGenericLiteralMapNullableArgument(ctx);
+        Object literalOrVar = visitGenericLiteralMapNullableArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
+            return ((GValue<Map>) literalOrVar).get();
+        } else {
+            return (Map) literalOrVar;
+        }
     }
 
     /**
@@ -215,10 +76,56 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Parse a string argument varargs, and return an string array
+     */
+    public GValue<String>[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
+        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
+            return new GValue[0];
+        }
+        return varargsContext.stringNullableArgument()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(antlr.argumentVisitor::parseString)
+                .toArray(GValue[]::new);
+    }
+
+    /**
      * Wrapper to visit function for string types.
      */
-    public String parseString(final GremlinParser.StringNullableArgumentContext ctx) {
-        return (String) visitStringNullableArgument(ctx);
+    public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
+        Object literalOrVar = visitStringNullableArgument((ctx));
+        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+            return (GValue<String>) literalOrVar;
+        } else {
+            return GValue.ofString(null, (String) literalOrVar);
+        }
+    }
+
+    /**
+     * Equivalent to {@link ArgumentVisitor#visitIntegerArgument(GremlinParser.IntegerArgumentContext)} except this
+     * method promotes output types to either Long or GValue<Long>. (visitIntegerArgument() may produce byte, short,
+     * int, or long depending on the input script)
+     */
+    public Object parseLong(final GremlinParser.IntegerArgumentContext ctx) {
+        if (ctx.integerLiteral() != null) {
+            return antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).longValue();
+        } else {
+            Object var = visitVariable(ctx.variable());
+            if (var instanceof Number) {
+                return ((Number) var).longValue();
+            }
+            if (GValue.valueInstanceOf(var, GType.LONG)) {
+                return var;
+            } else if (GValue.valueInstanceOf(var, GType.INTEGER)) {
+                return GValue.ofLong(((GValue<Integer>) var).getName(), ((GValue<Integer>) var).get().longValue());
+            } else if (GValue.valueInstanceOf(var, GType.SHORT)) {
+                return GValue.ofLong(((GValue<Short>) var).getName(), ((GValue<Short>) var).get().longValue());
+            } else if (GValue.valueInstanceOf(var, GType.BYTE)) {
+                return GValue.ofLong(((GValue<Byte>) var).getName(), ((GValue<Byte>) var).get().longValue());
+            } else {
+                throw new GremlinParserException(String.format("Expected variable [%s] to resolve to an integer type, instead found: %s", ctx.variable().Identifier().getSymbol(), var.getClass().getName()));
+            }
+        }
     }
 
     @Override
@@ -285,6 +192,11 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitGenericLiteral(final GremlinParser.GenericLiteralContext ctx) {
+        return antlr.genericVisitor.visitGenericLiteral(ctx);
+    }
+
+    @Override
     public Object visitGenericLiteralListArgument(final GremlinParser.GenericLiteralListArgumentContext ctx) {
         if (ctx.genericLiteralList() != null) {
             return antlr.genericVisitor.visitChildren(ctx.genericLiteralList());
@@ -294,124 +206,9 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitTraversalDirectionArgument(final GremlinParser.TraversalDirectionArgumentContext ctx) {
-        if (ctx.traversalDirection() != null) {
-            return TraversalEnumParser.parseTraversalDirectionFromContext(ctx.traversalDirection());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
     public Object visitStructureVertexArgument(final GremlinParser.StructureVertexArgumentContext ctx) {
         if (ctx.structureVertex() != null) {
             return antlr.structureVisitor.visitStructureVertex(ctx.structureVertex());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalOrderArgument(final GremlinParser.TraversalOrderArgumentContext ctx) {
-        if (ctx.traversalOrder() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Order.class, ctx.traversalOrder());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalScopeArgument(final GremlinParser.TraversalScopeArgumentContext ctx) {
-        if (ctx.traversalScope() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalTokenArgument(final GremlinParser.TraversalTokenArgumentContext ctx) {
-        if (ctx.traversalToken() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalToken());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalCardinalityArgument(final GremlinParser.TraversalCardinalityArgumentContext ctx) {
-        if (ctx.traversalCardinality() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, ctx.traversalCardinality());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalMergeArgument(final GremlinParser.TraversalMergeArgumentContext ctx) {
-        if (ctx.traversalMerge() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalPopArgument(final GremlinParser.TraversalPopArgumentContext ctx) {
-        if (ctx.traversalPop() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalDTArgument(final GremlinParser.TraversalDTArgumentContext ctx) {
-        if (ctx.traversalDT() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(DT.class, ctx.traversalDT());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalColumnArgument(final GremlinParser.TraversalColumnArgumentContext ctx) {
-        if (ctx.traversalColumn() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Column.class, ctx.traversalColumn());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalComparatorArgument(final GremlinParser.TraversalComparatorArgumentContext ctx) {
-        if (ctx.traversalComparator() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Order.class, ctx.traversalComparator().traversalOrder());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalFunctionArgument(final GremlinParser.TraversalFunctionArgumentContext ctx) {
-        if (ctx.traversalFunction() != null) {
-            final GremlinParser.TraversalFunctionContext tfc = ctx.traversalFunction();
-            if (tfc.traversalToken() != null) {
-                return TraversalEnumParser.parseTraversalEnumFromContext(T.class, tfc.traversalToken());
-            } else if (tfc.traversalColumn() != null)
-                return TraversalEnumParser.parseTraversalEnumFromContext(Column.class, tfc.traversalColumn());
-            else {
-                throw new GremlinParserException("Unrecognized enum for traversal function");
-            }
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitTraversalBiFunctionArgument(final GremlinParser.TraversalBiFunctionArgumentContext ctx) {
-        if (ctx.traversalBiFunction() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator());
         } else {
             return visitVariable(ctx.variable());
         }
@@ -438,16 +235,18 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitTraversalSackMethodArgument(final GremlinParser.TraversalSackMethodArgumentContext ctx) {
-        if (ctx.traversalSackMethod() != null) {
-            return TraversalEnumParser.parseTraversalEnumFromContext(SackFunctions.Barrier.class, ctx.traversalSackMethod());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
     public Object visitVariable(final GremlinParser.VariableContext ctx) {
         return resolver.apply(ctx.getText(), ctx);
+    }
+
+    /**
+     * Create a new {@code GValue} from a particular value but without the specified name. If the argument provide is
+     * already a {@code GValue} then it is returned as-is.
+     *
+     * @param value the value of the variable
+     */
+    public static <V> GValue<V> asGValue(final V value) {
+        if (value instanceof GValue) return (GValue) value;
+        return GValue.of(null, value);
     }
 }

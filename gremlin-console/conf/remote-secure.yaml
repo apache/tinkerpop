@@ -17,8 +17,7 @@
 
 ##############################################################
 # This configuration is meant to have Gremlin Server return
-# text serialized objects. The server will toString()
-# results giving a view into how scripts are executing.
+# serialized objects.
 #
 # This file will work with:
 # - gremlin-server-secure.yaml
@@ -26,9 +25,11 @@
 
 hosts: [localhost]
 port: 8182
-username: stephen
-password: password
+auth: {
+  type: basic,
+  username: stephen,
+  password: password }
 connectionPool: {
   enableSsl: true,
   sslEnabledProtocols: [TLSv1.2] }
-serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1, config: { serializeResultToString: true }}
+serializer: { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4}
