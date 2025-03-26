@@ -288,7 +288,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         } else if (ctx.getChild(0).getText().equals("keys")) {
             // find the last "List" in sb and replace it with "HashSet"
             final int ix = sb.lastIndexOf("List<object>");
-            sb.replace(ix, ix + 12, "List<string>");
+            if (ix > -1)
+                sb.replace(ix, ix + 12, "List<string>");
         }
 
         return null;

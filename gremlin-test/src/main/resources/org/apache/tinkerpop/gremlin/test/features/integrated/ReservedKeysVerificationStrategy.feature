@@ -33,7 +33,7 @@ Feature: Step - ReservedKeysVerificationStrategy
     Given the empty graph
     And the traversal of
       """
-      g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: ["age"])).addV("person").property("age", 29).property("name", "marko")
+      g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: {"age"})).addV("person").property("age", 29).property("name", "marko")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "is setting a property key to a reserved word: age"
