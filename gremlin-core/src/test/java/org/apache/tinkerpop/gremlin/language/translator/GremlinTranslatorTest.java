@@ -662,7 +662,7 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             "g.WithoutStrategies(typeof(ReadOnlyStrategy))",
-                            "g.WithoutStrategies(ReadOnlyStrategy)", // go - needs TINKERPOP-3055
+                            "g.WithoutStrategies(gremlingo.ReadOnlyStrategy)", // go - needs TINKERPOP-3055
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy)",  // javascript needs TINKERPOP-3055
@@ -671,7 +671,7 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             "g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(PathRetractionStrategy), typeof(FilterRankingStrategy))",
-                            "g.WithoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)", // go - needs TINKERPOP-3055
+                            "g.WithoutStrategies(gremlingo.ReadOnlyStrategy, gremlingo.PathRetractionStrategy, gremlingo.FilterRankingStrategy)", // go - needs TINKERPOP-3055
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class, PathRetractionStrategy.class, FilterRankingStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",  // javascript - needs TINKERPOP-3055
