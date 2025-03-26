@@ -218,6 +218,21 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalSourceSelfMethod_withoutStrategies(final GremlinParser.TraversalSourceSelfMethod_withoutStrategiesContext ctx) {
+        sb.append("WithoutStrategies(");
+        sb.append(GO_PACKAGE_NAME).append(ctx.classType().getText());
+
+        if (ctx.classTypeList() != null && ctx.classTypeList().classTypeExpr() != null) {
+            for (GremlinParser.ClassTypeContext classTypeContext : ctx.classTypeList().classTypeExpr().classType()) {
+                sb.append(", ").append(GO_PACKAGE_NAME).append(classTypeContext.getText());
+            }
+        }
+
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitConfiguration(final GremlinParser.ConfigurationContext ctx) {
         // form of three tokens of key:value to become key=value
         sb.append(SymbolHelper.toGo(ctx.getChild(0).getText()));
