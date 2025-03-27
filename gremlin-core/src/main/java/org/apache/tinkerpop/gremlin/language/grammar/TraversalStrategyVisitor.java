@@ -95,7 +95,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
                 return (TraversalStrategy) clazz.getMethod("create", Configuration.class).invoke(null, conf);
             }
         } catch (Exception ex) {
-            throw new IllegalStateException("TraversalStrategy not recognized - " + strategyName, ex);
+            throw new IllegalStateException("TraversalStrategy cannot be instantiated - " + strategyName, ex);
         }
     }
 }

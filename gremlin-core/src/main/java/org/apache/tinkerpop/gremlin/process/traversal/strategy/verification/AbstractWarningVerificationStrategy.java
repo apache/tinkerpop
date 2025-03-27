@@ -18,11 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +76,12 @@ public abstract class AbstractWarningVerificationStrategy
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> m = new LinkedHashMap<>(2);
-        m.put(THROW_EXCEPTION, this.throwException);
-        m.put(LOG_WARNING, this.logWarning);
-        return new MapConfiguration(m);
+        final BaseConfiguration conf = new BaseConfiguration();
+        conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+        conf.setProperty(THROW_EXCEPTION, this.throwException);
+        conf.setProperty(LOG_WARNING, this.logWarning);
+
+        return conf;
     }
 
     public static abstract class Builder<T extends AbstractWarningVerificationStrategy, B extends Builder> {

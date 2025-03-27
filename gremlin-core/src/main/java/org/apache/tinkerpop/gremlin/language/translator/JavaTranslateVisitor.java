@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.language.translator;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
@@ -75,10 +76,20 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
 
-            // the rest are the arguments to the strategy
-            for (ParseTree config : configs) {
-                sb.append(".");
-                visit(config);
+            if (configs.size() > 0 && ctx.getChild(1).getText().equals(OptionsStrategy.class.getSimpleName())) {
+                for (int ix = 0; ix < configs.size(); ix++) {
+                    sb.append(".with(\"");
+                    sb.append(configs.get(ix).getChild(0).getText());
+                    sb.append("\", ");
+                    visit(configs.get(ix).getChild(2));
+                    sb.append(")");
+                }
+            } else {
+                // the rest are the arguments to the strategy
+                for (ParseTree config : configs) {
+                    sb.append(".");
+                    visit(config);
+                }
             }
 
             sb.append(".create()");

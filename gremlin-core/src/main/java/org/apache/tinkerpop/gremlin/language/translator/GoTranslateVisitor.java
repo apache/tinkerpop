@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
@@ -198,20 +199,32 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         else {
             String strategyName = ctx.getChild(0).getText().equals("new") ? ctx.getChild(1).getText() : ctx.getChild(0).getText();
             sb.append(GO_PACKAGE_NAME).append(strategyName).append("(");
-            sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
 
             // get a list of all the arguments to the strategy - i.e. anything not a terminal node
             final List<ParseTree> configs = ctx.children.stream().
                     filter(c -> c instanceof GremlinParser.ConfigurationContext).collect(Collectors.toList());
 
-            // the rest are the arguments to the strategy
-            for (int ix = 0; ix < configs.size(); ix++) {
-                visit(configs.get(ix));
-                if (ix < configs.size() - 1)
-                    sb.append(", ");
+            if (configs.size() > 0 && ctx.children.stream().anyMatch(t -> t.getText().equals(OptionsStrategy.class.getSimpleName()))) {
+                sb.append("map[string]interface{}{");
+                for (int ix = 0; ix < configs.size(); ix++) {
+                    sb.append("\"").append(configs.get(ix).getChild(0).getText()).append("\":");
+                    visit(configs.get(ix).getChild(2));
+                    if (ix < configs.size() - 1)
+                        sb.append(", ");
+                }
+                sb.append("}");
+            } else {
+                // the rest are the arguments to the strategy
+                sb.append(GO_PACKAGE_NAME + strategyName + "Config{");
+                for (int ix = 0; ix < configs.size(); ix++) {
+                    visit(configs.get(ix));
+                    if (ix < configs.size() - 1)
+                        sb.append(", ");
+                }
+                sb.append("}");
             }
 
-            sb.append("})");
+            sb.append(")");
         }
 
         return null;

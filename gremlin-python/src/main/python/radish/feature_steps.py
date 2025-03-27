@@ -68,8 +68,11 @@ ignores = [
     'g.V().group().by(l1).by(__.constant(1))',
     'g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()',
     'g.V().group("a").by(l1).by(__.constant(1)).cap("a")',
-    'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")'
+    'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")',
     ## section end
+    'g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: {"age"})).addV("person").property("age", 29).property("name", "marko")', # TINKERPOP-3055
+    'g.withStrategies(ReservedKeysVerificationStrategy(throwException: true)).addV("person").property("id", 123).property("name", "marko")', # TINKERPOP-3055
+    'g.withoutStrategies(ReservedKeysVerificationStrategy).addV("person").property("id", 123).property("name", "marko")' # TINKERPOP-3055
 ]
 
 
@@ -81,6 +84,9 @@ def choose_graph(step, graph_name):
     tagset = [tag.name for tag in step.all_tags]
     if not step.context.ignore:
         step.context.ignore = "AllowNullPropertyValues" in tagset
+
+    if not step.context.ignore:
+        step.context.ignore = "WithReservedKeysVerificationStrategy" in tagset
 
     if (step.context.ignore):
         return
@@ -174,11 +180,17 @@ def next_the_traversal(step):
 
 @then("the traversal will raise an error")
 def raise_an_error(step):
+    if (step.context.ignore):
+        return
+
     assert_that(step.context.failed, equal_to(True))
 
 
 @then("the traversal will raise an error with message {comparison:w} text of {expected_message:QuotedString}")
 def raise_an_error_with_message(step, comparison, expected_message):
+    if (step.context.ignore):
+        return
+    
     assert_that(step.context.failed, equal_to(True))
 
     if comparison == "containing":

@@ -336,8 +336,8 @@ func TestStrategy(t *testing.T) {
 		defer g.remoteConnection.Close()
 
 		config := EdgeLabelVerificationStrategyConfig{
-			LogWarning:      true,
-			ThrowExcecption: true,
+			LogWarning:     true,
+			ThrowException: true,
 		}
 		count, err := g.WithStrategies(EdgeLabelVerificationStrategy(config)).V().Count().ToList()
 		assert.Nil(t, err)
@@ -389,7 +389,7 @@ func TestStrategy(t *testing.T) {
 		config := ReservedKeysVerificationStrategyConfig{
 			LogWarning:     true,
 			ThrowException: true,
-			Keys:           []string{"xyz"},
+			Keys:           NewSimpleSet("xyz"),
 		}
 		strategy := ReservedKeysVerificationStrategy(config)
 		count, err := g.WithStrategies(strategy).V().Count().ToList()

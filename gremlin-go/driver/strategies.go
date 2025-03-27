@@ -20,12 +20,15 @@ under the License.
 package gremlingo
 
 const (
-	baseNamespace               = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
-	decorationNamespace         = baseNamespace + "decoration."
-	finalizationNamespace       = baseNamespace + "finalization."
-	optimizationNamespace       = baseNamespace + "optimization."
-	verificationNamespace       = baseNamespace + "verification."
-	computerDecorationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
+	baseNamespace                 = "org.apache.tinkerpop.gremlin.process.traversal.strategy."
+	decorationNamespace           = baseNamespace + "decoration."
+	finalizationNamespace         = baseNamespace + "finalization."
+	optimizationNamespace         = baseNamespace + "optimization."
+	verificationNamespace         = baseNamespace + "verification."
+	computerDecorationNamespace   = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration."
+	computerVerificationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification."
+	computerFinalizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization."
+	computerOptimizationNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization."
 )
 
 type TraversalStrategy interface {
@@ -55,8 +58,8 @@ func ElementIdStrategy() TraversalStrategy {
 
 func HaltedTraverserStrategy(config HaltedTraverserStrategyConfig) TraversalStrategy {
 	configMap := make(map[string]interface{})
-	if config.HaltedTraverserFactoryName != "" {
-		configMap["haltedTraverserFactory"] = config.HaltedTraverserFactoryName
+	if config.HaltedTraverserFactory != "" {
+		configMap["haltedTraverserFactory"] = config.HaltedTraverserFactory
 	}
 	return &traversalStrategy{name: decorationNamespace + "HaltedTraverserStrategy", configuration: configMap}
 }
@@ -64,15 +67,22 @@ func HaltedTraverserStrategy(config HaltedTraverserStrategyConfig) TraversalStra
 // HaltedTraverserStrategyConfig provides configuration options for HaltedTraverserStrategy.
 // Zeroed (unset) values are ignored.
 type HaltedTraverserStrategyConfig struct {
-	HaltedTraverserFactoryName string
+	HaltedTraverserFactory string
 }
 
 // OptionsStrategy will not alter the Traversal. It is only a holder for configuration options associated with the
 // Traversal meant to be accessed by steps or other classes that might have some interaction with it. It is
 // essentially a way for users to provide Traversal level configuration options that can be used in various ways
 // by different Graph providers.
-func OptionsStrategy(options map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: options}
+func OptionsStrategy(options ...map[string]interface{}) TraversalStrategy {
+	var opts map[string]interface{}
+	if len(options) > 0 {
+		opts = options[0]
+	} else {
+		opts = make(map[string]interface{})
+	}
+
+	return &traversalStrategy{name: decorationNamespace + "OptionsStrategy", configuration: opts}
 }
 
 // PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
@@ -146,27 +156,32 @@ type SubgraphStrategyConfig struct {
 	CheckAdjacentVertices interface{}
 }
 
-func VertexProgramStrategy(config VertexProgramStrategyConfig) TraversalStrategy {
+func VertexProgramStrategy(config ...VertexProgramStrategyConfig) TraversalStrategy {
+	var cfg VertexProgramStrategyConfig
+	if len(config) > 0 {
+		cfg = config[0]
+	}
+
 	configMap := make(map[string]interface{})
-	if config.GraphComputer != "" {
-		configMap["graphComputer"] = config.GraphComputer
+	if cfg.GraphComputer != "" {
+		configMap["graphComputer"] = cfg.GraphComputer
 	}
-	if config.Workers != 0 {
-		configMap["workers"] = config.Workers
+	if cfg.Workers != 0 {
+		configMap["workers"] = cfg.Workers
 	}
-	if config.Persist != "" {
-		configMap["persist"] = config.Persist
+	if cfg.Persist != "" {
+		configMap["persist"] = cfg.Persist
 	}
-	if config.Result != "" {
-		configMap["result"] = config.Result
+	if cfg.Result != "" {
+		configMap["result"] = cfg.Result
 	}
-	if config.Vertices != nil {
-		configMap["vertices"] = config.Vertices
+	if cfg.Vertices != nil {
+		configMap["vertices"] = cfg.Vertices
 	}
-	if config.Edges != nil {
-		configMap["edges"] = config.Edges
+	if cfg.Edges != nil {
+		configMap["edges"] = cfg.Edges
 	}
-	for k, v := range config.Configuration {
+	for k, v := range cfg.Configuration {
 		configMap[k] = v
 	}
 	return &traversalStrategy{name: computerDecorationNamespace + "VertexProgramStrategy", configuration: configMap}
@@ -182,6 +197,38 @@ type VertexProgramStrategyConfig struct {
 	Vertices      *GraphTraversal
 	Edges         *GraphTraversal
 	Configuration map[string]interface{}
+}
+
+func ProfileStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "ProfileStrategy"}
+}
+
+func ReferenceElementStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "ReferenceElementStrategy"}
+}
+
+func StandardVerificationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: finalizationNamespace + "StandardVerificationStrategy"}
+}
+
+func ComputerFinalizationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerFinalizationNamespace + "ComputerFinalizationStrategy"}
+}
+
+func ComputerVerificationStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerVerificationNamespace + "ComputerVerificationStrategy"}
+}
+
+func VertexProgramRestrictionStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerVerificationNamespace + "VertexProgramRestrictionStrategy"}
+}
+
+func GraphFilterStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerOptimizationNamespace + "GraphFilterStrategy"}
+}
+
+func MessagePassingReductionStrategy() TraversalStrategy {
+	return &traversalStrategy{name: computerOptimizationNamespace + "MessagePassingReductionStrategy"}
 }
 
 // Finalization strategies
@@ -208,7 +255,7 @@ type MatchAlgorithmStrategyConfig struct {
 func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) TraversalStrategy {
 	configMap := map[string]interface{}{
 		"logWarning":     config.LogWarning,
-		"throwException": config.ThrowExcecption,
+		"throwException": config.ThrowException,
 	}
 
 	return &traversalStrategy{name: verificationNamespace + "EdgeLabelVerificationStrategy", configuration: configMap}
@@ -217,8 +264,8 @@ func EdgeLabelVerificationStrategy(config EdgeLabelVerificationStrategyConfig) T
 // EdgeLabelVerificationStrategyConfig provides configuration options for EdgeLabelVerificationStrategy.
 // Zeroed (unset) values are used.
 type EdgeLabelVerificationStrategyConfig struct {
-	LogWarning      bool
-	ThrowExcecption bool
+	LogWarning     bool
+	ThrowException bool
 }
 
 // LambdaRestrictionStrategy does not allow lambdas to be used in a Traversal. The contents of a lambda
@@ -241,7 +288,7 @@ func ReservedKeysVerificationStrategy(config ReservedKeysVerificationStrategyCon
 		"logWarning":     config.LogWarning,
 		"throwException": config.ThrowException,
 	}
-	if len(config.Keys) != 0 {
+	if len(config.Keys.ToSlice()) != 0 {
 		configMap["keys"] = config.Keys
 	}
 	return &traversalStrategy{name: verificationNamespace + "ReservedKeysVerificationStrategy", configuration: configMap}
@@ -252,7 +299,7 @@ func ReservedKeysVerificationStrategy(config ReservedKeysVerificationStrategyCon
 type ReservedKeysVerificationStrategyConfig struct {
 	LogWarning     bool
 	ThrowException bool
-	Keys           []string
+	Keys           Set
 }
 
 // Optimization strategies
