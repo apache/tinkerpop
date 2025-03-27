@@ -106,7 +106,8 @@ def translate_traversal(step):
     if step.context.ignore == False:
         step.context.ignore = step.text in ignores
 
-    # after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
+    # after backport of strategy construction improvements from master, there are now test failures (not currently
+    # running GLV tests on master) - TINKERPOP-3055
     if step.context.ignore == False:
         step.context.ignore = "withoutStrategies" in step.text
     if step.context.ignore == False:

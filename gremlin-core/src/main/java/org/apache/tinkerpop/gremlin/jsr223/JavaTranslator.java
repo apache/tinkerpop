@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -33,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -208,9 +210,13 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 return OptionsStrategy.EMPTY;
             }
 
+            final BaseConfiguration conf = new BaseConfiguration();
+            conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+            map.entrySet().forEach(entry -> conf.setProperty(entry.getKey(), entry.getValue()));
+
             return map.isEmpty() ?
                     methodCache.get("instance").invoke(null) :
-                    methodCache.get("create").invoke(null, new MapConfiguration(map));
+                    methodCache.get("create").invoke(null, conf);
         } catch (final InvocationTargetException | IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

@@ -47,7 +47,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Verification
         /// <param name="throwException">Throw an exception if a reserved key is used.</param>
         /// <param name="keys">List of keys to define as reserved. If not set then the defaults are used.</param>
         public ReservedKeysVerificationStrategy(bool logWarning = false, bool throwException = false,
-            List<string>? keys = null)
+            ISet<string>? keys = null)
             : this()
         {
             Configuration["logWarning"] = logWarning;

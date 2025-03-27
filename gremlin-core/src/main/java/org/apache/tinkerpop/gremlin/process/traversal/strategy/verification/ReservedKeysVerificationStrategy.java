@@ -77,18 +77,19 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
     }
 
     public static ReservedKeysVerificationStrategy create(final Configuration configuration) {
+        Set<String> keys = (Set) configuration.getProperty(KEYS);
+        if (null == keys) keys = new LinkedHashSet<>(DEFAULT_RESERVED_KEYS);
         return build()
-                .reservedKeys(configuration.getList(KEYS, new ArrayList<>(DEFAULT_RESERVED_KEYS)).
-                        stream().map(Object::toString).collect(Collectors.toCollection(LinkedHashSet::new)))
+                .reservedKeys(keys)
                 .throwException(configuration.getBoolean(THROW_EXCEPTION, false))
                 .logWarning(configuration.getBoolean(LOG_WARNING, false)).create();
     }
 
     @Override
     public Configuration getConfiguration() {
-        final Configuration c = super.getConfiguration();
-        c.setProperty(KEYS, this.reservedKeys);
-        return c;
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(KEYS, this.reservedKeys);
+        return conf;
     }
 
     public static ReservedKeysVerificationStrategy.Builder build() {

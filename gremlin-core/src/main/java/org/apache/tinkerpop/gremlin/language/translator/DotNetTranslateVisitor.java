@@ -280,16 +280,17 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.getChild(2));
 
         // need to convert List as needed to deal with fussy things in strategy construction inconsistencies
-        // TINKERPOP-3032 - so messy
+        // TINKERPOP-3032/TINKERPOP-3055 - so messy
         if (ctx.getChild(0).getText().equals("readPartitions")) {
             // find the last "List" in sb and replace it with "HashSet"
             final int ix = sb.lastIndexOf("List<object>");
             sb.replace(ix, ix + 12, "HashSet<string>");
         } else if (ctx.getChild(0).getText().equals("keys")) {
-            // find the last "List" in sb and replace it with "HashSet"
-            final int ix = sb.lastIndexOf("List<object>");
+            // find the last "HashSet<object>" in sb and replace it with "HashSet<object>" so that it aligns to
+            // the type needed for keys -
+            final int ix = sb.lastIndexOf("HashSet<object>");
             if (ix > -1)
-                sb.replace(ix, ix + 12, "List<string>");
+                sb.replace(ix, ix + 15, "HashSet<string>");
         }
 
         return null;
