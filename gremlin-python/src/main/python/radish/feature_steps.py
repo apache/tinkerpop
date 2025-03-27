@@ -85,6 +85,7 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "AllowNullPropertyValues" in tagset
 
+    # TINKERPOP-3055
     if not step.context.ignore:
         step.context.ignore = "WithReservedKeysVerificationStrategy" in tagset
 
@@ -190,7 +191,7 @@ def raise_an_error(step):
 def raise_an_error_with_message(step, comparison, expected_message):
     if (step.context.ignore):
         return
-    
+
     assert_that(step.context.failed, equal_to(True))
 
     if comparison == "containing":

@@ -583,10 +583,10 @@ public class GremlinTranslatorTest {
                             null,
                             null,
                             "g.with_bulk(x)"},
-                    {"g.withStrategies(ReservedKeysVerificationStrategy(keys:{'x','y'}))", /// if you happen to do [] you get a List in translation...........
+                    {"g.withStrategies(ReservedKeysVerificationStrategy(keys:{'x','y'}))", /// if you happen to do [] you get a List in translation...........TINKERPOP-3055
                             "g.withStrategies(ReservedKeysVerificationStrategy(keys:{'x', 'y'}))",
                             "g.withStrategies(ReservedKeysVerificationStrategy(keys:set0))",
-                            "g.WithStrategies(new ReservedKeysVerificationStrategy(keys: new HashSet<object> { \"x\", \"y\" }))",
+                            "g.WithStrategies(new ReservedKeysVerificationStrategy(keys: new HashSet<string> { \"x\", \"y\" }))",
                             "g.WithStrategies(gremlingo.ReservedKeysVerificationStrategy(gremlingo.ReservedKeysVerificationStrategyConfig{Keys: gremlingo.NewSimpleSet(\"x\", \"y\")}))",
                             "g.withStrategies(new ReservedKeysVerificationStrategy(keys:['x', 'y'] as Set))",
                             "g.withStrategies(ReservedKeysVerificationStrategy.build().keys(new HashSet<Object>() {{ add(\"x\"); add(\"y\"); }}).create())",
