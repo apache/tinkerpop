@@ -64,6 +64,11 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
             }
             if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
+
+            // prevents silly stuff like g.V().emit()
+            if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal())
+                throw new VerificationException("The repeat()-traversal was not defined:" + traversal, traversal);
+
         }
 
         // The ProfileSideEffectStep must be one of the following
