@@ -79,11 +79,8 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		ConnectionTimeout:        connectionTimeoutDefault,
 		EnableCompression:        false,
 		EnableUserAgentOnConnect: true,
-		// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. If a buffer
-		// size is zero, then a useful default size is used. The I/O buffer sizes
-		// do not limit the size of the messages that can be sent or received.
-		ReadBufferSize:  0,
-		WriteBufferSize: 0,
+		ReadBufferSize:           readBufferSizeDefault,
+		WriteBufferSize:          writeBufferSizeDefault,
 
 		NewConnectionThreshold:       defaultNewConnectionThreshold,
 		MaximumConcurrentConnections: runtime.NumCPU(),
