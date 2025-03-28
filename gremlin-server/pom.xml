@@ -59,6 +59,16 @@ limitations under the License.
             <artifactId>logback-classic</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.github.hakky54</groupId>
+            <artifactId>sslcontext-kickstart-for-netty</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- METRICS -->
         <dependency>
             <groupId>com.codahale.metrics</groupId>
