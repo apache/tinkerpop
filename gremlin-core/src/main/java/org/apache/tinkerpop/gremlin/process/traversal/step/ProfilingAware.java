@@ -40,8 +40,13 @@ public interface ProfilingAware {
 
     /**
      * Prepares the step for any internal changes that might help ensure that profiling will work as expected.
+     * @deprecated As of release 3.8.0, not directly replaced because a simple call to {@link Step#reset()} at traversal
+     * lock can more generally do what is needed by this much more specific API.
      */
-    public void prepareForProfiling();
+    @Deprecated
+    public default void prepareForProfiling() {
+
+    }
 
     /**
      * A helper class which holds a {@link Barrier} and it's related {@link ProfileStep} so that the latter can have
@@ -83,6 +88,11 @@ public interface ProfilingAware {
         @Override
         public void addBarrier(final Object barrier) {
             this.barrier.addBarrier(barrier);
+        }
+
+        @Override
+        public Object getEmptyBarrier() {
+            return new Object();
         }
 
         @Override

@@ -62,11 +62,6 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
                 // Create and inject ProfileStep
                 final ProfileStep profileStepToAdd = new ProfileStep(traversal);
                 traversal.addStep((i * 2) + 1, profileStepToAdd);
-
-                final Step stepToBeProfiled = traversal.getSteps().get(i * 2);
-                if (stepToBeProfiled instanceof ProfilingAware) {
-                    ((ProfilingAware) stepToBeProfiled).prepareForProfiling();
-                }
             }
         }
     }

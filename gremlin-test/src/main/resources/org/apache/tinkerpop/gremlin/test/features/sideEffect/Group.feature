@@ -214,7 +214,6 @@ Feature: Step - group()
       | result |
       | m[{"ripple":"d[32].i", "lop":"d[96].i"}] |
 
-
   Scenario: g_V_group_byXlabelX_byXlabel_countX
     Given the modern graph
     And the traversal of
@@ -225,3 +224,145 @@ Feature: Step - group()
     Then the result should be unordered
       | result |
       | m[{"software":"d[2].l", "person":"d[4].l"}] |
+
+  # validates that a reducing barrier in the value traversal produces an output when a collecting barrier does not.
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":[], "v[peter]":"l[v[lop]]"}] |
+
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_foldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().fold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":"l[]", "v[peter]":"l[v[lop]]"}] |
+
+  # validates that a collecting barrier produces a filtering effect if it is unproductive.
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_orderX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[peter]":"v[lop]"}] |
+
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_countX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order().count())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":"d[0].l", "v[peter]":"d[1].l"}] |
+
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_fold_countXlocalXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group().by().by(__.out().order().fold().count(local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":"d[0].l", "v[peter]":"d[1].l"}] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_group_by_byXout_label_foldX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by().by(__.out().label().fold()).select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_group_by_byXout_label_dedup_foldX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by().by(__.out().label().dedup().fold()).select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,software] |
+      | l[] |
+      | l[] |
+      | l[software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_group_by_byXout_label_limitX0X_foldX_selectXvaluesX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by().by(__.out().label().limit(0).fold()).select(Column.values).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_group_by_byXout_label_limitX10X_foldX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by().by(__.out().label().limit(10).fold()).select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_group_by_byXout_label_tailX10X_foldX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group().by().by(__.out().label().tail(10).fold()).select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |

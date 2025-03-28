@@ -73,4 +73,11 @@ public interface Barrier<B> extends MemoryComputing<B> {
     public default void done() {
 
     }
+
+    /**
+     * If a barrier is unproductive then provide an empty object suitable to the implementation which can be used
+     * to represent that state. This is important for cases like {@code by(out().order().fold())} where the
+     * {@code order()} might filter but the {@code fold()} means the traversal is productive.
+     */
+    public B getEmptyBarrier();
 }

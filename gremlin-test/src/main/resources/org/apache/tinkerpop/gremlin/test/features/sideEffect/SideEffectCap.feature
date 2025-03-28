@@ -159,3 +159,122 @@ Feature: Step - cap()
       """
       The result is [a:[32:1,35:1,27:1,29:1],b:[ripple:1,lop:1]] which is not supported by this test suite
       """
+
+  # validates that a collecting barrier produces a filtering effect if it is unproductive.
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_orderX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group("a").by().by(__.out().order()).cap("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[peter]":"v[lop]"}] |
+
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_countX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group("a").by().by(__.out().order().count()).cap("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":"d[0].l", "v[peter]":"d[1].l"}] |
+
+  Scenario: g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_fold_countXlocalXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name",P.within("vadas","peter")).group("a").by().by(__.out().order().fold().count(local)).cap("a")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"v[vadas]":"d[0].l", "v[peter]":"d[1].l"}] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_groupXaX_by_byXout_label_foldX_capXaX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("a").by().by(__.out().label().fold()).cap("a").select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_groupXaX_by_byXout_label_dedup_foldX_capXaX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("a").by().by(__.out().label().dedup().fold()).cap("a").select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,software] |
+      | l[] |
+      | l[] |
+      | l[software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_groupXaX_by_byXout_label_limitX0X_foldX_capXaX_selectXvaluesX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("a").by().by(__.out().label().limit(0).fold()).cap("a").select(Column.values).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+      | l[] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_groupXaX_by_byXout_label_limitX10X_foldX_capXaX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("a").by().by(__.out().label().limit(10).fold()).cap("a").select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_groupXaX_by_byXout_label_tailX10X_foldX_capXaX_selectXvaluesX_unfold_orderXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().group("a").by().by(__.out().label().tail(10).fold()).cap("a").select(Column.values).unfold().order(Scope.local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[person,person,software] |
+      | l[] |
+      | l[] |
+      | l[software,software] |
+      | l[] |
+      | l[software] |

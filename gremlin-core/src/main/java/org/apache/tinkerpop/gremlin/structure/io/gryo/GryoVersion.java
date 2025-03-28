@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
@@ -303,6 +304,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReferencePath.class, 85));
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
+            // skipping 199,200 given GValue,GType in 4.x
+            add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
+            add(GryoTypeReg.of(ComputerGraph.class, 202));
+            add(GryoTypeReg.of(ComputerGraph.State.class, 203));
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV3.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV3.VertexSerializer()));
@@ -511,6 +517,11 @@ public enum GryoVersion {
             add(GryoTypeReg.of(ReferencePath.class, 85));
 
             add(GryoTypeReg.of(StarGraph.class, 86, new StarGraphSerializer(Direction.BOTH, new GraphFilter())));
+            // skipping 199,200 given GValue,GType in 4.x 
+            add(GryoTypeReg.of(StarGraph.StarAdjacentVertex.class, 201));
+            add(GryoTypeReg.of(ComputerGraph.class, 202));
+            add(GryoTypeReg.of(ComputerGraph.State.class, 203));
+            add(GryoTypeReg.of(ComputerGraph.ComputerAdjacentVertex.class, 204));                    // ***LAST ID***
 
             add(GryoTypeReg.of(Edge.class, 65, new GryoSerializersV1.EdgeSerializer()));
             add(GryoTypeReg.of(Vertex.class, 66, new GryoSerializersV1.VertexSerializer()));

@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Generating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.io.Serializable;
@@ -109,6 +108,11 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
         while (this.starts.hasNext())
             this.seed = this.reducingBiOperator.apply(this.seed, this.projectTraverser(this.starts.next()));
+    }
+
+    @Override
+    public E getEmptyBarrier() {
+        return (E) NON_EMITTING_SEED;
     }
 
     @Override

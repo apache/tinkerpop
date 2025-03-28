@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.ProjectedTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -39,7 +39,7 @@ import java.util.function.BinaryOperator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier<TraverserSet<S>> {
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements FilteringBarrier<TraverserSet<S>> {
 
     protected TraverserSet<S> traverserSet;
     private int maxBarrierSize;
@@ -94,6 +94,11 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
             });
             return temp;
         }
+    }
+
+    @Override
+    public TraverserSet<S> getEmptyBarrier() {
+        return new TraverserSet<>();
     }
 
     @Override

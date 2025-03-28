@@ -16,25 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * Marker interface for a {@link Barrier} that can behave as a filter, like {@link RangeGlobalStep}
  */
-public interface LocalBarrier<S> extends Barrier<TraverserSet<S>> {
-
-    public default MemoryComputeKey getMemoryComputeKey() {
-        return MemoryComputeKey.of(((Step) this).getId(), Operator.and, false, true);
-    }
-
-    @Override
-    default TraverserSet<S> getEmptyBarrier() {
-        return new TraverserSet<>();
-    }
+public interface FilteringBarrier<S> extends Barrier<S> {
 }
