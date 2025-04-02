@@ -893,7 +893,7 @@ func readBigDecimal(data *[]byte, i *int) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	bigDecimal.UnscaledValue = *unscaled.(*big.Int)
+	bigDecimal.UnscaledValue = unscaled.(*big.Int)
 	return bigDecimal, nil
 }
 

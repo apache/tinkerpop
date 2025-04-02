@@ -510,7 +510,7 @@ world.gremlins = {
     'g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXoutX_timesX2X': [(lambda g:g.without_strategies(RepeatUnrollStrategy).V().repeat(__.out()).times(2))], 
     'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXid_123X_propertyXname_markoX': [(lambda g:g.with_strategies(ReservedKeysVerificationStrategy(throw_exception=True)).add_v('person').property('id', 123).property('name', 'marko'))], 
     'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXage_29X_propertyXname_markoX': [(lambda g:g.with_strategies(ReservedKeysVerificationStrategy(throw_exception=True, keys={'age'})).add_v('person').property('age', 29).property('name', 'marko'))], 
-    'g_withoutStrategiesXReservedKeysVerificationStrategyX_addVXpersonX_propertyXid_123X_propertyXname_markoX': [(lambda g:g.without_strategies(ReservedKeysVerificationStrategy).add_v('person').property('id', 123).property('name', 'marko'))], 
+    'g_withoutStrategiesXReservedKeysVerificationStrategyX_addVXpersonX_propertyXid_123X_propertyXname_markoX': [(lambda g:g.without_strategies(ReservedKeysVerificationStrategy).add_v('person').property('id', 123).property('name', 'marko').values())], 
     'g_withStrategiesXSeedStrategyX_V_coinX0.5X': [(lambda g:g.with_strategies(SeedStrategy(seed=7)).V().coin(0.5))], 
     'g_withoutStrategiesXSeedStrategyX_V': [(lambda g:g.without_strategies(SeedStrategy).V())], 
     'g_withStrategiesXStandardVerificationStrategyX_V': [(lambda g:g.with_strategies(StandardVerificationStrategy()).V())], 

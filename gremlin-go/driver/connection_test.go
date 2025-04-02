@@ -558,7 +558,7 @@ func TestConnection(t *testing.T) {
 		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
-		prop := &BigDecimal{11, *big.NewInt(int64(22))}
+		prop := &BigDecimal{11, big.NewInt(int64(22))}
 		i := g.AddV("type_test").Property("data", prop).Iterate()
 		err := <-i
 		assert.Nil(t, err)
@@ -650,12 +650,12 @@ func TestConnection(t *testing.T) {
 		r, err := g.V((&Bindings{}).Of("x", 1)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
 		assert.Nil(t, err)
 		for _, res := range r {
-			assert.Equal(t, int64(3), res.GetInterface())
+			assert.Equal(t, int32(3), res.GetInterface())
 		}
 		r, err = g.V((&Bindings{}).Of("x", 4)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
 		assert.Nil(t, err)
 		for _, res := range r {
-			assert.Equal(t, int64(9), res.GetInterface())
+			assert.Equal(t, int32(9), res.GetInterface())
 		}
 	})
 

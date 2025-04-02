@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"math/big"
+	"strings"
 )
 
 // Traverser is the objects propagating through the traversal.
@@ -702,7 +703,35 @@ type GremlinType struct {
 // unscaled value and a 32-bit integer scale.
 type BigDecimal struct {
 	Scale         int32
-	UnscaledValue big.Int
+	UnscaledValue *big.Int
+}
+
+// ParseBigDecimal creates a BigDecimal from a string value.
+func ParseBigDecimal(strValue string) *BigDecimal {
+	val := &BigDecimal{}
+
+	// get float value
+	bfVal := new(big.Float)
+	bfVal, ok := bfVal.SetString(strValue)
+	if !ok {
+		return nil
+	}
+	// resolve big int
+	unscaled := new(big.Int)
+	unscaled, ok = unscaled.SetString(strings.Replace(bfVal.String(), ".", "",-1), 10)
+	if !ok {
+		return nil
+	}
+	val.UnscaledValue = unscaled
+	// scale is the number of digits to the right of decimal point
+	scale := 0
+	decimalPos := strings.Index(strValue, ".")
+	if decimalPos > -1 {
+		scale = len(strValue) - decimalPos - 1
+	}
+	val.Scale = int32(scale)
+
+	return val
 }
 
 // ByteBuffer represents the GraphBinary type ByteBuffer which can be used to serialize a binary data.

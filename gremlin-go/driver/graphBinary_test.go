@@ -115,7 +115,7 @@ func TestGraphBinaryV1(t *testing.T) {
 		t.Run("read-write BigDecimal", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
-			source := &BigDecimal{11, *big.NewInt(int64(22))}
+			source := &BigDecimal{11, big.NewInt(int64(22))}
 			buf, err := bigDecimalWriter(source, &buffer, nil)
 			assert.Nil(t, err)
 			res, err := readBigDecimal(&buf, &pos)

@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/big"
 	"reflect"
 	"regexp"
 	"sort"
@@ -49,7 +50,9 @@ func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
 		regexp.MustCompile(`^str\[(.*)]$`):          func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
 		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
-		regexp.MustCompile(`^d\[(.*)]\.[bslfdmn]$`): toNumeric,
+		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`):	 toNumeric,
+		regexp.MustCompile(`^d\[(.*)]\.[m]$`): 		 toBigDecimal,
+		regexp.MustCompile(`^d\[(.*)]\.[n]$`): 		 toBigInt,
 		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,
 		regexp.MustCompile(`^vp\[(.+)]$`):           toVertexProperty,
 		regexp.MustCompile(`^v\[(.+)]$`):            toVertex,
@@ -129,6 +132,21 @@ func toNumeric(stringVal, graphName string) interface{} {
 		return nil
 	}
 	return val
+}
+
+// Parse bigInt.
+func toBigInt(stringVal, graphName string) interface{} {
+	val := new(big.Int)
+	val, ok := val.SetString(stringVal, 10)
+	if !ok {
+		return nil
+	}
+	return val
+}
+
+// Parse bigDecimal.
+func toBigDecimal(stringVal, graphName string) interface{} {
+	return gremlingo.ParseBigDecimal(stringVal)
 }
 
 // Parse int32.
