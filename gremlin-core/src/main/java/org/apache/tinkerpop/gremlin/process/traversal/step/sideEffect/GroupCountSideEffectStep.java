@@ -104,6 +104,9 @@ public class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> implements
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
+        if (this.keyTraversal != null) {
+            throw new IllegalStateException("GroupCount step can only have one by modulator");
+        }
         this.keyTraversal = this.integrateChild(keyTraversal);
     }
 

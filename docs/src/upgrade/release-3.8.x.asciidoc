@@ -210,6 +210,13 @@ gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2971[TINKERPOP-2971]
 
+==== groupCount() By Modulation Semantics
+
+The `groupCount()` step has been changed to throw an error if multiple `by()` modulators are applied. The previous 
+behavior would ignore previous `by()` modulators and apply the last one, which was not intuitive.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
