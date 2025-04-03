@@ -92,6 +92,9 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
+
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix
@@ -117,11 +120,10 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
-        if (ctx.SignedInfLiteral().getText().equals("-Infinity")) {
+        if (ctx.SignedInfLiteral() != null && ctx.SignedInfLiteral().getText().equals("-Infinity"))
             sb.append("Double.NEGATIVE_INFINITY");
-        } else {
+        else
             sb.append("Double.POSITIVE_INFINITY");
-        }
         return null;
     }
 

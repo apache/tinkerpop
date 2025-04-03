@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinVisitor;
@@ -39,7 +40,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A Gremlin to Gremlin translator. Makes no changes to input except:
@@ -1478,6 +1481,11 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
+    public Void visitStructureVertexArgument(GremlinParser.StructureVertexArgumentContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         return visitChildren(ctx);
     }
@@ -1489,7 +1497,7 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitTraversalToken(final GremlinParser.TraversalTokenContext ctx) {
+    public Void visitTraversalT(final GremlinParser.TraversalTContext ctx) {
         appendExplicitNaming(ctx.getText(), T.class.getSimpleName());
         return null;
     }
@@ -1520,14 +1528,16 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
 
     @Override
     public Void visitTraversalCardinality(final GremlinParser.TraversalCardinalityContext ctx) {
-        // handle the enum style of cardinality if there is one child, otherwise it's the function call style
-        if (ctx.getChildCount() == 1)
-            appendExplicitNaming(ctx.getText(), Cardinality.class.getSimpleName());
-        else {
-            appendExplicitNaming(ctx.getChild(0).getText(), Cardinality.class.getSimpleName());
+        // handle the enum style of cardinality if there are no parens otherwise is the function call.
+        if (ctx.LPAREN() != null && ctx.RPAREN() != null) {
+            final int idx = ctx.K_CARDINALITY() != null ? 2 : 0;
+            final String txt = ctx.getChild(idx).getText();
+            appendExplicitNaming(txt, getCardinalityFunctionClass());
             appendStepOpen();
-            visit(ctx.getChild(2));
+            visit(ctx.genericLiteral());
             appendStepClose();
+        } else {
+            appendExplicitNaming(ctx.getText(), "Cardinality");
         }
 
         return null;
@@ -1633,21 +1643,16 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
         sb.append(processGremlinSymbol(methodName));
         appendStepOpen();
 
-        // if there are commas then there are multiple arguments that are being handled literally e.g. between
-        final long commas = ctx.children.stream().filter(t -> t instanceof TerminalNode && t.getText().equals(",")).count();
-        if (commas > 0) {
-            // the number of commas indicates how many arguments there are. for each argument, visit the child
-            for (int ix = 0; ix < (commas * 2) + 1; ix+=2) {
-                visit(ctx.getChild(ix + 2));
-                if (ix < commas) {
-                    appendArgumentSeparator();
-                }
-            }
-        } else {
-            // there is only one argument, visit the child
-            if (ctx.getChildCount() > 3)
-                visit(ctx.getChild(2));
+        final List<ParseTree> list =  ctx.children.stream().filter(
+                t -> t instanceof GremlinParser.GenericLiteralArgumentContext ||
+                              t instanceof GremlinParser.GenericLiteralListArgumentContext ||
+                              t instanceof GremlinParser.StringArgumentContext ||
+                              t instanceof GremlinParser.TraversalPredicateContext).collect(Collectors.toList());
+        for (int ix = 0; ix < list.size(); ix++) {
+            visit(list.get(ix));
+            if (ix < list.size() - 1) appendArgumentSeparator();
         }
+
         appendStepClose();
     }
 
@@ -2075,76 +2080,6 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
-    public Void visitStructureVertexArgument(final GremlinParser.StructureVertexArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalCardinalityArgument(final GremlinParser.TraversalCardinalityArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalColumnArgument(final GremlinParser.TraversalColumnArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalDirectionArgument(final GremlinParser.TraversalDirectionArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalMergeArgument(final GremlinParser.TraversalMergeArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalOrderArgument(final GremlinParser.TraversalOrderArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalPopArgument(final GremlinParser.TraversalPopArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalSackMethodArgument(final GremlinParser.TraversalSackMethodArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalScopeArgument(final GremlinParser.TraversalScopeArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalTokenArgument(final GremlinParser.TraversalTokenArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalComparatorArgument(final GremlinParser.TraversalComparatorArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalFunctionArgument(final GremlinParser.TraversalFunctionArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalBiFunctionArgument(final GremlinParser.TraversalBiFunctionArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
-    public Void visitTraversalDTArgument(final GremlinParser.TraversalDTArgumentContext ctx) {
-        return visitChildren(ctx);
-    }
-
-    @Override
     public Void visitTraversalStrategyList(final GremlinParser.TraversalStrategyListContext ctx) {
         return visitChildren(ctx);
     }
@@ -2242,6 +2177,8 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
 
     @Override
     public Void visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
         sb.append(ctx.getText().toLowerCase());
         return null;
     }
@@ -2318,7 +2255,7 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
         final String keyword = ctx.getText();
 
         // translate differently based on the context of the keyword's parent.
-        if (ctx.getParent() instanceof GremlinParser.MapEntryContext || ctx.getParent() instanceof GremlinParser.ConfigurationContext) {
+        if (ctx.getParent() instanceof GremlinParser.MapKeyContext || ctx.getParent() instanceof GremlinParser.ConfigurationContext) {
             // if the keyword is a key in a map, then it's a string literal essentially
             sb.append(keyword);
         } else {
@@ -2352,13 +2289,57 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
                 // seems we still sometimes interpret this as a TerminalNode like when newing up a class
                 // which is optional syntax and will go away in the future.
                 sb.append("new");
-                if (!(node.getParent() instanceof GremlinParser.MapEntryContext))
+                if (!(node.getParent() instanceof GremlinParser.MapKeyContext))
                     sb.append(" "); // includes a space for when not use in context of a Map entry key...one off
                 break;
             default:
                 sb.append(processGremlinSymbol(terminal));
         }
         return null;
+    }
+
+    @Override
+    public Void visitTraversalTShort(final GremlinParser.TraversalTShortContext ctx) {
+        appendExplicitNaming(ctx.getText(), T.class.getSimpleName());
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalTLong(final GremlinParser.TraversalTLongContext ctx) {
+        appendExplicitNaming(ctx.getText(), T.class.getSimpleName());
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalDirectionShort(final GremlinParser.TraversalDirectionShortContext ctx) {
+        appendExplicitNaming(ctx.getText(), Direction.class.getSimpleName());
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalDirectionLong(final GremlinParser.TraversalDirectionLongContext ctx) {
+        appendExplicitNaming(ctx.getText(), Direction.class.getSimpleName());
+        return null;
+    }
+
+    @Override
+    public Void visitGenericLiteralMapNullable(final GremlinParser.GenericLiteralMapNullableContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitStringLiteralVarargsArgument(final GremlinParser.StringLiteralVarargsArgumentContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitMapKey(final GremlinParser.MapKeyContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitNakedKey(final GremlinParser.NakedKeyContext ctx) {
+        return visitChildren(ctx);
     }
 
     protected void appendExplicitNaming(final String txt, final String prefix) {
@@ -2374,5 +2355,9 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
 
     protected void appendAnonymousSpawn() {
         sb.append("__.");
+    }
+
+    protected String getCardinalityFunctionClass() {
+        return Cardinality.class.getSimpleName();
     }
 }

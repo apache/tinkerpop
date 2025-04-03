@@ -143,13 +143,13 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Parse a string literal varargs, and return an string array
      */
     public String[] parseStringVarargs(final GremlinParser.StringLiteralVarargsContext varargsContext) {
-        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
+        if (varargsContext == null) {
             return new String[0];
         }
-        return varargsContext.stringNullableArgument()
+        return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
+                .map(this::parseString)
                 .toArray(String[]::new);
     }
 
@@ -328,21 +328,25 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
 
         // filter out tokens and just grab map entries
         ctx.children.stream().filter(c -> c instanceof GremlinParser.MapEntryContext).forEach(c -> {
-            // [key : value] - index 0 is key, index 1 is COLON, index 2 is value
-            // also note that a child count of 5 indicates the key is an expression wrapped
-            // in parens as in `[(T.id): 1]`
-            final boolean isKeyExpression = c.getChildCount() == 5;
-            final Object kctx = isKeyExpression ? c.getChild(1) : c.getChild(0);
+            // [key : value] index 0 is key in the MapKeyContext unless it is wrapped in parens
+            // [(T.id): 1] in which case they key will be found at index 1 within the MapKeyContext
+            final GremlinParser.MapKeyContext mapKeyContext = ((GremlinParser.MapEntryContext) c).mapKey();
+            final boolean isKeyExpression = mapKeyContext.LPAREN() != null && mapKeyContext.RPAREN() != null;
+            final Object kctx = isKeyExpression ? mapKeyContext.getChild(1) : mapKeyContext.getChild(0);
             final Object key;
             if (kctx instanceof GremlinParser.StringLiteralContext) {
                 key = visitStringLiteral((GremlinParser.StringLiteralContext) kctx);
             } else if (kctx instanceof GremlinParser.NumericLiteralContext) {
                 key = visitNumericLiteral((GremlinParser.NumericLiteralContext) kctx);
-            } else if (kctx instanceof GremlinParser.TraversalTokenContext) {
-                key = visitTraversalToken((GremlinParser.TraversalTokenContext) kctx);
+            } else if (kctx instanceof GremlinParser.TraversalTContext) {
+                key = visitTraversalT((GremlinParser.TraversalTContext) kctx);
+            } else if (kctx instanceof GremlinParser.TraversalTLongContext) {
+                key = visitTraversalTLong((GremlinParser.TraversalTLongContext) kctx);
             } else if (kctx instanceof GremlinParser.TraversalDirectionContext) {
                 key = visitTraversalDirection((GremlinParser.TraversalDirectionContext) kctx);
-            } else if (kctx instanceof GremlinParser.GenericLiteralCollectionContext) {
+            } else if (kctx instanceof GremlinParser.TraversalDirectionLongContext) {
+                key = visitTraversalDirectionLong((GremlinParser.TraversalDirectionLongContext) kctx);
+            }else if (kctx instanceof GremlinParser.GenericLiteralCollectionContext) {
                 key = visitGenericLiteralCollection((GremlinParser.GenericLiteralCollectionContext) kctx);
             } else if (kctx instanceof GremlinParser.GenericLiteralSetContext) {
                 key = visitGenericLiteralSet((GremlinParser.GenericLiteralSetContext) kctx);
@@ -350,14 +354,15 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 key = visitGenericLiteralMap((GremlinParser.GenericLiteralMapContext) kctx);
             } else if (kctx instanceof GremlinParser.KeywordContext) {
                 key = ((GremlinParser.KeywordContext) kctx).getText();
+            } else if (kctx instanceof GremlinParser.NakedKeyContext) {
+                key = ((GremlinParser.NakedKeyContext) kctx).getText();
             } else if (kctx instanceof TerminalNode) {
                 key = ((TerminalNode) kctx).getText();
             } else {
                 throw new GremlinParserException("Invalid key for map " + ((ParseTree) kctx).getText());
             }
 
-            final int valueIndex = isKeyExpression ? 4 : 2;
-            final Object value = visitGenericLiteral((GremlinParser.GenericLiteralContext) c.getChild(valueIndex));
+            final Object value = visitGenericLiteral((GremlinParser.GenericLiteralContext) c.getChild(2));
             literalMap.put(key, value);
         });
 
@@ -461,6 +466,9 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
+
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix
@@ -520,7 +528,12 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * {@inheritDoc}
      */
     @Override
-    public Object visitTraversalToken(final GremlinParser.TraversalTokenContext ctx) {
+    public Object visitTraversalT(final GremlinParser.TraversalTContext ctx) {
+        return TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx);
+    }
+
+    @Override
+    public Object visitTraversalTLong(final GremlinParser.TraversalTLongContext ctx) {
         return TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx);
     }
 
@@ -529,18 +542,17 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitTraversalCardinality(final GremlinParser.TraversalCardinalityContext ctx) {
-        // could be Cardinality.single() the method or single the enum so grab the right child index based on
-        // number of children
-        if (ctx.getChildCount() == 1) {
+        // if there is a paren, we're doing the function call, otherwise it's just the enum
+        if (null == ctx.LPAREN()) {
             return TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, ctx);
         } else {
-            final int idx = ctx.getChildCount() == 5 ? 1 : 0;
+            final int idx = ctx.getChildCount() == 6 ? 2 : 0;
             final String specifiedCard = ctx.children.get(idx).getText();
-            if (specifiedCard.endsWith(VertexProperty.Cardinality.single.name()))
+            if (ctx.K_SINGLE() != null)
                 return VertexProperty.Cardinality.single(visitGenericLiteral(ctx.genericLiteral()));
-            else if (specifiedCard.endsWith(VertexProperty.Cardinality.list.name()))
+            else if (ctx.K_LIST() != null)
                 return VertexProperty.Cardinality.list(visitGenericLiteral(ctx.genericLiteral()));
-            else if (specifiedCard.endsWith(VertexProperty.Cardinality.set.name()))
+            else if (ctx.K_SET() != null)
                 return VertexProperty.Cardinality.set(visitGenericLiteral(ctx.genericLiteral()));
             else
                 throw new GremlinParserException(String.format(
@@ -553,6 +565,11 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitTraversalDirection(final GremlinParser.TraversalDirectionContext ctx) {
+        return TraversalEnumParser.parseTraversalDirectionFromContext(ctx);
+    }
+
+    @Override
+    public Object visitTraversalDirectionLong(final GremlinParser.TraversalDirectionLongContext ctx) {
         return TraversalEnumParser.parseTraversalDirectionFromContext(ctx);
     }
 
@@ -653,7 +670,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
 
     @Override
     public Object visitStringNullableLiteral(final GremlinParser.StringNullableLiteralContext ctx) {
-        if (ctx.NullLiteral() != null)
+        if (ctx.K_NULL() != null)
             return null;
         else
             return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));

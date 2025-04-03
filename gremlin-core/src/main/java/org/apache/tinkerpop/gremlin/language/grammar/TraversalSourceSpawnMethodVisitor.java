@@ -109,7 +109,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_io(final GremlinParser.TraversalSourceSpawnMethod_ioContext ctx) {
         if (ctx.getChildCount() > 2) {
-            this.graphTraversal = this.traversalSource.io(antlr.argumentVisitor.parseString(ctx.stringArgument()));
+            this.graphTraversal = this.traversalSource.io(antlr.genericVisitor.parseString(ctx.stringLiteral()));
         }
         return graphTraversal;
     }

@@ -1,0 +1,415 @@
+# numericLiteral
+0
+1
+123
+9999
++1
+-1
++123
+-123
+1_000
+1_000_000
+123L
+123l
+123B
+123b
+123S
+123s
+123N
+123n
+123I
+123i
+-123L
++456S
+-789b
+0x0
+0x1
+0xA
+0xFF
+0x123ABC
++0x123
+-0x456
+0x1_FF
+0xABCl
+0xDEFi
+0x123
+0X123
+00
+01
+07
+0123
++0123
+-0456
+0123_456
+0123l
+0456s
+0.0
+1.0
+123.456
++1.0
+-1.0
++123.456
+-123.456
+1e2
+1.0e2
+1e+2
+1e-2
+1.23e45
++1.23e45
+-1.23e45
++1.23e+45
+-1.23e-45
+1.0f
+1.0F
+1.0d
+1.0D
+1.0m
+1.0M
+1_000.5
+1.234_567
+1_2.3_4e5_6
+1e2
+1E2
+123f
+123F
+123d
+123D
+123m
+123M
++0
+-0
+0.01
+1.00
+2147483647
+-2147483648
+9999999999
+0.0000000001
+# booleanLiteral
+true
+false
+# stringLiteral
+""
+''
+"hello"
+'hello'
+"hello world"
+'hello world'
+"hello\nworld"
+'hello\nworld'
+"hello\tworld"
+'hello\tworld'
+"hello\\world"
+'hello\\world'
+"hello\"world"
+'hello\'world'
+"hello\rworld"
+'hello\rworld'
+"hello\fworld"
+'hello\fworld'
+"hello\bworld"
+'hello\bworld'
+"hello\123world"
+'hello\123world'
+"hello\0world"
+'hello\0world'
+"hello\07world"
+'hello\07world'
+"hello\377world"
+'hello\377world'
+"hello\u0041world"
+'hello\u0041world'
+"hello\uAAAAworld"
+'hello\uAAAAworld'
+"!@#$%^&*()"
+'!@#$%^&*()'
+"symbols + special chars: <>,.?/"
+'symbols + special chars: <>,.?/'
+"mixed 123 abc !@#"
+'mixed 123 abc !@#'
+"multiple\\\\backslashes"
+'multiple\\\\backslashes'
+"unicode symbols: \u20AC\u00A3\u00A5"
+'unicode symbols: \u20AC\u00A3\u00A5'
+"quotes \"inside\" string"
+'quotes \'inside\' string'
+# dateLiteral
+datetime()
+datetime("")
+datetime('')
+datetime("2023-04-15T10:30:45")
+datetime("2023-04-15")
+datetime("2023-04-15T10:30:45Z")
+datetime("2023-04-15T10:30:45+01:00")
+datetime('2023-04-15')
+datetime("2023-04-15T10:30:45.123")
+datetime("1682424645000")
+datetime("1800-01-01")
+datetime("2100-12-31")
+datetime("2024-02-29")
+datetime("2023-04-15T10:30:45-07:00")
+datetime("2023-W15-3")
+datetime("20230415T103045")
+datetime("2023-04-15 10:30:45")
+datetime("10:30:45")
+datetime("2023-04-15T10:30:45.123456789")
+datetime("2023-Apr-15")
+# nullLiteral
+null
+# infLiteral
+Infinity
++Infinity
+-Infinity
+# traversalT
+T.id
+T.label
+T.key
+T.value
+id
+label
+key
+value
+# traversalCardinality
+single
+Cardinality.single
+set
+Cardinality.set
+list
+Cardinality.list
+single("value")
+Cardinality.single("value")
+set("value")
+Cardinality.set("value")
+list("value")
+Cardinality.list("value")
+single(123)
+Cardinality.single(123)
+set(123)
+Cardinality.set(123)
+list(123)
+Cardinality.list(123)
+single(true)
+Cardinality.single(true)
+set(false)
+Cardinality.set(false)
+list(true)
+Cardinality.list(true)
+single([1, 2, 3])
+Cardinality.single([1, 2, 3])
+set([1, 2, 3])
+Cardinality.set([1, 2, 3])
+list([1, 2, 3])
+Cardinality.list([1, 2, 3])
+single([a: "b"])
+Cardinality.single([a: "b"])
+set([a: "b"])
+Cardinality.set([a: "b"])
+list([a: "b"])
+Cardinality.list([a: "b"])
+single(null)
+Cardinality.single(null)
+set(null)
+Cardinality.set(null)
+list(null)
+Cardinality.list(null)
+# traversalDirection
+IN
+from
+OUT
+to
+BOTH
+Direction.IN
+Direction.from
+Direction.OUT
+Direction.to
+Direction.BOTH
+# structureVertex
+Vertex(1,'person')
+Vertex("1", 'person')
+# genericLiteralSet
+{}
+{ }
+{1}
+{42}
+{-99}
+{3.14}
+{-2.718}
+{true}
+{false}
+{"hello"}
+{'world'}
+{""}
+{''}
+{null}
+{NaN}
+{Infinity}
+{-Infinity}
+{T.id}
+{T.label}
+{Cardinality.single}
+{Cardinality.list}
+{Cardinality.set}
+{Direction.IN}
+{Direction.OUT}
+{Direction.BOTH}
+{Merge.onCreate}
+{Merge.onMatch}
+{Pick.any}
+{Pick.none}
+{DT.hour}
+{DT.minute}
+{1, 2, 3}
+{-1, 0, 1}
+{1.1, 2.2, 3.3}
+{true, false}
+{"a", "b", "c"}
+{'x', 'y', 'z'}
+{null, null}
+{T.id, T.label}
+{1, "two", 3.0, false}
+{null, 42, "hello", true}
+{T.id, 123, "value"}
+{datetime("2023-04-15"), datetime()}
+{{}}
+{{1, 2}}
+{1, {2, 3}}
+{{1, 2}, {3, 4}}
+{[1, 2, 3]}
+{[1, 2], [3, 4]}
+{1, [2, 3], 4}
+{[:]}
+{["key": "value"]}
+{1, ["name": "John"]}
+{1..5}
+{1..5, 10..20}
+{"a".."z"}
+{Vertex("1", 'person')}
+{1, Vertex("2", 'person')}
+{1, {2, {3}}}
+{1, {}, []}
+{1, {2}, [3], 4..5, "six"}
+# genericLiteralCollection
+[]
+[1]
+[3.14]
+[true]
+[false]
+["string"]
+['single quoted string']
+[null]
+[NaN]
+[Infinity]
+[-Infinity]
+[T.id]
+[T.label]
+[Cardinality.single]
+[Cardinality.list]
+[Direction.IN]
+[1, 2, 3]
+[1, "string", true]
+[null, 3.14, false, "text"]
+[T.id, 100, "label"]
+[[]]
+[[1, 2]]
+[1, [2, 3], 4]
+[[1, 2], [3, 4]]
+[[[1]]]
+[[key: "value"]]
+[{1, 2, 3}]
+[1, {2, 3}, [4, 5]]
+[1..5]
+["a".."z"]
+[1, 2..5, 6]
+[datetime()]
+[datetime("2023-01-01T00:00:00")]
+[Direction.IN, Direction.OUT, Direction.BOTH]
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[1, [2, [3, [4]]]]
+[Pick.any, DT.second]
+[{1, 2}, [3, 4], [key: "value"]]
+[1, null, "test", [true, false]]
+# genericLiteralMap
+[:]
+["key":"value"]
+[("key"):"value"]
+[key:"value"]
+[1:"numeric key"]
+[(1B):"numeric key"]
+[(1S):"numeric key"]
+[(1N):"numeric key"]
+[(1I):"numeric key"]
+[(1L):"numeric key"]
+[(1F):"numeric key"]
+[(1D):"numeric key"]
+[(1b):"numeric key"]
+[(1s):"numeric key"]
+[(1n):"numeric key"]
+[(1i):"numeric key"]
+[(1l):"numeric key"]
+[(1f):"numeric key"]
+[(1d):"numeric key"]
+[1B:"numeric key"]
+[1S:"numeric key"]
+[1N:"numeric key"]
+[1I:"numeric key"]
+[1L:"numeric key"]
+[1F:"numeric key"]
+[1D:"numeric key"]
+[1b:"numeric key"]
+[1s:"numeric key"]
+[1n:"numeric key"]
+[1i:"numeric key"]
+[1l:"numeric key"]
+[1f:"numeric key"]
+[1d:"numeric key"]
+[true:false]
+["quoted key":"quoted value"]
+[key:123]
+[name:"bob", age:30]
+[a:true, b:false, c:null]
+[key:[nested:"map"]]
+[outer:[middle:[inner:"value"]]]
+[list:[1, 2, 3]]
+[set:{1, 2, 3}]
+[range:1..5]
+["":1]
+[complex:[a:1, b:2], simple:"value"]
+[nullValue:null]
+[booleans:[true, false]]
+["special chars":"test@#$%"]
+[map:[a:"A", b:"B"], collection:[1, 2], set:{3, 4}]
+[T.id:"special key"]
+[(T.id): "abc"]
+[Direction.IN:"direction as key"]
+[(from): 1, (to): 4]
+[(Direction.OUT): 1, "name": 'xyz']
+[(Direction.BOTH): Merge.outV, "name": 'xyz']
+[(Direction.BOTH): outV, "name": 'xyz']
+[{1, 2}:"set as key"]
+[({1, 2}):"set as key"]
+[[1, 2]:"collection as key"]
+[([1, 2]):"collection as key"]
+[keyMap:[[inner:value]:"nested map as key"]]
+[multiple:"values", with:123, different:true, types:[1, 2, 3]]
+[long:"multi-word string value that tests longer content"]
+[inf:Infinity]
+[negInf:-Infinity]
+[-Infinity:123]
+[Infinity:123]
+[+Infinity:123]
+[(-Infinity):123]
+[(Infinity):123]
+[(+Infinity):123]
+[NaN:NaN]
+[date:datetime("2023-01-01")]
+[emptyDate:datetime()]
+[multiLevel:[l1:[l2:[l3:"deep"]]]]
+[id:"special keyword"]
+[a:"A", b:"B", c:"C", d:"D", e:"E"]
+[label: "person", onCreate: [firstName: "John", lastName: "Doe", age: 30], onMatch: [age: 31]]
+[label: "software", onCreate: [name: "gremlin", version: 3.6], onMatch: [version: 3.7]]
+[label: "product", keys: ["productId"], values: [productId: "p1001", name: "Laptop", price: 999.99]]
+[label: "created", keys: ["since"], values: [since: 2023, isActive: true]]
+[label: "knows", onCreate: [weight: 0.5, since: 2020], onMatch: [weight: 0.75]]
+[label: "purchased", keys: ["date"], values: [date: "2023-05-15", amount: 150.50]]
+[name: "marko", age: 29, location: [longitude: 65.35, latitude: 45.12]]
+[skills: ["java", "python", "gremlin"], created: ["lop", "ripple"]]

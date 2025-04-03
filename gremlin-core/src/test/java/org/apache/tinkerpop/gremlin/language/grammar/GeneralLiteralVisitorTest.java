@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -37,6 +39,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -537,37 +540,47 @@ public class GeneralLiteralVisitorTest {
         public String script;
 
         @Parameterized.Parameter(value = 1)
-        public int expectedNumKeysInMap;
+        public Map<Object, Object> expectedMap;
 
-        @Parameterized.Parameters()
+        @Parameterized.Parameters(name = "{index}: shouldParse({0})")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
-                    {"[\"name\":\"simba\"]", 1},
-                    {"[(\"name\"):\"simba\"]", 1},
-                    {"[name:\"simba\", age: 29]", 2},
-                    {"[:]", 0},
-                    {"[1:'a']", 1},
-                    {"[edges: 'person', T.id: 1]", 2},
-                    {"[label: 'person', T.id: 1]", 2},
-                    {"[(label): 'person', (T.id): 1]", 2},
-                    {"[from: 'source', Direction.to: 'target']", 2},
-                    {"[(from): 'source', (Direction.to): 'target']", 2},
-                    {"[\"name\":\"simba\",\"age\":32]", 2},
-                    {"[\"name\":\"simba\",\"age\":[2,3]]", 2},
-                    {"[(3I):\"32\",([1I, 2I, 3.1D]):4I,\"x\":4I,\"+x\":8I]", 4},
-                    {"[(3I):\"32\",[1I, 2I, 3.1D]:4I,\"x\":4I,\"+x\":8I]", 4},
-                    {"[[label: 'person', T.id: 1]:\"x\"]", 1},
-                    {"[([label: 'person', T.id: 1]):\"x\"]", 1},
-                    {"[new: true]", 1},
-                    {"[new : true]", 1},
-                    {"['new' : true]", 1},
-                    {"[s: {'x'}]", 1},
-                    {"[l: ['x']]", 1},
-                    {"[({'x'}): 'x']", 1},
-                    {"[{'x'}: 'x']", 1},
-                    {"[['x']: ['x',{'y'}]]", 1},
-                    {"[['x']: ['x',['y']]]", 1},
+                    {"[\"name\":\"simba\"]", createMap(new Object[]{"name", "simba"})},
+                    {"[(\"name\"):\"simba\"]", createMap(new Object[]{"name", "simba"})},
+                    {"[name:\"simba\", age: 29]", createMap(new Object[]{"name", "simba", "age", 29})},
+                    {"[:]", createMap(new Object[]{})},
+                    {"[1:'a']", createMap(new Object[]{1, "a"})},
+                    {"[edges: 'person', T.id: 1]", createMap(new Object[]{"edges", "person", T.id, 1})},
+                    {"[(T.label): 'person', T.id: 1]", createMap(new Object[]{T.label, "person", T.id, 1})},
+                    {"[T.label: 'person', T.id: 1]", createMap(new Object[]{T.label, "person", T.id, 1})},
+                    {"['label': 'person', T.id: 1]", createMap(new Object[]{"label", "person", T.id, 1})},
+                    {"[label: 'person', T.id: 1]", createMap(new Object[]{"label", "person", T.id, 1})},
+                    {"[(label): 'person', (T.id): 1]", createMap(new Object[]{T.label, "person", T.id, 1})},
+                    {"[from: 'source', Direction.to: 'target']", createMap(new Object[]{"from", "source", Direction.to, "target"})},
+                    {"[(from): 'source', (Direction.to): 'target']", createMap(new Object[]{Direction.from, "source", Direction.to, "target"})},
+                    {"[\"name\":\"simba\",\"age\":32]", createMap(new Object[]{"name", "simba", "age", 32})},
+                    {"[\"name\":\"simba\",\"age\":[2,3]]", createMap(new Object[]{"name", "simba", "age", Arrays.asList(2, 3)})},
+                    {"[3L:\"32\",([1I, 2I, 3.1D]):4I,\"x\":4I,\"+x\":8I]", createMap(new Object[]{3L, "32", Arrays.asList(1, 2, 3.1), 4, "x", 4, "+x", 8})},
+                    {"[[label: 'person', T.id: 1]:\"x\"]", createMap(new Object[]{createMap(new Object[]{"label", "person", T.id, 1}), "x"})},
+                    {"[([label: 'person', T.id: 1]):\"x\"]", createMap(new Object[]{createMap(new Object[]{"label", "person", T.id, 1}), "x"})},
+                    {"[new: true]", createMap(new Object[]{"new", true})},
+                    {"[new : true]", createMap(new Object[]{"new", true})},
+                    {"['new' : true]", createMap(new Object[]{"new", true})},
+                    {"[s: {'x'}]", createMap(new Object[]{"s", new HashSet<>(Arrays.asList("x"))})},
+                    {"[l: ['x']]", createMap(new Object[]{"l", Arrays.asList("x")})},
+                    {"[({'x'}): 'x']", createMap(new Object[]{new HashSet<>(Arrays.asList("x")), "x"})},
+                    {"[{'x'}: 'x']", createMap(new Object[]{new HashSet<>(Arrays.asList("x")), "x"})},
+                    {"[['x']: ['x',{'y'}]]", createMap(new Object[]{Arrays.asList("x"), Arrays.asList("x", new HashSet<>(Arrays.asList("y")))})},
+                    {"[['x']: ['x',['y']]]", createMap(new Object[]{Arrays.asList("x"), Arrays.asList("x", Arrays.asList("y"))})},
             });
+        }
+
+        private static Map<Object, Object> createMap(final Object[] keyValuePairs) {
+            final Map<Object, Object> map = new HashMap<>();
+            for (int i = 0; i < keyValuePairs.length; i += 2) {
+                map.put(keyValuePairs[i], keyValuePairs[i + 1]);
+            }
+            return map;
         }
 
         @Test
@@ -580,9 +593,9 @@ public class GeneralLiteralVisitorTest {
             // verify type is Map
             assertThat(script, genericLiteral, instanceOf(Map.class));
 
-            // verify total number of elements
+            // verify the parsed map matches the expected map
             final Map<Object, Object> genericLiterals = (Map<Object, Object>) genericLiteral;
-            assertEquals(expectedNumKeysInMap, genericLiterals.size());
+            assertEquals(expectedMap, genericLiterals);
         }
     }
 
