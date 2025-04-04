@@ -1,3 +1,5 @@
+﻿#region License
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -7,7 +9,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,31 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.ser.binary.types.sample;
+#endregion
 
-import java.time.OffsetDateTime;
-import java.util.Objects;
+using System;
+using System.IO;
+using System.Text.Json;
 
-/**
- * A sample custom data type containing few properties.
- */
-public class SamplePerson {
-    private final String name;
-    private final OffsetDateTime birthDate;
-
-    SamplePerson(final String name, final OffsetDateTime birthDate) {
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(birthDate);
-
-        this.name = name;
-        this.birthDate = birthDate;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public OffsetDateTime getBirthDate() {
-        return birthDate;
+namespace Gremlin.Net.Structure.IO.GraphSON
+{
+    internal class OffsetDateTimeDeserializer : IGraphSONDeserializer
+    {
+        public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
+        {
+            return DateTimeOffset.Parse(graphsonObject.GetString() ??
+                                        throw new IOException("Read null but expected a OffsetDateTime value"));
+        }
     }
 }

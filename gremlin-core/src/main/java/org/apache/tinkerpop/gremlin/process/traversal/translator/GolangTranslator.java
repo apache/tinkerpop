@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -136,6 +137,11 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "time.UnixMilli(" + o.getTime() + ")";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            return "time.UnixMilli(" + o.toInstant().toEpochMilli() + ")";
         }
 
         @Override

@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -142,6 +143,11 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "new Date(" + o.getTime() + ")";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            return "new Date(" + o.toInstant().toEpochMilli() + ")";
         }
 
         @Override

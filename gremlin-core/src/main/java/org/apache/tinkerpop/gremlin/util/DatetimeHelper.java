@@ -22,7 +22,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -93,45 +97,41 @@ public final class DatetimeHelper {
      * </ul>>
      *
      */
-    public static Date parse(final String d) {
+    public static OffsetDateTime parse(final String d) {
         final TemporalAccessor t = formatter.parse(d);
 
         if (!t.isSupported(ChronoField.HOUR_OF_DAY)) {
             // no hours field so it must be a Date or a YearMonth
             if (!t.isSupported(ChronoField.DAY_OF_MONTH)) {
                 // must be a YearMonth coz no day
-                return Date.from(YearMonth.from(t).atDay(1).atStartOfDay(UTC).toInstant());
+                return OffsetDateTime.of(LocalDate.of(Year.from(t).getValue(), Month.from(t), 1), LocalTime.MIDNIGHT, UTC);
             } else {
                 // must be a Date as the day is present
-                return Date.from(Instant.ofEpochSecond(LocalDate.from(t).atStartOfDay().toEpochSecond(UTC)));
+                return OffsetDateTime.of(LocalDate.from(t), LocalTime.MIDNIGHT, UTC);
             }
         } else if (!t.isSupported(ChronoField.MONTH_OF_YEAR)) {
             // no month field so must be a Time
-            final Instant timeOnEpochDay = LocalDate.ofEpochDay(0)
-                    .atTime(LocalTime.from(t))
-                    .atZone(UTC)
-                    .toInstant();
-            return Date.from(timeOnEpochDay);
+            return OffsetDateTime.of(LocalDate.ofEpochDay(0), LocalTime.from(t), UTC);
         } else if (t.isSupported(ChronoField.OFFSET_SECONDS)) {
             // has all datetime components including an offset
-            return Date.from(ZonedDateTime.from(t).toInstant());
+            return OffsetDateTime.of(LocalDateTime.from(t), ZoneOffset.from(t));
         } else {
             // has all datetime components but no offset so throw in some UTC
-            return Date.from(ZonedDateTime.of(LocalDateTime.from(t), UTC).toInstant());
+            return OffsetDateTime.of(LocalDateTime.from(t), UTC);
         }
     }
 
     /**
      * A proxy call to {@link #parse(String)} but allows for syntax similar to Gremlin grammar of {@code datetime()}.
      */
-    public static Date datetime(final String d) {
+    public static OffsetDateTime datetime(final String d) {
         return parse(d);
     }
 
     /**
      * A proxy allows for syntax similar to Gremlin grammar of {@code datetime()}.
      */
-    public static Date datetime() {
-        return new Date();
+    public static OffsetDateTime datetime() {
+        return OffsetDateTime.now();
     }
 }

@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
@@ -86,7 +87,7 @@ public class SamplePersonSerializerTest {
         final GraphBinaryWriter writer = new GraphBinaryWriter(registry);
 
         final SamplePerson person = new SamplePerson("Matias",
-                Date.from(LocalDateTime.of(2005, 8, 5, 1, 0).toInstant(ZoneOffset.UTC)));
+                OffsetDateTime.of(LocalDateTime.of(2005, 8, 5, 1, 0), ZoneOffset.UTC));
 
         for (boolean nullable: new boolean[] { true, false }) {
             final Buffer buffer = bufferFactory.create(allocator.buffer());
@@ -99,7 +100,7 @@ public class SamplePersonSerializerTest {
     }
 
     private void assertPerson(final GraphBinaryMessageSerializerV1 serializer) throws IOException {
-        final Date birthDate = Date.from(LocalDateTime.of(2010, 4, 29, 5, 30).toInstant(ZoneOffset.UTC));
+        final OffsetDateTime birthDate = OffsetDateTime.of(LocalDateTime.of(2010, 4, 29, 5, 30), ZoneOffset.UTC);
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
         final ByteBuf serialized = serializer.serializeResponseAsBinary(

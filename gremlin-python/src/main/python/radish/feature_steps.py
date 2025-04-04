@@ -244,7 +244,7 @@ def _convert(val, ctx):
         return val[4:-1]
     elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
         # python 3.8 can handle only subset of ISO 8601 dates
-        return datetime.fromisoformat(val[3:-1].replace('Z', ''))
+        return datetime.fromisoformat(val[3:-1].replace('Z', '+00:00'))
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf

@@ -31,11 +31,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
+import static java.time.ZoneOffset.UTC;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
 
@@ -117,6 +120,12 @@ public class AnonymizingTypeTranslatorTest {
         c.set(1975, Calendar.SEPTEMBER, 7);
         final Date d = c.getTime();
         testAnonymize(g.inject(d), "g.inject(date0)");
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final OffsetDateTime d = OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC);
+        testAnonymize(g.inject(d), "g.inject(offsetdatetime0)");
     }
 
     @Test

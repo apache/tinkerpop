@@ -57,7 +57,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { typeof(float), new FloatConverter() },
             { typeof(double), new DoubleConverter() },
             { typeof(Guid), new UuidSerializer() },
-            { typeof(DateTimeOffset), new DateSerializer() },
             { typeof(Type), new ClassSerializer() },
             { typeof(EnumWrapper), new EnumSerializer() },
             { typeof(P), new PSerializer() },
@@ -70,6 +69,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { typeof(ILambda), new LambdaSerializer() },
 
             //Extended
+            { typeof(DateTimeOffset), new OffsetDateTimeSerializer() }, // DateTimeOffset will be serialized as OffsetDateTimeSerializer by default
             { typeof(decimal), new DecimalConverter() },
             { typeof(TimeSpan), new DurationSerializer() },
             { typeof(BigInteger), new BigIntegerSerializer() },

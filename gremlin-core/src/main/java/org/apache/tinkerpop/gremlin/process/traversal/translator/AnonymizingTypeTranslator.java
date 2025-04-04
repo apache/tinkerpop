@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -125,6 +126,13 @@ public class AnonymizingTypeTranslator extends GroovyTranslator.DefaultTypeTrans
         return anonymizer.anonymize(o).toString();
 //      Original syntax:
 //        return "new Date(" + o.getTime() + "L)";
+    }
+
+    @Override
+    protected String getSyntax(final OffsetDateTime o) {
+        return anonymizer.anonymize(o).toString();
+//      Original syntax:
+//        return "OffsetDateTime.parse(\"" + o.toString() + "\")";
     }
 
     @Override
