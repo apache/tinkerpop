@@ -85,6 +85,7 @@ const (
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
+	offsetDateTimeType    dataType = 0x88
 	nullType              dataType = 0xFE
 )
 
@@ -509,6 +510,39 @@ func timeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSeria
 	return buffer.Bytes(), nil
 }
 
+func offsetDateTimeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+	t := value.(time.Time)
+	err := binary.Write(buffer, binary.BigEndian, int32(t.Year()))
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Month()))
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Day()))
+	if err != nil {
+		return nil, err
+	}
+	// construct time of day in nanoseconds
+	h := t.Hour()
+	m := t.Minute()
+	s := t.Second()
+	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + t.Nanosecond()
+	err = binary.Write(buffer, binary.BigEndian, int64(ns))
+	if err != nil {
+		return nil, err
+	}
+	_, os := t.Zone()
+	err = binary.Write(buffer, binary.BigEndian, int32(os))
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
 func durationWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	t := value.(time.Duration)
 	sec := int64(t / time.Second)
@@ -687,7 +721,7 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 	case Set:
 		return setType, nil
 	case time.Time:
-		return dateType, nil
+		return offsetDateTimeType, nil  // default serialization of Time will become OffsetDateTime
 	case time.Duration:
 		return durationType, nil
 	case cardinality:
@@ -1042,6 +1076,18 @@ func readUuid(data *[]byte, i *int) (interface{}, error) {
 
 func timeReader(data *[]byte, i *int) (interface{}, error) {
 	return time.UnixMilli(readLongSafe(data, i)), nil
+}
+
+func offsetDateTimeReader(data *[]byte, i *int) (interface{}, error) {
+	year := readIntSafe(data, i)
+	month := readByteSafe(data, i)
+	day := readByteSafe(data, i)
+	ns := readLongSafe(data, i)
+	offset := readIntSafe(data, i)
+	// only way to pass offset info, timezone display is fixed to UTC as consequence (offset is calculated properly)
+	loc := time.FixedZone("UTC", int(offset))
+	datetime := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, int(ns), loc)
+	return datetime, nil
 }
 
 func durationReader(data *[]byte, i *int) (interface{}, error) {

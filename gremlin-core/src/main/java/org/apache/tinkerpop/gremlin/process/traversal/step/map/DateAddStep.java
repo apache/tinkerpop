@@ -24,11 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Calendar;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,16 +34,7 @@ import java.util.Set;
  *
  * @author Valentyn Kahamlyk
  */
-public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
-
-    final static Map<DT, Integer> DTtoCalendar = new HashMap<>();
-
-    static {
-        DTtoCalendar.put(DT.second, Calendar.SECOND);
-        DTtoCalendar.put(DT.minute, Calendar.MINUTE);
-        DTtoCalendar.put(DT.hour, Calendar.HOUR_OF_DAY);
-        DTtoCalendar.put(DT.day, Calendar.DAY_OF_MONTH);
-    }
+public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
 
     private DT dateToken;
     private int value;
@@ -57,16 +46,32 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
     }
 
     @Override
-    protected Date map(final Traverser.Admin<S> traverser) {
+    protected OffsetDateTime map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
 
-        if (!(object instanceof Date)) throw new IllegalArgumentException("dateAdd accept only Date.");
+        if (!(object instanceof OffsetDateTime)) throw new IllegalArgumentException("dateAdd accept only DateTime.");
 
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime((Date) object);
-        cal.add(DTtoCalendar.get(dateToken), value);
+        OffsetDateTime date = (OffsetDateTime) object;
+        OffsetDateTime new_date;
 
-        return cal.getTime();
+        switch (dateToken) {
+            case second:
+                new_date = date.plus(Duration.ofSeconds(value));
+                break;
+            case minute:
+                new_date = date.plus(Duration.ofMinutes(value));
+                break;
+            case hour:
+                new_date = date.plus(Duration.ofHours(value));
+                break;
+            case day:
+                new_date = date.plus(Duration.ofDays(value));
+                break;
+            default:
+                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
+        }
+
+        return new_date;
     }
 
     @Override

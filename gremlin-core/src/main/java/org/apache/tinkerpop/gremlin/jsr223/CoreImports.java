@@ -330,6 +330,7 @@ public final class CoreImports {
         CLASS_IMPORTS.add(TimeUtil.class);
         CLASS_IMPORTS.add(Lambda.class);
         CLASS_IMPORTS.add(java.util.Date.class);
+        CLASS_IMPORTS.add(java.time.OffsetDateTime.class);
         CLASS_IMPORTS.add(java.sql.Timestamp.class);
         CLASS_IMPORTS.add(java.util.UUID.class);
 
