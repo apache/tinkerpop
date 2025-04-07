@@ -226,3 +226,21 @@ Feature: Step - groupCount()
     Then the result should be unordered
       | result |
       | m[{"l[josh]":"d[1].l","l[vadas]":"d[1].l"}] |
+
+  Scenario: g_V_outXcreatedX_groupCount_byXnameX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").groupCount().by("name").by("age")
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
+  Scenario: g_V_outXcreatedX_groupCountXxX_byXnameX_byXageX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out("created").groupCount("x").by("name").by("age")
+      """
+    When iterated to list
+    Then the traversal will raise an error

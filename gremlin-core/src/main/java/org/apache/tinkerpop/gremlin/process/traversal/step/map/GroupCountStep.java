@@ -75,6 +75,9 @@ public class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Long>> i
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> keyTraversal) throws UnsupportedOperationException {
+        if (this.keyTraversal != null) {
+            throw new IllegalStateException("GroupCount step can only have one by modulator");
+        }
         this.keyTraversal = this.integrateChild(keyTraversal);
     }
 

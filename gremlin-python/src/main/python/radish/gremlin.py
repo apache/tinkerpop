@@ -1645,6 +1645,8 @@ world.gremlins = {
     'g_V_groupCount_byXbothE_countX': [(lambda g:g.V().group_count().by(__.both_e().count()))], 
     'g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX': [(lambda g:g.V().both().group_count('a').out().cap('a').select(Column.keys).unfold().both().group_count('a').cap('a'))], 
     'g_V_hasXperson_name_markoX_bothXknowsX_groupCount_byXvaluesXnameX_foldX': [(lambda g:g.V().has('person', 'name', 'marko').both('knows').group_count().by(__.values('name').fold()))], 
+    'g_V_outXcreatedX_groupCount_byXnameX_byXageX': [(lambda g:g.V().out('created').group_count().by('name').by('age'))], 
+    'g_V_outXcreatedX_groupCountXxX_byXnameX_byXageX': [(lambda g:g.V().out('created').group_count('x').by('name').by('age'))], 
     'g_VX1X_out_injectXv2X_name': [(lambda g, vid1=None,v2=None:g.V(vid1).out().inject(v2).values('name'))], 
     'g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path': [],  # skipping as it contains a lambda
     'g_VX1X_injectXg_VX4XX_out_name': [(lambda g, vid1=None,v2=None:g.V(vid1).inject(v2).out().values('name'))], 
