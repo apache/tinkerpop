@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import org.junit.Test;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -38,5 +39,10 @@ public class GroupCountStepTest extends StepTest {
                 __.groupCount().by("name"),
                 __.groupCount().by("age")
         );
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowForMultipleByModulators() {
+        __.groupCount().by("name").by("age");
     }
 }
