@@ -157,6 +157,9 @@ final class ConnectionPool {
         // Get valid connection
         Connection availableConnection;
         try {
+            // acquire lock before attempting to obtain an available connection and potentially waiting for one
+            // to prevent race conditions with other threads that are releasing or creating new connections
+            // otherwise signal may be called before await which would result in timeouts
             waitLock.lock();
             availableConnection = getAvailableConnection();
             if (availableConnection == null) {
@@ -534,7 +537,7 @@ final class ConnectionPool {
 
         return available;
     }
-
+    
     private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {
         logger.debug("Wait {} {} for an available connection on {} with {}", timeout, unit, host, Thread.currentThread());
         logConnectionPoolStatus();
