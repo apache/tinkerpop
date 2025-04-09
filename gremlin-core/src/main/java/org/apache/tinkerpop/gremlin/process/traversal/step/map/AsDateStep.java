@@ -30,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -48,10 +49,12 @@ public final class AsDateStep<S> extends ScalarMapStep<S, OffsetDateTime> {
         final Object object = traverser.get();
         if (object == null)
             throw new IllegalArgumentException("Can't parse null as OffsetDateTime.");
+        if (object instanceof Date)
+            return OffsetDateTime.ofInstant(((Date) object).toInstant(), ZoneOffset.UTC);
         if (object instanceof OffsetDateTime)
             return (OffsetDateTime) object;
         if (object instanceof Byte || object instanceof Short || object instanceof Integer || object instanceof Long)
-            // numbers handled as milliseconds since January 1, 1970, 00:00:00 GMT.
+            // numbers handled as milliseconds since January 1, 1970, 00:00:00 UTC.
             return OffsetDateTime.ofInstant(Instant.ofEpochMilli(((Number) object).longValue()), ZoneOffset.UTC);
         if (object instanceof BigInteger) {
             try {

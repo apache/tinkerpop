@@ -502,7 +502,7 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser.DateLiteralContext ctx = parser.dateLiteral();
 
             final OffsetDateTime dt = (OffsetDateTime) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDateLiteral(ctx);
-            assertTrue(OffsetDateTime.now(UTC).toEpochSecond() - dt.toEpochSecond() < 1000);
+            assertTrue(OffsetDateTime.now(UTC).toInstant().toEpochMilli() - dt.toInstant().toEpochMilli() < 1000);
         }
     }
 

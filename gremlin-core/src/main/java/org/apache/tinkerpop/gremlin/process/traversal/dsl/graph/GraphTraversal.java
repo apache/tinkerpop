@@ -1865,6 +1865,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Returns the difference between two {@link Date} in epoch time.
+     *
+     * @return the traversal with an appended {@link DateDiffStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
+     * @since 3.7.1
+     * @deprecated As of release 3.8.0, deprecated in favor of {@link GraphTraversal#dateDiff(OffsetDateTime)}.
+     */
+    @Deprecated
+    public default GraphTraversal<S, Long> dateDiff(final Date value) {
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
+        return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
+    }
+
+    /**
      * Returns the difference between two {@link OffsetDateTime} in epoch time.
      *
      * @return the traversal with an appended {@link DateDiffStep}.
@@ -1883,7 +1897,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, OffsetDateTime> dateTraversal) {
+    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, ?> dateTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.dateDiff, dateTraversal);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }

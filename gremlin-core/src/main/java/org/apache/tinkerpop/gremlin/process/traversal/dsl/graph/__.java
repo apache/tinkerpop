@@ -788,6 +788,15 @@ public class __ {
 
     /**
      * @see GraphTraversal#dateDiff(OffsetDateTime)
+     * @deprecated As of release 3.8.0, deprecated in favor of {@link GraphTraversal#dateDiff(OffsetDateTime)}.
+     */
+    @Deprecated
+    public static <A> GraphTraversal<A, Long> dateDiff(final Date value) {
+        return __.<A>start().dateDiff(value);
+    }
+
+    /**
+     * @see GraphTraversal#dateDiff(OffsetDateTime)
      */
     public static <A> GraphTraversal<A, Long> dateDiff(final OffsetDateTime value) {
         return __.<A>start().dateDiff(value);

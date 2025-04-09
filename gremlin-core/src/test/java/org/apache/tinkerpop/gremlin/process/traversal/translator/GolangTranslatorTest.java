@@ -40,6 +40,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.datetime;
 import static org.junit.Assert.assertEquals;
 
 public class GolangTranslatorTest {
@@ -138,5 +139,12 @@ public class GolangTranslatorTest {
         assertEquals("g.Tx().Commit()", script);
         script = translator.translate(GraphOp.TX_ROLLBACK.getBytecode()).getScript();
         assertEquals("g.Tx().Rollback()", script);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final String gremlinAsGo = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678Z")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject(time.Date(2023, 8, 2, 1, 23, 45, 678000000, time.FixedZone(\"UTC\", 0))", gremlinAsGo);
     }
 }

@@ -26,7 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -48,30 +50,38 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     @Override
     protected OffsetDateTime map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
+        OffsetDateTime date;
 
-        if (!(object instanceof OffsetDateTime)) throw new IllegalArgumentException("dateAdd accept only DateTime.");
-
-        OffsetDateTime date = (OffsetDateTime) object;
-        OffsetDateTime new_date;
+        if (!(object instanceof OffsetDateTime)) {
+            // allow incoming traverser to resolve into Date object for compatibility
+            if (object instanceof Date) {
+                date = ((Date) object).toInstant().atOffset(ZoneOffset.UTC);
+            } else {
+                throw new IllegalArgumentException("dateAdd() accept only OffsetDateTime or Date (deprecated).");
+            }
+        } else {
+            date = (OffsetDateTime) object;
+        }
+        OffsetDateTime newDate;
 
         switch (dateToken) {
             case second:
-                new_date = date.plus(Duration.ofSeconds(value));
+                newDate = date.plus(Duration.ofSeconds(value));
                 break;
             case minute:
-                new_date = date.plus(Duration.ofMinutes(value));
+                newDate = date.plus(Duration.ofMinutes(value));
                 break;
             case hour:
-                new_date = date.plus(Duration.ofHours(value));
+                newDate = date.plus(Duration.ofHours(value));
                 break;
             case day:
-                new_date = date.plus(Duration.ofDays(value));
+                newDate = date.plus(Duration.ofDays(value));
                 break;
             default:
                 throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
         }
 
-        return new_date;
+        return newDate;
     }
 
     @Override

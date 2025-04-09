@@ -49,12 +49,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             await stream.WriteIntAsync(value.Year, cancellationToken).ConfigureAwait(false);
             await stream.WriteByteAsync(Convert.ToByte(value.Month), cancellationToken).ConfigureAwait(false);
             await stream.WriteByteAsync(Convert.ToByte(value.Day), cancellationToken).ConfigureAwait(false);
-            var h = value.Hour;
-            var m = value.Minute;
-            var s = value.Second;
-            var ms = value.Millisecond; 
-            // Note there will be precision loss as microsecond and nanosecond access was added after .net 7
-            var ns = h * 60 * 60 * 1e9 + m * 60 * 1e9 + s * 1e9 + ms * 1e6;
+            // Note that nanosecond precisions were added after .NET 7
+            // Get the time of day as TimeSpan
+            var timeOfDay = value.TimeOfDay; 
+            // Convert ticks to nanoseconds (1 tick = 100 nanoseconds)
+            var ns = timeOfDay.Ticks * 100;
             await stream.WriteLongAsync(Convert.ToInt64(ns), cancellationToken).ConfigureAwait(false);
 
             var offset = value.Offset;

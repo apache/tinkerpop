@@ -20,20 +20,15 @@ package org.apache.tinkerpop.gremlin.util;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.Year;
-import java.time.YearMonth;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-import java.util.Date;
 
 import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
@@ -112,12 +107,9 @@ public final class DatetimeHelper {
         } else if (!t.isSupported(ChronoField.MONTH_OF_YEAR)) {
             // no month field so must be a Time
             return OffsetDateTime.of(LocalDate.ofEpochDay(0), LocalTime.from(t), UTC);
-        } else if (t.isSupported(ChronoField.OFFSET_SECONDS)) {
-            // has all datetime components including an offset
-            return OffsetDateTime.of(LocalDateTime.from(t), ZoneOffset.from(t));
         } else {
-            // has all datetime components but no offset so throw in some UTC
-            return OffsetDateTime.of(LocalDateTime.from(t), UTC);
+            // can directly obtain from TemporalAccessor
+            return OffsetDateTime.from(t);
         }
     }
 

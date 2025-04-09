@@ -26,7 +26,10 @@ import org.junit.Test;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
@@ -79,5 +82,58 @@ public class DateDiffStepTest extends StepTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWhenInputIsNotDate() {
         __.__("2023-08-23T00:00:00Z").dateDiff(OffsetDateTime.now(UTC)).next();
+    }
+
+    @Test
+    public void shouldHandlePositiveValuesWithDateCompatibility() {
+        final Date now = new Date();
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.setTimeZone(TimeZone.getTimeZone(UTC));
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        final Date other = cal.getTime();
+
+        assertEquals(604800L, (long) __.__(other).dateDiff(now).next());
+    }
+
+    @Test
+    public void shouldHandleNegativeValuesWithDateCompatibility() {
+        final Date now = new Date();
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.setTimeZone(TimeZone.getTimeZone(UTC));
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        final Date other = cal.getTime();
+
+        assertEquals(-604800L, (long) __.__(now).dateDiff(other).next());
+    }
+
+    @Test
+    public void shouldHandleTraversalParamWithDateCompatibility() {
+        final Date now = new Date();
+
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.setTimeZone(TimeZone.getTimeZone(UTC));
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        final Date other = cal.getTime();
+
+        assertEquals(-604800L, (long) __.__(now).dateDiff(__.constant(other)).next());
+    }
+
+    @Test
+    public void shouldHandleNullTraversalParamWithDateCompatibility() {
+        final Date now = new Date();
+
+        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.constant(null)).next());
+    }
+
+    @Test
+    public void shouldHandleNullDateWithDateCompatibility() {
+        final Date now = new Date();
+
+        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
     }
 }

@@ -162,8 +162,11 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
-        final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        sb.append("datetime.datetime.fromtimestamp(" + dt.toEpochSecond() + ").astimezone(datetime.timezone.utc)");
+        // for consistency, use the way OffsetDateTime formats the date strings
+        final String dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString)).toString();
+        // specially handling as python isoformat does not support zulu until 3.11
+        final String dtISOString = dt.endsWith("Z") ? dt.replace("Z", "+00:00") : dt;
+        sb.append("datetime.datetime.fromisoformat('").append(dtISOString).append("')");
         return null;
     }
 

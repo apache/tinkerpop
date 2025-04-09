@@ -41,6 +41,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.datetime;
 import static org.junit.Assert.assertEquals;
 
 public class PythonTranslatorTest {
@@ -170,5 +171,12 @@ public class PythonTranslatorTest {
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
         final String script = translator.translate(g.inject(objs).asAdmin().getBytecode()).getScript();
         assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final String gremlinAsPython = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678Z")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.inject(datetime.datetime.fromisoformat('2023-08-02T01:23:45.678+00:00'))", gremlinAsPython);
     }
 }

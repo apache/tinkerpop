@@ -141,7 +141,14 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final OffsetDateTime o) {
-            return "time.UnixMilli(" + o.toInstant().toEpochMilli() + ")";
+            return "time.Date(" + o.getYear() +
+                    ", " + o.getMonthValue() +
+                    ", " + o.getDayOfMonth() +
+                    ", " + o.getHour() +
+                    ", " + o.getMinute() +
+                    ", " + o.getSecond() +
+                    ", " + o.getNano() +
+                    ", time.FixedZone(\"UTC\", " + o.getOffset().getTotalSeconds() +")";
         }
 
         @Override

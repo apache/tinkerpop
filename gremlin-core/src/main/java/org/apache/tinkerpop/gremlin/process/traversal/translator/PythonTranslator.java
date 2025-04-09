@@ -157,7 +157,9 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final OffsetDateTime o) {
-            return "datetime.datetime.fromtimestamp(" + o.toEpochSecond() + ").astimezone(datetime.timezone.utc)";
+            final String dt = o.toString();
+            final String dtISOString = dt.endsWith("Z") ? dt.replace("Z", "+00:00") : dt;
+            return "datetime.datetime.fromisoformat('" + dtISOString + "')";
         }
 
         @Override

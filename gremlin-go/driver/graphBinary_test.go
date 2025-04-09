@@ -311,6 +311,7 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err := timeReader(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
+			fmt.Println(time.Date(2023,8,2,0,0,0,0,time.FixedZone("UTC",0)))
 		})
 		t.Run("read-write time", func(t *testing.T) {
 			pos := 0
