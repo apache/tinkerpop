@@ -203,7 +203,7 @@ public class ProfilingApplication {
         final boolean suppressStackTraces = Boolean.parseBoolean(options.getOrDefault("suppressStackTraces", "false").toString());
 
         final boolean exercise = Boolean.parseBoolean(options.getOrDefault("exercise", "false").toString());
-        final String script = options.getOrDefault("script", "1+1").toString();
+        final String script = options.getOrDefault("script", "g.inject(1)").toString();
 
         final Cluster cluster = Cluster.build(host)
                 .maxConnectionPoolSize(maxConnectionPoolSize)

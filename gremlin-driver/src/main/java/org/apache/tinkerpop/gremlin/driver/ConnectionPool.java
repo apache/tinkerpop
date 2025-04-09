@@ -155,13 +155,23 @@ final class ConnectionPool {
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
         // Get valid connection
-        final Connection availableConnection = getAvailableConnection();
-        if (availableConnection == null) {
-            return waitForConnection(timeout, unit);
+        Connection availableConnection;
+        try {
+            // acquire lock before attempting to obtain an available connection and potentially waiting for one
+            // to prevent race conditions with other threads that are releasing or creating new connections
+            // otherwise signal may be called before await which would result in timeouts
+            waitLock.lock();
+            availableConnection = getAvailableConnection();
+            if (availableConnection == null) {
+                availableConnection = waitForConnection(timeout, unit);
+            }
+        } finally {
+            waitLock.unlock();
         }
 
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("Borrowed {} on {} with {}", availableConnection.getConnectionInfo(), host, Thread.currentThread());
+        }
         return availableConnection;
     }
 
@@ -287,6 +297,9 @@ final class ConnectionPool {
     }
 
     private void newConnection() {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Scheduling creation of new connection for connection pool {} using scheduler {}", this.getPoolInfo(), cluster.connectionScheduler());
+        }
         cluster.connectionScheduler().submit(() -> {
             // seems like this should be decremented first because if addConnectionIfUnderMaximum fails there is
             // nothing that wants to decrement this number and so it leaves things in a state where you could
@@ -487,6 +500,7 @@ final class ConnectionPool {
 
     private void announceAvailableConnection() {
         logger.debug("Announce connection available on {}", host);
+        logConnectionPoolStatus();
 
         waitLock.lock();
         try {
@@ -523,23 +537,23 @@ final class ConnectionPool {
 
         return available;
     }
-
+    
     private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {
         logger.debug("Wait {} {} for an available connection on {} with {}", timeout, unit, host, Thread.currentThread());
+        logConnectionPoolStatus();
 
-        waitLock.lock();
         waiter.incrementAndGet();
         try {
             hasAvailableConnection.await(timeout, unit);
         } finally {
             waiter.decrementAndGet();
-            waitLock.unlock();
         }
     }
 
     private void announceAllAvailableConnection() {
         logger.debug("Announce to all connection available on {}", host);
-
+        logConnectionPoolStatus();
+        
         waitLock.lock();
         try {
             hasAvailableConnection.signalAll();
@@ -599,6 +613,12 @@ final class ConnectionPool {
             if (it.hasNext()) {
                 sb.append(System.lineSeparator());
             }
+        }
+    }
+
+    private void logConnectionPoolStatus() {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Connection Pool status: {} ", this.getPoolInfo());
         }
     }
 
