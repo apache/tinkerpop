@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
+import org.javatuples.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,16 +33,30 @@ import java.util.List;
 @RunWith(Parameterized.class)
 public class NegativeGrammarTest extends AbstractGrammarTest {
 
-    @Parameterized.Parameters
-    public static Iterable<String> queries() throws IOException {
-        final InputStream stream = ReferenceGrammarTest.class.getClassLoader()
-                .getResourceAsStream("incorrect-traversals.txt");
+    @Parameterized.Parameters(name = "{index} - {0}")
+    public static Iterable<Pair<String, ParserRule>> queries() throws IOException {
 
-        final List<String> queries = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+        final List<Pair<String, ParserRule>> queries = new ArrayList<>();
+        int size = 20;
+        try (InputStream stream = ReferenceGrammarTest.class.getClassLoader()
+                .getResourceAsStream("incorrect-traversals.txt")) {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             String line;
             while ((line = reader.readLine()) != null) {
-                queries.add(line);
+                queries.add(Pair.with(line, ParserRule.QUERY_LIST));
+            }
+        }
+
+        // gotta be at least this many scripts parsed
+        assert size < queries.size();
+        size = queries.size() + 1;
+
+        try (InputStream stream = ReferenceGrammarTest.class.getClassLoader()
+                .getResourceAsStream("incorrect-gremlin-values.txt")) {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                queries.add(Pair.with(String.format("g.inject(%s)", line), ParserRule.QUERY_LIST));
             }
         }
 
@@ -49,12 +64,11 @@ public class NegativeGrammarTest extends AbstractGrammarTest {
     }
 
     @Parameterized.Parameter
-    public String query;
+    public Pair<String, ParserRule> parseTestItem;
 
     @Test
     public void test_parse() {
-        parse(query, true);
+        parse(parseTestItem.getValue0(), parseTestItem.getValue1(), true);
     }
-
 
 }

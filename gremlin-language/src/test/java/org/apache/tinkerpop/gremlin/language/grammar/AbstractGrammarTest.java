@@ -26,11 +26,23 @@ import static org.junit.Assert.fail;
 
 public class AbstractGrammarTest {
 
-    protected void parse(final String query) {
-        parse(query, false);
+    /**
+     * Allows control of the type of parsing to do for a particular test line.
+     */
+    public enum ParserRule {
+        QUERY_LIST
     }
 
     protected void parse(final String query, final boolean expectFailures) {
+        parse(query, ParserRule.QUERY_LIST, expectFailures);
+    }
+
+    protected void parse(final String query, final ParserRule rule) {
+        parse(query, rule, false);
+    }
+
+    protected void parse(final String query, final ParserRule rule, final boolean expectFailures) {
+
         try {
             final CharStream in = CharStreams.fromString(query);
             final GremlinLexer lexer = new GremlinLexer(in);
@@ -44,41 +56,48 @@ public class AbstractGrammarTest {
             parser.setErrorHandler(new BailErrorStrategy());
             parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
 
-            // Visit top level query
+            // Visit based on the specified rule
             try {
-                final GremlinVisitor<GremlinParser.QueryListContext> visitor = new GremlinBaseVisitor<>();
-                visitor.visit(parser.queryList());
+                final GremlinBaseVisitor<?> visitor = new GremlinBaseVisitor<>();
+
+                switch (rule) {
+                    case QUERY_LIST:
+                        visitor.visit(parser.queryList());
+                        break;
+                }
             } catch (Exception ex) {
-                // Retry parsing the query again with using LL prediction mode.  LL parsing mode is more powerful
-                // so retrying the parsing would help parsing the rare edge cases.
-                tokens.seek(0); // rewind input stream
+                // Retry parsing with LL prediction mode
+                tokens.seek(0);
                 lexer.reset();
                 parser.reset();
                 parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 
-                final GremlinVisitor<GremlinParser.QueryListContext> visitor = new GremlinBaseVisitor<>();
-                visitor.visit(parser.queryList());
+                final GremlinBaseVisitor<?> visitor = new GremlinBaseVisitor<>();
+
+                switch (rule) {
+                    case QUERY_LIST:
+                        visitor.visit(parser.queryList());
+                        break;
+                }
             }
 
-            // If we are expecting failures, put assert check here
             if (expectFailures) {
                 fail("Query parsing should have failed for " + query);
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             if (!expectFailures) {
                 final Throwable t = ExceptionUtils.getRootCause(e);
                 if (t instanceof LexerNoViableAltException) {
-                    fail(String.format("Error parsing query: %s - [%s] - failed at index: %s",
+                    fail(String.format("Error parsing: %s - [%s] - failed at index: %s",
                             query, t.toString(), ((LexerNoViableAltException) t).getStartIndex()));
                 } else if (t instanceof NoViableAltException) {
-                    fail(String.format("Error parsing query: %s - [%s]", query, ((NoViableAltException) t).getStartToken().toString()));
+                    fail(String.format("Error parsing: %s - [%s]", query, ((NoViableAltException) t).getStartToken().toString()));
                 } else {
-                    fail(String.format("Error parsing query: %s - [%s]", query, t.getMessage()));
+                    fail(String.format("Error parsing: %s - [%s]", query, t.getMessage()));
                 }
             }
         }
     }
-
 }
 

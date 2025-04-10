@@ -55,4 +55,14 @@ public class TraversalEnumParser {
             text = text.substring(Direction.class.getSimpleName().length() + 1);
         return Direction.directionValueOf(text);
     }
+
+    /**
+     * Parsing of {@link Direction} requires some special handling because of aliases (from/to).
+     */
+    public static Direction parseTraversalDirectionFromContext(final GremlinParser.TraversalDirectionLongContext context) {
+        String text = context.getText();
+        if (text.startsWith(Direction.class.getSimpleName()))
+            text = text.substring(Direction.class.getSimpleName().length() + 1);
+        return Direction.directionValueOf(text);
+    }
 }

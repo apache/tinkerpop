@@ -57,7 +57,7 @@ public class TraversalEnumParserTest {
                     {"org.apache.tinkerpop.gremlin.process.traversal.Merge", "traversalMerge"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.SackFunctions$Barrier", "traversalSackMethod"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Operator", "traversalOperator"},
-                    {"org.apache.tinkerpop.gremlin.structure.T", "traversalToken"},
+                    {"org.apache.tinkerpop.gremlin.structure.T", "traversalT"},
                     {"org.apache.tinkerpop.gremlin.structure.Column", "traversalColumn"},
                     {"org.apache.tinkerpop.gremlin.structure.Direction", "traversalDirection"},
                     {"org.apache.tinkerpop.gremlin.structure.VertexProperty$Cardinality", "traversalCardinality"},
@@ -93,7 +93,7 @@ public class TraversalEnumParserTest {
                     {"org.apache.tinkerpop.gremlin.process.traversal.Scope", "traversalScope"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Order", "traversalOrder"},
                     {"org.apache.tinkerpop.gremlin.process.traversal.Merge", "traversalMerge"},
-                    {"org.apache.tinkerpop.gremlin.structure.T", "traversalToken"}
+                    {"org.apache.tinkerpop.gremlin.structure.T", "traversalT"}
             });
         }
 

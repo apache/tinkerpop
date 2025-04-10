@@ -34,9 +34,11 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed the deprecated `withGraph()` option from `AnonymousTraversalSource`.
 * Modified the `split()` step to split a string into a list of its characters if the given separator is an empty string.
 * Changed `GremlinLangScriptEngine` via `GenericLiteralVisitor` to treat floating-point literals as `Double` by default instead of `BigDecimal` for better alignment with common programming language conventions.
+* Modified the Gremlin grammar to to treat `Infinity` and `NaN` as floating-points.
 * Added `withoutStrategies()` syntax to the Gremlin ANTLR grammar.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
+* Allowed keywords to be used as `Map` keys when defined using the shorthand without quotes.
 * Added integer overflow checks.
 * Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
 * Added missing strategies to `strategies.py` in `gremlin-python`.
@@ -51,6 +53,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
+* Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

@@ -48,7 +48,7 @@ public class GremlinTranslatorTest {
         public static Collection<Object[]> data() {
             return Arrays.asList(new Object[][]{
                     {"g.V(l1)", Collections.singletonList("l1")},
-                    {"g.V().hasLabel('person').has(x, y).as('a').out('knows').as('b').select('a', 'b')", Arrays.asList("x", "y")},
+                    {"g.V().hasLabel('person').has('name', x).as('a').out(y).as('b').select('a', 'b')", Arrays.asList("x", "y")},
                     {"g.V(x).map(out(y).count())", Arrays.asList("x", "y")},
             });
         }

@@ -78,7 +78,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
             return source.withSack(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
         } else {
             return source.withSack(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
-                    (BinaryOperator) antlr.argumentVisitor.visitTraversalBiFunctionArgument(ctx.traversalBiFunctionArgument()));
+                    TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
 
@@ -94,7 +94,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
         } else {
             return source.withSideEffect(antlr.argumentVisitor.parseString(ctx.stringArgument()),
                     antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
-                    (BinaryOperator) antlr.argumentVisitor.visitTraversalBiFunctionArgument(ctx.traversalBiFunctionArgument()));
+                    TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
 
