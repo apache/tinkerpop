@@ -311,12 +311,33 @@ func TestGraphBinaryV1(t *testing.T) {
 			res, err := timeReader(&buf, &pos)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
-			fmt.Println(time.Date(2023,8,2,0,0,0,0,time.FixedZone("UTC",0)))
 		})
-		t.Run("read-write time", func(t *testing.T) {
+		t.Run("read-write local datetime", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
+			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := offsetDateTimeReader(&buf, &pos)
+			assert.Nil(t, err)
+			// ISO format
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
+		})
+		t.Run("read-write UTC datetime", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.UTC)
+			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			assert.Nil(t, err)
+			res, err := offsetDateTimeReader(&buf, &pos)
+			assert.Nil(t, err)
+			// ISO format
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
+		})
+		t.Run("read-write HST datetime", func(t *testing.T) {
+			pos := 0
+			var buffer bytes.Buffer
+			source := time.Date(2022, 5, 10, 9, 51, 0, 0, GetTimezoneFromOffset(-36000))
 			buf, err := offsetDateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
 			res, err := offsetDateTimeReader(&buf, &pos)

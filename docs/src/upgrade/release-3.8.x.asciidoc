@@ -30,6 +30,11 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== The Switch from Date to OffsetDateTime
+The default date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`.
+
+Note that `Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility.
+
 ==== Simplification to g creation
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
 long recommended the use of the anonymous `traversal()` function for this creation.

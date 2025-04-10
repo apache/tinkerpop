@@ -94,8 +94,6 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
 
         // let's not throw exception and assume null date == 0
         return otherDate == null ? date.toEpochSecond() : Duration.between(otherDate, date).getSeconds();
-//        final long otherDateSec = otherDate == null ? 0 : otherDate.toEpochSecond();
-//        return date.toEpochSecond() - otherDateSec;
     }
 
     @Override

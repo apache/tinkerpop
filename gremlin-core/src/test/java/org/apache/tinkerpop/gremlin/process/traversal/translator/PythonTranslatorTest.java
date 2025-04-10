@@ -174,9 +174,16 @@ public class PythonTranslatorTest {
     }
 
     @Test
-    public void shouldTranslateOffsetDateTime() {
+    public void shouldTranslateOffsetDateTimeUTC() {
         final String gremlinAsPython = translator.translate(
                 g.inject(datetime("2023-08-02T01:23:45.678Z")).asAdmin().getBytecode()).getScript();
         assertEquals("g.inject(datetime.datetime.fromisoformat('2023-08-02T01:23:45.678+00:00'))", gremlinAsPython);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final String gremlinAsPython = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678-07:00")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.inject(datetime.datetime.fromisoformat('2023-08-02T01:23:45.678-07:00'))", gremlinAsPython);
     }
 }

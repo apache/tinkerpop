@@ -1084,10 +1084,27 @@ func offsetDateTimeReader(data *[]byte, i *int) (interface{}, error) {
 	day := readByteSafe(data, i)
 	ns := readLongSafe(data, i)
 	offset := readIntSafe(data, i)
-	// only way to pass offset info, timezone display is fixed to UTC as consequence (offset is calculated properly)
-	loc := time.FixedZone("UTC", int(offset))
-	datetime := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, int(ns), loc)
+	datetime := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, int(ns), GetTimezoneFromOffset(int(offset)))
 	return datetime, nil
+}
+
+// GetTimezoneFromOffset is a helper function to convert an offset in seconds to a time.Location
+func GetTimezoneFromOffset(offsetSeconds int) *time.Location {
+	// calculate hours and minutes from seconds
+	hours := offsetSeconds / 3600
+	minutes := (offsetSeconds % 3600) / 60
+
+	// format the timezone name in the format that go expects
+	// for example: "UTC+01:00" or "UTC-05:30"
+	sign := "+"
+	if hours < 0 {
+		sign = "-"
+		hours = -hours
+		minutes = -minutes
+	}
+	tzName := fmt.Sprintf("UTC%s%02d:%02d", sign, hours, minutes)
+
+	return time.FixedZone(tzName, offsetSeconds)
 }
 
 func durationReader(data *[]byte, i *int) (interface{}, error) {

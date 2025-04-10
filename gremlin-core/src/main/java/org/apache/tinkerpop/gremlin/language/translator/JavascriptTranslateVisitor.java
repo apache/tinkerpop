@@ -135,9 +135,9 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
         final String dtString = ctx.getChild(2).getText();
         // for consistency, use the way OffsetDateTime formats the date strings
         final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        sb.append("new Date(\"");
+        sb.append("new Date('");
         sb.append(dt);
-        sb.append("\")");
+        sb.append("')");
         return null;
     }
 

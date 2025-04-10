@@ -27,8 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigInteger;
-import java.time.OffsetDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

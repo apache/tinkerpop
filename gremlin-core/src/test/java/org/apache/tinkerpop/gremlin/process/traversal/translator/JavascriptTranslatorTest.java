@@ -82,7 +82,7 @@ public class JavascriptTranslatorTest {
     @Test
     public void shouldTranslateDate() {
         final OffsetDateTime d = OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC);
-        assertTranslation(String.format("new Date(\"%s\")", d), d);
+        assertTranslation(String.format("new Date('%s')", d), d);
     }
 
     @Test

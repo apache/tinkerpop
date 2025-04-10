@@ -45,34 +45,37 @@ module.exports = class OffsetDateTimeSerializer {
       bufs.push(Buffer.from([this.ID, 0x00]));
     }
 
+    // NOTE: js Date will always display time in UTC, but regular date/hour getters will return in local system time.
+    // To avoid inconsistency we will always serialize the UTC representation of the Date object with offset of 0.
+
     // {year}
     let v = Buffer.alloc(4);
-    v.writeInt32BE(item.getFullYear());
+    v.writeInt32BE(item.getUTCFullYear());
     bufs.push(v);
 
     // {month}
     v = Buffer.alloc(1);
-    v.writeUInt8(item.getMonth() + 1); // Java Core DateTime serializer uses 1 - 12 for months, JS uses indices
+    v.writeUInt8(item.getUTCMonth() + 1); // Java Core DateTime serializer uses 1 - 12 for months, JS uses indices
     bufs.push(v);
 
-    // {day}
+    // {day} - in UTC
     v = Buffer.alloc(1);
-    v.writeUInt8(item.getDate());
+    v.writeUInt8(item.getUTCDate());
     bufs.push(v);
 
     // {nanoseconds}
-    const h = item.getHours();
-    const m = item.getMinutes();
-    const s = item.getSeconds();
-    const ms = item.getMilliseconds();
+    const h = item.getUTCHours(); // in UTC
+    const m = item.getUTCMinutes();
+    const s = item.getUTCSeconds();
+    const ms = item.getUTCMilliseconds();
     const ns = h * 60 * 60 * 1e9 + m * 60 * 1e9 + s * 1e9 + ms * 1e6;
     v = Buffer.alloc(8);
     v.writeBigInt64BE(BigInt(ns));
     bufs.push(v);
 
-    // {zone offset}
+    // {zone offset} - UTC is always used for serialization, as such offset will be 0
     v = Buffer.alloc(4);
-    v.writeInt32BE(item.getTimezoneOffset() * -60);
+    v.writeInt32BE(0);
     bufs.push(v);
 
     return Buffer.concat(bufs);
@@ -115,7 +118,7 @@ module.exports = class OffsetDateTimeSerializer {
       if (cursor.length < 8) {
         throw new Error('unexpected {value} length');
       }
-      len += 8;
+      len += 18;
 
       const year = cursor.readInt32BE();
       cursor = cursor.slice(4);
@@ -124,21 +127,21 @@ module.exports = class OffsetDateTimeSerializer {
       const date = cursor.readUInt8();
       cursor = cursor.slice(1);
       const ns = cursor.readBigInt64BE();
+      cursor = cursor.slice(8);
+      const offset = cursor.readInt32BE();
+      cursor.slice(4);
+
       // calculate hour, minute, second, and ms from ns as JS Date doesn't have ns precision
       const totalMS = ns / BigInt(1e6);
       const ms = Number(totalMS) % 1e3;
-      const totalS = Math.trunc(Number(totalMS) / 1e3);
+      const totalS = Math.trunc(Number(totalMS) / 1e3) - offset; // js Date doesn't have a way to set offset properly, account offset here to use UTC
       const s = totalS % 60;
       const totalM = Math.trunc(totalS / 60);
       const m = totalM % 60;
       const h = Math.trunc(totalM / 60);
 
-      cursor = cursor.slice(8);
-      cursor.readInt32BE();
-      // offset isn't used as Date automatically uses UTC time based on offset
-      const v = new Date(year, month, date, h, m, s, ms);
-
-      len += 18;
+      // use UTC time calculated with offset above
+      const v = new Date(Date.UTC(year, month, date, h, m, s, ms));
 
       return { v, len };
     } catch (err) {

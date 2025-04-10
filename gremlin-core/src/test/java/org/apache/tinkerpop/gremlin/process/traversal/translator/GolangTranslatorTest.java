@@ -142,9 +142,16 @@ public class GolangTranslatorTest {
     }
 
     @Test
-    public void shouldTranslateOffsetDateTime() {
+    public void shouldTranslateOffsetDateTimeUTC() {
         final String gremlinAsGo = translator.translate(
                 g.inject(datetime("2023-08-02T01:23:45.678Z")).asAdmin().getBytecode()).getScript();
-        assertEquals("g.Inject(time.Date(2023, 8, 2, 1, 23, 45, 678000000, time.FixedZone(\"UTC\", 0))", gremlinAsGo);
+        assertEquals("g.Inject(time.Date(2023, 8, 2, 1, 23, 45, 678000000, time.FixedZone(\"UTC+00:00\", 0))", gremlinAsGo);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final String gremlinAsGo = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678-07:30")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.Inject(time.Date(2023, 8, 2, 1, 23, 45, 678000000, time.FixedZone(\"UTC-07:30\", -27000))", gremlinAsGo);
     }
 }

@@ -27,9 +27,11 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,6 +87,18 @@ public class AsDateStepTest extends StepTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenNullInput() {
         __.__(null).asDate().next();
+    }
+
+    @Test
+    public void shouldAcceptDateForCompatibility() {
+
+        final ZonedDateTime testZoneDate =ZonedDateTime.of(2023, 8, 2, 0, 0, 0, 0, UTC);
+        final Instant testInstant = testZoneDate.toInstant();
+        final Date testDate = new Date(testInstant.toEpochMilli());
+
+        final OffsetDateTime expectedDate = testZoneDate.withZoneSameInstant(UTC).toOffsetDateTime();
+
+        assertEquals(expectedDate, __.__(testDate).asDate().next());
     }
 
 }

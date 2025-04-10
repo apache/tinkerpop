@@ -141,6 +141,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final OffsetDateTime o) {
+            final String zoneInfo = o.getOffset().getId().equals("Z") ? "UTC+00:00" : "UTC" + o.getOffset().getId();
             return "time.Date(" + o.getYear() +
                     ", " + o.getMonthValue() +
                     ", " + o.getDayOfMonth() +
@@ -148,7 +149,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
                     ", " + o.getMinute() +
                     ", " + o.getSecond() +
                     ", " + o.getNano() +
-                    ", time.FixedZone(\"UTC\", " + o.getOffset().getTotalSeconds() +")";
+                    ", time.FixedZone(\""+ zoneInfo + "\", " + o.getOffset().getTotalSeconds() +")";
         }
 
         @Override

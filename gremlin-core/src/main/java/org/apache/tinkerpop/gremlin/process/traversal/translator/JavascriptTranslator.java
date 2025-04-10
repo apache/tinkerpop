@@ -147,7 +147,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final OffsetDateTime o) {
-            return "new Date(\"" + o.toString() + "\")";
+            return "new Date('" + o.toString() + "')";
         }
 
         @Override

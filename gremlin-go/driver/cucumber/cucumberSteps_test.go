@@ -111,11 +111,14 @@ func parseValue(value string, graphName string) interface{} {
 
 // Parse dateTime.
 func toDateTime(stringVal, graphName string) interface{} {
-	val, err := time.Parse(time.RFC3339, stringVal)
+	val, err := time.Parse(time.RFC3339Nano, stringVal)
 	if err != nil {
 		return nil
 	}
-	return val
+	_, os := val.Zone()
+	// go doesn't expose getting the abbreviated zone names from offset despite parsing into them, so we'll need
+	// to update the location into UTC+/-HH:SS format for evaluation purposes
+	return val.In(gremlingo.GetTimezoneFromOffset(os))
 }
 
 // Parse numeric.
