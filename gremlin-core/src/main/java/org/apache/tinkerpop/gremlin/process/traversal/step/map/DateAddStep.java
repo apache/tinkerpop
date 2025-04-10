@@ -39,10 +39,27 @@ import java.util.Set;
 public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
 
     private DT dateToken;
+    private Duration duration;
     private int value;
 
     public DateAddStep(final Traversal.Admin traversal, final DT dateToken, final int value) {
         super(traversal);
+        switch (dateToken) {
+            case second:
+                this.duration = Duration.ofSeconds(value);
+                break;
+            case minute:
+                this.duration = Duration.ofMinutes(value);
+                break;
+            case hour:
+                this.duration= Duration.ofHours(value);
+                break;
+            case day:
+                this.duration= Duration.ofDays(value);
+                break;
+            default:
+                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
+        }
         this.dateToken = dateToken;
         this.value = value;
     }
@@ -62,26 +79,8 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
         } else {
             date = (OffsetDateTime) object;
         }
-        OffsetDateTime newDate;
 
-        switch (dateToken) {
-            case second:
-                newDate = date.plus(Duration.ofSeconds(value));
-                break;
-            case minute:
-                newDate = date.plus(Duration.ofMinutes(value));
-                break;
-            case hour:
-                newDate = date.plus(Duration.ofHours(value));
-                break;
-            case day:
-                newDate = date.plus(Duration.ofDays(value));
-                break;
-            default:
-                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
-        }
-
-        return newDate;
+        return date.plus(duration);
     }
 
     @Override
@@ -98,6 +97,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + dateToken.hashCode();
+        result = 31 * result + duration.hashCode();
         result = 31 * result + value;
         return result;
     }
@@ -106,6 +106,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     public DateAddStep<S> clone() {
         final DateAddStep<S> clone = (DateAddStep<S>) super.clone();
         clone.value = this.value;
+        clone.duration = this.duration;
         clone.dateToken = this.dateToken;
         return clone;
     }

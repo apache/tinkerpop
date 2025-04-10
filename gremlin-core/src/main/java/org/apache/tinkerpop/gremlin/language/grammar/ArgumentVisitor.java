@@ -69,8 +69,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for Date type.
      */
-    public 
-      DateTime parseDate(final GremlinParser.DateArgumentContext ctx) {
+    public OffsetDateTime parseDate(final GremlinParser.DateArgumentContext ctx) {
         return (OffsetDateTime) visitDateArgument(ctx);
     }
 

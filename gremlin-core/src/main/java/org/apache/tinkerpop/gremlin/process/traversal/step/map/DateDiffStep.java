@@ -40,7 +40,7 @@ import java.util.Set;
 public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements TraversalParent {
 
     private OffsetDateTime value;
-    private Traversal.Admin<S, OffsetDateTime> dateTraversal;
+    private Traversal.Admin<S, ?> dateTraversal;
 
     public DateDiffStep(final Traversal.Admin traversal, final Date value) {
         super(traversal);
@@ -68,6 +68,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
             if (object instanceof Date) {
                 date = ((Date) object).toInstant().atOffset(ZoneOffset.UTC);
             } else {
+                // note: null handling consistency to be resolved https://issues.apache.org/jira/browse/TINKERPOP-3152
                 throw new IllegalArgumentException(
                         String.format("DateDiff can only take OffsetDateTime or Date (deprecated) as argument, encountered %s", object.getClass()));
             }
@@ -130,7 +131,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
         return this.value;
     }
 
-    public Traversal.Admin<S, OffsetDateTime> getDateTraversal() {
+    public Traversal.Admin<S, ?> getDateTraversal() {
         return this.dateTraversal;
     }
 }

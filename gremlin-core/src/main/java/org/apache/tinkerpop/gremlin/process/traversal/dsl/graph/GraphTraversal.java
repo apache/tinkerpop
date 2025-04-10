@@ -1891,8 +1891,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Returns the difference between two {@link OffsetDateTime} in epoch time.
+     * Returns the difference between two dates in epoch time.
      *
+     * @param dateTraversal a traversal that supplies a {@link OffsetDateTime} object ({@link Date} is also accepted for compatibility).
      * @return the traversal with an appended {@link DateDiffStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
