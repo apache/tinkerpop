@@ -144,7 +144,7 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
         // called with no args which is valid for java/groovy
-        if (ctx.getChildCount() == 3) return P.within();
+        if (null == ctx.genericLiteralListArgument()) return P.within();
 
         final Object arguments = antlr.argumentVisitor.visitGenericLiteralListArgument(ctx.genericLiteralListArgument());
 
@@ -166,7 +166,7 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
         // called with no args which is valid for java/groovy
-        if (ctx.getChildCount() == 3) return P.without();
+        if (null == ctx.genericLiteralListArgument()) return P.without();
 
         final Object arguments = antlr.argumentVisitor.visitGenericLiteralListArgument(ctx.genericLiteralListArgument());
 
@@ -232,11 +232,11 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
     /**
      * Get 2 generic literal arguments from the antlr parse tree context, where the arguments have the child index
-     * of 2 and 4
+     * of 2 and 4 in the short form and 4 and 6 in the long form (e.g. between(1,2) vs P.between(1,2) respectively)
      */
     private Object[] getDoubleGenericLiteralArgument(final ParseTree ctx) {
-        final int childIndexOfParameterFirst = 2;
-        final int childIndexOfParameterSecond = 4;
+        final int childIndexOfParameterFirst = ctx.getChildCount() == 8 ? 4 : 2;
+        final int childIndexOfParameterSecond = ctx.getChildCount() == 8 ? 6 : 4;
 
         final Object first = antlr.argumentVisitor.visitGenericLiteralArgument(
                 ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterFirst));
@@ -248,10 +248,10 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
     /**
      * Get 1 generic literal argument from the antlr parse tree context, where the arguments have the child index
-     * of 2
+     * of 2 with the short form and 4 on the long form (e.g. eq(1) vs P.eq(1) respectively)
      */
-    private Object getSingleGenericLiteralArgument(final ParseTree ctx) {
-        final int childIndexOfParameterValue = 2;
+    private Object getSingleGenericLiteralArgument(final ParseTree ctx) {;
+        final int childIndexOfParameterValue = ctx.getChildCount() == 6 ? 4 : 2;
 
         return antlr.argumentVisitor.visitGenericLiteralArgument(
                 ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterValue));

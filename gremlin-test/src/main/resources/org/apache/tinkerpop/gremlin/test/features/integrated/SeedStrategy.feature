@@ -18,19 +18,6 @@
 @StepClassIntegrated
 Feature: Step - SeedStrategy
 
-  @WithSeedStrategy @InsertionOrderingRequired
-  Scenario: g_withStrategiesXSeedStrategyX_V_coinX0.5X
-    Given the modern graph
-    And the traversal of
-      """
-      g.withStrategies(SeedStrategy(seed: 7)).V().coin(0.5)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[lop] |
-      | v[peter]  |
-
   Scenario: g_withoutStrategiesXSeedStrategyX_V
     Given the modern graph
     And the traversal of

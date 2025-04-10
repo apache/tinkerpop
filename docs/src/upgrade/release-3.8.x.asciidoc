@@ -79,7 +79,7 @@ these were deserialized into arrays.
 
 ==== Gremlin Grammar Changes
 
-A number of changes have been introduce to the Gremlin grammar to help make it be more consistent and easier to use.
+A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
 
 *`new` keyword is now optional*
 
@@ -98,7 +98,7 @@ In a future version, it is likely that the `new` keyword will be removed entirel
 *Supports withoutStrategies()*
 
 The `withoutStrategies()` configuration step is now supported syntax for the grammar. While this option is not commonly
-used it is still a part of the Gremlin language and there are times where it is helpful to have this fine grained
+used it is still a part of the Gremlin language and there are times where it is helpful to have this fine-grained
 control over how a traversal works.
 
 [source,groovy]
@@ -106,8 +106,71 @@ control over how a traversal works.
 g.V().withoutStrategies(CountStrategy)
 ----
 
+*`Map` keys restrictions*
+
+Earlier versions of the grammar allowed a wide range of values for the keys. In many cases, these didn't really make
+sense for Gremlin and were just inherited from the Groovy language since Gremlin tends to follow that language in many
+ways. That said, Gremlin did take some liberties with that syntax and introduced its own shorthand for some cases. Those
+shorthands created unfortunate situations where certain words were being prevented as being able to be used as keys
+which could lead to confusion.
+
+A `Map` is still defined in the same way it always has been, where the following two lines produce an equivalent `Map`:
+
+[source,groovy]
+----
+[label: 100]
+["label": 100]
+----
+
+Note that when quotes are not use to denote a string, Gremlin will assume that the intention is to shorthand a string
+key and not reference a Gremlin keyword. To reference an allowable keyword as the key, either wrap it with parenthesis
+or use its longhand form as shown in the following examples which all produce the same `Map`:
+
+[source,groovy]
+----
+[T.id: 100]
+[(T.id): 100]
+[(id): 100]
+----
+
+Note that the first example is a Gremlin convenience that is not compatible in Groovy. This does produce a syntax error
+in Groovy's case. When upgrading to 3.8.0, it will be important to evaluate any code that is using scripts with `Map`
+keys that match keywords that are not wrapped in parentheses. On upgrade they will begin to be treated as `String` keys
+rather than their `Enum` value. This is particularly relevant for `property(Map)`, `mergeV` and `mergeE` which use a
+'Map` for their arguments and commonly require that `T` and `Direction` be used as keys.
+
+The following examples show some `Map` usage from older versions that will work without need for changes in 3.8.0:
+
+[source,groovy]
+----
+// the long forms are used and each are wrapped in parenthesis
+g.mergeE([(T.label):'Sibling',created:'2022-02-07',(Direction.from):1,(Direction.to):2])
+
+// the short forms are used and each are wrapped in parenthesis
+g.mergeE([(label):'Sibling',created:'2022-02-07',(Direction.from):1,(Direction.to):2])
+
+// the long forms are used and for Gremlin this is a syntax convenience to spare typing
+// the parenthesis
+g.mergeE([T.label:'Sibling',created:'2022-02-07',Direction.from:1,Direction.to:2])
+
+// while the following line mixes qualified enums with T and uses shorthand for Direction
+// with from and to all of the enums are wrapped in parenthesis
+g.mergeE([(T.label):'Sibling',created:'2022-02-07',(from):1,(to):2])
+----
+
+In this next example, the `Map` keys are defined in a way that changes will be necessary in 3.8.0:
+
+[source,groovy]
+----
+// none of the keys below are qualified with their enum long form nor are they wrapped in
+// parenthesis and as a result will be treated as String key values in 3.8.0 unless a
+// change is made
+g.mergeE([label:'Sibling',created:'2022-02-07',from:1,to:2])
+----
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
-link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046]
+link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047]
 
 ==== SeedStrategy Construction
 

@@ -271,7 +271,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_both(final GremlinParser.TraversalMethod_bothContext ctx) {
-        return graphTraversal.both(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.both(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -279,7 +279,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_bothE(final GremlinParser.TraversalMethod_bothEContext ctx) {
-        return graphTraversal.bothE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.bothE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -319,7 +319,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_by_Function(final GremlinParser.TraversalMethod_by_FunctionContext ctx) {
-        return graphTraversal.by(TraversalEnumParser.parseTraversalFunctionFromContext(ctx.traversalFunction()));
+        final GremlinParser.TraversalFunctionContext fctx = ctx.traversalFunction();
+        if (fctx.traversalT() != null) {
+            return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(T.class, fctx.traversalT()));
+        } else if (fctx.traversalColumn() != null) {
+            return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(Column.class, fctx.traversalColumn()));
+        } else {
+            throw new GremlinParserException("Invalid traversal function: " + fctx.getText());
+        }
     }
 
     /**
@@ -327,8 +334,15 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_by_Function_Comparator(final GremlinParser.TraversalMethod_by_Function_ComparatorContext ctx) {
-        return graphTraversal.by(TraversalEnumParser.parseTraversalFunctionFromContext(ctx.traversalFunction()),
-                TraversalEnumParser.parseTraversalEnumFromContext(Order.class, ctx.traversalComparator().traversalOrder()));
+        final GremlinParser.TraversalFunctionContext fctx = ctx.traversalFunction();
+        final Order order = TraversalEnumParser.parseTraversalEnumFromContext(Order.class, ctx.traversalComparator().traversalOrder());
+        if (fctx.traversalT() != null) {
+            return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(T.class, fctx.traversalT()), order);
+        } else if (fctx.traversalColumn() != null) {
+            return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(Column.class, fctx.traversalColumn()), order);
+        } else {
+            throw new GremlinParserException("Invalid traversal function: " + fctx.getText());
+        }
     }
 
     /**
@@ -361,7 +375,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_by_T(final GremlinParser.TraversalMethod_by_TContext ctx) {
-        return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalToken()));
+        return graphTraversal.by(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalT()));
     }
 
     /**
@@ -399,7 +413,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_choose_Function(final GremlinParser.TraversalMethod_choose_FunctionContext ctx) {
-        return graphTraversal.choose(TraversalEnumParser.parseTraversalFunctionFromContext(ctx.traversalFunction()));
+        final GremlinParser.TraversalFunctionContext fctx = ctx.traversalFunction();
+        if (fctx.traversalT() != null) {
+            return graphTraversal.choose(TraversalEnumParser.parseTraversalEnumFromContext(T.class, fctx.traversalT()));
+        } else if (fctx.traversalColumn() != null) {
+            return graphTraversal.choose(TraversalEnumParser.parseTraversalEnumFromContext(Column.class, fctx.traversalColumn()));
+        } else {
+            throw new GremlinParserException("Invalid traversal function: " + fctx.getText());
+        }
     }
 
     /**
@@ -534,7 +555,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dedup_Scope_String(final GremlinParser.TraversalMethod_dedup_Scope_StringContext ctx) {
-        return graphTraversal.dedup(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.dedup(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseStringVarargsLiterals(ctx.stringLiteralVarargsLiterals()));
     }
 
@@ -787,11 +809,13 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
                 return graphTraversal.hasLabel((String) literalOrVar);
         } else {
             Object literalOrVar = antlr.argumentVisitor.visitStringNullableArgument(ctx.stringNullableArgument());
-            Object[] literalOrVars = antlr.genericVisitor.visitStringLiteralVarargs(ctx.stringLiteralVarargs());
+            Object[] literalOrVars = antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument());
+
+            if (null == literalOrVar) literalOrVar = GValue.ofString(null, null);
 
             // if any are GValue then they all need to be GValue to call hasLabel
             if (literalOrVar instanceof GValue || Arrays.stream(literalOrVars).anyMatch(lov -> lov instanceof GValue)) {
-                literalOrVar = ArgumentVisitor.asGValue(literalOrVar);
+                literalOrVar = GValue.ensureGValue(literalOrVar);
                 literalOrVars = GValue.ensureGValues(literalOrVars);
             }
 
@@ -906,7 +930,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_has_T_Object(final GremlinParser.TraversalMethod_has_T_ObjectContext ctx) {
-        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalToken()),
+        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalT()),
                 antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
     }
 
@@ -915,7 +939,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_has_T_P(final GremlinParser.TraversalMethod_has_T_PContext ctx) {
-        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalToken()),
+        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalT()),
                 antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
     }
 
@@ -924,7 +948,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_has_T_Traversal(final GremlinParser.TraversalMethod_has_T_TraversalContext ctx) {
-        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalToken()),
+        return graphTraversal.has(TraversalEnumParser.parseTraversalEnumFromContext(T.class, ctx.traversalT()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
@@ -949,7 +973,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_in(final GremlinParser.TraversalMethod_inContext ctx) {
-        return graphTraversal.in(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.in(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -957,7 +981,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_inE(final GremlinParser.TraversalMethod_inEContext ctx) {
-        return graphTraversal.inE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.inE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -1073,7 +1097,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
 
     @Override
     public GraphTraversal visitTraversalMethod_repeat_String_Traversal(final GremlinParser.TraversalMethod_repeat_String_TraversalContext ctx) {
-        return graphTraversal.repeat((antlr.genericVisitor.parseString(ctx.stringLiteral())),
+        return graphTraversal.repeat(antlr.genericVisitor.parseString(ctx.stringLiteral()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
@@ -1256,7 +1280,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_option_Merge_Traversal(final GremlinParser.TraversalMethod_option_Merge_TraversalContext ctx) {
-        return this.graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
+        return this.graphTraversal.option(
+                TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
@@ -1268,6 +1293,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         if (ctx.nullableGenericLiteralMap().nullLiteral() != null) {
             return this.graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()), (Map) null);
         }
+
         return graphTraversal.option(TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, ctx.traversalMerge()),
                 antlr.genericVisitor.parseMap(ctx.nullableGenericLiteralMap().genericLiteralMap()),
                 TraversalEnumParser.parseTraversalEnumFromContext(Cardinality.class, ctx.traversalCardinality()));
@@ -1319,7 +1345,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_out(final GremlinParser.TraversalMethod_outContext ctx) {
-        return graphTraversal.out(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.out(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -1327,7 +1353,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_outE(final GremlinParser.TraversalMethod_outEContext ctx) {
-        return graphTraversal.outE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.outE(antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -1546,7 +1572,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_sample_Scope_int(final GremlinParser.TraversalMethod_sample_Scope_intContext ctx) {
-        return graphTraversal.sample(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.sample(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).intValue());
     }
 
@@ -1571,7 +1598,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_select_Pop_String(final GremlinParser.TraversalMethod_select_Pop_StringContext ctx) {
-        return graphTraversal.select(TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
+        return graphTraversal.select(
+                TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
                 antlr.genericVisitor.parseString(ctx.stringLiteral()));
     }
 
@@ -1580,7 +1608,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_select_Pop_String_String_String(final GremlinParser.TraversalMethod_select_Pop_String_String_StringContext ctx) {
-        return graphTraversal.select(TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
+        return graphTraversal.select(
+                TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
                 antlr.genericVisitor.parseString(ctx.stringLiteral(0)),
                 antlr.genericVisitor.parseString(ctx.stringLiteral(1)),
                 antlr.genericVisitor.parseStringVarargsLiterals(ctx.stringLiteralVarargsLiterals()));
@@ -1588,7 +1617,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
 
     @Override
     public GraphTraversal visitTraversalMethod_select_Pop_Traversal(final GremlinParser.TraversalMethod_select_Pop_TraversalContext ctx) {
-        return graphTraversal.select(TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
+        return graphTraversal.select(
+                TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, ctx.traversalPop()),
                 antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
@@ -1756,8 +1786,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_toE(final GremlinParser.TraversalMethod_toEContext ctx) {
-        return graphTraversal.toE(TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, ctx.traversalDirection()),
-                antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.toE(
+                TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, ctx.traversalDirection()),
+                antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargsArgument()));
     }
 
     /**
@@ -1773,8 +1804,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_to_Direction_String(final GremlinParser.TraversalMethod_to_Direction_StringContext ctx) {
-        return graphTraversal.to(TraversalEnumParser.parseTraversalDirectionFromContext(ctx.traversalDirection()),
-                antlr.argumentVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
+        return graphTraversal.to(TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, ctx.traversalDirection()),
+                antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
     }
 
     /**
@@ -1999,7 +2030,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_concat_String(final GremlinParser.TraversalMethod_concat_StringContext ctx) {
-        return graphTraversal.concat(antlr.genericVisitor.parseStringVarargsLiterals(ctx.stringLiteralVarargsLiterals()));
+        return graphTraversal.concat(antlr.genericVisitor.parseStringVarargs(ctx.stringLiteralVarargs()));
     }
 
     /**
@@ -2144,7 +2175,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_replace_Scope_String_String(final GremlinParser.TraversalMethod_replace_Scope_String_StringContext ctx) {
-        return graphTraversal.replace(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.replace(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseString(ctx.stringNullableLiteral(0)),
                 antlr.genericVisitor.parseString(ctx.stringNullableLiteral(1)));
     }
@@ -2162,7 +2194,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_split_Scope_String(final GremlinParser.TraversalMethod_split_Scope_StringContext ctx) {
-        return graphTraversal.split(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.split(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseString(ctx.stringNullableLiteral()));
     }
 
@@ -2179,7 +2212,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_substring_Scope_int(final GremlinParser.TraversalMethod_substring_Scope_intContext ctx) {
-        return graphTraversal.substring(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.substring(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).intValue());
     }
 
@@ -2197,7 +2231,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_substring_Scope_int_int(final GremlinParser.TraversalMethod_substring_Scope_int_intContext ctx) {
-        return graphTraversal.substring(TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
+        return graphTraversal.substring(
+                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
                 antlr.genericVisitor.parseIntegral(ctx.integerLiteral(0)).intValue(),
                 antlr.genericVisitor.parseIntegral(ctx.integerLiteral(1)).intValue());
     }
@@ -2215,7 +2250,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_dateAdd(final GremlinParser.TraversalMethod_dateAddContext ctx) {
-        return graphTraversal.dateAdd(TraversalEnumParser.parseTraversalEnumFromContext(DT.class, ctx.traversalDT()),
+        return graphTraversal.dateAdd(
+                TraversalEnumParser.parseTraversalEnumFromContext(DT.class, ctx.traversalDT()),
                 antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).intValue());
     }
 

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -121,17 +120,18 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitMapEntry(final GremlinParser.MapEntryContext ctx) {
         // if it is a terminal node that isn't a starting form like "(T.id)" then it has to be processed as a string
-        // for Java but otherwise it can just be handled as a generic literal
-        final boolean isKeyWrappedInParens = ctx.getChild(0).getText().equals("(");
-        if (ctx.getChild(0) instanceof TerminalNode && !isKeyWrappedInParens) {
-            handleStringLiteralText(ctx.getChild(0).getText());
-        }  else {
-            final int indexOfActualKey = isKeyWrappedInParens ? 1 : 0;
-            visit(ctx.getChild(indexOfActualKey));
-        }
+        // for python but otherwise it can just be handled as a generic literal
+        final GremlinParser.MapKeyContext mapKeyContext = ctx.mapKey();
+        visit(mapKeyContext);
         sb.append(": ");
-        final int indexOfValue = isKeyWrappedInParens ? 4 : 2;
-        visit(ctx.getChild(indexOfValue)); // value
+        visit(ctx.getChild(2)); // value
+        return null;
+    }
+
+    @Override
+    public Void visitMapKey(final GremlinParser.MapKeyContext ctx) {
+        final int keyIndex = ctx.LPAREN() != null && ctx.RPAREN() != null ? 1 : 0;
+        visit(ctx.getChild(keyIndex));
         return null;
     }
 
@@ -158,7 +158,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
-        if (ctx.SignedInfLiteral().getText().equals("-Infinity"))
+        if (ctx.SignedInfLiteral() != null && ctx.SignedInfLiteral().getText().equals("-Infinity"))
             sb.append("float('-inf')");
         else
             sb.append("float('inf')");
@@ -223,6 +223,9 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
+
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix
@@ -274,22 +277,8 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalCardinality(final GremlinParser.TraversalCardinalityContext ctx) {
-        // handle the enum style of cardinality if there is one child, otherwise it's the function call style
-        if (ctx.getChildCount() == 1)
-            appendExplicitNaming(ctx.getText(), VertexProperty.Cardinality.class.getSimpleName());
-        else {
-            String txt = ctx.getChild(0).getText();
-            if (txt.startsWith("Cardinality.")) {
-                txt = txt.replaceFirst("Cardinality.", "");
-            }
-            appendExplicitNaming(txt, "CardinalityValue");
-            appendStepOpen();
-            visit(ctx.getChild(2));
-            appendStepClose();
-        }
-
-        return null;
+    protected String getCardinalityFunctionClass() {
+        return "CardinalityValue";
     }
 
     @Override

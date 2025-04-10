@@ -352,6 +352,10 @@ public class GValue<V> implements Serializable {
         return o instanceof Number || valueInstanceOfNumeric(o);
     }
 
+    public static <T> GValue<T> ensureGValue(final Object o) {
+        return (GValue<T>) of(o);
+    }
+
     /**
      * The elements in object array argument are examined to see if they are {@link GValue} objects. If they are, they
      * are preserved as is. If they are not then they are wrapped in a {@link GValue} object.

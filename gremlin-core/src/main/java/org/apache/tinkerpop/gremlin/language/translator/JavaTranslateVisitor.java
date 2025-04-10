@@ -136,19 +136,17 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitMapEntry(final GremlinParser.MapEntryContext ctx) {
         sb.append("put(");
-        // if it is a terminal node that isn't a starting form like "(T.id)" then it has to be processed as a string
-        // for Java but otherwise it can just be handled as a generic literal
-        final boolean isKeyWrappedInParens = ctx.getChild(0).getText().equals("(");
-        if (ctx.getChild(0) instanceof TerminalNode && !isKeyWrappedInParens) {
-            handleStringLiteralText(ctx.getChild(0).getText());
-        }  else {
-            final int indexOfActualKey = isKeyWrappedInParens ? 1 : 0;
-            visit(ctx.getChild(indexOfActualKey));
-        }
+        visit(ctx.mapKey());
         sb.append(", ");
-        final int indexOfValue = isKeyWrappedInParens ? 4 : 2;
-        visit(ctx.getChild(indexOfValue)); // value
+        visit(ctx.genericLiteral()); // value
         sb.append(");");
+        return null;
+    }
+
+    @Override
+    public Void visitMapKey(final GremlinParser.MapKeyContext ctx) {
+        final int keyIndex = ctx.LPAREN() != null && ctx.RPAREN() != null ? 1 : 0;
+        visit(ctx.getChild(keyIndex));
         return null;
     }
 
@@ -171,7 +169,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
-        if (ctx.SignedInfLiteral().getText().equals("-Infinity"))
+        if (ctx.SignedInfLiteral() != null && ctx.SignedInfLiteral().getText().equals("-Infinity"))
             sb.append("Double.NEGATIVE_INFINITY");
         else
             sb.append("Double.POSITIVE_INFINITY");
@@ -222,6 +220,9 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
+
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix

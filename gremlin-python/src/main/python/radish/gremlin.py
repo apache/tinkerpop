@@ -154,7 +154,6 @@ world.gremlins = {
     'g_V_out_asXxX_in_asXyX_selectXx_yX_byXnameX_fold_dedupXlocal_x_yX_unfold': [(lambda g:g.V().out().as_('x').in_().as_('y').select('x', 'y').by('name').fold().dedup(Scope.local, 'x', 'y').unfold())], 
     'g_V_both_dedup_name': [(lambda g:g.V().both().dedup().values('name'))], 
     'g_V_both_hasXlabel_softwareX_dedup_byXlangX_name': [(lambda g:g.V().both().has(T.label, 'software').dedup().by('lang').values('name'))], 
-    'g_V_both_name_order_byXa_bX_dedup_value': [],  # skipping as it contains a lambda
     'g_V_both_both_name_dedup': [(lambda g:g.V().both().both().values('name').dedup())], 
     'g_V_both_both_dedup': [(lambda g:g.V().both().both().dedup())], 
     'g_V_both_both_dedup_byXlabelX': [(lambda g:g.V().both().both().dedup().by(T.label))], 
@@ -511,7 +510,6 @@ world.gremlins = {
     'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXid_123X_propertyXname_markoX': [(lambda g:g.with_strategies(ReservedKeysVerificationStrategy(throw_exception=True)).add_v('person').property('id', 123).property('name', 'marko'))], 
     'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXage_29X_propertyXname_markoX': [(lambda g:g.with_strategies(ReservedKeysVerificationStrategy(throw_exception=True, keys={'age'})).add_v('person').property('age', 29).property('name', 'marko'))], 
     'g_withoutStrategiesXReservedKeysVerificationStrategyX_addVXpersonX_propertyXid_123X_propertyXname_markoX': [(lambda g:g.without_strategies(ReservedKeysVerificationStrategy).add_v('person').property('id', 123).property('name', 'marko').values())], 
-    'g_withStrategiesXSeedStrategyX_V_coinX0.5X': [(lambda g:g.with_strategies(SeedStrategy(seed=7)).V().coin(0.5))], 
     'g_withoutStrategiesXSeedStrategyX_V': [(lambda g:g.without_strategies(SeedStrategy).V())], 
     'g_withStrategiesXStandardVerificationStrategyX_V': [(lambda g:g.with_strategies(StandardVerificationStrategy()).V())], 
     'g_withoutStrategiesXStandardVerificationStrategyX_V': [(lambda g:g.without_strategies(StandardVerificationStrategy).V())], 
@@ -1136,7 +1134,6 @@ world.gremlins = {
     'g_VX1X_valuesXageX_minXlocalX': [(lambda g, vid1=None:g.V(vid1).values('age').min_(Scope.local))], 
     'g_V_localXunionXvaluesXageX_outE_valuesXweightXX_foldX_minXlocalX': [(lambda g:g.V().local(__.union(__.values('age'), __.out_e().values('weight')).fold()).min_(Scope.local))], 
     'g_V_name_order': [(lambda g:g.V().values('name').order())], 
-    'g_V_name_order_byXa1_b1X_byXb2_a2X': [],  # skipping as it contains a lambda
     'g_V_order_byXname_ascX_name': [(lambda g:g.V().order().by('name', Order.asc).values('name'))], 
     'g_V_order_byXnameX_name': [(lambda g:g.V().order().by('name').values('name'))], 
     'g_V_outE_order_byXweight_descX_weight': [(lambda g:g.V().out_e().order().by('weight', Order.desc).values('weight'))], 

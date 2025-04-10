@@ -26,8 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
 /**
  * Parses Gremlin strings to an {@code Object}, typically to a {@link Traversal}.
  */

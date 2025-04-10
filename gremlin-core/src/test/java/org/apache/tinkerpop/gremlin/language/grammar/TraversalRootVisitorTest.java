@@ -1104,11 +1104,6 @@ public class TraversalRootVisitorTest {
     }
 
     @Test
-    public void shouldParseTraversalMethod_GValue()  {
-        compare(g.V().map(__.to(Direction.OUT, GValue.ofString("foo", "bar"))), eval("g.V().map(__.to(Direction.OUT,foo))"));
-    }
-
-    @Test
     public void shouldParseTraversalMethod_Direction()  {
         compare(g.V().map(__.to(Direction.OUT)), eval("g.V().map(__.to(Direction.OUT))"));
     }

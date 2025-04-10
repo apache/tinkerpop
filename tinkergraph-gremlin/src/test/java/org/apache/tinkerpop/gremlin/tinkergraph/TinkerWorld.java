@@ -300,9 +300,9 @@ public abstract class TinkerWorld implements World {
                 "@GraphComputerVerificationReferenceOnly",
                 "@TinkerServiceRegistry");
 
-        private World world;
+        private final World world;
 
-        public ComputerWorld(World world) { this.world = world; }
+        public ComputerWorld(final World world) { this.world = world; }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {

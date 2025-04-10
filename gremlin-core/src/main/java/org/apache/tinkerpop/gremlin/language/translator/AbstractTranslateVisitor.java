@@ -49,10 +49,10 @@ public abstract class AbstractTranslateVisitor extends TranslateVisitor {
         return null;
     }
 
-    protected void handleStringLiteralText(final String text) {
-        sb.append("\"");
-        sb.append(text);
-        sb.append("\"");
+    @Override
+    public Void visitNakedKey(final GremlinParser.NakedKeyContext ctx) {
+        handleStringLiteralText(ctx.getText());
+        return null;
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class AbstractTranslateVisitor extends TranslateVisitor {
         final String keyword = ctx.getText();
 
         // translate differently based on the context of the keyword's parent.
-        if (ctx.getParent() instanceof GremlinParser.MapEntryContext) {
+        if (ctx.getParent() instanceof GremlinParser.MapKeyContext) {
             // if the keyword is a key in a map, then it's a string literal essentially
             handleStringLiteralText(keyword);
         } else {
@@ -69,5 +69,11 @@ public abstract class AbstractTranslateVisitor extends TranslateVisitor {
         }
 
         return null;
+    }
+
+    protected void handleStringLiteralText(final String text) {
+        sb.append("\"");
+        sb.append(text);
+        sb.append("\"");
     }
 }

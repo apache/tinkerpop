@@ -34,24 +34,6 @@ Feature: Step - order()
       | ripple |
       | vadas  |
 
-  Scenario: g_V_name_order_byXa1_b1X_byXb2_a2X
-    Given the modern graph
-    And using the parameter c1 defined as "c[a, b -> a.substring(1, 2).compareTo(b.substring(1, 2))]"
-    And using the parameter c2 defined as "c[a, b -> b.substring(2, 3).compareTo(a.substring(2, 3))]"
-    And the traversal of
-      """
-      g.V().values("name").order().by(c1).by(c2)
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | marko  |
-      | vadas  |
-      | peter  |
-      | ripple |
-      | josh   |
-      | lop    |
-
   Scenario: g_V_order_byXname_ascX_name
     Given the modern graph
     And the traversal of

@@ -39,7 +39,7 @@ public class TraversalPredicateVisitorTest {
     @Parameterized.Parameter(value = 1)
     public P expected;
 
-    @Parameterized.Parameters()
+    @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {"eq(10)", P.eq(10)},

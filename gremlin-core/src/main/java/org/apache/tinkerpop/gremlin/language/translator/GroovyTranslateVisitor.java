@@ -91,6 +91,9 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitFloatLiteral(final GremlinParser.FloatLiteralContext ctx) {
+        if (ctx.infLiteral() != null) return visit(ctx.infLiteral());
+        if (ctx.nanLiteral() != null) return visit(ctx.nanLiteral());
+
         final String floatLiteral = ctx.getText().toLowerCase();
 
         // check suffix
@@ -121,11 +124,10 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
-        if (ctx.SignedInfLiteral().getText().equals("-Infinity")) {
+        if (ctx.SignedInfLiteral() != null && ctx.SignedInfLiteral().getText().equals("-Infinity"))
             sb.append("Double.NEGATIVE_INFINITY");
-        } else {
+        else
             sb.append("Double.POSITIVE_INFINITY");
-        }
         return null;
     }
 
@@ -190,7 +192,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // special handling for resolving ambiguous invocations of the hasLabel() step. coerces to the string form
         if (ctx.getChildCount() > 4 && ctx.getChild(2).getText().equals("null")) {
-            final GremlinParser.StringLiteralVarargsContext varArgs = (GremlinParser.StringLiteralVarargsContext) ctx.getChild(4);
+            final GremlinParser.StringLiteralVarargsArgumentContext varArgs = ctx.stringLiteralVarargsArgument();
             sb.append(ctx.getChild(0).getText());
             sb.append("((String) null, ");
 

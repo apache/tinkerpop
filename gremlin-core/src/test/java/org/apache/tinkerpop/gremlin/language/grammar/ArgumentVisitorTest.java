@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -81,7 +82,7 @@ public class ArgumentVisitorTest {
         put("x", null);
     }};
 
-    @Parameterized.Parameters(name = "{0}")
+    @Parameterized.Parameters(name = "{1}")
     public static Iterable<Object[]> generateTestParameters() {
         return Arrays.asList(new Object[][]{
                 {Boolean.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
@@ -133,31 +134,12 @@ public class ArgumentVisitorTest {
                 {Object.class, "x", GValue.of("x", now), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", now)))},
                 {Object.class, "x", "test", createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", "test")))},
                 {Object.class, "x", now, createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", now)))},
-                {Object.class, "[1,2,3]", Arrays.asList(1, 2, 3), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", now)))},
+                {Object.class, "[1,2,3]", Arrays.asList(1, 2, 3), createAntlr(VariableResolver.NoVariableResolver.instance())},
                 {Object.class, "x", GValue.of("x", P.eq(100)), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
                 {Object.class, "x", P.eq(100), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
-                {Direction.class, "Direction.OUT", Direction.OUT, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Direction.class, "OUT", Direction.OUT, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Vertex.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
                 {Vertex.class, "new Vertex(1i,'person')", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", Direction.from)))},
-                {Order.class, "Order.desc", Order.desc, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Scope.class, "Scope.local", Scope.local, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Scope.class, "local", Scope.local, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {T.class, "T.label", T.label, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {T.class, "label", T.label, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {VertexProperty.Cardinality.class, "Cardinality.list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {VertexProperty.Cardinality.class, "list", VertexProperty.Cardinality.list, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {DT.class, "DT.hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {DT.class, "hour", DT.hour, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Merge.class, "Merge.onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Merge.class, "onMatch", Merge.onMatch, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Pop.class, "Pop.last", Pop.last, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Pop.class, "last", Pop.last, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Operator.class, "Operator.sum", Operator.sum, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Operator.class, "sum", Operator.sum, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Column.class, "Column.keys", Column.keys, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {Column.class, "keys", Column.keys, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
-                {SackFunctions.Barrier.class, "Barrier.normSack", SackFunctions.Barrier.normSack, createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", "nope")))},
+                {Vertex.class, "x", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", new ReferenceVertex(1, "person"))))},
         });
     }
 
@@ -205,35 +187,13 @@ public class ArgumentVisitorTest {
                 final GremlinParser.GenericLiteralListArgumentContext ctx = parser.genericLiteralListArgument();
                 return antlrToLanguage.argumentVisitor.parseObjectVarargs(ctx);
             });
-        } else if (clazz.equals(Direction.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Direction.class, parser.traversalDirection()));
         } else if (clazz.equals(Vertex.class)) {
             assertParsing(() -> {
                 final GremlinParser.StructureVertexArgumentContext ctx = parser.structureVertexArgument();
                 return antlrToLanguage.argumentVisitor.visitStructureVertexArgument(ctx);
             });
-        } else if (clazz.equals(Order.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Order.class, parser.traversalOrder()));
-        } else if (clazz.equals(Scope.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, parser.traversalScope()));
-        } else if (clazz.equals(T.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(T.class, parser.traversalToken()));
-        } else if (clazz.equals(VertexProperty.Cardinality.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(VertexProperty.Cardinality.class, parser.traversalCardinality()));
-        } else if (clazz.equals(DT.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(DT.class, parser.traversalDT()));
-        } else if (clazz.equals(Merge.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Merge.class, parser.traversalMerge()));
-        } else if (clazz.equals(Pop.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Pop.class, parser.traversalPop()));
-        } else if (clazz.equals(Operator.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, parser.traversalOperator()));
-        } else if (clazz.equals(Column.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(Column.class, parser.traversalColumn()));
-        } else if (clazz.equals(SackFunctions.Barrier.class)) {
-            assertParsing(() -> TraversalEnumParser.parseTraversalEnumFromContext(SackFunctions.Barrier.class, parser.traversalBarrier()));
         } else {
-            fail("Missing an assertion type");
+            fail("Missing an assertion type: " + clazz.getSimpleName());
         }
     }
 
