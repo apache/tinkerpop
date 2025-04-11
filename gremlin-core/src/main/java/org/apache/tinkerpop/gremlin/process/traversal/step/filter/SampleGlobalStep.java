@@ -43,7 +43,8 @@ import java.util.Set;
  */
 public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating, Seedable {
 
-    private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);
+    private final Traversal.Admin<S, Number> initialTraversal = new ConstantTraversal<>(1.0d);
+    private Traversal.Admin<S, Number> probabilityTraversal = initialTraversal;
     private final int amountToSample;
     private final Random random = new Random();
 
@@ -68,6 +69,8 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> probabilityTraversal) {
+        if (this.probabilityTraversal != initialTraversal)
+            throw new IllegalStateException("Sample step can only have one by modulator");
         this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 
