@@ -46,6 +46,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -145,6 +146,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "new Date(" + o.getTime() + "L)";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            return "OffsetDateTime.parse('" + o.toString() + "')";
         }
 
         @Override
@@ -419,6 +425,11 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final Date o) {
+            return getDatetimeSyntax(o.toInstant());
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
             return getDatetimeSyntax(o.toInstant());
         }
 

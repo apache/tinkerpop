@@ -32,20 +32,20 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
     /// A serializer for the GraphBinary types Date and Timestamp. Both are represented as <see cref="DateTimeOffset"/>
     /// in .NET.
     /// </summary>
-    public class DateTimeOffsetSerializer : SimpleTypeSerializer<DateTimeOffset>
+    public class DateTimeSerializer : SimpleTypeSerializer<DateTimeOffset>
     {
         /// <summary>
         /// A serializer for the GraphBinary type Date, represented as <see cref="DateTimeOffset"/> in .NET.
         /// </summary>
-        public static readonly DateTimeOffsetSerializer DateSerializer = new DateTimeOffsetSerializer(DataType.Date);
+        public static readonly DateTimeSerializer DateSerializer = new DateTimeSerializer(DataType.Date);
 
         /// <summary>
         /// A serializer for the GraphBinary type Timestamp, represented as <see cref="DateTimeOffset"/> in .NET.
         /// </summary>
-        public static readonly DateTimeOffsetSerializer TimestampSerializer =
-            new DateTimeOffsetSerializer(DataType.Timestamp);
+        public static readonly DateTimeSerializer TimestampSerializer =
+            new DateTimeSerializer(DataType.Timestamp);
         
-        private DateTimeOffsetSerializer(DataType dataType) : base(dataType)
+        private DateTimeSerializer(DataType dataType) : base(dataType)
         {
         }
 

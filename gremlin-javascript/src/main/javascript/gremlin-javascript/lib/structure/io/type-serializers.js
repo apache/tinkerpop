@@ -87,10 +87,18 @@ class NumberSerializer extends TypeSerializer {
 }
 
 class DateSerializer extends TypeSerializer {
+  // only deserialize g:Date objects
+  deserialize(obj) {
+    return new Date(obj[valueKey]);
+  }
+}
+
+class OffsetDateTimeSerializer extends TypeSerializer {
+  // Date objects are serialized as OffsetDateTime by default
   serialize(item) {
     return {
-      [typeKey]: 'g:Date',
-      [valueKey]: item.getTime(),
+      [typeKey]: 'gx:OffsetDateTime',
+      [valueKey]: item.toISOString(),
     };
   }
 
@@ -495,6 +503,7 @@ module.exports = {
   BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
+  OffsetDateTimeSerializer,
   DirectionSerializer,
   EdgeSerializer,
   EnumSerializer,

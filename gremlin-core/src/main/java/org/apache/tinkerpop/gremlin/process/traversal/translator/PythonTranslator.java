@@ -47,6 +47,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -152,6 +153,13 @@ public final class PythonTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "datetime.datetime.utcfromtimestamp(" + o.getTime() + " / 1000.0)";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            final String dt = o.toString();
+            final String dtISOString = dt.endsWith("Z") ? dt.replace("Z", "+00:00") : dt;
+            return "datetime.datetime.fromisoformat('" + dtISOString + "')";
         }
 
         @Override

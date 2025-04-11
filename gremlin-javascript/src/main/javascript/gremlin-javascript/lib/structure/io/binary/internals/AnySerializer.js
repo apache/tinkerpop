@@ -35,6 +35,7 @@ module.exports = class AnySerializer {
       ioc.numberSerializationStrategy,
 
       ioc.booleanSerializer,
+      ioc.offsetDateTimeSerializer,
       ioc.dateSerializer,
       ioc.bytecodeSerializer,
       ioc.pSerializer,

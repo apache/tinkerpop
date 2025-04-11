@@ -50,6 +50,7 @@ import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -155,6 +156,11 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "DateTimeOffset.FromUnixTimeMilliseconds(" + o.getTime() + ")";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            return "DateTimeOffset.Parse(\"" + o.toString() + "\")";
         }
 
         @Override

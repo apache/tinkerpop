@@ -30,6 +30,17 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== The Switch from Date to OffsetDateTime
+The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+
+`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
+
+If one is using a persisted TinkerGraph that stored `Date` objects inside properties, one may notice `OffsetDateTime` being returned after traversal manipulation. The recommended solution is to update all existing `Date` objects into `OffsetDateTime`. This can be done by querying for the properties and transforming them using `asDate()`. Do note that all dates are assumed to be in `UTC` (given epoch time).
+
+For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and `OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
+
+For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version upgrade.
+
 ==== Simplification to g creation
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
 long recommended the use of the anonymous `traversal()` function for this creation.
@@ -284,4 +295,16 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
 
 ==== Graph System Providers
 
+==== The Switch from Date to OffsetDateTime
+The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+
+`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
+
+This may impact providers who use TinkerGraph or whose implementation store dates as `java.util.Date`. While steps will support `Date`, all date manipulations will output `OffsetDateTime`. If a user had persisted `Date` objects in the database, upgrading to 3.8 may lead to the database having both types stored. It is recommended for users to perform transformation of `Date` to `OffsetDateTime` to retain consistency.
+
 ==== Graph Driver Providers
+
+==== The Switch from Date to OffsetDateTime
+The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+
+This means that drivers should use the extended `OffsetDateTime` type in the IO specs to serialize and deserialize native date objects.
