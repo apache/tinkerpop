@@ -18,18 +18,6 @@
 @StepClassIntegrated
 Feature: Step - miscellaneous
 
-  # smoke test withoutStrategies()
-  Scenario: g_withoutStrategiesXCountStrategyX_V_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.withoutStrategies(CountStrategy).V().count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
-
   Scenario: g_V_coworker
     Given the modern graph
     And using the parameter xx1 defined as "l[]"

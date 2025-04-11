@@ -113,7 +113,7 @@ public class FeatureReader {
                                 } else {
                                     throw new IllegalStateException(String.format("Could not read parameters at: %s", cleanLine));
                                 }
-                            } else if (cleanLine.startsWith("Then nothing should happen because")) {
+                            } else if (cleanLine.contains("nothing should happen because") || cleanLine.contains("the result should be a tree with a structure of")) {
                                 skipIgnored = true;
                             } else if (cleanLine.startsWith("And the graph should return")) {
                                 gremlins.computeIfAbsent(scenarioName, k -> new ArrayList<>()).add(applyParametersToGremlin(StringEscapeUtils.unescapeJava(cleanLine.substring(cleanLine.indexOf("\"") + 1, cleanLine.lastIndexOf("\""))), parameters));

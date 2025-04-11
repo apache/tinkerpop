@@ -58,7 +58,6 @@ const parsers = [
   [ 'l\\[(.*)\\]', toArray ],
   [ 's\\[(.*)\\]', toSet ],
   [ 'm\\[(.+)\\]', toMap ],
-  [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
   [ 'D\\[(.+)\\]', toDirection ],
   [ 'M\\[(.+)\\]', toMerge ]
@@ -74,10 +73,27 @@ const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
+  subgraphStepNotSupported: "Javascript does not yet support subgraph()",
+  treeStepNotSupported: "Javascript does not yet support tree()",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
+  // javascript doesn't have subgraph() step yet
+  'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  // javascript doesn't have tree() step yet
+  'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_V_out_tree_byXageX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
@@ -154,12 +170,12 @@ const ignoredScenarios = {
   'g_withStrategiesXVertexProgramRestrictionStrategy_VertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withoutStrategiesXVertexProgramRestrictionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withoutStrategiesXVertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_withoutStrategiesXLambdaRestrictionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
-  // if the scenario is ignored or if the scenario has no gremlin (i.e. happens for skipped lambdas that can't
-  // translate) then skipp the test
-  if (ignoredScenarios[this.scenario] || gremlin[this.scenario].length === 0) {
+  // if the scenario is ignored then skip the test
+  if (ignoredScenarios[this.scenario]) {
     return 'skipped';
   }
   this.graphName = graphName;
@@ -278,6 +294,14 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(expectedResult).to.include.deep.members(toCompare(this.result));
       break;
   }
+});
+
+Then('the result should be a subgraph with the following', _ => {
+  // subgraph is not supported yet in javascript
+});
+
+Then('the result should be a tree with a structure of', _ => {
+  // tree is not supported yet in javascript
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
@@ -493,10 +517,6 @@ function parseMapValue(value) {
     map.set(parseMapValue.call(this, key), parseMapValue.call(this, value[key]));
   });
   return map;
-}
-
-function toLambda(stringLambda) {
-  return () => [stringLambda, "gremlin-groovy"];
 }
 
 /**

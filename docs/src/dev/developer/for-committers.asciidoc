@@ -402,7 +402,6 @@ brackets, optionally suffixed with some additional notation depending on the pri
 * Edge - *e[_xxx_]* - The "xxx" should be replaced with a representation of an edge in the form of the
 `vertex_name-edgelabel->vertex_name`. This syntax may also include the `.id` suffix which would indicate getting the
 edge identifier or the `.sid` suffix which gets a string representation of the edge identifier.
-* Lambda - *c[_xxx_]* - The "xxx" should contain a lambda written in Groovy.
 * List - *l[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the list should be added to
 between the square brackets. These values respect the type system thus allowing for creation of lists of vertices,
 edges, maps, and any other available type. Spaces are taken literally, therefore it is important to avoid spaces unless
@@ -503,10 +502,14 @@ of traversal iteration where "_comparison_" may be one of "containing", "startin
 * "the result should be unordered" - the exact results but can appear any order
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees
 regarding the exact results cannot be pre-determined easily - see the `range()`-step tests for examples)
+* "the result should be a graph with the following" - asserts a subgraph where the associated datatable is headed with
+"vertices" or "edges" with a set of expected vertex or edge definitions (can only be used with the "modern" graph data)
+* "the result should be a tree with a structure of" - asserts a tree structure given as an asciiart representation of
+the expected tree.
 
-These final three types of assertions mentioned above should be followed by a Gherkin table that has one column, where
-each row value in that column represents a value to assert in the result. These values are type notation respected as
-shown in the following example:
+For "the result should be ordered/unordered/of" types of assertions mentioned above should be followed by a Gherkin
+table that has one column, where each row value in that column represents a value to assert in the result. These values
+are type notation respected as shown in the following example:
 
 [source,gherkin]
 ----
@@ -518,6 +521,50 @@ Then the result should be unordered
   | vadas |
   | josh  |
 ----
+
+For "the result should be a graph with the following", the assertion looks like this:
+
+[source,gherkin]
+----
+When iterated next
+Then the result should be a subgraph with the following
+  | edges |
+  | e[marko-created->lop] |
+  | e[josh-created->lop] |
+  | e[josh-created->ripple] |
+  | e[peter-created->lop] |
+And the result should be a subgraph with the following
+  | vertices |
+  | v[marko] |
+  | v[lop] |
+  | v[josh] |
+  | v[peter] |
+  | v[ripple] |
+----
+
+Note the use of "When iterated next" to get the subgraph assigned directly as the result. To properly do the assertion
+of the graph, a line should be present for vertices and edges. While other objects can be parsed here, none
+particularly make sense, so it is important to just stick to the appropriate types in defining the assertions.
+
+For the result should be a tree with a structure of" the assertion looks like this:
+
+[source,gherkin]
+----
+When iterated next
+Then the result should be a tree with a structure of
+"""
+|--d[32].i
+|--d[35].i
+|--d[29].i
+   |--d[32].i
+   |--d[27].i
+"""
+----
+
+The indent spacing is critical in ensuring the tree is parsed by the test frameworks properly and should consist of 3
+spaces. Like the subgraph example, note the use of "When iterated next" to ensure the `Tree` itself is assigned to the
+result that is being asserted. Unlike the subgraph rules, any object can be used to designate a node. The example above
+used integers, but any of the allowed types should work.
 
 Another method of assertion is to test mutations in the original graph. Again, mutations should only occur on the
 "empty" graph, but they can be validated as follows:
@@ -568,6 +615,8 @@ tag when one is necessary will cause provider tests to fail:
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
+* `@GraphComputerVerificationMidENotSupported` - The scenario will not work on with `GraphComputer` because the
+mid-`E()` step is not supported.
 * `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the
 mid-`V()` step is not supported.
 * `@GraphComputerVerificationOneBulk` - The scenario will not work because `withBulk(false)` is configured and that
@@ -581,8 +630,6 @@ the traversal does not mind the star graph limitation.
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
 * `@MultiProperties` - The scenario makes use of multi-properties.
-* `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions. The
-best example of this sort of test would be one that uses the remote `Lambda` syntax.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
