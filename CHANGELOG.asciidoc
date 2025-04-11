@@ -2060,6 +2060,7 @@ This release also includes changes from <<release-3-3-8, 3.3.8>>.
 
 ==== Improvements
 
+* TINKERPOP-3150 Prevent sample step from having multiple by modulators.
 * TINKERPOP-1084 Branch option tokens should be allowed to be traversals.
 * TINKERPOP-1553 Deprecate store() in favor of aggregate(Scope)
 * TINKERPOP-1921 Support hasNext terminal step in GLVs
