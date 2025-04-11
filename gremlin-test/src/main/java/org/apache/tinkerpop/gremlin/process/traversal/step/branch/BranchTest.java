@@ -49,7 +49,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.Pick.none;
 @RunWith(GremlinProcessRunner.class)
 public abstract class BranchTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
 
     public abstract Traversal<Vertex, Object> get_g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX();
 
@@ -58,14 +57,6 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Object> get_g_V_branchXageX_optionXltX30X__youngX_optionXgtX30X__oldX_optionXnone__on_the_edgeX();
 
     public abstract Traversal<Vertex, Object> get_g_V_branchXidentityX_optionXhasLabelXsoftwareX__inXcreatedX_name_order_foldX_optionXhasXname_vadasX__ageX_optionXneqX123X__bothE_countX();
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-        final Traversal<Vertex, Object> traversal = get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
-    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -100,14 +91,6 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     }
 
     public static class Traversals extends BranchTest {
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            return g.V().branch(v -> v.get().label().equals("person") ? "a" : "b")
-                    .option("a", values("age"))
-                    .option("b", values("lang"))
-                    .option("b", values("name"));
-        }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX() {

@@ -97,12 +97,11 @@ Feature: Step - cap()
       | result |
       | m[{"original":"d[771317].l", "":"d[160968].l", "cover":"d[368579].l"}] |
 
-  Scenario: g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX
+  Scenario: g_V_groupXaX_byXvaluesXnameX_substringX1XX_byXconstantX1XX_capXaX
     Given the modern graph
-    And using the parameter l1 defined as "c[it.value('name').substring(0, 1)]"
     And the traversal of
       """
-      g.V().group("a").by(l1).by(__.constant(1)).cap("a")
+      g.V().group("a").by(__.values("name").substring(0,1)).by(__.constant(1)).cap("a")
       """
     When iterated to list
     Then the result should be unordered
@@ -153,12 +152,17 @@ Feature: Step - cap()
       | result |
       | m[{"software":"d[2].l", "person":"d[4].l"}] |
 
-  Scenario: g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX_unfold
+    Given the modern graph
+    And the traversal of
       """
-      The result is [a:[32:1,35:1,27:1,29:1],b:[ripple:1,lop:1]] which is not supported by this test suite
+      g.V().choose(has(T.label, "person"),values("age").groupCount("a"), values("name").groupCount("b")).cap("a", "b").unfold()
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"m[{\"d[32].i\":\"d[1].l\",\"d[35].i\":\"d[1].l\",\"d[27].i\":\"d[1].l\",\"d[29].i\":\"d[1].l\"}]"}] |
+      | m[{"b":"m[{\"ripple\":\"d[1].l\",\"lop\":\"d[1].l\"}]"}] |
 
   # validates that a collecting barrier produces a filtering effect if it is unproductive.
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_orderX_capXaX

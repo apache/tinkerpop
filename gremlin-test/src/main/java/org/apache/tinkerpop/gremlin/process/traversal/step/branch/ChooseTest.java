@@ -39,11 +39,9 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identity;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -59,8 +57,6 @@ import static org.junit.Assert.assertTrue;
 public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX();
-
-    public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name();
 
@@ -92,14 +88,6 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         assertEquals(2, counts.size());
         assertEquals(Long.valueOf(1), counts.get("29"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("josh", "vadas", "josh", "josh", "marko", "peter"), traversal);
     }
 
     @Test
@@ -178,11 +166,6 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
             return g.V().choose(out().count())
                     .option(2L, values("name"))
                     .option(3L, values("age"));
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name() {
-            return g.V().choose(v -> v.label().equals("person"), out("knows"), in("created")).values("name");
         }
 
         @Override

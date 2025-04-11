@@ -29,14 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +52,6 @@ import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -77,8 +74,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX();
 
-    public abstract Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX(final Object v1Id);
-
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count_descX_byXnameX();
 
     public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXname_order_byXdescX_foldX();
@@ -92,8 +87,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX();
 
     public abstract Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX();
-
-    public abstract Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_properties_order_byXkey_descX_key();
 
@@ -200,31 +193,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX() {
-        final Traversal<Vertex, Map<Integer, Integer>> traversal = get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        final Map<Integer, Integer> map = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertEquals(4, map.size());
-        final Iterator<Map.Entry<Integer, Integer>> iterator = map.entrySet().iterator();
-        Map.Entry<Integer, Integer> entry = iterator.next();
-        assertEquals(3, entry.getKey().intValue());
-        assertEquals(87, entry.getValue().intValue());
-        entry = iterator.next();
-        assertEquals(2, entry.getKey().intValue());
-        assertEquals(58, entry.getValue().intValue());
-        entry = iterator.next();
-        assertEquals(1, entry.getKey().intValue());
-        assertEquals(29, entry.getValue().intValue());
-        entry = iterator.next();
-        assertEquals(4, entry.getKey().intValue());
-        assertEquals(29, entry.getValue().intValue());
-        assertFalse(iterator.hasNext());
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
     public void g_V_order_byXoutE_count_descX_byXnameX() {
         Arrays.asList(get_g_V_order_byXoutE_count_descX_byXnameX()).forEach(traversal -> {
             printTraversalForm(traversal);
@@ -326,14 +294,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertEquals(convertToVertex(graph, "marko"), list.get(1));
         assertEquals(convertToVertex(graph, "josh"), list.get(2));
         assertEquals(convertToVertex(graph, "peter"), list.get(3));
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name();
-        printTraversalForm(traversal);
-        checkOrderedResults(Arrays.asList("peter", "josh", "marko", "vadas"), traversal);
     }
 
     @Test
@@ -555,18 +515,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX(final Object v1Id) {
-            return g.V(v1Id).hasLabel("person").map(v -> {
-                final Map<Integer, Integer> map = new HashMap<>();
-                map.put(1, (int) v.get().value("age"));
-                map.put(2, (int) v.get().value("age") * 2);
-                map.put(3, (int) v.get().value("age") * 3);
-                map.put(4, (int) v.get().value("age"));
-                return map;
-            }).order(Scope.local).by(Column.values, desc).by(keys, Order.asc);
-        }
-
-        @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count_descX_byXnameX() {
             return g.V().order().by(outE().count(), desc).by("name");
         }
@@ -599,11 +547,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
             return g.V().hasLabel("person").fold().order(Scope.local).by("age");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name() {
-            return g.V().hasLabel("person").order().<Vertex>by(v -> v.value("age"), desc).values("name");
         }
 
         @Override

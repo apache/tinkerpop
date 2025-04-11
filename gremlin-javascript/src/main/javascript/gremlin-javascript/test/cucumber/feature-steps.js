@@ -58,7 +58,6 @@ const parsers = [
   [ 'l\\[(.*)\\]', toArray ],
   [ 's\\[(.*)\\]', toSet ],
   [ 'm\\[(.+)\\]', toMap ],
-  [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
   [ 'D\\[(.+)\\]', toDirection ],
   [ 'M\\[(.+)\\]', toMerge ]
@@ -154,12 +153,12 @@ const ignoredScenarios = {
   'g_withStrategiesXVertexProgramRestrictionStrategy_VertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withoutStrategiesXVertexProgramRestrictionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withoutStrategiesXVertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_withoutStrategiesXLambdaRestrictionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
-  // if the scenario is ignored or if the scenario has no gremlin (i.e. happens for skipped lambdas that can't
-  // translate) then skipp the test
-  if (ignoredScenarios[this.scenario] || gremlin[this.scenario].length === 0) {
+  // if the scenario is ignored then skip the test
+  if (ignoredScenarios[this.scenario]) {
     return 'skipped';
   }
   this.graphName = graphName;
@@ -493,10 +492,6 @@ function parseMapValue(value) {
     map.set(parseMapValue.call(this, key), parseMapValue.call(this, value[key]));
   });
   return map;
-}
-
-function toLambda(stringLambda) {
-  return () => [stringLambda, "gremlin-groovy"];
 }
 
 /**

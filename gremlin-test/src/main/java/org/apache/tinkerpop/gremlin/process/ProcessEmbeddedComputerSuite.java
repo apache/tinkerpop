@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.search.path.ShortestPathVer
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
@@ -61,9 +62,9 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             ProgramTest.Traversals.class,
             WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
-            SideEffectTest.Traversals.class,
             SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
+            LambdaStepTest.Traversals.class,
 
             // compliance
             ComplexTest.Traversals.class,
@@ -89,7 +90,6 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             MatchTest.class,
             ProfileTest.class,
             ProgramTest.class,
-            SideEffectTest.class,
             SubgraphTest.class,
             TreeTest.class
     };

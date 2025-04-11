@@ -65,7 +65,6 @@ func init() {
 		regexp.MustCompile(`^l\[(.*)]$`):            toList,
 		regexp.MustCompile(`^s\[(.*)]$`):            toSet,
 		regexp.MustCompile(`^m\[(.+)]$`):            toMap,
-		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
 		regexp.MustCompile(`^t\[(.+)]$`):            toT,
 		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
 		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
@@ -303,11 +302,6 @@ func parseMapValue(mapVal interface{}, graphName string) interface{} {
 		// Not supported types.
 		return nil
 	}
-}
-
-// Parse lambda.
-func toLambda(name, graphName string) interface{} {
-	return &gremlingo.Lambda{Script: name}
 }
 
 func toT(name, graphName string) interface{} {

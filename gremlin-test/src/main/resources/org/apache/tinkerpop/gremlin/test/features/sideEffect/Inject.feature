@@ -39,10 +39,9 @@ Feature: Step - inject()
   Scenario: g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter l1 defined as "c[it.get().length()]"
     And the traversal of
       """
-      g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()
+      g.V(vid1).out().values("name").inject("daniel").as("a").map(__.length()).path()
       """
     When iterated to list
     Then the result should be unordered

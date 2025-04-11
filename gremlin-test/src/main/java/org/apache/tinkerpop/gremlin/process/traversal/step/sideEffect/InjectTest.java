@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
@@ -45,8 +44,6 @@ import static org.junit.Assert.assertFalse;
 public abstract class InjectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
-
-    public abstract Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id);
 
@@ -84,26 +81,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         assertEquals(1l, counter.get("lop").longValue());
         assertEquals(2l, counter.get("vadas").longValue());
         assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path() {
-        final Traversal<Vertex, Path> traversal = get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        int counter = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            final Path path = traversal.next();
-            if (path.get("a").equals("daniel")) {
-                assertEquals(2, path.size());
-                assertEquals(6, (int) path.get(1));
-            } else {
-                assertEquals(4, path.size());
-                assertEquals(path.<String>get("a").length(), (int) path.get(3));
-            }
-        }
-        assertEquals(4, counter);
     }
 
     @Test
@@ -195,11 +172,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
             return g.V(v1Id).out().inject(g.V(v2Id).next()).values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
-            return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
         }
 
         @Override

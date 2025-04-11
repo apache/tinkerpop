@@ -121,6 +121,12 @@ public final class StepDefinition {
             final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
             return String.format("[%s]", listItems);
         }));
+        add(Pair.with(Pattern.compile("s\\[\\]"), s -> String.format("{}")));
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
+            final String[] items = s.split(",");
+            final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
+            return String.format("{%s}", listItems);
+        }));
         add(Pair.with(Pattern.compile("d\\[(NaN)\\]"), s -> "NaN"));
         add(Pair.with(Pattern.compile("d\\[(Infinity)\\]"), s -> "Infinity"));
         add(Pair.with(Pattern.compile("d\\[(-Infinity)\\]"), s -> "-Infinity"));
@@ -147,28 +153,18 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), s -> String.format("Merge.%s", s)));
+        add(Pair.with(Pattern.compile("(null)"), s -> "null"));
+        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
+        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
 
         // the following force ignore conditions as they cannot be parsed by the grammar at this time. the grammar will
-        // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way for certain
-        // cases like the lambda item which likely won't make it to the grammar as it's raw groovy.
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
+        // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Edge as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
         }));
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("(null)"), s -> "null"));
-        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
-        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -237,10 +233,6 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), T::valueOf));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
-
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
 
         add(Pair.with(Pattern.compile("(null)"), s -> null));
         add(Pair.with(Pattern.compile("(true)"), s -> true));

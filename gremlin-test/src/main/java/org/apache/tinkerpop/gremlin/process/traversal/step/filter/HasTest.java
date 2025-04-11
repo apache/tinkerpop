@@ -56,8 +56,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(GremlinProcessRunner.class)
 public abstract class HasTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
-
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXname_markoX(final Object v1Id);
@@ -199,14 +197,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, ? extends Property<Object>> get_g_V_properties_hasValueXnull_nullX();
 
     public abstract Traversal<Vertex, String> get_g_V_properties_hasValueXnull_joshX_value();
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("ripple"), traversal);
-    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -983,11 +973,6 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e10Id) {
             return g.E(e11Id).outV().outE().has(T.id, e10Id);
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
-            return g.V().out("created").has("name", __.<String, Integer>map(s -> s.get().length()).is(P.gt(3))).values("name");
         }
 
         @Override

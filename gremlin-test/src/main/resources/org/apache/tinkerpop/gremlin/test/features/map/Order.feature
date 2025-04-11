@@ -133,21 +133,6 @@ Feature: Step - order()
       | age    |
       | age    |
 
-  Scenario: g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name
-    Given the modern graph
-    And using the parameter l1 defined as "c[it.value('age')]"
-    And the traversal of
-      """
-      g.V().hasLabel("person").order().by(l1, Order.desc).values("name")
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | peter  |
-      | josh   |
-      | marko  |
-      | vadas  |
-
   Scenario: g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX
     Given the modern graph
     And the traversal of
@@ -348,19 +333,6 @@ Feature: Step - order()
       | v[marko] |
       | v[josh]   |
       | v[peter] |
-
-  Scenario: g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX
-    Given the modern graph
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter l1 defined as "c[['1':it.get().value('age'),'2':it.get().value('age')*2,'3':it.get().value('age')*3,'4':it.get().value('age')]]"
-    And the traversal of
-      """
-      g.V(v1).hasLabel("person").map(l1).order(Scope.local).by(Column.values, Order.desc).by(Column.keys, Order.asc)
-      """
-    When iterated to list
-    Then the result should be ordered
-      | result |
-      | m[{"3":"d[87].i","2":"d[58].i","1":"d[29].i","4":"d[29].i"}] |
 
   Scenario: g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX
     Given the grateful graph

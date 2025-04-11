@@ -34,23 +34,6 @@ Feature: Step - choose()
       | d[29].i |
       | josh |
 
-  Scenario: g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name
-    Given the modern graph
-    And using the parameter pred1 defined as "c[it.label() == 'person']"
-    And the traversal of
-      """
-      g.V().choose(pred1, __.out("knows"), __.in("created")).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | josh |
-      | vadas |
-      | josh |
-      | josh |
-      | marko |
-      | peter |
-
   Scenario: g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name
     Given the modern graph
     And the traversal of

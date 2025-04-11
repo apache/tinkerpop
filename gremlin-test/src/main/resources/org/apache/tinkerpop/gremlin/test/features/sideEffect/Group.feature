@@ -115,12 +115,11 @@ Feature: Step - group()
       | result |
       | m[{"original":"d[771317].l", "":"d[160968].l", "cover":"d[368579].l"}] |
 
-  Scenario: g_V_group_byXname_substring_1X_byXconstantX1XX
+  Scenario: g_V_group_byXvaluesXnameX_substringX1XX_byXconstantX1XX
     Given the modern graph
-    And using the parameter l1 defined as "c[it.value('name').substring(0, 1)]"
     And the traversal of
       """
-      g.V().group().by(l1).by(__.constant(1))
+      g.V().group().by(__.values("name").substring(0,1)).by(__.constant(1))
       """
     When iterated to list
     Then the result should be unordered

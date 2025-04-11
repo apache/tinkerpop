@@ -18,29 +18,6 @@
 @StepClassBranch @StepBranch
 Feature: Step - branch()
 
-  Scenario: g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX
-    Given the modern graph
-    And using the parameter l1 defined as "c[it.get().label() == 'person' ? 'a' : 'b']"
-    And the traversal of
-      """
-      g.V().
-        branch(l1).
-          option("a", __.values("age")).
-          option("b", __.values("lang")).
-          option("b", __.values("name"))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | java |
-      | java |
-      | lop |
-      | ripple |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
-
   Scenario: g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX
     Given the modern graph
     And using the parameter xx1 defined as "d[1].l"

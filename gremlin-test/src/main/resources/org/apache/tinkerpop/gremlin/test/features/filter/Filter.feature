@@ -18,22 +18,20 @@
 @StepClassFilter @StepFilter
 Feature: Step - filter()
 
-  Scenario: g_V_filterXfalseX
+  Scenario: g_V_filterXisX0XX
     Given the modern graph
-    And using the parameter pred1 defined as "c[false]"
     And the traversal of
       """
-      g.V().filter(pred1)
+      g.V().filter(__.is(0))
       """
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_V_filterXtrueX
+  Scenario: g_V_filterXconstantX0XX
     Given the modern graph
-    And using the parameter pred1 defined as "c[true]"
     And the traversal of
       """
-      g.V().filter(pred1)
+      g.V().filter(__.constant(0))
       """
     When iterated to list
     Then the result should be unordered
@@ -45,12 +43,11 @@ Feature: Step - filter()
       | v[ripple] |
       | v[peter]  |
 
-  Scenario: g_V_filterXlang_eq_javaX
+  Scenario: g_V_filterXhasXlang_javaXX
     Given the modern graph
-    And using the parameter pred1 defined as "c[it.get().property('lang').orElse('none').equals('java')]"
     And the traversal of
       """
-      g.V().filter(pred1)
+      g.V().filter(__.has("lang","java"))
       """
     When iterated to list
     Then the result should be unordered
@@ -58,49 +55,45 @@ Feature: Step - filter()
       | v[ripple] |
       | v[lop]  |
 
-  Scenario: g_VX1X_filterXage_gt_30X
+  Scenario: g_VX1X_filterXhasXage_gtX30XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(vid1).filter(pred1)
+      g.V(vid1).filter(__.has("age",P.gt(30)))
       """
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_VX2X_filterXage_gt_30X
+  Scenario: g_VX2X_filterXhasXage_gtX30XXX
     Given the modern graph
     And using the parameter vid2 defined as "v[josh].id"
-    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(vid2).filter(pred1)
+      g.V(vid2).filter(__.has("age",P.gt(30)))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[josh] |
 
-  Scenario: g_VX1X_out_filterXage_gt_30X
+  Scenario: g_VX1X_out_filterXhasXage_gtX30XXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter pred1 defined as "c[it.get().property('age').orElse(0) > 30]"
     And the traversal of
       """
-      g.V(vid1).out().filter(pred1)
+      g.V(vid1).out().filter(__.has("age",P.gt(30)))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | v[josh] |
 
-  Scenario: g_V_filterXname_startsWith_m_OR_name_startsWith_pX
+  Scenario: g_V_filterXhasXname_startingWithXm_or_pXX
     Given the modern graph
-    And using the parameter pred1 defined as "c[{name = it.get().value('name'); name.startsWith('m') || name.startsWith('p')}]"
     And the traversal of
       """
-      g.V().filter(pred1)
+      g.V().filter(__.has("name", TextP.startingWith("m").or(TextP.startingWith("p"))))
       """
     When iterated to list
     Then the result should be unordered
@@ -108,22 +101,20 @@ Feature: Step - filter()
       | v[marko] |
       | v[peter]  |
 
-  Scenario: g_E_filterXfalseX
+  Scenario: g_E_filterXisX0XX
     Given the modern graph
-    And using the parameter pred1 defined as "c[false]"
     And the traversal of
       """
-      g.E().filter(pred1)
+      g.E().filter(__.is(0))
       """
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_E_filterXtrueX
+  Scenario: g_E_filterXconstantX0XX
     Given the modern graph
-    And using the parameter pred1 defined as "c[true]"
     And the traversal of
       """
-      g.E().filter(pred1)
+      g.E().filter(__.constant(0))
       """
     When iterated to list
     Then the result should be unordered

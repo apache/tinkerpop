@@ -34,12 +34,11 @@ Feature: Step - unfold()
       | e[josh-created->lop] |
       | e[peter-created->lop] |
 
-  Scenario: g_V_valueMap_unfold_mapXkeyX
+  Scenario: g_V_valueMap_unfold_mapXselectXkeysXX
     Given the modern graph
-    And using the parameter l1 defined as "c[it.get().getKey()]"
     And the traversal of
       """
-      g.V().valueMap().unfold().map(l1)
+      g.V().valueMap().unfold().map(__.select(keys))
       """
     When iterated to list
     Then the result should be unordered

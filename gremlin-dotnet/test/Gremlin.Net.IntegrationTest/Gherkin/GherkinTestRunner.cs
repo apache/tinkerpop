@@ -140,9 +140,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
+                    // after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
                     if (scenario.Name.Contains("withStrategies") || scenario.Name.Contains("withoutStrategies"))
                     {
-                        // after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.NoReason));
                         continue;
                     }
