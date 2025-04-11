@@ -337,7 +337,7 @@ func TestGraphBinaryV1(t *testing.T) {
 		t.Run("read-write HST datetime", func(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
-			source := time.Date(2022, 5, 10, 9, 51, 0, 0, GetTimezoneFromOffset(-36000))
+			source := time.Date(2022, 5, 10, 9, 51, 34, 123456789, GetTimezoneFromOffset(-36000))
 			buf, err := offsetDateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
 			res, err := offsetDateTimeReader(&buf, &pos)

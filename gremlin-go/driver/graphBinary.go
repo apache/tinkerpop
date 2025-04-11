@@ -526,11 +526,11 @@ func offsetDateTimeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinar
 		return nil, err
 	}
 	// construct time of day in nanoseconds
-	h := t.Hour()
-	m := t.Minute()
-	s := t.Second()
-	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + t.Nanosecond()
-	err = binary.Write(buffer, binary.BigEndian, int64(ns))
+	h := int64(t.Hour())
+	m := int64(t.Minute())
+	s := int64(t.Second())
+	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + int64(t.Nanosecond())
+	err = binary.Write(buffer, binary.BigEndian, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -1082,9 +1082,17 @@ func offsetDateTimeReader(data *[]byte, i *int) (interface{}, error) {
 	year := readIntSafe(data, i)
 	month := readByteSafe(data, i)
 	day := readByteSafe(data, i)
-	ns := readLongSafe(data, i)
+	totalNS := readLongSafe(data, i)
+	// calculate hour, minute, second, and ns from totalNS (int64) to prevent int overflow in the nanoseconds arg
+	ns := totalNS % 1e9
+	totalS := totalNS / 1e9
+	s := totalS % 60
+	totalM := totalS / 60
+	m := totalM % 60
+	h := totalM / 60
+
 	offset := readIntSafe(data, i)
-	datetime := time.Date(int(year), time.Month(month), int(day), 0, 0, 0, int(ns), GetTimezoneFromOffset(int(offset)))
+	datetime := time.Date(int(year), time.Month(month), int(day), int(h), int(m), int(s), int(ns), GetTimezoneFromOffset(int(offset)))
 	return datetime, nil
 }
 
