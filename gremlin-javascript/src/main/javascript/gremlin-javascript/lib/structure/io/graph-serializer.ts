@@ -274,6 +274,7 @@ export class GraphSON2Reader {
     const keys = Object.keys(obj);
     const result = {};
     for (let i = 0; i < keys.length; i++) {
+      // @ts-ignore
       result[keys[i]] = this.read(obj[keys[i]]);
     }
     return result;
