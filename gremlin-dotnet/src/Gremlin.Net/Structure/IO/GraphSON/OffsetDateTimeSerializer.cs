@@ -26,12 +26,12 @@ using System.Collections.Generic;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class DateSerializer : IGraphSONSerializer
+    internal class OffsetDateTimeSerializer : IGraphSONSerializer
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             DateTimeOffset value = objectData;
-            return GraphSONUtil.ToTypedValue("Date", value.ToUnixTimeMilliseconds());
+            return GraphSONUtil.ToTypedValue("OffsetDateTime", value.ToString("O"), "gx");
         }
     }
 }

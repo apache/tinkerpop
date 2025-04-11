@@ -25,7 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -38,14 +40,19 @@ import java.util.Set;
 public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements TraversalParent {
 
     private OffsetDateTime value;
-    private Traversal.Admin<S, OffsetDateTime> dateTraversal;
+    private Traversal.Admin<S, ?> dateTraversal;
+
+    public DateDiffStep(final Traversal.Admin traversal, final Date value) {
+        super(traversal);
+        this.value = value == null ? null : value.toInstant().atOffset(ZoneOffset.UTC);
+    }
 
     public DateDiffStep(final Traversal.Admin traversal, final OffsetDateTime value) {
         super(traversal);
         this.value = value;
     }
 
-    public DateDiffStep(final Traversal.Admin traversal, final Traversal<?, OffsetDateTime> dateTraversal) {
+    public DateDiffStep(final Traversal.Admin traversal, final Traversal<?, ?> dateTraversal) {
         super(traversal);
         this.dateTraversal = this.integrateChild(dateTraversal.asAdmin());
     }
@@ -53,18 +60,41 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     @Override
     protected Long map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
+        OffsetDateTime date;
+        OffsetDateTime otherDate;
 
-        if (!(object instanceof OffsetDateTime))
-            throw new IllegalArgumentException(
-                    String.format("DateDiff can only take DateTime as argument, encountered %s", object.getClass()));
+        if (!(object instanceof OffsetDateTime)) {
+            // allow incoming traverser to resolve into Date object for compatibility
+            if (object instanceof Date) {
+                date = ((Date) object).toInstant().atOffset(ZoneOffset.UTC);
+            } else {
+                // note: null handling consistency to be resolved https://issues.apache.org/jira/browse/TINKERPOP-3152
+                throw new IllegalArgumentException(
+                        String.format("DateDiff can only take OffsetDateTime or Date (deprecated) as argument, encountered %s", object.getClass()));
+            }
+        } else {
+            date = (OffsetDateTime) object;
+        }
 
-        final OffsetDateTime otherDate = value != null ? value :
-                dateTraversal != null ? TraversalUtil.apply(traverser, dateTraversal) : null;
+
+        if (null == value && null != dateTraversal) {
+            Object traversalDate = TraversalUtil.apply(traverser, dateTraversal);
+            if (traversalDate == null) {
+                otherDate = null;
+            } else if (traversalDate instanceof Date) {
+                // for cases when traversal resolves to a java.util.Date object (e.g. inject(new Date()))
+                otherDate = ((Date) traversalDate).toInstant().atOffset(ZoneOffset.UTC);
+            } else if (traversalDate instanceof OffsetDateTime) {
+                otherDate = (OffsetDateTime) traversalDate;
+            } else {
+                throw new IllegalArgumentException(String.format("DateDiff can only take OffsetDateTime or Date (deprecated) as argument, encountered %s", object.getClass()));
+            }
+        } else {
+            otherDate = value;
+        }
 
         // let's not throw exception and assume null date == 0
-        final long otherDateMs = otherDate == null ? 0 : otherDate.toEpochSecond();
-
-        return (((OffsetDateTime) object).toEpochSecond() - otherDateMs);
+        return otherDate == null ? date.toEpochSecond() : Duration.between(otherDate, date).getSeconds();
     }
 
     @Override
@@ -101,7 +131,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
         return this.value;
     }
 
-    public Traversal.Admin<S, OffsetDateTime> getDateTraversal() {
+    public Traversal.Admin<S, ?> getDateTraversal() {
         return this.dateTraversal;
     }
 }

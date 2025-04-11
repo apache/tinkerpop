@@ -66,6 +66,7 @@ import LongSerializer from './internals/LongSerializer.js';
 import LongSerializerNg from './internals/LongSerializerNg.js';
 import StringSerializer from './internals/StringSerializer.js';
 import DateSerializer from './internals/DateSerializer.js';
+import OffsetDateTimeSerializer from './internals/OffsetDateTimeSerializer.js';
 import DoubleSerializer from './internals/DoubleSerializer.js';
 import FloatSerializer from './internals/FloatSerializer.js';
 import ArraySerializer from './internals/ArraySerializer.js';
@@ -108,6 +109,7 @@ ioc.longSerializer = new LongSerializer(ioc);
 ioc.longSerializerNg = new LongSerializerNg(ioc);
 ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
 ioc.dateSerializer = new DateSerializer(ioc, ioc.DataType.DATE);
+ioc.offsetDateTimeSerializer = new OffsetDateTimeSerializer(ioc, ioc.DataType.OFFSETDATETIME);
 ioc.timestampSerializer = new DateSerializer(ioc, ioc.DataType.TIMESTAMP);
 ioc.classSerializer = new StringSerializer(ioc, ioc.DataType.CLASS);
 ioc.doubleSerializer = new DoubleSerializer(ioc);
@@ -151,6 +153,7 @@ export const {
   longSerializerNg,
   stringSerializer,
   dateSerializer,
+  offsetDateTimeSerializer,
   timestampSerializer,
   classSerializer,
   doubleSerializer,

@@ -27,6 +27,7 @@ import {
   BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
+  OffsetDateTimeSerializer,
   DirectionSerializer,
   EdgeSerializer,
   EnumSerializer,
@@ -273,7 +274,6 @@ export class GraphSON2Reader {
     const keys = Object.keys(obj);
     const result = {};
     for (let i = 0; i < keys.length; i++) {
-      // @ts-expect-error
       result[keys[i]] = this.read(obj[keys[i]]);
     }
     return result;
@@ -297,6 +297,7 @@ const graphSON2Deserializers = {
   'g:Float': NumberSerializer,
   'g:Double': NumberSerializer,
   'g:Date': DateSerializer,
+  'gx:OffsetDateTime': OffsetDateTimeSerializer,
   'g:Direction': DirectionSerializer,
   'g:Vertex': VertexSerializer,
   'g:Edge': EdgeSerializer,
@@ -317,6 +318,7 @@ const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
 const graphSON2Serializers = [
   NumberSerializer,
   DateSerializer,
+  OffsetDateTimeSerializer,
   BytecodeSerializer,
   TraverserSerializer,
   TraversalStrategySerializer,

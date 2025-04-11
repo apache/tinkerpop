@@ -201,9 +201,9 @@ describe('GraphSONWriter', function () {
     const expected = JSON.stringify({ "@type" : "g:Double", "@value" : "-Infinity" });
     assert.strictEqual(writer.write(Number.NEGATIVE_INFINITY), expected);
   });
-  it('should write Date', function() {
+  it('should write Date (as OffsetDateTime', function() {
     const writer = new GraphSONWriter();
-    const expected = JSON.stringify({ "@type" : "g:Date", "@value" : 1481750076295 });
+    const expected = JSON.stringify({ "@type" : "gx:OffsetDateTime", "@value" : "2016-12-14T21:14:36.295Z" });
     assert.strictEqual(writer.write(new Date(1481750076295)), expected);
   });
   it('should write boolean values', function () {

@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +58,16 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
         final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        // todo: update when go datetime serializer is implemented
-        sb.append("time.UnixMilli(" + dt.toInstant().toEpochMilli() + ")");
+        final String zoneInfo = dt.getOffset().getId().equals("Z") ? "UTC+00:00" : "UTC" + dt.getOffset().getId();
+        sb.append("time.Date(").append(dt.getYear()).
+                append(", ").append(dt.getMonthValue()).
+                append(", ").append(dt.getDayOfMonth()).
+                append(", ").append(dt.getHour()).
+                append(", ").append(dt.getMinute()).
+                append(", ").append(dt.getSecond()).
+                append(", ").append(dt.getNano()).
+                append(", time.FixedZone(\"").append(zoneInfo).append("\", ").append(dt.getOffset().getTotalSeconds()).append(")").
+                append(")");
         return null;
     }
 

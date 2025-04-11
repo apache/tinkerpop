@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,7 +167,7 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
 
     @Override
     public Void visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
-        return anonymize(ctx, Date.class);
+        return anonymize(ctx, OffsetDateTime.class);
     }
 
     @Override

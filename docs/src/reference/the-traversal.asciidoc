@@ -816,7 +816,7 @@ The `asDate()`-step (*map*) converts string or numeric input to Date.
 For string input only ISO-8601 format is supported. For numbers, the value is considered as the number of the
 milliseconds since "the epoch" (January 1, 1970, 00:00:00 GMT). Date input is passed without changes.
 
-If the incoming traverser is not a string, number or Date then an `IllegalArgumentException` will be thrown.
+If the incoming traverser is not a string, number, Date or OffsetDateTime then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
@@ -1358,7 +1358,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === DateAdd Step
 
 The `dateAdd()`-step (*map*) returns the value with the addition of the value number of units as specified by the DateToken. 
-If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
@@ -1377,7 +1377,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === DateDiff Step
 
 The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time. 
-If the incoming traverser is not a Date, then an `IllegalArgumentException` will be thrown.
+If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
 ----
@@ -1389,6 +1389,7 @@ g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(Date)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(java.util.Date)++[`dateDiff(OffsetDateTime)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#dateDiff(org.apache.tinkerpop.gremlin.process.traversal.Traversal)++[`dateDiff(Traversal)`]
 
 [[dedup-step]]

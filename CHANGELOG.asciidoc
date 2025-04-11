@@ -65,8 +65,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `auth` module in `gremlin-python` for pluggable authentication.
 * Fixed `GremlinLangScriptEngine` handling for some strategies.
 * Updated Docker test suite set-up in `gremlin-python` to work with HTTP driver/server.
-* Added `DateTime` serializer for Java and Python according for GraphBinaryV4.
-* Replaced `Date` with `OffsetDateTime` in Java core.
+* Updated `DateTime` serializers for Java and Python according to GraphBinaryV4.
 * Defined GraphBinaryV4 specification.
 * Defined GraphSONV4 specification.
 * Update serializers for `label` of an `Element` as a singleton list of string for GraphBinaryV4.
@@ -119,6 +118,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Fixed bug in `group()` value traversal of the second `by()` where a `CollectingBarrierStep` could produce an unexpected filtering effect when `ReducingBarrierStep` or `SupplyingBarrierStep` instances were not taken into account.
 * Changed `DetachedFactory` to special case the handling of `ComputerAdjacentVertex` which doesn't carry properties but still needs to be detachable for OLAP cases.
 * Deprecated `ProfilingAware.prepareForProfiling` method preferring to simply `resetBarrierFromValueTraversal` from the `Grouping` interface after strategy application.
+* Deprecated `Date` in favor of `OffsetDateTime` as the default date type in core, `Date` is still supported as input to date steps for compatibility.
+* Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
 * Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.

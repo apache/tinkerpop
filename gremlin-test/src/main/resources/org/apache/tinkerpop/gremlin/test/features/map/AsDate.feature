@@ -32,6 +32,18 @@ Feature: Step - asDate()
       | dt[2023-08-02T00:00:00Z] |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXstr_offsetX_asDate
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject("2023-08-02T00:00:00-07:00").asDate()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | dt[2023-08-02T00:00:00-07:00] |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1694017707000X_asDate
     Given the empty graph
     And the traversal of

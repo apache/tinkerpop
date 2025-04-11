@@ -159,10 +159,9 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         // child at 2 is the date argument to datetime() and comes enclosed in quotes
         final String dtString = ctx.getChild(2).getText();
         final OffsetDateTime dt = DatetimeHelper.parse(removeFirstAndLastCharacters(dtString));
-        // todo: update when dotnet datetime serializer is implemented
-        sb.append("DateTimeOffset.FromUnixTimeMilliseconds(");
-        sb.append(dt.toInstant().toEpochMilli());
-        sb.append(")");
+        sb.append("DateTimeOffset.Parse(\"");
+        sb.append(dt);
+        sb.append("\")");
         return null;
     }
 

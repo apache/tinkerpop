@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -930,6 +931,15 @@ public class __ {
      */
     public static <A> GraphTraversal<A, OffsetDateTime> dateAdd(final DT dateToken, final int value) {
         return __.<A>start().dateAdd(dateToken, value);
+    }
+
+    /**
+     * @see GraphTraversal#dateDiff(OffsetDateTime)
+     * @deprecated As of release 3.8.0, deprecated in favor of {@link GraphTraversal#dateDiff(OffsetDateTime)}.
+     */
+    @Deprecated
+    public static <A> GraphTraversal<A, Long> dateDiff(final Date value) {
+        return __.<A>start().dateDiff(value);
     }
 
     /**

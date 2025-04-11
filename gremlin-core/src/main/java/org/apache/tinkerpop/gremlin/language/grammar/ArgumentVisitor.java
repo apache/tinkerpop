@@ -24,7 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.lang.reflect.Array;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -70,8 +71,8 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for Date type.
      */
-    public Date parseDate(final GremlinParser.DateArgumentContext ctx) {
-        return (Date) visitDateArgument(ctx);
+    public OffsetDateTime parseDate(final GremlinParser.DateArgumentContext ctx) {
+        return (OffsetDateTime) visitDateArgument(ctx);
     }
 
     /**

@@ -213,6 +213,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -2225,8 +2226,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link DateDiffStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
+     * @deprecated As of release 3.8.0, deprecated in favor of {@link GraphTraversal#dateDiff(OffsetDateTime)}.
      */
-    public default GraphTraversal<S, Long> dateDiff(final OffsetDateTime value) {
+    @Deprecated
+    public default GraphTraversal<S, Long> dateDiff(final Date value) {
         this.asAdmin().getGremlinLang().addStep(Symbols.dateDiff, value);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
     }
@@ -2238,7 +2241,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, OffsetDateTime> dateTraversal) {
+    public default GraphTraversal<S, Long> dateDiff(final OffsetDateTime value) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.dateDiff, value);
+        return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
+    }
+
+    /**
+     * Returns the difference between two dates in epoch time.
+     *
+     * @param dateTraversal a traversal that supplies a {@link OffsetDateTime} object ({@link Date} is also accepted for compatibility).
+     * @return the traversal with an appended {@link DateDiffStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, ?> dateTraversal) {
         this.asAdmin().getGremlinLang().addStep(Symbols.dateDiff, dateTraversal);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }

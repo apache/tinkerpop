@@ -26,7 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -37,10 +39,27 @@ import java.util.Set;
 public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
 
     private DT dateToken;
+    private Duration duration;
     private int value;
 
     public DateAddStep(final Traversal.Admin traversal, final DT dateToken, final int value) {
         super(traversal);
+        switch (dateToken) {
+            case second:
+                this.duration = Duration.ofSeconds(value);
+                break;
+            case minute:
+                this.duration = Duration.ofMinutes(value);
+                break;
+            case hour:
+                this.duration= Duration.ofHours(value);
+                break;
+            case day:
+                this.duration= Duration.ofDays(value);
+                break;
+            default:
+                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
+        }
         this.dateToken = dateToken;
         this.value = value;
     }
@@ -48,30 +67,20 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     @Override
     protected OffsetDateTime map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
+        OffsetDateTime date;
 
-        if (!(object instanceof OffsetDateTime)) throw new IllegalArgumentException("dateAdd accept only DateTime.");
-
-        OffsetDateTime date = (OffsetDateTime) object;
-        OffsetDateTime new_date;
-
-        switch (dateToken) {
-            case second:
-                new_date = date.plus(Duration.ofSeconds(value));
-                break;
-            case minute:
-                new_date = date.plus(Duration.ofMinutes(value));
-                break;
-            case hour:
-                new_date = date.plus(Duration.ofHours(value));
-                break;
-            case day:
-                new_date = date.plus(Duration.ofDays(value));
-                break;
-            default:
-                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
+        if (!(object instanceof OffsetDateTime)) {
+            // allow incoming traverser to resolve into Date object for compatibility
+            if (object instanceof Date) {
+                date = ((Date) object).toInstant().atOffset(ZoneOffset.UTC);
+            } else {
+                throw new IllegalArgumentException("dateAdd() accept only OffsetDateTime or Date (deprecated).");
+            }
+        } else {
+            date = (OffsetDateTime) object;
         }
 
-        return new_date;
+        return date.plus(duration);
     }
 
     @Override
@@ -88,6 +97,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + dateToken.hashCode();
+        result = 31 * result + duration.hashCode();
         result = 31 * result + value;
         return result;
     }
@@ -96,6 +106,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
     public DateAddStep<S> clone() {
         final DateAddStep<S> clone = (DateAddStep<S>) super.clone();
         clone.value = this.value;
+        clone.duration = this.duration;
         clone.dateToken = this.dateToken;
         return clone;
     }

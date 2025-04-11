@@ -89,11 +89,28 @@ export class NumberSerializer extends TypeSerializer<number> {
     return typeof value === 'number';
   }
 }
-
+// consolidate into DateTime when implementing HTTP for js
 export class DateSerializer extends TypeSerializer<Date> {
   serialize(item: Date) {
     return {
       [typeKey]: 'g:Date',
+      [valueKey]: item.getTime(),
+    };
+  }
+
+  deserialize(obj: SerializedValue) {
+    return new Date(obj[valueKey]);
+  }
+
+  canBeUsedFor(value: unknown) {
+    return value instanceof Date;
+  }
+}
+
+export class OffsetDateTimeSerializer extends TypeSerializer<Date> {
+  serialize(item: Date) {
+    return {
+      [typeKey]: 'gx:OffsetDateTime',
       [valueKey]: item.getTime(),
     };
   }

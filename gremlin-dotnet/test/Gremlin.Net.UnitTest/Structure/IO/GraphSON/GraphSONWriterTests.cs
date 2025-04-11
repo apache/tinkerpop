@@ -232,7 +232,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             var graphSon = writer.WriteObject(dateTimeOffset);
 
-            const string expected = "{\"@type\":\"g:Date\",\"@value\":1475583442552}";
+            const string expected = "{\"@type\":\"gx:OffsetDateTime\",\"@value\":\"2016-10-04T12:17:22.5520000+00:00\"}";
             Assert.Equal(expected, graphSon);
         }
 
