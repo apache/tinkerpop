@@ -56,7 +56,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
                     'const traversalModule = require(\'../../lib/process/traversal\');\n' +
-                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
+                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, LambdaRestrictionStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +
@@ -89,10 +89,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
 
     writer.writeLine('const gremlins = {')
     gremlins.each { k,v ->
-        // skipping lambdas until we decide for sure that they are out in 4.x
-        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
-            writer.writeLine("    '${k}': [],  // skipping as it contains a lambda")
-        } else if (staticTranslate.containsKey(k)) {
+        if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
             writer.write("    ")

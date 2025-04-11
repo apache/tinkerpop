@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TernaryBooleanLogicsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
@@ -55,12 +56,12 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
+            LambdaStepTest.Traversals.class,
             MatchTest.CountMatchTraversals.class,
             MatchTest.GreedyMatchTraversals.class,
             ProfileTest.Traversals.class,
             WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
-            SideEffectTest.Traversals.class,
             SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
 
@@ -75,7 +76,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             // decorations
             ElementIdStrategyProcessTest.class,
             EventStrategyProcessTest.class,
-            PartitionStrategyProcessTest.class,
 
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
@@ -90,7 +90,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] testsToEnforce = new Class<?>[]{
             ProfileTest.class,
-            SideEffectTest.class,
             SubgraphTest.class,
             TreeTest.class,
     };

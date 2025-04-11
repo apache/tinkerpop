@@ -70,10 +70,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
 
     writer.writeLine('world.gremlins = {')
     gremlins.each { k,v ->
-        // skipping lambdas until we decide for sure that they are out in 4.x
-        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
-            writer.writeLine("    '${k}': [],  # skipping as it contains a lambda")
-        } else if (staticTranslate.containsKey(k)) {
+        if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
             writer.write("    '")

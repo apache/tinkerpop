@@ -56,6 +56,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
 * Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.
 * Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
+* Removed lambda oriented Gremlin testing from Gherkin test suite.
+* Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

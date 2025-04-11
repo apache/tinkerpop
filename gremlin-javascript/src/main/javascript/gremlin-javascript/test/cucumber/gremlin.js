@@ -26,7 +26,7 @@
 
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
-const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy } = require('../../lib/process/traversal-strategy');
+const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, LambdaRestrictionStrategy } = require('../../lib/process/traversal-strategy');
 const __ = graphTraversalModule.statics;
 const Barrier = traversalModule.barrier
 const Cardinality = traversalModule.cardinality
@@ -53,13 +53,11 @@ const TextP = traversalModule.TextP
 const WithOptions = traversalModule.withOptions
 
 const gremlins = {
-    'g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX': [],  // skipping as it contains a lambda
     g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX: [function({g, xx1, xx2}) { return g.V().branch(__.label().is("person").count()).option(xx1, __.values("age")).option(xx2, __.values("lang")).option(xx2, __.values("name")) }], 
     g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX_optionXany__labelX: [function({g, xx1, xx2}) { return g.V().branch(__.label().is("person").count()).option(xx1, __.values("age")).option(xx2, __.values("lang")).option(xx2, __.values("name")).option(Pick.any, __.label()) }], 
     g_V_branchXageX_optionXltX30X__youngX_optionXgtX30X__oldX_optionXnone__on_the_edgeX: [function({g}) { return g.V().hasLabel("person").branch(__.values("age")).option(P.lt(30), __.constant("young")).option(P.gt(30), __.constant("old")).option(Pick.none, __.constant("on the edge")) }], 
     g_V_branchXidentityX_optionXhasLabelXsoftwareX__inXcreatedX_name_order_foldX_optionXhasXname_vadasX__ageX_optionXneqX123X__bothE_countX: [function({g}) { return g.V().branch(__.identity()).option(__.hasLabel("software"), __.in_("created").values("name").order().fold()).option(__.has("name", "vadas"), __.values("age")).option(P.neq(123), __.bothE().count()) }], 
     g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX: [function({g, xx1, xx2}) { return g.V().choose(__.out().count()).option(xx1, __.values("name")).option(xx2, __.values("age")) }], 
-    'g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name': [],  // skipping as it contains a lambda
     g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name: [function({g}) { return g.V().choose(__.hasLabel("person").and().out("created"), __.out("knows"), __.identity()).values("name") }], 
     g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name: [function({g}) { return g.V().choose(__.label()).option("blah", __.out("knows")).option("bleep", __.out("created")).option(Pick.none, __.identity()).values("name") }], 
     g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name: [function({g}) { return g.V().choose(__.out("knows").count().is(P.gt(0)), __.out("knows")).values("name") }], 
@@ -96,7 +94,6 @@ const gremlins = {
     g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX: [function({g, vid1}) { return g.V(vid1).repeat(__.groupCount("m").by(__.loops()).out()).times(3).cap("m") }], 
     g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX: [function({g}) { return g.V().repeat(__.both()).times(10).as("a").out().as("b").select("a", "b").count() }], 
     g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name: [function({g, vid1}) { return g.V(vid1).repeat(__.out()).until(__.outE().count().is(0)).values("name") }], 
-    'g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX': [],  // skipping as it contains a lambda
     g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX: [function({g}) { return g.V().has("name", "marko").repeat(__.outE().inV().simplePath()).until(__.has("name", "ripple")).path().by("name").by(T.label) }], 
     g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name: [function({g}) { return g.V().has("loops", "name", "loop").repeat(__.in_()).times(5).path().by("name") }], 
     g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX: [function({g}) { return g.V().repeat(__.out().repeat(__.out().order().by("name", Order.desc)).times(1)).times(1).limit(1).path().by("name") }], 
@@ -198,16 +195,15 @@ const gremlins = {
     g_V_properties_drop: [function({g}) { return g.addV().property("name", "bob").addV().property("name", "alice") }, function({g}) { return g.V().properties().drop() }, function({g}) { return g.V() }, function({g}) { return g.V().properties() }], 
     g_E_propertiesXweightX_drop: [function({g}) { return g.addV("person").property("name", "marko").property("age", 29).as("marko").addV("person").property("name", "vadas").property("age", 27).as("vadas").addV("software").property("name", "lop").property("lang", "java").as("lop").addV("person").property("name", "josh").property("age", 32).as("josh").addV("software").property("name", "ripple").property("lang", "java").as("ripple").addV("person").property("name", "peter").property("age", 35).as("peter").addE("knows").from_("marko").to("vadas").property("weight", 0.5).addE("knows").from_("marko").to("josh").property("weight", 1.0).addE("created").from_("marko").to("lop").property("weight", 0.4).addE("created").from_("josh").to("ripple").property("weight", 1.0).addE("created").from_("josh").to("lop").property("weight", 0.4).addE("created").from_("peter").to("lop").property("weight", 0.2) }, function({g}) { return g.E().properties("weight").drop() }, function({g}) { return g.E().properties() }], 
     g_V_properties_propertiesXstartTimeX_drop: [function({g}) { return g.addV().property("name", "bob").property(Cardinality.list, "location", "ny", "startTime", 2014, "endTime", 2016).property(Cardinality.list, "location", "va", "startTime", 2016).addV().property("name", "alice").property(Cardinality.list, "location", "va", "startTime", 2014, "endTime", 2016).property(Cardinality.list, "location", "ny", "startTime", 2016) }, function({g}) { return g.V().properties().properties("startTime").drop() }, function({g}) { return g.V().properties().properties() }, function({g}) { return g.V().properties().properties("startTime") }], 
-    'g_V_filterXfalseX': [],  // skipping as it contains a lambda
-    'g_V_filterXtrueX': [],  // skipping as it contains a lambda
-    'g_V_filterXlang_eq_javaX': [],  // skipping as it contains a lambda
-    'g_VX1X_filterXage_gt_30X': [],  // skipping as it contains a lambda
-    'g_VX2X_filterXage_gt_30X': [],  // skipping as it contains a lambda
-    'g_VX1X_out_filterXage_gt_30X': [],  // skipping as it contains a lambda
-    'g_V_filterXname_startsWith_m_OR_name_startsWith_pX': [],  // skipping as it contains a lambda
-    'g_E_filterXfalseX': [],  // skipping as it contains a lambda
-    'g_E_filterXtrueX': [],  // skipping as it contains a lambda
-    'g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name': [],  // skipping as it contains a lambda
+    g_V_filterXisX0XX: [function({g}) { return g.V().filter(__.is(0)) }], 
+    g_V_filterXconstantX0XX: [function({g}) { return g.V().filter(__.constant(0)) }], 
+    g_V_filterXhasXlang_javaXX: [function({g}) { return g.V().filter(__.has("lang", "java")) }], 
+    g_VX1X_filterXhasXage_gtX30XXX: [function({g, vid1}) { return g.V(vid1).filter(__.has("age", P.gt(30))) }], 
+    g_VX2X_filterXhasXage_gtX30XXX: [function({g, vid2}) { return g.V(vid2).filter(__.has("age", P.gt(30))) }], 
+    g_VX1X_out_filterXhasXage_gtX30XXX: [function({g, vid1}) { return g.V(vid1).out().filter(__.has("age", P.gt(30))) }], 
+    g_V_filterXhasXname_startingWithXm_or_pXX: [function({g}) { return g.V().filter(__.has("name", TextP.startingWith("m").or(TextP.startingWith("p")))) }], 
+    g_E_filterXisX0XX: [function({g}) { return g.E().filter(__.is(0)) }], 
+    g_E_filterXconstantX0XX: [function({g}) { return g.E().filter(__.constant(0)) }], 
     g_VX1X_hasXnameX: [function({g, vid1}) { return g.V(vid1).has("name") }], 
     g_VX1X_hasXcircumferenceX: [function({g, vid1}) { return g.V(vid1).has("circumference") }], 
     g_VX1X_hasXname_markoX: [function({g, vid1}) { return g.V(vid1).has("name", "marko") }], 
@@ -426,8 +422,8 @@ const gremlins = {
     g_withoutStrategiesXIncidentToAdjacentStrategyX_V_outE_inV: [function({g}) { return g.withoutStrategies(IncidentToAdjacentStrategy).V().outE().inV() }], 
     g_withStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX: [function({g}) { return g.withStrategies(new InlineFilterStrategy()).V().filter(__.has("name", "marko")) }], 
     g_withoutStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX: [function({g}) { return g.withoutStrategies(InlineFilterStrategy).V().filter(__.has("name", "marko")) }], 
-    'g_withStrategiesXLambdaRestrictionStrategyX_V': [],  // skipping as it contains a lambda
-    'g_withoutStrategiesXLambdaRestrictionStrategyX_V': [],  // skipping as it contains a lambda
+    g_withStrategiesXLambdaRestrictionStrategyX_V: [function({g}) { return g.withStrategies(new LambdaRestrictionStrategy()).V() }], 
+    g_withoutStrategiesXLambdaRestrictionStrategyX_V: [function({g}) { return g.withoutStrategies(LambdaRestrictionStrategy).V() }], 
     g_withStrategiesXLazyBarrierStrategyX_V_out_bothE_count: [function({g}) { return g.withStrategies(new LazyBarrierStrategy()).V().out().bothE().count() }], 
     g_withoutStrategiesXLazyBarrierStrategyX_V_out_bothE_count: [function({g}) { return g.withoutStrategies(LazyBarrierStrategy).V().out().bothE().count() }], 
     g_withStrategiesXMatchAlgorithmStrategyXmatchAlgorithm_CountMatchAlgorithmXX_V_matchXa_knows_b__a_created_cX: [function({g}) { return g.withStrategies(new MatchAlgorithmStrategy({matchAlgorithm: "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep$CountMatchAlgorithm"})).V().match(__.as("a").out("knows").as("b"), __.as("a").out("created").as("c")) }], 
@@ -780,6 +776,7 @@ const gremlins = {
     g_EX11X_elementMap: [function({g, eid11}) { return g.E(eid11).elementMap() }], 
     g_V_elementMapXname_age_nullX: [function({g}) { return g.V().elementMap("name", "age", null) }], 
     g_V_asXaX_flatMapXselectXaXX: [function({g}) { return g.V().as("a").flatMap(__.select("a")) }], 
+    g_V_valuesXnameX_flatMapXsplitXaX_unfoldX: [function({g}) { return g.V().values("name").flatMap(__.split("a").unfold()) }], 
     g_V_fold: [function({g}) { return g.V().fold() }], 
     g_V_fold_unfold: [function({g}) { return g.V().fold().unfold() }], 
     g_V_age_foldX0_plusX: [function({g}) { return g.V().values("age").fold(0, Operator.sum) }], 
@@ -838,12 +835,11 @@ const gremlins = {
     g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX: [function({g, vid1}) { return g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").or().loops().is(2)).has("name", "peter").path().by("name") }], 
     g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX: [function({g, vid1}) { return g.V(vid1).repeat(__.both().simplePath()).until(__.has("name", "peter").and().loops().is(3)).has("name", "peter").path().by("name") }], 
     g_V_emitXhasXname_markoX_or_loops_isX2XX_repeatXoutX_valuesXnameX: [function({g}) { return g.V().emit(__.has("name", "marko").or().loops().is(2)).repeat(__.out()).values("name") }], 
-    'g_VX1X_mapXnameX': [],  // skipping as it contains a lambda
-    'g_VX1X_outE_label_mapXlengthX': [],  // skipping as it contains a lambda
-    'g_VX1X_out_mapXnameX_mapXlengthX': [],  // skipping as it contains a lambda
-    'g_VX1X_out_mapXlambdaXnameXX_mapXlambdaXlengthXX': [],  // skipping as it contains a lambda
-    'g_withPath_V_asXaX_out_mapXa_nameX': [],  // skipping as it contains a lambda
-    'g_withPath_V_asXaX_out_out_mapXa_name_it_nameX': [],  // skipping as it contains a lambda
+    g_VX1X_mapXvaluesXnameXX: [function({g, vid1}) { return g.V(vid1).map(__.values("name")) }], 
+    g_VX1X_outE_label_mapXlengthX: [function({g, vid1}) { return g.V(vid1).outE().label().map(__.length()) }], 
+    g_VX1X_out_mapXvaluesXnameXX_mapXlengthX: [function({g, vid1}) { return g.V(vid1).out().map(__.values("name")).map(__.length()) }], 
+    g_withPath_V_asXaX_out_mapXselectXaX_valuesXnameXX: [function({g}) { return g.withPath().V().as("a").out().map(__.select("a").values("name")) }], 
+    g_withPath_V_asXaX_out_out_asXbX_mapXselectXaX_valuesXnameX_concatXselectXbX_valuesXnameXXX: [function({g}) { return g.withPath().V().as("a").out().out().as("b").map(__.select("a").values("name").concat(__.select("b").values("name"))) }], 
     g_V_mapXselectXaXX: [function({g}) { return g.V().as("a").map(__.select("a")) }], 
     g_V_mapXconstantXnullXX: [function({g}) { return g.V().map(__.constant(null)) }], 
     g_V_valueMap_matchXa_selectXnameX_bX: [function({g}) { return g.V().valueMap().match(__.as("a").select("name").as("b")) }], 
@@ -1083,7 +1079,6 @@ const gremlins = {
     g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX: [function({g}) { return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select("a", "b") }], 
     g_V_both_hasLabelXpersonX_order_byXage_descX_limitX5X_name: [function({g}) { return g.V().both().hasLabel("person").order().by("age", Order.desc).limit(5).values("name") }], 
     g_V_properties_order_byXkey_descX_key: [function({g}) { return g.V().properties().order().by(T.key, Order.desc).key() }], 
-    'g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name': [],  // skipping as it contains a lambda
     g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX: [function({g}) { return g.V().hasLabel("person").group().by("name").by(__.outE().values("weight").sum()).order(Scope.local).by(Column.values) }], 
     g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX_byXcountXlocalX_descX: [function({g}) { return g.V().map(__.bothE().values("weight").order().by(Order.asc).fold()).order().by(__.sum(Scope.local), Order.desc).by(__.count(Scope.local), Order.desc) }], 
     g_V_group_byXlabelX_byXname_order_byXdescX_foldX: [function({g}) { return g.V().group().by(T.label).by(__.values("name").order().by(Order.desc).fold()) }], 
@@ -1098,7 +1093,6 @@ const gremlins = {
     g_V_fold_orderXlocalX_byXage_descX: [function({g}) { return g.V().fold().order(Scope.local).by("age", Order.desc) }], 
     g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX: [function({g}) { return g.V().or(__.hasLabel("person"), __.has("software", "name", "lop")).order().by("age") }], 
     g_withStrategiesXProductiveByStrategyX_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX: [function({g}) { return g.withStrategies(new ProductiveByStrategy()).V().or(__.hasLabel("person"), __.has("software", "name", "lop")).order().by("age") }], 
-    'g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX': [],  // skipping as it contains a lambda
     g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX: [function({g}) { return g.V().has("song", "name", "OH BOY").out("followedBy").out("followedBy").order().by("performances").by("songType", Order.desc).by("name") }], 
     g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name: [function({g}) { return g.V().hasLabel("song").order().by("performances", Order.desc).by("name").range(110, 120).values("name") }], 
     g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold: [function({g, vid1}) { return g.V(vid1).elementMap().order(Scope.local).by(Column.keys, Order.desc).unfold() }], 
@@ -1336,7 +1330,7 @@ const gremlins = {
     g_V_valuesXnameX_trim: [function({g}) { return g.addV("person").property("name", " marko ").property("age", 29).as("marko").addV("person").property("name", "  vadas  ").property("age", 27).as("vadas").addV("software").property("name", "  lop").property("lang", "java").as("lop").addV("person").property("name", "josh  ").property("age", 32).as("josh").addV("software").property("name", "   ripple   ").property("lang", "java").as("ripple").addV("person").property("name", "peter").property("age", 35).as("peter").addE("knows").from_("marko").to("vadas").property("weight", 0.5).addE("knows").from_("marko").to("josh").property("weight", 1.0).addE("created").from_("marko").to("lop").property("weight", 0.4).addE("created").from_("josh").to("ripple").property("weight", 1.0).addE("created").from_("josh").to("lop").property("weight", 0.4).addE("created").from_("peter").to("lop").property("weight", 0.2) }, function({g}) { return g.V().values("name").trim() }], 
     g_V_valuesXnameX_order_fold_trimXlocalX: [function({g}) { return g.addV("person").property("name", " marko ").property("age", 29).as("marko").addV("person").property("name", "  vadas  ").property("age", 27).as("vadas").addV("software").property("name", "  lop").property("lang", "java").as("lop").addV("person").property("name", "josh  ").property("age", 32).as("josh").addV("software").property("name", "   ripple   ").property("lang", "java").as("ripple").addV("person").property("name", "peter").property("age", 35).as("peter").addE("knows").from_("marko").to("vadas").property("weight", 0.5).addE("knows").from_("marko").to("josh").property("weight", 1.0).addE("created").from_("marko").to("lop").property("weight", 0.4).addE("created").from_("josh").to("ripple").property("weight", 1.0).addE("created").from_("josh").to("lop").property("weight", 0.4).addE("created").from_("peter").to("lop").property("weight", 0.2) }, function({g}) { return g.V().values("name").order().fold().trim(Scope.local) }], 
     g_V_localXoutE_foldX_unfold: [function({g}) { return g.V().local(__.outE().fold()).unfold() }], 
-    'g_V_valueMap_unfold_mapXkeyX': [],  // skipping as it contains a lambda
+    g_V_valueMap_unfold_mapXselectXkeysXX: [function({g}) { return g.V().valueMap().unfold().map(__.select(Column.keys)) }], 
     g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold: [function({g, vid6, vid1}) { return g.V(vid1).repeat(__.both().simplePath()).until(__.hasId(vid6)).path().by("name").unfold() }], 
     g_V_valueMap: [function({g}) { return g.V().valueMap() }], 
     g_V_valueMapXtrueX: [function({g}) { return g.V().valueMap(true) }], 
@@ -1568,7 +1562,7 @@ const gremlins = {
     g_V_hasXlangX_group_byXlangX_byXcountX: [function({g}) { return g.V().has("lang").group().by("lang").by(__.count()) }], 
     g_V_group_byXoutE_countX_byXnameX: [function({g}) { return g.V().order().by("name").group().by(__.outE().count()).by("name") }], 
     g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX: [function({g}) { return g.V().repeat(__.both("followedBy")).times(2).group().by("songType").by(__.count()) }], 
-    'g_V_group_byXname_substring_1X_byXconstantX1XX': [],  // skipping as it contains a lambda
+    g_V_group_byXvaluesXnameX_substringX1XX_byXconstantX1XX: [function({g}) { return g.V().group().by(__.values("name").substring(0, 1)).by(__.constant(1)) }], 
     g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X: [function({g}) { return g.V().out().group().by(T.label).select("person").unfold().out("created").values("name").limit(2) }], 
     g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX: [function({g}) { return g.V().hasLabel("song").group().by("name").by(__.properties().groupCount().by(T.label)) }], 
     g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX: [function({g}) { return g.V().out("followedBy").group().by("songType").by(__.bothE().group().by(T.label).by(__.values("weight").sum())) }], 
@@ -1604,7 +1598,7 @@ const gremlins = {
     g_V_outXcreatedX_groupCount_byXnameX_byXageX: [function({g}) { return g.V().out("created").groupCount().by("name").by("age") }], 
     g_V_outXcreatedX_groupCountXxX_byXnameX_byXageX: [function({g}) { return g.V().out("created").groupCount("x").by("name").by("age") }], 
     g_VX1X_out_injectXv2X_name: [function({g, vid1, v2}) { return g.V(vid1).out().inject(v2).values("name") }], 
-    'g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path': [],  // skipping as it contains a lambda
+    g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path: [function({g, vid1}) { return g.V(vid1).out().values("name").inject("daniel").as("a").map(__.length()).path() }], 
     g_VX1X_injectXg_VX4XX_out_name: [function({g, vid1, v2}) { return g.V(vid1).inject(v2).out().values("name") }], 
     g_injectXnull_1_3_nullX: [function({g}) { return g.inject(null, 1, 3, null) }], 
     g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX: [function({g}) { return g.inject(10, 20, null, 20, 10, 10).groupCount("x").dedup().as("y").project("a", "b").by().by(__.select("x").select(__.select("y"))) }], 
@@ -1635,6 +1629,11 @@ const gremlins = {
     g_V_sackXassignX_byXageX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").sack() }], 
     g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack: [function({g, xx1}) { return g.withSack(xx1, Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in_("knows").barrier().sack() }], 
     g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack: [function({g, xx1}) { return g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack() }], 
+    g_V_sideEffectXidentityX: [function({g}) { return g.V().sideEffect(__.identity()) }], 
+    g_V_sideEffectXidentity_valuesXnameXX: [function({g}) { return g.V().sideEffect(__.identity().values("name")) }], 
+    g_V_sideEffectXpropertyXage_22X: [function({g}) { return g.addV("person").property("age", 21) }, function({g}) { return g.V().sideEffect(__.property("age", 22)) }, function({g}) { return g.V().has("age", 21) }, function({g}) { return g.V().has("age", 22) }], 
+    g_V_group_byXvaluesXnameX_sideEffectXconstantXzyxXX_substringX1XX_byXconstantX1X_sideEffectXconstantXxyzXXX: [function({g}) { return g.V().group().by(__.values("name").sideEffect(__.constant("zyx")).substring(0, 1)).by(__.constant(1).sideEffect(__.constant("xyz"))) }], 
+    g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold: [function({g}) { return g.withSideEffect("x", new Set([])).V().both().both().sideEffect(__.store("x").by("name")).cap("x").unfold() }], 
     g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX: [function({g}) { return g.V().has("age").groupCount("a").by("name").out().cap("a") }], 
     g_V_groupXaX_byXageX_capXaX: [function({g}) { return g.V().group("a").by("age").cap("a") }], 
     g_V_groupXaX_byXnameX_capXaX: [function({g}) { return g.V().group("a").by("name").cap("a") }], 
@@ -1642,11 +1641,12 @@ const gremlins = {
     g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX: [function({g}) { return g.V().repeat(__.out().group("a").by("name").by(__.count())).times(2).cap("a") }], 
     g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX: [function({g}) { return g.V().group("a").by(T.label).by(__.outE().values("weight").sum()).cap("a") }], 
     g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX: [function({g}) { return g.V().repeat(__.both("followedBy")).times(2).group("a").by("songType").by(__.count()).cap("a") }], 
-    'g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX': [],  // skipping as it contains a lambda
+    g_V_groupXaX_byXvaluesXnameX_substringX1XX_byXconstantX1XX_capXaX: [function({g}) { return g.V().group("a").by(__.values("name").substring(0, 1)).by(__.constant(1)).cap("a") }], 
     g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX: [function({g}) { return g.V().hasLabel("song").group("a").by("name").by(__.properties().groupCount().by(T.label)).out().cap("a") }], 
     g_V_hasLabelXpersonX_asXpX_outXcreatedX_groupXaX_byXnameX_byXselectXpX_valuesXageX_sumX_capXaX: [function({g}) { return g.V().hasLabel("person").as("p").out("created").group("a").by("name").by(__.select("p").values("age").sum()).cap("a") }], 
     g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX: [function({g}) { return g.V().group("m").by("name").by(__.in_("knows").values("name")).cap("m") }], 
     g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX: [function({g}) { return g.V().group("m").by(__.label()).by(__.label().count()).cap("m") }], 
+    g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX_unfold: [function({g}) { return g.V().choose(__.has(T.label, "person"), __.values("age").groupCount("a"), __.values("name").groupCount("b")).cap("a", "b").unfold() }], 
     g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_orderX_capXaX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group("a").by().by(__.out().order()).cap("a") }], 
     g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_countX_capXaX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group("a").by().by(__.out().order().count()).cap("a") }], 
     g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_fold_countXlocalXX_capXaX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group("a").by().by(__.out().order().fold().count(Scope.local)).cap("a") }], 
