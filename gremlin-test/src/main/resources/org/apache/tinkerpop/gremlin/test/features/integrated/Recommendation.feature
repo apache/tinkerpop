@@ -27,13 +27,13 @@ Feature: Step - recommendation
         groupCount().
         unfold().
         project("x", "y", "z").
-          by(__.select(keys).values("name")).
-          by(__.select(keys).values("performances")).
-          by(__.select(values)).
+          by(__.select(Column.keys).values("name")).
+          by(__.select(Column.keys).values("performances")).
+          by(__.select(Column.values)).
         order().
           by(__.select("z"), Order.desc).
           by(__.select("y"), Order.asc).
-        limit(5).aggregate(local,"m").select("x")
+        limit(5).aggregate(Scope.local,"m").select("x")
       """
     When iterated to list
     Then the result should be unordered
@@ -43,3 +43,29 @@ Feature: Step - recommendation
       | I KNOW YOU RIDER |
       | SHIP OF FOOLS |
       | GOOD LOVING |
+
+  Scenario: g_V_classic_recommendation_ranked
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().has("name", "DARK STAR").as("a").out("followedBy").aggregate("stash").
+        in("followedBy").where(P.neq("a").and(P.not(P.within("stash")))).
+        groupCount().
+        unfold().
+        project("x", "y", "z").
+          by(__.select(Column.keys).values("name")).
+          by(__.select(Column.keys).values("performances")).
+          by(__.select(Column.values)).
+        order().
+          by(__.select("z"), Order.desc).
+          by(__.select("y"), Order.asc).
+        limit(5).aggregate(Scope.local,"m")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"x":"LET IT GROW","y":"d[276].i","z":"d[21].l"}] |
+      | m[{"x":"UNCLE JOHNS BAND","y":"d[332].i","z":"d[20].l"}] |
+      | m[{"x":"I KNOW YOU RIDER","y":"d[550].i","z":"d[20].l"}] |
+      | m[{"x":"SHIP OF FOOLS","y":"d[225].i","z":"d[18].l"}] |
+      | m[{"x":"GOOD LOVING","y":"d[428].i","z":"d[18].l"}] |

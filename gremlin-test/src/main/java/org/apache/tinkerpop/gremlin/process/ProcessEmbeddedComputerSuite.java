@@ -67,7 +67,6 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             LambdaStepTest.Traversals.class,
 
             // compliance
-            ComplexTest.Traversals.class,
             TraversalInterruptionComputerTest.class,
 
             // algorithms
