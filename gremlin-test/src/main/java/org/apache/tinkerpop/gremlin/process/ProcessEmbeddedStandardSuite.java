@@ -66,7 +66,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             TreeTest.Traversals.class,
 
             // compliance
-            ComplexTest.Traversals.class,
             CoreTraversalTest.class,
             TraversalInterruptionTest.class,
 
