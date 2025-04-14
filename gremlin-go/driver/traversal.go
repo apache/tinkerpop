@@ -102,7 +102,13 @@ func (t *Traversal) HasNext() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return !results.IsEmpty(), nil
+
+	isEmpty, emptyErr := results.IsEmpty()
+	if emptyErr != nil {
+		return false, emptyErr
+	} else {
+		return !isEmpty, nil
+	}
 }
 
 // Next returns next result.
@@ -111,9 +117,14 @@ func (t *Traversal) Next() (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if results.IsEmpty() {
+
+	isEmpty, emptyErr := results.IsEmpty()
+	if emptyErr != nil {
+		return nil, emptyErr
+	} else if isEmpty {
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
+
 	result, _, err := results.One()
 	return result, err
 }
@@ -718,7 +729,7 @@ func ParseBigDecimal(strValue string) *BigDecimal {
 	}
 	// resolve big int
 	unscaled := new(big.Int)
-	unscaled, ok = unscaled.SetString(strings.Replace(bfVal.String(), ".", "",-1), 10)
+	unscaled, ok = unscaled.SetString(strings.Replace(bfVal.String(), ".", "", -1), 10)
 	if !ok {
 		return nil
 	}

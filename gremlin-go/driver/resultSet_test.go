@@ -123,26 +123,34 @@ func TestChannelResultSet(t *testing.T) {
 	t.Run("Test ResultSet IsEmpty before signal.", func(t *testing.T) {
 		channelResultSet := newChannelResultSet(mockID, getSyncMap())
 		go closeAfterTime(500, channelResultSet)
-		empty := channelResultSet.IsEmpty()
+		empty, _ := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after signal.", func(t *testing.T) {
 		channelResultSet := newChannelResultSet(mockID, getSyncMap())
 		channelResultSet.Close()
-		empty := channelResultSet.IsEmpty()
+		empty, _ := channelResultSet.IsEmpty()
 		assert.True(t, empty)
 	})
 
 	t.Run("Test ResultSet IsEmpty after close.", func(t *testing.T) {
 		channelResultSet := newChannelResultSet(mockID, getSyncMap())
 		go addAfterTime(500, channelResultSet)
-		empty := channelResultSet.IsEmpty()
+		empty, _ := channelResultSet.IsEmpty()
 		assert.False(t, empty)
 		channelResultSet.One()
 		go closeAfterTime(500, channelResultSet)
-		empty = channelResultSet.IsEmpty()
+		empty, _ = channelResultSet.IsEmpty()
 		assert.True(t, empty)
+	})
+
+	t.Run("Test ResultSet IsEmpty handles error.", func(t *testing.T) {
+		channelResultSet := newChannelResultSet(mockID, getSyncMap())
+		setError(channelResultSet, fmt.Errorf("injected %s error", "ResultSet"))
+		empty, err := channelResultSet.IsEmpty()
+		assert.True(t, empty)
+		assert.True(t, err != nil)
 	})
 
 	t.Run("Test ResultSet removes self from container.", func(t *testing.T) {
@@ -170,6 +178,10 @@ func AddResults(resultSet ResultSet, count int) {
 	for i := 0; i < count; i++ {
 		resultSet.addResult(&Result{i})
 	}
+}
+
+func setError(resultSet ResultSet, resultError error) {
+	resultSet.setError(resultError)
 }
 
 func closeAfterTime(millisecondTicks time.Duration, resultSet ResultSet) {
