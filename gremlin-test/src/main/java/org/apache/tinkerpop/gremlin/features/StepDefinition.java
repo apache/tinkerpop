@@ -39,9 +39,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -58,7 +60,9 @@ import org.junit.AssumptionViolatedException;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
@@ -80,6 +84,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -372,6 +377,60 @@ public final class StepDefinition {
             assertEquals(val.intValue(), ((Map) result).size());
         else
             fail(String.format("Missing an assert for this type", result.getClass()));
+    }
+
+    @Then("the result should be a subgraph with edges")
+    public void theResultShouldBeASubgraphWithEdges(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
+        // result should be a graph
+        assertThat(result, instanceOf(Graph.class));
+
+        // pop a graph traversal source from what was returned so we can use it for assertions
+        final GraphTraversalSource sg = ((Graph) result).traversal();
+
+        // grab the expected edges in the subgraph
+        final List<Edge> expectedEdges = dataTable.asList().stream().map(this::convertToObject).
+                map(e -> (Edge) e).collect(Collectors.toList());
+
+        // assert the structure of the subgraph. there should be no references here as this is serialized as
+        // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
+        // of this to do a complete assertion. there is only support for the modern graph right now but it
+        // wouldn't be hard to add others.
+        for (Edge edge : expectedEdges) {
+            assertThat(sg.E(edge.id()).
+                          has(edge.label(), "weight", eq(edge.value("weight"))).
+                          filter(__.outV().hasId(edge.outVertex().id())).
+                          filter(__.inV().hasId(edge.inVertex().id())).hasNext(),
+                    equalTo(true));
+        }
+    }
+
+    @Then("the result should be a subgraph with vertices")
+    public void theResultShouldBeASubgraphWithVertices(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
+        // result should be a graph
+        assertThat(result, instanceOf(Graph.class));
+
+        // pop a graph traversal source from what was returned so we can use it for assertions
+        final GraphTraversalSource sg = ((Graph) result).traversal();
+
+        // grab the expected vertex in the subgraph
+        final List<Vertex> expectedEdges = dataTable.asList().stream().map(this::convertToObject).
+                map(v -> (Vertex) v).collect(Collectors.toList());
+
+        // assert the structure of the subgraph. there should be no references here as this is serialized as
+        // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
+        // of this to do a complete assertion. there is only support for the modern graph right now but it
+        // wouldn't be hard to add others.
+        for (Vertex vertex : expectedEdges) {
+            final String variableKey = vertex.label().equals("person") ? "age" : "lang";
+
+            assertThat(sg.V(vertex.id()).has(vertex.label(), "name", eq(vertex.value("name"))).
+                            has(variableKey, eq(vertex.value(variableKey))).hasNext(),
+                    equalTo(true));
+        }
     }
 
     @Then("the graph should return {int} for count of {string}")

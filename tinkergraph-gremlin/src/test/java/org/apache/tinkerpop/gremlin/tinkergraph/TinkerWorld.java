@@ -280,13 +280,19 @@ public abstract class TinkerWorld implements World {
     public static class ComputerWorld implements World {
         private static final Random RANDOM = TestHelper.RANDOM;
 
+        /**
+         * Defining these here allows them to be globally ignored for all {@code withComputer()} test setups.
+         */
         private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
                 "@StepDrop",
                 "@StepInject",
-                "@StepV",
-                "@StepE",
+                "@StepSubgraph",
+                "@InsertionOrderingRequired",
+                "@StepIndex",
+                "@GraphComputerVerificationElementSupported",
                 "@GraphComputerVerificationOneBulk",
                 "@GraphComputerVerificationStrategyNotSupported",
+                "@GraphComputerVerificationMidENotSupported",
                 "@GraphComputerVerificationMidVNotSupported",
                 "@GraphComputerVerificationInjectionNotSupported",
                 "@GraphComputerVerificationStarGraphExceeded",

@@ -36,6 +36,8 @@ project = __.project
 tail = __.tail
 
 ignores = [
+    "g.V(vid1).outE(\"knows\").subgraph(\"sg\").values(\"name\").cap(\"sg\")",
+    "g.V().repeat(__.bothE(\"created\").subgraph(\"sg\").outV()).times(5).values(\"name\").dedup().cap(\"sg\")",
     "g.V().choose(has(T.label, \"person\"),values(\"age\").groupCount(\"a\"), values(\"name\").groupCount(\"b\")).cap(\"a\", \"b\").unfold()", # uses embedded Map in assertion
     "g.withSideEffect(\"x\",{}).V().both().both().sideEffect(__.store(\"x\").by(\"name\")).cap(\"x\").unfold()", # Objects must be both of Map or Collection: a=LinkedHashMap b=BulkSet???
     "g.withoutStrategies(CountStrategy).V().count()" # serialization issues with Class in GraphSON

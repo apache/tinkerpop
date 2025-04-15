@@ -73,10 +73,14 @@ const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
+  subgraphStepNotSupported: "Javascript does not yet support subgraph()",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
+  // javascript doesn't have subgraph() step yet
+  'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
@@ -277,6 +281,14 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(expectedResult).to.include.deep.members(toCompare(this.result));
       break;
   }
+});
+
+Then('the result should be a subgraph with edges', _ => {
+  // subgraph is not supported yet in javascript
+});
+
+Then('the result should be a subgraph with vertices', _ => {
+  // subgraph is not supported yet in javascript
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
