@@ -18,6 +18,15 @@
 @StepClassFilter @StepSample
 Feature: Step - sample()
 
+  Scenario: g_V_aggregateXxX_byXnameX_byXageX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate("x").by("name").by("age").cap("x")
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
   Scenario: g_E_sampleX1X
     Given the modern graph
     And the traversal of
