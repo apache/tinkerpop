@@ -184,9 +184,7 @@ Feature: Step - valueMap()
       | m[{"name": ["josh"], "age": [32], "t[label]":"person", "t[id]":"v[josh].id"}] |
       | m[{"name": ["peter"], "age": [35], "t[label]":"person", "t[id]":"v[peter].id"}] |
 
-# NOTE: Insertion order is required for this test due to TINKERPOP-2974.
-# This annotation should be removed once the bug is fixed
-  @MultiProperties @MetaProperties @InsertionOrderingRequired
+  @MultiProperties @MetaProperties
   Scenario: g_VX1X_valueMapXname_locationX_byXunfoldX_by
     Given the crew graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -194,10 +192,8 @@ Feature: Step - valueMap()
       """
       g.V(vid1).valueMap("name", "location").by(__.unfold()).by()
       """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"name": "marko", "location": ["san diego", "santa cruz", "brussels", "santa fe"]}] |
+    When iterated next
+    Then the traversal will raise an error with message containing text of "step can only have one by modulator"
 
   Scenario: g_V_valueMapXname_age_nullX
     Given the modern graph
@@ -215,8 +211,6 @@ Feature: Step - valueMap()
       | m[{"name": ["lop"]}] |
       | m[{"name": ["ripple"]}] |
 
-# NOTE: Insertion order is required for this test due to TINKERPOP-2974.
-# This annotation should be removed once the bug is fixed
   @InsertionOrderingRequired
   Scenario: g_V_valueMapXname_ageX_byXisXxXXbyXunfoldX
     Given the modern graph
@@ -225,11 +219,4 @@ Feature: Step - valueMap()
       g.V().valueMap("name", "age").by(__.is("x")).by(__.unfold())
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"age": 29}] |
-      | m[{"age": 32}] |
-      | m[{"age": 35}] |
-      | m[{"age": 27}] |
-      | m[{}] |
-      | m[{}] |
+    Then the traversal will raise an error with message containing text of "step can only have one by modulator"

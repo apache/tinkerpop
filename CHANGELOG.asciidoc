@@ -54,7 +54,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
-* Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.
+* Added validation to `valueMap()`/`propertyMap()`/`groupCount()` to prevent an invalid usage of multiple `by()` modulators.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

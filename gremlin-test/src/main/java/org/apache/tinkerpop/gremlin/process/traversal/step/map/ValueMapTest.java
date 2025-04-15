@@ -35,15 +35,18 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.apache.tinkerpop.gremlin.structure.T.id;
 import static org.apache.tinkerpop.gremlin.structure.T.label;
+import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -345,19 +348,14 @@ public abstract class ValueMapTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(CREW)
     public void g_VX1X_valueMapXname_locationX_byXunfoldX_by() {
-        final Traversal<Vertex,Map<Object,Object>> traversal = get_g_VX1X_valueMapXname_locationX_byXunfoldX_by(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
-        final Map<Object, Object> values = traversal.next();
-        assertFalse(traversal.hasNext());
-        assertTrue("name value should be a String", values.containsKey("name") && String.class.equals(values.get("name").getClass()));
-        assertTrue("location value should be a List", values.containsKey("location") && List.class.isAssignableFrom(values.get("location").getClass()));
-        assertEquals("marko", values.get("name"));
-        final List locations = (List) values.get("location");
-        for (final String location : Arrays.asList("san diego", "santa cruz", "brussels", "santa fe")) {
-            assertTrue(locations.contains(location));
+        try {
+            final Traversal<Vertex,Map<Object,Object>> traversal = get_g_VX1X_valueMapXname_locationX_byXunfoldX_by(convertToVertexId("marko"));
+            printTraversalForm(traversal);
+            assertFalse(traversal.hasNext());
+            fail("Should have failed as multiple by() not allowed for valueMap");
+        } catch (Exception ex) {
+            assertThat(ex.getMessage(), containsString("valueMap()/propertyMap() step can only have one by modulator"));
         }
-        assertEquals(2, values.size());
     }
 
     public static class Traversals extends ValueMapTest {
