@@ -62,7 +62,6 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             ProgramTest.Traversals.class,
             WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
-            SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
             LambdaStepTest.Traversals.class,
 
@@ -89,7 +88,6 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             MatchTest.class,
             ProfileTest.class,
             ProgramTest.class,
-            SubgraphTest.class,
             TreeTest.class
     };
 

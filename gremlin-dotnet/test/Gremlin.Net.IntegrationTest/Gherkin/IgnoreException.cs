@@ -65,6 +65,11 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// Tests with lambdas can't be translated. This should be removed once lambdas are completely dropped.
         /// </summary>
-        LambdasNotTranslated
+        LambdasNotTranslated,
+
+        /// <summary>
+        /// subgraph() is not supported yet
+        /// </summary>
+        SubgraphStepNotSupported
     }
 }

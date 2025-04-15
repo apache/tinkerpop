@@ -567,6 +567,8 @@ tag when one is necessary will cause provider tests to fail:
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.
 * `@GraphComputerVerificationInjectionNotSupported` - The scenario will not work on with `GraphComputer` because the
 `inject()` step is not supported.
+* `@GraphComputerVerificationMidENotSupported` - The scenario will not work on with `GraphComputer` because the
+mid-`E()` step is not supported.
 * `@GraphComputerVerificationMidVNotSupported` - The scenario will not work on with `GraphComputer` because the
 mid-`V()` step is not supported.
 * `@GraphComputerVerificationOneBulk` - The scenario will not work because `withBulk(false)` is configured and that
