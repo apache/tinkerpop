@@ -36,7 +36,6 @@ Feature: Step - subgraph()
 
   Scenario: g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX
     Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V().repeat(__.bothE("created").subgraph("sg").outV()).times(5).values("name").dedup().cap("sg")
