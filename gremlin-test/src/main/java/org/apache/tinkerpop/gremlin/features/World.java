@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.features;
 
 import io.cucumber.java.Scenario;
+import io.cucumber.junit.CucumberOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -32,6 +33,20 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
  * package (e.g. {@code guice}) to push an instance into the Cucumber execution.
  */
 public interface World {
+
+    /**
+     * Tag filter string for tests that will not run for tests using {@code withComputer()}. This is a helpful start
+     * point to filtering away tests using the "tags" argument for {@link CucumberOptions}.
+     */
+    public static final String GRAPHCOMPUTER_TAG_FILTER =
+            "not @RemoteOnly and " +
+            "not @StepDrop and not @StepV and not @StepE and not @StepIndex and not @StepInject and " +
+            "not @StepSubgraph and not @GraphComputerVerificationMidENotSupported and " +
+            "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
+            "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
+            "not @GraphComputerVerificationInjectionNotSupported and " +
+            "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
+            "not @TinkerServiceRegistry and not @InsertionOrderingRequired";
 
     /**
      * Gets a {@link GraphTraversalSource} that is backed by the specified {@link GraphData}. For {@code null}, the
