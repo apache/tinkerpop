@@ -111,37 +111,11 @@ public abstract class RemoteWorld implements World {
      * instances that include the VertexProgramStrategy.
      */
     public abstract static class RemoteComputerWorld extends RemoteWorld {
-        private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
-                "@StepDrop",
-                "@StepInject",
-                "@StepMidV",
-                "@StepMidE",
-                "@StepSubgraph",
-                "@InsertionOrderingRequired",
-                "@StepIndex",
-                "@GraphComputerVerificationElementSupported",
-                "@GraphComputerVerificationOneBulk",
-                "@GraphComputerVerificationStrategyNotSupported",
-                "@GraphComputerVerificationMidENotSupported",
-                "@GraphComputerVerificationMidVNotSupported",
-                "@GraphComputerVerificationInjectionNotSupported",
-                "@GraphComputerVerificationStarGraphExceeded",
-                "@GraphComputerVerificationReferenceOnly",
-                "@TinkerServiceRegistry");
 
         private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
         public RemoteComputerWorld(Cluster cluster) {
             super(cluster);
-        }
-
-        @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-
-            super.beforeEachScenario(scenario);
         }
 
         @Override
@@ -180,17 +154,6 @@ public abstract class RemoteWorld implements World {
 
     public static class GraphSONRemoteWorld extends RemoteWorld {
         public GraphSONRemoteWorld() { super(createTestCluster(Serializers.GRAPHSON_V3)); }
-
-        @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            // not sure if it is expected or not that subgraph() does not work with GraphSON fully.
-            // getting serialization problems
-            final List<String> ignores = Arrays.asList("@StepSubgraph").stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-
-            super.beforeEachScenario(scenario);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
