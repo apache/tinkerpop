@@ -629,9 +629,16 @@ image:gremlin-edumacated.png[width=225]
 
 [source,xml]
 ----
+<!-- gremlin-tests contains test classes and gherkin tests -->
 <dependency>
   <groupId>org.apache.tinkerpop</groupId>
   <artifactId>gremlin-test</artifactId>
+  <version>x.y.z</version>
+</dependency>
+<!-- TinkerGraph is required for validating subgraph() tests -->
+<dependency>
+  <groupId>org.apache.tinkerpop</groupId>
+  <artifactId>tinkergraph-gremlin</artifactId>
   <version>x.y.z</version>
 </dependency>
 ----
