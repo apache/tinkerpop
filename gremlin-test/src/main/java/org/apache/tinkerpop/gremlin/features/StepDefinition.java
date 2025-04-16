@@ -393,6 +393,9 @@ public final class StepDefinition {
         final List<Edge> expectedEdges = dataTable.asList().stream().map(this::convertToObject).
                 map(e -> (Edge) e).collect(Collectors.toList());
 
+        // expected edges match the count in the graph
+        assertEquals(expectedEdges.size(), sg.E().count().next().intValue());
+
         // assert the structure of the subgraph. there should be no references here as this is serialized as
         // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
         // of this to do a complete assertion. there is only support for the modern graph right now but it
@@ -417,14 +420,17 @@ public final class StepDefinition {
         final GraphTraversalSource sg = ((Graph) result).traversal();
 
         // grab the expected vertex in the subgraph
-        final List<Vertex> expectedEdges = dataTable.asList().stream().map(this::convertToObject).
+        final List<Vertex> expectedVertices = dataTable.asList().stream().map(this::convertToObject).
                 map(v -> (Vertex) v).collect(Collectors.toList());
+
+        // expected vertices match the count in the graph
+        assertEquals(expectedVertices.size(), sg.E().count().next().intValue());
 
         // assert the structure of the subgraph. there should be no references here as this is serialized as
         // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
         // of this to do a complete assertion. there is only support for the modern graph right now but it
         // wouldn't be hard to add others.
-        for (Vertex vertex : expectedEdges) {
+        for (Vertex vertex : expectedVertices) {
             final String variableKey = vertex.label().equals("person") ? "age" : "lang";
 
             assertThat(sg.V(vertex.id()).has(vertex.label(), "name", eq(vertex.value("name"))).

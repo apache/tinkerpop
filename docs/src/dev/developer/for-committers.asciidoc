@@ -502,6 +502,8 @@ of traversal iteration where "_comparison_" may be one of "containing", "startin
 * "the result should be unordered" - the exact results but can appear any order
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees
 regarding the exact results cannot be pre-determined easily - see the `range()`-step tests for examples)
+* "the result should be a graph with _xxx_" - asserts a subgraph where the _xxx_ may be "vertices" or "edges" with a
+follow-on table containing vertex or edge definitions respectively that are expected to exist in the subgraph
 
 These final three types of assertions mentioned above should be followed by a Gherkin table that has one column, where
 each row value in that column represents a value to assert in the result. These values are type notation respected as
