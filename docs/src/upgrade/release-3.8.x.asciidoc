@@ -253,14 +253,6 @@ The `GremlinLangScriptEngine` has been modified to treat float literals without 
 or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
 `GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
 
-==== Gremlin Go API Changes
-
-The `IsEmpty` function in `resultSet` has been changed to return `(bool, error)`. If an error is detected in the
-channel then `true` will be returned along with the error. This is in contrast to the previous behavior where true
-was returned and the error was ignored which lead to error information being missing from the result. This may have
-lead you to believe that there were simply no results when there was actually an issue with the query. This change also
-means the `HasNext` and `Next` functions for `Traversal` will correctly return the error.
-
 ==== group() Value Traversal Semantics
 
 The `group()` step takes two `by()` modulators. The first defines the key for the grouping and the second acts upon the

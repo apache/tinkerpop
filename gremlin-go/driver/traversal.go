@@ -102,13 +102,7 @@ func (t *Traversal) HasNext() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
-	isEmpty, emptyErr := results.IsEmpty()
-	if emptyErr != nil {
-		return false, emptyErr
-	} else {
-		return !isEmpty, nil
-	}
+	return !results.IsEmpty(), nil
 }
 
 // Next returns next result.
@@ -117,14 +111,13 @@ func (t *Traversal) Next() (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	isEmpty, emptyErr := results.IsEmpty()
-	if emptyErr != nil {
-		return nil, emptyErr
-	} else if isEmpty {
+	if results.IsEmpty() {
+		err = results.GetError()
+		if err != nil {
+			return nil, err
+		}
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
-
 	result, _, err := results.One()
 	return result, err
 }

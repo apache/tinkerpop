@@ -33,7 +33,7 @@ type ResultSet interface {
 	setStatusAttributes(statusAttributes map[string]interface{})
 	GetStatusAttributes() map[string]interface{}
 	GetRequestID() string
-	IsEmpty() (bool, error)
+	IsEmpty() bool
 	Close()
 	unlockedClose()
 	Channel() chan *Result
@@ -70,33 +70,25 @@ func (channelResultSet *channelResultSet) sendSignal() {
 
 // GetError returns error from the channelResultSet.
 func (channelResultSet *channelResultSet) GetError() error {
-	channelResultSet.channelMutex.Lock()
-	defer channelResultSet.channelMutex.Unlock()
 	return channelResultSet.err
 }
 
 func (channelResultSet *channelResultSet) setError(err error) {
-	channelResultSet.channelMutex.Lock()
-	defer channelResultSet.channelMutex.Unlock()
 	channelResultSet.err = err
 }
 
 // IsEmpty returns true when the channelResultSet is empty.
-func (channelResultSet *channelResultSet) IsEmpty() (bool, error) {
+func (channelResultSet *channelResultSet) IsEmpty() bool {
 	channelResultSet.channelMutex.Lock()
 	// If our channel is empty and we have no data in it, wait for signal that the state has been updated.
 	if len(channelResultSet.channel) != 0 {
 		// Channel is not empty.
 		channelResultSet.channelMutex.Unlock()
-		return false, nil
-	} else if channelResultSet.err != nil {
-		// Channel has an error.
-		channelResultSet.channelMutex.Unlock()
-		return true, channelResultSet.err
+		return false
 	} else if channelResultSet.closed {
 		// Channel is empty and closed.
 		channelResultSet.channelMutex.Unlock()
-		return true, nil
+		return true
 	} else {
 		// Channel is empty and not closed. Need to wait for signal that state has changed, otherwise
 		// we do not know if it is empty or not.
