@@ -24,7 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
-
+* Changed aggregate step to not allowing multiple by modulators.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.

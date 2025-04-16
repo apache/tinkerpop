@@ -27,6 +27,15 @@ Feature: Step - sample()
     When iterated to list
     Then the traversal will raise an error
 
+  Scenario: g_V_aggregateXScope_local_xX_byXnameX_byXageX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "x").by("name").by("age").cap("x")
+      """
+    When iterated to list
+    Then the traversal will raise an error
+
   Scenario: g_E_sampleX1X
     Given the modern graph
     And the traversal of
