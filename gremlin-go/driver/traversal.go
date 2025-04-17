@@ -112,6 +112,10 @@ func (t *Traversal) Next() (*Result, error) {
 		return nil, err
 	}
 	if results.IsEmpty() {
+		err = results.GetError()
+		if err != nil {
+			return nil, err
+		}
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
 	result, _, err := results.One()
@@ -718,7 +722,7 @@ func ParseBigDecimal(strValue string) *BigDecimal {
 	}
 	// resolve big int
 	unscaled := new(big.Int)
-	unscaled, ok = unscaled.SetString(strings.Replace(bfVal.String(), ".", "",-1), 10)
+	unscaled, ok = unscaled.SetString(strings.Replace(bfVal.String(), ".", "", -1), 10)
 	if !ok {
 		return nil
 	}

@@ -328,3 +328,22 @@ Feature: Step - range()
       | result |
       | marko |
       | marko |
+
+  Scenario: g_V_rangeX2_1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().range(2, 1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Not a legal range: [2, 1]"
+
+  # iterated next variant of the previous test (which is iterated to list)
+  Scenario: g_V_rangeX3_2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().range(3, 2)
+      """
+    When iterated next
+    Then the traversal will raise an error with message containing text of "Not a legal range: [3, 2]"
