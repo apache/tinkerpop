@@ -83,6 +83,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 * Changed `gremlin-go` Client `ReadBufferSize` and `WriteBufferSize` defaults to 1048576 (1MB) to align with DriverRemoteConnection.
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
+* Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)

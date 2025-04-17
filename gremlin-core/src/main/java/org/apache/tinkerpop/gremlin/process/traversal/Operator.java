@@ -186,7 +186,7 @@ public enum Operator implements BinaryOperator<Object> {
 
             if (a instanceof Map && b instanceof Map)
                 ((Map<?, ?>) a).putAll((Map) b);
-            else if (a instanceof Collection && a instanceof Collection)
+            else if (a instanceof Collection && b instanceof Collection)
                 ((Collection<?>) a).addAll((Collection) b);
             else
                 throw new IllegalArgumentException(String.format("Objects must be both of Map or Collection: a=%s b=%s",
