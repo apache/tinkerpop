@@ -63,13 +63,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         NullPropertyValuesNotSupportedOnTestGraph,
 
         /// <summary>
-        /// Tests with lambdas can't be translated. This should be removed once lambdas are completely dropped.
-        /// </summary>
-        LambdasNotTranslated,
-
-        /// <summary>
         /// subgraph() is not supported yet
         /// </summary>
-        SubgraphStepNotSupported
+        SubgraphStepNotSupported,
+
+        /// <summary>
+        /// tree() is not supported yet
+        /// </summary>
+        TreeStepNotSupported
     }
 }

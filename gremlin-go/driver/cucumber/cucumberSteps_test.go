@@ -48,26 +48,26 @@ var parsers map[*regexp.Regexp]func(string, string) interface{}
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
-		regexp.MustCompile(`^str\[(.*)]$`): func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
-		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
-		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`):	 toNumeric,
-		regexp.MustCompile(`^d\[(.*)]\.[m]$`): 		 toBigDecimal,
-		regexp.MustCompile(`^d\[(.*)]\.[n]$`): 		 toBigInt,
-		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,
-		regexp.MustCompile(`^vp\[(.+)]$`):           toVertexProperty,
-		regexp.MustCompile(`^v\[(.+)]$`):            toVertex,
-		regexp.MustCompile(`^v\[(.+)]\.id$`):        toVertexId,
-		regexp.MustCompile(`^e\[(.+)]$`):            toEdge,
-		regexp.MustCompile(`^v\[(.+)]\.sid$`):       toVertexIdString,
-		regexp.MustCompile(`^e\[(.+)]\.id$`):        toEdgeId,
-		regexp.MustCompile(`^e\[(.+)]\.sid$`):       toEdgeIdString,
-		regexp.MustCompile(`^p\[(.+)]$`):            toPath,
-		regexp.MustCompile(`^l\[(.*)]$`):            toList,
-		regexp.MustCompile(`^s\[(.*)]$`):            toSet,
-		regexp.MustCompile(`^m\[(.+)]$`):            toMap,
-		regexp.MustCompile(`^t\[(.+)]$`):            toT,
-		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
-		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
+		regexp.MustCompile(`^str\[(.*)]$`):        func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
+		regexp.MustCompile(`^dt\[(.*)]$`):         toDateTime,
+		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`): toNumeric,
+		regexp.MustCompile(`^d\[(.*)]\.[m]$`):     toBigDecimal,
+		regexp.MustCompile(`^d\[(.*)]\.[n]$`):     toBigInt,
+		regexp.MustCompile(`^d\[(.*)]\.[i]$`):     toInt32,
+		regexp.MustCompile(`^vp\[(.+)]$`):         toVertexProperty,
+		regexp.MustCompile(`^v\[(.+)]$`):          toVertex,
+		regexp.MustCompile(`^v\[(.+)]\.id$`):      toVertexId,
+		regexp.MustCompile(`^e\[(.+)]$`):          toEdge,
+		regexp.MustCompile(`^v\[(.+)]\.sid$`):     toVertexIdString,
+		regexp.MustCompile(`^e\[(.+)]\.id$`):      toEdgeId,
+		regexp.MustCompile(`^e\[(.+)]\.sid$`):     toEdgeIdString,
+		regexp.MustCompile(`^p\[(.+)]$`):          toPath,
+		regexp.MustCompile(`^l\[(.*)]$`):          toList,
+		regexp.MustCompile(`^s\[(.*)]$`):          toSet,
+		regexp.MustCompile(`^m\[(.+)]$`):          toMap,
+		regexp.MustCompile(`^t\[(.+)]$`):          toT,
+		regexp.MustCompile(`^D\[(.+)]$`):          toDirection,
+		regexp.MustCompile(`^M\[(.+)]$`):          toMerge,
 	}
 }
 
@@ -956,7 +956,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

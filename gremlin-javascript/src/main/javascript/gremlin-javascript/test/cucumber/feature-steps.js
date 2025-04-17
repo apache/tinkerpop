@@ -74,6 +74,7 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
   subgraphStepNotSupported: "Javascript does not yet support subgraph()",
+  treeStepNotSupported: "Javascript does not yet support tree()",
   needsFurtherInvestigation: '',
 };
 
@@ -81,6 +82,18 @@ const ignoredScenarios = {
   // javascript doesn't have subgraph() step yet
   'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  // javascript doesn't have tree() step yet
+  'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_V_out_tree_byXageX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
@@ -283,12 +296,12 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   }
 });
 
-Then('the result should be a subgraph with edges', _ => {
+Then('the result should be a subgraph with the following', _ => {
   // subgraph is not supported yet in javascript
 });
 
-Then('the result should be a subgraph with vertices', _ => {
-  // subgraph is not supported yet in javascript
+Then('the result should be a tree with a structure of', _ => {
+  // tree is not supported yet in javascript
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {

@@ -136,4 +136,22 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
             return parents;
         }
     }
+
+    /**
+     * Produce a formatted string representation of the tree structure.
+     */
+    public String prettyPrint() {
+        final StringBuilder builder = new StringBuilder();
+        prettyPrint(builder, "");
+        final String pretty = builder.toString();
+        return pretty.isEmpty() ? pretty : pretty.substring(0, pretty.length() - 1);
+    }
+
+    private void prettyPrint(final StringBuilder builder, final String prefix) {
+        for (Map.Entry<T, Tree<T>> entry : this.entrySet()) {
+            builder.append(prefix).append("|--").append(entry.getKey());
+            builder.append(System.lineSeparator());
+            entry.getValue().prettyPrint(builder, prefix + "   ");
+        }
+    }
 }

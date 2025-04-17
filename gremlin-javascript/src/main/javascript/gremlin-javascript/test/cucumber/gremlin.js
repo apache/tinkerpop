@@ -1663,6 +1663,17 @@ const gremlins = {
     g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX: [function({g}) { return g.V().store("a").by(__.outE("created").count()).out().out().store("a").by(__.inE("created").values("weight").sum()).cap("a") }], 
     g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX: [function({g, vid1}) { return g.V(vid1).outE("knows").subgraph("sg").values("name").cap("sg") }], 
     g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX: [function({g}) { return g.V().repeat(__.bothE("created").subgraph("sg").outV()).times(5).values("name").dedup().cap("sg") }], 
+    g_V_outEXnoexistX_subgraphXsgXcapXsgX: [function({g}) { return g.V().outE("noexist").subgraph("sg").cap("sg") }], 
+    g_VX1X_out_out_tree_byXnameX: [function({g, vid1}) { return g.V(vid1).out().out().tree().by("name") }], 
+    g_VX1X_out_out_tree: [function({g, vid1}) { return g.V(vid1).out().out().tree() }], 
+    g_V_out_tree_byXageX: [function({g}) { return g.V().out().tree().by("age") }], 
+    g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX: [function({g, vid1}) { return g.V(vid1).out().out().tree("a").by("name").both().both().cap("a") }], 
+    g_VX1X_out_out_treeXaX_both_both_capXaX: [function({g, vid1}) { return g.V(vid1).out().out().tree("a").both().both().cap("a") }], 
+    g_VX1X_out_out_tree_byXlabelX: [function({g, vid1}) { return g.V(vid1).out().out().tree().by(T.label) }], 
+    g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX: [function({g, vid1}) { return g.V(vid1).out().out().tree("a").by(T.label).both().both().cap("a") }], 
+    g_VX1X_out_out_out_tree: [function({g}) { return g.V().out().out().out().tree() }], 
+    g_VX1X_outE_inV_bothE_otherV_tree: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree() }], 
+    g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree().by("name").by(T.label) }], 
 }
 
 exports.gremlin = gremlins
