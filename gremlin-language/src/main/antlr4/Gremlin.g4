@@ -283,6 +283,7 @@ traversalMethod
     | traversalMethod_unfold
     | traversalMethod_union
     | traversalMethod_until
+    | traversalMethod_uuid
     | traversalMethod_value
     | traversalMethod_valueMap
     | traversalMethod_values
@@ -916,6 +917,11 @@ traversalMethod_union
 traversalMethod_until
     : K_UNTIL LPAREN traversalPredicate RPAREN #traversalMethod_until_Predicate
     | K_UNTIL LPAREN nestedTraversal RPAREN #traversalMethod_until_Traversal
+    ;
+
+traversalMethod_uuid
+    : X_UUID LPAREN RPAREN
+    | X_UUID LPAREN STRING RPAREN
     ;
 
 traversalMethod_value
@@ -1908,6 +1914,7 @@ keyword
     | K_UNFOLD
     | K_UNION
     | K_UNTIL
+    | X_UUID
     | K_V
     | K_VALUEMAP
     | K_VALUES
@@ -2167,6 +2174,7 @@ K_TX: 'tx';
 K_UNFOLD: 'unfold';
 K_UNION: 'union';
 K_UNTIL: 'until';
+X_UUID: 'UUID';
 K_V: 'V';
 K_VALUEMAP: 'valueMap';
 K_VALUES: 'values';
