@@ -630,7 +630,6 @@ the traversal does not mind the star graph limitation.
 * `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
 * `@MultiProperties` - The scenario makes use of multi-properties.
-* `@RemoteOnly` - The scenario uses some Gremlin syntax that cannot be supported outside of remote test executions.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
 * `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.

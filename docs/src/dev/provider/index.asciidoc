@@ -844,7 +844,7 @@ The following is just an example as taken from TinkerGraph:
 ----
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly",
+        tags = "not @GraphComputerOnly and not @AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml",
@@ -853,12 +853,13 @@ The following is just an example as taken from TinkerGraph:
 
 The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
 choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
-`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]),
-as will most providers. The "glue" will be the same for all test implementers as it refers to a package containing
-TinkerPop's test infrastructure in `gremlin-test` (unless of course, a provider needs to develop their own
-infrastructure for some reason). The "features" is the path to the actual Gherkin test files that should be made
-available locally. The files can be referenced on the classpath assuming `gremlin-test` is a dependency. The "plugin"
-defines a JUnit style output, which happens to be understood by Maven.
+`@GraphComputerOnly` and `@AllowNullPropertyValues` tags (the full list of possible tags can be found
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]), since this configuration was for OLTP
+tests and the graph was configured without support for storing `null` in the graph. The "glue" will be the same for all
+test implementers as it refers to a package containing TinkerPop's test infrastructure in `gremlin-test` (unless of
+course, a provider needs to develop their own infrastructure for some reason). The "features" is the path to the actual
+Gherkin test files that should be made available locally. The files can be referenced on the classpath assuming
+`gremlin-test` is a dependency. The "plugin" defines a JUnit style output, which happens to be understood by Maven.
 
 The "objectFactory" is the last component. Cucumber relies on dependency injection to get a `World` implementation into
 the test infrastructure. Providers may choose from multiple available implementations, but TinkerPop chose to use

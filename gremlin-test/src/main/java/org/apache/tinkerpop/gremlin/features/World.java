@@ -39,7 +39,6 @@ public interface World {
      * point to filtering away tests using the "tags" argument for {@link CucumberOptions}.
      */
     public static final String GRAPHCOMPUTER_TAG_FILTER =
-            "not @RemoteOnly and " +
             "not @StepDrop and not @StepV and not @StepE and not @StepIndex and not @StepInject and " +
             "not @StepSubgraph and not @GraphComputerVerificationMidENotSupported and " +
             "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
