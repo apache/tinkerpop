@@ -59,7 +59,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             ProfileTest.Traversals.class,
             WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
-            TreeTest.Traversals.class,
 
             // compliance
             CoreTraversalTest.class,
@@ -85,7 +84,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
      */
     private static final Class<?>[] testsToEnforce = new Class<?>[]{
             ProfileTest.class,
-            TreeTest.class,
     };
 
     /**

@@ -26,10 +26,12 @@ Feature: Step - subgraph()
       g.V(vid1).outE("knows").subgraph("sg").values("name").cap("sg")
       """
     When iterated next
-    Then the result should be a subgraph with edges
+    Then the result should be a subgraph with the following
+      | edges |
       | e[marko-knows->josh] |
       | e[marko-knows->vadas] |
-    And the result should be a subgraph with vertices
+    And the result should be a subgraph with the following
+      | vertices |
       | v[marko] |
       | v[vadas] |
       | v[josh] |
@@ -41,14 +43,28 @@ Feature: Step - subgraph()
       g.V().repeat(__.bothE("created").subgraph("sg").outV()).times(5).values("name").dedup().cap("sg")
       """
     When iterated next
-    Then the result should be a subgraph with edges
+    Then the result should be a subgraph with the following
+      | edges |
       | e[marko-created->lop] |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
       | e[peter-created->lop] |
-    And the result should be a subgraph with vertices
+    And the result should be a subgraph with the following
+      | vertices |
       | v[marko] |
       | v[lop] |
       | v[josh] |
       | v[peter] |
       | v[ripple] |
+
+  Scenario: g_V_outEXnoexistX_subgraphXsgXcapXsgX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE("noexist").subgraph("sg").cap("sg")
+      """
+    When iterated next
+    Then the result should be a subgraph with the following
+      | edges |
+    And the result should be a subgraph with the following
+      | vertices |

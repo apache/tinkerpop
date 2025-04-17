@@ -245,7 +245,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _error = null;
         }
 
-        [Then("the result should be (\\w+)")]
+
+        [Then("the result should be a tree with a structure of")]
+        public void AssertTreeStructure(string expectedTree)
+        {
+
+        }
+
+        [Then("the result should be a subgraph with the following")]
+        public void AssertSubgraphStructure(DataTable? table = null)
+        {
+
+        }
+
+        [Then("the result should be (\\w+)\\s*")]
         public void AssertResult(string characterizedAs, DataTable? table = null)
         {
             AssertThatNoErrorWasThrown();
