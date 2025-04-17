@@ -110,7 +110,10 @@ import org.junit.runners.model.RunnerBuilder;
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.8.0, prefer the Gherkin test suite for validating Gremlin behavior and the
+ * {@link ProcessEmbeddedStandardSuite} for JVM specific tests.
  */
+@Deprecated
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
     /**

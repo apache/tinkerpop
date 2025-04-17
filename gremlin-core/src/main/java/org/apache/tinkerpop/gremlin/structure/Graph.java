@@ -1272,7 +1272,17 @@ public interface Graph extends AutoCloseable, Host {
     @interface OptIn {
         String SUITE_STRUCTURE_STANDARD = "org.apache.tinkerpop.gremlin.structure.StructureStandardSuite";
         String SUITE_STRUCTURE_INTEGRATE = "org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite";
+        /**
+         * @deprecated As of release 3.8.0, prefer the Gherkin test suite for validating Gremlin behavior and the
+         * {@link #SUITE_PROCESS_EMBEDDED_COMPUTER} for JVM specific tests.
+         */
+        @Deprecated
         String SUITE_PROCESS_COMPUTER = "org.apache.tinkerpop.gremlin.process.ProcessComputerSuite";
+        /**
+         * @deprecated As of release 3.8.0, prefer the Gherkin test suite for validating Gremlin behavior and the
+         * {@link #SUITE_PROCESS_EMBEDDED_STANDARD} for JVM specific tests.
+         */
+        @Deprecated
         String SUITE_PROCESS_STANDARD = "org.apache.tinkerpop.gremlin.process.ProcessStandardSuite";
         /**
          * @deprecated As of release 3.8.0, replaced by {@link #SUITE_PROCESS_EMBEDDED_STANDARD}.
