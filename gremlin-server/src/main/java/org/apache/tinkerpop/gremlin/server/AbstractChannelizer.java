@@ -165,7 +165,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                                 logger.error("Failed to reload SSLFactory", e);
                             }
                         }),
-                        1L, 1L, TimeUnit.MINUTES
+                        settings.ssl.refreshInterval, settings.ssl.refreshInterval, TimeUnit.MILLISECONDS
                 );
             }
         } else {

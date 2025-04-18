@@ -53,7 +53,7 @@ public class SSLStoreFilesModificationWatcher implements Runnable {
      * @param trustStore             path to the trustStore file or null to ignore
      * @param onModificationRunnable function to run when a modification to the keyStore or trustStore is detected
      */
-    public SSLStoreFilesModificationWatcher(String keyStore, String trustStore, Runnable onModificationRunnable) {
+    public SSLStoreFilesModificationWatcher(final String keyStore, final String trustStore, final Runnable onModificationRunnable) {
         // keyStore/trustStore can be null when not specified in gremlin-server Settings
         this.keyStore = keyStore != null ? Paths.get(keyStore) : null;
         this.trustStore = trustStore != null ? Paths.get(trustStore) : null;
@@ -117,7 +117,7 @@ public class SSLStoreFilesModificationWatcher implements Runnable {
         }
     }
 
-    private static ZonedDateTime getLastModifiedTime(Path filepath) throws IOException {
+    private static ZonedDateTime getLastModifiedTime(final Path filepath) throws IOException {
         BasicFileAttributes attributes = Files.readAttributes(filepath, BasicFileAttributes.class);
         return ZonedDateTime.ofInstant(attributes.lastModifiedTime().toInstant(), ZoneOffset.UTC);
     }
