@@ -2080,6 +2080,11 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     }
 
     @Override
+    public Void visitUuidArgument(final GremlinParser.UuidArgumentContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Void visitTraversalStrategyList(final GremlinParser.TraversalStrategyListContext ctx) {
         return visitChildren(ctx);
     }
@@ -2215,6 +2220,11 @@ public class TranslateVisitor extends AbstractParseTreeVisitor<Void> implements 
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
         sb.append(ctx.getText());
         return null;
+    }
+
+    @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        return visitChildren(ctx);
     }
 
     @Override
