@@ -283,7 +283,6 @@ traversalMethod
     | traversalMethod_unfold
     | traversalMethod_union
     | traversalMethod_until
-    | traversalMethod_uuid
     | traversalMethod_value
     | traversalMethod_valueMap
     | traversalMethod_values
@@ -919,11 +918,6 @@ traversalMethod_until
     | K_UNTIL LPAREN nestedTraversal RPAREN #traversalMethod_until_Traversal
     ;
 
-traversalMethod_uuid
-    : X_UUID LPAREN RPAREN
-    | X_UUID LPAREN STRING RPAREN
-    ;
-
 traversalMethod_value
     : K_VALUE LPAREN RPAREN
     ;
@@ -1511,6 +1505,11 @@ structureVertexArgument
     | variable
     ;
 
+uuidArgument
+    : uuidLiteral
+    | variable
+    ;
+
 traversalStrategyList
     : traversalStrategyExpr?
     ;
@@ -1667,6 +1666,12 @@ infLiteral
     : K_INFINITY
     | SignedInfLiteral
     ;
+
+uuidLiteral
+    : K_UUID LPAREN RPAREN
+    | K_UUID LPAREN stringArgument RPAREN
+    ;
+
 
 nakedKey
     : Identifier
@@ -1914,7 +1919,7 @@ keyword
     | K_UNFOLD
     | K_UNION
     | K_UNTIL
-    | X_UUID
+    | K_UUID
     | K_V
     | K_VALUEMAP
     | K_VALUES
@@ -2174,7 +2179,7 @@ K_TX: 'tx';
 K_UNFOLD: 'unfold';
 K_UNION: 'union';
 K_UNTIL: 'until';
-X_UUID: 'UUID';
+K_UUID: 'UUID';
 K_V: 'V';
 K_VALUEMAP: 'valueMap';
 K_VALUES: 'values';
