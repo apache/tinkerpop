@@ -87,8 +87,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Stack;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -737,7 +735,7 @@ public final class StepDefinition {
     public List<TreeNode> parseTree(final String asciiTree) {
         if (asciiTree.isEmpty()) return Collections.emptyList();
 
-        final List<String> lines = Arrays.asList(asciiTree.split("\n"));
+        final List<String> lines = Arrays.asList(asciiTree.split(System.lineSeparator()));
 
         final List<TreeNode> roots = new ArrayList<>();
         final Map<Integer, TreeNode> levelMap = new HashMap<>();
@@ -764,7 +762,7 @@ public final class StepDefinition {
             if (c == ' ') count++;
             else break;
         }
-        return count / 3; // Assuming 4 spaces per level
+        return count / 3; // Assuming 3 spaces per level
     }
 
     /**

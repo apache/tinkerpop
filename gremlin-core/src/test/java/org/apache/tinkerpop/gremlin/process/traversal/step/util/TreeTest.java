@@ -118,8 +118,12 @@ public class TreeTest extends StepTest {
         tree.get("root").put("child2", child2);
 
         // either can be expected since Tree doesn't maintain node order
-        final String expected1 = "|--root\n   |--child1\n   |--child2";
-        final String expected2 = "|--root\n   |--child2\n   |--child1";
+        final String expected1 = "|--root" + System.lineSeparator() +
+                                 "   |--child1" + System.lineSeparator() +
+                                 "   |--child2";
+        final String expected2 = "|--root" + System.lineSeparator() +
+                                 "   |--child2" + System.lineSeparator() +
+                                 "   |--child1";
         assertThat(tree.prettyPrint(), Matchers.anyOf(Matchers.is(expected1), Matchers.is(expected2)));
     }
 
@@ -132,7 +136,9 @@ public class TreeTest extends StepTest {
         tree.get("root").put("child1", child1);
         tree.get("root").get("child1").put("grandchild", grandchild);
 
-        final String expected = "|--root\n   |--child1\n      |--grandchild";
+        final String expected = "|--root" + System.lineSeparator() +
+                                "   |--child1" + System.lineSeparator() +
+                                "      |--grandchild";
         assertEquals(expected, tree.prettyPrint());
     }
 

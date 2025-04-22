@@ -503,7 +503,7 @@ of traversal iteration where "_comparison_" may be one of "containing", "startin
 * "the result should be of" - results can be any of the specified values and in any order (use when guarantees
 regarding the exact results cannot be pre-determined easily - see the `range()`-step tests for examples)
 * "the result should be a graph with the following" - asserts a subgraph where the associated datatable is headed with
-"vertices" or "edges" with a set of expected vertex or edge definitions
+"vertices" or "edges" with a set of expected vertex or edge definitions (can only be used with the "modern" graph data)
 * "the result should be a tree with a structure of" - asserts a tree structure given as an asciiart representation of
 the expected tree.
 
