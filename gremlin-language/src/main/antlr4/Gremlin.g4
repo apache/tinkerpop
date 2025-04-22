@@ -1596,6 +1596,7 @@ genericLiteral
     | nestedTraversal
     | terminatedTraversal
     | genericLiteralMap
+    | uuidLiteral
     ;
 
 genericLiteralMap
