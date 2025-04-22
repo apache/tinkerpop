@@ -287,19 +287,6 @@ public abstract class TinkerWorld implements World {
     public static class ComputerWorld implements World {
         private static final Random RANDOM = TestHelper.RANDOM;
 
-        private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
-                "@StepDrop",
-                "@StepInject",
-                "@StepV",
-                "@StepE",
-                "@GraphComputerVerificationOneBulk",
-                "@GraphComputerVerificationStrategyNotSupported",
-                "@GraphComputerVerificationMidVNotSupported",
-                "@GraphComputerVerificationInjectionNotSupported",
-                "@GraphComputerVerificationStarGraphExceeded",
-                "@GraphComputerVerificationReferenceOnly",
-                "@TinkerServiceRegistry");
-
         private final World world;
 
         public ComputerWorld(final World world) { this.world = world; }
@@ -315,15 +302,6 @@ public abstract class TinkerWorld implements World {
                         GraphComputer.class.getCanonicalName() :
                         TinkerGraphComputer.class.getCanonicalName());
             }})));
-        }
-
-        @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
-
-            this.world.beforeEachScenario(scenario);
         }
 
         @Override

@@ -128,6 +128,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | e[josh-created->lop] |
 
+  @GraphComputerVerificationMidENotSupported
   Scenario: g_V_EX11X
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -145,6 +146,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[josh-created->lop] |
       | e[josh-created->lop] |
 
+  @GraphComputerVerificationMidENotSupported
   Scenario: g_EX11X_E
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -161,7 +163,8 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[peter-created->lop] |
       | e[josh-created->lop] |
       | e[josh-created->ripple] |
-      
+
+  @GraphComputerVerificationMidENotSupported
   Scenario: g_V_EXnullX
     Given the modern graph
     And the traversal of
@@ -171,6 +174,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationMidENotSupported
   Scenario: g_V_EXlistXnullXX
     Given the modern graph
     And using the parameter xx1 defined as "l[null]"
@@ -181,6 +185,7 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
     When iterated to list
     Then the result should be empty
 
+  @GraphComputerVerificationMidENotSupported
   Scenario: g_injectX1X_EX11_nullX
     Given the modern graph
     And using the parameter eid11 defined as "e[josh-created->lop].id"
@@ -193,7 +198,8 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | e[josh-created->lop] |
 
- Scenario: g_injectX1X_coalesceXEX_hasLabelXtestsX_addEXtestsX_from_V_hasXnameX_XjoshXX_toXV_hasXnameX_XvadasXXX
+  @GraphComputerVerificationMidENotSupported
+  Scenario: g_injectX1X_coalesceXEX_hasLabelXtestsX_addEXtestsX_from_V_hasXnameX_XjoshXX_toXV_hasXnameX_XvadasXXX
     Given the empty graph
     And the graph initializer of
       """

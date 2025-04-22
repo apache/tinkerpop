@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TernaryBooleanLogicsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
@@ -108,13 +109,19 @@ import org.junit.runners.model.RunnerBuilder;
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.8.0, prefer the Gherkin test suite for validating Gremlin behavior and the
+ * {@link ProcessEmbeddedStandardSuite} for JVM specific tests.
  */
+@Deprecated
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
     /**
      * This list of tests in the suite that will be executed as part of this suite.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
+
+            LambdaStepTest.Traversals.class,
+
             // branch
             BranchTest.Traversals.class,
             ChooseTest.Traversals.class,
@@ -212,6 +219,8 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      * A list of the minimum set of base tests that Gremlin flavors should implement to be compliant with Gremlin.
      */
     private static final Class<?>[] testsToEnforce = new Class<?>[]{
+            LambdaStepTest.class,
+
             // branch
             BranchTest.class,
             ChooseTest.class,

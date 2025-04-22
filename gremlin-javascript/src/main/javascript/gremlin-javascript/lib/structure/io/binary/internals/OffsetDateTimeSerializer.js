@@ -17,8 +17,6 @@
  *  under the License.
  */
 
-'use strict';
-
 const { Buffer } = require('buffer');
 
 module.exports = class OffsetDateTimeSerializer {

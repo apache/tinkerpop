@@ -629,58 +629,61 @@ image:gremlin-edumacated.png[width=225]
 
 [source,xml]
 ----
+<!-- gremlin-tests contains test classes and gherkin tests -->
 <dependency>
   <groupId>org.apache.tinkerpop</groupId>
   <artifactId>gremlin-test</artifactId>
   <version>x.y.z</version>
 </dependency>
+<!-- TinkerGraph is required for validating subgraph() tests -->
+<dependency>
+  <groupId>org.apache.tinkerpop</groupId>
+  <artifactId>tinkergraph-gremlin</artifactId>
+  <version>x.y.z</version>
+</dependency>
 ----
 
-Providers currently have two approaches to consider when validating their TinkerPop implementations. The first approach
-comes from the wholly JVM oriented original test suite which was developed in the early days of TinkerPop 3.x design
-and development. The second approach is available as of 3.6.0, is Gherkin-based and originates from the Gremlin
-Language Variant test suite which is language agnostic.
-
-The first approach is more complete and more opinionated as to how an implementation should behave and in many ways
-helpful in getting an implementation semantically correct from the ground up (i.e. first getting the `Graph` Structure
-API implemented well by getting the Structure Suite to pass which will almost inevitably ensure that the most of the
-Gremlin language oriented tests in the Process Suite pass early on). On the other hand, the fact that this test suite
-is rigorous also can make it harder to implement especially if your graph already exists and behaves in a certain
-fashion.
-
-The second approach only validates Gremlin semantics which is ultimately what users concern themselves with as that is
-the method by which they will interact with a provider's `Graph`. This test suite is less concerned with how a
-TinkerPop implementation does what it does, so long as it succeeds at processing Gremlin traversals. There is
-significant overlap between this test suite and the aforementioned Process Suite.
-
-At this time, it would be wise for providers to implement both approaches as the goal for TinkerPop is to move away
-from the rigors of the JVM Structure and Process Suites in favor of Gherkin. Over time, the Structure and Process
-Suites will be deprecated and removed.
+TinkerPop provides `gremlin-test`, a technology test kit, that helps validate provider implementations. There is a
+Gherkin-based test suite and a JVM-based test suite. The Gherkin suite is meant to test Gremlin operations and semantics
+while the JVM-based suite is meant for lower-level `Graph` implementation validation and for Gremlin use cases that
+apply to embedded operations (i.e. running Gremlin in the same JVM as the `Graph` implementation).
 
 ==== JVM Test Suite
 
 IMPORTANT: 4.0.0-beta.1 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
 forward providers should focus on implementing the <<gherkin-tests-suite>> as opposed to the JVM suite.
 
-The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. To implement these tests,
-provide test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g.
-TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
+The JVM test suite is useful to graph system implementers who want to validate that their `Graph` implementation is
+working properly and that Gremlin features specific to embedded use cases are behaving as expected. These tests do not
+validate that all the semantics of the Gremlin query language are properly operating. Providers should implement the
+<<gherkin-tests-suite>> for that type of validation.
+
+If you are a remote graph database only or don't implement the `Graph` API but simply expose access to the Gremlin
+language then it likely makes sense to skip implementing this suite and only implemented the Gherkin suite. On the other
+hand, if you do implement the `Graph` API or `GraphComputer` API, it likely makes sense to implement both these tests
+and the Gherkin suite.
+
+To implement the JVM tests, provide test case implementations as shown below, where `XXX` below denotes the name of the
+graph implementation (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 
 [source,java]
 ----
-// Structure API tests
+// Structure API tests which validate the core functionality of the Graph implementation.
+// Start with this one because, generally speaking, if this suite passes then the others
+// will mostly follow suit. Moreover, the structure tests operate on lower-level aspects
+// of the Graph interfaces which are much easier to debug than Gremlin level tests.
 @RunWith(StructureStandardSuite.class)
 @GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXStructureStandardTest {}
 
-// Process API tests
-@RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
-public class XXXProcessComputerTest {}
-
-@RunWith(ProcessStandardSuite.class)
+// Process API tests cover embedded Gremlin uses cases
+@RunWith(ProcessEmbeddedStandardSuite.class)
 @GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXProcessStandardTest {}
+
+@RunWith(ProcessEmbeddedComputerSuite.class)
+@GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
+public class XXXProcessComputerTest {}
 ----
 
 IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test`
@@ -773,7 +776,7 @@ there is a single test case that prevents an implementer from claiming support o
 choose to either not support the `Feature` or to support it but "opt-out" of the test with a "reason" as to why so
 that users understand the limitation.
 
-IMPORTANT: Before using `OptOut` be sure that the reason for using it is sound and it is more of a last resort.
+IMPORTANT: Before using `OptOut` be sure that the reason for using it is sound and that it is more of a last resort.
 It is possible that a test from the suite doesn't properly represent the expectations of a feature, is too broad or
 narrow for the semantics it is trying to enforce or simply contains a bug.  Please consider raising issues in the
 developer mailing list with such concerns before assuming `OptOut` is the only answer.
@@ -818,7 +821,8 @@ by way of a system property - simply set `-DtestIteratorLeaks=false".
 
 The Gherkin Test Suite is a language agnostic set of tests that verify Gremlin semantics. It provides a unified set of
 tests that validate many TinkerPop components internally. The tests themselves can be found in `gremlin-tests/features`
-(link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here]) with their syntax described in the
+(link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features[here])
+with their syntax described in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[TinkerPop Developer Documentation].
 
 TinkerPop provides some infrastructure, for JVM based graphs, to help make it easier for providers to implement these
@@ -843,7 +847,7 @@ The following is just an example as taken from TinkerGraph:
 ----
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly",
+        tags = "not @GraphComputerOnly and not @AllowNullPropertyValues",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
         plugin = {"progress", "junit:target/cucumber.xml",
@@ -852,12 +856,13 @@ The following is just an example as taken from TinkerGraph:
 
 The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
 choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
-`@RemoteOnly` tag (the full list of possible tags can be found link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]),
-as will most providers. The "glue" will be the same for all test implementers as it refers to a package containing
-TinkerPop's test infrastructure in `gremlin-test` (unless of course, a provider needs to develop their own
-infrastructure for some reason). The "features" is the path to the actual Gherkin test files that should be made
-available locally. The files can be referenced on the classpath assuming `gremlin-test` is a dependency. The "plugin"
-defines a JUnit style output, which happens to be understood by Maven.
+`@GraphComputerOnly` and `@AllowNullPropertyValues` tags (the full list of possible tags can be found
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]), since this configuration was for OLTP
+tests and the graph was configured without support for storing `null` in the graph. The "glue" will be the same for all
+test implementers as it refers to a package containing TinkerPop's test infrastructure in `gremlin-test` (unless of
+course, a provider needs to develop their own infrastructure for some reason). The "features" is the path to the actual
+Gherkin test files that should be made available locally. The files can be referenced on the classpath assuming
+`gremlin-test` is a dependency. The "plugin" defines a JUnit style output, which happens to be understood by Maven.
 
 The "objectFactory" is the last component. Cucumber relies on dependency injection to get a `World` implementation into
 the test infrastructure. Providers may choose from multiple available implementations, but TinkerPop chose to use
@@ -978,7 +983,7 @@ Gremlin Server is distributed with a configuration that utilizes HTTP with a cus
 Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then streams back the results in
 HTTP chunks.
 
-Let's use the incoming request to process the Gremlin script of `g.V()` as an example.  Gremlin Server evaluates that 
+Let's use the incoming request to process the Gremlin script of `g.V()` as an example.  Gremlin Server evaluates that
 script, getting an `Iterator` of vertices as a result, and steps through each `Vertex` within it.  The vertices are
 batched together into an HTTP chunk.  Each response is serialized given the requested serializer type (GraphBinary is
 recommended) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result
@@ -1208,12 +1213,12 @@ connect at all.
 
 By default, Gremlin Server only supports
 link:https://en.wikipedia.org/wiki/Basic_access_authentication[basic HTTP authentication].  This is handled by the
-`HttpBasicAuthenticationHandler` which is the only `AbstractAuthenticationHandler` provided with the Gremlin Server. 
+`HttpBasicAuthenticationHandler` which is the only `AbstractAuthenticationHandler` provided with the Gremlin Server.
 Other common HTTP authentication schemes that are sent via an HTTP header can be supported by implementing a custom
 `AbstractAuthenticationHandler`.  Because the communication protocol is HTTP/1.1, authentication should be header-based
 and should not include negotiation.
 
-When basic authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`. 
+When basic authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`.
 The request is examined for an `Authorization` header. If one doesn't exist then "401 Unauthorized" error response is
 returned.
 

@@ -97,10 +97,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
     gremlins.each { k,v ->
-        // skipping lambdas until we decide for sure that they are out in 4.x
-        if (v.any { it.contains('l1')} || v.any { it.contains('pred1')} || v.any { it.contains('Lambda')}) {
-            writer.writeLine("               {\"${k}\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>>()},  // skipping as it contains a lambda")
-        } else if (staticTranslate.containsKey(k)) {
+        if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
             writer.write("               {\"")

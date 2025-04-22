@@ -18,18 +18,6 @@
 @StepClassFilter @StepHas
 Feature: Step - has()
 
-  Scenario: g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name
-    Given the modern graph
-    And using the parameter l1 defined as "c[it.get().length()]"
-    And the traversal of
-      """
-      g.V().out("created").has("name", __.map(l1).is(P.gt(3))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | ripple |
-
   Scenario: g_VX1X_hasXnameX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

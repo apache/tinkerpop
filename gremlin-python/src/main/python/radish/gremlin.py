@@ -35,13 +35,11 @@ from gremlin_python.structure.graph import Graph
 from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, T, Pick, Operator, IO, WithOptions
 
 world.gremlins = {
-    'g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX': [],  # skipping as it contains a lambda
     'g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX': [(lambda g, xx1=None,xx2=None:g.V().branch(__.label().is_('person').count()).option(xx1, __.values('age')).option(xx2, __.values('lang')).option(xx2, __.values('name')))], 
     'g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX_optionXany__labelX': [(lambda g, xx1=None,xx2=None:g.V().branch(__.label().is_('person').count()).option(xx1, __.values('age')).option(xx2, __.values('lang')).option(xx2, __.values('name')).option(Pick.any_, __.label()))], 
     'g_V_branchXageX_optionXltX30X__youngX_optionXgtX30X__oldX_optionXnone__on_the_edgeX': [(lambda g:g.V().has_label('person').branch(__.values('age')).option(P.lt(30), __.constant('young')).option(P.gt(30), __.constant('old')).option(Pick.none, __.constant('on the edge')))], 
     'g_V_branchXidentityX_optionXhasLabelXsoftwareX__inXcreatedX_name_order_foldX_optionXhasXname_vadasX__ageX_optionXneqX123X__bothE_countX': [(lambda g:g.V().branch(__.identity()).option(__.has_label('software'), __.in_('created').values('name').order().fold()).option(__.has('name', 'vadas'), __.values('age')).option(P.neq(123), __.both_e().count()))], 
     'g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX': [(lambda g, xx1=None,xx2=None:g.V().choose(__.out().count()).option(xx1, __.values('name')).option(xx2, __.values('age')))], 
-    'g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name': [],  # skipping as it contains a lambda
     'g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name': [(lambda g:g.V().choose(__.has_label('person').and_().out('created'), __.out('knows'), __.identity()).values('name'))], 
     'g_V_chooseXlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name': [(lambda g:g.V().choose(__.label()).option('blah', __.out('knows')).option('bleep', __.out('created')).option(Pick.none, __.identity()).values('name'))], 
     'g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name': [(lambda g:g.V().choose(__.out('knows').count().is_(P.gt(0)), __.out('knows')).values('name'))], 
@@ -78,7 +76,6 @@ world.gremlins = {
     'g_VX1X_repeatXgroupCountXmX_byXloopsX_outX_timesX3X_capXmX': [(lambda g, vid1=None:g.V(vid1).repeat(__.group_count('m').by(__.loops()).out()).times(3).cap('m'))], 
     'g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX': [(lambda g:g.V().repeat(__.both()).times(10).as_('a').out().as_('b').select('a', 'b').count())], 
     'g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name': [(lambda g, vid1=None:g.V(vid1).repeat(__.out()).until(__.out_e().count().is_(0)).values('name'))], 
-    'g_V_repeatXbothX_untilXname_eq_marko_or_loops_gt_1X_groupCount_byXnameX': [],  # skipping as it contains a lambda
     'g_V_hasXname_markoX_repeatXoutE_inV_simplePathX_untilXhasXname_rippleXX_path_byXnameX_byXlabelX': [(lambda g:g.V().has('name', 'marko').repeat(__.out_e().in_v().simple_path()).until(__.has('name', 'ripple')).path().by('name').by(T.label))], 
     'g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name': [(lambda g:g.V().has('loops', 'name', 'loop').repeat(__.in_()).times(5).path().by('name'))], 
     'g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX': [(lambda g:g.V().repeat(__.out().repeat(__.out().order().by('name', Order.desc)).times(1)).times(1).limit(1).path().by('name'))], 
@@ -190,16 +187,15 @@ world.gremlins = {
     'g_V_properties_drop': [(lambda g:g.add_v().property('name', 'bob').add_v().property('name', 'alice')), (lambda g:g.V().properties().drop()), (lambda g:g.V()), (lambda g:g.V().properties())], 
     'g_E_propertiesXweightX_drop': [(lambda g:g.add_v('person').property('name', 'marko').property('age', 29).as_('marko').add_v('person').property('name', 'vadas').property('age', 27).as_('vadas').add_v('software').property('name', 'lop').property('lang', 'java').as_('lop').add_v('person').property('name', 'josh').property('age', 32).as_('josh').add_v('software').property('name', 'ripple').property('lang', 'java').as_('ripple').add_v('person').property('name', 'peter').property('age', 35).as_('peter').add_e('knows').from_('marko').to('vadas').property('weight', 0.5).add_e('knows').from_('marko').to('josh').property('weight', 1.0).add_e('created').from_('marko').to('lop').property('weight', 0.4).add_e('created').from_('josh').to('ripple').property('weight', 1.0).add_e('created').from_('josh').to('lop').property('weight', 0.4).add_e('created').from_('peter').to('lop').property('weight', 0.2)), (lambda g:g.E().properties('weight').drop()), (lambda g:g.E().properties())], 
     'g_V_properties_propertiesXstartTimeX_drop': [(lambda g:g.add_v().property('name', 'bob').property(Cardinality.list_, 'location', 'ny', 'startTime', 2014, 'endTime', 2016).property(Cardinality.list_, 'location', 'va', 'startTime', 2016).add_v().property('name', 'alice').property(Cardinality.list_, 'location', 'va', 'startTime', 2014, 'endTime', 2016).property(Cardinality.list_, 'location', 'ny', 'startTime', 2016)), (lambda g:g.V().properties().properties('startTime').drop()), (lambda g:g.V().properties().properties()), (lambda g:g.V().properties().properties('startTime'))], 
-    'g_V_filterXfalseX': [],  # skipping as it contains a lambda
-    'g_V_filterXtrueX': [],  # skipping as it contains a lambda
-    'g_V_filterXlang_eq_javaX': [],  # skipping as it contains a lambda
-    'g_VX1X_filterXage_gt_30X': [],  # skipping as it contains a lambda
-    'g_VX2X_filterXage_gt_30X': [],  # skipping as it contains a lambda
-    'g_VX1X_out_filterXage_gt_30X': [],  # skipping as it contains a lambda
-    'g_V_filterXname_startsWith_m_OR_name_startsWith_pX': [],  # skipping as it contains a lambda
-    'g_E_filterXfalseX': [],  # skipping as it contains a lambda
-    'g_E_filterXtrueX': [],  # skipping as it contains a lambda
-    'g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name': [],  # skipping as it contains a lambda
+    'g_V_filterXisX0XX': [(lambda g:g.V().filter_(__.is_(0)))], 
+    'g_V_filterXconstantX0XX': [(lambda g:g.V().filter_(__.constant(0)))], 
+    'g_V_filterXhasXlang_javaXX': [(lambda g:g.V().filter_(__.has('lang', 'java')))], 
+    'g_VX1X_filterXhasXage_gtX30XXX': [(lambda g, vid1=None:g.V(vid1).filter_(__.has('age', P.gt(30))))], 
+    'g_VX2X_filterXhasXage_gtX30XXX': [(lambda g, vid2=None:g.V(vid2).filter_(__.has('age', P.gt(30))))], 
+    'g_VX1X_out_filterXhasXage_gtX30XXX': [(lambda g, vid1=None:g.V(vid1).out().filter_(__.has('age', P.gt(30))))], 
+    'g_V_filterXhasXname_startingWithXm_or_pXX': [(lambda g:g.V().filter_(__.has('name', TextP.starting_with('m').or_(TextP.starting_with('p')))))], 
+    'g_E_filterXisX0XX': [(lambda g:g.E().filter_(__.is_(0)))], 
+    'g_E_filterXconstantX0XX': [(lambda g:g.E().filter_(__.constant(0)))], 
     'g_VX1X_hasXnameX': [(lambda g, vid1=None:g.V(vid1).has('name'))], 
     'g_VX1X_hasXcircumferenceX': [(lambda g, vid1=None:g.V(vid1).has('circumference'))], 
     'g_VX1X_hasXname_markoX': [(lambda g, vid1=None:g.V(vid1).has('name', 'marko'))], 
@@ -445,8 +441,8 @@ world.gremlins = {
     'g_withoutStrategiesXIncidentToAdjacentStrategyX_V_outE_inV': [(lambda g:g.without_strategies(IncidentToAdjacentStrategy).V().out_e().in_v())], 
     'g_withStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX': [(lambda g:g.with_strategies(InlineFilterStrategy()).V().filter_(__.has('name', 'marko')))], 
     'g_withoutStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX': [(lambda g:g.without_strategies(InlineFilterStrategy).V().filter_(__.has('name', 'marko')))], 
-    'g_withStrategiesXLambdaRestrictionStrategyX_V': [],  # skipping as it contains a lambda
-    'g_withoutStrategiesXLambdaRestrictionStrategyX_V': [],  # skipping as it contains a lambda
+    'g_withStrategiesXLambdaRestrictionStrategyX_V': [(lambda g:g.with_strategies(LambdaRestrictionStrategy()).V())], 
+    'g_withoutStrategiesXLambdaRestrictionStrategyX_V': [(lambda g:g.without_strategies(LambdaRestrictionStrategy).V())], 
     'g_withStrategiesXLazyBarrierStrategyX_V_out_bothE_count': [(lambda g:g.with_strategies(LazyBarrierStrategy()).V().out().both_e().count())], 
     'g_withoutStrategiesXLazyBarrierStrategyX_V_out_bothE_count': [(lambda g:g.without_strategies(LazyBarrierStrategy).V().out().both_e().count())], 
     'g_withStrategiesXMatchAlgorithmStrategyXmatchAlgorithm_CountMatchAlgorithmXX_V_matchXa_knows_b__a_created_cX': [(lambda g:g.with_strategies(MatchAlgorithmStrategy(match_algorithm='org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep$CountMatchAlgorithm')).V().match(__.as_('a').out('knows').as_('b'), __.as_('a').out('created').as_('c')))], 
@@ -456,7 +452,6 @@ world.gremlins = {
     'g_withoutStrategiesXMatchPredicateStrategyX_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXa_b_cX': [(lambda g:g.without_strategies(MatchPredicateStrategy).V().match(__.as_('a').out('created').has('name', 'lop').as_('b'), __.as_('b').in_('created').has('age', 29).as_('c')).where(__.as_('c').repeat(__.out()).times(2)).select('a', 'b', 'c'))], 
     'g_withStrategiesXMessagePassingReductionStrategyX_V': [(lambda g:g.with_strategies(MessagePassingReductionStrategy()).V())], 
     'g_withoutStrategiesXMessagePassingReductionStrategyX_V': [(lambda g:g.without_strategies(MessagePassingReductionStrategy).V())], 
-    'g_withoutStrategiesXCountStrategyX_V_count': [(lambda g:g.without_strategies(CountStrategy).V().count())], 
     'g_V_coworker': [(lambda g, xx1=None:g.V().has_label('person').filter_(__.out_e('created')).aggregate('p').as_('p1').values('name').as_('p1n').select('p').unfold().where(P.neq('p1')).as_('p2').values('name').as_('p2n').select('p2').out('created').choose(__.in_('created').where(P.eq('p1')), __.values('name'), __.constant(xx1)).group().by(__.select('p1n')).by(__.group().by(__.select('p2n')).by(__.unfold().fold().project('numCoCreated', 'coCreated').by(__.count(Scope.local)).by())).unfold())], 
     'g_V_coworker_with_midV': [(lambda g:g.V().has_label('person').filter_(__.out_e('created')).as_('p1').V().has_label('person').where(P.neq('p1')).filter_(__.out_e('created')).as_('p2').map(__.out('created').where(__.in_('created').as_('p1')).values('name').fold()).group().by(__.select('p1').by('name')).by(__.group().by(__.select('p2').by('name')).by(__.project('numCoCreated', 'coCreated').by(__.count(Scope.local)).by())).unfold())], 
     'g_withStrategiesXOptionsStrategyX_V': [(lambda g:g.with_strategies(OptionsStrategy()).V())], 
@@ -493,6 +488,7 @@ world.gremlins = {
     'g_withStrategiesXPathRetractionStrategyX_V': [(lambda g:g.with_strategies(PathRetractionStrategy()).V())], 
     'g_withoutStrategiesXPathRetractionStrategyX_V': [(lambda g:g.without_strategies(PathRetractionStrategy).V())], 
     'g_V_shortestpath': [(lambda g:g.V().as_('v').both().as_('v').project('src', 'tgt', 'p').by(__.select(Pop.first, 'v')).by(__.select(Pop.last, 'v')).by(__.select(Pop.all_, 'v')).as_('triple').group('x').by(__.select('src', 'tgt')).by(__.select('p').fold()).select('tgt').barrier().repeat(__.both().as_('v').project('src', 'tgt', 'p').by(__.select(Pop.first, 'v')).by(__.select(Pop.last, 'v')).by(__.select(Pop.all_, 'v')).as_('t').filter_(__.select(Pop.all_, 'p').count(Scope.local).as_('l').select(Pop.last, 't').select(Pop.all_, 'p').dedup(Scope.local).count(Scope.local).where(P.eq('l'))).select(Pop.last, 't').not_(__.select(Pop.all_, 'p').as_('p').count(Scope.local).as_('l').select(Pop.all_, 'x').unfold().filter_(__.select(Column.keys).where(P.eq('t')).by(__.select('src', 'tgt'))).filter_(__.select(Column.values).unfold().or_(__.count(Scope.local).where(P.lt('l')), __.where(P.eq('p'))))).barrier().group('x').by(__.select('src', 'tgt')).by(__.select(Pop.all_, 'p').fold()).select('tgt').barrier()).cap('x').select(Column.values).unfold().unfold().map(__.unfold().values('name').fold()))], 
+    'g_V_playlist_paths': [(lambda g:g.with_strategies(SeedStrategy(seed=99999)).V().has('name', 'Bob_Dylan').in_('sungBy').as_('a').repeat(__.out().order().by(Order.shuffle).simple_path().from_('a')).until(__.out('writtenBy').has('name', 'Johnny_Cash')).limit(1).as_('b').repeat(__.out().order().by(Order.shuffle).as_('c').simple_path().from_('b').to('c')).until(__.out('sungBy').has('name', 'Grateful_Dead')).limit(1).path().from_('a').unfold().project('song', 'artists').by('name').by(__.coalesce(__.out('sungBy', 'writtenBy').dedup().values('name'), __.constant('Unknown')).fold()))], 
     'g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX': [(lambda g:g.with_strategies(ProductiveByStrategy()).V().group().by('age').by('name'))], 
     'g_withoutStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX': [(lambda g:g.without_strategies(ProductiveByStrategy).V().group().by('age').by('name'))], 
     'g_withStrategiesXProfileStrategyX_V': [(lambda g:g.with_strategies(ProfileStrategy()).V())], 
@@ -505,6 +501,7 @@ world.gremlins = {
     'g_withStrategiesXReadOnlyStrategyX_V_propertyXname_joshX': [(lambda g:g.with_strategies(ReadOnlyStrategy()).V().property('name', 'josh'))], 
     'g_withStrategiesXReadOnlyStrategyX_E_propertyXweight_0X': [(lambda g:g.with_strategies(ReadOnlyStrategy()).E().property('weight', 0))], 
     'g_V_classic_recommendation': [(lambda g:g.V().has('name', 'DARK STAR').as_('a').out('followedBy').aggregate('stash').in_('followedBy').where(P.neq('a').and_(P.not_(P.within('stash')))).group_count().unfold().project('x', 'y', 'z').by(__.select(Column.keys).values('name')).by(__.select(Column.keys).values('performances')).by(__.select(Column.values)).order().by(__.select('z'), Order.desc).by(__.select('y'), Order.asc).limit(5).aggregate(Scope.local, 'm').select('x'))], 
+    'g_V_classic_recommendation_ranked': [(lambda g:g.V().has('name', 'DARK STAR').as_('a').out('followedBy').aggregate('stash').in_('followedBy').where(P.neq('a').and_(P.not_(P.within('stash')))).group_count().unfold().project('x', 'y', 'z').by(__.select(Column.keys).values('name')).by(__.select(Column.keys).values('performances')).by(__.select(Column.values)).order().by(__.select('z'), Order.desc).by(__.select('y'), Order.asc).limit(5).aggregate(Scope.local, 'm'))], 
     'g_withStrategiesXReferenceElementStrategyX_V': [(lambda g:g.with_strategies(ReferenceElementStrategy()).V())], 
     'g_withoutStrategiesXReferenceElementStrategyX_V': [(lambda g:g.without_strategies(ReferenceElementStrategy).V())], 
     'g_withStrategiesXRepeatUnrollStrategyX_V_repeatXoutX_timesX2X': [(lambda g:g.with_strategies(RepeatUnrollStrategy()).V().repeat(__.out()).times(2))], 
@@ -832,6 +829,7 @@ world.gremlins = {
     'g_EX11X_elementMap': [(lambda g, eid11=None:g.E(eid11).element_map())], 
     'g_V_elementMapXname_age_nullX': [(lambda g:g.V().element_map('name', 'age', None))], 
     'g_V_asXaX_flatMapXselectXaXX': [(lambda g:g.V().as_('a').flat_map(__.select('a')))], 
+    'g_V_valuesXnameX_flatMapXsplitXaX_unfoldX': [(lambda g:g.V().values('name').flat_map(__.split('a').unfold()))], 
     'g_V_fold': [(lambda g:g.V().fold())], 
     'g_V_fold_unfold': [(lambda g:g.V().fold().unfold())], 
     'g_V_age_foldX0_plusX': [(lambda g:g.V().values('age').fold(0, Operator.sum_))], 
@@ -848,10 +846,6 @@ world.gremlins = {
     'g_V_elementMap_formatXstrX': [(lambda g:g.V().element_map().format_('%{name} is %{age} years old'))], 
     'g_V_hasLabelXpersonX_asXaX_valuesXnameX_asXp1X_selectXaX_inXknowsX_formatXstrX': [(lambda g:g.V().has_label('person').as_('a').values('name').as_('p1').select('a').in_('knows').format_('%{p1} knows %{name}'))], 
     'g_V_asXsX_label_asXsubjectX_selectXsX_outE_asXpX_label_asXpredicateX_selectXpX_inV_label_asXobjectX_formatXstrX': [(lambda g:g.V().as_('s').label().as_('subject').select('s').out_e().as_('p').label().as_('predicate').select('p').in_v().label().as_('object').format_('%{subject} %{predicate} %{object}'))], 
-    'g_VX1X_V_valuesXnameX': [(lambda g, vid1=None:g.V(vid1).V().values('name'))], 
-    'g_V_outXknowsX_V_name': [(lambda g:g.V().out('knows').V().values('name'))], 
-    'g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name': [(lambda g:g.V().has('artist', 'name', 'Garcia').in_('sungBy').as_('song').V().has('artist', 'name', 'Willie_Dixon').in_('writtenBy').where(P.eq('song')).values('name'))], 
-    'g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX': [(lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.add_v('person').property('name', 'marko').property('age', 29).as_('marko').add_v('person').property('name', 'vadas').property('age', 27).as_('vadas').add_v('software').property('name', 'lop').property('lang', 'java').as_('lop').add_v('person').property('name', 'josh').property('age', 32).as_('josh').add_v('software').property('name', 'ripple').property('lang', 'java').as_('ripple').add_v('person').property('name', 'peter').property('age', 35).as_('peter').add_e('knows').from_('marko').to('vadas').property('weight', 0.5).add_e('knows').from_('marko').to('josh').property('weight', 1.0).add_e('created').from_('marko').to('lop').property('weight', 0.4).add_e('created').from_('josh').to('ripple').property('weight', 1.0).add_e('created').from_('josh').to('lop').property('weight', 0.4).add_e('created').from_('peter').to('lop').property('weight', 0.2)), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V().has_label('person').as_('p').V(xx1).add_e('uses').from_('p')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.E().has_label('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid1).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid2).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid3).in_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid4).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid5).in_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid6).out_e('uses'))], 
     'g_V_hasLabelXsoftwareX_index_unfold': [(lambda g:g.V().has_label('software').index().unfold())], 
     'g_V_hasLabelXsoftwareX_order_byXnameX_index_withXmapX': [(lambda g:g.V().has_label('software').order().by('name').index().with_(WithOptions.indexer, WithOptions.map))], 
     'g_V_hasLabelXsoftwareX_name_fold_orderXlocalX_index_unfold_order_byXtailXlocal_1XX': [(lambda g:g.V().has_label('software').values('name').fold().order(Scope.local).index().unfold().order().by(__.tail(Scope.local, 1)))], 
@@ -891,12 +885,11 @@ world.gremlins = {
     'g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_or_loops_isX2XX_hasXname_peterX_path_byXnameX': [(lambda g, vid1=None:g.V(vid1).repeat(__.both().simple_path()).until(__.has('name', 'peter').or_().loops().is_(2)).has('name', 'peter').path().by('name'))], 
     'g_VX1X_repeatXboth_simplePathX_untilXhasXname_peterX_and_loops_isX3XX_hasXname_peterX_path_byXnameX': [(lambda g, vid1=None:g.V(vid1).repeat(__.both().simple_path()).until(__.has('name', 'peter').and_().loops().is_(3)).has('name', 'peter').path().by('name'))], 
     'g_V_emitXhasXname_markoX_or_loops_isX2XX_repeatXoutX_valuesXnameX': [(lambda g:g.V().emit(__.has('name', 'marko').or_().loops().is_(2)).repeat(__.out()).values('name'))], 
-    'g_VX1X_mapXnameX': [],  # skipping as it contains a lambda
-    'g_VX1X_outE_label_mapXlengthX': [],  # skipping as it contains a lambda
-    'g_VX1X_out_mapXnameX_mapXlengthX': [],  # skipping as it contains a lambda
-    'g_VX1X_out_mapXlambdaXnameXX_mapXlambdaXlengthXX': [],  # skipping as it contains a lambda
-    'g_withPath_V_asXaX_out_mapXa_nameX': [],  # skipping as it contains a lambda
-    'g_withPath_V_asXaX_out_out_mapXa_name_it_nameX': [],  # skipping as it contains a lambda
+    'g_VX1X_mapXvaluesXnameXX': [(lambda g, vid1=None:g.V(vid1).map(__.values('name')))], 
+    'g_VX1X_outE_label_mapXlengthX': [(lambda g, vid1=None:g.V(vid1).out_e().label().map(__.length()))], 
+    'g_VX1X_out_mapXvaluesXnameXX_mapXlengthX': [(lambda g, vid1=None:g.V(vid1).out().map(__.values('name')).map(__.length()))], 
+    'g_withPath_V_asXaX_out_mapXselectXaX_valuesXnameXX': [(lambda g:g.with_path().V().as_('a').out().map(__.select('a').values('name')))], 
+    'g_withPath_V_asXaX_out_out_asXbX_mapXselectXaX_valuesXnameX_concatXselectXbX_valuesXnameXXX': [(lambda g:g.with_path().V().as_('a').out().out().as_('b').map(__.select('a').values('name').concat(__.select('b').values('name'))))], 
     'g_V_mapXselectXaXX': [(lambda g:g.V().as_('a').map(__.select('a')))], 
     'g_V_mapXconstantXnullXX': [(lambda g:g.V().map(__.constant(None)))], 
     'g_V_valueMap_matchXa_selectXnameX_bX': [(lambda g:g.V().value_map().match(__.as_('a').select('name').as_('b')))], 
@@ -1143,7 +1136,6 @@ world.gremlins = {
     'g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX': [(lambda g:g.V().as_('a').out('created').as_('b').order().by(Order.shuffle).select('a', 'b'))], 
     'g_V_both_hasLabelXpersonX_order_byXage_descX_limitX5X_name': [(lambda g:g.V().both().has_label('person').order().by('age', Order.desc).limit(5).values('name'))], 
     'g_V_properties_order_byXkey_descX_key': [(lambda g:g.V().properties().order().by(T.key, Order.desc).key())], 
-    'g_V_hasLabelXpersonX_order_byXvalueXageX_descX_name': [],  # skipping as it contains a lambda
     'g_V_hasLabelXpersonX_group_byXnameX_byXoutE_weight_sumX_orderXlocalX_byXvaluesX': [(lambda g:g.V().has_label('person').group().by('name').by(__.out_e().values('weight').sum_()).order(Scope.local).by(Column.values))], 
     'g_V_mapXbothE_weight_foldX_order_byXsumXlocalX_descX_byXcountXlocalX_descX': [(lambda g:g.V().map(__.both_e().values('weight').order().by(Order.asc).fold()).order().by(__.sum_(Scope.local), Order.desc).by(__.count(Scope.local), Order.desc))], 
     'g_V_group_byXlabelX_byXname_order_byXdescX_foldX': [(lambda g:g.V().group().by(T.label).by(__.values('name').order().by(Order.desc).fold()))], 
@@ -1158,7 +1150,6 @@ world.gremlins = {
     'g_V_fold_orderXlocalX_byXage_descX': [(lambda g:g.V().fold().order(Scope.local).by('age', Order.desc))], 
     'g_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX': [(lambda g:g.V().or_(__.has_label('person'), __.has('software', 'name', 'lop')).order().by('age'))], 
     'g_withStrategiesXProductiveByStrategyX_V_orXhasLabelXpersonX_hasXsoftware_name_lopXX_order_byXageX': [(lambda g:g.with_strategies(ProductiveByStrategy()).V().or_(__.has_label('person'), __.has('software', 'name', 'lop')).order().by('age'))], 
-    'g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_descX_byXkeys_ascX': [],  # skipping as it contains a lambda
     'g_V_hasXsong_name_OHBOYX_outXfollowedByX_outXfollowedByX_order_byXperformancesX_byXsongType_descX': [(lambda g:g.V().has('song', 'name', 'OH BOY').out('followedBy').out('followedBy').order().by('performances').by('songType', Order.desc).by('name'))], 
     'g_V_hasLabelXsongX_order_byXperformances_descX_byXnameX_rangeX110_120X_name': [(lambda g:g.V().has_label('song').order().by('performances', Order.desc).by('name').range_(110, 120).values('name'))], 
     'g_VX1X_elementMap_orderXlocalX_byXkeys_descXunfold': [(lambda g, vid1=None:g.V(vid1).element_map().order(Scope.local).by(Column.keys, Order.desc).unfold())], 
@@ -1397,7 +1388,7 @@ world.gremlins = {
     'g_V_valuesXnameX_trim': [(lambda g:g.add_v('person').property('name', ' marko ').property('age', 29).as_('marko').add_v('person').property('name', '  vadas  ').property('age', 27).as_('vadas').add_v('software').property('name', '  lop').property('lang', 'java').as_('lop').add_v('person').property('name', 'josh  ').property('age', 32).as_('josh').add_v('software').property('name', '   ripple   ').property('lang', 'java').as_('ripple').add_v('person').property('name', 'peter').property('age', 35).as_('peter').add_e('knows').from_('marko').to('vadas').property('weight', 0.5).add_e('knows').from_('marko').to('josh').property('weight', 1.0).add_e('created').from_('marko').to('lop').property('weight', 0.4).add_e('created').from_('josh').to('ripple').property('weight', 1.0).add_e('created').from_('josh').to('lop').property('weight', 0.4).add_e('created').from_('peter').to('lop').property('weight', 0.2)), (lambda g:g.V().values('name').trim())], 
     'g_V_valuesXnameX_order_fold_trimXlocalX': [(lambda g:g.add_v('person').property('name', ' marko ').property('age', 29).as_('marko').add_v('person').property('name', '  vadas  ').property('age', 27).as_('vadas').add_v('software').property('name', '  lop').property('lang', 'java').as_('lop').add_v('person').property('name', 'josh  ').property('age', 32).as_('josh').add_v('software').property('name', '   ripple   ').property('lang', 'java').as_('ripple').add_v('person').property('name', 'peter').property('age', 35).as_('peter').add_e('knows').from_('marko').to('vadas').property('weight', 0.5).add_e('knows').from_('marko').to('josh').property('weight', 1.0).add_e('created').from_('marko').to('lop').property('weight', 0.4).add_e('created').from_('josh').to('ripple').property('weight', 1.0).add_e('created').from_('josh').to('lop').property('weight', 0.4).add_e('created').from_('peter').to('lop').property('weight', 0.2)), (lambda g:g.V().values('name').order().fold().trim(Scope.local))], 
     'g_V_localXoutE_foldX_unfold': [(lambda g:g.V().local(__.out_e().fold()).unfold())], 
-    'g_V_valueMap_unfold_mapXkeyX': [],  # skipping as it contains a lambda
+    'g_V_valueMap_unfold_mapXselectXkeysXX': [(lambda g:g.V().value_map().unfold().map(__.select(Column.keys)))], 
     'g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold': [(lambda g, vid6=None,vid1=None:g.V(vid1).repeat(__.both().simple_path()).until(__.has_id(vid6)).path().by('name').unfold())], 
     'g_V_valueMap': [(lambda g:g.V().value_map())], 
     'g_V_valueMapXtrueX': [(lambda g:g.V().value_map(True))], 
@@ -1444,6 +1435,10 @@ world.gremlins = {
     'g_V_hasLabelXloopsX_bothXselfX': [(lambda g:g.V().has_label('loops').both('self'))], 
     'g_injectX1X_VXnullX': [(lambda g:g.inject(1).V(None))], 
     'g_injectX1X_VX1_nullX': [(lambda g, vid1=None:g.inject(1).V(vid1, None))], 
+    'g_VX1X_V_valuesXnameX': [(lambda g, vid1=None:g.V(vid1).V().values('name'))], 
+    'g_V_outXknowsX_V_name': [(lambda g:g.V().out('knows').V().values('name'))], 
+    'g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name': [(lambda g:g.V().has('artist', 'name', 'Garcia').in_('sungBy').as_('song').V().has('artist', 'name', 'Willie_Dixon').in_('writtenBy').where(P.eq('song')).values('name'))], 
+    'g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX': [(lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.add_v('person').property('name', 'marko').property('age', 29).as_('marko').add_v('person').property('name', 'vadas').property('age', 27).as_('vadas').add_v('software').property('name', 'lop').property('lang', 'java').as_('lop').add_v('person').property('name', 'josh').property('age', 32).as_('josh').add_v('software').property('name', 'ripple').property('lang', 'java').as_('ripple').add_v('person').property('name', 'peter').property('age', 35).as_('peter').add_e('knows').from_('marko').to('vadas').property('weight', 0.5).add_e('knows').from_('marko').to('josh').property('weight', 1.0).add_e('created').from_('marko').to('lop').property('weight', 0.4).add_e('created').from_('josh').to('ripple').property('weight', 1.0).add_e('created').from_('josh').to('lop').property('weight', 0.4).add_e('created').from_('peter').to('lop').property('weight', 0.2)), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V().has_label('person').as_('p').V(xx1).add_e('uses').from_('p')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.E().has_label('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid1).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid2).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid3).in_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid4).out_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid5).in_e('uses')), (lambda g, xx1=None,vid1=None,vid2=None,vid3=None,vid4=None,vid5=None,vid6=None:g.V(vid6).out_e('uses'))], 
     'InjectXnullX_eqXnullX': [(lambda g:g.inject(None).is_(P.eq(None)))], 
     'InjectXnullX_neqXnullX': [(lambda g:g.inject(None).is_(P.neq(None)))], 
     'InjectXnullX_ltXnullX': [(lambda g:g.inject(None).is_(P.lt(None)))], 
@@ -1612,7 +1607,7 @@ world.gremlins = {
     'g_V_hasXlangX_group_byXlangX_byXcountX': [(lambda g:g.V().has('lang').group().by('lang').by(__.count()))], 
     'g_V_group_byXoutE_countX_byXnameX': [(lambda g:g.V().order().by('name').group().by(__.out_e().count()).by('name'))], 
     'g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX': [(lambda g:g.V().repeat(__.both('followedBy')).times(2).group().by('songType').by(__.count()))], 
-    'g_V_group_byXname_substring_1X_byXconstantX1XX': [],  # skipping as it contains a lambda
+    'g_V_group_byXvaluesXnameX_substringX1XX_byXconstantX1XX': [(lambda g:g.V().group().by(__.values('name').substring(0, 1)).by(__.constant(1)))], 
     'g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X': [(lambda g:g.V().out().group().by(T.label).select('person').unfold().out('created').values('name').limit(2))], 
     'g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX': [(lambda g:g.V().has_label('song').group().by('name').by(__.properties().group_count().by(T.label)))], 
     'g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX': [(lambda g:g.V().out('followedBy').group().by('songType').by(__.both_e().group().by(T.label).by(__.values('weight').sum_())))], 
@@ -1648,7 +1643,7 @@ world.gremlins = {
     'g_V_outXcreatedX_groupCount_byXnameX_byXageX': [(lambda g:g.V().out('created').group_count().by('name').by('age'))], 
     'g_V_outXcreatedX_groupCountXxX_byXnameX_byXageX': [(lambda g:g.V().out('created').group_count('x').by('name').by('age'))], 
     'g_VX1X_out_injectXv2X_name': [(lambda g, vid1=None,v2=None:g.V(vid1).out().inject(v2).values('name'))], 
-    'g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path': [],  # skipping as it contains a lambda
+    'g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path': [(lambda g, vid1=None:g.V(vid1).out().values('name').inject('daniel').as_('a').map(__.length()).path())], 
     'g_VX1X_injectXg_VX4XX_out_name': [(lambda g, vid1=None,v2=None:g.V(vid1).inject(v2).out().values('name'))], 
     'g_injectXnull_1_3_nullX': [(lambda g:g.inject(None, 1, 3, None))], 
     'g_injectX10_20_null_20_10_10X_groupCountXxX_dedup_asXyX_projectXa_bX_by_byXselectXxX_selectXselectXyXXX': [(lambda g:g.inject(10, 20, None, 20, 10, 10).group_count('x').dedup().as_('y').project('a', 'b').by().by(__.select('x').select(__.select('y'))))], 
@@ -1684,6 +1679,11 @@ world.gremlins = {
     'g_V_sackXassignX_byXageX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').sack())], 
     'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': [(lambda g, xx1=None:g.with_sack(xx1, Operator.assign).V().local(__.out('knows').barrier(Barrier.norm_sack)).in_('knows').barrier().sack())], 
     'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': [(lambda g, xx1=None:g.with_sack(2).V().sack(Operator.div).by(__.constant(xx1)).sack())], 
+    'g_V_sideEffectXidentityX': [(lambda g:g.V().side_effect(__.identity()))], 
+    'g_V_sideEffectXidentity_valuesXnameXX': [(lambda g:g.V().side_effect(__.identity().values('name')))], 
+    'g_V_sideEffectXpropertyXage_22X': [(lambda g:g.add_v('person').property('age', 21)), (lambda g:g.V().side_effect(__.property('age', 22))), (lambda g:g.V().has('age', 21)), (lambda g:g.V().has('age', 22))], 
+    'g_V_group_byXvaluesXnameX_sideEffectXconstantXzyxXX_substringX1XX_byXconstantX1X_sideEffectXconstantXxyzXXX': [(lambda g:g.V().group().by(__.values('name').side_effect(__.constant('zyx')).substring(0, 1)).by(__.constant(1).side_effect(__.constant('xyz'))))], 
+    'g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold': [(lambda g:g.with_side_effect('x', {}).V().both().both().side_effect(__.store('x').by('name')).cap('x').unfold())], 
     'g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX': [(lambda g:g.V().has('age').group_count('a').by('name').out().cap('a'))], 
     'g_V_groupXaX_byXageX_capXaX': [(lambda g:g.V().group('a').by('age').cap('a'))], 
     'g_V_groupXaX_byXnameX_capXaX': [(lambda g:g.V().group('a').by('name').cap('a'))], 
@@ -1691,11 +1691,12 @@ world.gremlins = {
     'g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX': [(lambda g:g.V().repeat(__.out().group('a').by('name').by(__.count())).times(2).cap('a'))], 
     'g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX': [(lambda g:g.V().group('a').by(T.label).by(__.out_e().values('weight').sum_()).cap('a'))], 
     'g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX': [(lambda g:g.V().repeat(__.both('followedBy')).times(2).group('a').by('songType').by(__.count()).cap('a'))], 
-    'g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX': [],  # skipping as it contains a lambda
+    'g_V_groupXaX_byXvaluesXnameX_substringX1XX_byXconstantX1XX_capXaX': [(lambda g:g.V().group('a').by(__.values('name').substring(0, 1)).by(__.constant(1)).cap('a'))], 
     'g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX': [(lambda g:g.V().has_label('song').group('a').by('name').by(__.properties().group_count().by(T.label)).out().cap('a'))], 
     'g_V_hasLabelXpersonX_asXpX_outXcreatedX_groupXaX_byXnameX_byXselectXpX_valuesXageX_sumX_capXaX': [(lambda g:g.V().has_label('person').as_('p').out('created').group('a').by('name').by(__.select('p').values('age').sum_()).cap('a'))], 
     'g_V_groupXmX_byXnameX_byXinXknowsX_nameX_capXmX': [(lambda g:g.V().group('m').by('name').by(__.in_('knows').values('name')).cap('m'))], 
     'g_V_groupXmX_byXlabelX_byXlabel_countX_capXmX': [(lambda g:g.V().group('m').by(__.label()).by(__.label().count()).cap('m'))], 
+    'g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX_unfold': [(lambda g:g.V().choose(__.has(T.label, 'person'), __.values('age').group_count('a'), __.values('name').group_count('b')).cap('a', 'b').unfold())], 
     'g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_orderX_capXaX': [(lambda g:g.V().has('person', 'name', P.within('vadas', 'peter')).group('a').by().by(__.out().order()).cap('a'))], 
     'g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_countX_capXaX': [(lambda g:g.V().has('person', 'name', P.within('vadas', 'peter')).group('a').by().by(__.out().order().count()).cap('a'))], 
     'g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_order_fold_countXlocalXX_capXaX': [(lambda g:g.V().has('person', 'name', P.within('vadas', 'peter')).group('a').by().by(__.out().order().fold().count(Scope.local)).cap('a'))], 
@@ -1709,4 +1710,17 @@ world.gremlins = {
     'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': [(lambda g, xx1=None:g.with_side_effect('a', xx1).V().both().values('name').store('a').cap('a'))], 
     'g_withSideEffectXa_set_inlineX_V_both_name_storeXaX_capXaX': [(lambda g:g.with_side_effect('a', {'alice'}).V().both().values('name').store('a').cap('a'))], 
     'g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX': [(lambda g:g.V().store('a').by(__.out_e('created').count()).out().out().store('a').by(__.in_e('created').values('weight').sum_()).cap('a'))], 
+    'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': [(lambda g, vid1=None:g.V(vid1).out_e('knows').subgraph('sg').values('name').cap('sg'))], 
+    'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': [(lambda g:g.V().repeat(__.both_e('created').subgraph('sg').out_v()).times(5).values('name').dedup().cap('sg'))], 
+    'g_V_outEXnoexistX_subgraphXsgXcapXsgX': [(lambda g:g.V().out_e('noexist').subgraph('sg').cap('sg'))], 
+    'g_VX1X_out_out_tree_byXnameX': [(lambda g, vid1=None:g.V(vid1).out().out().tree().by('name'))], 
+    'g_VX1X_out_out_tree': [(lambda g, vid1=None:g.V(vid1).out().out().tree())], 
+    'g_V_out_tree_byXageX': [(lambda g:g.V().out().tree().by('age'))], 
+    'g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX': [(lambda g, vid1=None:g.V(vid1).out().out().tree('a').by('name').both().both().cap('a'))], 
+    'g_VX1X_out_out_treeXaX_both_both_capXaX': [(lambda g, vid1=None:g.V(vid1).out().out().tree('a').both().both().cap('a'))], 
+    'g_VX1X_out_out_tree_byXlabelX': [(lambda g, vid1=None:g.V(vid1).out().out().tree().by(T.label))], 
+    'g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX': [(lambda g, vid1=None:g.V(vid1).out().out().tree('a').by(T.label).both().both().cap('a'))], 
+    'g_VX1X_out_out_out_tree': [(lambda g:g.V().out().out().out().tree())], 
+    'g_VX1X_outE_inV_bothE_otherV_tree': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree())], 
+    'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree().by('name').by(T.label))], 
 }

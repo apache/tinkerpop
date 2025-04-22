@@ -308,11 +308,6 @@ func parseMapValue(mapVal interface{}, graphName string) interface{} {
 	}
 }
 
-// Parse lambda.
-func toLambda(name, graphName string) interface{} {
-	return &gremlingo.Lambda{Script: name}
-}
-
 func toT(name, graphName string) interface{} {
 	// Return as is, since T values are just strings.
 	if name == "label" {
@@ -949,7 +944,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

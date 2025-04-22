@@ -54,15 +54,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.apache.tinkerpop.gremlin.features.World.GRAPHCOMPUTER_TAG_FILTER;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @StepDrop and not @StepV and not @StepE and not @StepIndex and not @StepInject and " +
-               "not @GraphComputerVerificationOneBulk and not @GraphComputerVerificationStrategyNotSupported and " +
-               "not @GraphComputerVerificationMidVNotSupported and not @GraphComputerVerificationElementSupported and " +
-               "not @GraphComputerVerificationInjectionNotSupported and " +
-               "not @GraphComputerVerificationStarGraphExceeded and not @GraphComputerVerificationReferenceOnly and " +
-               "not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @WithElementIdStrategy",
+        tags = GRAPHCOMPUTER_TAG_FILTER + " and not @WithElementIdStrategy",
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

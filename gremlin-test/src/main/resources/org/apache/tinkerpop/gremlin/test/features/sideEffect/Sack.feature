@@ -125,14 +125,6 @@ Feature: Step - sack()
       | d[0.5].m |
       | d[0.5].m |
 
-  Scenario: g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack
-    Given an unsupported test
-    Then nothing should happen because
-      """
-      This test is bound pretty tightly to the JVM in that it requires a UnaryOperator cast to get the right
-      withSack() method called. Not sure how that would work with a GLV.
-      """
-
   Scenario: g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack
     Given the modern graph
     And using the parameter xx1 defined as "d[4.0].d"

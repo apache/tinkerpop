@@ -111,30 +111,11 @@ public abstract class RemoteWorld implements World {
      * instances that include the VertexProgramStrategy.
      */
     public abstract static class RemoteComputerWorld extends RemoteWorld {
-        private static final List<String> TAGS_TO_IGNORE = Arrays.asList(
-                "@StepDrop",
-                "@StepInject",
-                "@StepV",
-                "@StepE",
-                "@GraphComputerVerificationOneBulk",
-                "@GraphComputerVerificationStrategyNotSupported",
-                "@GraphComputerVerificationMidVNotSupported",
-                "@GraphComputerVerificationInjectionNotSupported",
-                "@GraphComputerVerificationStarGraphExceeded",
-                "@GraphComputerVerificationReferenceOnly",
-                "@TinkerServiceRegistry");
 
         private final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
         public RemoteComputerWorld(Cluster cluster) {
             super(cluster);
-        }
-
-        @Override
-        public void beforeEachScenario(final Scenario scenario) {
-            final List<String> ignores = TAGS_TO_IGNORE.stream().filter(t -> scenario.getSourceTagNames().contains(t)).collect(Collectors.toList());
-            if (!ignores.isEmpty())
-                throw new AssumptionViolatedException(String.format("This scenario is not supported with GraphComputer: %s", ignores));
         }
 
         @Override
