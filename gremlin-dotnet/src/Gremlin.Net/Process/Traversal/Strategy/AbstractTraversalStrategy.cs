@@ -36,6 +36,8 @@ namespace Gremlin.Net.Process.Traversal.Strategy
     {
         private const string BaseNamespace = "org.apache.tinkerpop.gremlin.process.traversal.strategy.";
 
+        private const string BaseComputerNamespace = "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.";
+
         /// <summary>
         /// Java namespace for decoration strategies.
         /// </summary>
@@ -59,8 +61,22 @@ namespace Gremlin.Net.Process.Traversal.Strategy
         /// <summary>
         /// Java namespace for computer decoration strategies.
         /// </summary>
-        protected const string ComputerDecorationNamespace =
-            "org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.";
+        protected const string ComputerDecorationNamespace = BaseComputerNamespace + "decoration.";
+
+        /// <summary>
+        /// Java namespace for computer finalization strategies.
+        /// </summary>
+        protected const string ComputerFinalizationNamespace = BaseComputerNamespace + "finalization.";
+
+        /// <summary>
+        /// Java namespace for computer optimization strategies.
+        /// </summary>
+        protected const string ComputerOptimizationNamespace = BaseComputerNamespace + "optimization.";
+
+        /// <summary>
+        /// Java namespace for computer verification strategies.
+        /// </summary>
+        protected const string ComputerVerificationNamespace = BaseComputerNamespace + "verification.";
         
         /// <summary>
         ///     Creates a new <see cref="AbstractTraversalStrategy"/> instance.

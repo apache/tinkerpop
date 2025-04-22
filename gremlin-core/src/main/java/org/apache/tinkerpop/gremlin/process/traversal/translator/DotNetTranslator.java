@@ -316,8 +316,7 @@ public final class DotNetTranslator implements Translator.ScriptTranslator {
                 return script.append("new " + o.getStrategyClass().getSimpleName() + "()");
             } else {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
-                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).
-                        filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
+                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).iterator();
                 while (keys.hasNext()) {
                     final String k = keys.next();
                     script.append(k);

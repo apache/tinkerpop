@@ -383,11 +383,9 @@ class TestGraphSONWriter:
         assert result == json.loads(self.graphson_writer.write_object(P.within(1)))
 
     def test_strategies(self):
-        # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
+        assert {"@type": "g:SubgraphStrategy", "@value": {'conf': {}, 'fqcn': 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'}} == json.loads(
             self.graphson_writer.write_object(SubgraphStrategy))
-        assert {"@type": "g:SubgraphStrategy", "@value": {
-            "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
+        assert {"@type": "g:SubgraphStrategy", "@value": {'conf': { "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}, 'fqcn': 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'}} == json.loads(
             self.graphson_writer.write_object(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
     def test_graph(self):

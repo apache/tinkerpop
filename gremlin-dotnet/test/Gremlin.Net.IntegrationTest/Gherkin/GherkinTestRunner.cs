@@ -52,6 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withoutStrategiesXCountStrategyX_V_count", IgnoreReason.NoReason}, // needs investigation
                 {"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX", IgnoreReason.NoReason},
             };
@@ -126,13 +127,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                     if (scenario.Tags.Any(t => t.Name == "@StepSubgraph"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.SubgraphStepNotSupported));
-                        continue;
-                    }
-
-                    // after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
-                    if (scenario.Name.Contains("withStrategies") || scenario.Name.Contains("withoutStrategies"))
-                    {
-                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.NoReason));
                         continue;
                     }
 

@@ -21,14 +21,14 @@
 
 #endregion
 
-namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
+namespace Gremlin.Net.Process.Traversal.Strategy.Verification
 {
     /// <summary>
     ///     A strategy
     /// </summary>
     public class VertexProgramRestrictionStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = OptimizationNamespace + nameof(VertexProgramRestrictionStrategy);
+        private const string JavaFqcn = ComputerVerificationNamespace + nameof(VertexProgramRestrictionStrategy);
         
         /// <summary>
         /// Initializes a new instance of the <see cref="VertexProgramRestrictionStrategy" /> class.

@@ -17,52 +17,43 @@
  *  under the License.
  */
 
-/**
- * @author Igor Ostapenko
- */
 'use strict';
 
+const { TraversalStrategy } = require('../../../../process/traversal-strategy');
 const { Buffer } = require('buffer');
 
-const { TraversalStrategySerializer: GraphsonTraversalStrategySerializer } = require('../../type-serializers');
-
-module.exports = class TraversalStrategySerializer {
+module.exports = class ClassSerializer {
   constructor(ioc) {
     this.ioc = ioc;
-    this.graphsonTraversalStrategySerializer = new GraphsonTraversalStrategySerializer();
+    this.ioc.serializers[ioc.DataType.CLASS] = this;
   }
 
   canBeUsedFor(value) {
-    return this.graphsonTraversalStrategySerializer.canBeUsedFor(value);
+    return (
+      typeof value === 'function' &&
+      !!value.prototype &&
+      !!value.prototype.constructor.name &&
+      new value() instanceof TraversalStrategy
+    );
   }
 
   serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null) {
       if (fullyQualifiedFormat) {
-        return Buffer.from([this.ioc.DataType.TRAVERSALSTRATEGY, 0x01]);
+        return Buffer.from([this.ioc.DataType.CLASS, 0x01]);
       }
-      const strategy_class = [0x00, 0x00, 0x00, 0x00]; // ''
-      const configuration = [0x00, 0x00, 0x00, 0x00]; // {}
-      return Buffer.from([...strategy_class, ...configuration]);
+      return this.ioc.intSerializer.serialize(0, false);
     }
 
     const bufs = [];
     if (fullyQualifiedFormat) {
-      bufs.push(Buffer.from([this.ioc.DataType.TRAVERSALSTRATEGY, 0x00]));
+      bufs.push(Buffer.from([this.ioc.DataType.CLASS, 0x00]));
     }
 
-    const conf = {};
-    for (const k in item.configuration) {
-      if (item.configuration.hasOwnProperty(k)) {
-        conf[k] = item.configuration[k];
-      }
-    }
-
-    // {strategy_class}
-    bufs.push(this.ioc.classSerializer.serialize(item.constructor, false));
-
-    // {configuration}
-    bufs.push(this.ioc.mapSerializer.serialize(conf, false));
+    const fqcn = new item().fqcn;
+    const v = Buffer.from(fqcn, 'utf8');
+    bufs.push(this.ioc.intSerializer.serialize(fqcn.length, false));
+    bufs.push(v);
 
     return Buffer.concat(bufs);
   }

@@ -26,7 +26,16 @@
 
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
-const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, LambdaRestrictionStrategy } = require('../../lib/process/traversal-strategy');
+const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, 
+        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, 
+        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, 
+        ComputerVerificationStrategy, MessagePassingReductionStrategy, ProfileStrategy, InlineFilterStrategy, 
+        ComputerFinalizationStrategy, ReferenceElementStrategy, ElementIdStrategy, MatchAlgorithmStrategy, 
+        EdgeLabelVerificationStrategy, CountStrategy, ConnectiveStrategy, ByModulatorOptimizationStrategy, 
+        AdjacentToIncidentStrategy, ReservedKeysVerificationStrategy, RepeatUnrollStrategy, 
+        PathRetractionStrategy, PathProcessorStrategy, OrderLimitStrategy, MatchPredicateStrategy, 
+        LazyBarrierStrategy, EarlyLimitStrategy, IncidentToAdjacentStrategy, IdentityRemovalStrategy, 
+        HaltedTraverserStrategy, FilterRankingStrategy } = require('../../lib/process/traversal-strategy');
 const __ = graphTraversalModule.statics;
 const Barrier = traversalModule.barrier
 const Cardinality = traversalModule.cardinality

@@ -295,7 +295,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
                 final Map<Object,Object> conf = ConfigurationConverter.getMap(o.getConfiguration());
                 script.append("{");
-                conf.entrySet().stream().filter(entry -> !entry.getKey().equals(TraversalStrategy.STRATEGY)).forEach(entry -> {
+                conf.entrySet().stream().forEach(entry -> {
                     script.append(entry.getKey().toString());
                     script.append(":");
                     convertToScript(entry.getValue()).getScript();

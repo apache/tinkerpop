@@ -56,7 +56,16 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
                     'const traversalModule = require(\'../../lib/process/traversal\');\n' +
-                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, LambdaRestrictionStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
+                    'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
+                    '        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, \n' +
+                    '        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, \n' +
+                    '        ComputerVerificationStrategy, MessagePassingReductionStrategy, ProfileStrategy, InlineFilterStrategy, \n' +
+                    '        ComputerFinalizationStrategy, ReferenceElementStrategy, ElementIdStrategy, MatchAlgorithmStrategy, \n' +
+                    '        EdgeLabelVerificationStrategy, CountStrategy, ConnectiveStrategy, ByModulatorOptimizationStrategy, \n' +
+                    '        AdjacentToIncidentStrategy, ReservedKeysVerificationStrategy, RepeatUnrollStrategy, \n' +
+                    '        PathRetractionStrategy, PathProcessorStrategy, OrderLimitStrategy, MatchPredicateStrategy, \n' +
+                    '        LazyBarrierStrategy, EarlyLimitStrategy, IncidentToAdjacentStrategy, IdentityRemovalStrategy, \n' +
+                    '        HaltedTraverserStrategy, FilterRankingStrategy } = require(\'../../lib/process/traversal-strategy\');\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +

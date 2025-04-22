@@ -111,6 +111,24 @@ class OffsetDateTimeSerializer extends TypeSerializer {
   }
 }
 
+class ClassSerializer extends TypeSerializer {
+  serialize(item) {
+    return {
+      [typeKey]: 'g:Class',
+      [valueKey]: new item().fqcn,
+    };
+  }
+
+  canBeUsedFor(value) {
+    return (
+      typeof value === 'function' &&
+      !!value.prototype &&
+      !!value.prototype.constructor.name &&
+      new value() instanceof ts.TraversalStrategy
+    );
+  }
+}
+
 class LongSerializer extends TypeSerializer {
   serialize(item) {
     return {
@@ -284,7 +302,7 @@ class TraversalStrategySerializer extends TypeSerializer {
 
     return {
       [typeKey]: 'g:' + item.constructor.name,
-      [valueKey]: conf,
+      [valueKey]: { ['fqcn']: item.fqcn, ['conf']: conf },
     };
   }
 
@@ -502,6 +520,7 @@ class SetSerializer extends ArraySerializer {
 module.exports = {
   BulkSetSerializer,
   BytecodeSerializer,
+  ClassSerializer,
   DateSerializer,
   OffsetDateTimeSerializer,
   DirectionSerializer,

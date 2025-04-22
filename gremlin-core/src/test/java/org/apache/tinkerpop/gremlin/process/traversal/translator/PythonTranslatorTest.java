@@ -123,7 +123,7 @@ public class PythonTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.with_strategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.has_label('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
+        assertEquals("g.with_strategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.has_label('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         SeedStrategy.build().seed(999999).create()).

@@ -291,7 +291,7 @@ public class Bytecode implements Cloneable, Serializable {
 
     /////
 
-    private final Object[] flattenArguments(final Object... arguments) {
+    private Object[] flattenArguments(final Object... arguments) {
         if (arguments == null || arguments.length == 0)
             return EMPTY_ARRAY;
         final List<Object> flatArguments = new ArrayList<>(arguments.length);
@@ -306,7 +306,7 @@ public class Bytecode implements Cloneable, Serializable {
         return flatArguments.toArray();
     }
 
-    private final Object convertArgument(final Object argument, final boolean searchBindings) {
+    private Object convertArgument(final Object argument, final boolean searchBindings) {
         if (searchBindings) {
             final String variable = Bindings.getBoundVariable(argument);
             if (null != variable)
