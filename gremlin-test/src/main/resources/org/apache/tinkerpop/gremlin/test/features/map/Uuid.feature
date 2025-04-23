@@ -19,13 +19,13 @@
 Feature: Step - uuid()
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXUUIDX
+  Scenario: g_injectXUUIDX_asXidX_selectXidX_asString
     Given the empty graph
     And the traversal of
       """
-      g.inject(UUID())
+      g.inject(UUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")).as("id").select("id").asString()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[2023-08-02T00:00:00Z] |
+      | f47ac10b-58cc-4372-a567-0e02b2c3d479 |
