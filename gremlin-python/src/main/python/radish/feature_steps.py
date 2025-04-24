@@ -247,7 +247,7 @@ def _convert(val, ctx):
         # python 3.8 can handle only subset of ISO 8601 dates
         return datetime.fromisoformat(val[3:-1].replace('Z', ''))
     elif isinstance(val, str) and re.match(r"^uuid\[.*\]$", val):  # parse uuid
-        name = val[3:-1]  # strip 'dt[...]' or similar format
+        name = val[5:-1]  # strip 'uuid[...]' or similar format
         dummy_namespace = uuid.UUID('00000000-0000-0000-0000-000000000000')
         return uuid.uuid5(dummy_namespace, name)
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan

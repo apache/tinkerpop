@@ -51,7 +51,7 @@ func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
 		regexp.MustCompile(`^str\[(.*)]$`): func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
 		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
-		regexp.MustCompile(`^uuid\[(.*)]$`):           toUuid,
+		regexp.MustCompile(`^uuid\[(.*)]$`):         toUuid,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`):	 toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[m]$`): 		 toBigDecimal,
 		regexp.MustCompile(`^d\[(.*)]\.[n]$`): 		 toBigInt,
