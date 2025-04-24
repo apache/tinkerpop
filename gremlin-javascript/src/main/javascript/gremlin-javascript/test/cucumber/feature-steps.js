@@ -22,6 +22,8 @@
  */
 'use strict';
 
+import { v5 as uuidv5 } from 'uuid';
+
 const {Given, Then, When, setDefaultTimeout} = require('cucumber');
 // Setting Cucumber timeout to 10s for Floating Errors on Windows on GitHub Actions
 setDefaultTimeout(10 * 1000);
@@ -46,6 +48,7 @@ const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'dt\\[(.+)\\]', toDateTime ],
+  [ 'uid\\[(.+)\\]', toUuid ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
@@ -448,6 +451,11 @@ function toDirection(value) {
 
 function toDateTime(value) {
   return new Date(value);
+}
+
+function toUuid(value) {
+  const DUMMY_NAMESPACE = '00000000-0000-0000-0000-000000000000';
+  return uuidv5(value, DUMMY_NAMESPACE);
 }
 
 function toMerge(value) {

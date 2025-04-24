@@ -37,6 +37,7 @@ import (
 
 	gremlingo "github.com/apache/tinkerpop/gremlin-go/v3/driver"
 	"github.com/cucumber/godog"
+	"github.com/google/uuid"
 )
 
 type tinkerPopGraph struct {
@@ -50,6 +51,7 @@ func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
 		regexp.MustCompile(`^str\[(.*)]$`): func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
 		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
+		regexp.MustCompile(`^uuid\[(.*)]$`):           toUuid,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`):	 toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[m]$`): 		 toBigDecimal,
 		regexp.MustCompile(`^d\[(.*)]\.[n]$`): 		 toBigInt,
@@ -112,6 +114,15 @@ func parseValue(value string, graphName string) interface{} {
 // Parse dateTime.
 func toDateTime(stringVal, graphName string) interface{} {
 	val, err := time.Parse(time.RFC3339, stringVal)
+	if err != nil {
+		return nil
+	}
+	return val
+}
+
+// Parse uuid.
+func toUuid(stringVal, graphName string) interface{} {
+	val, err := uuid.Parse(stringVal)
 	if err != nil {
 		return nil
 	}

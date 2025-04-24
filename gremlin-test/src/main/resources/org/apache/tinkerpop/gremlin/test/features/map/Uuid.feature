@@ -23,7 +23,7 @@ Feature: Step - uuid()
     Given the empty graph
     And the traversal of
       """
-      g.inject(UUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")).as("id").select("id").asString()
+      g.inject(UUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")).asString()
       """
     When iterated to list
     Then the result should be unordered

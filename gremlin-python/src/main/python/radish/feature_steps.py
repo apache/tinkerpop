@@ -20,6 +20,7 @@
 from datetime import datetime
 import json
 import re
+import uuid
 from gremlin_python.statics import long
 from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
@@ -245,6 +246,10 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
         # python 3.8 can handle only subset of ISO 8601 dates
         return datetime.fromisoformat(val[3:-1].replace('Z', ''))
+    elif isinstance(val, str) and re.match(r"^uuid\[.*\]$", val):  # parse uuid
+        name = val[3:-1]  # strip 'dt[...]' or similar format
+        dummy_namespace = uuid.UUID('00000000-0000-0000-0000-000000000000')
+        return uuid.uuid5(dummy_namespace, name)
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf
