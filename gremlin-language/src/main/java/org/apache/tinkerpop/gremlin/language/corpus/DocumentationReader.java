@@ -110,8 +110,8 @@ public class DocumentationReader {
                 replace("vPeter", "\"peter\"").
                 replace("vStephen", "\"stephen\"").
                 replace("maps", "[:]").
-                replace("v1", "new Vertex(1,\"vertex\")").
-                replace("v2", "new Vertex(2,\"vertex\")").
+                replace("v1", "Vertex(1)").
+                replace("v2", "Vertex(2)").
                 replace("input.head()", "\"head\"").
                 replace("input.tail().size()", "6").
                 replace("input.tail()", "\"tail\"").

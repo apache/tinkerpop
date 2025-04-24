@@ -241,6 +241,20 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+        sb.append("new Vertex(");
+        if (ctx.getChildCount() == 4) {
+            visit(ctx.getChild(2)); // id
+        } else {
+            visit(ctx.getChild(2)); // id
+            sb.append(", ");
+            visit(ctx.getChild(4)); // label
+        }
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
 
         if (ctx.getChildCount() == 1)

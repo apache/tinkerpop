@@ -225,6 +225,8 @@ Direction.BOTH
 # structureVertex
 Vertex(1,'person')
 Vertex("1", 'person')
+Vertex(1)
+Vertex("1")
 # genericLiteralSet
 {}
 { }
@@ -284,6 +286,8 @@ Vertex("1", 'person')
 {"a".."z"}
 {Vertex("1", 'person')}
 {1, Vertex("2", 'person')}
+{Vertex("1")}
+{1, Vertex("2")}
 {1, {2, {3}}}
 {1, {}, []}
 {1, {2}, [3], 4..5, "six"}

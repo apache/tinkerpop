@@ -950,12 +950,9 @@ traversalMethod_write
     ARGUMENT AND TERMINAL RULES
 **********************************************/
 
-// There is syntax available in the construction of a ReferenceVertex, that allows the label to not be specified.
-// That use case is related to OLAP when the StarGraph does not preserve the label of adjacent vertices or other
-// fail fast scenarios in that processing model. It is not relevant to the grammar however when a user is creating
-// the Vertex to be used in a Traversal and therefore both id and label are required.
+// Vertex will only require an id for grammar, label is optional.
 structureVertex
-    : K_NEW? (K_VERTEX | K_REFERENCEVERTEX) LPAREN genericLiteralArgument COMMA stringArgument RPAREN
+    : K_VERTEX LPAREN genericLiteralArgument (COMMA stringArgument)? RPAREN
     ;
 
 traversalStrategy
@@ -1857,7 +1854,6 @@ keyword
     | K_RANGE
     | K_READ
     | K_READER
-    | K_REFERENCEVERTEX
     | K_REGEX
     | K_REPLACE
     | K_REPEAT
@@ -2116,7 +2112,6 @@ K_PRODUCT: 'product';
 K_RANGE: 'range';
 K_READ: 'read';
 K_READER: 'reader';
-K_REFERENCEVERTEX: 'ReferenceVertex';
 K_REGEX: 'regex';
 K_REPLACE: 'replace';
 K_REPEAT: 'repeat';

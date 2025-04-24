@@ -75,7 +75,7 @@ public class ReferenceGrammarTest extends AbstractGrammarTest {
             return String.format("[%s]", listItems);
         }));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), (k,v) -> "\"1\""));
-        add(Pair.with(Pattern.compile("v(\\d)"), (k,v) -> String.format("new Vertex(%s, \"vertex\")", v)));
+        add(Pair.with(Pattern.compile("v(\\d)"), (k,v) -> String.format("Vertex(%s)", v)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), (k,v) -> "\"1\""));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.?.*"), (k,v) -> v));
         add(Pair.with(Pattern.compile("m\\[(.*)\\]"), (k,v) -> v.replace('{','[').replace('}', ']')));

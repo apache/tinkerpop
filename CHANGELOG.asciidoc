@@ -55,6 +55,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
+* Modified grammar to only require `id` for Vertex structure with `label` as optional, i.e. `Vertex(id)`, and removed the support for redundant `new` and `ReferenceVertex` keywords.
 * Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.
 * Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
 * Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.

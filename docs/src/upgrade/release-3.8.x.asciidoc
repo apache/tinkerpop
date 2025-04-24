@@ -104,6 +104,26 @@ these were deserialized into arrays.
 
 A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
 
+*Changes to `Vertex` structure in grammar*
+
+- `id` is the only required parameter, `label` is now optional
+- Removed support for the `new` keyword.
+- Removed support for `ReferenceVertex` given its redundancy, grammar will only accept `Vertex`.
+
+[source,groovy]
+----
+// given 2 vertices with label 'person'
+// only id is required, default label of `vertex` will be used
+g.addE('knows').from(Vertex(1)).to(Vertex(2))
+
+// label is optional, but can be used
+g.addE('knows').from(Vertex(1, 'person')).to(Vertex(2, 'person'))
+----
+
+Note that this will diverge from `gremlin-groovy`, which still retains the original syntax `new ReferenceVertex(id)`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
+
 *`new` keyword is now optional*
 
 The `new` keyword is now optional in all cases where it was previously used. Both of the following examples are now

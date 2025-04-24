@@ -32,7 +32,11 @@ public class StructureElementVisitor extends GremlinBaseVisitor<Element> {
 
     @Override
     public Vertex visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
-        return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
-                (String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+        if (ctx.getChildCount() == 4) {
+            return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+        } else {
+            return new ReferenceVertex(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
+                    (String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+        }
     }
 }

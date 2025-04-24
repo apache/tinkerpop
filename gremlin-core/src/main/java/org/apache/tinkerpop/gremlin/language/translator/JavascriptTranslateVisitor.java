@@ -56,9 +56,13 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
         sb.append("new Vertex(");
-        visit(ctx.getChild(3)); // id
-        sb.append(", ");
-        visit(ctx.getChild(5)); // label
+        if (ctx.getChildCount() == 4) {
+            visit(ctx.getChild(2)); // id
+        } else {
+            visit(ctx.getChild(2)); // id
+            sb.append(", ");
+            visit(ctx.getChild(4)); // label
+        }
         sb.append(")");
         return null;
     }

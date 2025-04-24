@@ -152,8 +152,9 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
             final Iterator<Object> itty = g.V().has("name", s).id();
-            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ?
-                    world.convertIdToScript(itty.next(), Vertex.class) : s, Vertex.DEFAULT_LABEL);
+            // Vertex only needs id for construction in grammar, label is as default and omitted
+            return String.format("Vertex(%s)", itty.hasNext() ?
+                    world.convertIdToScript(itty.next(), Vertex.class) : s);
         }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));

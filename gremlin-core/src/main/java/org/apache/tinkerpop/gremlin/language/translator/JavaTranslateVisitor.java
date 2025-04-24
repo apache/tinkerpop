@@ -57,9 +57,13 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
         sb.append("new ");
         sb.append(vertexClassName);
         sb.append("(");
-        visit(ctx.getChild(3)); // id
-        sb.append(", ");
-        visit(ctx.getChild(5)); // label
+        if (ctx.getChildCount() == 4) {
+            visit(ctx.getChild(2)); // id
+        } else {
+            visit(ctx.getChild(2)); // id
+            sb.append(", ");
+            visit(ctx.getChild(4)); // label
+        }
         sb.append(")");
         return null;
     }
