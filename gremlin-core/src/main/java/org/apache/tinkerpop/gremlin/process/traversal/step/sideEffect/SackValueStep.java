@@ -51,6 +51,9 @@ public final class SackValueStep<S, A, B> extends AbstractStep<S, S> implements 
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> sackTraversal) {
+        if (this.sackTraversal != null) {
+            throw new IllegalStateException("Sack step can only have one by modulator");
+        }
         this.sackTraversal = this.integrateChild(sackTraversal);
     }
 

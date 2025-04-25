@@ -1639,6 +1639,7 @@ const gremlins = {
     g_V_sackXassignX_byXageX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").sack() }], 
     g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack: [function({g, xx1}) { return g.withSack(xx1, Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in_("knows").barrier().sack() }], 
     g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack: [function({g, xx1}) { return g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack() }], 
+    g_V_sackXassignX_byXageX_byXnameX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").by("name").sack() }], 
     g_V_sideEffectXidentityX: [function({g}) { return g.V().sideEffect(__.identity()) }], 
     g_V_sideEffectXidentity_valuesXnameXX: [function({g}) { return g.V().sideEffect(__.identity().values("name")) }], 
     g_V_sideEffectXpropertyXage_22X: [function({g}) { return g.addV("person").property("age", 21) }, function({g}) { return g.V().sideEffect(__.property("age", 22)) }, function({g}) { return g.V().has("age", 21) }, function({g}) { return g.V().has("age", 22) }], 
