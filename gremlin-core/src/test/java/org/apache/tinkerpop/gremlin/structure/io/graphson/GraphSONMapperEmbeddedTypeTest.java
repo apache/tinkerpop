@@ -18,12 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -55,7 +65,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -478,6 +490,43 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
 
         final P o = PExt.mix("bah");
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    public static class DummyTraversalStrategy implements TraversalStrategy {
+
+        private static final DummyTraversalStrategy INSTANCE = new DummyTraversalStrategy();
+
+        @Override
+        public void apply(final Traversal.Admin traversal) {
+            // do nothing
+        }
+
+        @Override
+        public int compareTo(final Object o) {
+            return 0;
+        }
+
+        public static DummyTraversalStrategy instance() {
+            return INSTANCE;
+        }
+    }
+
+    public static class DummyConfiguredTraversalStrategy extends DummyTraversalStrategy {
+
+        private static final DummyConfiguredTraversalStrategy INSTANCE = new DummyConfiguredTraversalStrategy();
+
+        @Override
+        public Configuration getConfiguration() {
+            final BaseConfiguration conf = new BaseConfiguration();
+            conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+            conf.setProperty("x", 123);
+            conf.setProperty("y", "test");
+            return conf;
+        }
+
+        public static DummyConfiguredTraversalStrategy instance() {
+            return INSTANCE;
+        }
     }
 
     public static class PExt<V> extends P<V> {

@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -295,6 +296,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(OrP.class, "P");
                     put(P.class, "P");
                     put(TextP.class, "TextP");
+                    put(TraversalStrategyProxy.class, "TraversalStrategy");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -411,6 +413,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Metrics.class, new GraphSONSerializersV3.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV3.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV3.TreeJacksonDeserializer());
+            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer<>());
 
             // java.util - use the standard jackson serializers for collections when types aren't embedded
             if (typeInfo != TypeInfo.NO_TYPES) {
@@ -537,6 +540,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(OrP.class, "P");
                     put(P.class, "P");
                     put(TextP.class, "TextP");
+                    put(TraversalStrategyProxy.class, "TraversalStrategy");
                     Stream.of(
                             VertexProperty.Cardinality.class,
                             Column.class,
@@ -647,6 +651,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
             addDeserializer(Metrics.class, new GraphSONSerializersV2.MetricsJacksonDeserializer());
             addDeserializer(TraversalMetrics.class, new GraphSONSerializersV2.TraversalMetricsJacksonDeserializer());
             addDeserializer(Tree.class, new GraphSONSerializersV2.TreeJacksonDeserializer());
+            addDeserializer(TraversalStrategyProxy.class, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer<>());
 
             // numbers
             addDeserializer(Integer.class, new GraphSONSerializersV2.IntegerJacksonDeserializer());

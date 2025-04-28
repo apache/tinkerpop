@@ -195,20 +195,20 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(GRAPH_COMPUTER, this.computer.getGraphComputerClass().getCanonicalName());
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(GRAPH_COMPUTER, this.computer.getGraphComputerClass().getCanonicalName());
         if (-1 != this.computer.getWorkers())
-            map.put(WORKERS, this.computer.getWorkers());
+            conf.setProperty(WORKERS, this.computer.getWorkers());
         if (null != this.computer.getPersist())
-            map.put(PERSIST, this.computer.getPersist().name());
+            conf.setProperty(PERSIST, this.computer.getPersist().name());
         if (null != this.computer.getResultGraph())
-            map.put(RESULT, this.computer.getResultGraph().name());
+            conf.setProperty(RESULT, this.computer.getResultGraph().name());
         if (null != this.computer.getVertices())
-            map.put(VERTICES, this.computer.getVertices());
+            conf.setProperty(VERTICES, this.computer.getVertices());
         if (null != this.computer.getEdges())
-            map.put(EDGES, this.computer.getEdges());
-        map.putAll(this.computer.getConfiguration());
-        return new MapConfiguration(map);
+            conf.setProperty(EDGES, this.computer.getEdges());
+        this.computer.getConfiguration().forEach(conf::setProperty);
+        return conf;
     }
 
     public static VertexProgramStrategy create(final Configuration configuration) {

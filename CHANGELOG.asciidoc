@@ -94,6 +94,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
+* Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.
+* Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
+* Modified the `TraversalStrategy` format for GraphSON v2 and v3 so that it could work with `Bytecode` based requests.
+* Added a `Class` serializer to GraphBinary in Javascript and modified the `TraversalStrategy` serializer to use it so that specification was properly satisfied.
+* Added missing strategies to `strategies.py` in `gremlin-python`.
+* Fixed fully qualified class names for `TraversalStrategy` names in `gremlin-dotnet`.
+* Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
+* Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
+* Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.

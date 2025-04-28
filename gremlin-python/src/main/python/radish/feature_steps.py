@@ -38,8 +38,6 @@ tail = __.tail
 ignores = [
     "g.V().choose(has(T.label, \"person\"),values(\"age\").groupCount(\"a\"), values(\"name\").groupCount(\"b\")).cap(\"a\", \"b\").unfold()", # uses embedded Map in assertion
     "g.withSideEffect(\"x\",{}).V().both().both().sideEffect(__.store(\"x\").by(\"name\")).cap(\"x\").unfold()", # Objects must be both of Map or Collection: a=LinkedHashMap b=BulkSet???
-    "g.withoutStrategies(CountStrategy).V().count()",  # serialization issues with Class in GraphSON
-    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
     "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
     "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
     ## The following section has queries that aren't supported by gremlin-lang parameters
@@ -71,10 +69,6 @@ ignores = [
     'g.V(vid1).out().values("name").inject("daniel").as("a").map(l1).path()',
     'g.V().group("a").by(l1).by(__.constant(1)).cap("a")',
     'g.withSideEffect("a", xx1).V().both().values("name").store("a").cap("a")',
-    ## section end
-    'g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: {"age"})).addV("person").property("age", 29).property("name", "marko")', # TINKERPOP-3055
-    'g.withStrategies(ReservedKeysVerificationStrategy(throwException: true)).addV("person").property("id", 123).property("name", "marko")', # TINKERPOP-3055
-    'g.withoutStrategies(ReservedKeysVerificationStrategy).addV("person").property("id", 123).property("name", "marko")' # TINKERPOP-3055
 ]
 
 

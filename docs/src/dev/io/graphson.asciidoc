@@ -181,7 +181,7 @@ JSON String representing a datetime in the ISO-8601 format.
 === Double
 
 A JSON Number with the same range as a IEEE754 double precision floating point or a JSON String with one of the
-following values: "-Infinity", "Infinity", "NaN" 
+following values: "-Infinity", "Infinity", "NaN"
 
 [source,json]
 ----
@@ -199,7 +199,7 @@ following values: "-Infinity", "Infinity", "NaN"
 === Float
 
 A JSON Number with the same range as a IEEE754 single precision floating point or a JSON String with one of the
-following values: "-Infinity", "Infinity", "NaN" 
+following values: "-Infinity", "Infinity", "NaN"
 
 [source,json]
 ----

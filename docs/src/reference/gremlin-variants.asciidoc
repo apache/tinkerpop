@@ -1424,6 +1424,29 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
 |=========================================================
 
+[[gremlin-javascript-strategies]]
+=== Traversal Strategies
+
+In order to add and remove <<traversalstrategy,traversal strategies>> from a traversal source, Gremlin-Javascript has a
+`TraversalStrategy` class along with a collection of subclasses that mirror the standard Gremlin-Java strategies.
+
+[source,javascript]
+----
+// use the class name for the strategy directly for withoutStrategies()
+g.withoutStrategies(InlineFilterStrategy);
+
+// use an instance for withStrategies()
+g.withStrategies(new InlineFilterStrategy());
+
+// if the strategies has arguments, specify them as named arguments
+g.withStrategies(new SeedStrategy({seed: 99999}))
+----
+
+NOTE: Many of the `TraversalStrategy` classes in Gremlin-Javascript are proxies to the respective strategy on
+Apache TinkerPop's JVM-based Gremlin traversal machine. As such, their `apply(Traversal)` method does nothing. However,
+the strategy is encoded in the Gremlin-Javascript bytecode and transmitted to the Gremlin traversal machine for
+re-construction machine-side.
+
 [[gremlin-javascript-transactions]]
 === Transactions
 

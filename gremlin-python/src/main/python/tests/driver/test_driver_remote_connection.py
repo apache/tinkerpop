@@ -27,7 +27,7 @@ from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT,
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
-from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy
+from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver import serializer
@@ -285,6 +285,15 @@ class TestDriverRemoteConnection(object):
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).to_list()
+        #
+        g = traversal().with_(remote_connection). \
+            withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
+        try:
+            g.addV("person").property("id", "please-don't-use-id").iterate()
+            assert False
+        except GremlinServerError as gse:
+            assert gse.status_code == 500
+
 
     def test_clone(self, remote_connection):
         g = traversal().with_(remote_connection)

@@ -629,13 +629,16 @@ tries to reference inaccessible properties that are on elements only available b
 the traversal does not mind the star graph limitation.
 * `@GremlinGroovyNotSupported` - The scenario uses `gremlin-lang` syntax which is incompatible with `gremlin-groovy` and
 cannot be resolved with the groovy translator. This is typically for scenarios using ambiguously-types `null` parameters.
-* `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph.
+* `@InsertionOrderingRequired` - The scenario is reliant on the graph system predictably returning results (vertices,
+edges, properties) in the same order in which they were inserted into the graph.
 * `@MetaProperties` - The scenario makes use of meta-properties.
 * `@MultiProperties` - The scenario makes use of multi-properties.
 * `@UserSuppliedVertexIds` - The scenario relies on the vertex IDs specified in the dataset used by the scenario.
 * `@UserSuppliedEdgeIds` - The scenario relies on the edge IDs specified in the dataset used by the scenario.
-* `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by the scenario.
-* `@With*` - The scenario uses some `with()` based configuration like strategies. This includes but is not limited to the following:
+* `@UserSuppliedVertexPropertyIds` - The scenario relies on the vertex property IDs specified in the dataset used by
+the scenario.
+* `@With*` - The scenario uses some `with()` based configuration like strategies. This includes but is not limited to
+the following:
 ** `@WithPartitionStrategy`
 ** `@WithProductiveByStrategy`
 ** `@WithReadOnlyStrategy`

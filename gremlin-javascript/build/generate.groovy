@@ -56,7 +56,16 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
                     'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
-                    'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, ReadOnlyStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, LambdaRestrictionStrategy } from \'../../lib/process/traversal-strategy.js\';\n' +
+                    'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
+                    '        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, \n' +
+                    '        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, \n' +
+                    '        ComputerVerificationStrategy, MessagePassingReductionStrategy, ProfileStrategy, InlineFilterStrategy, \n' +
+                    '        ComputerFinalizationStrategy, ReferenceElementStrategy, ElementIdStrategy, MatchAlgorithmStrategy, \n' +
+                    '        EdgeLabelVerificationStrategy, CountStrategy, ConnectiveStrategy, ByModulatorOptimizationStrategy, \n' +
+                    '        AdjacentToIncidentStrategy, ReservedKeysVerificationStrategy, RepeatUnrollStrategy, \n' +
+                    '        PathRetractionStrategy, PathProcessorStrategy, OrderLimitStrategy, MatchPredicateStrategy, \n' +
+                    '        LazyBarrierStrategy, EarlyLimitStrategy, IncidentToAdjacentStrategy, IdentityRemovalStrategy, \n' +
+                    '        HaltedTraverserStrategy, FilterRankingStrategy } from \'../../lib/process/traversal-strategy.js\';\n' +
                     'const __ = graphTraversalModule.statics;\n' +
                     'const Barrier = traversalModule.barrier\n' +
                     'const Cardinality = traversalModule.cardinality\n' +

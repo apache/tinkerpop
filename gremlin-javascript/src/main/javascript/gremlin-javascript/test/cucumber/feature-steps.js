@@ -90,8 +90,6 @@ const ignoredScenarios = {
   'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
-  'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
-  'g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX': new IgnoreError(ignoreReason.classNotSupported),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
@@ -194,6 +192,9 @@ Then(/^the traversal will raise an error with message (\w+) text of "(.+)"$/, fu
 });
 
 Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resultTable) {
+  if (this.result instanceof Error) {
+    console.error('Error encountered:', this.result.message, this.result.stack);
+  }
   expect(this.result).to.not.be.a.instanceof(Error);
 
   if (characterizedAs === 'empty') {

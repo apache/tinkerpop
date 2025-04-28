@@ -79,7 +79,7 @@ describe('GraphBinary.BytecodeSerializer', () => {
         0x00,0x00,0x00,0x00, // {sources_length}
     ]},
 
-    { ser:1, v: g(new ReservedKeysVerificationStrategy(false, true)).V().hasLabel('Person').has('age', 42),
+    { ser:1, v: g(new ReservedKeysVerificationStrategy({logWarnings: false, throwException: true})).V().hasLabel('Person').has('age', 42),
       b: [
         0x00,0x00,0x00,0x03, // {steps_length}
           0x00,0x00,0x00,0x01, 0x56, // V

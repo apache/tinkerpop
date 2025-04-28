@@ -52,6 +52,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
+                {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withoutStrategiesXCountStrategyX_V_count", IgnoreReason.NoReason}, // needs investigation
                 {"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX", IgnoreReason.NoReason},
             };

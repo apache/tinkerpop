@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -44,7 +43,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -56,9 +54,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -310,15 +306,15 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new LinkedHashMap<>();
-        map.put(CHECK_ADJACENT_VERTICES, this.checkAdjacentVertices);
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(CHECK_ADJACENT_VERTICES, this.checkAdjacentVertices);
         if (null != this.vertexCriterion)
-            map.put(VERTICES, this.vertexCriterion);
+            conf.setProperty(VERTICES, this.vertexCriterion);
         if (null != this.edgeCriterion)
-            map.put(EDGES, this.edgeCriterion);
+            conf.setProperty(EDGES, this.edgeCriterion);
         if (null != this.vertexPropertyCriterion)
-            map.put(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
-        return new MapConfiguration(map);
+            conf.setProperty(VERTEX_PROPERTIES, this.vertexPropertyCriterion);
+        return conf;
     }
 
     @Override

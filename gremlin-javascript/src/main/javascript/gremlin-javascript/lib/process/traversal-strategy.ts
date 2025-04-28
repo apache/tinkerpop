@@ -115,6 +115,12 @@ export class HaltedTraverserStrategy extends TraversalStrategy {
   }
 }
 
+export class MessagePassingReductionStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy');
+    }
+}
+
 export class OptionsStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy', options);
@@ -132,6 +138,12 @@ export class PartitionStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy', options);
   }
+}
+
+export class ProfileStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy');
+    }
 }
 
 export class SubgraphStrategy extends TraversalStrategy {
@@ -166,6 +178,12 @@ export class ProductiveByStrategy extends TraversalStrategy {
   }
 }
 
+export class ReferenceElementStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy');
+    }
+}
+
 export class VertexProgramStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
     super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy', options);
@@ -184,6 +202,12 @@ export class MatchAlgorithmStrategy extends TraversalStrategy {
   }
 }
 
+export class ComputerFinalizationStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy');
+    }
+}
+
 export class AdjacentToIncidentStrategy extends TraversalStrategy {
   constructor() {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy');
@@ -194,6 +218,12 @@ export class FilterRankingStrategy extends TraversalStrategy {
   constructor() {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy');
   }
+}
+
+export class ByModulatorOptimizationStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy');
+    }
 }
 
 export class IdentityRemovalStrategy extends TraversalStrategy {
@@ -258,7 +288,7 @@ export class RepeatUnrollStrategy extends TraversalStrategy {
 
 export class GraphFilterStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.GraphFilterStrategy');
+    super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy');
   }
 }
 
@@ -266,6 +296,12 @@ export class EarlyLimitStrategy extends TraversalStrategy {
   constructor() {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy');
   }
+}
+
+export class ComputerVerificationStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy');
+    }
 }
 
 export class LambdaRestrictionStrategy extends TraversalStrategy {
@@ -306,6 +342,20 @@ export class ReservedKeysVerificationStrategy extends TraversalStrategy {
       keys: keys,
     });
   }
+}
+
+export class VertexProgramRestrictionStrategy extends TraversalStrategy {
+    constructor() {
+        super(
+            'org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy',
+        );
+    }
+}
+
+export class StandardVerificationStrategy extends TraversalStrategy {
+    constructor() {
+        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy');
+    }
 }
 
 export type SeedStrategyOptions = { seed: number };

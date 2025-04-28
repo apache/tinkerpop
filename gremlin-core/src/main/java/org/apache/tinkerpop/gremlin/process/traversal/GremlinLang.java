@@ -48,7 +48,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy.STRATEGY;
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.asIterator;
 
@@ -394,7 +393,7 @@ public class GremlinLang implements Cloneable, Serializable {
                         .append("(");
 
                 configuration.getKeys().forEachRemaining(key -> {
-                    if (!key.equals(STRATEGY)) {
+                    if (!key.equals("strategy")) {
                         sb.append(key).append(":").append(argAsString(configuration.getProperty(key))).append(",");
                     }
                 });

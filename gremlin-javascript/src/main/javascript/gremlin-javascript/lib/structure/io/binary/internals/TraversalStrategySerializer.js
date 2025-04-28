@@ -28,7 +28,6 @@ import { TraversalStrategySerializer as GraphsonTraversalStrategySerializer } fr
 export default class TraversalStrategySerializer {
   constructor(ioc) {
     this.ioc = ioc;
-    // this.ioc.serializers[ioc.DataType.TRAVERSALSTRATEGY] = this; // TODO: it's not expected to be deserialized
     this.graphsonTraversalStrategySerializer = new GraphsonTraversalStrategySerializer();
   }
 
@@ -44,8 +43,6 @@ export default class TraversalStrategySerializer {
       const strategy_class = [0x00, 0x00, 0x00, 0x00]; // ''
       const configuration = [0x00, 0x00, 0x00, 0x00]; // {}
       return Buffer.from([...strategy_class, ...configuration]);
-      // TODO: should we delegate these to respective serializers like classSerializer.serialize(undefined, false) ?
-      // Consider to make it the same way for all other serializers
     }
 
     const bufs = [];
@@ -53,8 +50,6 @@ export default class TraversalStrategySerializer {
       bufs.push(Buffer.from([this.ioc.DataType.TRAVERSALSTRATEGY, 0x00]));
     }
 
-    // let's repeat the logic of Graphson's TraversalStrategySerializer:
-    const strategy_class = item.fqcn;
     const conf = {};
     for (const k in item.configuration) {
       if (item.configuration.hasOwnProperty(k)) {
@@ -63,7 +58,7 @@ export default class TraversalStrategySerializer {
     }
 
     // {strategy_class}
-    bufs.push(this.ioc.classSerializer.serialize(strategy_class, false));
+    bufs.push(this.ioc.classSerializer.serialize(item.constructor, false));
 
     // {configuration}
     bufs.push(this.ioc.mapSerializer.serialize(conf, false));
