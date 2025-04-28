@@ -1656,7 +1656,8 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_VX1X_out_out_out_tree": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Out().Out().Out().Tree()}}, 
     "g_VX1X_outE_inV_bothE_otherV_tree": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree()}}, 
     "g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree().By("name").By(gremlingo.T.Label)}}, 
-    "g_injectXUUIDX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(uuid.MustParse("f47af10b-58cc-4372-a567-0f02b2f3d479"))}}, 
+    "g_injectXUUIDX47af10b_58cc_4372_a567_0f02b2f3d479XX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(uuid.MustParse("f47af10b-58cc-4372-a567-0f02b2f3d479"))}}, 
+    "g_injectXUUIDXXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(uuid.New())}}, 
 }
 
    func GetTraversal(scenarioName string, g *gremlingo.GraphTraversalSource, parameters map[string]interface{}) (*gremlingo.GraphTraversal, error) {
