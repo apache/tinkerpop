@@ -1619,7 +1619,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
 [[valueMap-step]]
 === valueMap()
 
-*Description:* Removes repeatedly seen results from the Traversal Stream.
+*Description:* Converts elements to a map representation of their properties.
 
 *Syntax:* `valueMap(String... propertyKeys)` | `valueMap(boolean includeTokens, String... propertyKeys)`
 
