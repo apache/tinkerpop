@@ -39,7 +39,7 @@ const responseStatusCode = {
   authenticationChallenge: 407,
 };
 
-const defaultMimeType = 'application/vnd.gremlin-v3.0+json';
+const defaultMimeType = 'application/vnd.graphbinary-v1.0';
 const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
 const graphBinaryMimeType = 'application/vnd.graphbinary-v1.0';
 
