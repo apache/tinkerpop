@@ -25,6 +25,16 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
+* Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.
+* Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
+* Modified the `TraversalStrategy` format for GraphSON v2 and v3 so that it could work with `Bytecode` based requests.
+* Added a `Class` serializer to GraphBinary in Javascript and modified the `TraversalStrategy` serializer to use it so that specification was properly satisfied.
+* Added missing strategies to `strategies.py` in `gremlin-python`.
+* Fixed fully qualified class names for `TraversalStrategy` names in `gremlin-dotnet`.
+* Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
+* Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
+* Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Deprecated `withEmbedded()` and `withRemote()` options on `AnonymousTraversalSource`.
 * Added `with()` on `AnonymousTraversalSource` to cover both embedded and remote creation options.
@@ -39,19 +49,28 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Modified the Gremlin ANTLR grammar to more dynamically interact with any strategies registered globally to the `TraversalStrategies` cache sets.
 * Made `new` keyword optional in the Gremlin grammar.
 * Allowed keywords to be used as `Map` keys when defined using the shorthand without quotes.
+* Added `prettyPrint()` method to `Tree` to produce a formatted string representation of the tree structure.
 * Added integer overflow checks.
 * Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
 * Added missing strategies to `strategies.py` in `gremlin-python`.
 * Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
 * Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
+* Fixed issue in `gremlin-go` where `Next()` didn't return the error from the server.
 * Changed type for `ReservedKeysVerificationStrategy.keys` in .NET to take a `Set<string>` rather than `List<string>`.
 * Fixed bug in `group()` value traversal of the second `by()` where a `CollectingBarrierStep` could produce an unexpected filtering effect when `ReducingBarrierStep` or `SupplyingBarrierStep` instances were not taken into account.
 * Changed `DetachedFactory` to special case the handling of `ComputerAdjacentVertex` which doesn't carry properties but still needs to be detachable for OLAP cases.
 * Deprecated `ProfilingAware.prepareForProfiling` method preferring to simply `resetBarrierFromValueTraversal` from the `Grouping` interface after strategy application.
+* Deprecated `Date` in favor of `OffsetDateTime` as the default date type in core, `Date` is still supported as input to date steps for compatibility.
+* Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
 * Added validation to `groupCount()` to prevent an invalid usage of multiple `by()` modulators.
+* Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
+* Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.
+* Removed lambda oriented Gremlin testing from Gherkin test suite.
+* Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
+* Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -81,6 +100,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 * Changed `gremlin-go` Client `ReadBufferSize` and `WriteBufferSize` defaults to 1048576 (1MB) to align with DriverRemoteConnection.
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
+* Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)

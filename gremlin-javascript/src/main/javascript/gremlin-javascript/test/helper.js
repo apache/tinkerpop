@@ -63,6 +63,10 @@ exports.getSecureConnectionWithPlainTextSaslAuthenticator = (traversalSource, us
 
 exports.getDriverRemoteConnection = (url, options) => {
   return new DriverRemoteConnection(url, { ...options, mimeType: process.env.CLIENT_MIMETYPE });
+}
+
+exports.getDriverRemoteConnectionGraphSON = (traversalSource) => {
+  return new DriverRemoteConnection(serverUrl, { traversalSource, mimeType: 'application/vnd.gremlin-v3.0+json' });
 };
 
 exports.getClient = function getClient(traversalSource) {

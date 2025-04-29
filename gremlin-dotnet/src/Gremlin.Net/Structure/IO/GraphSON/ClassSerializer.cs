@@ -32,8 +32,16 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             var type = (Type) objectData;
-            return writer.ToDict(Activator.CreateInstance(type) ??
-                                 throw new IOException($"Cannot write {objectData}. maybe it is not a supported type"));
+
+            // try to create the Type and then access the Fqcn property. if that's not there then
+            // throw an exception
+            var instance = Activator.CreateInstance(type) 
+                           ?? throw new IOException($"Cannot create an instance of {type.FullName}");
+            var fqcnProperty = type.GetProperty("Fqcn") 
+                               ?? throw new IOException($"The type {type.FullName} does not have a 'Fqcn' property");
+            var fqcnValue = fqcnProperty.GetValue(instance) 
+                            ?? throw new IOException($"The 'Fqcn' property of {type.FullName} is null");
+            return GraphSONUtil.ToTypedValue("Class", fqcnValue);
         }
     }
 }

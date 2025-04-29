@@ -2836,6 +2836,21 @@ The following `Bytecode` example represents the traversal of `g.V().hasLabel('pe
 }
 ----
 
+==== TraversalStrategy
+
+[source,json]
+----
+{
+  "@type": "g:HaltedTraverserStrategy",
+  "@value": {
+    "conf": {
+      "haltedTraverserFactory": "org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory"
+    },
+    "fqcn": "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy"
+  }
+}
+----
+
 ==== Traverser
 
 [source,json]
@@ -5244,6 +5259,21 @@ Please see <<_p,P>> for additional information on `within`.
         }
       } ]
     } ]
+  }
+}
+----
+
+==== TraversalStrategy
+
+[source,json]
+----
+{
+  "@type": "g:HaltedTraverserStrategy",
+  "@value": {
+    "conf": {
+      "haltedTraverserFactory": "org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory"
+    },
+    "fqcn": "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy"
   }
 }
 ----

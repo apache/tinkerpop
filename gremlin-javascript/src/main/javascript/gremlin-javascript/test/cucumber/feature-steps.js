@@ -61,7 +61,6 @@ const parsers = [
   [ 'l\\[(.*)\\]', toArray ],
   [ 's\\[(.*)\\]', toSet ],
   [ 'm\\[(.+)\\]', toMap ],
-  [ 'c\\[(.+)\\]', toLambda ],
   [ 't\\[(.+)\\]', toT ],
   [ 'D\\[(.+)\\]', toDirection ],
   [ 'M\\[(.+)\\]', toMerge ]
@@ -77,92 +76,39 @@ const ignoreReason = {
   classNotSupported: "Javascript does not support the class type in GraphBinary",
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
+  subgraphStepNotSupported: "Javascript does not yet support subgraph()",
+  treeStepNotSupported: "Javascript does not yet support tree()",
   needsFurtherInvestigation: '',
 };
 
 const ignoredScenarios = {
+  // javascript doesn't have subgraph() step yet
+  'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  // javascript doesn't have tree() step yet
+  'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_V_out_tree_byXageX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_tree_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_out_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
-  'g_withoutStrategiesXCountStrategyX_V_count': new IgnoreError(ignoreReason.classNotSupported),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
   'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': new IgnoreError(ignoreReason.floatingPointIssues),
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
-  // after backport of strategy construction improvements from master, there are now test failures (not currently running GLV tests on master)
-  'g_withStrategiesXAdjacentToIncidentStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXAdjacentToIncidentStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXAdjacentToIncidentStrategyX_V_out_count': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXAdjacentToIncidentStrategyX_V_whereXoutX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXByModulatorOptimizationStrategyX_V_order_byXvaluesXnameXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXByModulatorOptimizationStrategyX_V_order_byXvaluesXnameXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXComputerFinalizationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXByModulatorOptimizationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXComputerVerificationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXComputerVerificationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXConnectiveStrategyStrategyX_V_hasXname_markoX_or_whereXinXknowsX_hasXname_markoXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXConnectiveStrategyX_V_hasXname_markoX_or_whereXinXknowsX_hasXname_markoXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXCountStrategyX_V_whereXoutE_count_isX0XX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXCountStrategyX_V_whereXoutE_count_isX0XX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXEarlyLimitStrategyX_V_out_order_valueMap_limitX3X_selectXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXEarlyLimitStrategyX_V_out_order_valueMap_limitX3X_selectXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXEdgeLabelVerificationStrategyXthrowException_true_logWarning_falseXX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXEdgeLabelVerificationStrategyXthrowException_false_logWarning_falseXX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXEdgeLabelVerificationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXElementIdStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXElementIdStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXFilterRankingStrategyX_V_out_order_dedup': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXFilterRankingStrategyX_V_out_order_dedup': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXGraphFilterStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXGraphFilterStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXHaltedTraverserStrategyXDetachedFactoryXX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXHaltedTraverserStrategyXReferenceFactoryXX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXHaltedTraverserStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXIdentityRemovalStrategyX_V_identity_out': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXIdentityRemovalStrategyX_V_identity_out': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXIncidentToAdjacentStrategyX_V_outE_inV': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXIncidentToAdjacentStrategyX_V_outE_inV': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXInlineFilterStrategyX_V_filterXhasXname_markoXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXLazyBarrierStrategyX_V_out_bothE_count': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXLazyBarrierStrategyX_V_out_bothE_count': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXMatchAlgorithmStrategyXmatchAlgorithm_CountMatchAlgorithmXX_V_matchXa_knows_b__a_created_cX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXMatchAlgorithmStrategyXmatchAlgorithm_GreedyMatchAlgorithmXX_V_matchXa_knows_b__a_created_cX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXMatchAlgorithmStrategyX_V_matchXa_knows_b__a_created_cX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXMatchPredicateStrategyX_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXa_b_cX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXMatchPredicateStrategyX_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXa_b_cX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXMessagePassingReductionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXMessagePassingReductionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXOptionsStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXOrderLimitStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXOrderLimitStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXPathProcessorStrategyX_V_asXaX_selectXaX_byXvaluesXnameXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXPathProcessorStrategyX_V_asXaX_selectXaX_byXvaluesXnameXX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXPathRetractionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXPathRetractionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXProfileStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXProfileStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXReferenceElementStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXReferenceElementStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXRepeatUnrollStrategyX_V_repeatXoutX_timesX2X': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXoutX_timesX2X': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXid_123X_propertyXname_markoX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXReservedKeysVerificationStrategyXthrowException_trueXX_addVXpersonX_propertyXage_29X_propertyXname_markoX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXReservedKeysVerificationStrategyX_addVXpersonX_propertyXid_123X_propertyXname_markoX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXSeedStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXStandardVerificationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXStandardVerificationStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXVertexProgramRestrictionStrategyX_withoutStrategiesXVertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withStrategiesXVertexProgramRestrictionStrategy_VertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXVertexProgramRestrictionStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_withoutStrategiesXVertexProgramStrategyX_V': new IgnoreError(ignoreReason.needsFurtherInvestigation),
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
-  // if the scenario is ignored or if the scenario has no gremlin (i.e. happens for skipped lambdas that can't
-  // translate) then skipp the test
-  if (ignoredScenarios[this.scenario] || gremlin[this.scenario].length === 0) {
+  // if the scenario is ignored then skip the test
+  if (ignoredScenarios[this.scenario]) {
     return 'skipped';
   }
   this.graphName = graphName;
@@ -259,6 +205,9 @@ Then(/^the traversal will raise an error with message (\w+) text of "(.+)"$/, fu
 });
 
 Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resultTable) {
+  if (this.result instanceof Error) {
+    console.error('Error encountered:', this.result.message, this.result.stack);
+  }
   expect(this.result).to.not.be.a.instanceof(Error);
 
   if (characterizedAs === 'empty') {
@@ -281,6 +230,14 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(expectedResult).to.include.deep.members(toCompare(this.result));
       break;
   }
+});
+
+Then('the result should be a subgraph with the following', _ => {
+  // subgraph is not supported yet in javascript
+});
+
+Then('the result should be a tree with a structure of', _ => {
+  // tree is not supported yet in javascript
 });
 
 Then(/^the graph should return (\d+) for count of "(.+)"$/, function (stringCount, traversalText) {
@@ -501,10 +458,6 @@ function parseMapValue(value) {
     map.set(parseMapValue.call(this, key), parseMapValue.call(this, value[key]));
   });
   return map;
-}
-
-function toLambda(stringLambda) {
-  return () => [stringLambda, "gremlin-groovy"];
 }
 
 /**

@@ -18,14 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -57,7 +68,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.either;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -448,11 +461,120 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     }
 
     @Test
+    public void shouldReadBytecodeWithHaltedTraverserStrategy() throws Exception {
+        assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
+
+        final HaltedTraverserStrategy strat = HaltedTraverserStrategy.detached();
+        final Bytecode expected = EmptyGraph.instance().traversal().withStrategies(strat).V().asAdmin().getBytecode();
+        final Bytecode actual = mapper.readValue("{\"@type\":\"g:Bytecode\",\"@value\":{\"source\":[[\"withStrategies\",{\"@type\":\"g:HaltedTraverserStrategy\",\"@value\":{\"conf\": { \"haltedTraverserFactory\":\"org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory\" },\"fqcn\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy\"}}]],\"step\":[[\"V\"]]}}", Bytecode.class);
+        assertEquals(expected.getSourceInstructions().size(), actual.getSourceInstructions().size());
+        assertEquals(expected.getSourceInstructions().get(0).getOperator(), actual.getSourceInstructions().get(0).getOperator());
+        assertEquals(expected.getSourceInstructions().get(0).getArguments().length, actual.getSourceInstructions().get(0).getArguments().length);
+        assertEquals(1, actual.getSourceInstructions().get(0).getArguments().length);
+        assertEquals(expected.getSourceInstructions().get(0).getArguments()[0].getClass(), ((TraversalStrategyProxy) actual.getSourceInstructions().get(0).getArguments()[0]).getStrategyClass());
+        assertEquals(((HaltedTraverserStrategy) expected.getSourceInstructions().get(0).getArguments()[0]).getHaltedTraverserFactory().getCanonicalName(), ((TraversalStrategyProxy) actual.getSourceInstructions().get(0).getArguments()[0]).getConfiguration().getProperty("haltedTraverserFactory"));
+    }
+
+    @Test
+    public void shouldHandleSeedStrategy() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        final SeedStrategy o = new SeedStrategy(999);
+        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+        assertEquals(SeedStrategy.class, strategyProxy.getStrategyClass());
+        assertEquals(999, strategyProxy.getConfiguration().getInt("seed"));
+    }
+
+    @Test
+    public void shouldHandleHaltedTraverserStrategy() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        final HaltedTraverserStrategy o = HaltedTraverserStrategy.detached();
+        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+        assertEquals(HaltedTraverserStrategy.class, strategyProxy.getStrategyClass());
+        assertEquals(o.getHaltedTraverserFactory().getCanonicalName(), strategyProxy.getConfiguration().getString("haltedTraverserFactory"));
+    }
+
+    @Test
+    public void shouldHandleMatchAlgorithmStrategy() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        final MatchAlgorithmStrategy o = MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create();
+        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+        assertEquals(MatchAlgorithmStrategy.class, strategyProxy.getStrategyClass());
+        assertEquals(o.getConfiguration().getProperty("matchAlgorithm"), strategyProxy.getConfiguration().getString("matchAlgorithm"));
+    }
+
+    @Test
+    public void shouldHandleTraversalStrategyProxy() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyTraversalStrategy.instance());
+        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+        assertEquals(DummyTraversalStrategy.class, strategyProxy.getStrategyClass());
+        DummyTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
+                k -> assertEquals(DummyTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+    }
+
+    @Test
+    public void shouldHandleTraversalStrategyProxyWithConfig() throws Exception {
+        assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
+
+        final TraversalStrategyProxy o = new TraversalStrategyProxy(DummyConfiguredTraversalStrategy.instance());
+        final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
+        assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
+        assertEquals(DummyConfiguredTraversalStrategy.class, strategyProxy.getStrategyClass());
+        DummyConfiguredTraversalStrategy.instance().getConfiguration().getKeys().forEachRemaining(
+                k -> assertEquals(DummyConfiguredTraversalStrategy.instance().getConfiguration().getProperty(k), strategyProxy.getConfiguration().getProperty(k)));
+    }
+
+    @Test
     public void shouldHandlePExt() throws Exception  {
         assumeThat(version, either(startsWith("v2")).or(startsWith("v3")));
 
         final P o = PExt.mix("bah");
         assertEquals(o, serializeDeserialize(mapper, o, P.class));
+    }
+
+    public static class DummyTraversalStrategy implements TraversalStrategy {
+
+        private static final DummyTraversalStrategy INSTANCE = new DummyTraversalStrategy();
+
+        @Override
+        public void apply(final Traversal.Admin traversal) {
+            // do nothing
+        }
+
+        @Override
+        public int compareTo(final Object o) {
+            return 0;
+        }
+
+        public static DummyTraversalStrategy instance() {
+            return INSTANCE;
+        }
+    }
+
+    public static class DummyConfiguredTraversalStrategy extends DummyTraversalStrategy {
+
+        private static final DummyConfiguredTraversalStrategy INSTANCE = new DummyConfiguredTraversalStrategy();
+
+        @Override
+        public Configuration getConfiguration() {
+            final BaseConfiguration conf = new BaseConfiguration();
+            conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+            conf.setProperty("x", 123);
+            conf.setProperty("y", "test");
+            return conf;
+        }
+
+        public static DummyConfiguredTraversalStrategy instance() {
+            return INSTANCE;
+        }
     }
 
     public static class PExt<V> extends P<V> {

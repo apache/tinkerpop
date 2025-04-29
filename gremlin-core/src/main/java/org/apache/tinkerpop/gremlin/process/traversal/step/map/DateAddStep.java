@@ -24,11 +24,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Calendar;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,37 +36,51 @@ import java.util.Set;
  *
  * @author Valentyn Kahamlyk
  */
-public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
-
-    final static Map<DT, Integer> DTtoCalendar = new HashMap<>();
-
-    static {
-        DTtoCalendar.put(DT.second, Calendar.SECOND);
-        DTtoCalendar.put(DT.minute, Calendar.MINUTE);
-        DTtoCalendar.put(DT.hour, Calendar.HOUR_OF_DAY);
-        DTtoCalendar.put(DT.day, Calendar.DAY_OF_MONTH);
-    }
+public final class DateAddStep<S> extends ScalarMapStep<S, OffsetDateTime> {
 
     private DT dateToken;
+    private Duration duration;
     private int value;
 
     public DateAddStep(final Traversal.Admin traversal, final DT dateToken, final int value) {
         super(traversal);
+        switch (dateToken) {
+            case second:
+                this.duration = Duration.ofSeconds(value);
+                break;
+            case minute:
+                this.duration = Duration.ofMinutes(value);
+                break;
+            case hour:
+                this.duration= Duration.ofHours(value);
+                break;
+            case day:
+                this.duration= Duration.ofDays(value);
+                break;
+            default:
+                throw new IllegalArgumentException("DT tokens should only be second, minute, hour, or day.");
+        }
         this.dateToken = dateToken;
         this.value = value;
     }
 
     @Override
-    protected Date map(final Traverser.Admin<S> traverser) {
+    protected OffsetDateTime map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
+        OffsetDateTime date;
 
-        if (!(object instanceof Date)) throw new IllegalArgumentException("dateAdd accept only Date.");
+        if (!(object instanceof OffsetDateTime)) {
+            // allow incoming traverser to resolve into Date object for compatibility
+            if (object instanceof Date) {
+                date = ((Date) object).toInstant().atOffset(ZoneOffset.UTC);
+            } else {
+                throw new IllegalArgumentException("dateAdd() accept only OffsetDateTime or Date (deprecated).");
+            }
+        } else {
+            date = (OffsetDateTime) object;
+        }
 
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime((Date) object);
-        cal.add(DTtoCalendar.get(dateToken), value);
-
-        return cal.getTime();
+        return date.plus(duration);
     }
 
     @Override
@@ -83,6 +97,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + dateToken.hashCode();
+        result = 31 * result + duration.hashCode();
         result = 31 * result + value;
         return result;
     }
@@ -91,6 +106,7 @@ public final class DateAddStep<S> extends ScalarMapStep<S, Date> {
     public DateAddStep<S> clone() {
         final DateAddStep<S> clone = (DateAddStep<S>) super.clone();
         clone.value = this.value;
+        clone.duration = this.duration;
         clone.dateToken = this.dateToken;
         return clone;
     }

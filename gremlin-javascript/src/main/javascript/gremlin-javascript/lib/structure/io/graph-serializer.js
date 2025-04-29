@@ -253,6 +253,7 @@ const graphSON2Deserializers = {
   'g:Float': typeSerializers.NumberSerializer,
   'g:Double': typeSerializers.NumberSerializer,
   'g:Date': typeSerializers.DateSerializer,
+  'gx:OffsetDateTime': typeSerializers.OffsetDateTimeSerializer,
   'g:Direction': typeSerializers.DirectionSerializer,
   'g:Vertex': typeSerializers.VertexSerializer,
   'g:Edge': typeSerializers.EdgeSerializer,
@@ -272,12 +273,13 @@ const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
 
 const graphSON2Serializers = [
   typeSerializers.NumberSerializer,
-  typeSerializers.DateSerializer,
+  typeSerializers.OffsetDateTimeSerializer,
   typeSerializers.BytecodeSerializer,
   typeSerializers.TraverserSerializer,
   typeSerializers.TraversalStrategySerializer,
   typeSerializers.PSerializer,
   typeSerializers.TextPSerializer,
+  typeSerializers.ClassSerializer,
   typeSerializers.LambdaSerializer,
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,

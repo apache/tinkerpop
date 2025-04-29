@@ -37,8 +37,8 @@ project = __.project
 tail = __.tail
 
 ignores = [
-    "g.withoutStrategies(CountStrategy).V().count()" # serialization issues with Class in GraphSON
-    "g.withoutStrategies(LazyBarrierStrategy).V().as(\"label\").aggregate(local,\"x\").select(\"x\").select(\"label\")",
+    "g.V().choose(has(T.label, \"person\"),values(\"age\").groupCount(\"a\"), values(\"name\").groupCount(\"b\")).cap(\"a\", \"b\").unfold()", # uses embedded Map in assertion
+    "g.withSideEffect(\"x\",{}).V().both().both().sideEffect(__.store(\"x\").by(\"name\")).cap(\"x\").unfold()", # Objects must be both of Map or Collection: a=LinkedHashMap b=BulkSet???
     "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
     "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()" # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
 ]
@@ -46,12 +46,14 @@ ignores = [
 
 @given("the {graph_name:w} graph")
 def choose_graph(step, graph_name):
-    # if we have no traversals then we are ignoring the test - should be temporary until we can settle out the
-    # issue of handling the removal of lambdas from Gremlin as a language
-    step.context.ignore = len(step.context.traversals) == 0
+    step.context.ignore = False
     tagset = [tag.name for tag in step.all_tags]
     if not step.context.ignore:
         step.context.ignore = "AllowNullPropertyValues" in tagset
+    if not step.context.ignore:
+        step.context.ignore = "StepSubgraph" in tagset
+    if not step.context.ignore:
+        step.context.ignore = "StepTree" in tagset
 
     if (step.context.ignore):
         return
@@ -245,7 +247,7 @@ def _convert(val, ctx):
         return val[4:-1]
     elif isinstance(val, str) and re.match(r"^dt\[.*\]$", val):  # parse datetime
         # python 3.8 can handle only subset of ISO 8601 dates
-        return datetime.fromisoformat(val[3:-1].replace('Z', ''))
+        return datetime.fromisoformat(val[3:-1].replace('Z', '+00:00'))
     elif isinstance(val, str) and re.match(r"^uuid\[.*\]$", val):  # parse uuid
         name = val[5:-1]  # strip 'uuid[...]' or similar format
         dummy_namespace = uuid.UUID('00000000-0000-0000-0000-000000000000')
@@ -277,8 +279,6 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^p\[.*\]$", val):  # parse path
         path_objects = list(map((lambda x: _convert(x, ctx)), val[2:-1].split(",")))
         return Path([set([])], path_objects)
-    elif isinstance(val, str) and re.match(r"^c\[.*\]$", val):  # parse lambda/closure
-        return lambda: (val[2:-1], "gremlin-groovy")
     elif isinstance(val, str) and re.match(r"^t\[.*\]$", val):  # parse instance of T enum
         return T[val[2:-1]]
     elif isinstance(val, str) and re.match(r"^D\[.*\]$", val):  # parse instance of Direction enum

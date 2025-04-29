@@ -240,10 +240,12 @@ class TraversalStrategySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, strategy, writer):
-        configuration = {}
+        strat_dict = {}
+        strat_dict["fqcn"] = strategy.fqcn
+        strat_dict["conf"] = {}
         for key in strategy.configuration:
-            configuration[key] = writer.to_dict(strategy.configuration[key])
-        return GraphSONUtil.typed_value(strategy.strategy_name, configuration)
+            strat_dict["conf"][key] = writer.to_dict(strategy.configuration[key])
+        return GraphSONUtil.typed_value(strategy.strategy_name, strat_dict)
 
 
 class TraverserIO(_GraphSONTypeIO):
@@ -346,7 +348,6 @@ class UUIDIO(_GraphSONTypeIO):
 
 
 class DateIO(_GraphSONTypeIO):
-    python_type = datetime.datetime
     graphson_type = "g:Date"
     graphson_base_type = "Date"
 
@@ -365,6 +366,24 @@ class DateIO(_GraphSONTypeIO):
     def objectify(cls, ts, reader):
         # Python timestamp expects seconds
         return datetime.datetime.utcfromtimestamp(ts / 1000.0)
+
+
+class OffsetDateTimeIO(_GraphSONTypeIO):
+    python_type = datetime.datetime
+    graphson_type = "gx:OffsetDateTime"
+    graphson_base_type = "OffsetDateTime"
+
+    @classmethod
+    def dictify(cls, obj, writer):
+        if obj.tzinfo is None:
+            return DateIO.dictify(obj, writer)
+        return GraphSONUtil.typed_value(cls.graphson_base_type, obj.isoformat(), "gx")
+
+    @classmethod
+    def objectify(cls, dt, reader):
+        # specially handling as python isoformat does not support zulu until 3.11
+        dt_iso = dt[:-1] + '+00:00' if dt.endswith('Z') else dt
+        return datetime.datetime.fromisoformat(dt_iso)
 
 
 # Based on current implementation, this class must always be declared before FloatIO.
