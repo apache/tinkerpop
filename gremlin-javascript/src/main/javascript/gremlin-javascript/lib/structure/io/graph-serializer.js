@@ -279,6 +279,7 @@ const graphSON2Serializers = [
   typeSerializers.TraversalStrategySerializer,
   typeSerializers.PSerializer,
   typeSerializers.TextPSerializer,
+  typeSerializers.ClassSerializer,
   typeSerializers.LambdaSerializer,
   typeSerializers.EnumSerializer,
   typeSerializers.VertexSerializer,

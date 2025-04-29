@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
@@ -368,16 +367,15 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, PartitionStrategy.class.getCanonicalName());
-        map.put(INCLUDE_META_PROPERTIES, this.includeMetaProperties);
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(INCLUDE_META_PROPERTIES, this.includeMetaProperties);
         if (null != this.writePartition)
-            map.put(WRITE_PARTITION, this.writePartition);
+            conf.setProperty(WRITE_PARTITION, this.writePartition);
         if (null != this.readPartitions)
-            map.put(READ_PARTITIONS, this.readPartitions);
+            conf.setProperty(READ_PARTITIONS, this.readPartitions);
         if (null != this.partitionKey)
-            map.put(PARTITION_KEY, this.partitionKey);
-        return new MapConfiguration(map);
+            conf.setProperty(PARTITION_KEY, this.partitionKey);
+        return conf;
     }
 
     public static final String INCLUDE_META_PROPERTIES = "includeMetaProperties";

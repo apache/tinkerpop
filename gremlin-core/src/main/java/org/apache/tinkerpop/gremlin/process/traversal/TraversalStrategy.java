@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -44,8 +45,6 @@ import java.util.Set;
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
-
-    public static final String STRATEGY = "strategy";
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
@@ -79,13 +78,15 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
     }
 
     /**
-     * Get the configuration representation of this strategy.
-     * This is useful for converting a strategy into a serialized form.
+     * Get the configuration representation of this strategy. This is useful for converting a strategy into a
+     * serialized form.
      *
      * @return the configuration used to create this strategy
      */
     public default Configuration getConfiguration() {
-        return new BaseConfiguration();
+        final BaseConfiguration conf = new BaseConfiguration();
+        conf.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+        return conf;
     }
 
     @Override

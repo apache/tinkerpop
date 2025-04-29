@@ -21,14 +21,14 @@
 
 #endregion
 
-namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
+namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
 {
     /// <summary>
     ///      A strategy that detaches traversers with graph elements as references.
     /// </summary>
     public class ReferenceElementStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = OptimizationNamespace + nameof(ReferenceElementStrategy);
+        private const string JavaFqcn = FinalizationNamespace + nameof(ReferenceElementStrategy);
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ReferenceElementStrategy" /> class.

@@ -285,8 +285,7 @@ public final class GolangTranslator implements Translator.ScriptTranslator {
             } else {
                 script.append(GO_PACKAGE_NAME + o.getStrategyClass().getSimpleName() + "(");
                 script.append(GO_PACKAGE_NAME + o.getStrategyClass().getSimpleName() + "Config{");
-                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).
-                    filter(e -> !e.equals(TraversalStrategy.STRATEGY)).iterator();
+                final Iterator<String> keys = IteratorUtils.stream(o.getConfiguration().getKeys()).iterator();
                 while (keys.hasNext()) {
                     final String k = keys.next();
                     script.append(SymbolHelper.toGolang(k));

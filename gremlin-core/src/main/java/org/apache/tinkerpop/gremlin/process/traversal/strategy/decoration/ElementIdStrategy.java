@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -41,8 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -174,15 +171,14 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, ElementIdStrategy.class.getCanonicalName());
-        map.put(ID_PROPERTY_KEY, this.idPropertyKey);
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(ID_PROPERTY_KEY, this.idPropertyKey);
         // The idMaker is not serializable. The default idMaker is excluded from the configuration to allow for remote
         // serialization. Custom idMakers are only supported in the config for embedded usages.
         if (!idMaker.equals(Builder.DEFAULT_ID_MAKER)) {
-            map.put(ID_MAKER, this.idMaker);
+            conf.setProperty(ID_MAKER, this.idMaker);
         }
-        return new MapConfiguration(map);
+        return conf;
     }
 
     public static ElementIdStrategy instance() {

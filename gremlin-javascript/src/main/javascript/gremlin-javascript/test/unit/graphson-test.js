@@ -27,6 +27,7 @@ const graph = require('../../lib/structure/graph');
 const t = require('../../lib/process/traversal.js');
 const gs = require('../../lib/structure/io/graph-serializer.js');
 const utils = require('../../lib/utils');
+const { ConnectiveStrategy, SeedStrategy } = require("../../lib/process/traversal-strategy");
 const GraphSONReader = gs.GraphSONReader;
 const GraphSONWriter = gs.GraphSONWriter;
 const P = t.P;
@@ -256,5 +257,15 @@ describe('GraphSONWriter', function () {
     const writer = new GraphSONWriter();
     assert.strictEqual(writer.write(() => '(x,y) -> x.get() + y'),
         '{"@type":"g:Lambda","@value":{"arguments":2,"language":"gremlin-groovy","script":"(x,y) -> x.get() + y"}}');
+  });
+  it('should write Class values', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:Class", "@value": "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy"});
+    assert.strictEqual(writer.write(ConnectiveStrategy), expected);
+  });
+  it('should write TraversalStrategy values', function () {
+    const writer = new GraphSONWriter();
+    const expected = JSON.stringify({"@type": "g:SeedStrategy", "@value": {"fqcn": "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy", "conf": {"seed":100}}});
+    assert.strictEqual(writer.write(new SeedStrategy({seed: 100})), expected);
   });
 });

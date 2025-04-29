@@ -236,7 +236,12 @@ class TraversalStrategySerializer(_GraphSONTypeIO):
 
     @classmethod
     def dictify(cls, strategy, writer):
-        return GraphSONUtil.typed_value(strategy.strategy_name, writer.to_dict(strategy.configuration))
+        strat_dict = {}
+        strat_dict["fqcn"] = strategy.fqcn
+        strat_dict["conf"] = {}
+        for key in strategy.configuration:
+            strat_dict["conf"][key] = writer.to_dict(strategy.configuration[key])
+        return GraphSONUtil.typed_value(strategy.strategy_name, strat_dict)
 
 
 class TraverserIO(_GraphSONTypeIO):
