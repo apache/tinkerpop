@@ -433,7 +433,8 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
 
     @Override
     public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
-        return visitChildren(ctx);
+        sb.append(ctx.getText());
+        return null;
     }
 
     @Override
