@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassMap @StepUuid
+@StepClassSideEffect @StepUuid
 Feature: Step - uuid()
 
   @GraphComputerVerificationInjectionNotSupported
