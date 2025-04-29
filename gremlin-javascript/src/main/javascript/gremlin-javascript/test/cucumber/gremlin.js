@@ -199,6 +199,7 @@ const gremlins = {
     g_VX1X_valuesXageX_dedupXlocalX_unfold: [function({g, vid1}) { return g.V(vid1).values("age").dedup(Scope.local).unfold() }], 
     g_V_properties_dedup_count: [function({g}) { return g.addV("person").property("name", "josh").addV("person").property("name", "josh").addV("person").property("name", "josh") }, function({g}) { return g.V().properties("name").dedup().count() }], 
     g_V_properties_dedup_byXvalueX_count: [function({g}) { return g.addV("person").property("name", "josh").addV("person").property("name", "josh").addV("person").property("name", "josh") }, function({g}) { return g.V().properties("name").dedup().by(T.value).count() }], 
+    g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name: [function({g}) { return g.V().both().has(T.label, "software").dedup().by("lang").by("name").values("name") }], 
     g_V_drop: [function({g}) { return g.addV().as("a").addV().as("b").addE("knows").to("a") }, function({g}) { return g.V().drop() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_V_outE_drop: [function({g}) { return g.addV().as("a").addV().as("b").addE("knows").to("a") }, function({g}) { return g.V().outE().drop() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_V_properties_drop: [function({g}) { return g.addV().property("name", "bob").addV().property("name", "alice") }, function({g}) { return g.V().properties().drop() }, function({g}) { return g.V() }, function({g}) { return g.V().properties() }], 
