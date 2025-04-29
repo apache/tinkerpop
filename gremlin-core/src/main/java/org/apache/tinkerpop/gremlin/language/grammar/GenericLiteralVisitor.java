@@ -521,7 +521,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
         if (ctx.stringLiteral() == null)
             return UUID.randomUUID();
-        return UUID.fromString((String) antlr.argumentVisitor.visitStringLiteral(ctx.stringLiteral()));
+        return UUID.fromString((String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
