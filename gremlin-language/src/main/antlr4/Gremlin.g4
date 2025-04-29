@@ -1670,7 +1670,7 @@ infLiteral
 
 uuidLiteral
     : K_UUID LPAREN RPAREN
-    | K_UUID LPAREN stringArgument RPAREN
+    | K_UUID LPAREN stringLiteral RPAREN
     ;
 
 
