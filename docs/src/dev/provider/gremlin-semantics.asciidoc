@@ -1615,3 +1615,41 @@ Null values from the incoming traverser are not processed and remain as null whe
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TrimLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#trim-step[reference]
+
+[[valueMap-step]]
+=== valueMap()
+
+*Description:* Converts elements to a map representation of their properties.
+
+*Syntax:* `valueMap(String... propertyKeys)` | `valueMap(boolean includeTokens, String... propertyKeys)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()`/`with()` |`Element` |`Map`
+|=========================================================
+
+*Arguments:*
+
+* `includeTokens` - Determines if the result map should contain entries from `T` (such as `label` and `id`).
+
+* `propertyKeys` - If `valueMap()` is provided a list of propertyKeys, then the result map will only contain entries
+specified by propertyKeys. If the list is empty, then all properties are included.
+
+*Modulation:*
+
+* `by(Traversal)` - Only a single by() modulator is allowed and it applies to all map values. An attempt to add more
+than one by() will result in an Exception that contains the message "valueMap()/propertyMap() step can only have one by
+modulator".
+* `with(key, value)` - Determines which optional entries to add to the map. The key is "tinkerpop.valueMap.tokens" and
+the possible values are:
+** 0 for no tokens
+** 1 for including id (Element)
+** 2 for including label (Vertex/Edge)
+** 4 for including keys (VertexProperty)
+** 8 for including values (VertexProperty)
+** 15 for including all
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/PropertyMapStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#valuemap-step[reference],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#propertymap-step[reference]
