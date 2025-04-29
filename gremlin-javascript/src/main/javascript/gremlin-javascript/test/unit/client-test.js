@@ -70,4 +70,14 @@ describe('Client', function () {
     customClient._connection = connectionMock;
     customClient.submit(query, null, {'evaluationTimeout': 123, 'materializeProperties': 'tokens'})
   });
+
+  it('should use default mimeType', function () {
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
+    assert.strictEqual(customClient._connection.mimeType, 'application/vnd.graphbinary-v1.0')
+  });
+
+  it('should use given mimeType', function () {
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false, mimeType: 'application/vnd.gremlin-v2.0+json'});
+    assert.strictEqual(customClient._connection.mimeType, 'application/vnd.gremlin-v2.0+json')
+  });
 });

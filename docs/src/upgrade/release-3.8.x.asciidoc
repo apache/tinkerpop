@@ -296,6 +296,13 @@ gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2971[TINKERPOP-2971]
 
+==== valueMap() and propertyMap() By Modulation Semantics
+
+The `valueMap()` and `propertyMap()`steps have been changed to throw an error if multiple `by()` modulators are applied.
+The previous behavior attempted to round-robin the by() but this wasn't possible for all providers.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
+
 ==== groupCount() By Modulation Semantics
 
 The `groupCount()` step has been changed to throw an error if multiple `by()` modulators are applied. The previous 
@@ -331,6 +338,14 @@ The default implementation for date type in Gremlin is now changed from the depr
 `Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
 
 This may impact providers who use TinkerGraph or whose implementation store dates as `java.util.Date`. While steps will support `Date`, all date manipulations will output `OffsetDateTime`. If a user had persisted `Date` objects in the database, upgrading to 3.8 may lead to the database having both types stored. It is recommended for users to perform transformation of `Date` to `OffsetDateTime` to retain consistency.
+
+===== Semantics change for PropertyMapStep
+
+The semantics have changed for the handling of by modulators to the `valueMap` and `propertyMap` steps. Only one by
+modulator is required to be accepted and an exception should be thrown when there are more than one by() modulators.
+The exception thrown should contain the following: "valueMap()/propertyMap() step can only have one by modulator".
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
 ==== Graph Driver Providers
 
