@@ -18,6 +18,7 @@
 module example
 
 go 1.22.0
+toolchain go1.24.1
 
 require github.com/apache/tinkerpop/gremlin-go/v3 v3.7.1
 
@@ -25,6 +26,6 @@ require (
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.2.2 // indirect
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 )
