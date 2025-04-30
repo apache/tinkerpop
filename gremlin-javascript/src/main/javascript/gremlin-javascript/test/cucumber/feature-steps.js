@@ -409,8 +409,7 @@ function toDateTime(value) {
 }
 
 function toUuid(value) {
-  const DUMMY_NAMESPACE = '00000000-0000-0000-0000-000000000000';
-  return uuidv5(value, DUMMY_NAMESPACE);
+  return value;
 }
 
 function toMerge(value) {
