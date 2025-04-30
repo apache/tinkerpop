@@ -171,7 +171,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     }
 
     @Override
-    public void createKeyIndex(final String key) {
+    public void createIndex(final String key, final Map<String,Object> configuration) {
         if (null == key)
             throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (key.isEmpty())
@@ -192,7 +192,7 @@ final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTi
     }
 
     @Override
-    public void dropKeyIndex(final String key) {
+    public void dropIndex(final String key) {
         if (index.containsKey(key))
             index.remove(key).clear();
 

@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -373,11 +374,10 @@ public class TinkerGraph extends AbstractTinkerGraph {
 
     }
 
-
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
 
     /**
-     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
+     * Create a default index for said element class ({@link Vertex} or {@link Edge}) and said property key.
      * Whenever an element has the specified key mutated, the index is updated.
      * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
      *
@@ -386,14 +386,43 @@ public class TinkerGraph extends AbstractTinkerGraph {
      * @param <E>          The type of the element class
      */
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
-        if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
-            this.vertexIndex.createKeyIndex(key);
-        } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null == this.edgeIndex) this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
-            this.edgeIndex.createKeyIndex(key);
+        createIndex(TinkerIndexType.DEFAULT, key, elementClass, Collections.emptyMap());
+    }
+
+    /**
+     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key with the given
+     * configuration options. Whenever an element has the specified key mutated, the index is updated. When the index
+     * is created, all existing elements are indexed to ensure that they are captured by the index.
+     *
+     * @param indexType     the type of the index
+     * @param key           the property key to index
+     * @param elementClass  the element class to index
+     * @param configuration the configuration options
+     * @param <E>           The type of the element class
+     */
+    public <E extends Element> void createIndex(final TinkerIndexType indexType, final String key,
+                                                final Class<E> elementClass, final Map<String, Object> configuration) {
+        if (TinkerIndexType.VECTOR == indexType) {
+            if (Vertex.class.isAssignableFrom(elementClass)) {
+                if (null == this.vertexVectorIndex) this.vertexVectorIndex = new TinkerVectorIndex<>(this, TinkerVertex.class);
+                this.vertexVectorIndex.createIndex(key, configuration);
+            } else if (Edge.class.isAssignableFrom(elementClass)) {
+                if (null == this.edgeVectorIndex) this.edgeVectorIndex = new TinkerVectorIndex<>(this, TinkerEdge.class);
+                this.edgeVectorIndex.createIndex(key, configuration);
+            } else {
+                throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+            }
         } else {
-            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+            // Create a standard index
+            if (Vertex.class.isAssignableFrom(elementClass)) {
+                if (null == this.vertexIndex) this.vertexIndex = new TinkerIndex<>(this, TinkerVertex.class);
+                this.vertexIndex.createIndex(key);
+            } else if (Edge.class.isAssignableFrom(elementClass)) {
+                if (null == this.edgeIndex) this.edgeIndex = new TinkerIndex<>(this, TinkerEdge.class);
+                this.edgeIndex.createIndex(key);
+            } else {
+                throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+            }
         }
     }
 
@@ -406,11 +435,69 @@ public class TinkerGraph extends AbstractTinkerGraph {
      */
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
+            if (null != this.vertexIndex) this.vertexIndex.dropIndex(key);
+            if (null != this.vertexVectorIndex) this.vertexVectorIndex.dropIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
+            if (null != this.edgeIndex) this.edgeIndex.dropIndex(key);
+            if (null != this.edgeVectorIndex) this.edgeVectorIndex.dropIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
+    }
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of vertices sorted by distance
+     */
+    public List<Vertex> findNearestVertices(final String key, final float[] vector, final int k) {
+        if (null == this.vertexVectorIndex)
+            return Collections.emptyList();
+        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector, k));
+    }
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     * Uses the default number of nearest neighbors.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of vertices sorted by distance
+     */
+    public List<Vertex> findNearestVertices(final String key, final float[] vector) {
+        if (null == this.vertexVectorIndex)
+            return Collections.emptyList();
+        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector));
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of edges sorted by distance
+     */
+    public List<Edge> findNearestEdges(final String key, final float[] vector, final int k) {
+        if (null == this.edgeVectorIndex)
+            return Collections.emptyList();
+        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector, k));
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     * Uses the default number of nearest neighbors.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of edges sorted by distance
+     */
+    public List<Edge> findNearestEdges(final String key, final float[] vector) {
+        if (null == this.edgeVectorIndex)
+            return Collections.emptyList();
+        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector));
     }
 }

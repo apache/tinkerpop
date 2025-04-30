@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -85,16 +87,24 @@ public abstract class AbstractTinkerIndex<T extends Element> {
     public abstract void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element);
 
     /**
-     * Create new index
+     * Create new index with no configuration.
      * @param key property key
      */
-    public abstract void createKeyIndex(final String key);
+    public void createIndex(final String key) {
+        createIndex(key, Collections.emptyMap());
+    }
+
+    /**
+     * Create new index with a specified configuration.
+     * @param key property key
+     */
+    public abstract void createIndex(final String key, final Map<String, Object> configuration);
 
     /**
      * Drop index
      * @param key property key
      */
-    public abstract void dropKeyIndex(final String key);
+    public abstract void dropIndex(final String key);
 
     /**
      * Get all index keys for Graph

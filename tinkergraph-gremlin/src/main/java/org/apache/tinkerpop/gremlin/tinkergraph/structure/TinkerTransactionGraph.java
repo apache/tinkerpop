@@ -470,10 +470,10 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
             if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
-            this.vertexIndex.createKeyIndex(key);
+            this.vertexIndex.createIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
             if (null == this.edgeIndex) this.edgeIndex = new TinkerTransactionalIndex<>(this, TinkerEdge.class);
-            this.edgeIndex.createKeyIndex(key);
+            this.edgeIndex.createIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
@@ -488,9 +488,9 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
      */
     public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null != this.vertexIndex) this.vertexIndex.dropKeyIndex(key);
+            if (null != this.vertexIndex) this.vertexIndex.dropIndex(key);
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null != this.edgeIndex) this.edgeIndex.dropKeyIndex(key);
+            if (null != this.edgeIndex) this.edgeIndex.dropIndex(key);
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }

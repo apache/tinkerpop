@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
@@ -70,6 +71,8 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected TinkerGraphComputerView graphComputerView = null;
     protected AbstractTinkerIndex<TinkerVertex> vertexIndex = null;
     protected AbstractTinkerIndex<TinkerEdge> edgeIndex = null;
+    protected TinkerVectorIndex<TinkerVertex> vertexVectorIndex = null;
+    protected TinkerVectorIndex<TinkerEdge> edgeVectorIndex = null;
 
     protected IdManager<Vertex> vertexIdManager;
     protected IdManager<Edge> edgeIdManager;
@@ -256,6 +259,8 @@ public abstract class AbstractTinkerGraph implements Graph {
         this.currentId.set(-1L);
         this.vertexIndex = null;
         this.edgeIndex = null;
+        this.vertexVectorIndex = null;
+        this.edgeVectorIndex = null;
         this.graphComputerView = null;
     }
 
@@ -385,9 +390,19 @@ public abstract class AbstractTinkerGraph implements Graph {
      */
     public <E extends Element> Set<String> getIndexedKeys(final Class<E> elementClass) {
         if (Vertex.class.isAssignableFrom(elementClass)) {
-            return null == this.vertexIndex ? Collections.emptySet() : this.vertexIndex.getIndexedKeys();
+            Set<String> keys = new HashSet<>();
+            if (this.vertexIndex != null)
+                keys.addAll(this.vertexIndex.getIndexedKeys());
+            if (this.vertexVectorIndex != null)
+                keys.addAll(this.vertexVectorIndex.getIndexedKeys());
+            return keys;
         } else if (Edge.class.isAssignableFrom(elementClass)) {
-            return null == this.edgeIndex ? Collections.emptySet() : this.edgeIndex.getIndexedKeys();
+            Set<String> keys = new HashSet<>();
+            if (this.edgeIndex != null)
+                keys.addAll(this.edgeIndex.getIndexedKeys());
+            if (this.edgeVectorIndex != null)
+                keys.addAll(this.edgeVectorIndex.getIndexedKeys());
+            return keys;
         } else {
             throw new IllegalArgumentException("Class is not indexable: " + elementClass);
         }
@@ -564,7 +579,7 @@ public abstract class AbstractTinkerGraph implements Graph {
                 return true;
             }
         },
-        
+
         /**
          * Manages identifiers of type {@code String}.
          */

@@ -118,7 +118,7 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
     }
 
     @Override
-    public void createKeyIndex(final String key) {
+    public void createIndex(final String key, final Map<String,Object> configuration) {
         if (null == key)
             throw Graph.Exceptions.argumentCanNotBeNull("key");
         if (key.isEmpty())
@@ -138,7 +138,7 @@ final class TinkerIndex<T extends Element> extends AbstractTinkerIndex<T> {
     }
 
     @Override
-    public void dropKeyIndex(final String key) {
+    public void dropIndex(final String key) {
         if (this.index.containsKey(key))
             this.index.remove(key).clear();
 
