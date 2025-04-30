@@ -22,8 +22,6 @@
  */
 'use strict';
 
-import { v5 as uuidv5 } from 'uuid';
-
 const {Given, Then, When, setDefaultTimeout} = require('cucumber');
 // Setting Cucumber timeout to 10s for Floating Errors on Windows on GitHub Actions
 setDefaultTimeout(10 * 1000);
@@ -48,7 +46,7 @@ const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'dt\\[(.+)\\]', toDateTime ],
-  [ 'uid\\[(.+)\\]', toUuid ],
+  [ 'uuid\\[(.+)\\]', toUuid ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],

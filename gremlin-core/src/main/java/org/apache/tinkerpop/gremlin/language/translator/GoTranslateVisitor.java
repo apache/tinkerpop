@@ -293,6 +293,18 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null) {
+            sb.append("uuid.New()");
+            return null;
+        }
+        sb.append("uuid.Parse(");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     protected String getCardinalityFunctionClass() {
         return "CardinalityValue";
     }

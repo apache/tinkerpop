@@ -1098,6 +1098,18 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         return null;
     }
 
+    @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null) {
+            sb.append("Guid.NewGuid()");
+            return null;
+        }
+        sb.append("Guid.Parse(");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
     /**
      * Steps with a {@code <TNewEnd>} defined need special handling to append generics.
      */

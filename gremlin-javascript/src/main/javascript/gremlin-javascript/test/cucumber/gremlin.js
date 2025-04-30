@@ -1347,7 +1347,6 @@ const gremlins = {
     g_V_localXoutE_foldX_unfold: [function({g}) { return g.V().local(__.outE().fold()).unfold() }], 
     g_V_valueMap_unfold_mapXselectXkeysXX: [function({g}) { return g.V().valueMap().unfold().map(__.select(Column.keys)) }], 
     g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold: [function({g, vid6, vid1}) { return g.V(vid1).repeat(__.both().simplePath()).until(__.hasId(vid6)).path().by("name").unfold() }], 
-    g_injectXUUIDX_asXidX_selectXidX_asString: [function({g}) { return g.inject(UUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")) }], 
     g_V_valueMap: [function({g}) { return g.V().valueMap() }], 
     g_V_valueMapXtrueX: [function({g}) { return g.V().valueMap(true) }], 
     g_V_valueMap_withXtokensX: [function({g}) { return g.V().valueMap().with_(WithOptions.tokens) }], 
@@ -1684,6 +1683,7 @@ const gremlins = {
     g_VX1X_out_out_out_tree: [function({g}) { return g.V().out().out().out().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree().by("name").by(T.label) }], 
+    g_injectXUUIDX: [function({g}) { return g.inject(UUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")) }], 
 }
 
 exports.gremlin = gremlins

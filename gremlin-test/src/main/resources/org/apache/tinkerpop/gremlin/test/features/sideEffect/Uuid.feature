@@ -18,8 +18,7 @@
 @StepClassSideEffect @StepUuid
 Feature: Step - uuid()
 
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXUUIDX_asXidX_selectXidX_asString
+  Scenario: g_injectXUUIDX
     Given the empty graph
     And the traversal of
       """

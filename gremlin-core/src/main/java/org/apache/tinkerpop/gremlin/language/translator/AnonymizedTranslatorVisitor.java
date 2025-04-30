@@ -184,4 +184,7 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
         return anonymize(ctx, Number.class);
     }
+
+    @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) { return anonymize(ctx, String.class); }
 }

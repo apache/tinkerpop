@@ -1684,6 +1684,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_out_out_out_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Out().Out().Out().Tree<object>()}}, 
                {"g_VX1X_outE_inV_bothE_otherV_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>()}}, 
                {"g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>().By("name").By(T.Label)}}, 
+               {"g_injectXUUIDX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Guid.Parse("f47a(IComparator) p["c10"]b-58cc-4372-a567-0p["e02"]b2(IComparator) p["c3"]d479"))}}, 
             };
 
         public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)
