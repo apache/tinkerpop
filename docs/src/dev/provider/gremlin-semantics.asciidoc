@@ -524,10 +524,82 @@ fully demonstrative of Gremlin step semantics. It is also hard to simply read th
 step is meant to behave. This section discusses the semantics for individual steps to help users and providers
 understand implementation expectations.
 
+[[adde-step]]
+=== addE()
+
+*Description:* Adds an edge to the graph.
+
+*Syntax:* `addE(String edgeLabel)` | `addE(Traversal<?, String> edgeLabelTraversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |`from()`/`to()` |`any` |`Edge`
+|=========================================================
+
+*Arguments:*
+
+* `edgeLabel` - The label of the edge to add.
+* `edgeLabelTraversal` - A traversal that produces the label of the edge to add.
+
+*Modulation:*
+
+* `from()` - Specifies the source vertex for the edge.
+* `to()` - Specifies the target vertex for the edge.
+
+*Considerations:*
+
+The `addE()` step can be used as both a start step and a mid-traversal step. When used as a start step, both `from()`
+and `to()` must be specified. When used as a mid-traversal step, the current traverser becomes the source vertex and
+only `to()` needs to be specified.
+
+*Exceptions*
+
+* If the edge label is null, an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddEdgeStartStep.java[source (start)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addedge-step[reference]
+
+[[addv-step]]
+=== addV()
+
+*Description:* Adds a vertex to the graph.
+
+*Syntax:* `addV()` | `addV(String vertexLabel)` | `addV(Traversal<?, String> vertexLabelTraversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|Y |Y |N |`any` |`Vertex`
+|=========================================================
+
+*Arguments:*
+
+* `vertexLabel` - The label of the vertex to add.
+* `vertexLabelTraversal` - A traversal that produces the label of the vertex to add.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `addV()` step can be used as both a start step and a mid-traversal step. If no label is provided, the default
+vertex label for the graph will be used.
+
+*Exceptions*
+
+* If the vertex label is null, an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AddVertexStartStep.java[source (start)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#addvertex-step[reference]
+
 [[all-step]]
 === all()
 
-*Description:* Filters array data from the Traversal Stream if all of the array's items match the supplied predicate.
+*Description:* Filters array data from the traversal stream if all of the array's items match the supplied predicate.
 
 *Syntax:* `all(P predicate)`
 
@@ -556,6 +628,75 @@ will be filtered out of the Traversal Stream.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AllStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
+
+[[aggregate-step]]
+=== aggregate()
+
+*Description:* Collects all objects in the traversal into a collection.
+
+*Syntax:* `aggregate(String sideEffectKey)` | `aggregate(Scope scope, String sideEffectKey)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `scope` - Determines the scope in which `aggregate` is applied. The `global` scope will collect all objects across the
+traversal. The `local` scope will collect objects within the current object (if it's a collection).
+* `sideEffectKey` - The name of the side-effect key that will hold the aggregated objects.
+
+*Modulation:*
+
+* `by()` - Determines how to transform the object before aggregating. If not specified, the object itself is used.
+
+*Considerations:*
+
+The `aggregate()` step is a side-effect step that collects objects but passes the traverser to the next step unchanged.
+The aggregated objects can be accessed later using the `cap()` step.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateLocalStep.java[source (local)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#aggregate-step[reference]
+
+[[and-step]]
+=== and()
+
+*Description:* Ensures that all provided traversals yield a result.
+
+*Syntax:* `and(Traversal<?, ?>... andTraversals)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `andTraversals` - One or more traversals that will be executed against the current object.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `and()` step is a filter step that allows the traverser to pass if all of the provided traversals yield a result.
+It follows the ternary boolean logic described in the <<gremlin-semantics-concepts,Ternary Boolean Logics>> section.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AndStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#and-step[reference]
 
 [[any-step]]
 === any()
@@ -590,6 +731,41 @@ filtered out of the Traversal Stream.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/AnyStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#any-step[reference]
 
+[[as-step]]
+=== as()
+
+*Description:* Labels a step for later access by steps that make use of such labels.
+
+*Syntax:* `as(String stepLabel, String... stepLabels)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `stepLabel` - The label to assign to the step.
+* `stepLabels` - Additional labels to assign to the step.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `as()` step is not a real step, but a "step modulator" similar to `by()` and `option()`. It allows labeling a step
+for later access by steps like `select()` and `match()`. A step can have any number of labels associated with it, which
+is useful for referencing the same step multiple times in a future step.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[reference]
+
 [[asDate-step]]
 === asDate()
 
@@ -614,6 +790,209 @@ Incoming date remains unchanged.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
+
+[[barrier-step]]
+=== barrier()
+
+*Description:* Turns the lazy traversal pipeline into a bulk-synchronous pipeline.
+
+*Syntax:* `barrier()` | `barrier(int maxBarrierSize)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `maxBarrierSize` - The maximum number of traversers that can be held in the barrier before being processed.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `barrier()` step is useful in the following situations:
+* When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e., ordering).
+* When "stalling" the traversal may lead to a "bulking optimization" in traversals that repeatedly touch many of the
+same elements (i.e., optimizing).
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/NoOpBarrierStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#barrier-step[reference]
+
+[[both-step]]
+=== both()
+
+*Description:* Maps a vertex to its adjacent vertices given the edge labels.
+
+*Syntax:* `both(String... edgeLabels)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Vertex` |`Vertex`
+|=========================================================
+
+*Arguments:*
+
+* `edgeLabels` - The edge labels to traverse. If no labels are provided, all edges are traversed.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `both()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex to
+adjacent vertices. It is equivalent to the union of `in()` and `out()`.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
+
+[[bothe-step]]
+=== bothE()
+
+*Description:* Maps a vertex to its incident edges given the edge labels.
+
+*Syntax:* `bothE(String... edgeLabels)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Vertex` |`Edge`
+|=========================================================
+
+*Arguments:*
+
+* `edgeLabels` - The edge labels to traverse. If no labels are provided, all edges are traversed.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `bothE()` step is a vertex-centric step that traverses both incoming and outgoing edges from the current vertex. It
+is equivalent to the union of `inE()` and `outE()`.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/VertexStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
+
+[[bothv-step]]
+=== bothV()
+
+*Description:* Maps an edge to its incident vertices.
+
+*Syntax:* `bothV()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Edge` |`Vertex`
+|=========================================================
+
+*Arguments:*
+
+None
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `bothV()` step is an edge-centric step that traverses to both the incoming and outgoing vertices of the current
+edge. It is equivalent to the union of `inV()` and `outV()`.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/EdgeVertexStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#vertex-steps[reference]
+
+[[branch-step]]
+=== branch()
+
+*Description:* Splits the traverser to all the specified traversals.
+
+*Syntax:* `branch(Traversal<?, M> branchTraversal)` | `branch(Function<Traverser<E>, M> function)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`option()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `branchTraversal` - The traversal to branch the traverser to.
+* `function` - The function to branch the traverser to.
+
+*Modulation:*
+
+* `option()` - Specifies the branch options for the traverser.
+
+*Considerations:*
+
+The `branch()` step is a general step that splits the traverser to all the child traversals provided to it. It's the
+basis for more robust steps like `choose()` and `union()`. The branch step is typically used with the `option()` step
+to specify the branch options.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/BranchStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#branch-step[reference]
+
+[[cap-step]]
+=== cap()
+
+*Description:* Iterates the traversal up to itself and emits the sideEffect referenced by the provided key.
+
+*Syntax:* `cap(String sideEffectKey, String... sideEffectKeys)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `sideEffectKey` - The side-effect to emit.
+* `sideEffectKeys` - Other side-effects to emit.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `cap()` step is a barrier step that iterates the traversal up to itself and emits the sideEffect referenced by the
+provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SideEffectCapStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#cap-step[reference]
 
 [[asString-step]]
 === asString()
@@ -765,6 +1144,39 @@ will cause exceptions to be thrown.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/CombineStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#combine-step[reference],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#merge-step[merge() reference]
+
+[[coin-step]]
+=== coin()
+
+*Description:* Filters traversers from the Traversal Stream based on a biased coin toss.
+
+*Syntax:* `coin(double probability)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `probability` - The probability (between 0.0 and 1.0) that the traverser will pass through the filter.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each traverser is subject to a random filter based on the provided probability. A probability of 0.0 means no
+traversers pass through, while a probability of 1.0 means all traversers pass through.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/CoinStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#coin-step[reference]
 
 [[concat-step]]
 === concat()
@@ -1040,6 +1452,44 @@ None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
+
+[[groupcount-step]]
+=== groupCount()
+
+*Description:* Counts the number of times a particular object has been part of a traversal, returning a `Map` where the
+object is the key and the value is the count.
+
+*Syntax:* `groupCount()` | `groupCount(String sideEffectKey)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`Map<Object, Long>`
+|=========================================================
+
+*Arguments:*
+
+* `sideEffectKey` - The name of the side-effect key that will hold the aggregated grouping. When provided, the step
+operates as a side-effect step and passes the traverser to the next step unchanged.
+
+*Modulation:*
+
+* `by()` - Determines how to transform the object before counting. If not specified, the object itself is used as the
+key.
+
+*Considerations:*
+
+The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a `Map` with
+the counted objects as keys and their counts as values. As a side-effect step, it stores the counts in a side-effect and
+passes the traverser to the next step unchanged.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GroupCountStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupCountSideEffectStep.java[source (sideEffect)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#groupcount-step[reference]
 
 [[length-step]]
 === length()
@@ -1412,6 +1862,43 @@ applies to list types which means that non-iterable types (including null) will 
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProductStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#product-step[reference]
+
+[[project-step]]
+=== project()
+
+*Description:* Projects the current object in the stream into a `Map` that is keyed by the provided labels.
+
+*Syntax:* `project(String projectKey, String... otherProjectKeys)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`Map<String, Object>`
+|=========================================================
+
+*Arguments:*
+
+* `projectKey` - The first key to use in the resulting map.
+* `otherProjectKeys` - Additional keys to use in the resulting map.
+
+*Modulation:*
+
+* `by()` - Determines how to transform the current object for each key in the resulting map. The number of `by()`
+modulations should match the number of keys provided.
+
+*Considerations:*
+
+The `project()` step is similar to `select()` but instead of retrieving historic traverser state, it modulates the
+current state of the traverser. Each key in the resulting map corresponds to a `by()` modulation in the order they are
+provided. If a `by()` modulation doesn't produce a value for a particular key (not productive), that key will be omitted
+from the resulting `Map`.
+
+*Exceptions*
+
+* If duplicate keys are provided, an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProjectStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 
 [[replace-step]]
 === replace()
