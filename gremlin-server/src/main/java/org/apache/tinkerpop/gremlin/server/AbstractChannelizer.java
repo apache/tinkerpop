@@ -154,19 +154,21 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 final SSLFactory sslFactory = createSSLFactoryBuilder(settings).withSwappableTrustMaterial().withSwappableIdentityMaterial().build();
                 this.sslContext = Optional.of(createSSLContext(sslFactory));
 
-                // Every minute, check if keyStore/trustStore were modified, and if they were,
-                // reload the SSLFactory which will reload the underlying KeyManager/TrustManager that Netty SSLHandler uses.
-                scheduledExecutorService.scheduleAtFixedRate(
-                        new SSLStoreFilesModificationWatcher(settings.ssl.keyStore, settings.ssl.trustStore, () -> {
-                            SSLFactory newSslFactory = createSSLFactoryBuilder(settings).build();
-                            try {
-                                SSLFactoryUtils.reload(sslFactory, newSslFactory);
-                            } catch (RuntimeException e) {
-                                logger.error("Failed to reload SSLFactory", e);
-                            }
-                        }),
-                        settings.ssl.refreshInterval, settings.ssl.refreshInterval, TimeUnit.MILLISECONDS
-                );
+                if (settings.ssl.refreshInterval > 0) {
+                    // At the scheduled refreshInterval, check whether the keyStore or trustStore has been modified. If they were,
+                    // reload the SSLFactory which will reload the underlying KeyManager/TrustManager that Netty SSLHandler uses.
+                    scheduledExecutorService.scheduleAtFixedRate(
+                            new SSLStoreFilesModificationWatcher(settings.ssl.keyStore, settings.ssl.trustStore, () -> {
+                                SSLFactory newSslFactory = createSSLFactoryBuilder(settings).build();
+                                try {
+                                    SSLFactoryUtils.reload(sslFactory, newSslFactory);
+                                } catch (RuntimeException e) {
+                                    logger.error("Failed to reload SSLFactory", e);
+                                }
+                            }),
+                            settings.ssl.refreshInterval, settings.ssl.refreshInterval, TimeUnit.MILLISECONDS
+                    );
+                }
             }
         } else {
             this.sslContext = Optional.empty();
