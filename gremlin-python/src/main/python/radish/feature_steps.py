@@ -250,8 +250,7 @@ def _convert(val, ctx):
         return datetime.fromisoformat(val[3:-1].replace('Z', '+00:00'))
     elif isinstance(val, str) and re.match(r"^uuid\[.*\]$", val):  # parse uuid
         name = val[5:-1]  # strip 'uuid[...]' or similar format
-        dummy_namespace = uuid.UUID('00000000-0000-0000-0000-000000000000')
-        return uuid.uuid5(dummy_namespace, name)
+        return uuid.UUID(name)
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf
