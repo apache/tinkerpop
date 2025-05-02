@@ -79,6 +79,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
+* Changed sample step to not allow multiple by modulators.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
 * Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
