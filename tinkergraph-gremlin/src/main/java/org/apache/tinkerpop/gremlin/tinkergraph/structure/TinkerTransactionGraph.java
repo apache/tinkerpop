@@ -35,8 +35,10 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optim
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -455,44 +457,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     }
 
-
-    /////////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
-
-    /**
-     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
-     * Whenever an element has the specified key mutated, the index is updated.
-     * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
-     *
-     * @param key          the property key to index
-     * @param elementClass the element class to index
-     * @param <E>          The type of the element class
-     */
-    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
-        if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null == this.vertexIndex) this.vertexIndex = new TinkerTransactionalIndex<>(this, TinkerVertex.class);
-            this.vertexIndex.createIndex(key);
-        } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null == this.edgeIndex) this.edgeIndex = new TinkerTransactionalIndex<>(this, TinkerEdge.class);
-            this.edgeIndex.createIndex(key);
-        } else {
-            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-        }
-    }
-
-    /**
-     * Drop the index for the specified element class ({@link Vertex} or {@link Edge}) and key.
-     *
-     * @param key          the property key to stop indexing
-     * @param elementClass the element class of the index to drop
-     * @param <E>          The type of the element class
-     */
-    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
-        if (Vertex.class.isAssignableFrom(elementClass)) {
-            if (null != this.vertexIndex) this.vertexIndex.dropIndex(key);
-        } else if (Edge.class.isAssignableFrom(elementClass)) {
-            if (null != this.edgeIndex) this.edgeIndex.dropIndex(key);
-        } else {
-            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
-        }
+    @Override
+    protected <E extends Element> AbstractTinkerIndex<E> constructTinkerIndex(final TinkerIndexType indexType, final Class<E> elementClass) {
+        return indexType == TinkerIndexType.VECTOR ? new TinkerTransactionVectorIndex(this, elementClass) : new TinkerTransactionIndex(this, elementClass);
     }
 }

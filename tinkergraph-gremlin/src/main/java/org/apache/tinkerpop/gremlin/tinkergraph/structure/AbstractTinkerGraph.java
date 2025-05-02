@@ -37,9 +37,12 @@ import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,8 +74,8 @@ public abstract class AbstractTinkerGraph implements Graph {
     protected TinkerGraphComputerView graphComputerView = null;
     protected AbstractTinkerIndex<TinkerVertex> vertexIndex = null;
     protected AbstractTinkerIndex<TinkerEdge> edgeIndex = null;
-    protected TinkerVectorIndex<TinkerVertex> vertexVectorIndex = null;
-    protected TinkerVectorIndex<TinkerEdge> edgeVectorIndex = null;
+    protected AbstractTinkerVectorIndex<TinkerVertex> vertexVectorIndex = null;
+    protected AbstractTinkerVectorIndex<TinkerEdge> edgeVectorIndex = null;
 
     protected IdManager<Vertex> vertexIdManager;
     protected IdManager<Edge> edgeIdManager;
@@ -281,6 +284,64 @@ public abstract class AbstractTinkerGraph implements Graph {
         return configuration;
     }
 
+    ///////////// Vector Search /////////////////
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of vertices sorted by distance
+     */
+    public List<Vertex> findNearestVertices(final String key, final float[] vector, final int k) {
+        if (null == this.vertexVectorIndex)
+            throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
+        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector, k));
+    }
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     * Uses the default number of nearest neighbors.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of vertices sorted by distance
+     */
+    public List<Vertex> findNearestVertices(final String key, final float[] vector) {
+        if (null == this.vertexVectorIndex)
+            throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
+        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector));
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of edges sorted by distance
+     */
+    public List<Edge> findNearestEdges(final String key, final float[] vector, final int k) {
+        if (null == this.edgeVectorIndex)
+            throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
+        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector, k));
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     * Uses the default number of nearest neighbors.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of edges sorted by distance
+     */
+    public List<Edge> findNearestEdges(final String key, final float[] vector) {
+        if (null == this.edgeVectorIndex)
+            throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
+        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector));
+    }
+
     ///////////// Utility methods ///////////////
     protected abstract void addOutEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
@@ -380,6 +441,82 @@ public abstract class AbstractTinkerGraph implements Graph {
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
+
+    /**
+     * Provides a mechanism to internally construct an {@link AbstractTinkerIndex} of the appropriate type for a
+     * particular implementation of this class.
+     */
+    protected abstract <E extends Element> AbstractTinkerIndex<E> constructTinkerIndex(final TinkerIndexType indexType,
+                                                                                       final Class<E> elementClass);
+
+    /**
+     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key.
+     * Whenever an element has the specified key mutated, the index is updated.
+     * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
+     *
+     * @param key          the property key to index
+     * @param elementClass the element class to index
+     * @param <E>          The type of the element class
+     */
+    public <E extends Element> void createIndex(final String key, final Class<E> elementClass) {
+        createIndex(TinkerIndexType.DEFAULT, key, elementClass, Collections.emptyMap());
+    }
+
+    /**
+     * Create an index for said element class ({@link Vertex} or {@link Edge}) and said property key with the specified index type.
+     * Whenever an element has the specified key mutated, the index is updated.
+     * When the index is created, all existing elements are indexed to ensure that they are captured by the index.
+     *
+     * @param indexType     the type of the index
+     * @param key           the property key to index
+     * @param elementClass  the element class to index
+     * @param configuration the configuration options
+     * @param <E>           The type of the element class
+     */
+    public <E extends Element> void createIndex(final TinkerIndexType indexType, final String key,
+                                                final Class<E> elementClass, final Map<String, Object> configuration) {
+        if (TinkerIndexType.VECTOR == indexType) {
+            if (Vertex.class.isAssignableFrom(elementClass)) {
+                if (null == this.vertexVectorIndex) this.vertexVectorIndex = (AbstractTinkerVectorIndex<TinkerVertex>) constructTinkerIndex(TinkerIndexType.VECTOR, TinkerVertex.class);
+                this.vertexVectorIndex.createIndex(key, configuration);
+            } else if (Edge.class.isAssignableFrom(elementClass)) {
+                if (null == this.edgeVectorIndex) this.edgeVectorIndex = (AbstractTinkerVectorIndex<TinkerEdge>) constructTinkerIndex(TinkerIndexType.VECTOR, TinkerEdge.class);
+                this.edgeVectorIndex.createIndex(key, configuration);
+            } else {
+                throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+            }
+        } else {
+            // Create a standard index
+            if (Vertex.class.isAssignableFrom(elementClass)) {
+                if (null == this.vertexIndex) this.vertexIndex = constructTinkerIndex(TinkerIndexType.DEFAULT, TinkerVertex.class);
+                this.vertexIndex.createIndex(key);
+            } else if (Edge.class.isAssignableFrom(elementClass)) {
+                if (null == this.edgeIndex) this.edgeIndex = constructTinkerIndex(TinkerIndexType.DEFAULT, TinkerEdge.class);
+                this.edgeIndex.createIndex(key);
+            } else {
+                throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+            }
+        }
+    }
+
+    /**
+     * Drop the index for the specified element class ({@link Vertex} or {@link Edge}) and key.
+     *
+     * @param key          the property key to stop indexing
+     * @param elementClass the element class of the index to drop
+     * @param <E>          The type of the element class
+     */
+    public <E extends Element> void dropIndex(final String key, final Class<E> elementClass) {
+        if (Vertex.class.isAssignableFrom(elementClass)) {
+            if (null != this.vertexIndex) this.vertexIndex.dropIndex(key);
+            if (null != this.vertexVectorIndex) this.vertexVectorIndex.dropIndex(key);
+        } else if (Edge.class.isAssignableFrom(elementClass)) {
+            if (null != this.edgeIndex) this.edgeIndex.dropIndex(key);
+            if (null != this.edgeVectorIndex) this.edgeVectorIndex.dropIndex(key);
+        } else {
+            throw new IllegalArgumentException("Class is not indexable: " + elementClass);
+        }
+    }
 
     /**
      * Return all the keys currently being index for said element class  ({@link Vertex} or {@link Edge}).

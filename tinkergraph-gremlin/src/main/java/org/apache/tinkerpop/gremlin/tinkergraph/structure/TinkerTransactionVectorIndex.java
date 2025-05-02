@@ -22,7 +22,6 @@ import com.github.jelmerk.hnswlib.core.Item;
 import com.github.jelmerk.hnswlib.core.SearchResult;
 import com.github.jelmerk.hnswlib.core.hnsw.HnswIndex;
 import com.github.jelmerk.hnswlib.core.Index;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,15 +30,16 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * A vector index implementation for TinkerGraph using hnswlib.
+ * A vector index implementation for TinkerTransactionGraph using hnswlib.
  *
  * @param <T> the element type (Vertex or Edge)
  */
-final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorIndex<T> {
+final class TinkerTransactionVectorIndex<T extends TinkerElement> extends AbstractTinkerVectorIndex<T> {
 
     /**
      * Map of property key to vector index
@@ -107,7 +107,7 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
      * @param graph      the graph
      * @param indexClass the element class
      */
-    public TinkerVectorIndex(final TinkerGraph graph, final Class<T> indexClass) {
+    public TinkerTransactionVectorIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
@@ -195,18 +195,25 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
         this.vectorIndices.put(key, index);
 
         // Index existing elements
-        (Vertex.class.isAssignableFrom(this.indexClass) ?
-                ((TinkerGraph) this.graph).vertices.values().parallelStream() :
-                ((TinkerGraph) this.graph).edges.values().parallelStream())
-                .map(e -> new Object[]{((T) e).property(key), e})
-                .filter(a -> ((Property) a[0]).isPresent())
-                .forEach(a -> {
-                    // values for the key that don't match the dimensions of the index won't be added
-                    final Object value = ((Property) a[0]).value();
+        final Map elements =
+                Vertex.class.isAssignableFrom(indexClass) ?
+                        ((TinkerTransactionGraph) graph).getVertices() :
+                        ((TinkerTransactionGraph) graph).getEdges();
+
+        for (Object element : elements.values()) {
+            TinkerElementContainer container = (TinkerElementContainer) element;
+            Object e = container.get();
+            if (e != null && indexClass.isInstance(e)) {
+                T tinkerElement = (T) e;
+                Property property = tinkerElement.property(key);
+                if (property.isPresent()) {
+                    Object value = property.value();
                     if (value instanceof float[] && ((float[]) value).length == dimension) {
-                        this.addToIndex(key, (float[]) value, (T) a[1]);
+                        this.addToIndex(key, (float[]) value, tinkerElement);
                     }
-                });
+                }
+            }
+        }
     }
 
     /**
@@ -218,7 +225,7 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
      */
     public void addToIndex(final String key, final float[] vector, final T element) {
         if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
-            return;
+            throw new IllegalArgumentException("The key '" + key + "' is not indexed");
 
         final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
         final ElementItem item = new ElementItem(element.id(), vector, element);
@@ -372,5 +379,40 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
         if (this.indexedKeys.contains(key) && newValue instanceof float[]) {
             updateIndex(key, (float[]) newValue, element);
         }
+    }
+
+    /**
+     * Commit changes to the index.
+     *
+     * @param updatedElements the set of updated elements
+     */
+    public void commit(final Set<TinkerElementContainer> updatedElements) {
+        for (final TinkerElementContainer container : updatedElements) {
+            Object element = container.get();
+            if (element != null && !container.isDeleted() && indexClass.isInstance(element)) {
+                T tinkerElement = (T) element;
+                for (String key : this.indexedKeys) {
+                    Property property = tinkerElement.property(key);
+                    if (property.isPresent() && property.value() instanceof float[]) {
+                        updateIndex(key, (float[]) property.value(), tinkerElement);
+                    }
+                }
+            } else if (container.isDeleted()) {
+                Object oldElement = container.getUnmodified();
+                if (oldElement != null && indexClass.isInstance(oldElement)) {
+                    T tinkerOldElement = (T) oldElement;
+                    for (String key : this.indexedKeys) {
+                        removeFromIndex(key, tinkerOldElement);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Rollback changes to the index.
+     */
+    public void rollback() {
+        // No specific action needed for rollback in the current implementation
     }
 }

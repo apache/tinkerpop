@@ -387,7 +387,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 0);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.vertexIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(1, index.get(1).size());
@@ -429,7 +429,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 0);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.vertexIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(1, index.get(AbstractTinkerIndex.IndexedNull.instance()).size());
@@ -469,7 +469,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 0, 0);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.vertexIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(0, index.size());
@@ -508,7 +508,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 1, 0);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.vertexIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.vertexIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(0, index.size());
@@ -548,7 +548,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 1);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.edgeIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(1, index.size());
@@ -594,7 +594,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 1);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.edgeIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(1, index.size());
@@ -637,7 +637,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 0);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.edgeIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(0, index.size());
@@ -678,7 +678,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 1);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.edgeIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(1, index.size());
@@ -726,7 +726,7 @@ public class TinkerTransactionGraphTest {
         countElementsInNewThreadTx(g, 2, 1);
 
         final Map<Object, Set<TinkerElementContainer<?>>> index =
-                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionalIndex) g.edgeIndex).index.get("test-property");
+                (Map<Object, Set<TinkerElementContainer<?>>>) ((TinkerTransactionIndex) g.edgeIndex).index.get("test-property");
         assertNotNull(index);
         // should be only vertex vid in set
         assertEquals(0, index.size());

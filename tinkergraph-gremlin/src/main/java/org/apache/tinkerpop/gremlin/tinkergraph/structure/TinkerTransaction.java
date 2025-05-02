@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
 
@@ -176,10 +175,14 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
                 throw new TransactionException(TX_CONFLICT);
 
             // update indices
-            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+            final TinkerTransactionIndex vertexIndex = (TinkerTransactionIndex) graph.vertexIndex;
             if (vertexIndex != null) vertexIndex.commit(changedVertices);
-            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+            final TinkerTransactionIndex edgeIndex = (TinkerTransactionIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.commit(changedEdges);
+
+            // update vector indices
+            if (graph.vertexVectorIndex != null) ((TinkerTransactionVectorIndex) graph.vertexVectorIndex).commit(changedVertices);
+            if (graph.edgeVectorIndex != null) ((TinkerTransactionVectorIndex) graph.edgeVectorIndex).commit(changedEdges);
 
             // commit all changes
             changedVertices.forEach(v -> v.commit(txVersion));
@@ -190,10 +193,14 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
             changedEdges.forEach(e -> e.rollback());
 
             // also revert indices update
-            final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+            final TinkerTransactionIndex vertexIndex = (TinkerTransactionIndex) graph.vertexIndex;
             if (vertexIndex != null) vertexIndex.rollback();
-            final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
+            final TinkerTransactionIndex edgeIndex = (TinkerTransactionIndex) graph.edgeIndex;
             if (edgeIndex != null) edgeIndex.rollback();
+
+            // revert vector indices update
+            if (graph.vertexVectorIndex != null) ((TinkerTransactionVectorIndex) graph.vertexVectorIndex).rollback();
+            if (graph.edgeVectorIndex != null) ((TinkerTransactionVectorIndex) graph.edgeVectorIndex).rollback();
 
             throw ex;
         } finally {
@@ -234,10 +241,14 @@ final class TinkerTransaction extends AbstractThreadLocalTransaction {
         if (null != changedEdges) changedEdges.forEach(e -> e.rollback());
 
         // rollback indices
-        final TinkerTransactionalIndex vertexIndex = (TinkerTransactionalIndex) graph.vertexIndex;
+        final TinkerTransactionIndex vertexIndex = (TinkerTransactionIndex) graph.vertexIndex;
         if (vertexIndex != null) vertexIndex.rollback();
-        final TinkerTransactionalIndex edgeIndex = (TinkerTransactionalIndex) graph.edgeIndex;
-        if (vertexIndex != null) edgeIndex.rollback();
+        final TinkerTransactionIndex edgeIndex = (TinkerTransactionIndex) graph.edgeIndex;
+        if (edgeIndex != null) edgeIndex.rollback();
+
+        // rollback vector indices
+        if (graph.vertexVectorIndex != null) ((TinkerTransactionVectorIndex) graph.vertexVectorIndex).rollback();
+        if (graph.edgeVectorIndex != null) ((TinkerTransactionVectorIndex) graph.edgeVectorIndex).rollback();
 
         // cleanup unused containers
         if (null != changedVertices)
