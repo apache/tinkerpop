@@ -298,7 +298,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
             sb.append("uuid.New()");
             return null;
         }
-        sb.append("uuid.Parse(");
+        sb.append("uuid.MustParse(");
         visitStringLiteral(ctx.stringLiteral());
         sb.append(")");
         return null;
