@@ -1105,7 +1105,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
             return null;
         }
         sb.append("Guid.Parse(");
-        visitStringLiteral(ctx.stringLiteral());
+        sb.append(ctx.stringLiteral().getText());
         sb.append(")");
         return null;
     }
