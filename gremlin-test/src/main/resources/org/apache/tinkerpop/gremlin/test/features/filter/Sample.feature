@@ -25,7 +25,7 @@ Feature: Step - sample()
       g.V().sample(1).by("age").by(T.id)
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "Sample step can only have one by modulator"
 
   Scenario: g_E_sampleX1X
     Given the modern graph

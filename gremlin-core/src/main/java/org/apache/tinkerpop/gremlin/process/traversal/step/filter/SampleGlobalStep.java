@@ -70,9 +70,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> probabilityTraversal) {
         if (this.probabilityTraversal != initialTraversal)
-        {
             throw new IllegalStateException("Sample step can only have one by modulator");
-        }
         this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 
