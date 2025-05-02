@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 /**
  * @author Valentyn Kahamlyk
  */
-final class TinkerTransactionalIndex<T extends TinkerElement> extends AbstractTinkerIndex<T> {
+final class TinkerTransactionIndex<T extends TinkerElement> extends AbstractTinkerIndex<T> {
 
     protected Map<String, Map<Object, Set<TinkerElementContainer<T>>>> index = new ConcurrentHashMap<>();
     protected ThreadLocal<Map<String, Map<Object, Set<T>>>> txIndex =
             ThreadLocal.withInitial(() -> new ConcurrentHashMap<>());
 
-    public TinkerTransactionalIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
+    public TinkerTransactionIndex(final TinkerTransactionGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
     }
 
