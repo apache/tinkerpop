@@ -340,6 +340,8 @@ const gremlins = {
     g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X: [function({g}) { return g.V().hasLabel("person").order().by("age").values("name").skip(1) }], 
     g_VX1X_valuesXageX_rangeXlocal_20_30X: [function({g, vid1}) { return g.V(vid1).values("age").range(Scope.local, 20, 30) }], 
     g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX: [function({g, vid1}) { return g.V().map(__.in_().hasId(vid1)).limit(2).values("name") }], 
+    g_V_aggregateXxX_byXnameX_byXageX_capXxX: [function({g}) { return g.V().aggregate("x").by("name").by("age").cap("x") }], 
+    g_V_aggregateXScope_local_xX_byXnameX_byXageX_capXxX: [function({g}) { return g.V().aggregate(Scope.local, "x").by("name").by("age").cap("x") }], 
     g_V_rangeX2_1X: [function({g}) { return g.V().range(2, 1) }], 
     g_V_rangeX3_2X: [function({g}) { return g.V().range(3, 2) }], 
     g_E_sampleX1X: [function({g}) { return g.E().sample(1) }], 
