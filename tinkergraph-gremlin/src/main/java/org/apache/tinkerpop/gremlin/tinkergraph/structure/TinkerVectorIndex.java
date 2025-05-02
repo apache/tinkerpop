@@ -47,11 +47,6 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
     protected Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
 
     /**
-     * Default number of nearest neighbors to return
-     */
-    private static final int DEFAULT_K = 10;
-
-    /**
      * Default M parameter for HNSW index
      */
     private static final int DEFAULT_M = 16;
@@ -233,24 +228,31 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
      * @param k      the number of nearest neighbors to return
      * @return a list of elements sorted by distance
      */
-    public List<T> findNearest(final String key, final float[] vector, final int k) {
+    public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k) {
+        if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
+            throw new IllegalArgumentException("The key '" + key + "' is not indexed");
+
+        final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
+        final List<SearchResult<ElementItem, Float>> nearest = index.findNearest(vector, k);
+        return nearest.stream().map(sr ->
+                new TinkerIndexElement<>(sr.item().element, sr.distance())).collect(Collectors.toList());
+    }
+
+    /**
+     * Searches for nearest neighbors in the vector index.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of elements sorted by distance
+     */
+    public List<T> findNearestElements(final String key, final float[] vector, final int k) {
         if (!this.indexedKeys.contains(key) || !this.vectorIndices.containsKey(key))
             throw new IllegalArgumentException("The key '" + key + "' is not indexed");
 
         final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
         final List<SearchResult<ElementItem, Float>> nearest = index.findNearest(vector, k);
         return nearest.stream().map(sr -> sr.item().element).collect(Collectors.toList());
-    }
-
-    /**
-     * Searches for nearest neighbors in the vector index with the default k.
-     *
-     * @param key    the property key
-     * @param vector the query vector
-     * @return a list of elements sorted by distance
-     */
-    public List<T> findNearest(final String key, final float[] vector) {
-        return findNearest(key, vector, DEFAULT_K);
     }
 
     /**

@@ -21,12 +21,17 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.util.List;
+
 /**
  * Base class for representing a vector index for performing nearest neighbor searches.
  *
  * @param <T> the type of elements stored in the vector index
  */
 public abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTinkerIndex<T> {
+    /**
+     * Default number of nearest neighbors to return
+     */
+    private static final int DEFAULT_K = 10;
 
     protected AbstractTinkerVectorIndex(final AbstractTinkerGraph graph, final Class<T> indexClass) {
         super(graph, indexClass);
@@ -40,7 +45,7 @@ public abstract class AbstractTinkerVectorIndex<T extends Element> extends Abstr
      * @param k      the number of nearest neighbors to return
      * @return a list of elements sorted by distance
      */
-    public abstract List<T> findNearest(final String key, final float[] vector, final int k);
+    public abstract List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector, final int k);
 
     /**
      * Searches for nearest neighbors in the vector index with the default k.
@@ -49,6 +54,28 @@ public abstract class AbstractTinkerVectorIndex<T extends Element> extends Abstr
      * @param vector the query vector
      * @return a list of elements sorted by distance
      */
-    public abstract List<T> findNearest(final String key, final float[] vector);
+    public List<TinkerIndexElement<T>> findNearest(final String key, final float[] vector) {
+        return findNearest(key, vector, DEFAULT_K);
+    }
 
+    /**
+     * Searches for nearest neighbors in the vector index.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of elements sorted by distance
+     */
+    public abstract List<T> findNearestElements(final String key, final float[] vector, final int k);
+
+    /**
+     * Searches for nearest neighbors in the vector index with the default k.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of elements sorted by distance
+     */
+    public List<T> findNearestElements(final String key, final float[] vector) {
+        return findNearestElements(key, vector, DEFAULT_K);
+    }
 }

@@ -41,7 +41,7 @@ import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
  */
 public class TinkerTextSearchFactory<I, R> extends TinkerServiceRegistry.TinkerServiceFactory<I, R> implements Service<I, R> {
 
-    public static final String NAME = "tinker.search";
+    public static final String NAME = "tinker.search.text";
 
     public interface Params {
         /**

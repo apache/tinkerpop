@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -294,10 +293,37 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param k      the number of nearest neighbors to return
      * @return a list of vertices sorted by distance
      */
-    public List<Vertex> findNearestVertices(final String key, final float[] vector, final int k) {
+    public List<TinkerIndexElement<TinkerVertex>> findNearestVertices(final String key, final float[] vector, final int k) {
         if (null == this.vertexVectorIndex)
             throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
-        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector, k));
+        return this.vertexVectorIndex.findNearest(key, vector, k);
+    }
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of vertices sorted by distance
+     */
+    public List<TinkerIndexElement<TinkerVertex>> findNearestVertices(final String key, final float[] vector) {
+        if (null == this.vertexVectorIndex)
+            throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
+        return this.vertexVectorIndex.findNearest(key, vector);
+    }
+
+    /**
+     * Find the nearest vertices to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of vertices sorted by distance
+     */
+    public List<TinkerVertex> findNearestVerticesOnly(final String key, final float[] vector, final int k) {
+        if (null == this.vertexVectorIndex)
+            throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
+        return this.vertexVectorIndex.findNearestElements(key, vector, k);
     }
 
     /**
@@ -308,10 +334,37 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param vector the query vector
      * @return a list of vertices sorted by distance
      */
-    public List<Vertex> findNearestVertices(final String key, final float[] vector) {
+    public List<TinkerVertex> findNearestVerticesOnly(final String key, final float[] vector) {
         if (null == this.vertexVectorIndex)
             throw new IllegalStateException("Vector index not created for vertices on key: '" + key + "'");
-        return new ArrayList<>(this.vertexVectorIndex.findNearest(key, vector));
+        return this.vertexVectorIndex.findNearestElements(key, vector);
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @param k      the number of nearest neighbors to return
+     * @return a list of vertices sorted by distance
+     */
+    public List<TinkerIndexElement<TinkerEdge>> findNearestEdges(final String key, final float[] vector, final int k) {
+        if (null == this.edgeVectorIndex)
+            throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
+        return this.edgeVectorIndex.findNearest(key, vector, k);
+    }
+
+    /**
+     * Find the nearest edges to the given vector in the vector index for the specified property key.
+     *
+     * @param key    the property key
+     * @param vector the query vector
+     * @return a list of vertices sorted by distance
+     */
+    public List<TinkerIndexElement<TinkerEdge>> findNearestEdges(final String key, final float[] vector) {
+        if (null == this.edgeVectorIndex)
+            throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
+        return this.edgeVectorIndex.findNearest(key, vector);
     }
 
     /**
@@ -322,10 +375,10 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param k      the number of nearest neighbors to return
      * @return a list of edges sorted by distance
      */
-    public List<Edge> findNearestEdges(final String key, final float[] vector, final int k) {
+    public List<TinkerEdge> findNearestEdgesOnly(final String key, final float[] vector, final int k) {
         if (null == this.edgeVectorIndex)
             throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
-        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector, k));
+        return new ArrayList<>(this.edgeVectorIndex.findNearestElements(key, vector, k));
     }
 
     /**
@@ -336,10 +389,10 @@ public abstract class AbstractTinkerGraph implements Graph {
      * @param vector the query vector
      * @return a list of edges sorted by distance
      */
-    public List<Edge> findNearestEdges(final String key, final float[] vector) {
+    public List<TinkerEdge> findNearestEdgesOnly(final String key, final float[] vector) {
         if (null == this.edgeVectorIndex)
             throw new IllegalStateException("Vector index not created for edges on key: '" + key + "'");
-        return new ArrayList<>(this.edgeVectorIndex.findNearest(key, vector));
+        return new ArrayList<>(this.edgeVectorIndex.findNearestElements(key, vector));
     }
 
     ///////////// Utility methods ///////////////
