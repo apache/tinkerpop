@@ -70,9 +70,7 @@ public final class AggregateGlobalStep<S> extends AbstractStep<S, S> implements 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> aggregateTraversal) {
         if (this.aggregateTraversal != null)
-        {
             throw new IllegalStateException("Aggregate step can only have one by modulator");
-        }
         this.aggregateTraversal = this.integrateChild(aggregateTraversal);
     }
 
