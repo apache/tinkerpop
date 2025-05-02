@@ -28,7 +28,7 @@ namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
     /// </summary>
     public class ComputerFinalizationStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = OptimizationNamespace + nameof(ComputerFinalizationStrategy);
+        private const string JavaFqcn = ComputerFinalizationNamespace + nameof(ComputerFinalizationStrategy);
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ComputerFinalizationStrategy" /> class.

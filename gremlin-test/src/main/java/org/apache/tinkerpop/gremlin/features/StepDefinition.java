@@ -39,9 +39,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -49,6 +52,7 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.collection.IsIterableContainingInAnyOrder;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.core.IsEqual;
@@ -58,7 +62,9 @@ import org.junit.AssumptionViolatedException;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.Every.everyItem;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.StringContains.containsStringIgnoringCase;
@@ -72,6 +78,7 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -121,6 +128,12 @@ public final class StepDefinition {
             final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
             return String.format("[%s]", listItems);
         }));
+        add(Pair.with(Pattern.compile("s\\[\\]"), s -> String.format("{}")));
+        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
+            final String[] items = s.split(",");
+            final String listItems = Stream.of(items).map(String::trim).map(x -> convertToString(x)).collect(Collectors.joining(","));
+            return String.format("{%s}", listItems);
+        }));
         add(Pair.with(Pattern.compile("d\\[(NaN)\\]"), s -> "NaN"));
         add(Pair.with(Pattern.compile("d\\[(Infinity)\\]"), s -> "Infinity"));
         add(Pair.with(Pattern.compile("d\\[(-Infinity)\\]"), s -> "-Infinity"));
@@ -147,28 +160,18 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), s -> String.format("Direction.%s", s)));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), s -> String.format("Merge.%s", s)));
+        add(Pair.with(Pattern.compile("(null)"), s -> "null"));
+        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
+        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
 
         // the following force ignore conditions as they cannot be parsed by the grammar at this time. the grammar will
-        // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way for certain
-        // cases like the lambda item which likely won't make it to the grammar as it's raw groovy.
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
+        // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way
         add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Edge as a parameter which is not supported by gremlin-language");
         }));
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
         }));
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a empty Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Set as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("(null)"), s -> "null"));
-        add(Pair.with(Pattern.compile("(true)"), s -> "true"));
-        add(Pair.with(Pattern.compile("(false)"), s -> "false"));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -238,10 +241,6 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("D\\[(.*)\\]"), Direction::valueOf));
         add(Pair.with(Pattern.compile("M\\[(.*)\\]"), Merge::valueOf));
 
-        add(Pair.with(Pattern.compile("c\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a lambda as a parameter which is not supported by gremlin-language");
-        }));
-
         add(Pair.with(Pattern.compile("(null)"), s -> null));
         add(Pair.with(Pattern.compile("(true)"), s -> true));
         add(Pair.with(Pattern.compile("(false)"), s -> false));
@@ -307,6 +306,10 @@ public final class StepDefinition {
 
     @When("iterated to list")
     public void iteratedToList() {
+        if ((null == traversal) && (error != null)) {
+            return; // Error probably occurred during traversal construction. Skip to prevent NPE.
+        }
+
         try {
             result = traversal.toList();
         } catch (Exception ex) {
@@ -316,6 +319,10 @@ public final class StepDefinition {
 
     @When("iterated next")
     public void iteratedNext() {
+        if ((null == traversal) && (error != null)) {
+            return; // Error probably occurred during traversal construction. Skip to prevent NPE.
+        }
+
         try {
             result = traversal.next();
         } catch (Exception ex) {
@@ -372,6 +379,91 @@ public final class StepDefinition {
             assertEquals(val.intValue(), ((Map) result).size());
         else
             fail(String.format("Missing an assert for this type", result.getClass()));
+    }
+
+    @Then("the result should be a subgraph with the following")
+    public void theResultShouldBeASubgraphWithEdges(final DataTable dataTable) {
+        assertThatNoErrorWasThrown();
+
+        // result should be a graph
+        assertThat(result, instanceOf(Graph.class));
+
+        // pop a graph traversal source from what was returned so we can use it for assertions
+        final GraphTraversalSource sg = ((Graph) result).traversal();
+
+        // the first item in the datatable tells us what we are asserting
+        final boolean assertingVertices = dataTable.asList().get(0).equals("vertices") ? true : false;
+
+        if (assertingVertices) {
+            // grab the expected vertex in the subgraph
+            final List<Vertex> expectedVertices = dataTable.asList().stream().skip(1).
+                    map(this::convertToObject).
+                    map(v -> (Vertex) v).collect(Collectors.toList());
+
+            // expected vertices match the count in the graph
+            assertEquals(expectedVertices.size(), sg.V().count().next().intValue());
+
+            // assert the structure of the subgraph. there should be no references here as this is serialized as
+            // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
+            // of this to do a complete assertion. there is only support for the modern graph right now but it
+            // wouldn't be hard to add others.
+            for (Vertex vertex : expectedVertices) {
+                final String variableKey = vertex.label().equals("person") ? "age" : "lang";
+
+                assertThat(sg.V(vertex.id()).has(vertex.label(), "name", eq(vertex.value("name"))).
+                                has(variableKey, eq(vertex.value(variableKey))).hasNext(),
+                        equalTo(true));
+            }
+        } else {
+            // grab the expected edges in the subgraph
+            final List<Edge> expectedEdges = dataTable.asList().stream().skip(1).
+                    map(this::convertToObject).
+                    map(e -> (Edge) e).collect(Collectors.toList());
+
+            // expected edges match the count in the graph
+            assertEquals(expectedEdges.size(), sg.E().count().next().intValue());
+
+            // assert the structure of the subgraph. there should be no references here as this is serialized as
+            // a full TinkerGraph. also, ids should be the same as they are in the source graph so we can use all
+            // of this to do a complete assertion. there is only support for the modern graph right now but it
+            // wouldn't be hard to add others.
+            for (Edge edge : expectedEdges) {
+                assertThat(sg.E(edge.id()).
+                                has(edge.label(), "weight", eq(edge.value("weight"))).
+                                filter(__.outV().hasId(edge.outVertex().id())).
+                                filter(__.inV().hasId(edge.inVertex().id())).hasNext(),
+                        equalTo(true));
+            }
+        }
+    }
+
+    @Then("the result should be a tree with a structure of")
+    public void theGraphShouldBeATreeWithAStructureOf(final String asciiTree) {
+        assertThatNoErrorWasThrown();
+
+        // result should be a tree
+        assertThat(result, instanceOf(Tree.class));
+        final Tree tree = (Tree) result;
+
+        // empty list is an empty tree
+        final List<TreeNode> roots = parseTree(asciiTree);
+
+        // Validate that the tree matches the data in roots
+        assertEquals(roots.size(), tree.keySet().size());
+        for (TreeNode root : roots) {
+            assertThat(String.format("Tree not matching at %s", root.getValue()),
+                    tree.containsKey(root.getValue()), CoreMatchers.is(true));
+            validateTreeStructure((Tree) tree.get(root.getValue()), root);
+        }
+    }
+
+    private void validateTreeStructure(final Tree<?> actualTree, final TreeNode expectedNode) {
+        assertEquals(expectedNode.getChildren().size(), actualTree.keySet().size());
+        for (TreeNode child : expectedNode.getChildren()) {
+            assertThat(String.format("Tree not matching at %s", child.getValue()),
+                    actualTree.containsKey(child.getValue()), CoreMatchers.is(true));
+            validateTreeStructure(actualTree.get(child.getValue()), child);
+        }
     }
 
     @Then("the graph should return {int} for count of {string}")
@@ -635,6 +727,72 @@ public final class StepDefinition {
             }
         }
         return matchers;
+    }
+
+    /**
+     * Parse the tree structure as taken from the Gherkin feature file.
+     */
+    public List<TreeNode> parseTree(final String asciiTree) {
+        if (asciiTree.isEmpty()) return Collections.emptyList();
+
+        final List<String> lines = Arrays.asList(asciiTree.split(System.lineSeparator()));
+
+        final List<TreeNode> roots = new ArrayList<>();
+        final Map<Integer, TreeNode> levelMap = new HashMap<>();
+
+        for (String line : lines) {
+            final int level = countLeadingCharacters(line);
+            final String value = line.replace("|--", "").trim();
+
+            final TreeNode node = new TreeNode(convertToObject(value));
+            if (level == 0) {
+                roots.add(node);
+            } else {
+                levelMap.get(level - 1).addChild(node);
+            }
+            levelMap.put(level, node);
+        }
+
+        return roots;
+    }
+
+    private static int countLeadingCharacters(final String line) {
+        int count = 0;
+        for (char c : line.toCharArray()) {
+            if (c == ' ') count++;
+            else break;
+        }
+        return count / 3; // Assuming 3 spaces per level
+    }
+
+    /**
+     * An basic internal tree-structure to hold the expected tree defined in the gherkin feature files.
+     */
+    private static class TreeNode {
+        private final Object value;
+        private final List<TreeNode> children;
+
+        public TreeNode(final Object value) {
+            this.value = value;
+            this.children = new ArrayList<>();
+        }
+
+        public void addChild(final TreeNode child) {
+            this.children.add(child);
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public List<TreeNode> getChildren() {
+            return children;
+        }
+
+        @Override
+        public String toString() {
+            return value + (children.isEmpty() ? "" : " -> " + children);
+        }
     }
 
 }

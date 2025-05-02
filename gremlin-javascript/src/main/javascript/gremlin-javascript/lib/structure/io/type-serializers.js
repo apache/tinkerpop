@@ -87,10 +87,18 @@ class NumberSerializer extends TypeSerializer {
 }
 
 class DateSerializer extends TypeSerializer {
+  // only deserialize g:Date objects
+  deserialize(obj) {
+    return new Date(obj[valueKey]);
+  }
+}
+
+class OffsetDateTimeSerializer extends TypeSerializer {
+  // Date objects are serialized as OffsetDateTime by default
   serialize(item) {
     return {
-      [typeKey]: 'g:Date',
-      [valueKey]: item.getTime(),
+      [typeKey]: 'gx:OffsetDateTime',
+      [valueKey]: item.toISOString(),
     };
   }
 
@@ -100,6 +108,24 @@ class DateSerializer extends TypeSerializer {
 
   canBeUsedFor(value) {
     return value instanceof Date;
+  }
+}
+
+class ClassSerializer extends TypeSerializer {
+  serialize(item) {
+    return {
+      [typeKey]: 'g:Class',
+      [valueKey]: new item().fqcn,
+    };
+  }
+
+  canBeUsedFor(value) {
+    return (
+      typeof value === 'function' &&
+      !!value.prototype &&
+      !!value.prototype.constructor.name &&
+      new value() instanceof ts.TraversalStrategy
+    );
   }
 }
 
@@ -276,7 +302,7 @@ class TraversalStrategySerializer extends TypeSerializer {
 
     return {
       [typeKey]: 'g:' + item.constructor.name,
-      [valueKey]: conf,
+      [valueKey]: { ['fqcn']: item.fqcn, ['conf']: conf },
     };
   }
 
@@ -494,7 +520,9 @@ class SetSerializer extends ArraySerializer {
 module.exports = {
   BulkSetSerializer,
   BytecodeSerializer,
+  ClassSerializer,
   DateSerializer,
+  OffsetDateTimeSerializer,
   DirectionSerializer,
   EdgeSerializer,
   EnumSerializer,

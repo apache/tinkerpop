@@ -73,7 +73,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"l\[(.*)\]", ToList},
                 {@"s\[(.*)\]", ToSet},
                 {@"m\[(.+)\]", ToMap},
-                {@"c\[(.+)\]", ToLambda},
                 {@"t\[(.+)\]", ToT},
                 {"null", (_, __) => null},
                 {"true", (_, __) => true},
@@ -246,7 +245,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             _error = null;
         }
 
-        [Then("the result should be (\\w+)")]
+
+        [Then("the result should be a tree with a structure of")]
+        public void AssertTreeStructure(string expectedTree)
+        {
+
+        }
+
+        [Then("the result should be a subgraph with the following")]
+        public void AssertSubgraphStructure(DataTable? table = null)
+        {
+
+        }
+
+        [Then("the result should be (\\w+)\\s*")]
         public void AssertResult(string characterizedAs, DataTable? table = null)
         {
             AssertThatNoErrorWasThrown();
@@ -366,11 +378,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             var jsonMap = JsonSerializer.Deserialize<JsonElement>(stringMap, JsonDeserializingOptions);
             return ParseMapValue(jsonMap, graphName)!;
-        }
-
-        private static object ToLambda(string stringLambda, string graphName)
-        {
-            return Lambda.Groovy(stringLambda);
         }
 
         private static object ToT(string enumName, string graphName)

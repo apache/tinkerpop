@@ -41,6 +41,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.datetime;
 import static org.junit.Assert.assertEquals;
 
 public class PythonTranslatorTest {
@@ -122,7 +123,7 @@ public class PythonTranslatorTest {
 
     @Test
     public void shouldTranslateStrategies() {
-        assertEquals("g.with_strategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.has_label('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999,'strategy':'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy'}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
+        assertEquals("g.with_strategies(*[TraversalStrategy('ReadOnlyStrategy', None, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'),TraversalStrategy('SubgraphStrategy',{'checkAdjacentVertices':False,'vertices':__.has_label('person')}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'),TraversalStrategy('SeedStrategy',{'seed':999999}, 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy')]).V().has('name')",
                 translator.translate(g.withStrategies(ReadOnlyStrategy.instance(),
                         SubgraphStrategy.build().checkAdjacentVertices(false).vertices(hasLabel("person")).create(),
                         SeedStrategy.build().seed(999999).create()).
@@ -170,5 +171,19 @@ public class PythonTranslatorTest {
     private void assertTranslation(final String expectedTranslation, final Object... objs) {
         final String script = translator.translate(g.inject(objs).asAdmin().getBytecode()).getScript();
         assertEquals(String.format("g.inject(%s)", expectedTranslation), script);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTimeUTC() {
+        final String gremlinAsPython = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678Z")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.inject(datetime.datetime.fromisoformat('2023-08-02T01:23:45.678+00:00'))", gremlinAsPython);
+    }
+
+    @Test
+    public void shouldTranslateOffsetDateTime() {
+        final String gremlinAsPython = translator.translate(
+                g.inject(datetime("2023-08-02T01:23:45.678-07:00")).asAdmin().getBytecode()).getScript();
+        assertEquals("g.inject(datetime.datetime.fromisoformat('2023-08-02T01:23:45.678-07:00'))", gremlinAsPython);
     }
 }

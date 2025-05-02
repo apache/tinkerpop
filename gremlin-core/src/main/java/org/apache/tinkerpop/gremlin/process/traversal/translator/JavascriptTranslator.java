@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -142,6 +143,11 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
         @Override
         protected String getSyntax(final Date o) {
             return "new Date(" + o.getTime() + ")";
+        }
+
+        @Override
+        protected String getSyntax(final OffsetDateTime o) {
+            return "new Date('" + o.toString() + "')";
         }
 
         @Override
@@ -289,7 +295,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
                 script.append("new " + o.getStrategyClass().getSimpleName() + "(");
                 final Map<Object,Object> conf = ConfigurationConverter.getMap(o.getConfiguration());
                 script.append("{");
-                conf.entrySet().stream().filter(entry -> !entry.getKey().equals(TraversalStrategy.STRATEGY)).forEach(entry -> {
+                conf.entrySet().stream().forEach(entry -> {
                     script.append(entry.getKey().toString());
                     script.append(":");
                     convertToScript(entry.getValue()).getScript();

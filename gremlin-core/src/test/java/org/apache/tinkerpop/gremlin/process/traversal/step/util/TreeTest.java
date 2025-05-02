@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.AbstractMap;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -95,6 +97,56 @@ public class TreeTest extends StepTest {
         assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_1_1"));
         assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_2_1"));
         assertTrue(mergeTree.getObjectsAtDepth(3).contains("1_2_2"));
+    }
+
+    @Test
+    public void testPrettyPrintSingleNode() {
+        final Tree<String> tree = new Tree<>();
+        tree.put("root", new Tree<>());
+
+        final String expected = "|--root";
+        assertEquals(expected, tree.prettyPrint());
+    }
+
+    @Test
+    public void testPrettyPrintMultipleNodes() {
+        final Tree<String> tree = new Tree<>();
+        final Tree<String> child1 = new Tree<>();
+        final Tree<String> child2 = new Tree<>();
+        tree.put("root", new Tree<>());
+        tree.get("root").put("child1", child1);
+        tree.get("root").put("child2", child2);
+
+        // either can be expected since Tree doesn't maintain node order
+        final String expected1 = "|--root" + System.lineSeparator() +
+                                 "   |--child1" + System.lineSeparator() +
+                                 "   |--child2";
+        final String expected2 = "|--root" + System.lineSeparator() +
+                                 "   |--child2" + System.lineSeparator() +
+                                 "   |--child1";
+        assertThat(tree.prettyPrint(), Matchers.anyOf(Matchers.is(expected1), Matchers.is(expected2)));
+    }
+
+    @Test
+    public void testPrettyPrintNestedTree() {
+        final Tree<String> tree = new Tree<>();
+        final Tree<String> child1 = new Tree<>();
+        final Tree<String> grandchild = new Tree<>();
+        tree.put("root", new Tree<>());
+        tree.get("root").put("child1", child1);
+        tree.get("root").get("child1").put("grandchild", grandchild);
+
+        final String expected = "|--root" + System.lineSeparator() +
+                                "   |--child1" + System.lineSeparator() +
+                                "      |--grandchild";
+        assertEquals(expected, tree.prettyPrint());
+    }
+
+    @Test
+    public void testPrettyPrintEmptyTree() {
+        final Tree<String> tree = new Tree<>();
+        final String expected = "";
+        assertEquals(expected, tree.prettyPrint());
     }
 
     private static <T> Map.Entry<T, Tree<T>> createTree(T key, Tree<T> tree) {

@@ -48,27 +48,26 @@ var parsers map[*regexp.Regexp]func(string, string) interface{}
 
 func init() {
 	parsers = map[*regexp.Regexp]func(string, string) interface{}{
-		regexp.MustCompile(`^str\[(.*)]$`): func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
-		regexp.MustCompile(`^dt\[(.*)]$`):           toDateTime,
-		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`):	 toNumeric,
-		regexp.MustCompile(`^d\[(.*)]\.[m]$`): 		 toBigDecimal,
-		regexp.MustCompile(`^d\[(.*)]\.[n]$`): 		 toBigInt,
-		regexp.MustCompile(`^d\[(.*)]\.[i]$`):       toInt32,
-		regexp.MustCompile(`^vp\[(.+)]$`):           toVertexProperty,
-		regexp.MustCompile(`^v\[(.+)]$`):            toVertex,
-		regexp.MustCompile(`^v\[(.+)]\.id$`):        toVertexId,
-		regexp.MustCompile(`^e\[(.+)]$`):            toEdge,
-		regexp.MustCompile(`^v\[(.+)]\.sid$`):       toVertexIdString,
-		regexp.MustCompile(`^e\[(.+)]\.id$`):        toEdgeId,
-		regexp.MustCompile(`^e\[(.+)]\.sid$`):       toEdgeIdString,
-		regexp.MustCompile(`^p\[(.+)]$`):            toPath,
-		regexp.MustCompile(`^l\[(.*)]$`):            toList,
-		regexp.MustCompile(`^s\[(.*)]$`):            toSet,
-		regexp.MustCompile(`^m\[(.+)]$`):            toMap,
-		regexp.MustCompile(`^c\[(.+)]$`):            toLambda,
-		regexp.MustCompile(`^t\[(.+)]$`):            toT,
-		regexp.MustCompile(`^D\[(.+)]$`):            toDirection,
-		regexp.MustCompile(`^M\[(.+)]$`):            toMerge,
+		regexp.MustCompile(`^str\[(.*)]$`):        func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
+		regexp.MustCompile(`^dt\[(.*)]$`):         toDateTime,
+		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`): toNumeric,
+		regexp.MustCompile(`^d\[(.*)]\.[m]$`):     toBigDecimal,
+		regexp.MustCompile(`^d\[(.*)]\.[n]$`):     toBigInt,
+		regexp.MustCompile(`^d\[(.*)]\.[i]$`):     toInt32,
+		regexp.MustCompile(`^vp\[(.+)]$`):         toVertexProperty,
+		regexp.MustCompile(`^v\[(.+)]$`):          toVertex,
+		regexp.MustCompile(`^v\[(.+)]\.id$`):      toVertexId,
+		regexp.MustCompile(`^e\[(.+)]$`):          toEdge,
+		regexp.MustCompile(`^v\[(.+)]\.sid$`):     toVertexIdString,
+		regexp.MustCompile(`^e\[(.+)]\.id$`):      toEdgeId,
+		regexp.MustCompile(`^e\[(.+)]\.sid$`):     toEdgeIdString,
+		regexp.MustCompile(`^p\[(.+)]$`):          toPath,
+		regexp.MustCompile(`^l\[(.*)]$`):          toList,
+		regexp.MustCompile(`^s\[(.*)]$`):          toSet,
+		regexp.MustCompile(`^m\[(.+)]$`):          toMap,
+		regexp.MustCompile(`^t\[(.+)]$`):          toT,
+		regexp.MustCompile(`^D\[(.+)]$`):          toDirection,
+		regexp.MustCompile(`^M\[(.+)]$`):          toMerge,
 	}
 }
 
@@ -111,11 +110,14 @@ func parseValue(value string, graphName string) interface{} {
 
 // Parse dateTime.
 func toDateTime(stringVal, graphName string) interface{} {
-	val, err := time.Parse(time.RFC3339, stringVal)
+	val, err := time.Parse(time.RFC3339Nano, stringVal)
 	if err != nil {
 		return nil
 	}
-	return val
+	_, os := val.Zone()
+	// go doesn't expose getting the abbreviated zone names from offset despite parsing into them, so we'll need
+	// to update the location into UTC+/-HH:SS format for evaluation purposes
+	return val.In(gremlingo.GetTimezoneFromOffset(os))
 }
 
 // Parse numeric.
@@ -303,11 +305,6 @@ func parseMapValue(mapVal interface{}, graphName string) interface{} {
 		// Not supported types.
 		return nil
 	}
-}
-
-// Parse lambda.
-func toLambda(name, graphName string) interface{} {
-	return &gremlingo.Lambda{Script: name}
 }
 
 func toT(name, graphName string) interface{} {
@@ -959,7 +956,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

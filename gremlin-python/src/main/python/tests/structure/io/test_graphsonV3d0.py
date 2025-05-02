@@ -295,10 +295,28 @@ class TestGraphSONReader:
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
         pts = calendar.timegm(expected.utctimetuple()) + expected.microsecond / 1e6
         ts = int(round(pts * 1000))
-        dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Date", "@value": ts}))
-        assert isinstance(dt, datetime.datetime)
+        output = self.graphson_reader.read_object(json.dumps({"@type": "g:Date", "@value": ts}))
+        assert isinstance(output, datetime.datetime)
         # TINKERPOP-1848
-        assert dt == expected
+        assert expected == output
+
+    def test_offsetdatetime(self):
+        tz = datetime.timezone(datetime.timedelta(seconds=36000))
+        ms = 12345678912
+        expected = datetime.datetime(2022, 5, 20, tzinfo=tz) + datetime.timedelta(microseconds=ms)
+        output = self.graphson_reader.read_object(json.dumps({"@type": "gx:OffsetDateTime", "@value": expected.isoformat()}))
+        assert isinstance(output, datetime.datetime)
+        assert expected == output
+
+    def test_offsetdatetime_zulu(self):
+        tz = datetime.timezone.utc
+        ms = 12345678912
+        expected = datetime.datetime(2022, 5, 20, tzinfo=tz) + datetime.timedelta(microseconds=ms)
+        # simulate zulu format
+        expected_zulu = expected.isoformat()[:-6] + 'Z'
+        output = self.graphson_reader.read_object(json.dumps({"@type": "gx:OffsetDateTime", "@value": expected_zulu}))
+        assert isinstance(output, datetime.datetime)
+        assert expected == output
 
     def test_timestamp(self):
         dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
@@ -427,12 +445,9 @@ class TestGraphSONWriter:
         assert result == json.loads(self.graphson_writer.write_object(P.within(1)))
 
     def test_strategies(self):
-        # we have a proxy model for now given that we don't want to have to have g:XXX all registered on the 
-        # Gremlin traversal machine (yet)
-        assert {"@type": "g:SubgraphStrategy", "@value": {}} == json.loads(
+        assert {"@type": "g:SubgraphStrategy", "@value": {'conf': {}, 'fqcn': 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'}} == json.loads(
             self.graphson_writer.write_object(SubgraphStrategy))
-        assert {"@type": "g:SubgraphStrategy", "@value": {
-            "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}} == json.loads(
+        assert {"@type": "g:SubgraphStrategy", "@value": {'conf': { "vertices": {"@type": "g:Bytecode", "@value": {"step": [["has", "name", "marko"]]}}}, 'fqcn': 'org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy'}} == json.loads(
             self.graphson_writer.write_object(SubgraphStrategy(vertices=__.has("name", "marko"))))
 
     def test_graph(self):

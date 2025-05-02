@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        tags = "not @RemoteOnly and not @GraphComputerVerificationElementSupported",
+        tags = World.GRAPHCOMPUTER_TAG_FILTER,
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = TinkerTransactionGraphComputerFeatureTest.TinkerGraphGuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },

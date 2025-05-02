@@ -58,6 +58,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { "g:T", new TDeserializer() },
 
             //Extended
+            { "gx:OffsetDateTime", new OffsetDateTimeDeserializer() },
             { "gx:BigDecimal", new DecimalConverter() },
             { "gx:Duration", new DurationDeserializer() },
             { "gx:BigInteger", new BigIntegerDeserializer() },

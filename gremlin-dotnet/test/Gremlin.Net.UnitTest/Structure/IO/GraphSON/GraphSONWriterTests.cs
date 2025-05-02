@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Process.Traversal.Strategy.Optimization;
+using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Xunit;
@@ -232,7 +234,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
 
             var graphSon = writer.WriteObject(dateTimeOffset);
 
-            const string expected = "{\"@type\":\"g:Date\",\"@value\":1475583442552}";
+            const string expected = "{\"@type\":\"gx:OffsetDateTime\",\"@value\":\"2016-10-04T12:17:22.5520000+00:00\"}";
             Assert.Equal(expected, graphSon);
         }
 
@@ -480,14 +482,50 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializeTypeToItsObject(int version)
+        public void ShouldSerializeReadOnlyStrategy(int version)
         {
             var writer = CreateGraphSONWriter(version);
-            var type = typeof(SubgraphStrategy);
+            var readonlyStrategy = new ReadOnlyStrategy();
+
+            var graphSon = writer.WriteObject(readonlyStrategy);
+
+            const string expected = "{\"@type\":\"g:ReadOnlyStrategy\",\"@value\":{\"fqcn\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy\",\"conf\":{}}}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeSubgraphStrategyEmptyConfig(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var readonlyStrategy = new SubgraphStrategy();
+
+            var graphSon = writer.WriteObject(readonlyStrategy);
+
+            const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{\"fqcn\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy\",\"conf\":{}}}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeSubgraphStrategy(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var readonlyStrategy = new SubgraphStrategy(vertices: __.HasLabel("person"));
+
+            var graphSon = writer.WriteObject(readonlyStrategy);
+
+            const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{\"fqcn\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy\",\"conf\":{\"vertices\":{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"hasLabel\",\"person\"]]}}}}}";
+            Assert.Equal(expected, graphSon);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeClass(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var type = typeof(InlineFilterStrategy);
 
             var graphSon = writer.WriteObject(type);
 
-            const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{}}";
+            const string expected = "{\"@type\":\"g:Class\",\"@value\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy\"}";
             Assert.Equal(expected, graphSon);
         }
 

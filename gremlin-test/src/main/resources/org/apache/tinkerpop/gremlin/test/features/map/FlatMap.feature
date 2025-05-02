@@ -34,3 +34,23 @@ Feature: Step - flatMap()
       | v[ripple] |
       | v[peter]  |
 
+  Scenario: g_V_valuesXnameX_flatMapXsplitXaX_unfoldX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").flatMap(split("a").unfold())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m |
+      | rko |
+      | v |
+      | d |
+      | s |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+

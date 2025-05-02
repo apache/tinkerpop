@@ -22,6 +22,7 @@ import uuid
 
 from gremlin_python.driver.serializer import GraphSONSerializersV2d0, GraphBinarySerializersV1
 from gremlin_python.process.anonymous_traversal import traversal
+from gremlin_python.process.traversal import DT
 from gremlin_python.statics import *
 
 
@@ -106,6 +107,19 @@ def test_datetime(remote_connection):
     finally:
         g.V(vid).drop().iterate()
 
+def test_offsetdatetime(remote_connection):
+    g = traversal().with_(remote_connection)
+    tz = datetime.timezone(datetime.timedelta(seconds=36000))
+    ms = 12345678912
+    dt = datetime.datetime(2022, 5, 20, tzinfo=tz) + datetime.timedelta(microseconds=ms)
+    resp = g.add_v('test_vertex').property('dt', dt).to_list()
+    vid = resp[0].id
+    try:
+        dt_prop = g.V(vid).properties('dt').to_list()[0]
+        assert isinstance(dt_prop.value, datetime.datetime)
+        assert dt_prop.value == dt
+    finally:
+        g.V(vid).drop().iterate()
 
 def test_uuid(remote_connection):
     g = traversal().with_(remote_connection)

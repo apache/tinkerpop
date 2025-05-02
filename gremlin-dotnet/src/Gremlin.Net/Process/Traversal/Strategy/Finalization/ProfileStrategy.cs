@@ -21,14 +21,14 @@
 
 #endregion
 
-namespace Gremlin.Net.Process.Traversal.Strategy.Optimization
+namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
 {
     /// <summary>
     ///      A strategy.
     /// </summary>
     public class ProfileStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = OptimizationNamespace + nameof(ProfileStrategy);
+        private const string JavaFqcn = FinalizationNamespace + nameof(ProfileStrategy);
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ProfileStrategy" /> class.

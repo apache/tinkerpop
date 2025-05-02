@@ -39,12 +39,15 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
+import static java.time.ZoneOffset.UTC;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.junit.Assert.assertEquals;
@@ -78,10 +81,8 @@ public class JavascriptTranslatorTest {
 
     @Test
     public void shouldTranslateDate() {
-        final Calendar c = Calendar.getInstance();
-        c.set(1975, Calendar.SEPTEMBER, 7);
-        final Date d = c.getTime();
-        assertTranslation(String.format("new Date(%s)", d.getTime()), d);
+        final OffsetDateTime d = OffsetDateTime.of(LocalDateTime.of(2018, 03, 22, 00, 35, 44, 741000000), UTC);
+        assertTranslation(String.format("new Date('%s')", d), d);
     }
 
     @Test

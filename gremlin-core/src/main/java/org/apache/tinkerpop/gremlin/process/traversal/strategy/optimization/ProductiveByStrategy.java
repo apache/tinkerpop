@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -40,10 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -55,17 +52,21 @@ import java.util.Set;
 public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
     public static final String PRODUCTIVE_KEYS = "productiveKeys";
 
-    private static final ProductiveByStrategy INSTANCE = new ProductiveByStrategy(Collections.emptyList());
-    private final List<String> productiveKeys;
+    private static final ProductiveByStrategy INSTANCE = new ProductiveByStrategy(Collections.emptySet());
+    private final Set<String> productiveKeys;
     private static final ConstantTraversal<?,?> nullTraversal = new ConstantTraversal<>(null);
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(ByModulatorOptimizationStrategy.class));
 
-    private ProductiveByStrategy(final List<String> productiveKeys) {
+    private ProductiveByStrategy(final Set<String> productiveKeys) {
         this.productiveKeys = productiveKeys;
     }
 
     public static ProductiveByStrategy create(final Configuration configuration) {
-        return new ProductiveByStrategy(new ArrayList<>((Collection<String>) configuration.getProperty(PRODUCTIVE_KEYS)));
+        return new ProductiveByStrategy(new HashSet<>((Collection<String>) configuration.getProperty(PRODUCTIVE_KEYS)));
+    }
+
+    public Set<String> getProductiveKeys() {
+        return productiveKeys;
     }
 
     /**
@@ -161,10 +162,9 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
 
     @Override
     public Configuration getConfiguration() {
-        final Map<String, Object> map = new HashMap<>();
-        map.put(STRATEGY, ProductiveByStrategy.class.getCanonicalName());
-        map.put(PRODUCTIVE_KEYS, this.productiveKeys);
-        return new MapConfiguration(map);
+        final Configuration conf = super.getConfiguration();
+        conf.setProperty(PRODUCTIVE_KEYS, this.productiveKeys);
+        return conf;
     }
 
     public static Builder build() {
@@ -172,7 +172,7 @@ public class ProductiveByStrategy extends AbstractTraversalStrategy<TraversalStr
     }
 
     public static class Builder {
-        private final ArrayList<String> productiveKeys = new ArrayList<>();
+        private final HashSet<String> productiveKeys = new HashSet<>();
 
         private Builder() {}
 

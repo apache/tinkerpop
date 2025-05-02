@@ -31,7 +31,12 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
             AbstractTraversalStrategy strategy = objectData;
-            return GraphSONUtil.ToTypedValue(strategy.StrategyName, writer.ToDict(strategy.Configuration));
+            var stratData = new Dictionary<string, dynamic>
+            {
+                {"fqcn", strategy.Fqcn},
+                {"conf", writer.ToDict(strategy.Configuration)},
+            };
+            return GraphSONUtil.ToTypedValue(strategy.StrategyName, stratData);
         }
     }
 }

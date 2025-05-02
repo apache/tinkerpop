@@ -204,6 +204,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1840,25 +1841,25 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Parse value of the incoming traverser as an ISO-8601 {@link Date}.
+     * Parse value of the incoming traverser as an ISO-8601 {@link OffsetDateTime}.
      *
      * @return the traversal with an appended {@link AsDateStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asDate-step" target="_blank">Reference Documentation - asDate Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Date> asDate() {
+    public default GraphTraversal<S, OffsetDateTime> asDate() {
         this.asAdmin().getBytecode().addStep(Symbols.asDate);
         return this.asAdmin().addStep(new AsDateStep<>(this.asAdmin()));
     }
 
     /**
-     * Increase value of input {@link Date}.
+     * Increase value of input {@link OffsetDateTime}.
      *
      * @return the traversal with an appended {@link DateAddStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateAdd-step" target="_blank">Reference Documentation - dateAdd Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Date> dateAdd(final DT dateToken, final int value) {
+    public default GraphTraversal<S, OffsetDateTime> dateAdd(final DT dateToken, final int value) {
         this.asAdmin().getBytecode().addStep(Symbols.dateAdd, dateToken, value);
         return this.asAdmin().addStep(new DateAddStep<>(this.asAdmin(), dateToken, value));
     }
@@ -1869,20 +1870,35 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link DateDiffStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
+     * @deprecated As of release 3.8.0, deprecated in favor of {@link GraphTraversal#dateDiff(OffsetDateTime)}.
      */
+    @Deprecated
     public default GraphTraversal<S, Long> dateDiff(final Date value) {
         this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
     }
 
     /**
-     * Returns the difference between two {@link Date} in epoch time.
+     * Returns the difference between two {@link OffsetDateTime} in epoch time.
      *
      * @return the traversal with an appended {@link DateDiffStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
      * @since 3.7.1
      */
-    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, Date> dateTraversal) {
+    public default GraphTraversal<S, Long> dateDiff(final OffsetDateTime value) {
+        this.asAdmin().getBytecode().addStep(Symbols.dateDiff, value);
+        return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), value));
+    }
+
+    /**
+     * Returns the difference between two dates in epoch time.
+     *
+     * @param dateTraversal a traversal that supplies a {@link OffsetDateTime} object ({@link Date} is also accepted for compatibility).
+     * @return the traversal with an appended {@link DateDiffStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#dateDiff-step" target="_blank">Reference Documentation - dateDiff Step</a>
+     * @since 3.7.1
+     */
+    public default GraphTraversal<S, Long> dateDiff(final Traversal<?, ?> dateTraversal) {
         this.asAdmin().getBytecode().addStep(Symbols.dateDiff, dateTraversal);
         return this.asAdmin().addStep(new DateDiffStep<>(this.asAdmin(), dateTraversal));
     }
