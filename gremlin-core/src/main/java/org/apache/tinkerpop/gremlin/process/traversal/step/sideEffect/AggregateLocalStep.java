@@ -88,9 +88,7 @@ public final class AggregateLocalStep<S> extends SideEffectStep<S> implements Si
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> storeTraversal) {
         if (this.storeTraversal != null)
-        {
             throw new IllegalStateException("Aggregate step can only have one by modulator");
-        }
         this.storeTraversal = this.integrateChild(storeTraversal);
     }
 
