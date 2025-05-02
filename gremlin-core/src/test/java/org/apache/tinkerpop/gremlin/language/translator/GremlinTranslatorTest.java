@@ -155,7 +155,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.inject(string0)",
                             "g.Inject<object>(Guid.Parse(\"f47af10b-58cc-4372-a567-0f02b2f3d479\"))",
-                            "g.Inject(uuid.Parse(\"f47af10b-58cc-4372-a567-0f02b2f3d479\"))",
+                            "g.Inject(uuid.MustParse(\"f47af10b-58cc-4372-a567-0f02b2f3d479\"))",
                             null,
                             null,
                             "g.inject(\"f47af10b-58cc-4372-a567-0f02b2f3d479\")",
