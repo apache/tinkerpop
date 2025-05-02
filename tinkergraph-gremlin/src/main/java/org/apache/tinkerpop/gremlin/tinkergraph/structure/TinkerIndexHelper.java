@@ -35,7 +35,7 @@ public final class TinkerIndexHelper {
      * @return a list of vertices sorted by distance
      */
     public static List<TinkerVertex> findNearestVertices(final AbstractTinkerGraph graph, final String key, final float[] vector, final int k) {
-        return null == graph.vertexVectorIndex ? Collections.emptyList() : graph.vertexVectorIndex.findNearest(key, vector, k);
+        return null == graph.vertexVectorIndex ? Collections.emptyList() : graph.vertexVectorIndex.findNearestElements(key, vector, k);
     }
 
     /**
@@ -47,7 +47,7 @@ public final class TinkerIndexHelper {
      * @return a list of vertices sorted by distance
      */
     public static List<TinkerVertex> findNearestVertices(final AbstractTinkerGraph graph, final String key, final float[] vector) {
-        return null == graph.vertexVectorIndex ? Collections.emptyList() : graph.vertexVectorIndex.findNearest(key, vector);
+        return null == graph.vertexVectorIndex ? Collections.emptyList() : graph.vertexVectorIndex.findNearestElements(key, vector);
     }
 
     /**
@@ -60,7 +60,7 @@ public final class TinkerIndexHelper {
      * @return a list of edges sorted by distance
      */
     public static List<TinkerEdge> findNearestEdges(final AbstractTinkerGraph graph, final String key, final float[] vector, final int k) {
-        return null == graph.edgeVectorIndex ? Collections.emptyList() : graph.edgeVectorIndex.findNearest(key, vector, k);
+        return null == graph.edgeVectorIndex ? Collections.emptyList() : graph.edgeVectorIndex.findNearestElements(key, vector, k);
     }
 
     /**
@@ -72,7 +72,7 @@ public final class TinkerIndexHelper {
      * @return a list of edges sorted by distance
      */
     public static List<TinkerEdge> findNearestEdges(final AbstractTinkerGraph graph, final String key, final float[] vector) {
-        return null == graph.edgeVectorIndex ? Collections.emptyList() : graph.edgeVectorIndex.findNearest(key, vector);
+        return null == graph.edgeVectorIndex ? Collections.emptyList() : graph.edgeVectorIndex.findNearestElements(key, vector);
     }
 
     public static List<TinkerVertex> queryVertexIndex(final AbstractTinkerGraph graph, final String key, final Object value) {

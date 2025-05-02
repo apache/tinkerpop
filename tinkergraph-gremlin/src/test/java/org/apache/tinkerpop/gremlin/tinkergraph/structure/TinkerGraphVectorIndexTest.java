@@ -36,6 +36,7 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.number.OrderingComparison.lessThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -53,7 +54,7 @@ public class TinkerGraphVectorIndexTest {
     @Parameterized.Parameter
     public AbstractTinkerGraph graph;
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {TinkerGraph.open()},
@@ -91,7 +92,7 @@ public class TinkerGraphVectorIndexTest {
 
         graph.createIndex(TinkerIndexType.VECTOR,"embedding", Vertex.class, indexConfig);
 
-        final List<Vertex> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerVertex> nearest = graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertEquals("Alice", nearest.get(0).value("name"));
@@ -111,7 +112,7 @@ public class TinkerGraphVectorIndexTest {
         g.V().has("name", "Bob").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate();
         tryCommitChanges(graph);
 
-        final List<Vertex> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerVertex> nearest = graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertEquals("Alice", nearest.get(0).value("name"));
@@ -132,7 +133,7 @@ public class TinkerGraphVectorIndexTest {
         g.V().has("name", "Bob").drop().iterate();
         tryCommitChanges(graph);
 
-        final List<Vertex> nearest = graph.findNearestVertices("embedding", new float[]{0.0f, 1.0f, 0.0f}, 2);
+        final List<TinkerVertex> nearest = graph.findNearestVerticesOnly("embedding", new float[]{0.0f, 1.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertThat(nearest.stream().noneMatch(v -> v.value("name").equals("Bob")), is(true));
@@ -153,7 +154,7 @@ public class TinkerGraphVectorIndexTest {
         assertThat(graph.getIndexedKeys(Vertex.class).contains("embedding"), is(false));
 
         try {
-            graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+            graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
             fail("Should have thrown exception since the index was removed");
         } catch (IllegalArgumentException ex) { }
     }
@@ -173,7 +174,7 @@ public class TinkerGraphVectorIndexTest {
 
         graph.createIndex(TinkerIndexType.VECTOR,"embedding", Edge.class, indexConfig);
 
-        final List<Edge> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerEdge> nearest = graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertEquals(0.8f, (float) nearest.get(0).value("strength"), 0.0001f);
@@ -195,7 +196,7 @@ public class TinkerGraphVectorIndexTest {
         g.E(edge.id()).property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate();
         tryCommitChanges(graph);
 
-        final List<Edge> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerEdge> nearest = graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertEquals(0.8f, (float) nearest.get(0).value("strength"), 0.0001f);
@@ -219,7 +220,7 @@ public class TinkerGraphVectorIndexTest {
         g.E(edge.id()).drop().iterate();
         tryCommitChanges(graph);
 
-        final List<Edge> nearest = graph.findNearestEdges("embedding", new float[]{0.0f, 1.0f, 0.0f}, 2);
+        final List<TinkerEdge> nearest = graph.findNearestEdgesOnly("embedding", new float[]{0.0f, 1.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(2, nearest.size());
         assertThat(nearest.stream().noneMatch(e -> e.value("strength").equals(0.6f)), is(true));
@@ -242,7 +243,7 @@ public class TinkerGraphVectorIndexTest {
         assertThat(graph.getIndexedKeys(Edge.class).contains("embedding"), is(false));
 
         try {
-            graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+            graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
             fail("Should have thrown exception since the index was removed");
         } catch (IllegalArgumentException ex) { }
     }
@@ -285,7 +286,7 @@ public class TinkerGraphVectorIndexTest {
         tryRollbackChanges(graph);
 
         // Bob's embedding should still be [0.0f, 1.0f, 0.0f]
-        final List<Vertex> nearest = graph.findNearestVertices("embedding", new float[]{0.0f, 1.0f, 0.0f}, 1);
+        final List<TinkerVertex> nearest = graph.findNearestVerticesOnly("embedding", new float[]{0.0f, 1.0f, 0.0f}, 1);
         assertNotNull(nearest);
         assertEquals(1, nearest.size());
         assertEquals("Bob", nearest.get(0).value("name"));
@@ -294,7 +295,7 @@ public class TinkerGraphVectorIndexTest {
     @Test
     public void shouldHandleEmptyGraphForNearestVertices() {
         graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
-        final List<Vertex> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerVertex> nearest = graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(0, nearest.size());
     }
@@ -302,29 +303,206 @@ public class TinkerGraphVectorIndexTest {
     @Test
     public void shouldHandleEmptyGraphForNearestEdges() {
         graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
-        final List<Edge> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        final List<TinkerEdge> nearest = graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
         assertNotNull(nearest);
         assertEquals(0, nearest.size());
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenIndexNotCreatedForNearestVertices() {
-        graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenIndexNotCreatedForNearestEdges() {
-        graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenIndexNotCreatedForNearestVerticesNoDefaultCount() {
-        graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f});
+        graph.findNearestVerticesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f});
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowExceptionWhenIndexNotCreatedForNearestEdgesNoDefaultCount() {
+        graph.findNearestEdgesOnly("embedding", new float[]{1.0f, 0.0f, 0.0f});
+    }
+
+    @Test
+    public void shouldFindNearestVerticesWithDefaultK() {
+        final GraphTraversalSource g = traversal().with(graph);
+        g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate();
+        g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate();
+        g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate();
+        g.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate();
+
+        tryCommitChanges(graph);
+
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+
+        final List<TinkerIndexElement<TinkerVertex>> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f});
+        assertNotNull(nearest);
+        assertEquals(4, nearest.size());
+
+        // Sort by distance first, then by "strength" to ensure deterministic order
+        nearest.sort((e1, e2) -> {
+            int distanceComparison = Float.compare(e1.getDistance(), e2.getDistance());
+            if (distanceComparison != 0) return distanceComparison;
+            return e1.getElement().value("name").toString().compareTo(e2.getElement().value("name"));
+        });
+
+        assertEquals("Alice", nearest.get(0).getElement().value("name"));
+        assertEquals("Dave", nearest.get(1).getElement().value("name"));
+        assertEquals("Bob", nearest.get(2).getElement().value("name"));
+        assertEquals("Charlie", nearest.get(3).getElement().value("name"));
+
+        // ensure that the finds are descending order given distance
+        for (int i = 0; i < nearest.size() - 1; i++) {
+            assertThat(nearest.get(i).getDistance(), is(lessThanOrEqualTo(nearest.get(i + 1).getDistance())));
+        }
+    }
+
+    @Test
+    public void shouldFindNearestVerticesWithSpecifiedK() {
+        final GraphTraversalSource g = traversal().with(graph);
+        g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate();
+        g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate();
+        g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate();
+        g.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate();
+
+        tryCommitChanges(graph);
+
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+
+        final List<TinkerIndexElement<TinkerVertex>> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        assertNotNull(nearest);
+        assertEquals(2, nearest.size());
+        assertEquals("Alice", nearest.get(0).getElement().value("name"));
+        assertEquals("Dave", nearest.get(1).getElement().value("name"));
+
+        // ensure that the finds are descending order given distance
+        for (int i = 0; i < nearest.size() - 1; i++) {
+            assertThat(nearest.get(i).getDistance(), is(lessThanOrEqualTo(nearest.get(i + 1).getDistance())));
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowExceptionWhenIndexNotCreatedForFindNearestVertices() {
+        graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f});
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowExceptionWhenIndexNotCreatedForFindNearestVerticesWithK() {
+        graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+    }
+
+    @Test
+    public void shouldHandleEmptyGraphForFindNearestVertices() {
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final List<TinkerIndexElement<TinkerVertex>> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f});
+        assertNotNull(nearest);
+        assertEquals(0, nearest.size());
+    }
+
+    @Test
+    public void shouldHandleEmptyGraphForFindNearestVerticesWithK() {
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final List<TinkerIndexElement<TinkerVertex>> nearest = graph.findNearestVertices("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        assertNotNull(nearest);
+        assertEquals(0, nearest.size());
+    }
+
+    @Test
+    public void shouldFindNearestEdgesWithDefaultK() {
+        final GraphTraversalSource g = traversal().with(graph);
+        final Vertex alice = g.addV("person").property("name", "Alice").next();
+        final Vertex bob = g.addV("person").property("name", "Bob").next();
+        final Vertex charlie = g.addV("person").property("name", "Charlie").next();
+        final Vertex dave = g.addV("person").property("name", "Dave").next();
+        g.addE("knows").from(alice).to(bob).property("embedding", new float[]{1.0f, 0.0f, 0.0f}).property("strength", 8).iterate();
+        g.addE("knows").from(bob).to(charlie).property("embedding", new float[]{0.0f, 1.0f, 0.0f}).property("strength", 6).iterate();
+        g.addE("knows").from(charlie).to(dave).property("embedding", new float[]{0.0f, 0.0f, 1.0f}).property("strength", 7).iterate();
+        g.addE("knows").from(alice).to(dave).property("embedding", new float[]{0.9f, 0.1f, 0.0f}).property("strength", 9).iterate();
+
+        tryCommitChanges(graph);
+
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
+
+        final List<TinkerIndexElement<TinkerEdge>> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f});
+        assertNotNull(nearest);
+        assertEquals(4, nearest.size());
+
+        // Sort by distance first, then by "strength" to ensure deterministic order
+        nearest.sort((e1, e2) -> {
+            int distanceComparison = Float.compare(e1.getDistance(), e2.getDistance());
+            if (distanceComparison != 0) return distanceComparison;
+            return Integer.compare((int) e1.getElement().value("strength"), (int) e2.getElement().value("strength"));
+        });
+
+        // Assert the sorted results
+        assertEquals(8, (int) nearest.get(0).getElement().value("strength"));
+        assertEquals(9, (int) nearest.get(1).getElement().value("strength"));
+        assertEquals(6, (int) nearest.get(2).getElement().value("strength"));
+        assertEquals(7, (int) nearest.get(3).getElement().value("strength"));
+
+        // Validate distances are in non-decreasing order
+        for (int i = 0; i < nearest.size() - 1; i++) {
+            assertThat(nearest.get(i).getDistance(), is(lessThanOrEqualTo(nearest.get(i + 1).getDistance())));
+        }
+    }
+
+    @Test
+    public void shouldFindNearestEdgesWithSpecifiedK() {
+        final GraphTraversalSource g = traversal().with(graph);
+        final Vertex alice = g.addV("person").property("name", "Alice").next();
+        final Vertex bob = g.addV("person").property("name", "Bob").next();
+        final Vertex charlie = g.addV("person").property("name", "Charlie").next();
+        final Vertex dave = g.addV("person").property("name", "Dave").next();
+        g.addE("knows").from(alice).to(bob).property("embedding", new float[]{1.0f, 0.0f, 0.0f}).property("strength", 8).iterate();
+        g.addE("knows").from(bob).to(charlie).property("embedding", new float[]{0.0f, 1.0f, 0.0f}).property("strength", 6).iterate();
+        g.addE("knows").from(charlie).to(dave).property("embedding", new float[]{0.0f, 0.0f, 1.0f}).property("strength", 7).iterate();
+        g.addE("knows").from(alice).to(dave).property("embedding", new float[]{0.9f, 0.1f, 0.0f}).property("strength", 9).iterate();
+
+        tryCommitChanges(graph);
+
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
+
+        final List<TinkerIndexElement<TinkerEdge>> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        assertNotNull(nearest);
+        assertEquals(2, nearest.size());
+        assertEquals(8, (int) nearest.get(0).getElement().value("strength"));
+        assertEquals(9, (int) nearest.get(1).getElement().value("strength"));
+
+        // Validate distances are in non-decreasing order
+        for (int i = 0; i < nearest.size() - 1; i++) {
+            assertThat(nearest.get(i).getDistance(), is(lessThanOrEqualTo(nearest.get(i + 1).getDistance())));
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowExceptionWhenIndexNotCreatedForFindNearestEdges() {
         graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f});
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowExceptionWhenIndexNotCreatedForFindNearestEdgesWithK() {
+        graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+    }
+
+    @Test
+    public void shouldHandleEmptyGraphForFindNearestEdges() {
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
+        final List<TinkerIndexElement<TinkerEdge>> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f});
+        assertNotNull(nearest);
+        assertEquals(0, nearest.size());
+    }
+
+    @Test
+    public void shouldHandleEmptyGraphForFindNearestEdgesWithK() {
+        graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
+        final List<TinkerIndexElement<TinkerEdge>> nearest = graph.findNearestEdges("embedding", new float[]{1.0f, 0.0f, 0.0f}, 2);
+        assertNotNull(nearest);
+        assertEquals(0, nearest.size());
     }
 
     private void tryCommitChanges(final Graph graph) {
