@@ -1505,6 +1505,11 @@ structureVertexArgument
     | variable
     ;
 
+uuidArgument
+    : uuidLiteral
+    | variable
+    ;
+
 traversalStrategyList
     : traversalStrategyExpr?
     ;
@@ -1591,6 +1596,7 @@ genericLiteral
     | nestedTraversal
     | terminatedTraversal
     | genericLiteralMap
+    | uuidLiteral
     ;
 
 genericLiteralMap
@@ -1661,6 +1667,12 @@ infLiteral
     : K_INFINITY
     | SignedInfLiteral
     ;
+
+uuidLiteral
+    : K_UUID LPAREN RPAREN
+    | K_UUID LPAREN stringLiteral RPAREN
+    ;
+
 
 nakedKey
     : Identifier
@@ -1908,6 +1920,7 @@ keyword
     | K_UNFOLD
     | K_UNION
     | K_UNTIL
+    | K_UUID
     | K_V
     | K_VALUEMAP
     | K_VALUES
@@ -2167,6 +2180,7 @@ K_TX: 'tx';
 K_UNFOLD: 'unfold';
 K_UNION: 'union';
 K_UNTIL: 'until';
+K_UUID: 'UUID';
 K_V: 'V';
 K_VALUEMAP: 'valueMap';
 K_VALUES: 'values';

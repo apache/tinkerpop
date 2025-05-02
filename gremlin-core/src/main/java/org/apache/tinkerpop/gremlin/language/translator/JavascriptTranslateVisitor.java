@@ -224,6 +224,16 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null) {
+            sb.append("uuid.v4()");
+            return null;
+        }
+        visitStringLiteral(ctx.stringLiteral());
+        return null;
+    }
+
+    @Override
     protected String getCardinalityFunctionClass() {
         return "CardinalityValue";
     }
