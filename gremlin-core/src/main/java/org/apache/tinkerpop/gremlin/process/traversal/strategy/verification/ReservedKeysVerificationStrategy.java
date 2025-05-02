@@ -29,11 +29,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This verification strategy detects property keys that should not be used by the traversal. A term may be reserved
@@ -76,9 +75,18 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
         }
     }
 
+    public Set<String> getReservedKeys() {
+        return reservedKeys;
+    }
+
     public static ReservedKeysVerificationStrategy create(final Configuration configuration) {
-        Set<String> keys = (Set) configuration.getProperty(KEYS);
-        if (null == keys) keys = new LinkedHashSet<>(DEFAULT_RESERVED_KEYS);
+        final Object listOrSet = configuration.getProperty(KEYS);
+        final Set<String> keys;
+        if (null == listOrSet)
+            keys = new LinkedHashSet<>(DEFAULT_RESERVED_KEYS);
+        else
+            keys = listOrSet instanceof Set ? (Set) listOrSet : new LinkedHashSet<>((List) listOrSet);
+
         return build()
                 .reservedKeys(keys)
                 .throwException(configuration.getBoolean(THROW_EXCEPTION, false))

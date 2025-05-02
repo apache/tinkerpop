@@ -19,8 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.ConfigurationConverter;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
@@ -228,9 +229,15 @@ final class TraversalSerializersV2 {
         public void serialize(final TraversalStrategy traversalStrategy, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeStartObject();
+            final String fqcn = traversalStrategy instanceof TraversalStrategyProxy ?
+                    ((TraversalStrategyProxy) traversalStrategy).getStrategyClass().getName() :
+                    traversalStrategy.getClass().getName();
+            jsonGenerator.writeStringField("fqcn", fqcn);
+            jsonGenerator.writeObjectFieldStart("conf");
             for (final Map.Entry<Object, Object> entry : ConfigurationConverter.getMap(traversalStrategy.getConfiguration()).entrySet()) {
                 jsonGenerator.writeObjectField((String) entry.getKey(), entry.getValue());
             }
+            jsonGenerator.writeEndObject();
             jsonGenerator.writeEndObject();
         }
     }
@@ -504,7 +511,12 @@ final class TraversalSerializersV2 {
 
     final static class TraversalStrategyProxyJacksonDeserializer<T extends TraversalStrategy> extends AbstractObjectDeserializer<TraversalStrategyProxy> {
 
-        private final Class<T> clazz;
+        private Class<T> clazz;
+
+        public TraversalStrategyProxyJacksonDeserializer() {
+            super(TraversalStrategyProxy.class);
+            this.clazz = null;
+        }
 
         public TraversalStrategyProxyJacksonDeserializer(final Class<T> clazz) {
             super(TraversalStrategyProxy.class);
@@ -513,7 +525,28 @@ final class TraversalSerializersV2 {
 
         @Override
         public TraversalStrategyProxy<T> createObject(final Map<String, Object> data) {
-            return new TraversalStrategyProxy<>(this.clazz, new MapConfiguration(data));
+            final BaseConfiguration config = new BaseConfiguration();
+
+            // if the clazz is a TraversalStrategyProxy, that means it was loaded from reference as one, rather than
+            // an explicit strategy instance like one defined as "g:HaltedTraverserStrategy". in this case, we would
+            // want to get the class right. we don't update clazz or else it gets cached in the type resolver
+            final Class clasz;
+            final Map<String,Object> mapConf = (Map<String,Object>) data.get("conf");
+            if (null == this.clazz || this.clazz == TraversalStrategyProxy.class) {
+                try {
+                    clasz = Class.forName(data.get("fqcn").toString());
+                } catch (Exception ex) {
+                    throw new IllegalArgumentException("Could not load class " + mapConf.get("fqcn").toString(), ex);
+                }
+            } else {
+                clasz = this.clazz;
+            }
+
+            config.setListDelimiterHandler(GremlinDisabledListDelimiterHandler.instance());
+            for (Map.Entry<String, Object> entry : mapConf.entrySet()) {
+                config.setProperty(entry.getKey(), entry.getValue());
+            }
+            return new TraversalStrategyProxy<>(clasz, config);
         }
     }
 }

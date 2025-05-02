@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 /**
@@ -43,5 +44,10 @@ public class OperatorExceptionTest {
     @Test(expected = ClassCastException.class)
     public void shouldThrowIfValueToSumIsNotNumeric() {
         Operator.sum.apply("1", "1");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowForAddAllIfBothArgsNotCollection() {
+        Operator.addAll.apply(Arrays.asList(1,2,3), "not a collection");
     }
 }

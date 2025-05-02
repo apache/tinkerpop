@@ -29,10 +29,11 @@ const DriverRemoteConnection = require('../../lib/driver/driver-remote-connectio
 const { Vertex, Edge, VertexProperty} = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
-const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,
-        ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
+const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, HaltedTraverserStrategy, FilterRankingStrategy,
+        OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
 const Bytecode = require('../../lib/process/bytecode');
 const helper = require('../helper');
+const {getDriverRemoteConnectionGraphSON} = require("../helper");
 const __ = statics;
 
 let connection;
@@ -224,12 +225,19 @@ describe('Traversal', function () {
       const g = traversal().with_(connection).withStrategies(new ReadOnlyStrategy());
       return g.addV().iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
     });
+    it('should allow OptionsStrategy', function() {
+      const g = traversal().with_(connection).withStrategies(new OptionsStrategy());
+      return g.V().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 6);
+      });
+    });
     it('should allow ReservedKeysVerificationStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(new ReservedKeysVerificationStrategy(false, true));
+      const g = traversal().with_(connection).withStrategies(new ReservedKeysVerificationStrategy({logWarnings: false, throwException: true}));
       return g.addV().property("id", "please-don't-use-id").iterate().then(() => assert.fail("should have tanked"), (err) => assert.ok(err));
     });
     it('should allow EdgeLabelVerificationStrategy', function() {
-      const g = traversal().with_(connection).withStrategies(new EdgeLabelVerificationStrategy(false, true));
+      const g = traversal().with_(connection).withStrategies(new EdgeLabelVerificationStrategy({logWarnings: false, throwException: true}));
       g.V().outE("created", "knows").count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 6);
@@ -246,6 +254,24 @@ describe('Traversal', function () {
         assert.ok(item1);
         assert.strictEqual(item1.value, 1);
       }, (err) => assert.fail("tanked: " + err));
+    });
+    it('should allow without HaltedTraverserStrategy', function() {
+      const c = helper.getDriverRemoteConnectionGraphSON( 'gmodern');
+      const g = traversal().with_(c).withoutStrategies(HaltedTraverserStrategy);
+      return g.V().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 6);
+        c.close();
+      });
+    });
+    it('should allow with FilterRankingStrategy', function() {
+      const c = helper.getDriverRemoteConnectionGraphSON( 'gmodern');
+      const g = traversal().with_(c).withStrategies(new FilterRankingStrategy());
+      return g.V().out().order().dedup().count().next().then(function (item1) {
+        assert.ok(item1);
+        assert.strictEqual(item1.value, 4);
+        c.close();
+      });
     });
   });
   describe("should handle tx errors if graph not support tx", function() {

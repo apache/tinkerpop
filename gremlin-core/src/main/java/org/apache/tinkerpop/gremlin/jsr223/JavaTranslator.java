@@ -241,6 +241,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                     "Could not locate method", delegate, methodName, argumentsCopy));
         }
 
+        boolean found = false;
         try {
             for (final ReflectedMethod methodx : methodCache.get(methodName)) {
                 final Method method = methodx.method;
@@ -248,7 +249,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                     final Parameter[] parameters = methodx.parameters;
                     if (parameters.length == argumentsCopy.length || methodx.hasVarArgs) {
                         final Object[] newArguments = new Object[parameters.length];
-                        boolean found = true;
+                        found = true;
                         for (int i = 0; i < parameters.length; i++) {
                             if (parameters[i].isVarArgs()) {
                                 final Class<?> parameterClass = parameters[i].getType().getComponentType();
@@ -323,8 +324,15 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                 }
             }
         } catch (final Throwable e) {
-            throw new IllegalStateException(generateMethodNotFoundMessage(
-                    e.getMessage(), null, methodName, argumentsCopy), e);
+            if (found && (e instanceof InvocationTargetException)) {
+                // get the target exception out for a better message, otherwise, it will be null.
+                final InvocationTargetException ite = (InvocationTargetException) e;
+                throw new IllegalStateException(generateMethodNotFoundMessage(
+                        ite.getTargetException().getMessage(), null, methodName, argumentsCopy), ite.getTargetException());
+            } else {
+                throw new IllegalStateException(generateMethodNotFoundMessage(
+                        e.getMessage(), null, methodName, argumentsCopy), e);
+            }
         }
 
         // if it got down here then the method was in the cache but it was never called as it could not be found

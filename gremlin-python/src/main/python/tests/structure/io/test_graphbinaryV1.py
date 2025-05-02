@@ -17,11 +17,11 @@ specific language governing permissions and limitations
 under the License.
 """
 
-import datetime
 import uuid
 import math
 
-from gremlin_python.statics import timestamp, long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType
+from datetime import datetime, timedelta, timezone
+from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType, timestamp
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge, Direction
@@ -31,7 +31,7 @@ class TestGraphBinaryReader(object):
     graphbinary_reader = GraphBinaryReader()
 
 
-class TestGraphSONWriter(object):
+class TestGraphBinaryWriter(object):
     graphbinary_writer = GraphBinaryWriter()
     graphbinary_reader = GraphBinaryReader()
 
@@ -83,12 +83,34 @@ class TestGraphSONWriter(object):
         assert x.unscaled_value == output.unscaled_value
 
     def test_date(self):
-        x = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
+        x = datetime(2016, 12, 14, 16, 14, 36, 295000)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
     def test_timestamp(self):
         x = timestamp(1481750076295 / 1000)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_offsetdatetime(self):
+        tz = timezone(timedelta(seconds=36000))
+        ms = 12345678912
+        x = datetime(2022, 5, 20, tzinfo=tz) + timedelta(microseconds=ms)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_offsetdatetime_format(self):
+        x = datetime.strptime('2022-05-20T03:25:45.678912Z', '%Y-%m-%dT%H:%M:%S.%f%z')
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_offsetdatetime_local(self):
+        x = datetime.now().astimezone()
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
+
+    def test_offsetdatetime_epoch(self):
+        x = datetime.fromtimestamp(1690934400).astimezone(timezone.utc)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
@@ -233,6 +255,6 @@ class TestGraphSONWriter(object):
         assert x == output
 
     def test_duration(self):
-        x = datetime.timedelta(seconds=1000, microseconds=1000)
+        x = timedelta(seconds=1000, microseconds=1000)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output

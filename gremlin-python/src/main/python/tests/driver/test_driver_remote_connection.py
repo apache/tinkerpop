@@ -219,15 +219,15 @@ class TestDriverRemoteConnection(object):
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
         assert shuffledResult == g.V().values("name").order().by(Order.shuffle).toList()
-        # TINKERPOP-3055
-        # g = traversal().with_(remote_connection). \
-        #     withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
-        # try:
-        #     g.addV("person").property("id", "please-don't-use-id").iterate()
-        #     assert False
-        # except GremlinServerError as gse:
-        #     assert gse.status_code == 500
         #
+        g = traversal().with_(remote_connection). \
+            withStrategies(ReservedKeysVerificationStrategy(throw_exception=True))
+        try:
+            g.addV("person").property("id", "please-don't-use-id").iterate()
+            assert False
+        except GremlinServerError as gse:
+            assert gse.status_code == 500
+
         g = traversal().with_(remote_connection).with_("x", True).with_('evaluationTimeout', 10)
         try:
             g.inject(1).sideEffect(lambda: ("Thread.sleep(1000)", "gremlin-groovy")).iterate()

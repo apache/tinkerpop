@@ -164,8 +164,8 @@ NOTE: To use <<tinkergraph-gremlin-tx, transactions>>, configure `gremlin.graph`
 `org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph`.
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex
-properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully
-qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values
+properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, `STRING` or the
+fully qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values
 for all settings is `ANY`, meaning that the graph will work with any object on the JVM as the identifier and will
 generate new identifiers from `Long` when the identifier is not user supplied.  TinkerGraph will also expect the
 user to understand the types used for identifiers when querying, meaning that `g.V(1)` and `g.V(1L)` could return

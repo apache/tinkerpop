@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
 import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
 import org.apache.tinkerpop.shaded.jackson.core.JsonToken;
@@ -155,7 +157,10 @@ public class GraphSONTypeDeserializer extends TypeDeserializerBase {
                     // Type has been detected pattern detected.
                     final JavaType typeFromId = idRes.typeFromId(deserializationContext, typeName);
 
-                    if (!baseType.isJavaLangObject() && !baseType.equals(typeFromId)) {
+                    // the type needs to match what we are deserializing with except for TraversalStrategy which gets
+                    // coerced to a TraversalStrategyProxy
+                    if (!baseType.isJavaLangObject() && !baseType.equals(typeFromId) &&
+                            !(baseType.getRawClass() == TraversalStrategyProxy.class && TraversalStrategy.class.isAssignableFrom(typeFromId.getRawClass()))) {
                         throw new InstantiationException(
                                 String.format("Cannot deserialize the value with the detected type contained in the JSON ('%s') " +
                                         "to the type specified in parameter to the object mapper (%s). " +

@@ -44,7 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {typeof(int), SingleTypeSerializers.IntSerializer},
                 {typeof(long), SingleTypeSerializers.LongSerializer},
                 {typeof(string), new StringSerializer()},
-                {typeof(DateTimeOffset), DateTimeOffsetSerializer.DateSerializer},
+                {typeof(DateTimeOffset), new OffsetDateTimeSerializer()},
                 {typeof(GremlinType), new ClassSerializer()},
                 {typeof(Type), new TypeSerializer()},
                 {typeof(double), SingleTypeSerializers.DoubleSerializer},
@@ -91,8 +91,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {DataType.Int, SingleTypeSerializers.IntSerializer},
                 {DataType.Long, SingleTypeSerializers.LongSerializer},
                 {DataType.String, new StringSerializer()},
-                {DataType.Date, DateTimeOffsetSerializer.DateSerializer},
-                {DataType.Timestamp, DateTimeOffsetSerializer.TimestampSerializer},
+                {DataType.Date, DateTimeSerializer.DateSerializer},
+                {DataType.Timestamp, DateTimeSerializer.TimestampSerializer},
                 {DataType.Class, new ClassSerializer()},
                 {DataType.Double, SingleTypeSerializers.DoubleSerializer},
                 {DataType.Float, SingleTypeSerializers.FloatSerializer},
@@ -133,6 +133,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {DataType.BulkSet, new BulkSetSerializer<List<object>>()},
                 {DataType.Char, new CharSerializer()},
                 {DataType.Duration, new DurationSerializer()},
+                {DataType.OffsetDateTime, new OffsetDateTimeSerializer()},
             };
 
         private readonly Dictionary<string, CustomTypeSerializer> _serializerByCustomTypeName =

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,11 @@ public interface Translator<S, T> {
              * Take the {@code Date} argument and convert it to a string representation in the target language.
              */
             protected abstract String getSyntax(final Date o);
+
+            /**
+             * Take the {@code OffsetDateTime} argument and convert it to a string representation in the target language.
+             */
+            protected abstract String getSyntax(final OffsetDateTime o);
 
             /**
              * Take the {@code Timestamp} argument and convert it to a string representation in the target language.
@@ -309,6 +315,9 @@ public interface Translator<S, T> {
                     return script.getBoundKeyOrAssign(withParameters, objectOrWrapper);
                 } else if (object instanceof Date) {
                     final Object objectOrWrapper = withParameters ? object : getSyntax((Date) object);
+                    return script.getBoundKeyOrAssign(withParameters, objectOrWrapper);
+                } else if (object instanceof OffsetDateTime) {
+                    final Object objectOrWrapper = withParameters ? object : getSyntax((OffsetDateTime) object);
                     return script.getBoundKeyOrAssign(withParameters, objectOrWrapper);
                 } else if (object instanceof UUID) {
                     final Object objectOrWrapper = withParameters ? object : getSyntax((UUID) object);

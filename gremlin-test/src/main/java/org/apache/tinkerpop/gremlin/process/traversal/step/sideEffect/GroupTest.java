@@ -41,7 +41,6 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
@@ -78,10 +77,6 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX();
-
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX();
-
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
 
     public abstract Traversal<Vertex, String> get_g_V_out_group_byXlabelX_selectXpersonX_unfold_outXcreatedX_name_limitX2X();
 
@@ -272,40 +267,6 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
             put("original", 771317l);
             put("", 160968l);
             put("cover", 368579l);
-        }}, traversal.next());
-        assertFalse(traversal.hasNext());
-        checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_group_byXname_substring_1X_byXconstantX1XX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_group_byXname_substring_1X_byXconstantX1XX();
-        printTraversalForm(traversal);
-        checkMap(new HashMap<String, Long>() {{
-            put("m", 1l);
-            put("v", 1l);
-            put("p", 1l);
-            put("l", 1l);
-            put("r", 1l);
-            put("j", 1l);
-        }}, traversal.next());
-        assertFalse(traversal.hasNext());
-        checkSideEffects(traversal.asAdmin().getSideEffects());
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
-        printTraversalForm(traversal);
-        checkMap(new HashMap<String, Long>() {{
-            put("m", 1l);
-            put("v", 1l);
-            put("p", 1l);
-            put("l", 1l);
-            put("r", 1l);
-            put("j", 1l);
         }}, traversal.next());
         assertFalse(traversal.hasNext());
         checkSideEffects(traversal.asAdmin().getSideEffects(), "a", HashMap.class);
@@ -604,16 +565,6 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
             return g.V().repeat(both("followedBy")).times(2).<String, Long>group("a").by("songType").by(count()).cap("a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX() {
-            return g.V().<String, Long>group().<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l));
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
-            return g.V().<String, Long>group("a").<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l)).cap("a");
         }
 
         @Override

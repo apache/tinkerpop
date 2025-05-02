@@ -23,8 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
-import java.util.Calendar;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -36,11 +38,54 @@ public class DateDiffStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.dateDiff(new Date(1690934420000L)));
+        return Collections.singletonList(__.dateDiff(OffsetDateTime.parse("2023-08-02T00:00:20Z")));
     }
 
     @Test
     public void shouldHandlePositiveValues() {
+        final OffsetDateTime now = OffsetDateTime.now(UTC);
+        final OffsetDateTime other = now.plus(Duration.ofDays(7));
+
+        assertEquals(604800L, (long) __.__(other).dateDiff(now).next());
+    }
+
+    @Test
+    public void shouldHandleNegativeValues() {
+        final OffsetDateTime now = OffsetDateTime.now(UTC);
+        final OffsetDateTime other = now.plus(Duration.ofDays(7));
+
+        assertEquals(-604800L, (long) __.__(now).dateDiff(other).next());
+    }
+
+    @Test
+    public void shouldHandleTraversalParam() {
+        final OffsetDateTime now = OffsetDateTime.now(UTC);
+        final OffsetDateTime other = now.plus(Duration.ofDays(7));
+
+        assertEquals(-604800L, (long) __.__(now).dateDiff(__.constant(other)).next());
+    }
+
+    @Test
+    public void shouldHandleNullTraversalParam() {
+        final OffsetDateTime now = OffsetDateTime.now(UTC);
+
+        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff(__.constant(null)).next());
+    }
+
+    @Test
+    public void shouldHandleNullDate() {
+        final OffsetDateTime now = OffsetDateTime.now(UTC);
+
+        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff((OffsetDateTime) null).next());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWhenInputIsNotDate() {
+        __.__("2023-08-23T00:00:00Z").dateDiff(OffsetDateTime.now(UTC)).next();
+    }
+
+    @Test
+    public void shouldHandlePositiveValuesWithDateCompatibility() {
         final Date now = new Date();
 
         final Calendar cal = Calendar.getInstance();
@@ -53,7 +98,7 @@ public class DateDiffStepTest extends StepTest {
     }
 
     @Test
-    public void shouldHandleNegativeValues() {
+    public void shouldHandleNegativeValuesWithDateCompatibility() {
         final Date now = new Date();
 
         final Calendar cal = Calendar.getInstance();
@@ -66,7 +111,7 @@ public class DateDiffStepTest extends StepTest {
     }
 
     @Test
-    public void shouldHandleTraversalParam() {
+    public void shouldHandleTraversalParamWithDateCompatibility() {
         final Date now = new Date();
 
         final Calendar cal = Calendar.getInstance();
@@ -79,21 +124,16 @@ public class DateDiffStepTest extends StepTest {
     }
 
     @Test
-    public void shouldHandleNullTraversalParam() {
+    public void shouldHandleNullTraversalParamWithDateCompatibility() {
         final Date now = new Date();
 
         assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test
-    public void shouldHandleNullDate() {
+    public void shouldHandleNullDateWithDateCompatibility() {
         final Date now = new Date();
 
         assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowWhenInputIsNotDate() {
-        __.__("2023-08-23T00:00:00Z").dateDiff(new Date()).next();
     }
 }
