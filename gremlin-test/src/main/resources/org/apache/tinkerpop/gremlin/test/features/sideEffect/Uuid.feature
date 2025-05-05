@@ -15,10 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassSideEffect @StepUuid
-Feature: Step - uuid()
+@HelperUuid @ConstructorUuid
+Feature: Helper - uuid()
 
-  Scenario: g_injectXUUIDX
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXUUIDX47af10b_58cc_4372_a567_0f02b2f3d479XX
     Given the empty graph
     And the traversal of
       """
@@ -28,3 +29,13 @@ Feature: Step - uuid()
     Then the result should be unordered
       | result |
       | uuid[f47af10b-58cc-4372-a567-0f02b2f3d479] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXUUIDXXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(UUID())
+      """
+    When iterated to list
+    Then the result should have a count of 1
