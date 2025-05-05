@@ -43,8 +43,8 @@ import java.util.Set;
  */
 public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implements TraversalParent, ByModulating, Seedable {
 
-    private final Traversal.Admin<S, Number> initialTraversal = new ConstantTraversal<>(1.0d);
-    private Traversal.Admin<S, Number> probabilityTraversal = initialTraversal;
+    private boolean detectedMutipleBy = false;
+    private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);;
     private final int amountToSample;
     private final Random random = new Random();
 
@@ -69,15 +69,18 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> probabilityTraversal) {
-        if (this.probabilityTraversal != initialTraversal)
+        if (this.detectedMutipleBy)
             throw new IllegalStateException("Sample step can only have one by modulator");
+        this.detectedMutipleBy = true;
         this.probabilityTraversal = this.integrateChild(probabilityTraversal);
     }
 
     @Override
     public void replaceLocalChild(final Traversal.Admin<?, ?> oldTraversal, final Traversal.Admin<?, ?> newTraversal) {
-        if (null != this.probabilityTraversal && this.probabilityTraversal.equals(oldTraversal))
+        if (null != this.probabilityTraversal && this.probabilityTraversal.equals(oldTraversal)) {
+            this.detectedMutipleBy = true;
             this.probabilityTraversal = this.integrateChild(newTraversal);
+        }
     }
 
     @Override
@@ -158,6 +161,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     public SampleGlobalStep<S> clone() {
         final SampleGlobalStep<S> clone = (SampleGlobalStep<S>) super.clone();
         clone.probabilityTraversal = this.probabilityTraversal.clone();
+        clone.detectedMutipleBy = this.detectedMutipleBy;
         return clone;
     }
 
