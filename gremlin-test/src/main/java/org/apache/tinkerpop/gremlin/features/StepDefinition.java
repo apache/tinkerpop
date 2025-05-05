@@ -83,6 +83,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.UUID;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeJava;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
@@ -240,7 +241,8 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.m"), BigDecimal::new));
         add(Pair.with(Pattern.compile("d\\[(.*)\\]\\.n"), BigInteger::new));
 
-        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> DatetimeHelper.parse(s)));
+        add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), DatetimeHelper::parse));
+        add(Pair.with(Pattern.compile("uuid\\[(.*)\\]"), UUID::fromString));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));

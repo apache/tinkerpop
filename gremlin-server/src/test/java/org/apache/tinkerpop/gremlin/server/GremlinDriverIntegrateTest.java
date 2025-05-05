@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -1244,5 +1245,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldFailOnInitiallyDeadHostForClusterClient() throws Exception {
         testShouldFailOnInitiallyDeadHost(true);
+    }
+
+    @Test
+    public void shouldFailOnInitiallyDeadHostForSessionClient() throws Exception {
+        testShouldFailOnInitiallyDeadHost(false);
+    }
+
+    @Test
+    public void shouldReturnUuid() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final Client client = cluster.connect().alias("g");
+            List<Result> returnedList = client.submit("g.inject(UUID())", RequestOptions.build().language("gremlin-lang").create()).all().get();
+            assertEquals(1, returnedList.size());
+            Object value = returnedList.get(0).getObject();
+            assertTrue(value instanceof UUID);
+        } finally {
+            cluster.close();
+        }
     }
 }

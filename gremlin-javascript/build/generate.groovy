@@ -56,6 +56,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
                     'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
+                    'import * as uuid from \'uuid\';\n' +
                     'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
                     '        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, \n' +
                     '        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, \n' +

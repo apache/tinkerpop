@@ -1688,6 +1688,23 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSideEffect("a", p["xx1"]).V().Both().Values<object>("name").Store("a").Cap<object>("a")}}, 
                {"g_withSideEffectXa_set_inlineX_V_both_name_storeXaX_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSideEffect("a", new HashSet<object> { "alice" }).V().Both().Values<object>("name").Store("a").Cap<object>("a")}}, 
                {"g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Store("a").By(__.OutE("created").Count()).Out().Out().Store("a").By(__.InE("created").Values<object>("weight").Sum<object>()).Cap<object>("a")}}, 
+<<<<<<< HEAD
+=======
+               {"g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE("knows").Subgraph("sg").Values<object>("name").Cap<object>("sg")}}, 
+               {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Repeat(__.BothE("created").Subgraph("sg").OutV()).Times(5).Values<object>("name").Dedup().Cap<object>("sg")}}, 
+               {"g_V_outEXnoexistX_subgraphXsgXcapXsgX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().OutE("noexist").Subgraph("sg").Cap<object>("sg")}}, 
+               {"g_VX1X_out_out_tree_byXnameX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree<object>().By("name")}}, 
+               {"g_VX1X_out_out_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree<object>()}}, 
+               {"g_V_out_tree_byXageX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Out().Tree<object>().By("age")}}, 
+               {"g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree("a").By("name").Both().Both().Cap<object>("a")}}, 
+               {"g_VX1X_out_out_treeXaX_both_both_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree("a").Both().Both().Cap<object>("a")}}, 
+               {"g_VX1X_out_out_tree_byXlabelX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree<object>().By(T.Label)}}, 
+               {"g_VX1X_out_out_treeXaX_byXlabelX_both_both_capXaX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Out().Out().Tree("a").By(T.Label).Both().Both().Cap<object>("a")}}, 
+               {"g_VX1X_out_out_out_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Out().Out().Out().Tree<object>()}}, 
+               {"g_VX1X_outE_inV_bothE_otherV_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>()}}, 
+               {"g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>().By("name").By(T.Label)}}, 
+               {"g_injectXUUIDX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Guid.Parse("f47af10b-58cc-4372-a567-0f02b2f3d479"))}}, 
+>>>>>>> 3.8-dev
             };
 
         public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)

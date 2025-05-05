@@ -1350,6 +1350,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitPageRankStringConstant(final GremlinParser.PageRankStringConstantContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1462,9 +1466,11 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitDateArgument(final GremlinParser.DateArgumentContext ctx) { notImplemented(ctx); return null; }
-
+	@Override public T visitDateArgument(final GremlinParser.DateArgumentContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitUuidArgument(final GremlinParser.UuidArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

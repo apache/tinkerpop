@@ -40,6 +40,7 @@ const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
   [ 'vp\\[(.+)\\]', toVertexProperty ],
   [ 'dt\\[(.+)\\]', toDateTime ],
+  [ 'uuid\\[(.+)\\]', toUuid ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
@@ -395,6 +396,10 @@ function toDirection(value) {
 
 function toDateTime(value) {
   return new Date(value);
+}
+
+function toUuid(value) {
+  return value;
 }
 
 function toMerge(value) {

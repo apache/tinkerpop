@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Visitor class to handle generic literal. All visitor methods return type is Object. It maybe used as a singleton
@@ -88,6 +89,13 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     public OffsetDateTime parseDate(final GremlinParser.DateLiteralContext dateLiteral) {
         return (OffsetDateTime) visitDateLiteral(dateLiteral);
+    }
+
+    /**
+     * Parse a UUID based literal context and return the UUID.
+     */
+    public UUID parseUuid(final GremlinParser.UuidLiteralContext uuidLiteral) {
+        return (UUID) visitUuidLiteral(uuidLiteral);
     }
 
     /**
@@ -502,6 +510,16 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (ctx.stringArgument() == null)
             return DatetimeHelper.datetime();
         return DatetimeHelper.parse((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null)
+            return UUID.randomUUID();
+        return UUID.fromString((String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
