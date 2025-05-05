@@ -172,6 +172,7 @@ world.gremlins = {
     'g_VX1X_valuesXageX_dedupXlocalX_unfold': [(lambda g, vid1=None:g.V(vid1).values('age').dedup(Scope.local).unfold())], 
     'g_V_properties_dedup_count': [(lambda g:g.add_v('person').property('name', 'josh').add_v('person').property('name', 'josh').add_v('person').property('name', 'josh')), (lambda g:g.V().properties('name').dedup().count())], 
     'g_V_properties_dedup_byXvalueX_count': [(lambda g:g.add_v('person').property('name', 'josh').add_v('person').property('name', 'josh').add_v('person').property('name', 'josh')), (lambda g:g.V().properties('name').dedup().by(T.value).count())], 
+    'g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name': [(lambda g:g.V().both().has(T.label, 'software').dedup().by('lang').by('name').values('name'))], 
     'g_V_drop': [(lambda g:g.add_v().as_('a').add_v().as_('b').add_e('knows').to('a')), (lambda g:g.V().drop()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_V_outE_drop': [(lambda g:g.add_v().as_('a').add_v().as_('b').add_e('knows').to('a')), (lambda g:g.V().out_e().drop()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_V_properties_drop': [(lambda g:g.add_v().property('name', 'bob').add_v().property('name', 'alice')), (lambda g:g.V().properties().drop()), (lambda g:g.V()), (lambda g:g.V().properties())], 
