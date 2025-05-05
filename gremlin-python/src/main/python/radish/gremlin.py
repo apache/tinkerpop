@@ -1613,6 +1613,7 @@ world.gremlins = {
     'g_V_sackXassignX_byXageX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').sack())], 
     'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': [(lambda g, xx1=None:g.with_sack(xx1, Operator.assign).V().local(__.out('knows').barrier(Barrier.norm_sack)).in_('knows').barrier().sack())], 
     'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': [(lambda g, xx1=None:g.with_sack(2).V().sack(Operator.div).by(__.constant(xx1)).sack())], 
+    'g_V_sackXassignX_byXageX_byXnameX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').by('name').sack())], 
     'g_V_sideEffectXidentityX': [(lambda g:g.V().side_effect(__.identity()))], 
     'g_V_sideEffectXidentity_valuesXnameXX': [(lambda g:g.V().side_effect(__.identity().values('name')))], 
     'g_V_sideEffectXpropertyXage_22X': [(lambda g:g.add_v('person').property('age', 21)), (lambda g:g.V().side_effect(__.property('age', 22))), (lambda g:g.V().has('age', 21)), (lambda g:g.V().has('age', 22))], 

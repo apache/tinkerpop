@@ -141,3 +141,12 @@ Feature: Step - sack()
       | d[0.5].d |
       | d[0.5].d |
       | d[0.5].d |
+
+  Scenario: g_V_sackXassignX_byXageX_byXnameX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().sack(assign).by("age").by("name").sack()
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Sack step can only have one by modulator"
