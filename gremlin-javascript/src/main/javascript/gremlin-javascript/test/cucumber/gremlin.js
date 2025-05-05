@@ -1685,6 +1685,7 @@ const gremlins = {
     g_VX1X_out_out_out_tree: [function({g}) { return g.V().out().out().out().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree().by("name").by(T.label) }], 
+    g_injectXUUIDX: [function({g}) { return g.inject("f47af10b-58cc-4372-a567-0f02b2f3d479") }], 
 }
 
 exports.gremlin = gremlins

@@ -29,6 +29,7 @@ import (
 	 "time"
 	 "math"
 	 "github.com/apache/tinkerpop/gremlin-go/v3/driver"
+	 "github.com/google/uuid"
 )
 
 var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal{
@@ -1655,6 +1656,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_VX1X_out_out_out_tree": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Out().Out().Out().Tree()}}, 
     "g_VX1X_outE_inV_bothE_otherV_tree": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree()}}, 
     "g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree().By("name").By(gremlingo.T.Label)}}, 
+    "g_injectXUUIDX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(uuid.MustParse("f47af10b-58cc-4372-a567-0f02b2f3d479"))}}, 
 }
 
    func GetTraversal(scenarioName string, g *gremlingo.GraphTraversalSource, parameters map[string]interface{}) (*gremlingo.GraphTraversal, error) {

@@ -26,6 +26,7 @@
 
 from radish import world
 import datetime
+import uuid
 from gremlin_python.statics import long, bigint, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
@@ -1658,4 +1659,5 @@ world.gremlins = {
     'g_VX1X_out_out_out_tree': [(lambda g:g.V().out().out().out().tree())], 
     'g_VX1X_outE_inV_bothE_otherV_tree': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree())], 
     'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree().by('name').by(T.label))], 
+    'g_injectXUUIDX': [(lambda g:g.inject(uuid.UUID('f47af10b-58cc-4372-a567-0f02b2f3d479')))], 
 }
