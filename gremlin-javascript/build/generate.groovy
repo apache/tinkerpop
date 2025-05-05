@@ -54,7 +54,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine("//********************************************************************************\n\n")
 
     writer.writeLine(
-                    'import { v4 as uuid } from \'uuid\';\n' +
+                    'const uuid = require(\'uuid\');\n' +
                     'const graphTraversalModule = require(\'../../lib/process/graph-traversal\');\n' +
                     'const traversalModule = require(\'../../lib/process/traversal\');\n' +
                     'const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
