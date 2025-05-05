@@ -178,6 +178,7 @@ limitations under the License.
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.5.4</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
+        <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -779,6 +780,11 @@ limitations under the License.
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.hakky54</groupId>
+                <artifactId>sslcontext-kickstart-for-netty</artifactId>
+                <version>${sslcontext.kickstart.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>

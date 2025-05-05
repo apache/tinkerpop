@@ -122,6 +122,9 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public void modulateBy(final Traversal.Admin<?, ?> dedupTraversal) {
+        if (this.dedupTraversal != null) {
+            throw new IllegalStateException("Dedup step can only have one by modulator");
+        }
         this.dedupTraversal = this.integrateChild(dedupTraversal);
     }
 
