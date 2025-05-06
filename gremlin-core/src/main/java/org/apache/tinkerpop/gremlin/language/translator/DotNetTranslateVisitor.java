@@ -166,12 +166,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralRange(final GremlinParser.GenericLiteralRangeContext ctx) {
+    public Void visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         throw new TranslatorException(".NET does not support range literals");
     }
 
     @Override
-    public Void visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+    public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("new Dictionary<object, object> {");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {
             final GremlinParser.MapEntryContext mapEntryContext = ctx.mapEntry(i);
@@ -184,7 +184,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("new HashSet<object> { ");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -197,26 +197,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+    public Void visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         sb.append("new List<object> { ");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
             visit(genericLiteralContext);
             if (i < ctx.genericLiteral().size() - 1)
-                sb.append(", ");
-        }
-        sb.append(" }");
-        return null;
-    }
-
-    @Override
-    public Void visitStringLiteralList(final GremlinParser.StringLiteralListContext ctx) {
-        sb.append("new List<string> { ");
-        for (int ix = 0; ix < ctx.getChild(1).getChildCount(); ix++) {
-            if (ctx.getChild(1).getChild(ix) instanceof TerminalNode)
-                continue;
-            visit(ctx.getChild(1).getChild(ix));
-            if (ix < ctx.getChild(1).getChildCount() - 1)
                 sb.append(", ");
         }
         sb.append(" }");
@@ -330,7 +316,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.stringArgument());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapArgument());
+        visit(ctx.genericMapArgument());
         sb.append(")");
         return null;
     }
@@ -356,7 +342,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.stringArgument());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapArgument());
+        visit(ctx.genericMapArgument());
         sb.append(", ");
         sb.append("(ITraversal) ");
         visit(ctx.nestedTraversal());
@@ -370,7 +356,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.getChild(0));
         sb.append("(");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapNullableArgument());
+        visit(ctx.genericMapNullableArgument());
         sb.append(")");
         return null;
     }
@@ -392,7 +378,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.getChild(0));
         sb.append("(");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapNullableArgument());
+        visit(ctx.genericMapNullableArgument());
         sb.append(")");
         return null;
     }
@@ -441,7 +427,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapArgument());
+        visit(ctx.genericMapArgument());
         sb.append(")");
         return null;
     }
@@ -467,7 +453,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.stringLiteral());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapArgument());
+        visit(ctx.genericMapArgument());
         sb.append(", ");
         sb.append("(ITraversal) ");
         visit(ctx.nestedTraversal());
@@ -562,8 +548,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         tryAppendCastToString(ctx.stringNullableLiteral());
         visit(ctx.stringNullableLiteral());
         sb.append(", ");
-        tryAppendCastToObject(ctx.genericLiteralArgument());
-        visit(ctx.genericLiteralArgument());
+        tryAppendCastToObject(ctx.genericArgument());
+        visit(ctx.genericArgument());
         sb.append(")");
         return null;
     }
@@ -592,8 +578,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         tryAppendCastToString(ctx.stringNullableLiteral());
         visit(ctx.stringNullableLiteral());
         sb.append(", ");
-        tryAppendCastToObject(ctx.genericLiteralArgument());
-        visit(ctx.genericLiteralArgument());
+        tryAppendCastToObject(ctx.genericArgument());
+        visit(ctx.genericArgument());
         sb.append(")");
         return null;
     }
@@ -634,8 +620,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         sb.append("(");
         visit(ctx.traversalT());
         sb.append(", ");
-        tryAppendCastToObject(ctx.genericLiteralArgument());
-        visit(ctx.genericLiteralArgument());
+        tryAppendCastToObject(ctx.genericArgument());
+        visit(ctx.genericArgument());
         sb.append(")");
         return null;
     }
@@ -677,7 +663,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalMethod_hasKey_String_String(final GremlinParser.TraversalMethod_hasKey_String_StringContext ctx) {
         // if there is only one argument then cast to string otherwise it's ambiguous with hasKey(P)
-        if (ctx.stringLiteralVarargs() == null || ctx.stringLiteralVarargs().getChildCount() == 0) {
+        if (ctx.stringNullableLiteralVarargs() == null || ctx.stringNullableLiteralVarargs().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
@@ -693,12 +679,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalMethod_hasValue_Object_Object(final GremlinParser.TraversalMethod_hasValue_Object_ObjectContext ctx) {
         // if there is only one argument then cast to object otherwise it's ambiguous with hasValue(P)
-        if (ctx.genericLiteralVarargs() == null || ctx.genericLiteralVarargs().getChildCount() == 0) {
+        if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
-            tryAppendCastToObject(ctx.genericLiteralArgument());
-            visit(ctx.genericLiteralArgument());
+            tryAppendCastToObject(ctx.genericArgument());
+            visit(ctx.genericArgument());
             sb.append(")");
             return null;
         } else {
@@ -729,7 +715,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // if there is only one argument then cast to string otherwise it's ambiguous with hasLabel(P)
-        if (ctx.stringLiteralVarargsArgument() == null || ctx.stringLiteralVarargsArgument().getChildCount() == 0) {
+        if (ctx.stringNullableArgumentVarargs() == null || ctx.stringNullableArgumentVarargs().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
@@ -808,7 +794,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.getChild(0));
         sb.append("(");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapNullableArgument());
+        visit(ctx.genericMapNullableArgument());
         sb.append(")");
         return null;
     }
@@ -830,7 +816,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.getChild(0));
         sb.append("(");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapNullableArgument());
+        visit(ctx.genericMapNullableArgument());
         sb.append(")");
         return null;
     }
@@ -864,7 +850,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.traversalMerge());
         sb.append(", ");
         sb.append("(IDictionary<object, object>) ");
-        visit(ctx.genericLiteralMapNullableArgument()); // second argument
+        visit(ctx.genericMapNullableArgument()); // second argument
         sb.append(")");
         return null;
     }
@@ -904,17 +890,17 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalMethod_property_Cardinality_Object_Object_Object(final GremlinParser.TraversalMethod_property_Cardinality_Object_Object_ObjectContext ctx) {
-        if (ctx.genericLiteralVarargs() == null || ctx.genericLiteralVarargs().getChildCount() == 0) {
+        if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();
             sb.append(convertToPascalCase(step));
             sb.append("(");
             visit(ctx.traversalCardinality());
             sb.append(", ");
-            tryAppendCastToObject(ctx.genericLiteralArgument(0));
-            visit(ctx.genericLiteralArgument(0));
+            tryAppendCastToObject(ctx.genericArgument(0));
+            visit(ctx.genericArgument(0));
             sb.append(", ");
-            tryAppendCastToObject(ctx.genericLiteralArgument(1));
-            visit(ctx.genericLiteralArgument(1));
+            tryAppendCastToObject(ctx.genericArgument(1));
+            visit(ctx.genericArgument(1));
             sb.append(")");
             return null;
         } else {
@@ -1166,7 +1152,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         }
     }
 
-    private void tryAppendCastToObject(final GremlinParser.GenericLiteralArgumentContext ctx) {
+    private void tryAppendCastToObject(final GremlinParser.GenericArgumentContext ctx) {
         if (ctx.variable() != null || ctx.genericLiteral().nullLiteral() != null)
             sb.append("(object) ");
     }

@@ -58,7 +58,7 @@ public class TraversalStrategyVisitor extends DefaultGremlinBaseVisitor<Traversa
         if (null != contexts) {
             for (GremlinParser.ConfigurationContext ctx : contexts) {
                 final String key = ctx.getChild(0).getText();
-                final Object val = antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument());
+                final Object val = antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument());
                 conf.setProperty(key, val);
             }
         }

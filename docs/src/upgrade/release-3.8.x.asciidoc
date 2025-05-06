@@ -347,6 +347,26 @@ The exception thrown should contain the following: "valueMap()/propertyMap() ste
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
+===== Grammar Type Renaming
+
+All of the following types in the grammar have been renamed to follow consistent rules:
+
+`genericLiteralArgument` -> `genericArgument`
+`structureVertex` -> `structureVertexLiteral`
+`stringLiteralVarargsArgument` -> `stringNullableArgumentVarargs`
+`genericLiteralMapArgument` -> `genericMapArgument`
+`genericLiteralMapNullable` -> `genericMapNullableLiteral`
+`genericLiteralMapNullableArgument` -> `genericMapNullableArgument`
+`traversalStrategyList` -> `traversalStrategyVarargs`
+`genericLiteralVarargs` -> `genericArgumentVarags`
+`genericLiteralCollection` -> `genericCollectionLiteral`
+`genericLiteralList` -> `genericLiteralVarargs`
+`genericLiteralRange` -> `genericRangeLiteral`
+`stringLiteralVarargs` -> `stringNullableLiteralVarargs`
+`genericLiteralMap` -> `genericMapLiteral`
+
+Additionally, `genericLiteralListArgument` and `stringLiteralList` have been removed in favor of `genericArgumentVarags` and `stringNullableLiteralVarargs` respectively.
+
 ==== Graph Driver Providers
 
 ==== The Switch from Date to OffsetDateTime
