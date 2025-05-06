@@ -1185,14 +1185,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     /**
      * Client created on an initially dead host should fail initially, and recover after the dead host has restarted
-     * @param testClusterClient - boolean flag set to test clustered client if true and sessioned client if false.
      */
-    private void testShouldFailOnInitiallyDeadHost(final boolean testClusterClient) throws Exception {
+    @Test
+    public void shouldFailOnInitiallyDeadHostForClusterClient() throws Exception {
         logger.info("Stopping server.");
         this.stopServer();
 
         final Cluster cluster = TestClientFactory.build().create();
-        final Client client = testClusterClient? cluster.connect() : cluster.connect("sessionClient");
+        final Client client = cluster.connect();
 
         try {
             // try to re-issue a request now that the server is down
@@ -1240,16 +1240,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
-    }
-
-    @Test
-    public void shouldFailOnInitiallyDeadHostForClusterClient() throws Exception {
-        testShouldFailOnInitiallyDeadHost(true);
-    }
-
-    @Test
-    public void shouldFailOnInitiallyDeadHostForSessionClient() throws Exception {
-        testShouldFailOnInitiallyDeadHost(false);
     }
 
     @Test
