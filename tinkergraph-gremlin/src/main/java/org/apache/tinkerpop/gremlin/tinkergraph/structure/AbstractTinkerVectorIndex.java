@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @param <T> the type of elements stored in the vector index
  */
-public abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTinkerIndex<T> {
+abstract class AbstractTinkerVectorIndex<T extends Element> extends AbstractTinkerIndex<T> {
     /**
      * Default number of nearest neighbors to return
      */

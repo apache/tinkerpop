@@ -19,37 +19,28 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.services;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexElement;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory.Params.KEY;
 import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory.Params.TOP_K;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
- *
+ * Service to utilize a {@code TinkerVertexIndex} to do a vector search.
  */
 public class TinkerVectorSearchFactory extends TinkerServiceRegistry.TinkerServiceFactory<Element, Map<String, Object>> implements Service<Element, Map<String, Object>> {
 
-    public static final String NAME = "tinker.search.vector.topKByVertex";
+    public static final String NAME = "tinker.search.vector.topKByElement";
 
     public interface Params {
         /**
@@ -91,16 +82,38 @@ public class TinkerVectorSearchFactory extends TinkerServiceRegistry.TinkerServi
         if (isStart) {
             throw new UnsupportedOperationException(Exceptions.cannotStartTraversal);
         }
+
+        if (!params.containsKey(KEY)) {
+            throw new IllegalArgumentException("The parameter map must contain the key where the embedding is: " + KEY);
+        }
+
         return this;
     }
 
     @Override
     public CloseableIterator<Map<String,Object>> execute(final ServiceCallContext ctx, final Traverser.Admin<Element> in, final Map params) {
         final String key = (String) params.get(KEY);
-        final int k = (int) params.getOrDefault(TOP_K, 10);
+
+        // add 1 because we always filter 1 out of the index because it will return a match on itself
+        final int k = (int) params.getOrDefault(TOP_K, 10) + 1;
         final Element e = in.get();
+
+        // if the current element does not have the specified key, then return no results
+        if (!e.keys().contains(key))
+            return CloseableIterator.empty();
+
         final float[] embedding = e.value(key);
-        return CloseableIterator.of(graph.findNearestVertices(key, embedding, k).stream().map(TinkerIndexElement::toMap).iterator());
+        if (e instanceof Vertex) {
+            return CloseableIterator.of(graph.findNearestVertices(key, embedding, k).stream()
+                    .filter(tie -> !tie.getElement().equals(e))
+                    .map(TinkerIndexElement::toMap).iterator());
+        } else if (e instanceof Edge) {
+            return CloseableIterator.of(graph.findNearestEdges(key, embedding, k).stream()
+                    .filter(tie -> !tie.getElement().equals(e))
+                    .map(TinkerIndexElement::toMap).iterator());
+        } else {
+            return CloseableIterator.empty();
+        }
     }
 
     @Override

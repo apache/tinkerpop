@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -87,7 +86,7 @@ public class ServiceRegistry implements DirectoryService, AutoCloseable {
      * {@link DirectoryService} execution. List or describe the registered callable services.
      */
     @Override
-    public CloseableIterator execute(ServiceCallContext ctx, final Map params) {
+    public CloseableIterator execute(final ServiceCallContext ctx, final Map params) {
         final boolean verbose = (boolean) params.getOrDefault(Params.VERBOSE, false);
         final String serviceName = (String) params.get(Params.SERVICE);
 

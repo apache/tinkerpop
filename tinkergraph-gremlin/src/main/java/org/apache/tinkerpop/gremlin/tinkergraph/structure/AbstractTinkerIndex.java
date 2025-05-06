@@ -34,7 +34,7 @@ import java.util.Set;
  *
  * @author Valentyn Kahamlyk
  */
-public abstract class AbstractTinkerIndex<T extends Element> {
+abstract class AbstractTinkerIndex<T extends Element> {
 
     protected final Class<T> indexClass;
     protected final AbstractTinkerGraph graph;

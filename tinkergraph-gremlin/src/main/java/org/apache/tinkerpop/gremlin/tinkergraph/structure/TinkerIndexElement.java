@@ -18,9 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A container object that holds an {@link Element} with a "distance" as determined by a vector index.
+ */
 public class TinkerIndexElement<T> {
     private final T element;
     private final float distance;

@@ -99,7 +99,6 @@ public class TinkerGraph extends AbstractTinkerGraph {
         if (graphLocation != null) loadGraph();
 
         serviceRegistry = new TinkerServiceRegistry(this);
-        serviceRegistry.registerService(new TinkerServiceRegistry(this));
         configuration.getList(String.class, GREMLIN_TINKERGRAPH_SERVICE, Collections.emptyList()).forEach(serviceClass ->
                 serviceRegistry.registerService(instantiate(serviceClass)));
     }
