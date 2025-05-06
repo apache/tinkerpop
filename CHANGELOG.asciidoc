@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added vector search to TinkerGraph.
+* Renamed the regex based seach service in TinkerGraph to `tinker.search.text`.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
@@ -84,7 +86,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
-* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`. 
+* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`.
 * Target framework for `gremlin-dotnet` updated to `net8.0`.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
 * Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.
