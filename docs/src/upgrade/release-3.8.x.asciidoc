@@ -200,6 +200,50 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047]
 The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
 to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed in a consistent manner.
 
+=== TinkerGraph Vector Index
+
+Vector search enables finding similar items based on their semantic meaning rather than exact keyword matches, which is
+essential for modern applications like recommendation systems, image search, and natural language processing.
+TinkerGraph now supports vector indexing and similarity search through a dedicated vector index implementation and the
+`call()` step, allowing efficient nearest neighbor searches on both vertices and edges.
+
+The vector index in TinkerGraph is implemented using HNSW (Hierarchical Navigable Small World), a state-of-the-art
+algorithm for approximate nearest neighbor search that provides excellent performance for high-dimensional vector data.
+To use this feature, you need to create a vector index, add elements with vector embeddings, and then perform searches
+using the `call()` step.
+
+Here's a basic example using Groovy:
+
+[source,groovy]
+----
+// Create a graph and register the vector search service
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+
+// Create a vector index with dimension 3
+indexConfig = [:]
+indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3)
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
+
+// Add vertices with vector embeddings
+g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate()
+
+// Perform a vector search using the call() step
+params = [key: "embedding", topK: 2]
+g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", params)
+----
+
+The `call()` step returns a list of maps, each containing the matching element and its distance from the query vector:
+
+[source,text]
+----
+==>[distance:0.9500624, element:v[2]]
+==>[distance:1.0, element:v[3]]
+----
+
 ==== Improved Translators
 
 The various Java `Translator` implementations allowing conversion of Gremlin traversals to string forms in various

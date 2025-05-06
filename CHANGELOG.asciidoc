@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Added vector search to TinkerGraph.
+* Renamed the regex based seach service in TinkerGraph to `tinker.search.text`.
 * Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
 * Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.
 * Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.

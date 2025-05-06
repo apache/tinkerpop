@@ -202,6 +202,168 @@ g.io("data/tinkerpop-crew.kryo").read().iterate()
 g.V().properties()
 ----
 
+=== Indices
+
+Indices are a critical component of graph databases that significantly improve query performance by allowing for quick
+lookups of elements based on their properties. Without indices, graph traversals would need to scan through all
+elements to find those matching specific criteria, which becomes increasingly inefficient as the graph grows in size.
+
+TinkerGraph supports two types of indices:
+
+1. *Key-based Indices*: Traditional indices that enable fast lookups of vertices or edges based on property values.
+2. *Vector Indices*: Specialized indices for similarity search that find elements with vector embeddings similar to a
+query vector.
+
+==== Key-based Indices
+
+Key-based indices are the standard way to improve lookup performance in TinkerGraph. They're simple to create and use:
+
+[gremlin-groovy]
+----
+graph.createIndex("name", Vertex.class) <1>
+g.addV("person").property("name", "marko").property("age", 29).iterate()
+g.addV("person").property("name", "vadas").property("age", 27).iterate()
+g.addV("person").property("name", "josh").property("age", 32).iterate()
+g.V().has("name", "marko").next() <2>
+----
+
+<1> Create an index on the "name" property for vertices.
+<2> Query using the index - this will be much faster than a full scan.
+
+You can also create indices for edge properties:
+
+[gremlin-groovy]
+----
+graph.createIndex("weight", Edge.class) <1>
+marko = g.V().has("name", "marko").next()
+vadas = g.V().has("name", "vadas").next()
+g.addE("knows").from(marko).to(vadas).property("weight", 0.5).iterate()
+g.E().has("weight", 0.5).next() <2>
+----
+
+<1> Create an index on the "weight" property for edges.
+<2> Query using the index - this will be much faster than a full scan.
+
+To check which properties are indexed for a particular element class:
+
+[gremlin-groovy]
+----
+graph.getIndexedKeys(Vertex.class) <1>
+graph.getIndexedKeys(Edge.class) <2>
+----
+
+<1> Get all indexed keys for vertices.
+<2> Get all indexed keys for edges.
+
+To drop an index when it's no longer needed:
+
+[gremlin-groovy]
+----
+graph.dropIndex("name", Vertex.class)
+----
+
+==== Vector Indices
+
+Vector indices enable similarity search based on vector embeddings. Vector search allows you to find elements that are
+conceptually similar rather than just matching on exact property values. Vector search works by representing elements as
+points in a high-dimensional space, where proximity indicates similarity. TinkerGraph implements vector search using
+HNSW (Hierarchical Navigable Small World), an algorithm for approximate nearest neighbor search that provides excellent
+performance for high-dimensional vector data.
+
+To use vector indices in TinkerGraph, you need to:
+
+1. Create a vector index with a specified dimension
+2. Add elements with vector embeddings
+3. Perform searches using either direct graph methods or the `call()` step
+
+Here's a complete example:
+
+[gremlin-groovy]
+----
+graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph)) <1>
+indexConfig = [:]
+indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3) <2>
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
+g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
+g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate()
+g.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate()
+params = [key: "embedding", topK: 2] <3>
+g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", params).toList()
+----
+
+<1> Register the vector search service.
+<2> Configuration for the vector index that defines the embedding dimension of size 3.
+<3> Specify the property key containing the embedding and number of results to return.
+
+The `call()` step returns a list of maps, each containing:
+
+* `distance`: The similarity score between the query vector and the result
+* `element`: The vertex or edge that matches the query
+
+Vector indices can also be created for edges:
+
+[gremlin-groovy]
+----
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig)
+alice = g.V().has("name", "Alice").next()
+bob = g.V().has("name", "Bob").next()
+charlie = g.V().has("name", "Charlie").next()
+g.addE("knows").from(alice).to(bob).property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
+g.addE("knows").from(bob).to(charlie).property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
+params = [key: "embedding"]
+g.E().has("embedding", new float[]{1.0f, 0.0f, 0.0f}).call("tinker.search.vector.topKByElement", params).toList()
+----
+
+TinkerGraph supports various distance functions for vector similarity search:
+
+* `COSINE`: Measures the cosine of the angle between two vectors (default)
+* `EUCLIDEAN`: Measures the straight-line distance between two points
+* `MANHATTAN`: Measures the sum of absolute differences between coordinates
+* `INNER_PRODUCT`: Measures the dot product of two vectors
+* `BRAY_CURTIS`: Measures the Bray-Curtis dissimilarity
+* `CANBERRA`: Measures the weighted Manhattan distance
+* `CORRELATION`: Measures the correlation distance
+
+You can specify the distance function when creating the vector index:
+
+[gremlin-groovy]
+----
+indexConfig = [:]
+indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3)
+indexConfig.put(TinkerVectorIndex.CONFIG_DISTANCE_TYPE, TinkerIndexType.Vector.EUCLIDEAN)
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
+----
+
+There are several configuration options that can be used to fine-tune the performance and behavior of vector indices.
+These options are specified when creating a vector index:
+
+[width="100%",cols="2,5,2",options="header"]
+|=========================================================
+|Configuration Option |Description |Default Value
+|`CONFIG_DIMENSION` |The dimension of the vector embeddings. This is a required parameter and must match the length of the vector embeddings stored in the graph. |N/A (Required)
+|`CONFIG_DISTANCE_TYPE` |The distance function to use for similarity calculations. Must be one of the `TinkerIndexType.Vector` enum values (COSINE, EUCLIDEAN, MANHATTAN, INNER_PRODUCT, BRAY_CURTIS, CANBERRA, CORRELATION). |COSINE
+|`CONFIG_M` |The maximum number of connections per node in the HNSW graph. Higher values provide better search quality at the cost of increased memory usage and index build time. |16
+|`CONFIG_EF_CONSTRUCTION` |The size of the dynamic candidate list during index construction. Higher values improve index quality at the cost of longer build times. |200
+|`CONFIG_EF` |The size of the dynamic candidate list during search. Higher values improve search accuracy at the cost of slower search times. |10
+|`CONFIG_MAX_ITEMS` |The maximum number of items that can be stored in the index. |100
+|=========================================================
+
+Here's an example of creating a vector index with custom configuration options:
+
+[gremlin-groovy]
+----
+// create a vector index with custom configuration
+indexConfig = [:]
+indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 128)
+indexConfig.put(TinkerVectorIndex.CONFIG_DISTANCE_TYPE, TinkerIndexType.Vector.COSINE)
+indexConfig.put(TinkerVectorIndex.CONFIG_M, 32)
+indexConfig.put(TinkerVectorIndex.CONFIG_EF_CONSTRUCTION, 300)
+indexConfig.put(TinkerVectorIndex.CONFIG_EF, 20)
+indexConfig.put(TinkerVectorIndex.CONFIG_MAX_ITEMS, 1000)
+graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
+----
+
 [[tinkergraph-gremlin-tx]]
 === Transactions
 
