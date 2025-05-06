@@ -1645,8 +1645,10 @@ booleanLiteral
     ;
 
 dateLiteral
-    : K_DATETIME LPAREN stringArgument RPAREN
-    | K_DATETIME LPAREN RPAREN
+    : K_DATETIME1 LPAREN stringArgument RPAREN
+    | K_DATETIME1 LPAREN RPAREN
+    | K_DATETIME2 LPAREN stringArgument RPAREN
+    | K_DATETIME2 LPAREN RPAREN
     ;
 
 nullLiteral
@@ -1722,7 +1724,8 @@ keyword
     | K_DAY
     | K_DATEADD
     | K_DATEDIFF
-    | K_DATETIME
+    | K_DATETIME1
+    | K_DATETIME2
     | K_DECR
     | K_DEDUP
     | K_DESC
@@ -1981,7 +1984,8 @@ K_CYCLICPATH: 'cyclicPath';
 K_DAY: 'day';
 K_DATEADD: 'dateAdd';
 K_DATEDIFF: 'dateDiff';
-K_DATETIME: 'datetime';
+K_DATETIME1: 'datetime';
+K_DATETIME2: 'DateTime';
 K_DECR: 'decr';
 K_DEDUP: 'dedup';
 K_DESC: 'desc';
