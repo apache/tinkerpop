@@ -200,6 +200,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_valuesXageX_dedupXlocalX_unfold", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Values<object>("age").Dedup(Scope.Local).Unfold<object>()}}, 
                {"g_V_properties_dedup_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV("person").Property("name", "josh").AddV("person").Property("name", "josh").AddV("person").Property("name", "josh"), (g,p) =>g.V().Properties<object>("name").Dedup().Count()}}, 
                {"g_V_properties_dedup_byXvalueX_count", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV("person").Property("name", "josh").AddV("person").Property("name", "josh").AddV("person").Property("name", "josh"), (g,p) =>g.V().Properties<object>("name").Dedup().By(T.Value).Count()}}, 
+               {"g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Both().Has(T.Label, "software").Dedup().By("lang").By("name").Values<object>("name")}}, 
                {"g_V_drop", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV().As("a").AddV().As("b").AddE("knows").To("a"), (g,p) =>g.V().Drop(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_V_outE_drop", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV().As("a").AddV().As("b").AddE("knows").To("a"), (g,p) =>g.V().OutE().Drop(), (g,p) =>g.V(), (g,p) =>g.E()}}, 
                {"g_V_properties_drop", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV().Property("name", "bob").AddV().Property("name", "alice"), (g,p) =>g.V().Properties<object>().Drop(), (g,p) =>g.V(), (g,p) =>g.V().Properties<object>()}}, 
@@ -1649,6 +1650,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_sackXassignX_byXageX_sack", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Sack(Operator.Assign).By("age").Sack<object>()}}, 
                {"g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSack(p["xx1"], Operator.Assign).V().Local<object>(__.Out("knows").Barrier(Barrier.NormSack)).In("knows").Barrier().Sack<object>()}}, 
                {"g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSack(2).V().Sack(Operator.Div).By(__.Constant<object>(p["xx1"])).Sack<object>()}}, 
+               {"g_V_sackXassignX_byXageX_byXnameX_sack", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Sack(Operator.Assign).By("age").By("name").Sack<object>()}}, 
                {"g_V_sideEffectXidentityX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().SideEffect(__.Identity())}}, 
                {"g_V_sideEffectXidentity_valuesXnameXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().SideEffect(__.Identity().Values<object>("name"))}}, 
                {"g_V_sideEffectXpropertyXage_22X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.AddV("person").Property("age", 21), (g,p) =>g.V().SideEffect(__.Property("age", 22)), (g,p) =>g.V().Has("age", 21), (g,p) =>g.V().Has("age", 22)}}, 
@@ -1693,6 +1695,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_VX1X_out_out_out_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Out().Out().Out().Tree<object>()}}, 
                {"g_VX1X_outE_inV_bothE_otherV_tree", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>()}}, 
                {"g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).OutE().InV().BothE().OtherV().Tree<object>().By("name").By(T.Label)}}, 
+               {"g_injectXUUIDX47af10b_58cc_4372_a567_0f02b2f3d479XX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Guid.Parse("f47af10b-58cc-4372-a567-0f02b2f3d479"))}}, 
+               {"g_injectXUUIDXXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Guid.NewGuid())}}, 
             };
 
         public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)

@@ -46,7 +46,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
         sb.append("new ");
         sb.append(vertexClassName);
         sb.append("(");
@@ -129,7 +129,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
-        if (ctx.getParent() instanceof GremlinParser.GenericLiteralMapNullableArgumentContext) {
+        if (ctx.getParent() instanceof GremlinParser.GenericMapNullableArgumentContext) {
             sb.append("null as Map");
             return null;
         }
@@ -139,7 +139,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("[");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);

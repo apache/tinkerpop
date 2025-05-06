@@ -63,8 +63,8 @@ public class GeneralLiteralVisitorTest {
     static Object parseGenericLiteralRange(final String query) {
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(query));
         final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-        final GremlinParser.GenericLiteralRangeContext ctx = parser.genericLiteralRange();
-        return new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericLiteralRange(ctx);
+        final GremlinParser.GenericRangeLiteralContext ctx = parser.genericRangeLiteral();
+        return new GenericLiteralVisitor(new GremlinAntlrToJava()).visitGenericRangeLiteral(ctx);
     }
 
     @RunWith(Parameterized.class)

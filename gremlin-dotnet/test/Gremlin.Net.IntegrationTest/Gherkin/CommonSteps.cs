@@ -60,6 +60,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"str\[(.*)\]", (x, graphName) => x }, //returns the string value as is
                 {@"vp\[(.+)\]", ToVertexProperty},
                 {@"dt\[(.+)\]", ToDateTime},
+                {@"uuid\[(.+)\]", ToUuid},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"M\[(.+)\]", ToMerge},
@@ -459,6 +460,15 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static object ToDateTime(string date, string graphName)
         {
             return DateTimeOffset.Parse(date);
+        }
+
+        private static object ToUuid(string uuid, string graphName)
+        {
+            if (Guid.TryParse(uuid, out Guid result))
+            {
+                return result;
+            }
+            return null;
         }
 
         private static Vertex ToVertex(string name, string graphName)

@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.junit.Test;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -48,5 +49,10 @@ public class SackValueStepTest extends StepTest {
                     return m;
                 })
         );
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowForMultipleByModulators() {
+        __.sack(Operator.assign).by("age").by("name");
     }
 }

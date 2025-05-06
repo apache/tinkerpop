@@ -243,4 +243,4 @@ Feature: Step - groupCount()
       g.V().out("created").groupCount("x").by("name").by("age")
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the traversal will raise an error with message containing text of "GroupCount step can only have one by modulator"

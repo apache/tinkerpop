@@ -35,6 +35,7 @@ tools/
 *.user
 .vscode/
 .vs/
+.junie/
 *nupkg
 NuGet.Config
 nuget*.exe
