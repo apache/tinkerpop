@@ -200,7 +200,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047]
 The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
 to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed in a consistent manner.
 
-=== TinkerGraph Vector Index
+==== TinkerGraph Vector Index
 
 Vector search enables finding similar items based on their semantic meaning rather than exact keyword matches, which is
 essential for modern applications like recommendation systems, image search, and natural language processing.
@@ -222,8 +222,7 @@ g = traversal().with(graph)
 graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
 
 // Create a vector index with dimension 3
-indexConfig = [:]
-indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3)
+indexConfig = [dimension: 3]
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 
 // Add vertices with vector embeddings
@@ -243,6 +242,8 @@ The `call()` step returns a list of maps, each containing the matching element a
 ==>[distance:0.9500624, element:v[2]]
 ==>[distance:1.0, element:v[3]]
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3158[TINKERPOP-3158]
 
 ==== Improved Translators
 

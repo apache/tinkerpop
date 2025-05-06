@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import com.github.jelmerk.hnswlib.core.Item;
 import com.github.jelmerk.hnswlib.core.SearchResult;
 import com.github.jelmerk.hnswlib.core.hnsw.HnswIndex;
+import com.github.jelmerk.hnswlib.core.hnsw.SizeLimitExceededException;
 import com.github.jelmerk.hnswlib.core.Index;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -44,7 +45,12 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
     /**
      * Map of property key to vector index
      */
-    protected Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
+    private final Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
+
+    /**
+     * Map of property key to growth rate
+     */
+    private final Map<String, Double> growthRates = new ConcurrentHashMap<>();
 
     /**
      * Default M parameter for HNSW index
@@ -64,7 +70,12 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
     /**
      * Default maximum number of items in the index
      */
-    private static final int DEFAULT_MAX_ITEMS = 100;
+    private static final int DEFAULT_MAX_ITEMS = 10000;
+
+    /**
+     * Default growth rate for the index when it reaches capacity (10%)
+     */
+    private static final double DEFAULT_GROWTH_RATE = 0.1;
 
     /**
      * Configuration key for the dimension of the vector
@@ -95,6 +106,11 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
      * Configuration key for the distance function of the HNSW index
      */
     public static final String CONFIG_DISTANCE_FUNCTION = "distanceFunction";
+
+    /**
+     * Configuration key for the growth rate of the index when it reaches capacity
+     */
+    public static final String CONFIG_GROWTH_RATE = "growthRate";
 
     /**
      * Creates a new vector index for the specified graph and element class.
@@ -178,6 +194,15 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
             }
         }
 
+        double growthRate = DEFAULT_GROWTH_RATE;
+        if (configuration.containsKey(CONFIG_GROWTH_RATE)) {
+            final Object growthObj = configuration.get(CONFIG_GROWTH_RATE);
+            if (growthObj instanceof Number) {
+                growthRate = ((Number) growthObj).doubleValue();
+            }
+        }
+        this.growthRates.put(key, growthRate);
+
         // Create a new HNSW index for this property key
         final Index<Object, float[], ElementItem, Float> index = HnswIndex
                 .newBuilder(dimension, vector.getDistanceFunction(), Float::compare, maxItems)
@@ -217,7 +242,8 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
 
         final Index<Object, float[], ElementItem, Float> index = this.vectorIndices.get(key);
         final ElementItem item = new ElementItem(element.id(), vector, element);
-        index.add(item);
+
+        addWithResize(key, index, item);
     }
 
     /**
@@ -291,7 +317,8 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
             // If the element is not in the index, just ignore the exception
         }
         final ElementItem item = new ElementItem(element.id(), newValue, element);
-        index.add(item);
+
+        addWithResize(key, index, item);
     }
 
     /**
@@ -305,37 +332,11 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
             this.vectorIndices.remove(key);
         }
 
+        if (this.growthRates.containsKey(key)) {
+            this.growthRates.remove(key);
+        }
+
         this.indexedKeys.remove(key);
-    }
-
-    /**
-     * A class that wraps an element with its vector for use in the HNSW index.
-     */
-    private class ElementItem implements Item<Object, float[]>, Serializable {
-        private final Object id;
-        private final float[] vector;
-        private final T element;
-
-        public ElementItem(final Object id, final float[] vector, final T element) {
-            this.id = id;
-            this.vector = vector;
-            this.element = element;
-        }
-
-        @Override
-        public Object id() {
-            return id;
-        }
-
-        @Override
-        public float[] vector() {
-            return vector;
-        }
-
-        @Override
-        public int dimensions() {
-            return vector.length;
-        }
     }
 
     // AbstractTinkerIndex implementation methods
@@ -373,6 +374,72 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
         if (this.indexedKeys.contains(key) && newValue instanceof float[]) {
             updateIndex(key, (float[]) newValue, element);
+        }
+    }
+
+    /**
+     * Helper method to add an item to the index with automatic resizing if needed.
+     *
+     * @param key   the property key
+     * @param index the vector index
+     * @param item  the item to add
+     */
+    private void addWithResize(final String key, final Index<Object, float[], ElementItem, Float> index,
+                               final ElementItem item) {
+        try {
+            index.add(item);
+        } catch (SizeLimitExceededException e) {
+            // Get the growth rate for this index
+            final Double growthRate = this.growthRates.getOrDefault(key, 0.0d);
+
+            // If growth rate is 0 or not set, rethrow the exception
+            if (growthRate <= 0) {
+                throw e;
+            }
+
+            // Calculate new size based on growth rate
+            final int currentSize = ((HnswIndex<Object, float[], ElementItem, Float>) index).getMaxItemCount();
+            final int newSize = currentSize + (int) Math.ceil(currentSize * growthRate);
+
+            // Resize the index
+            ((HnswIndex<Object, float[], ElementItem, Float>) index).resize(newSize);
+
+            // Try adding the item again
+            index.add(item);
+        } catch (Exception e) {
+            // If it's not a size limit exception, rethrow it
+            throw e;
+        }
+    }
+
+
+    /**
+     * A class that wraps an element with its vector for use in the HNSW index.
+     */
+    private class ElementItem implements Item<Object, float[]>, Serializable {
+        private final Object id;
+        private final float[] vector;
+        private final T element;
+
+        public ElementItem(final Object id, final float[] vector, final T element) {
+            this.id = id;
+            this.vector = vector;
+            this.element = element;
+        }
+
+        @Override
+        public Object id() {
+            return id;
+        }
+
+        @Override
+        public float[] vector() {
+            return vector;
+        }
+
+        @Override
+        public int dimensions() {
+            return vector.length;
         }
     }
 }

@@ -281,8 +281,7 @@ Here's a complete example:
 [gremlin-groovy]
 ----
 graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph)) <1>
-indexConfig = [:]
-indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3) <2>
+indexConfig = [dimension: 3] <2>
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
 g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
@@ -305,6 +304,7 @@ Vector indices can also be created for edges:
 
 [gremlin-groovy]
 ----
+graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig)
 alice = g.V().has("name", "Alice").next()
 bob = g.V().has("name", "Bob").next()
@@ -329,9 +329,8 @@ You can specify the distance function when creating the vector index:
 
 [gremlin-groovy]
 ----
-indexConfig = [:]
-indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 3)
-indexConfig.put(TinkerVectorIndex.CONFIG_DISTANCE_TYPE, TinkerIndexType.Vector.EUCLIDEAN)
+graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+indexConfig = [dimension: 3, distanceType: TinkerIndexType.Vector.EUCLIDEAN]
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 ----
 
@@ -341,28 +340,34 @@ These options are specified when creating a vector index:
 [width="100%",cols="2,5,2",options="header"]
 |=========================================================
 |Configuration Option |Description |Default Value
-|`CONFIG_DIMENSION` |The dimension of the vector embeddings. This is a required parameter and must match the length of the vector embeddings stored in the graph. |N/A (Required)
-|`CONFIG_DISTANCE_TYPE` |The distance function to use for similarity calculations. Must be one of the `TinkerIndexType.Vector` enum values (COSINE, EUCLIDEAN, MANHATTAN, INNER_PRODUCT, BRAY_CURTIS, CANBERRA, CORRELATION). |COSINE
-|`CONFIG_M` |The maximum number of connections per node in the HNSW graph. Higher values provide better search quality at the cost of increased memory usage and index build time. |16
-|`CONFIG_EF_CONSTRUCTION` |The size of the dynamic candidate list during index construction. Higher values improve index quality at the cost of longer build times. |200
-|`CONFIG_EF` |The size of the dynamic candidate list during search. Higher values improve search accuracy at the cost of slower search times. |10
-|`CONFIG_MAX_ITEMS` |The maximum number of items that can be stored in the index. |100
+|`dimension` |The dimension of the vector embeddings. This is a required parameter and must match the length of the vector embeddings stored in the graph. |N/A (Required)
+|`distanceType` |The distance function to use for similarity calculations. Must be one of the `TinkerIndexType.Vector` enum values (COSINE, EUCLIDEAN, MANHATTAN, INNER_PRODUCT, BRAY_CURTIS, CANBERRA, CORRELATION). |COSINE
+|`growthRate`| The rate at which the index will automatically increase in size once it is full. If set to `0` the index will not grow automatically and will throw `SizeLimitExceededException` when its maximum size is reached. |0.10
+|`m` |The maximum number of connections per node in the HNSW graph. Higher values provide better search quality at the cost of increased memory usage and index build time. |16
+|`efConstruction` |The size of the dynamic candidate list during index construction. Higher values improve index quality at the cost of longer build times. |200
+|`ef` |The size of the dynamic candidate list during search. Higher values improve search accuracy at the cost of slower search times. |10
+|`maxItems` |The maximum number of items expected to be stored in the index. Use in conjuction with `growthRate`. |10000
 |=========================================================
 
 Here's an example of creating a vector index with custom configuration options:
 
 [gremlin-groovy]
 ----
-// create a vector index with custom configuration
-indexConfig = [:]
-indexConfig.put(TinkerVectorIndex.CONFIG_DIMENSION, 128)
-indexConfig.put(TinkerVectorIndex.CONFIG_DISTANCE_TYPE, TinkerIndexType.Vector.COSINE)
-indexConfig.put(TinkerVectorIndex.CONFIG_M, 32)
-indexConfig.put(TinkerVectorIndex.CONFIG_EF_CONSTRUCTION, 300)
-indexConfig.put(TinkerVectorIndex.CONFIG_EF, 20)
-indexConfig.put(TinkerVectorIndex.CONFIG_MAX_ITEMS, 1000)
+graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+indexConfig = [
+    dimension      : 128,
+    distance       : TinkerIndexType.Vector.COSINE,
+    growthRate     : 0.15,
+    m              : 32,
+    efConstruction : 300,
+    ef             : 20,
+    maxItems       : 1000
+]
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 ----
+
+TIP: Constants for all the configuration values can be found in `TinkerVectorIndex`. They are prefixed with "CONFIG_".
+For example, "dimension" can be referenced as `TinkerVectorIndex.CONFIG_DIMENSION`.
 
 [[tinkergraph-gremlin-tx]]
 === Transactions
