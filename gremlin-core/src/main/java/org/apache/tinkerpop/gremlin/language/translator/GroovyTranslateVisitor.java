@@ -47,7 +47,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
         sb.append("new ");
         sb.append(vertexClassName);
         sb.append("(");
@@ -133,7 +133,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
 
     @Override
     public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
-        if (ctx.getParent() instanceof GremlinParser.GenericLiteralMapNullableArgumentContext) {
+        if (ctx.getParent() instanceof GremlinParser.GenericMapNullableArgumentContext) {
             sb.append("null as Map");
             return null;
         }
@@ -143,7 +143,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralSet(GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("[");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -192,7 +192,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // special handling for resolving ambiguous invocations of the hasLabel() step. coerces to the string form
         if (ctx.getChildCount() > 4 && ctx.getChild(2).getText().equals("null")) {
-            final GremlinParser.StringLiteralVarargsArgumentContext varArgs = ctx.stringLiteralVarargsArgument();
+            final GremlinParser.StringNullableArgumentVarargsContext varArgs = ctx.stringNullableArgumentVarargs();
             sb.append(ctx.getChild(0).getText());
             sb.append("((String) null, ");
 
@@ -220,8 +220,8 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
     */
     private Void handleInject(final ParserRuleContext ctx) {
-        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GenericLiteralVarargsContext) {
-            final GenericLiteralVarargsContext varArgs = (GenericLiteralVarargsContext) ctx.getChild(2);
+        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GremlinParser.GenericArgumentVarargsContext) {
+            final GremlinParser.GenericArgumentVarargsContext varArgs = (GremlinParser.GenericArgumentVarargsContext) ctx.getChild(2);
             if (varArgs.getChildCount() > 2 && "null".equals(varArgs.getChild(2).getText())) {
                 sb.append(ctx.getChild(0).getText());
                 sb.append("(");
@@ -243,5 +243,56 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
         }
 
         return visitChildren(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_option_Merge_Map(final GremlinParser.TraversalMethod_option_Merge_MapContext ctx){
+        sb.append("option(");
+        visit(ctx.traversalMerge());
+        sb.append(", ");
+        tryCastMapNullableArgument(ctx.genericMapNullableArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_mergeV_Map(final GremlinParser.TraversalMethod_mergeV_MapContext ctx){
+        sb.append("mergeV(");
+        tryCastMapNullableArgument(ctx.genericMapNullableArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_mergeV_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeV_MapContext ctx){
+        sb.append("mergeV(");
+        tryCastMapNullableArgument(ctx.genericMapNullableArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_mergeE_Map(final GremlinParser.TraversalMethod_mergeE_MapContext ctx){
+        sb.append("mergeE(");
+        tryCastMapNullableArgument(ctx.genericMapNullableArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_mergeE_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeE_MapContext ctx){
+        sb.append("mergeE(");
+        tryCastMapNullableArgument(ctx.genericMapNullableArgument());
+        sb.append(")");
+        return null;
+    }
+
+    private void tryCastMapNullableArgument(GremlinParser.GenericMapNullableArgumentContext ctx) {
+        if (ctx.genericMapNullableLiteral() != null
+                && ctx.genericMapNullableLiteral().nullLiteral() != null) {
+            sb.append("(Map) null");
+        } else {
+            visit(ctx);
+        }
     }
 }

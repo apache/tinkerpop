@@ -53,7 +53,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
         sb.append("new ");
         sb.append(vertexClassName);
         sb.append("(");
@@ -120,7 +120,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+    public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("new LinkedHashMap<Object, Object>() {{ ");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {
             final GremlinParser.MapEntryContext mapEntryContext = ctx.mapEntry(i);
@@ -248,12 +248,12 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralRange(final GremlinParser.GenericLiteralRangeContext ctx) {
+    public Void visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         throw new TranslatorException("Java does not support range literals");
     }
 
     @Override
-    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("new HashSet<Object>() {{ ");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -268,7 +268,7 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+    public Void visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         sb.append("new ArrayList<Object>() {{ ");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -276,22 +276,6 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
             visit(genericLiteralContext);
             sb.append(");");
             if (i < ctx.genericLiteral().size() - 1)
-                sb.append(" ");
-        }
-        sb.append(" }}");
-        return null;
-    }
-
-    @Override
-    public Void visitStringLiteralList(final GremlinParser.StringLiteralListContext ctx) {
-        sb.append("new ArrayList<String>() {{ ");
-        for (int ix = 0; ix < ctx.getChild(1).getChildCount(); ix++) {
-            if (ctx.getChild(1).getChild(ix) instanceof TerminalNode)
-                continue;
-            sb.append("add(");
-            visit(ctx.getChild(1).getChild(ix));
-            sb.append(");");
-            if (ix < ctx.getChild(1).getChildCount() - 1)
                 sb.append(" ");
         }
         sb.append(" }}");

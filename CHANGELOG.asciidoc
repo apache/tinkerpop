@@ -143,6 +143,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
+* Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs"
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

@@ -116,12 +116,12 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralRange(final GremlinParser.GenericLiteralRangeContext ctx) {
+    public Void visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         throw new TranslatorException("Go does not support range literals");
     }
 
     @Override
-    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append(GO_PACKAGE_NAME);
         sb.append("NewSimpleSet(");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
@@ -135,7 +135,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+    public Void visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         sb.append("[]interface{}{");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -148,7 +148,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+    public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("map[interface{}]interface{}{");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {
             final GremlinParser.MapEntryContext mapEntryContext = ctx.mapEntry(i);
@@ -200,7 +200,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
         sb.append(GO_PACKAGE_NAME).append("Vertex{Element{");
         visit(ctx.getChild(3)); // id
         sb.append(", ");

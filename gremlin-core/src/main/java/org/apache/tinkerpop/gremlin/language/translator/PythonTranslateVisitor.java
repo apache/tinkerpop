@@ -62,7 +62,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertex(final GremlinParser.StructureVertexContext ctx) {
+    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
         sb.append("Vertex(");
         visit(ctx.getChild(3)); // id
         sb.append(", ");
@@ -104,7 +104,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+    public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("{ ");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {
             final GremlinParser.MapEntryContext mapEntryContext = ctx.mapEntry(i);
@@ -248,12 +248,12 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralRange(final GremlinParser.GenericLiteralRangeContext ctx) {
+    public Void visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         throw new TranslatorException("Python does not support range literals");
     }
 
     @Override
-    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         sb.append("{");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);
@@ -266,7 +266,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+    public Void visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         sb.append("[");
         for (int i = 0; i < ctx.genericLiteral().size(); i++) {
             final GremlinParser.GenericLiteralContext genericLiteralContext = ctx.genericLiteral(i);

@@ -75,9 +75,9 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
     @Override
     public GraphTraversalSource visitTraversalSourceSelfMethod_withSack(final GremlinParser.TraversalSourceSelfMethod_withSackContext ctx) {
         if (ctx.getChildCount() == 4) {
-            return source.withSack(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+            return source.withSack(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
         } else {
-            return source.withSack(antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
+            return source.withSack(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()),
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
@@ -90,10 +90,10 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
         if (ctx.getChildCount() < 8) {
             // with 4 children withSideEffect() was called without a reducer specified.
             return source.withSideEffect(antlr.genericVisitor.parseString(ctx.stringLiteral()),
-                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
         } else {
             return source.withSideEffect(antlr.genericVisitor.parseString(ctx.stringLiteral()),
-                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()),
+                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()),
                     TraversalEnumParser.parseTraversalEnumFromContext(Operator.class, ctx.traversalBiFunction().traversalOperator()));
         }
     }
@@ -109,7 +109,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
             return source.withStrategies(traversalStrategyVisitor.visitTraversalStrategy((GremlinParser.TraversalStrategyContext) ctx.getChild(2)));
         } else {
             final Object[] vargs = GenericLiteralVisitor.parseTraversalStrategyList(
-                    (GremlinParser.TraversalStrategyListContext) ctx.getChild(4), traversalStrategyVisitor);
+                    (GremlinParser.TraversalStrategyVarargsContext) ctx.getChild(4), traversalStrategyVisitor);
             final List<TraversalStrategy> strats = new ArrayList<>(Arrays.asList(Arrays.copyOf(vargs, vargs.length, TraversalStrategy[].class)));
             strats.add(0, traversalStrategyVisitor.visitTraversalStrategy((GremlinParser.TraversalStrategyContext) ctx.getChild(2)));
             return source.withStrategies(strats.toArray(new TraversalStrategy[strats.size()]));
@@ -141,7 +141,7 @@ public class TraversalSourceSelfMethodVisitor extends DefaultGremlinBaseVisitor<
             return source.with(antlr.genericVisitor.parseString(ctx.stringLiteral()));
         } else {
             return source.with(antlr.genericVisitor.parseString(ctx.stringLiteral()),
-                    antlr.argumentVisitor.visitGenericLiteralArgument(ctx.genericLiteralArgument()));
+                    antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
         }
     }
 }

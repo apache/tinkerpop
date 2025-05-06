@@ -253,8 +253,8 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
         appendStepOpen();
 
         final List<ParseTree> list =  ctx.children.stream().filter(
-                t -> t instanceof GremlinParser.GenericLiteralArgumentContext ||
-                              t instanceof GremlinParser.GenericLiteralListArgumentContext ||
+                t -> t instanceof GremlinParser.GenericArgumentContext ||
+                              t instanceof GremlinParser.GenericArgumentVarargsContext ||
                               t instanceof GremlinParser.StringArgumentContext ||
                               t instanceof GremlinParser.TraversalPredicateContext).collect(Collectors.toList());
         for (int ix = 0; ix < list.size(); ix++) {
@@ -384,7 +384,7 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitGenericLiteralArgument(final GremlinParser.GenericLiteralArgumentContext ctx) {
+    public Void visitGenericArgument(final GremlinParser.GenericArgumentContext ctx) {
         if (ctx.genericLiteral() != null)
             visitGenericLiteral(ctx.genericLiteral());
         else
