@@ -86,7 +86,7 @@ public class ServiceRegistry implements DirectoryService, AutoCloseable {
      * {@link DirectoryService} execution. List or describe the registered callable services.
      */
     @Override
-    public CloseableIterator execute(ServiceCallContext ctx, final Map params) {
+    public CloseableIterator execute(final ServiceCallContext ctx, final Map params) {
         final boolean verbose = (boolean) params.getOrDefault(Params.VERBOSE, false);
         final String serviceName = (String) params.get(Params.SERVICE);
 

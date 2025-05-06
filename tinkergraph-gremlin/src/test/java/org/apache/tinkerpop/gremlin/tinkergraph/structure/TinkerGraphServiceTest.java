@@ -25,10 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerDegreeCentralityFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory;
 import org.apache.tinkerpop.gremlin.util.function.TriFunction;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -38,6 +40,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,8 +72,12 @@ public class TinkerGraphServiceTest {
     final TinkerGraph graph = TinkerFactory.createModern();
     final GraphTraversalSource g = graph.traversal();
 
+    static final Map<String,Object> indexConfig = new HashMap<String,Object>() {{
+        put(TinkerVectorIndex.CONFIG_DIMENSION, 3);
+    }};
+
     @Before
-    public void registerServices() {
+    public void setup() {
         graph.getServiceRegistry().registerService(new TinkerTextSearchFactory(graph));
         graph.getServiceRegistry().registerService(new TinkerDegreeCentralityFactory(graph));
     }
@@ -81,31 +88,31 @@ public class TinkerGraphServiceTest {
     @Test
     public void g_call() throws Exception {
         /*
-         * Tinkergraph has one registered service by default ("tinker.search").
+         * TinkerGraph has one registered service by default ("tinker.search").
          */
         assertArrayEquals(new String[] {
-                "tinker.search",
-                "tinker.degree.centrality"
+                TinkerTextSearchFactory.NAME,
+                TinkerDegreeCentralityFactory.NAME,
                 }, toResultStrings(
 
                 g.call()
 
         ));
         assertArrayEquals(new String[] {
-                "tinker.search",
-                "tinker.degree.centrality"
+                TinkerTextSearchFactory.NAME,
+                TinkerDegreeCentralityFactory.NAME,
                 }, toResultStrings(
 
                 g.call("--list")
 
         ));
 
-        checkResult("tinker.search",
-                g.call("--list").with("service", "tinker.search"));
+        checkResult(TinkerTextSearchFactory.NAME,
+                g.call("--list").with("service", TinkerTextSearchFactory.NAME));
 
-        checkResult("{\"name\":\"tinker.search\",\"type:[requirements]:\":{\"Start\":[]}," +
+        checkResult("{\"name\":\"" + TinkerTextSearchFactory.NAME + "\",\"type:[requirements]:\":{\"Start\":[]}," +
                       "\"params\":"+new ObjectMapper().writeValueAsString(TinkerTextSearchFactory.Params.DESCRIBE)+"}",
-                g.call("--list").with("service", "tinker.search").with("verbose"));
+                g.call("--list").with("service", TinkerTextSearchFactory.NAME).with("verbose"));
     }
 
     /**
@@ -118,7 +125,7 @@ public class TinkerGraphServiceTest {
          */
         assertEquals("[path[vp[name->marko], v[1]]]", toResultString(
 
-            g.call("tinker.search", asMap("search", "mar"))
+            g.call(TinkerTextSearchFactory.NAME, asMap("search", "mar"))
                 .element().path()
 
         ));
@@ -128,7 +135,7 @@ public class TinkerGraphServiceTest {
          */
         assertEquals("[path[vp[name->vadas], v[2]]]", toResultString(
 
-            g.call("tinker.search", (Traversal) __.project("search").by(V(2).values("name")))
+            g.call(TinkerTextSearchFactory.NAME, (Traversal) __.project("search").by(V(2).values("name")))
                 .element().path()
 
         ));
@@ -143,7 +150,7 @@ public class TinkerGraphServiceTest {
                 "path[p[weight->0.2], e[12][6-created->3]]"
                 }, toResultStrings(
 
-            g.call("tinker.search").with("search", __.constant("2"))
+            g.call(TinkerTextSearchFactory.NAME).with("search", __.constant("2"))
                 .element().path()
 
         ));
@@ -157,7 +164,7 @@ public class TinkerGraphServiceTest {
                 "path[vp[age->32], v[4]]",
         }, toResultStrings(
 
-                g.call("tinker.search").with("search", __.constant("2")).with("type", "Vertex")
+                g.call(TinkerTextSearchFactory.NAME).with("search", __.constant("2")).with("type", "Vertex")
                         .element().path()
 
         ));
@@ -175,7 +182,7 @@ public class TinkerGraphServiceTest {
                 "{vertex=v[6], degree=0}",
         }, toResultStrings(
 
-                g.V().as("v").call("tinker.degree.centrality")
+                g.V().as("v").call(TinkerDegreeCentralityFactory.NAME)
                         .project("vertex", "degree").by(select("v")).by()
 
         ));
@@ -189,14 +196,14 @@ public class TinkerGraphServiceTest {
                 "{vertex=peter, degree=1}",
         }, toResultStrings(
 
-                g.V().as("v").call("tinker.degree.centrality").with("direction", Direction.OUT)
+                g.V().as("v").call(TinkerDegreeCentralityFactory.NAME).with("direction", Direction.OUT)
                         .project("vertex", "degree").by(select("v").values("name")).by()
 
         ));
 
-        checkResult("lop", g.V().where(__.call("tinker.degree.centrality").is(3)).values("name"));
-        checkResults(Arrays.asList("vadas","josh","ripple"), g.V().where(__.call("tinker.degree.centrality").is(1)).values("name"));
-        checkResult(0l, g.V().where(__.call("tinker.degree.centrality").is(100)).count());
+        checkResult("lop", g.V().where(__.call(TinkerDegreeCentralityFactory.NAME).is(3)).values("name"));
+        checkResults(Arrays.asList("vadas","josh","ripple"), g.V().where(__.call(TinkerDegreeCentralityFactory.NAME).is(1)).values("name"));
+        checkResult(0l, g.V().where(__.call(TinkerDegreeCentralityFactory.NAME).is(100)).count());
     }
 
     /**
@@ -443,6 +450,145 @@ public class TinkerGraphServiceTest {
         checkResults(Arrays.asList(2, 2, 2), g.V().call(serviceName, asMap(LambdaServiceFactory.Options.TYPE, Type.Barrier, LambdaServiceFactory.Options.CHUNK_SIZE, 2)));
         // chunk size 4
         checkResults(Arrays.asList(4, 2), g.V().call(serviceName, asMap(LambdaServiceFactory.Options.TYPE, Type.Barrier, LambdaServiceFactory.Options.CHUNK_SIZE, 4)));
+    }
+
+    @Test
+    public void g_V_callXvector_topKByVertex_key_embeddingX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+        final Vertex vBob = gv.addV("person").property("name", "Bob").property("embedding", new float[]{0.05f, 1.0f, 0.0f}).next();
+        final Vertex vCharlie = gv.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).next();
+        final Vertex vDave = gv.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).next();
+
+        final Map<String,Object> m = new HashMap<String,Object>() {{
+            put("key", "embedding");
+        }};
+        final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchFactory.NAME, m).toList();
+
+        final List<Map<String,Object>> expected = new ArrayList<>();
+        expected.add(asMap("distance", 0.006116271f, "element", vDave));
+        expected.add(asMap("distance", 0.9500624f, "element", vBob));
+        expected.add(asMap("distance", 1.0f, "element", vCharlie));
+
+        // Use a custom comparison to ensure the lists are equal
+        assertEquals(expected.size(), list.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).get("distance"), ((Map) list.get(i)).get("distance"));
+            assertEquals(expected.get(i).get("element"), ((Map) list.get(i)).get("element"));
+        }
+    }
+
+    @Test
+    public void g_E_callXvector_topKByEdge_key_embeddingX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").next();
+        final Vertex vBob = gv.addV("person").property("name", "Bob").next();
+        final Vertex vCharlie = gv.addV("person").property("name", "Charlie").next();
+
+        final Edge e1 = gv.addE("knows").from(vAlice).to(vBob).property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+        final Edge e2 = gv.addE("knows").from(vAlice).to(vCharlie).property("embedding", new float[]{0.0f, 1.0f, 0.0f}).next();
+        final Edge e3 = gv.addE("knows").from(vBob).to(vCharlie).property("embedding", new float[]{0.5f, 0.5f, 0.0f}).next();
+
+        final Map<String, Object> m = new HashMap<String, Object>() {{
+            put("key", "embedding");
+        }};
+        final List<Object> list = gv.E(e1).call(TinkerVectorSearchFactory.NAME, m).toList();
+
+        final List<Map<String, Object>> expected = new ArrayList<>();
+        expected.add(asMap("distance", 0.29289323f, "element", e3));
+        expected.add(asMap("distance", 1.0f, "element", e2));
+
+        // Use a custom comparison to ensure the lists are equal
+        assertEquals(expected.size(), list.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).get("distance"), ((Map) list.get(i)).get("distance"));
+            assertEquals(expected.get(i).get("element"), ((Map) list.get(i)).get("element"));
+        }
+    }
+
+    @Test
+    public void g_V_callXvector_topKByVertex_key_embedding_topK_1X() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+        final Vertex vBob = gv.addV("person").property("name", "Bob").property("embedding", new float[]{0.05f, 1.0f, 0.0f}).next();
+        final Vertex vCharlie = gv.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).next();
+        final Vertex vDave = gv.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).next();
+
+        final Map<String,Object> m = new HashMap<String,Object>() {{
+            put("key", "embedding");
+            put("topK", 1);
+        }};
+        final List<Object> list = gv.V(vAlice).call(TinkerVectorSearchFactory.NAME, m).toList();
+
+        final List<Map<String,Object>> expected = new ArrayList<>();
+        expected.add(asMap("distance", 0.006116271f, "element", vDave));
+
+        // Use a custom comparison to ensure the lists are equal
+        assertEquals(expected.size(), list.size());
+        for (int i = 0; i < expected.size(); i++) {
+            assertEquals(expected.get(i).get("distance"), ((Map) list.get(i)).get("distance"));
+            assertEquals(expected.get(i).get("element"), ((Map) list.get(i)).get("element"));
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void g_V_callXvector_missing_keyX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+
+        // Missing key parameter should cause a IllegalArgumentException when trying to access it
+        final Map<String,Object> emptyParams = new HashMap<>();
+        gv.V(vAlice).call(TinkerVectorSearchFactory.NAME, emptyParams).toList();
+    }
+
+    @Test
+    public void g_V_callXvector_nonexistent_propertyX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").next(); // No embedding property
+
+        // Referencing a non-existent property should return no results
+        final Map<String,Object> params = new HashMap<String,Object>() {{
+            put("key", "embedding");
+        }};
+
+        assertEquals(0, gv.V(vAlice).call(TinkerVectorSearchFactory.NAME, params).count().next().intValue());
+    }
+
+    @Test
+    public void g_V_properties_callXvector_nonexistent_propertyX() {
+        final TinkerGraph graf = TinkerGraph.open();
+        graf.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graf));
+        graf.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig);
+        final GraphTraversalSource gv = graf.traversal();
+
+        final Vertex vAlice = gv.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).next();
+
+        final Map<String,Object> params = new HashMap<String,Object>() {{
+            put("key", "embedding");
+        }};
+
+        // Referencing things other than vertex or edge should return no results
+        assertEquals(0, gv.V(vAlice).properties().call(TinkerVectorSearchFactory.NAME, params).count().next().intValue());
     }
 
     private String toResultString(final Traversal traversal) {

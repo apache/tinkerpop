@@ -27,7 +27,7 @@ Feature: Step - call()
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
       | tinker.degree.centrality |
 
   Scenario: g_callXlistX
@@ -39,34 +39,34 @@ Feature: Step - call()
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
       | tinker.degree.centrality |
 
   Scenario: g_callXlistX_withXstring_stringX
     Given the empty graph
     And the traversal of
       """
-      g.call("--list").with("service", "tinker.search")
+      g.call("--list").with("service", "tinker.search.text")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
 
   Scenario: g_callXlistX_withXstring_traversalX
     Given the empty graph
     And the traversal of
       """
-      g.call("--list").with("service", __.constant("tinker.search"))
+      g.call("--list").with("service", __.constant("tinker.search.text"))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
 
   Scenario: g_callXlist_mapX
     Given the empty graph
-    And using the parameter xx1 defined as "m[{\"service\": \"tinker.search\"}]"
+    And using the parameter xx1 defined as "m[{\"service\": \"tinker.search.text\"}]"
     And the traversal of
       """
       g.call("--list", xx1)
@@ -74,18 +74,18 @@ Feature: Step - call()
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
 
   Scenario: g_callXlist_traversalX
     Given the empty graph
     And the traversal of
       """
-      g.call("--list", __.project("service").by(__.constant("tinker.search")))
+      g.call("--list", __.project("service").by(__.constant("tinker.search.text")))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
 
 # The parameterized xx1 map will fail, but just passing in the map will pass, need to check
   Scenario: g_callXlist_map_traversalX
@@ -93,19 +93,19 @@ Feature: Step - call()
     And using the parameter xx1 defined as "m[{\"x\": \"y\"}]"
     And the traversal of
       """
-      g.call("--list", xx1, __.project("service").by(__.constant("tinker.search")))
+      g.call("--list", xx1, __.project("service").by(__.constant("tinker.search.text")))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | tinker.search |
+      | tinker.search.text |
 
   Scenario: g_callXsearch_mapX
     Given the modern graph
     And using the parameter xx1 defined as "m[{\"search\": \"mar\"}]"
     And the traversal of
       """
-      g.call("tinker.search", xx1).element()
+      g.call("tinker.search.text", xx1).element()
       """
     When iterated to list
     Then the result should be unordered
@@ -116,7 +116,7 @@ Feature: Step - call()
     Given the modern graph
     And the traversal of
       """
-      g.call("tinker.search", __.project("search").by(__.constant("vada"))).element()
+      g.call("tinker.search.text", __.project("search").by(__.constant("vada"))).element()
       """
     When iterated to list
     Then the result should be unordered
@@ -127,7 +127,7 @@ Feature: Step - call()
     Given the modern graph
     And the traversal of
       """
-      g.call("tinker.search").with("search", "vada").element()
+      g.call("tinker.search.text").with("search", "vada").element()
       """
     When iterated to list
     Then the result should be unordered
@@ -138,7 +138,7 @@ Feature: Step - call()
     Given the modern graph
     And the traversal of
       """
-      g.call("tinker.search").with("search", __.constant("vada")).element()
+      g.call("tinker.search.text").with("search", __.constant("vada")).element()
       """
     When iterated to list
     Then the result should be unordered
@@ -150,7 +150,7 @@ Feature: Step - call()
     And using the parameter xx1 defined as "m[{\"search\": \"mar\"}]"
     And the traversal of
       """
-      g.call("tinker.search", xx1).with("type", "Vertex").element()
+      g.call("tinker.search.text", xx1).with("type", "Vertex").element()
       """
     When iterated to list
     Then the result should be unordered
@@ -162,7 +162,7 @@ Feature: Step - call()
     And using the parameter xx1 defined as "m[{\"search\": \"mar\"}]"
     And the traversal of
       """
-      g.call("tinker.search", xx1).with("type", "Edge").element()
+      g.call("tinker.search.text", xx1).with("type", "Edge").element()
       """
     When iterated to list
     Then the result should be empty
@@ -172,7 +172,7 @@ Feature: Step - call()
     And using the parameter xx1 defined as "m[{\"search\": \"mar\"}]"
     And the traversal of
       """
-      g.call("tinker.search", xx1).with("type", "VertexProperty").element()
+      g.call("tinker.search.text", xx1).with("type", "VertexProperty").element()
       """
     When iterated to list
     Then the result should be empty
