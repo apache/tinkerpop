@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorIndex<T> {
 
     /**
-     * Map of property key to vector index
+     * Map of the property key to vector index
      */
     private final Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
 
@@ -411,7 +411,6 @@ final class TinkerVectorIndex<T extends Element> extends AbstractTinkerVectorInd
             throw e;
         }
     }
-
 
     /**
      * A class that wraps an element with its vector for use in the HNSW index.
