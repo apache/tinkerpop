@@ -1250,7 +1250,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalStrategyList(final GremlinParser.TraversalStrategyListContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalStrategyVarargs(final GremlinParser.TraversalStrategyVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1266,27 +1266,23 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralList(final GremlinParser.GenericLiteralListContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitGenericLiteralExpr(final GremlinParser.GenericLiteralExprContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralRange(final GremlinParser.GenericLiteralRangeContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitStringLiteralList(final GremlinParser.StringLiteralListContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitStringNullableLiteralVarargs(final GremlinParser.StringNullableLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitStringLiteralExpr(final GremlinParser.StringLiteralExprContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitStringNullableArgumentVarargs(final GremlinParser.StringNullableArgumentVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1294,7 +1290,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1338,6 +1334,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitPageRankStringConstant(final GremlinParser.PageRankStringConstantContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1370,7 +1370,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitStructureVertex(final GremlinParser.StructureVertexContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1454,9 +1454,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override
-	public T visitDateArgument(final GremlinParser.DateArgumentContext ctx) { notImplemented(ctx); return null; }
-
+	@Override public T visitDateArgument(final GremlinParser.DateArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1608,11 +1606,11 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralArgument(final GremlinParser.GenericLiteralArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericArgument(final GremlinParser.GenericArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralListArgument(GremlinParser.GenericLiteralListArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericArgumentVarargs(GremlinParser.GenericArgumentVarargsContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1620,15 +1618,11 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralMapArgument(final GremlinParser.GenericLiteralMapArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericMapArgument(final GremlinParser.GenericMapArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralMapNullableArgument(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitStringLiteralVarargs(final GremlinParser.StringLiteralVarargsContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericMapNullableArgument(final GremlinParser.GenericMapNullableArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1664,7 +1658,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1684,11 +1678,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitGenericLiteralMapNullable(final GremlinParser.GenericLiteralMapNullableContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitStringLiteralVarargsArgument(final GremlinParser.StringLiteralVarargsArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitGenericMapNullableLiteral(final GremlinParser.GenericMapNullableLiteralContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

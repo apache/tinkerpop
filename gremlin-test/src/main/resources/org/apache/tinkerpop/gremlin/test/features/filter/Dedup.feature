@@ -422,3 +422,12 @@ Feature: Step - dedup()
     Then the result should be unordered
       | result |
       | d[1].l |
+
+  Scenario: g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().both().has(T.label, "software").dedup().by("lang").by("name").values("name")
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Dedup step can only have one by modulator"

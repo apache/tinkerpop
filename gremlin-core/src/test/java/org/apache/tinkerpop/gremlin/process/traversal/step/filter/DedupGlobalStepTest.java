@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import org.junit.Test;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -36,5 +37,10 @@ public class DedupGlobalStepTest extends StepTest {
                 __.dedup(),
                 __.dedup().by("name")
         );
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowForMultipleByModulators() {
+        __.dedup().by("name").by("age");
     }
 }

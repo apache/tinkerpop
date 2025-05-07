@@ -77,22 +77,22 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitGenericLiteralSet(final GremlinParser.GenericLiteralSetContext ctx) {
+    public Void visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         return anonymize(ctx, Set.class);
     }
 
     @Override
-    public Void visitGenericLiteralCollection(final GremlinParser.GenericLiteralCollectionContext ctx) {
+    public Void visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         return anonymize(ctx, List.class);
     }
 
     @Override
-    public Void visitGenericLiteralMap(final GremlinParser.GenericLiteralMapContext ctx) {
+    public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         return anonymize(ctx, Map.class);
     }
 
     @Override
-    public Void visitGenericLiteralMapNullableArgument(final GremlinParser.GenericLiteralMapNullableArgumentContext ctx) {
+    public Void visitGenericMapNullableArgument(final GremlinParser.GenericMapNullableArgumentContext ctx) {
         return anonymize(ctx, Map.class);
     }
 
@@ -184,4 +184,7 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
     public Void visitInfLiteral(final GremlinParser.InfLiteralContext ctx) {
         return anonymize(ctx, Number.class);
     }
+
+    @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) { return anonymize(ctx, String.class); }
 }
