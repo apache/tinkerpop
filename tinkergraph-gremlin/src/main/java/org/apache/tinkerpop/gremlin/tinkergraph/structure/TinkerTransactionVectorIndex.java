@@ -22,6 +22,7 @@ import com.github.jelmerk.hnswlib.core.Item;
 import com.github.jelmerk.hnswlib.core.SearchResult;
 import com.github.jelmerk.hnswlib.core.hnsw.HnswIndex;
 import com.github.jelmerk.hnswlib.core.Index;
+import com.github.jelmerk.hnswlib.core.hnsw.SizeLimitExceededException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -47,6 +48,11 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
     protected Map<String, Index<Object, float[], ElementItem, Float>> vectorIndices = new ConcurrentHashMap<>();
 
     /**
+     * Map of property key to growth rate
+     */
+    private final Map<String, Double> growthRates = new ConcurrentHashMap<>();
+
+    /**
      * Default number of nearest neighbors to return
      */
     private static final int DEFAULT_K = 10;
@@ -69,7 +75,12 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
     /**
      * Default maximum number of items in the index
      */
-    private static final int DEFAULT_MAX_ITEMS = 100;
+    private static final int DEFAULT_MAX_ITEMS = 10000;
+
+    /**
+     * Default growth rate for the index when it reaches capacity (10%)
+     */
+    private static final double DEFAULT_GROWTH_RATE = 0.1;
 
     /**
      * Configuration key for the dimension of the vector
@@ -100,6 +111,11 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
      * Configuration key for the distance function of the HNSW index
      */
     public static final String CONFIG_DISTANCE_FUNCTION = "distanceFunction";
+
+    /**
+     * Configuration key for the growth rate of the index when it reaches capacity
+     */
+    public static final String CONFIG_GROWTH_RATE = "growthRate";
 
     /**
      * Creates a new vector index for the specified graph and element class.
@@ -182,6 +198,15 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
                 vector = ((TinkerIndexType.Vector) vec);
             }
         }
+
+        double growthRate = DEFAULT_GROWTH_RATE;
+        if (configuration.containsKey(CONFIG_GROWTH_RATE)) {
+            final Object growthObj = configuration.get(CONFIG_GROWTH_RATE);
+            if (growthObj instanceof Number) {
+                growthRate = ((Number) growthObj).doubleValue();
+            }
+        }
+        this.growthRates.put(key, growthRate);
 
         // Create a new HNSW index for this property key
         final Index<Object, float[], ElementItem, Float> index = HnswIndex
@@ -303,7 +328,7 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
             // If the element is not in the index, just ignore the exception
         }
         final ElementItem item = new ElementItem(element.id(), newValue, element);
-        index.add(item);
+        addWithResize(key, index, item);
     }
 
     /**
@@ -366,26 +391,17 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
 
     @Override
     public void remove(final String key, final Object value, final T element) {
-        // For vector indices, we use removeFromIndex
-        if (value instanceof float[]) {
-            removeFromIndex(key, element);
-        }
+        // only make changes to index tx close
     }
 
     @Override
     public void removeElement(final T element) {
-        if (this.indexClass.isAssignableFrom(element.getClass())) {
-            for (String key : this.indexedKeys) {
-                removeFromIndex(key, element);
-            }
-        }
+        // only make changes to index tx close
     }
 
     @Override
     public void autoUpdate(final String key, final Object newValue, final Object oldValue, final T element) {
-        if (this.indexedKeys.contains(key) && newValue instanceof float[]) {
-            updateIndex(key, (float[]) newValue, element);
-        }
+        // only make changes to index tx close
     }
 
     /**
@@ -421,5 +437,40 @@ final class TinkerTransactionVectorIndex<T extends TinkerElement> extends Abstra
      */
     public void rollback() {
         // No specific action needed for rollback in the current implementation
+    }
+
+    /**
+     * Helper method to add an item to the index with automatic resizing if needed.
+     *
+     * @param key   the property key
+     * @param index the vector index
+     * @param item  the item to add
+     */
+    private void addWithResize(final String key, final Index<Object, float[], ElementItem, Float> index,
+                               final ElementItem item) {
+        try {
+            index.add(item);
+        } catch (SizeLimitExceededException e) {
+            // Get the growth rate for this index
+            final Double growthRate = this.growthRates.getOrDefault(key, 0.0d);
+
+            // If growth rate is 0 or not set, rethrow the exception
+            if (growthRate <= 0) {
+                throw e;
+            }
+
+            // Calculate new size based on growth rate
+            final int currentSize = ((HnswIndex<Object, float[], ElementItem, Float>) index).getMaxItemCount();
+            final int newSize = currentSize + (int) Math.ceil(currentSize * growthRate);
+
+            // Resize the index
+            ((HnswIndex<Object, float[], ElementItem, Float>) index).resize(newSize);
+
+            // Try adding the item again
+            index.add(item);
+        } catch (Exception e) {
+            // If it's not a size limit exception, rethrow it
+            throw e;
+        }
     }
 }

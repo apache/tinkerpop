@@ -508,11 +508,6 @@ public class TinkerGraphVectorIndexTest {
 
     @Test
     public void shouldGrowIndexWhenCapacityReached() {
-        // Skip this test for TinkerTransactionGraph as it handles transactions differently
-        if (graph instanceof TinkerTransactionGraph) {
-            return;
-        }
-
         final GraphTraversalSource g = traversal().with(graph);
 
         // Create a small index with only 5 items capacity and 50% growth rate
@@ -551,11 +546,6 @@ public class TinkerGraphVectorIndexTest {
 
     @Test
     public void shouldThrowExceptionWhenGrowthRateIsZero() {
-        // Skip this test for TinkerTransactionGraph as it handles transactions differently
-        if (graph instanceof TinkerTransactionGraph) {
-            return;
-        }
-
         final GraphTraversalSource g = traversal().with(graph);
 
         // Create a small index with only 5 items capacity and 0 growth rate
