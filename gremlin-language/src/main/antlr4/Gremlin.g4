@@ -1645,10 +1645,10 @@ booleanLiteral
     ;
 
 dateLiteral
-    : K_DATETIME1 LPAREN stringArgument RPAREN
-    | K_DATETIME1 LPAREN RPAREN
-    | K_DATETIME2 LPAREN stringArgument RPAREN
-    | K_DATETIME2 LPAREN RPAREN
+    : K_DATETIME LPAREN stringArgument RPAREN
+    | K_DATETIME LPAREN RPAREN
+    | K_DATETIMEU LPAREN stringArgument RPAREN
+    | K_DATETIMEU LPAREN RPAREN
     ;
 
 nullLiteral
@@ -1724,8 +1724,8 @@ keyword
     | K_DAY
     | K_DATEADD
     | K_DATEDIFF
-    | K_DATETIME1
-    | K_DATETIME2
+    | K_DATETIME
+    | K_DATETIMEU
     | K_DECR
     | K_DEDUP
     | K_DESC
