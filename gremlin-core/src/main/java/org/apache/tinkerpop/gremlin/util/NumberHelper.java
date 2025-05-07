@@ -28,6 +28,17 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
+    private static class NumberInfo {
+
+        int bits;
+        boolean fp;
+
+        NumberInfo(int bits, boolean fp) {
+            this.bits = bits;
+            this.fp = fp;
+        }
+    }
+
     private static byte asByte(int arg) {
         if (arg > Byte.MAX_VALUE || arg < Byte.MIN_VALUE)
             throw new ArithmeticException("byte overflow");
@@ -312,11 +323,7 @@ public final class NumberHelper {
         this.cmp = cmp;
     }
 
-    public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
-        return getHighestCommonNumberClass(false, numbers);
-    }
-
-    public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
+    private static NumberInfo getHighestCommonNumberInfo(final boolean forceFloatingPoint, final Number... numbers) {
         int bits = 8;
         boolean fp = forceFloatingPoint;
         for (final Number number : numbers) {
@@ -343,7 +350,16 @@ public final class NumberHelper {
                 break; // maxed out, no need to check remaining numbers
             }
         }
-        return determineNumberClass(bits, fp);
+        return  new NumberInfo(bits, fp);
+    }
+
+    public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
+        return getHighestCommonNumberClass(false, numbers);
+    }
+
+    public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
+        NumberInfo numberInfo = getHighestCommonNumberInfo(forceFloatingPoint, numbers);
+        return determineNumberClass(numberInfo.bits, numberInfo.fp);
     }
 
     /**
@@ -361,8 +377,18 @@ public final class NumberHelper {
      */
     public static Number add(final Number a, final Number b) {
         if (null == a || null == b) return a;
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
-        return getHelper(clazz).add.apply(a, b);
+        NumberInfo numberInfo = getHighestCommonNumberInfo(false, a, b);
+        while (true) {
+            try {
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                return getHelper(clazz).add.apply(a, b);
+            } catch (ArithmeticException exception) {
+                if (numberInfo.bits == 128) {
+                    throw exception;
+                }
+                numberInfo.bits <<= 1;
+            }
+        }
     }
 
 

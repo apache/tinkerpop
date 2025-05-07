@@ -18,6 +18,17 @@
 @StepClassMap @StepSum
 Feature: Step - sum()
 
+  Scenario: g_V_sum_overflow_int
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(2147483647, 1).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2147483648].l |
+
   Scenario: g_V_age_sum
     Given the modern graph
     And the traversal of
