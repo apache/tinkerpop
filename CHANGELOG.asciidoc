@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)
 
+* Added an interface `PopContaining` which is implemented by `Scoping` and `TraversalParent`. Used to get label, and Pop info for a step/traversal. The information is wrapped in a `PopInstruction` object
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Removed old `Translator` infrastructure.

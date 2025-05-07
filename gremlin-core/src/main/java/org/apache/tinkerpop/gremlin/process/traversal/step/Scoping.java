@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,7 +106,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Scoping {
+public interface Scoping extends PopContaining {
 
     public enum Variable {START, END}
 
@@ -165,6 +166,23 @@ public interface Scoping {
      * @return the accessed labels of the scoping step
      */
     public Set<String> getScopeKeys();
+
+    /**
+     * Used to get PopInstruction of a Step that implements Scoping. PopInstruction includes the labels it needs, and the
+     * pop type for each label.
+     *
+     * @return A Set of {@link org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining.PopInstruction} values which contain the label and Pop value
+     */
+    @Override
+    public default HashSet<PopInstruction> getPopInstructions() {
+        final Set<String> labels = this.getScopeKeys();
+        final HashSet<PopInstruction> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final PopInstruction scopingInfo = new PopInstruction(Pop.last, label);
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
+    }
 
     public static class KeyNotFoundException extends Exception {
 
