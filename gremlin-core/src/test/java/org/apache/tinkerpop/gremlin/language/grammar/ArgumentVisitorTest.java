@@ -149,12 +149,12 @@ public class ArgumentVisitorTest {
             });
         } else if (clazz.equals(Object.class)) {
             assertParsing(() -> {
-                final GremlinParser.GenericLiteralArgumentContext ctx = parser.genericLiteralArgument();
+                final GremlinParser.GenericArgumentContext ctx = parser.genericArgument();
                 return antlrToLanguage.argumentVisitor.parseObject(ctx);
             });
         } else if (clazz.equals(List.class)) {
             assertParsing(() -> {
-                final GremlinParser.GenericLiteralListArgumentContext ctx = parser.genericLiteralListArgument();
+                final GremlinParser.GenericArgumentVarargsContext ctx = parser.genericArgumentVarargs();
                 return antlrToLanguage.argumentVisitor.parseObjectVarargs(ctx);
             });
         } else if (clazz.equals(Vertex.class)) {
