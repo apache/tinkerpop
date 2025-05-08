@@ -18,16 +18,49 @@
 @StepClassMap @StepSum
 Feature: Step - sum()
 
+  Scenario: g_V_sum_overflow_byte
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(127b, 1b).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[128].s |
+
+  Scenario: g_V_sum_overflow_short
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(32767s, 1s).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32768].i |
+
   Scenario: g_V_sum_overflow_int
     Given the modern graph
     And the traversal of
       """
-      g.inject(2147483647, 1).sum()
+      g.inject(2147483647i, 1i).sum()
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | d[2147483648].l |
+
+  Scenario: g_V_sum_overflow_long
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(9223372036854775807l, 1l).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[9223372036854775808].n |
 
   Scenario: g_V_age_sum
     Given the modern graph
