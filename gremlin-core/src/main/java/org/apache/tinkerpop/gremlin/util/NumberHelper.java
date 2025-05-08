@@ -383,7 +383,7 @@ public final class NumberHelper {
                 final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
                 return getHelper(clazz).add.apply(a, b);
             } catch (ArithmeticException exception) {
-                if (numberInfo.bits == 128) {
+                if (numberInfo.bits >= 128) {
                     throw exception;
                 }
                 numberInfo.bits <<= 1;
