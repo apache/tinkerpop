@@ -306,10 +306,10 @@ g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f,
 g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate()
 g.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate()
 byElementParams = [key: "embedding", topK: 2] <4>
-g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", byElementParams).toList() <5>
+g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", byElementParams) <5>
 byElementParams = [key: "embedding", topK: 2, element: "vertex"] <6>
 embedding = new float[]{1.0f, 0.0f, 0.0f}
-g.inject([embedding]).unfold().call("tinker.search.vector.topKByEmbedding", params).toList() <7>
+g.inject([embedding]).unfold().call("tinker.search.vector.topKByEmbedding", params) <7>
 ----
 
 <1> Register the vector search service for "topKByElement".
@@ -325,20 +325,7 @@ The `call()` step returns a list of maps, each containing:
 * `distance`: The similarity score between the query vector and the result
 * `element`: The vertex or edge that matches the query
 
-Vector indices can also be created for edges:
-
-[gremlin-groovy]
-----
-graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
-graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig)
-alice = g.V().has("name", "Alice").next()
-bob = g.V().has("name", "Bob").next()
-charlie = g.V().has("name", "Charlie").next()
-g.addE("knows").from(alice).to(bob).property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
-g.addE("knows").from(bob).to(charlie).property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
-params = [key: "embedding"]
-g.E().has("embedding", new float[]{1.0f, 0.0f, 0.0f}).call("tinker.search.vector.topKByElement", params).toList()
-----
+TIP: Vector indices can also be created for edges.
 
 TinkerGraph supports various distance functions for vector similarity search:
 
@@ -352,9 +339,8 @@ TinkerGraph supports various distance functions for vector similarity search:
 
 You can specify the distance function when creating the vector index:
 
-[gremlin-groovy]
+[source,groovy]
 ----
-graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
 indexConfig = [dimension: 3, distanceType: TinkerIndexType.Vector.EUCLIDEAN]
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 ----
@@ -376,7 +362,7 @@ These options are specified when creating a vector index:
 
 Here's an example of creating a vector index with custom configuration options:
 
-[gremlin-groovy]
+[source,groovy]
 ----
 graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
 indexConfig = [
@@ -395,7 +381,29 @@ TIP: Constants for all the configuration values can be found in `TinkerVectorInd
 For example, "dimension" can be referenced as `TinkerVectorIndex.CONFIG_DIMENSION`.
 
 Note that the distance functions can be used directly with the `TinkerVectorDistanceFactory` service. It allows
-calculation of the distance between the elements 
+calculation of the distance between the starting and ending elements in a `Path`.
+
+[gremlin-groovy]
+----
+graph.getServiceRegistry().registerService(new TinkerVectorDistanceFactory(graph))
+g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).as('a').
+  addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).as('b').
+  addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).as('c').
+  addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).as('d').
+  addE('knows').from('a').to('b').
+  addE('knows').from('b').to('c').
+  addE('knows').from('b').to('d').
+  addE('knows').from('c').to('d').iterate()
+params = [key: "embedding", distanceFunction: "COSINE"]
+g.V().has('name','Alice').out().out().path()
+g.V().has('name','Alice').out().out().path().
+  project('path','distance').
+    by().
+    by(call('tinker.vector.distance', params))
+----
+
+In the example above, the `Path` object is projected to a `Map` that has the `Path` itself and the vector distance
+between the start and end vertex of the path.
 
 [[tinkergraph-gremlin-tx]]
 === Transactions
