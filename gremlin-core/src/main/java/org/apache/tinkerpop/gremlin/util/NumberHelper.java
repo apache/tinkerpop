@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
-    static class NumberInfo {
+    static final class NumberInfo {
 
         int bits;
         boolean fp;
