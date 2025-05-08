@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
-    private static class NumberInfo {
+    static class NumberInfo {
 
         int bits;
         boolean fp;
@@ -323,7 +323,7 @@ public final class NumberHelper {
         this.cmp = cmp;
     }
 
-    private static NumberInfo getHighestCommonNumberInfo(final boolean forceFloatingPoint, final Number... numbers) {
+    static NumberInfo getHighestCommonNumberInfo(final boolean forceFloatingPoint, final Number... numbers) {
         int bits = 8;
         boolean fp = forceFloatingPoint;
         for (final Number number : numbers) {

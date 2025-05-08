@@ -32,10 +32,13 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.add;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.compare;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.div;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.getHighestCommonNumberClass;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.getHighestCommonNumberInfo;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.sub;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.NumberInfo;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -48,6 +51,17 @@ public class NumberHelperTest {
 
     private final static List<Number> EACH_NUMBER_TYPE = Arrays.asList(
             (byte) 1, (short) 1, 1, 1L, 1F, 1D, BigInteger.ONE, BigDecimal.ONE
+    );
+
+    private final static List<Triplet<Number, Integer, Boolean>> NUMBER_INFO_CASES = Arrays.asList(
+            new Triplet<>((byte)1, 8, false),
+            new Triplet<>((short)1, 16, false),
+            new Triplet<>(1, 32, false),
+            new Triplet<>(1L, 64, false),
+            new Triplet<>(BigInteger.ONE, 128, false),
+            new Triplet<>(1F, 32, true),
+            new Triplet<>(1D, 64, true),
+            new Triplet<>(BigDecimal.ONE, 128, true)
     );
 
     private final static List<Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>> COMMON_NUMBER_CLASSES =
@@ -98,20 +112,29 @@ public class NumberHelperTest {
                     new Quartet<>(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class)
             );
 
-    private final static List<Triplet<Number, Number, String>> OVERFLOW_CASES = Arrays.asList(
-            new Triplet<>(Integer.MAX_VALUE, 1, "add"),
-            new Triplet<>(Integer.MIN_VALUE, 1, "sub"),
-            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul"),
-            new Triplet<>(Long.MAX_VALUE, 1L, "add"),
-            new Triplet<>(Long.MIN_VALUE, 1L, "sub"),
-            new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul"),
-            new Triplet<>(Byte.MAX_VALUE, (byte)100, "add"),
-            new Triplet<>(Byte.MIN_VALUE, (byte)100, "sub"),
-            new Triplet<>((byte)100, (byte)100, "mul"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "add"),
-            new Triplet<>(Short.MIN_VALUE, (short)100, "sub"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "mul")
+    private final static List<Quartet<Number, Number, String, Boolean>> OVERFLOW_CASES = Arrays.asList(
+            new Quartet<>(Integer.MAX_VALUE, 1, "add", false),
+            new Quartet<>(Integer.MIN_VALUE, 1, "sub", true),
+            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", true),
+            new Quartet<>(Long.MAX_VALUE, 1L, "add", false),
+            new Quartet<>(Long.MIN_VALUE, 1L, "sub", true),
+            new Quartet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul", true),
+            new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", false),
+            new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", true),
+            new Quartet<>((byte)100, (byte)100, "mul", true),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "add", false),
+            new Quartet<>(Short.MIN_VALUE, (short)100, "sub", true),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", true)
     );
+
+    @Test
+    public void shouldReturnHighestCommonNumberNumberInfo() {
+        for (final Triplet<Number, Integer, Boolean> q : NUMBER_INFO_CASES) {
+            NumberInfo numberInfo = getHighestCommonNumberInfo(false, q.getValue0(), q.getValue0());
+            assertEquals(numberInfo.bits, (int)q.getValue1());
+            assertEquals(numberInfo.fp, q.getValue2());
+        }
+    }
 
     @Test
     public void shouldReturnHighestCommonNumberClass() {
@@ -462,11 +485,12 @@ public class NumberHelperTest {
 
     @Test
     public void shouldThrowArithmeticExceptionOnOverflow() {
-        for (final Triplet<Number, Number, String> q : OVERFLOW_CASES) {
+        for (final Quartet<Number, Number, String, Boolean> q : OVERFLOW_CASES) {
+            if (!q.getValue3()) {
+                continue;
+            }
             try {
                 switch (q.getValue2()) {
-                    case "add":
-                        add(q.getValue0(), q.getValue1());
                     case "sub":
                         sub(q.getValue0(), q.getValue1());
                     case "mul":
@@ -476,6 +500,23 @@ public class NumberHelperTest {
             }
             catch (ArithmeticException ex) {
                 // expected
+            }
+        }
+    }
+
+    @Test
+    public void shouldNotThrowArithmeticExceptionOnOverflow() {
+        for (final Quartet<Number, Number, String, Boolean> q : OVERFLOW_CASES) {
+            if (q.getValue3()) {
+                continue;
+            }
+            try {
+                if (q.getValue2().equals("add")) {
+                    add(q.getValue0(), q.getValue1());
+                }
+            }
+            catch (ArithmeticException ex) {
+                fail("ArithmeticException bot expected");
             }
         }
     }
