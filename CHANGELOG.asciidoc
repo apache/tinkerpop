@@ -25,8 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
-* Added vector search to TinkerGraph.
-* Renamed the regex based seach service in TinkerGraph to `tinker.search.text`.
+* Added vector indexing to TinkerGraph with search services for `tinker.search.vector.topKByElement` and `tinker.search.vector.topKByEmbedding`.
+* Added vector distance calculation functions for TinkerGraph.
+* Renamed the regex based search service in TinkerGraph to `tinker.search.text`.
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
