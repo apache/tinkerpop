@@ -22,6 +22,21 @@ limitations under the License.
     <title>Graph Computing Framework | Apache TinkerPop</title>
     <meta name="description" content="Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language.">
     <meta name="keywords" content="graph, graph database, graph computing, graph framework, OLTP, OLAP, Gremlin, Apache TinkerPop">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tinkerpop.apache.org/">
+    <meta property="og:title" content="Graph Computing Framework | Apache TinkerPop">
+    <meta property="og:description" content="Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language.">
+    <meta property="og:image" content="https://tinkerpop.apache.org/img/tinkerpop-splash.webp">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@apachetinkerpop">
+    <meta name="twitter:title" content="Graph Computing Framework | Apache TinkerPop">
+    <meta name="twitter:description" content="Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language.">
+    <meta name="twitter:image" content="https://tinkerpop.apache.org/img/tinkerpop-splash.webp">
+    
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -47,67 +62,67 @@ limitations under the License.
     </script>
     <!-- End Matomo Code -->
     
-    <!-- Structured Data / JSON-LD -->
+    <!-- Structured Data / JSON-LD: Used for SEO and rich search results -->
     <script type="application/ld+json">
     {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": "https://tinkerpop.apache.org/#organization",
-          "name": "Apache TinkerPop",
-          "url": "https://tinkerpop.apache.org/",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://tinkerpop.apache.org/img/logo.png",
-            "width": 280,
-            "height": 60
-          },
-          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).",
-          "sameAs": [
-            "https://github.com/apache/tinkerpop/",
-            "https://twitter.com/apachetinkerpop"
-          ]
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://tinkerpop.apache.org/#website",
-          "url": "https://tinkerpop.apache.org/",
-          "name": "Apache TinkerPop",
-          "publisher": {
-            "@id": "https://tinkerpop.apache.org/#organization"
-          }
-        },
-        {
-          "@type": "WebPage",
-          "@id": "https://tinkerpop.apache.org/#webpage",
-          "url": "https://tinkerpop.apache.org/",
-          "name": "Graph Computing Framework | Apache TinkerPop",
-          "isPartOf": {
-            "@id": "https://tinkerpop.apache.org/#website"
-          },
-          "about": {
-            "@id": "https://tinkerpop.apache.org/#organization"
-          },
-          "description": "Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language."
-        },
-        {
-          "@type": "BreadcrumbList",
-          "@id": "https://tinkerpop.apache.org/#breadcrumblist",
-          "itemListElement": [
+        "@context": "https://schema.org",
+        "@graph": [
             {
-              "@type": "ListItem",
-              "position": 1,
-              "item": {
-                "@type": "WebPage",
-                "@id": "https://tinkerpop.apache.org/",
+                "@type": "Organization",
+                "@id": "https://tinkerpop.apache.org/#organization",
+                "name": "Apache TinkerPop",
                 "url": "https://tinkerpop.apache.org/",
-                "name": "Home"
-              }
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://tinkerpop.apache.org/img/logo.png",
+                    "width": 280,
+                    "height": 60
+                },
+                "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).",
+                "sameAs": [
+                    "https://github.com/apache/tinkerpop/",
+                    "https://twitter.com/apachetinkerpop"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://tinkerpop.apache.org/#website",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Apache TinkerPop",
+                "publisher": {
+                    "@id": "https://tinkerpop.apache.org/#organization"
+                }
+            },
+            {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/#webpage",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Graph Computing Framework | Apache TinkerPop",
+                "isPartOf": {
+                    "@id": "https://tinkerpop.apache.org/#website"
+                },
+                "about": {
+                    "@id": "https://tinkerpop.apache.org/#organization"
+                },
+                "description": "Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language."
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": "https://tinkerpop.apache.org/#breadcrumblist",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "item": {
+                            "@type": "WebPage",
+                            "@id": "https://tinkerpop.apache.org/",
+                            "url": "https://tinkerpop.apache.org/",
+                            "name": "Home"
+                        }
+                    }
+                ]
             }
-          ]
-        }
-      ]
+        ]
     }
     </script>
 </head>
@@ -253,7 +268,7 @@ limitations under the License.
                 <h1 class="ft-40 bold black mb-3">Apache TinkerPop™</h1>
                 <p>Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic
                     systems (OLAP).</p>
-                <a href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-button.png" alt="img"
+                <a href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-button.png" alt="Join the TinkerPop Discord Community"
                                                                              class="img-fluid"></a>
             </div>
         </div>
@@ -263,7 +278,7 @@ limitations under the License.
 <div class="container">
     <div class="row">
         <div class="col-12 text-center">
-            <img src="img/tinkerpop-splash.png" class="img-fluid tinkerpop-splash" alt="TinkerPop Graph Database Framework Visualization">
+            <img src="img/tinkerpop-splash.webp" class="img-fluid tinkerpop-splash" alt="TinkerPop Graph Database Framework Visualization">
         </div>
     </div>
 </div>
@@ -536,7 +551,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
         <div class="row d-flex">
 
             <div class="col-lg-12">
-                <img src="img/tinkerpopfuture-home.png" class="img-fluid w-100" alt="img">
+                <img src="img/tinkerpopfuture-home.png" class="img-fluid w-100" alt="TinkerPop Architecture and Framework Illustration">
             </div>
         </div>
     </div>
@@ -1065,7 +1080,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                 <div class="ju-box">
                     <h2 class="ft-40 text-blue bold">Join Us</h2>
                     <p class="bold">Join us on our Discord Server</p>
-                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                            <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="TinkerPop Discord QR code and invitation"></a>
                 </div>
             </div>
         </div>
@@ -1081,11 +1096,11 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     <div class="bold ft-25">Apache TinkerPop™</div>
                     <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">

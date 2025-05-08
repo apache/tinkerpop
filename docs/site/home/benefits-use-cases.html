@@ -24,6 +24,20 @@ limitations under the License.
     <meta name="description" content="Explore the advantages of graph databases and real-world applications including social networks, fraud detection, and recommendation engines. Learn how graph computing solves complex relationship challenges.">
     <meta name="keywords" content="graph database, graph computing, use cases, social networks, fraud detection, recommendation engines, knowledge graphs, Apache TinkerPop">
     <link rel="canonical" href="https://tinkerpop.apache.org/benefits-use-cases.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tinkerpop.apache.org/benefits-use-cases.html">
+    <meta property="og:title" content="Graph Database Benefits & Use Cases | Apache TinkerPop">
+    <meta property="og:description" content="Explore the advantages of graph databases and real-world applications including social networks, fraud detection, and recommendation engines. Learn how graph computing solves complex relationship challenges.">
+    <meta property="og:image" content="https://tinkerpop.apache.org/img/use-cases/bg.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@apachetinkerpop">
+    <meta name="twitter:title" content="Graph Database Benefits & Use Cases | Apache TinkerPop">
+    <meta name="twitter:description" content="Explore the advantages of graph databases and real-world applications including social networks, fraud detection, and recommendation engines. Learn how graph computing solves complex relationship challenges.">
+    <meta name="twitter:image" content="https://tinkerpop.apache.org/img/use-cases/bg.png">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -125,6 +139,44 @@ limitations under the License.
                 "@id": "https://tinkerpop.apache.org/benefits-use-cases.html",
                 "url": "https://tinkerpop.apache.org/benefits-use-cases.html",
                 "name": "Benefits & Use Cases"
+              }
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://tinkerpop.apache.org/benefits-use-cases.html#faqpage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is a graph database?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A graph database is a structure composed of vertices and edges, where vertices denote discrete objects such as a person, a place, or an event, and edges denote relationships between vertices. Both vertices and edges can have properties, which are key/value-pairs that express non-relational information."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "When should I use a graph database?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "If your domain is composed of a heterogeneous set of objects (vertices) that can be related to one another in a multitude of ways (edges), then a graph may be the right representation to use. Graph databases are particularly effective for data models with complex relationships."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What are common use cases for graph databases?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Common use cases for graph databases include social networks, fraud detection, knowledge graphs, recommendation engines, identity/access management, customer 360 views, master data management, supply chain management, and compliance systems."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What advantages do graph databases offer over relational databases?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Graph databases allow you to think in terms of actors within a world of complex relations as opposed to statically-typed tables joined in aggregate. They offer a flexible, intuitive data structure along with algorithms for complex reasoning: path analysis, vertex clustering and ranking, subgraph identification, and more."
               }
             }
           ]
@@ -318,7 +370,7 @@ limitations under the License.
             </div>
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/network.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/network.png" class="img-fluid mb-3" alt="Social Networks Icon">
                     <h3 class="ft-18 bold text-blue">Social Networks</h3>
                     <p>Unleash the power of a social network by using relationships between individuals to infer and
                         recommend connections.</p>
@@ -327,7 +379,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/fraud.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/fraud.png" class="img-fluid mb-3" alt="Fraud Detection Icon">
                     <h3 class="ft-18 bold text-blue">Fraud Detection</h3>
                     <p>Leverage the connections inherent in a financial transaction to provide real-time analysis and
                         detection for known fraudulent patterns of activity.</p>
@@ -336,7 +388,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/knowledge.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/knowledge.png" class="img-fluid mb-3" alt="Knowledge Graphs Icon">
                     <h3 class="ft-18 bold text-blue">Knowledge Graphs</h3>
                     <p>Unite disperate data sources and data silos to provide contextually relevant information to
                         queries.</p>
@@ -345,7 +397,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/recommendation.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/recommendation.png" class="img-fluid mb-3" alt="Recommendation Engines Icon">
                     <h3 class="ft-18 bold text-blue">Recommendation Engines</h3>
                     <p>Provide real-time personalized recommendations for products, services and content by utilizing
                         connections within data.</p>
@@ -354,7 +406,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/identify.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/identify.png" class="img-fluid mb-3" alt="Identity and Access Management Icon">
                     <h3 class="ft-18 bold text-blue">Identity/Access Management</h3>
                     <p>Effectively and effciently track user activity and access using a graph of assets and
                         relationships.</p>
@@ -363,7 +415,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/360-view.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/360-view.png" class="img-fluid mb-3" alt="Customer 360 View Icon">
                     <h3 class="ft-18 bold text-blue">Customer 360</h3>
                     <p>Leverage disconnected data sources to provide a holisitic 360 degree view of customer
                         interactons</p>
@@ -371,7 +423,7 @@ limitations under the License.
             </div>
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/master-data.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/master-data.png" class="img-fluid mb-3" alt="Master Data Management Icon">
                     <h3 class="ft-18 bold text-blue">Master Data Management</h3>
                     <p>Organize and provide access to canonical master data by combining data in a schemaless and
                         flexible manner.</p>
@@ -381,7 +433,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/supply-chain.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/supply-chain.png" class="img-fluid mb-3" alt="Supply Chain Management Icon">
                     <h3 class="ft-18 bold text-blue">Supply Chain Management</h3>
                     <p>Manage and visualize complex interconnected supply chains to identify optimizations and assess
                         risk.</p>
@@ -391,7 +443,7 @@ limitations under the License.
 
             <div class="col-md-4">
                 <div class="uc-box">
-                    <img src="img/use-cases/compliant.png" class="img-fluid mb-3" alt="img">
+                    <img src="img/use-cases/compliant.png" class="img-fluid mb-3" alt="Compliance Icon">
                     <h3 class="ft-18 bold text-blue">Compliance</h3>
                     <p>Ensure effective compliance by examining and evaluating entities against a network of applicable
                         interconnected regulations.</p>
@@ -412,7 +464,7 @@ limitations under the License.
                 <div class="ju-box">
                     <h2 class="ft-40 text-blue bold">Join Us</h2>
                     <p class="bold">Join us on our Discord Server</p>
-                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="TinkerPop Discord invitation"></a>
                 </div>
             </div>
         </div>
@@ -428,11 +480,11 @@ limitations under the License.
                     <div class="bold ft-25">Apache TinkerPop™</div>
                     <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">
