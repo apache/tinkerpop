@@ -19,9 +19,10 @@ limitations under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Providers</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Database Providers & Systems | Apache TinkerPop</title>
+    <meta name="description" content="Discover TinkerPop-enabled graph databases, processors, and analytics tools from leading providers. Find the right graph database system for your application needs and use cases.">
+    <meta name="keywords" content="graph database providers, graph systems, TinkerPop-enabled, graph computing, graph analytics, OLTP, OLAP, graph databases">
+    <link rel="canonical" href="https://tinkerpop.apache.org/providers.html">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -44,6 +45,100 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://tinkerpop.apache.org/#organization",
+          "name": "Apache TinkerPop",
+          "url": "https://tinkerpop.apache.org/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tinkerpop.apache.org/img/logo.png",
+            "width": 280,
+            "height": 60
+          },
+          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://tinkerpop.apache.org/#website",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Apache TinkerPop",
+          "publisher": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://tinkerpop.apache.org/providers.html#webpage",
+          "url": "https://tinkerpop.apache.org/providers.html",
+          "name": "Graph Database Providers & Systems | Apache TinkerPop",
+          "isPartOf": {
+            "@id": "https://tinkerpop.apache.org/#website"
+          },
+          "about": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          },
+          "description": "Discover TinkerPop-enabled graph databases, processors, and analytics tools from leading providers. Find the right graph database system for your application needs and use cases."
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://tinkerpop.apache.org/providers.html#itemlist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Aerospike Graph",
+              "url": "https://aerospike.com/products/graph-database/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Alibaba Graph Database",
+              "url": "https://cn.aliyun.com/product/gdb"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Amazon Neptune",
+              "url": "https://aws.amazon.com/neptune/"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tinkerpop.apache.org/providers.html#breadcrumblist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Home"
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/providers.html",
+                "url": "https://tinkerpop.apache.org/providers.html",
+                "name": "Graph Database Providers"
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -206,8 +301,8 @@ limitations under the License.
                         computing features. The other type of provider are language designers that have a (graph) query
                         language they wish to have execute on the Gremlin traversal machine and thus, against any
                         TinkerPop-enabled graph system.</p>
-                    <a href="https://tinkerpop.apache.org/docs/current/dev/provider/" class="text-blue "><u>Learn
-                        More</u></a>
+                    <a href="https://tinkerpop.apache.org/docs/current/dev/provider/" class="text-blue "><u>Provider
+                        Documentation & Guidelines</u></a>
                 </div>
             </div>
         </div>

@@ -19,9 +19,9 @@ limitations under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Home</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Computing Framework | Apache TinkerPop</title>
+    <meta name="description" content="Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language.">
+    <meta name="keywords" content="graph, graph database, graph computing, graph framework, OLTP, OLAP, Gremlin, Apache TinkerPop">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -46,6 +46,70 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://tinkerpop.apache.org/#organization",
+          "name": "Apache TinkerPop",
+          "url": "https://tinkerpop.apache.org/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tinkerpop.apache.org/img/logo.png",
+            "width": 280,
+            "height": 60
+          },
+          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).",
+          "sameAs": [
+            "https://github.com/apache/tinkerpop/",
+            "https://twitter.com/apachetinkerpop"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://tinkerpop.apache.org/#website",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Apache TinkerPop",
+          "publisher": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://tinkerpop.apache.org/#webpage",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Graph Computing Framework | Apache TinkerPop",
+          "isPartOf": {
+            "@id": "https://tinkerpop.apache.org/#website"
+          },
+          "about": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          },
+          "description": "Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language."
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tinkerpop.apache.org/#breadcrumblist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Home"
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -54,7 +118,7 @@ limitations under the License.
         <nav class="navbar navbar-expand-lg  ">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html">
-                    <img src="img/logo.png" class="img-fluid" alt="img">
+                    <img src="img/logo.png" class="img-fluid" alt="Apache TinkerPop Graph Computing Framework Logo">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -199,7 +263,7 @@ limitations under the License.
 <div class="container">
     <div class="row">
         <div class="col-12 text-center">
-            <img src="img/tinkerpop-splash.png" class="img-fluid tinkerpop-splash" alt="img">
+            <img src="img/tinkerpop-splash.png" class="img-fluid tinkerpop-splash" alt="TinkerPop Graph Database Framework Visualization">
         </div>
     </div>
 </div>
@@ -348,7 +412,7 @@ limitations under the License.
     <div class="container">
         <div class="row">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="img/gremlin-logo.png" alt="img" class="img-fluid">
+                <img src="img/gremlin-logo.png" alt="Gremlin Graph Query Language Logo" class="img-fluid">
             </div>
             <div class="col-lg-6 ">
                 <h2 class="ft-30 bold text-white mb-3">Gremlin Query Language</h2>
@@ -460,7 +524,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     </div>
                 </div>
                 <a class="btn btn-theme btn-cust" href="gremlin.html"><img src="img/link.svg" class="img-fluid me-2"
-                                                                           alt="img">Learn More</a>
+                                                                           alt="img">Explore Gremlin Graph Query Language</a>
             </div>
         </div>
     </div>
@@ -479,9 +543,9 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
 </div>
 <div class="sec-pad pt-0">
     <div class="container">
-        <div class="row d-flex">
+                <div class="row d-flex">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <h2 class="ft-30 bold black mb-3 ">Benefits & Use Cases</h2>
+                            <h2 class="ft-30 bold black mb-3 mt-4">Benefits & Use Cases</h2>
                 <p class="mb-3">A graph is a structure composed of vertices and edges. Both vertices and edges can have
                     an arbitrary number of key/value-pairs called properties. Vertices denote discrete objects such as a
                     person, a place, or an event. Edges denote relationships between vertices. For instance, a person
@@ -492,7 +556,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     a graph, each vertex is seen as an atomic entity (not simply a "row in a table") that can be linked
                     to any other vertex or have properties added or removed at will.</p>
 
-                <a href="benefits-use-cases.html" class="text-blue ft-17"><u>Learn More</u></a>
+                <a href="benefits-use-cases.html" class="text-blue ft-17"><u>Explore Graph Database Benefits & Use Cases</u></a>
             </div>
             <div class="col-lg-6  ">
                 <h2 class="ft-30 bold black mb-3">How to use TinkerPop</h2>
@@ -502,7 +566,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                         <p class="mb-2 text-blue bold">Database Support</p>
                         <p class="mb-2">TinkerPop is widely supported by more than two dozen commercial and open source
                             graph databases</p>
-                        <a href="providers.html" class="text-blue ft-17"><u>Learn More</u></a>
+                        <a href="providers.html" class="text-blue ft-17"><u>Explore Graph Database Providers</u></a>
                     </div>
                 </div>
 
@@ -514,7 +578,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                             NodeJS with additional drivers provided through community contributions</p>
                         <p class="mb-2">There is a wide array of third-party managed tools and applications that are
                             TinkerPop-compatible</p>
-                        <a href="community.html" class="text-blue ft-17"><u>Learn More</u></a>
+                        <a href="community.html" class="text-blue ft-17"><u>Explore Graph Programming Languages & Tools</u></a>
                     </div>
                 </div>
             </div>
@@ -1070,4 +1134,3 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
 <script src="js/prism.js"></script>
 </body>
 </html>
-

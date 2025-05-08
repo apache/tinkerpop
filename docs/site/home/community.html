@@ -19,9 +19,10 @@ limitations under the License.
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Community</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Computing Community | Apache TinkerPop</title>
+    <meta name="description" content="Join the Apache TinkerPop community to collaborate on graph database technology. Connect with developers, find resources, and contribute to the open-source graph computing ecosystem.">
+    <meta name="keywords" content="graph computing community, graph database community, TinkerPop, open source, graph developers, graph contribution, gremlin">
+    <link rel="canonical" href="https://tinkerpop.apache.org/community.html">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -46,6 +47,76 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://tinkerpop.apache.org/#organization",
+          "name": "Apache TinkerPop",
+          "url": "https://tinkerpop.apache.org/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tinkerpop.apache.org/img/logo.png",
+            "width": 280,
+            "height": 60
+          },
+          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://tinkerpop.apache.org/#website",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Apache TinkerPop",
+          "publisher": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://tinkerpop.apache.org/community.html#webpage",
+          "url": "https://tinkerpop.apache.org/community.html",
+          "name": "Graph Computing Community | Apache TinkerPop",
+          "isPartOf": {
+            "@id": "https://tinkerpop.apache.org/#website"
+          },
+          "about": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          },
+          "description": "Join the Apache TinkerPop community to collaborate on graph database technology. Connect with developers, find resources, and contribute to the open-source graph computing ecosystem."
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tinkerpop.apache.org/community.html#breadcrumblist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Home"
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/community.html",
+                "url": "https://tinkerpop.apache.org/community.html",
+                "name": "Community"
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -358,7 +429,7 @@ result, err := g.V().Out("knows").In("created").ToList()
 
                                   <div class="mt-4 text-center text-blue ft-17">
                                       <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-go"
-                                         target="_blank"><u>Learn More</u></a>
+                                         target="_blank"><u>Gremlin-Go Documentation & Reference</u></a>
                                   </div>
 
                                   <div class="d-flex align-items-start">
@@ -431,7 +502,7 @@ def l = g.V().out('knows').in('created').toList()
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-groovy"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Groovy Documentation & Reference</u></a>
                                 </div>
                             </div>
                         </div>
@@ -521,7 +592,7 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-java"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Java Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -598,7 +669,7 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-JavaScript Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -711,7 +782,7 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin.NET Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -778,7 +849,7 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Python Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">

@@ -19,9 +19,10 @@ limitations under the License.
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="img/favicon.png" rel="shortcut icon" />
-        <title>Apache TinkerPop: Gremlin</title>
-        <meta name="description" content="">
-        <meta name="keywords" content="">
+    <title>Graph Query Language - Gremlin | Apache TinkerPop</title>
+    <meta name="description" content="Gremlin is a graph traversal language that enables developers to query graph databases with a functional, data-flow approach. Learn how to use this powerful graph query language for your data relationships.">
+    <meta name="keywords" content="graph query language, gremlin, graph traversal, graph database, query language, Apache TinkerPop, data-flow language">
+    <link rel="canonical" href="https://tinkerpop.apache.org/gremlin.html">
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/font-awesome.css" rel="stylesheet"/>
         <link href="css/custome.css" rel="stylesheet">
@@ -46,6 +47,93 @@ limitations under the License.
             })();
         </script>
         <!-- End Matomo Code -->
+        
+        <!-- Structured Data / JSON-LD -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://tinkerpop.apache.org/#organization",
+              "name": "Apache TinkerPop",
+              "url": "https://tinkerpop.apache.org/",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://tinkerpop.apache.org/img/logo.png",
+                "width": 280,
+                "height": 60
+              },
+              "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://tinkerpop.apache.org/#website",
+              "url": "https://tinkerpop.apache.org/",
+              "name": "Apache TinkerPop",
+              "publisher": {
+                "@id": "https://tinkerpop.apache.org/#organization"
+              }
+            },
+            {
+              "@type": "TechArticle",
+              "@id": "https://tinkerpop.apache.org/gremlin.html#article",
+              "headline": "Graph Query Language - Gremlin",
+              "description": "Gremlin is a graph traversal language that enables developers to query graph databases with a functional, data-flow approach. Learn how to use this powerful graph query language for your data relationships.",
+              "isPartOf": {
+                "@id": "https://tinkerpop.apache.org/#website"
+              },
+              "publisher": {
+                "@id": "https://tinkerpop.apache.org/#organization"
+              },
+              "mainEntityOfPage": {
+                "@id": "https://tinkerpop.apache.org/gremlin.html#webpage"
+              },
+              "inLanguage": "en",
+              "technicalArticle": true
+            },
+            {
+              "@type": "WebPage",
+              "@id": "https://tinkerpop.apache.org/gremlin.html#webpage",
+              "url": "https://tinkerpop.apache.org/gremlin.html",
+              "name": "Graph Query Language - Gremlin | Apache TinkerPop",
+              "isPartOf": {
+                "@id": "https://tinkerpop.apache.org/#website"
+              },
+              "about": {
+                "@id": "https://tinkerpop.apache.org/#organization"
+              },
+              "description": "Gremlin is a graph traversal language that enables developers to query graph databases with a functional, data-flow approach. Learn how to use this powerful graph query language for your data relationships."
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://tinkerpop.apache.org/gremlin.html#breadcrumblist",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "item": {
+                    "@type": "WebPage",
+                    "@id": "https://tinkerpop.apache.org/",
+                    "url": "https://tinkerpop.apache.org/",
+                    "name": "Home"
+                  }
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "item": {
+                    "@type": "WebPage",
+                    "@id": "https://tinkerpop.apache.org/gremlin.html",
+                    "url": "https://tinkerpop.apache.org/gremlin.html",
+                    "name": "Gremlin Query Language"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        </script>
     </head>
     <body>
     <!-- header -->
@@ -657,4 +745,3 @@ g.V().has("name","gremlin").as("a").
         <script src="js/prism.js"></script>
     </body>
 </html>
-       
