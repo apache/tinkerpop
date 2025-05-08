@@ -41,6 +41,7 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.NumberInfo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -481,6 +482,20 @@ public class NumberHelperTest {
             assertEquals(-1, compare(null, one).intValue());
             assertEquals(1, compare(one, null).intValue());
         }
+    }
+
+    @Test
+    public void shouldPromoteFloatToDoubleForSum() {
+        Number value = add(Float.MAX_VALUE, Float.MAX_VALUE);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForSum() {
+        Number value = add(Double.MAX_VALUE, Double.MAX_VALUE);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
     }
 
     @Test

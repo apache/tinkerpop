@@ -365,6 +365,15 @@ public final class NumberHelper {
     /**
      * Adds two numbers returning the highest common number class between them.
      *
+     * <p>
+     * This method returns a result using the highest common number class between the two inputs.
+     * If an overflow occurs (either integer or floating-point), the method promotes the precision
+     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * If no suitable type exists (e.g., for very large integers beyond 128-bit),
+     * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
+     * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
+     * </p>
+     *
      * <pre>
      *     a = 1, b = 1 -> 2
      *     a = null, b = 1 -> null
@@ -378,13 +387,21 @@ public final class NumberHelper {
     public static Number add(final Number a, final Number b) {
         if (null == a || null == b) return a;
         NumberInfo numberInfo = getHighestCommonNumberInfo(false, a, b);
+        Number result = 0;
         while (true) {
             try {
                 final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
-                return getHelper(clazz).add.apply(a, b);
+                result = getHelper(clazz).add.apply(a, b);
+                if (Double.isInfinite(result.doubleValue()))
+                {
+                    throw new ArithmeticException("Floating point overflow detected");
+                }
+                return result;
             } catch (ArithmeticException exception) {
-                if (numberInfo.bits >= 128) {
+                if (!numberInfo.fp && numberInfo.bits >= 128) {
                     throw exception;
+                } else if (numberInfo.fp && numberInfo.bits >= 64) {
+                    return result;
                 }
                 numberInfo.bits <<= 1;
             }
