@@ -485,7 +485,7 @@ Example values of the two's complement `{value}`:
 
 ==== Byte
 
-An unsigned 8-bit integer.
+An 8-bit two's complement integer.
 
 ==== ByteBuffer
 
