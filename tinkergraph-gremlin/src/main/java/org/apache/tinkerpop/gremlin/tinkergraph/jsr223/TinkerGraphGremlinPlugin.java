@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerWorkerPoo
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerDegreeCentralityFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -61,7 +61,7 @@ public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
                     TinkerIoRegistryV1.class,
                     TinkerIoRegistryV2.class,
                     TinkerIoRegistryV3.class,
-                    TinkerVectorSearchFactory.class,
+                    TinkerVectorSearchByElementFactory.class,
                     TinkerTextSearchFactory.class,
                     TinkerDegreeCentralityFactory.class,
                     TinkerServiceRegistry.TinkerServiceFactory.class,

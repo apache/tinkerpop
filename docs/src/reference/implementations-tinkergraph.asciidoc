@@ -280,20 +280,28 @@ Here's a complete example:
 
 [gremlin-groovy]
 ----
-graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph)) <1>
-indexConfig = [dimension: 3] <2>
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph)) <1>
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByEmbeddingFactory(graph)) <2>
+indexConfig = [dimension: 3] <3>
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 g.addV("person").property("name", "Alice").property("embedding", new float[]{1.0f, 0.0f, 0.0f}).iterate()
 g.addV("person").property("name", "Bob").property("embedding", new float[]{0.0f, 1.0f, 0.0f}).iterate()
 g.addV("person").property("name", "Charlie").property("embedding", new float[]{0.0f, 0.0f, 1.0f}).iterate()
 g.addV("person").property("name", "Dave").property("embedding", new float[]{0.9f, 0.1f, 0.0f}).iterate()
-params = [key: "embedding", topK: 2] <3>
-g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", params).toList()
+byElementParams = [key: "embedding", topK: 2] <4>
+g.V().has("name", "Alice").call("tinker.search.vector.topKByElement", byElementParams).toList() <5>
+byElementParams = [key: "embedding", topK: 2, element: "vertex"] <6>
+embedding = new float[]{1.0f, 0.0f, 0.0f}
+g.inject([embedding]).unfold().call("tinker.search.vector.topKByEmbedding", params).toList() <7>
 ----
 
-<1> Register the vector search service.
-<2> Configuration for the vector index that defines the embedding dimension of size 3.
-<3> Specify the property key containing the embedding and number of results to return.
+<1> Register the vector search service for "topKByElement".
+<2> Register the vector search service for "topKByEmbedding".
+<3> Configuration for the vector index that defines the embedding dimension of size 3.
+<4> Specify the property key containing the embedding and number of results to return.
+<5> Search the vector index for vertices like "Alice".
+<6> Specify the property key containing the embedding, number of results to return, and the index type to search (i.e. either "vertex" or "edge").
+<7> Given an embedding, search the "vertex" index.
 
 The `call()` step returns a list of maps, each containing:
 
@@ -304,7 +312,7 @@ Vector indices can also be created for edges:
 
 [gremlin-groovy]
 ----
-graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Edge.class, indexConfig)
 alice = g.V().has("name", "Alice").next()
 bob = g.V().has("name", "Bob").next()
@@ -329,7 +337,7 @@ You can specify the distance function when creating the vector index:
 
 [gremlin-groovy]
 ----
-graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
 indexConfig = [dimension: 3, distanceType: TinkerIndexType.Vector.EUCLIDEAN]
 graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig)
 ----
@@ -368,6 +376,9 @@ graph.createIndex(TinkerIndexType.VECTOR, "embedding", Vertex.class, indexConfig
 
 TIP: Constants for all the configuration values can be found in `TinkerVectorIndex`. They are prefixed with "CONFIG_".
 For example, "dimension" can be referenced as `TinkerVectorIndex.CONFIG_DIMENSION`.
+
+Note that the distance functions can be used directly with the `TinkerVectorDistanceFactory` service. It allows
+calculation of the distance between the elements 
 
 [[tinkergraph-gremlin-tx]]
 === Transactions

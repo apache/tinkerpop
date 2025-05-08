@@ -219,7 +219,7 @@ Here's a basic example using Groovy:
 // Create a graph and register the vector search service
 graph = TinkerGraph.open()
 g = traversal().with(graph)
-graph.getServiceRegistry().registerService(new TinkerVectorSearchFactory(graph))
+graph.getServiceRegistry().registerService(new TinkerVectorSearchByElementFactory(graph))
 
 // Create a vector index with dimension 3
 indexConfig = [dimension: 3]

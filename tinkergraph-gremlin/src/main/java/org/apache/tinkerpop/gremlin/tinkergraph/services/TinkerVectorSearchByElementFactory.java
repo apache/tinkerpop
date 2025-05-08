@@ -31,14 +31,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory.Params.KEY;
-import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchFactory.Params.TOP_K;
+import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.KEY;
+import static org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerVectorSearchByElementFactory.Params.TOP_K;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 
 /**
- * Service to utilize a {@code TinkerVertexIndex} to do a vector search.
+ * Service to utilize a {@code TinkerVertexIndex} to do a vector search using an embedding from a supplied vertex
+ * or edge.
  */
-public class TinkerVectorSearchFactory extends TinkerServiceRegistry.TinkerServiceFactory<Element, Map<String, Object>> implements Service<Element, Map<String, Object>> {
+public class TinkerVectorSearchByElementFactory extends TinkerServiceRegistry.TinkerServiceFactory<Element, Map<String, Object>> implements Service<Element, Map<String, Object>> {
 
     public static final String NAME = "tinker.search.vector.topKByElement";
 
@@ -58,7 +59,7 @@ public class TinkerVectorSearchFactory extends TinkerServiceRegistry.TinkerServi
         );
     }
 
-    public TinkerVectorSearchFactory(final AbstractTinkerGraph graph) {
+    public TinkerVectorSearchByElementFactory(final AbstractTinkerGraph graph) {
         super(graph, NAME);
     }
 
