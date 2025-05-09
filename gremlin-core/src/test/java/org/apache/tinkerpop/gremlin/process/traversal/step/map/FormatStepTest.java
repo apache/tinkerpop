@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -29,6 +31,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
@@ -179,5 +182,25 @@ public class FormatStepTest extends StepTest {
         assertEquals("Hello Stephen",
                 __.__("Marko").as("name").
                         constant(vertex).format("Hello %{name}").next());
+    }
+
+    @Test
+    public void testScopingInfo() {
+        final FormatStep formatStep = new FormatStep(__.identity().asAdmin(), "%{Hello} %{world}");
+
+        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
+        scopingInfo1.label = "Hello";
+        scopingInfo1.pop = Pop.last;
+
+        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
+        scopingInfo2.label = "world";
+        scopingInfo2.pop = Pop.last;
+
+        final HashSet<Scoping.ScopingInfo> scopingInfoSet = new HashSet<>();
+        scopingInfoSet.add(scopingInfo1);
+        scopingInfoSet.add(scopingInfo2);
+
+        assertEquals(formatStep.getScopingInfo(), scopingInfoSet);
+
     }
 }

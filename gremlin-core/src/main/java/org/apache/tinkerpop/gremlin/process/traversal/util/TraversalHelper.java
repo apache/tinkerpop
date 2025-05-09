@@ -54,7 +54,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -788,4 +787,31 @@ public final class TraversalHelper {
         } else
             return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
     }
+
+    /**
+     * Used to get ScopingInfo of a traversal. Scoping info includes the labels it needs, and the pop type for each label.
+     *
+     * @param traversal     the traversal to get Scoping Info for
+     * @param <T>           the traversal type
+     * @return              A Set of {@link Scoping.ScopingInfo} values which contain the label and Pop value
+     */
+    public static <T extends  Traversal.Admin<?, ?>> Set<Scoping.ScopingInfo> getScopingInfoForTraversal(final T traversal) {
+        final Set<Scoping.ScopingInfo> scopingInfos = new HashSet<>();
+        for (final Step step: traversal.getSteps()) {
+            if (step instanceof Scoping) {
+                final Set<Scoping.ScopingInfo> scopingInfo = ((Scoping) step).getScopingInfo();
+                scopingInfos.addAll(scopingInfo);
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin local: ((TraversalParent) step).getLocalChildren()) {
+                    scopingInfos.addAll(TraversalHelper.getScopingInfoForTraversal(local));
+                }
+                for (final Traversal.Admin global: ((TraversalParent) step).getGlobalChildren()) {
+                    scopingInfos.addAll(TraversalHelper.getScopingInfoForTraversal(global));
+                }
+            }
+        }
+        return scopingInfos;
+    }
+
 }
