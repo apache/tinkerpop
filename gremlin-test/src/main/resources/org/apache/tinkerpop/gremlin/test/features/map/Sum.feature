@@ -18,6 +18,7 @@
 @StepClassMap @StepSum
 Feature: Step - sum()
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_sum_overflow_byte
     Given the modern graph
     And the traversal of
@@ -29,6 +30,7 @@ Feature: Step - sum()
       | result |
       | d[128].s |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_sum_overflow_short
     Given the modern graph
     And the traversal of
@@ -40,6 +42,7 @@ Feature: Step - sum()
       | result |
       | d[32768].i |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_sum_overflow_int
     Given the modern graph
     And the traversal of
@@ -51,6 +54,7 @@ Feature: Step - sum()
       | result |
       | d[2147483648].l |
 
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_sum_overflow_long
     Given the modern graph
     And the traversal of
@@ -58,9 +62,7 @@ Feature: Step - sum()
       g.inject(9223372036854775807l, 1l).sum()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[9223372036854775808].n |
+    Then the traversal will raise an error with message containing text of "long overflow"
 
   Scenario: g_V_age_sum
     Given the modern graph
