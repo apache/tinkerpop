@@ -113,19 +113,27 @@ public class NumberHelperTest {
                     new Quartet<>(BigDecimal.ONE, BigDecimal.ONE, BigDecimal.class, BigDecimal.class)
             );
 
-    private final static List<Quartet<Number, Number, String, Boolean>> OVERFLOW_CASES = Arrays.asList(
-            new Quartet<>(Integer.MAX_VALUE, 1, "add", false),
-            new Quartet<>(Integer.MIN_VALUE, 1, "sub", true),
-            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", false),
-            new Quartet<>(Long.MAX_VALUE, 1L, "add", false),
-            new Quartet<>(Long.MIN_VALUE, 1L, "sub", true),
-            new Quartet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul", false),
-            new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", false),
-            new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", true),
-            new Quartet<>((byte)100, (byte)100, "mul", false),
-            new Quartet<>(Short.MAX_VALUE, (short)100, "add", false),
-            new Quartet<>(Short.MIN_VALUE, (short)100, "sub", true),
-            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", false)
+    private final static List<Triplet<Number, Number, String>> OVERFLOW_CASES = Arrays.asList(
+            new Triplet<>(Long.MAX_VALUE, 1L, "add"),
+            new Triplet<>(Long.MIN_VALUE, 1L, "sub"),
+            new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul")
+    );
+
+    private final static List<Triplet<Number, Number, String>> NO_OVERFLOW_CASES = Arrays.asList(
+            new Triplet<>(Byte.MAX_VALUE, (byte)100, "add"),
+            new Triplet<>(Byte.MIN_VALUE, (byte)100, "sub"),
+            new Triplet<>((byte)100, (byte)100, "mul"),
+            new Triplet<>(Byte.MAX_VALUE, 0.5f, "div"),
+            new Triplet<>(Short.MAX_VALUE, (short)100, "add"),
+            new Triplet<>(Short.MIN_VALUE, (short)100, "sub"),
+            new Triplet<>(Short.MAX_VALUE, (short)100, "mul"),
+            new Triplet<>(Short.MAX_VALUE, 0.5f, "div"),
+            new Triplet<>(Integer.MAX_VALUE, 1, "add"),
+            new Triplet<>(Integer.MIN_VALUE, 1, "sub"),
+            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul"),
+            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "div"),
+            new Triplet<>(Integer.MAX_VALUE, 0.5f, "div"),
+            new Triplet<>(Long.MAX_VALUE, 0.5f, "div")
     );
 
     @Test
@@ -514,13 +522,17 @@ public class NumberHelperTest {
 
     @Test
     public void shouldThrowArithmeticExceptionOnOverflow() {
-        for (final Quartet<Number, Number, String, Boolean> q : OVERFLOW_CASES) {
-            if (!q.getValue3()) {
-                continue;
-            }
+        for (final Triplet<Number, Number, String> q : OVERFLOW_CASES) {
             try {
-                if (q.getValue2().equals("sub")) {
-                    sub(q.getValue0(), q.getValue1());
+                switch (q.getValue2()) {
+                    case "add":
+                        add(q.getValue0(), q.getValue1());
+                    case "sub":
+                        sub(q.getValue0(), q.getValue1());
+                    case "mul":
+                        mul(q.getValue0(), q.getValue1());
+                    case "div":
+                        div(q.getValue0(), q.getValue1());
                 }
                 fail("ArithmeticException expected");
             }
@@ -532,16 +544,17 @@ public class NumberHelperTest {
 
     @Test
     public void shouldNotThrowArithmeticExceptionOnOverflow() {
-        for (final Quartet<Number, Number, String, Boolean> q : OVERFLOW_CASES) {
-            if (q.getValue3()) {
-                continue;
-            }
+        for (final Triplet<Number, Number, String> q : NO_OVERFLOW_CASES) {
             try {
                 switch (q.getValue2()) {
                     case "add":
                         add(q.getValue0(), q.getValue1());
+                    case "sub":
+                        sub(q.getValue0(), q.getValue1());
                     case "mul":
                         mul(q.getValue0(), q.getValue1());
+                    case "div":
+                        div(q.getValue0(), q.getValue1());
                 }
             }
             catch (ArithmeticException ex) {
