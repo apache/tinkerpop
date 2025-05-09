@@ -499,6 +499,20 @@ public class NumberHelperTest {
     }
 
     @Test
+    public void shouldPromoteFloatToDoubleForMul() {
+        Number value = mul(Float.MAX_VALUE, 2F);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForMul() {
+        Number value = mul(Double.MAX_VALUE, 2F);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
     public void shouldThrowArithmeticExceptionOnOverflow() {
         for (final Quartet<Number, Number, String, Boolean> q : OVERFLOW_CASES) {
             if (!q.getValue3()) {
