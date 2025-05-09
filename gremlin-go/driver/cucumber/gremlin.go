@@ -312,6 +312,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().HasLabel("person").Order().By("age").Values("name").Skip(1)}}, 
     "g_VX1X_valuesXageX_rangeXlocal_20_30X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V(p["vid1"]).Values("age").Range(gremlingo.Scope.Local, 20, 30)}}, 
     "g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Map(gremlingo.T__.In().HasId(p["vid1"])).Limit(2).Values("name")}}, 
+    "g_V_sampleX1X_byXageX_byXT_idX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Sample(1).By("age").By(gremlingo.T.Id)}}, 
     "g_V_rangeX2_1X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Range(2, 1)}}, 
     "g_V_rangeX3_2X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().Range(3, 2)}}, 
     "g_E_sampleX1X": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.E().Sample(1)}}, 
