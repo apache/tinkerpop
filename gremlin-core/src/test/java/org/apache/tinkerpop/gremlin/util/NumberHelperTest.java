@@ -493,14 +493,14 @@ public class NumberHelperTest {
     }
 
     @Test
-    public void shouldPromoteFloatToDoubleForSum() {
+    public void shouldPromoteFloatToDoubleForAdd() {
         Number value = add(Float.MAX_VALUE, Float.MAX_VALUE);
         assertTrue(value instanceof Double);
         assertFalse(Double.isInfinite(value.doubleValue()));
     }
 
     @Test
-    public void shouldPromoteDoubleToInfiniteForSum() {
+    public void shouldPromoteDoubleToInfiniteForAdd() {
         Number value = add(Double.MAX_VALUE, Double.MAX_VALUE);
         assertTrue(value instanceof Double);
         assertTrue(Double.isInfinite(value.doubleValue()));
@@ -521,18 +521,35 @@ public class NumberHelperTest {
     }
 
     @Test
+    public void shouldPromoteFloatToDoubleForDiv() {
+        Number value = div(Float.MAX_VALUE, 0.5F);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForDiv() {
+        Number value = div(Double.MAX_VALUE, 0.5F);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
     public void shouldThrowArithmeticExceptionOnOverflow() {
         for (final Triplet<Number, Number, String> q : OVERFLOW_CASES) {
             try {
                 switch (q.getValue2()) {
                     case "add":
                         add(q.getValue0(), q.getValue1());
+                        break;
                     case "sub":
                         sub(q.getValue0(), q.getValue1());
+                        break;
                     case "mul":
                         mul(q.getValue0(), q.getValue1());
-                    case "div":
-                        div(q.getValue0(), q.getValue1());
+                        break;
+                    default:
+                        fail("Unexepected math operation " + q.getValue2() + "'");
                 }
                 fail("ArithmeticException expected");
             }
@@ -549,12 +566,18 @@ public class NumberHelperTest {
                 switch (q.getValue2()) {
                     case "add":
                         add(q.getValue0(), q.getValue1());
+                        break;
                     case "sub":
                         sub(q.getValue0(), q.getValue1());
+                        break;
                     case "mul":
                         mul(q.getValue0(), q.getValue1());
+                        break;
                     case "div":
                         div(q.getValue0(), q.getValue1());
+                        break;
+                    default:
+                        fail("Unexepected math operation '" + q.getValue2() + "'");
                 }
             }
             catch (ArithmeticException ex) {
