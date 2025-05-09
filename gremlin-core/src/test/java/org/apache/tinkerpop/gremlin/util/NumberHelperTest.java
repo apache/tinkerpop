@@ -116,16 +116,16 @@ public class NumberHelperTest {
     private final static List<Quartet<Number, Number, String, Boolean>> OVERFLOW_CASES = Arrays.asList(
             new Quartet<>(Integer.MAX_VALUE, 1, "add", false),
             new Quartet<>(Integer.MIN_VALUE, 1, "sub", true),
-            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", true),
+            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", false),
             new Quartet<>(Long.MAX_VALUE, 1L, "add", false),
             new Quartet<>(Long.MIN_VALUE, 1L, "sub", true),
-            new Quartet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul", true),
+            new Quartet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul", false),
             new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", false),
             new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", true),
-            new Quartet<>((byte)100, (byte)100, "mul", true),
+            new Quartet<>((byte)100, (byte)100, "mul", false),
             new Quartet<>(Short.MAX_VALUE, (short)100, "add", false),
             new Quartet<>(Short.MIN_VALUE, (short)100, "sub", true),
-            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", true)
+            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", false)
     );
 
     @Test
@@ -519,11 +519,8 @@ public class NumberHelperTest {
                 continue;
             }
             try {
-                switch (q.getValue2()) {
-                    case "sub":
-                        sub(q.getValue0(), q.getValue1());
-                    case "mul":
-                        mul(q.getValue0(), q.getValue1());
+                if (q.getValue2().equals("sub")) {
+                    sub(q.getValue0(), q.getValue1());
                 }
                 fail("ArithmeticException expected");
             }
@@ -540,8 +537,11 @@ public class NumberHelperTest {
                 continue;
             }
             try {
-                if (q.getValue2().equals("add")) {
-                    add(q.getValue0(), q.getValue1());
+                switch (q.getValue2()) {
+                    case "add":
+                        add(q.getValue0(), q.getValue1());
+                    case "mul":
+                        mul(q.getValue0(), q.getValue1());
                 }
             }
             catch (ArithmeticException ex) {
