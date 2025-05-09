@@ -549,7 +549,7 @@ public class NumberHelperTest {
                         mul(q.getValue0(), q.getValue1());
                         break;
                     default:
-                        fail("Unexepected math operation " + q.getValue2() + "'");
+                        fail("Unexpected math operation " + q.getValue2() + "'");
                 }
                 fail("ArithmeticException expected");
             }
@@ -577,7 +577,7 @@ public class NumberHelperTest {
                         div(q.getValue0(), q.getValue1());
                         break;
                     default:
-                        fail("Unexepected math operation '" + q.getValue2() + "'");
+                        fail("Unexpected math operation '" + q.getValue2() + "'");
                 }
             }
             catch (ArithmeticException ex) {
