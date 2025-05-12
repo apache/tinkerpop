@@ -402,6 +402,10 @@ public final class NumberHelper {
         while (true) {
             try {
                 result = mathOperation.apply(numberInfo, a, b);
+                if (result.getClass() == BigInteger.class || result.getClass() == BigDecimal.class)
+                {
+                    return result;
+                }
                 if (Double.isInfinite(result.doubleValue()))
                 {
                     throw new ArithmeticException("Floating point overflow detected");
