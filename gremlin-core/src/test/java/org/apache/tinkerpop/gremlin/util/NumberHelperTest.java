@@ -119,21 +119,20 @@ public class NumberHelperTest {
             new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul")
     );
 
-    private final static List<Triplet<Number, Number, String>> NO_OVERFLOW_CASES = Arrays.asList(
-            new Triplet<>(Byte.MAX_VALUE, (byte)100, "add"),
-            new Triplet<>(Byte.MIN_VALUE, (byte)100, "sub"),
-            new Triplet<>((byte)100, (byte)100, "mul"),
-            new Triplet<>(Byte.MAX_VALUE, 0.5f, "div"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "add"),
-            new Triplet<>(Short.MIN_VALUE, (short)100, "sub"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "mul"),
-            new Triplet<>(Short.MAX_VALUE, 0.5f, "div"),
-            new Triplet<>(Integer.MAX_VALUE, 1, "add"),
-            new Triplet<>(Integer.MIN_VALUE, 1, "sub"),
-            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul"),
-            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "div"),
-            new Triplet<>(Integer.MAX_VALUE, 0.5f, "div"),
-            new Triplet<>(Long.MAX_VALUE, 0.5f, "div")
+    private final static List<Quartet<Number, Number, String, String>> NO_OVERFLOW_CASES = Arrays.asList(
+            new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", "s"),
+            new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", "s"),
+            new Quartet<>((byte)100, (byte)100, "mul", "s"),
+            new Quartet<>(Byte.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "add", "i"),
+            new Quartet<>(Short.MIN_VALUE, (short)100, "sub", "i"),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", "i"),
+            new Quartet<>(Short.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Integer.MAX_VALUE, 1, "add", "l"),
+            new Quartet<>(Integer.MIN_VALUE, 1, "sub", "l"),
+            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", "l"),
+            new Quartet<>(Integer.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Long.MAX_VALUE, 0.5f, "div", "d")
     );
 
     @Test
@@ -561,23 +560,44 @@ public class NumberHelperTest {
 
     @Test
     public void shouldNotThrowArithmeticExceptionOnOverflow() {
-        for (final Triplet<Number, Number, String> q : NO_OVERFLOW_CASES) {
+        for (final Quartet<Number, Number, String, String> q : NO_OVERFLOW_CASES) {
             try {
+                Number result = 0;
                 switch (q.getValue2()) {
                     case "add":
-                        add(q.getValue0(), q.getValue1());
+                        result = add(q.getValue0(), q.getValue1());
                         break;
                     case "sub":
-                        sub(q.getValue0(), q.getValue1());
+                        result = sub(q.getValue0(), q.getValue1());
                         break;
                     case "mul":
-                        mul(q.getValue0(), q.getValue1());
+                        result = mul(q.getValue0(), q.getValue1());
                         break;
                     case "div":
-                        div(q.getValue0(), q.getValue1());
+                        result = div(q.getValue0(), q.getValue1());
                         break;
                     default:
                         fail("Unexpected math operation '" + q.getValue2() + "'");
+                }
+                String classValue = result.getClass().toString();
+                switch (q.getValue3()) {
+                    case "s":
+                        assertEquals("class java.lang.Short", classValue);
+                        break;
+                    case "i":
+                        assertEquals("class java.lang.Integer", classValue);
+                        break;
+                    case "l":
+                        assertEquals("class java.lang.Long", classValue);
+                        break;
+                    case "f":
+                        assertEquals("class java.lang.Float", classValue);
+                        break;
+                    case "d":
+                        assertEquals("class java.lang.Double", classValue);
+                        break;
+                    default:
+                        fail("Unexpected class type '" + q.getValue3() + "'");
                 }
             }
             catch (ArithmeticException ex) {
