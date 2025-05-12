@@ -144,18 +144,15 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_within(final GremlinParser.TraversalPredicate_withinContext ctx) {
         // called with no args which is valid for java/groovy
-        if (null == ctx.genericLiteralListArgument()) return P.within();
+        if (null == ctx.genericArgumentVarargs()) return P.within();
 
-        final Object arguments = antlr.argumentVisitor.visitGenericLiteralListArgument(ctx.genericLiteralListArgument());
+        final Object[] arguments = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
 
-        if (arguments instanceof Object[]) {
-            // when generic literal list is consist of a comma separated generic literals
-            return P.within((Object []) arguments);
-        } else if (arguments instanceof List || arguments instanceof Set) {
+        if (arguments.length == 1 && arguments[0] instanceof Collection) {
             // when generic literal list is consist of a collection of generic literals, E.g. range
-            return P.within((Collection) arguments);
+            return P.within((Collection) arguments[0]);
         } else {
-            // when generic literal list is consist of a single generic literal
+            // when generic literal list is consist of comma separated generic literals or a single generic literal
             return P.within(arguments);
         }
     }
@@ -166,18 +163,15 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
         // called with no args which is valid for java/groovy
-        if (null == ctx.genericLiteralListArgument()) return P.without();
+        if (null == ctx.genericArgumentVarargs()) return P.without();
 
-        final Object arguments = antlr.argumentVisitor.visitGenericLiteralListArgument(ctx.genericLiteralListArgument());
+        final Object[] arguments = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
 
-        if (arguments instanceof Object[]) {
-            // when generic literal list is consist of a comma separated generic literals
-            return P.without((Object [])arguments);
-        } else if (arguments instanceof List) {
+        if (arguments.length == 1 && arguments[0] instanceof Collection) {
             // when generic literal list is consist of a collection of generic literals, E.g. range
-            return P.without((List)arguments);
+            return P.without((Collection) arguments[0]);
         } else {
-            // when generic literal list is consist of a single generic literal
+            // when generic literal list is consist of comma separated generic literals or a single generic literal
             return P.without(arguments);
         }
     }
@@ -238,9 +232,9 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
         final int childIndexOfParameterFirst = ctx.getChildCount() == 8 ? 4 : 2;
         final int childIndexOfParameterSecond = ctx.getChildCount() == 8 ? 6 : 4;
 
-        final Object first = antlr.argumentVisitor.visitGenericLiteralArgument(
+        final Object first = antlr.argumentVisitor.visitGenericArgument(
                 ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterFirst));
-        final Object second = antlr.argumentVisitor.visitGenericLiteralArgument(
+        final Object second = antlr.argumentVisitor.visitGenericArgument(
                 ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterSecond));
 
         return new Object[]{first, second};
@@ -253,7 +247,7 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     private Object getSingleGenericLiteralArgument(final ParseTree ctx) {;
         final int childIndexOfParameterValue = ctx.getChildCount() == 6 ? 4 : 2;
 
-        return antlr.argumentVisitor.visitGenericLiteralArgument(
+        return antlr.argumentVisitor.visitGenericArgument(
                 ParseTreeContextCastHelper.castChildToGenericLiteral(ctx, childIndexOfParameterValue));
     }
 }

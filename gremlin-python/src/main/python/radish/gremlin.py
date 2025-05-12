@@ -26,6 +26,7 @@
 
 from radish import world
 import datetime
+import uuid
 from gremlin_python.statics import long, bigint, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
@@ -172,6 +173,7 @@ world.gremlins = {
     'g_VX1X_valuesXageX_dedupXlocalX_unfold': [(lambda g, vid1=None:g.V(vid1).values('age').dedup(Scope.local).unfold())], 
     'g_V_properties_dedup_count': [(lambda g:g.add_v('person').property('name', 'josh').add_v('person').property('name', 'josh').add_v('person').property('name', 'josh')), (lambda g:g.V().properties('name').dedup().count())], 
     'g_V_properties_dedup_byXvalueX_count': [(lambda g:g.add_v('person').property('name', 'josh').add_v('person').property('name', 'josh').add_v('person').property('name', 'josh')), (lambda g:g.V().properties('name').dedup().by(T.value).count())], 
+    'g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name': [(lambda g:g.V().both().has(T.label, 'software').dedup().by('lang').by('name').values('name'))], 
     'g_V_drop': [(lambda g:g.add_v().as_('a').add_v().as_('b').add_e('knows').to('a')), (lambda g:g.V().drop()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_V_outE_drop': [(lambda g:g.add_v().as_('a').add_v().as_('b').add_e('knows').to('a')), (lambda g:g.V().out_e().drop()), (lambda g:g.V()), (lambda g:g.E())], 
     'g_V_properties_drop': [(lambda g:g.add_v().property('name', 'bob').add_v().property('name', 'alice')), (lambda g:g.V().properties().drop()), (lambda g:g.V()), (lambda g:g.V().properties())], 
@@ -313,6 +315,7 @@ world.gremlins = {
     'g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X': [(lambda g:g.V().has_label('person').order().by('age').values('name').skip(1))], 
     'g_VX1X_valuesXageX_rangeXlocal_20_30X': [(lambda g, vid1=None:g.V(vid1).values('age').range_(Scope.local, 20, 30))], 
     'g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX': [(lambda g, vid1=None:g.V().map(__.in_().has_id(vid1)).limit(2).values('name'))], 
+    'g_V_sampleX1X_byXageX_byXT_idX': [(lambda g:g.V().sample(1).by('age').by(T.id_))], 
     'g_V_rangeX2_1X': [(lambda g:g.V().range_(2, 1))], 
     'g_V_rangeX3_2X': [(lambda g:g.V().range_(3, 2))], 
     'g_V_aggregateXxX_byXnameX_byXageX_capXxX': [(lambda g:g.V().aggregate('x').by('name').by('age').cap('x'))], 
@@ -1614,6 +1617,7 @@ world.gremlins = {
     'g_V_sackXassignX_byXageX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').sack())], 
     'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': [(lambda g, xx1=None:g.with_sack(xx1, Operator.assign).V().local(__.out('knows').barrier(Barrier.norm_sack)).in_('knows').barrier().sack())], 
     'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': [(lambda g, xx1=None:g.with_sack(2).V().sack(Operator.div).by(__.constant(xx1)).sack())], 
+    'g_V_sackXassignX_byXageX_byXnameX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').by('name').sack())], 
     'g_V_sideEffectXidentityX': [(lambda g:g.V().side_effect(__.identity()))], 
     'g_V_sideEffectXidentity_valuesXnameXX': [(lambda g:g.V().side_effect(__.identity().values('name')))], 
     'g_V_sideEffectXpropertyXage_22X': [(lambda g:g.add_v('person').property('age', 21)), (lambda g:g.V().side_effect(__.property('age', 22))), (lambda g:g.V().has('age', 21)), (lambda g:g.V().has('age', 22))], 
@@ -1658,4 +1662,6 @@ world.gremlins = {
     'g_VX1X_out_out_out_tree': [(lambda g:g.V().out().out().out().tree())], 
     'g_VX1X_outE_inV_bothE_otherV_tree': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree())], 
     'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': [(lambda g, vid1=None:g.V(vid1).out_e().in_v().both_e().other_v().tree().by('name').by(T.label))], 
+    'g_injectXUUIDX47af10b_58cc_4372_a567_0f02b2f3d479XX': [(lambda g:g.inject(uuid.UUID('f47af10b-58cc-4372-a567-0f02b2f3d479')))], 
+    'g_injectXUUIDXXX': [(lambda g:g.inject(uuid.uuid4()))], 
 }

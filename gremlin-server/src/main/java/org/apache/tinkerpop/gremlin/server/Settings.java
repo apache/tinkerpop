@@ -581,6 +581,12 @@ public class Settings {
          */
         public ClientAuth needClientAuth = ClientAuth.NONE;
 
+        /**
+         * The interval, in milliseconds, at which the trustStore and keyStore files are checked for updates.
+         * The default interval is 60 seconds.
+         */
+        public long refreshInterval = 60000L;
+
         private SslContext sslContext;
 
         /**

@@ -24,6 +24,7 @@
 //********************************************************************************
 
 
+const uuid = require('uuid');
 const graphTraversalModule = require('../../lib/process/graph-traversal');
 const traversalModule = require('../../lib/process/traversal');
 const { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, 
@@ -199,6 +200,7 @@ const gremlins = {
     g_VX1X_valuesXageX_dedupXlocalX_unfold: [function({g, vid1}) { return g.V(vid1).values("age").dedup(Scope.local).unfold() }], 
     g_V_properties_dedup_count: [function({g}) { return g.addV("person").property("name", "josh").addV("person").property("name", "josh").addV("person").property("name", "josh") }, function({g}) { return g.V().properties("name").dedup().count() }], 
     g_V_properties_dedup_byXvalueX_count: [function({g}) { return g.addV("person").property("name", "josh").addV("person").property("name", "josh").addV("person").property("name", "josh") }, function({g}) { return g.V().properties("name").dedup().by(T.value).count() }], 
+    g_V_both_hasXlabel_softwareX_dedup_byXlangX_byXnameX_name: [function({g}) { return g.V().both().has(T.label, "software").dedup().by("lang").by("name").values("name") }], 
     g_V_drop: [function({g}) { return g.addV().as("a").addV().as("b").addE("knows").to("a") }, function({g}) { return g.V().drop() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_V_outE_drop: [function({g}) { return g.addV().as("a").addV().as("b").addE("knows").to("a") }, function({g}) { return g.V().outE().drop() }, function({g}) { return g.V() }, function({g}) { return g.E() }], 
     g_V_properties_drop: [function({g}) { return g.addV().property("name", "bob").addV().property("name", "alice") }, function({g}) { return g.V().properties().drop() }, function({g}) { return g.V() }, function({g}) { return g.V().properties() }], 
@@ -340,6 +342,7 @@ const gremlins = {
     g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X: [function({g}) { return g.V().hasLabel("person").order().by("age").values("name").skip(1) }], 
     g_VX1X_valuesXageX_rangeXlocal_20_30X: [function({g, vid1}) { return g.V(vid1).values("age").range(Scope.local, 20, 30) }], 
     g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX: [function({g, vid1}) { return g.V().map(__.in_().hasId(vid1)).limit(2).values("name") }], 
+    g_V_sampleX1X_byXageX_byXT_idX: [function({g}) { return g.V().sample(1).by("age").by(T.id) }], 
     g_V_rangeX2_1X: [function({g}) { return g.V().range(2, 1) }], 
     g_V_rangeX3_2X: [function({g}) { return g.V().range(3, 2) }], 
     g_V_aggregateXxX_byXnameX_byXageX_capXxX: [function({g}) { return g.V().aggregate("x").by("name").by("age").cap("x") }], 
@@ -1641,6 +1644,7 @@ const gremlins = {
     g_V_sackXassignX_byXageX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").sack() }], 
     g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack: [function({g, xx1}) { return g.withSack(xx1, Operator.assign).V().local(__.out("knows").barrier(Barrier.normSack)).in_("knows").barrier().sack() }], 
     g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack: [function({g, xx1}) { return g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack() }], 
+    g_V_sackXassignX_byXageX_byXnameX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").by("name").sack() }], 
     g_V_sideEffectXidentityX: [function({g}) { return g.V().sideEffect(__.identity()) }], 
     g_V_sideEffectXidentity_valuesXnameXX: [function({g}) { return g.V().sideEffect(__.identity().values("name")) }], 
     g_V_sideEffectXpropertyXage_22X: [function({g}) { return g.addV("person").property("age", 21) }, function({g}) { return g.V().sideEffect(__.property("age", 22)) }, function({g}) { return g.V().has("age", 21) }, function({g}) { return g.V().has("age", 22) }], 
@@ -1685,6 +1689,8 @@ const gremlins = {
     g_VX1X_out_out_out_tree: [function({g}) { return g.V().out().out().out().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree() }], 
     g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX: [function({g, vid1}) { return g.V(vid1).outE().inV().bothE().otherV().tree().by("name").by(T.label) }], 
+    g_injectXUUIDX47af10b_58cc_4372_a567_0f02b2f3d479XX: [function({g}) { return g.inject("f47af10b-58cc-4372-a567-0f02b2f3d479") }], 
+    g_injectXUUIDXXX: [function({g}) { return g.inject(uuid.v4()) }], 
 }
 
 exports.gremlin = gremlins

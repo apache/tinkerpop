@@ -1903,4 +1903,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldFailOnInitiallyDeadHostForSessionClient() throws Exception {
         testShouldFailOnInitiallyDeadHost(false);
     }
+
+    @Test
+    public void shouldReturnUuid() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHSON_V3).create();
+        try {
+            final Client client = cluster.connect().alias("g");
+            List<Result> returnedList = client.submit("g.inject(UUID())", RequestOptions.build().language("gremlin-lang").create()).all().get();
+            assertEquals(1, returnedList.size());
+            Object value = returnedList.get(0).getObject();
+            assertTrue(value instanceof UUID);
+        } finally {
+            cluster.close();
+        }
+    }
 }
