@@ -342,6 +342,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_hasLabelXpersonX_order_byXageX_valuesXnameX_skipX1X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("person").Order().By("age").Values<object>("name").Skip<object>(1)}}, 
                {"g_VX1X_valuesXageX_rangeXlocal_20_30X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V(p["vid1"]).Values<object>("age").Range<object>(Scope.Local, 20, 30)}}, 
                {"g_V_mapXin_hasIdX1XX_limitX2X_valuesXnameX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Map<object>(__.In().HasId(p["vid1"])).Limit<object>(2).Values<object>("name")}}, 
+               {"g_V_sampleX1X_byXageX_byXT_idX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Sample(1).By("age").By(T.Id)}}, 
                {"g_V_rangeX2_1X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Range<object>(2, 1)}}, 
                {"g_V_rangeX3_2X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Range<object>(3, 2)}}, 
                {"g_E_sampleX1X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.E().Sample(1)}}, 
