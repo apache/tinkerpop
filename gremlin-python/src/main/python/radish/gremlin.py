@@ -318,6 +318,8 @@ world.gremlins = {
     'g_V_sampleX1X_byXageX_byXT_idX': [(lambda g:g.V().sample(1).by('age').by(T.id_))], 
     'g_V_rangeX2_1X': [(lambda g:g.V().range_(2, 1))], 
     'g_V_rangeX3_2X': [(lambda g:g.V().range_(3, 2))], 
+    'g_V_aggregateXxX_byXnameX_byXageX_capXxX': [(lambda g:g.V().aggregate('x').by('name').by('age').cap('x'))], 
+    'g_V_aggregateXScope_local_xX_byXnameX_byXageX_capXxX': [(lambda g:g.V().aggregate(Scope.local, 'x').by('name').by('age').cap('x'))], 
     'g_E_sampleX1X': [(lambda g:g.E().sample(1))], 
     'g_E_sampleX2X_byXweightX': [(lambda g:g.E().sample(2).by('weight'))], 
     'g_V_localXoutE_sampleX1X_byXweightXX': [(lambda g:g.V().local(__.out_e().sample(1).by('weight')))], 
