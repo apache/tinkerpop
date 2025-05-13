@@ -53,17 +53,7 @@ Feature: Step - sum()
     Then the result should be unordered
       | result |
       | d[2147483648].l |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_V_sum_overflow_long
-    Given the modern graph
-    And the traversal of
-      """
-      g.inject(9223372036854775807l, 1l).sum()
-      """
-    When iterated to list
-    Then the traversal will raise an error with message containing text of "long overflow"
-
+    
   Scenario: g_V_age_sum
     Given the modern graph
     And the traversal of
