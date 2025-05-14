@@ -429,7 +429,7 @@ public final class NumberHelper {
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
      * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
-     * If no suitable type exists (e.g., for very large integers beyond 128-bit),
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
      * </p>
@@ -455,7 +455,7 @@ public final class NumberHelper {
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
      * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
-     * If no suitable type exists (e.g., for very large integers beyond 128-bit),
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
      * </p>
@@ -481,7 +481,7 @@ public final class NumberHelper {
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
      * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
-     * If no suitable type exists (e.g., for very large integers beyond 128-bit),
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
      * </p>
@@ -515,7 +515,7 @@ public final class NumberHelper {
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
      * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
-     * If no suitable type exists (e.g., for very large integers beyond 128-bit),
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
      * </p>
