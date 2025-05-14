@@ -94,4 +94,4 @@ Feature: Step - dateAdd()
     Then the result should be unordered
       | result |
       | dt[2023-09-17T00:00:00Z] |
-      | dt[2023-09-17T00:00:20Z] |
+      | dt[2023-09-17T00:00:00Z] |
