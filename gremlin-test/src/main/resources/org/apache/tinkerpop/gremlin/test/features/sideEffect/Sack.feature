@@ -79,7 +79,7 @@ Feature: Step - sack()
       | d[Infinity].d |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX-128bX_injectX1bX_sackXminusX_sack
+  Scenario: g_withSackX_128bX_injectX1bX_sackXminusX_sack
     Given the modern graph
     And the traversal of
       """
@@ -91,7 +91,7 @@ Feature: Step - sack()
       | d[-129].s |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX-32768sX_injectX1sX_sackXminusX_sack
+  Scenario: g_withSackX_32768sX_injectX1sX_sackXminusX_sack
     Given the modern graph
     And the traversal of
       """
@@ -103,7 +103,7 @@ Feature: Step - sack()
       | d[-32769].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX-2147483648iX_injectX1iX_sackXminusX_sack
+  Scenario: g_withSackX_2147483648iX_injectX1iX_sackXminusX_sack
     Given the modern graph
     And the traversal of
       """
@@ -115,7 +115,7 @@ Feature: Step - sack()
       | d[-2147483649].l |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX-3_40282347e_38fX_injectX3_40282347e_38fX_sackXminusX_sack
+  Scenario: g_withSackX_3_40282347e_38fX_injectX3_40282347e_38fX_sackXminusX_sack
     Given the modern graph
     And the traversal of
       """
@@ -127,7 +127,7 @@ Feature: Step - sack()
       | d[-6.805646932770577E38].d |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX-1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXminusX_sack
+  Scenario: g_withSackX_1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXminusX_sack
     Given the modern graph
     And the traversal of
       """
