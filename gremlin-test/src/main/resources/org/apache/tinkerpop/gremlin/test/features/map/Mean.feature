@@ -24,7 +24,7 @@ Feature: Step - mean()
     And using the parameter xx1 defined as "d[127].b"
     And the traversal of
       """
-      g.inject(xx1, xx1).mean()
+      g.inject(127b, 127b).mean()
       """
     When iterated to list
     Then the result should be unordered
