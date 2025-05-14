@@ -18,6 +18,19 @@
 @StepClassMap @StepMean
 Feature: Step - mean()
 
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXnull_10_20_nullX_mean_over
+    Given the modern graph
+    And using the parameter xx1 defined as "d[127].b"
+    And the traversal of
+      """
+      g.inject(xx1, xx1).mean()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[127].s |
+
   Scenario: g_V_age_mean
     Given the modern graph
     And the traversal of
