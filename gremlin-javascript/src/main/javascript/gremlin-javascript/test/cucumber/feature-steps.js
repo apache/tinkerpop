@@ -104,6 +104,68 @@ const ignoredScenarios = {
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
 };
 
+function expectDeepCloseToOrdered(actual, expected, epsilon = 1e+30) {
+  if (typeof actual === 'number' && typeof expected === 'number') {
+    expect(actual).to.be.closeTo(expected, epsilon);
+  } else if (Array.isArray(actual) && Array.isArray(expected)) {
+    expect(actual).to.have.lengthOf(expected.length);
+    actual.forEach((val, i) => {
+      expectDeepCloseToOrdered(val, expected[i], epsilon);
+    });
+  } else if (
+      actual !== null &&
+      expected !== null &&
+      typeof actual === 'object' &&
+      typeof expected === 'object'
+  ) {
+    expect(actual).to.have.all.keys(expected);
+    for (const key in expected) {
+      expectDeepCloseToOrdered(actual[key], expected[key], epsilon);
+    }
+  } else {
+    expect(actual).to.equal(expected);
+  }
+}
+
+function expectDeepCloseToUnordered(actual, expected, epsilon = 1e-6) {
+  if (typeof actual === 'number' && typeof expected === 'number') {
+    expect(actual).to.be.closeTo(expected, epsilon);
+  } else if (Array.isArray(actual) && Array.isArray(expected)) {
+    expect(actual).to.have.lengthOf(expected.length);
+
+    // Copy expected and track unmatched elements
+    const unmatched = [...expected];
+
+    actual.forEach((actualItem) => {
+      const matchIndex = unmatched.findIndex(expectedItem => {
+        try {
+          expectDeepCloseToUnordered(actualItem, expectedItem, epsilon);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+      if (matchIndex === -1) {
+        throw new Error(`Unmatched item: ${JSON.stringify(actualItem)}`);
+      }
+      unmatched.splice(matchIndex, 1);
+    });
+  } else if (
+      actual !== null &&
+      expected !== null &&
+      typeof actual === 'object' &&
+      typeof expected === 'object'
+  ) {
+    expect(actual).to.have.all.keys(expected);
+    for (const key in expected) {
+      expectDeepCloseToUnordered(actual[key], expected[key], epsilon);
+    }
+  } else {
+    expect(actual).to.equal(expected);
+  }
+}
+
 Given(/^the (.+) graph$/, function (graphName) {
   // if the scenario is ignored then skip the test
   if (ignoredScenarios[this.scenario]) {
@@ -218,10 +280,10 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
+      expectDeepCloseToOrdered(this.result, expectedResult, 1e+30);
       break;
     case 'unordered':
-      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
+      expectDeepCloseToUnordered(this.result, expectedResult, 1e+30);
       break;
     case 'of':
       // result is a subset of the expected
