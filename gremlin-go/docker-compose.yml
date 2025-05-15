@@ -45,7 +45,7 @@ services:
 
   gremlin-go-integration-tests:
     container_name: gremlin-go-integration-tests
-    image: golang:1.22
+    image: golang:1.24
     volumes:
       - .:/go_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
