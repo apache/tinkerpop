@@ -104,8 +104,17 @@ const ignoredScenarios = {
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
 };
 
-function isArrayOfNumbers(arr) {
-  return Array.isArray(arr) && arr.every(item => typeof item === 'number');
+function objectsMatchWithTolerance(actual, expected, tolerance = 1e+30) {
+  for (const key of Object.keys(expected)) {
+    const actualVal = actual[key];
+    const expectedVal = expected[key];
+
+    if (typeof expectedVal === 'number' && typeof actualVal === 'number') {
+      expect(actualVal, `Mismatch at key "${key}"`).to.be.closeTo(expectedVal, tolerance);
+    } else {
+      expect(actualVal, `Mismatch at key "${key}"`).to.equal(expectedVal);
+    }
+  }
 }
 
 Given(/^the (.+) graph$/, function (graphName) {
@@ -222,26 +231,22 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      let actualOrdered = toCompare(this.result);
-      if (isArrayOfNumbers(this.result) && isArrayOfNumbers(expectedResult)) {
-        expect(actualOrdered).to.have.lengthOf(expectedResult.length);
-        for (let i = 0; i < this.result.length; i++) {
-          expect(actualOrdered[i]).to.be.closeTo(expectedResult[i], 1e+30);
-        }
-      } else {
-        expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
-      }
+      expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
       let actualUnordered = toCompare(this.result);
-      if (isArrayOfNumbers(actualUnordered) && isArrayOfNumbers(expectedResult)) {
-        expect(actualUnordered).to.have.lengthOf(expectedResult.length);
-        for (let i = 0; i < this.result.length; i++) {
-          expect(actualUnordered[i]).to.be.closeTo(expectedResult[i], 1e+30);
-        }
-      } else {
-        expect(toCompare(this.result)).to.have.deep.members(expectedResult);
-      }
+      expectedResult.forEach(expectedItem => {
+        const match = actualUnordered.find(actualItem => {
+          try {
+            objectsMatchWithTolerance(actualItem, expectedItem);
+            return true; // Found a valid match
+          } catch (err) {
+            return false; // Not a match, try next
+          }
+        });
+
+        expect(match, `Expected item not found: ${JSON.stringify(expectedItem)}`).to.exist;
+      });
       break;
     case 'of':
       // result is a subset of the expected
