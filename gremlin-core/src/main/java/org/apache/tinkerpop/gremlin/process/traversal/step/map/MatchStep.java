@@ -219,6 +219,19 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
+    public Set<ScopingInfo> getScopingInfo() {
+        final Set<String> labels = this.getScopeKeys();
+        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final ScopingInfo scopingInfo = new ScopingInfo();
+            scopingInfo.label = label;
+            scopingInfo.pop = Pop.last;
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.dedupLabels, this.connective, this.matchTraversals);
     }

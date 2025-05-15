@@ -166,6 +166,19 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     }
 
     @Override
+    public Set<ScopingInfo> getScopingInfo() {
+        final Set<String> labels = this.getScopeKeys();
+        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final ScopingInfo scopingInfo = new ScopingInfo();
+            scopingInfo.label = label;
+            scopingInfo.pop = Pop.last;
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
+    }
+
+    @Override
     public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }

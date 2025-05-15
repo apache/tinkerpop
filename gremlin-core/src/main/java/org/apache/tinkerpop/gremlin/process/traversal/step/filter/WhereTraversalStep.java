@@ -147,6 +147,19 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         return this.keepLabels;
     }
 
+    @Override
+    public Set<ScopingInfo> getScopingInfo() {
+        final Set<String> labels = this.getScopeKeys();
+        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final ScopingInfo scopingInfo = new ScopingInfo();
+            scopingInfo.label = label;
+            scopingInfo.pop = Pop.last;
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
+    }
+
     //////////////////////////////
 
     public static class WhereStartStep<S> extends ScalarMapStep<S, Object> implements Scoping {

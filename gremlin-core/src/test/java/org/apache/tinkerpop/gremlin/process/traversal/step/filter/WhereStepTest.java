@@ -19,15 +19,23 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
 
@@ -36,6 +44,8 @@ import static org.junit.Assert.assertEquals;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class WhereStepTest extends StepTest {
+
+    private static final Logger log = LoggerFactory.getLogger(WhereStepTest.class);
 
     @Override
     public List<Traversal> getTraversals() {
@@ -64,5 +74,38 @@ public class WhereStepTest extends StepTest {
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
         }
+    }
+
+    @Test
+    public void testScopingInfo() {
+
+        // Testing WherePredicate Step
+        final WherePredicateStep wherePredicateStep = new WherePredicateStep(__.identity().asAdmin(), Optional.of("key1"), P.neq("label1"));
+
+        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
+        scopingInfo1.label = "key1";
+        scopingInfo1.pop = Pop.last;
+
+        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
+        scopingInfo2.label = "label1";
+        scopingInfo2.pop = Pop.last;
+
+        HashSet<Scoping.ScopingInfo> scopingInfoHashSet = new HashSet<>();
+        scopingInfoHashSet.add(scopingInfo1);
+        scopingInfoHashSet.add(scopingInfo2);
+
+        assertEquals(wherePredicateStep.getScopingInfo(), scopingInfoHashSet);
+
+        // Testing WhereTraversal Test
+        final WhereTraversalStep whereTraversalStep = new WhereTraversalStep<>(new DefaultTraversal(), __.as("x").select("a", "b").asAdmin());
+        final Scoping.ScopingInfo scopingInfo = new Scoping.ScopingInfo();
+        scopingInfo.label = "x";
+        scopingInfo.pop = Pop.last;
+
+        scopingInfoHashSet = new HashSet<>();
+        scopingInfoHashSet.add(scopingInfo);
+
+        assertEquals(whereTraversalStep.getScopingInfo(), scopingInfoHashSet);
+
     }
 }

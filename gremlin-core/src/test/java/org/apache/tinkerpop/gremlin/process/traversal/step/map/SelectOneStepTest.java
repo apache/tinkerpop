@@ -20,12 +20,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -60,5 +63,58 @@ public class SelectOneStepTest extends StepTest {
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
         }
+    }
+
+    @Test
+    public void testScopingInfo() {
+        final GraphTraversal<Object, Object> traversal = __.identity();
+
+        // Expected Output
+        HashSet<Scoping.ScopingInfo> scopingInfoSet = new HashSet<>();
+
+        Scoping.ScopingInfo scopingInfo = new Scoping.ScopingInfo();
+        scopingInfo.label = "x";
+        scopingInfo.pop = Pop.all;
+
+        scopingInfoSet.add(scopingInfo);
+
+
+        // Pop.all
+        final SelectOneStep selectOneStepAll = new SelectOneStep((Traversal.Admin) traversal, Pop.all, "x");
+
+        assertEquals(selectOneStepAll.getScopingInfo(), scopingInfoSet);
+
+
+        // Pop.last
+        final SelectOneStep selectOneStepLast = new SelectOneStep<>((Traversal.Admin) traversal, Pop.last, "x");
+        scopingInfoSet = new HashSet<>();
+        scopingInfo = new Scoping.ScopingInfo();
+        scopingInfo.label = "x";
+        scopingInfo.pop = Pop.last;
+        scopingInfoSet.add(scopingInfo);
+
+        assertEquals(selectOneStepLast.getScopingInfo(), scopingInfoSet);
+
+
+        // Pop.first
+        final SelectOneStep selectOneStepFirst = new SelectOneStep<>((Traversal.Admin) traversal, Pop.first, "x");
+        scopingInfoSet = new HashSet<>();
+        scopingInfo = new Scoping.ScopingInfo();
+        scopingInfo.label = "x";
+        scopingInfo.pop = Pop.first;
+        scopingInfoSet.add(scopingInfo);
+        assertEquals(selectOneStepFirst.getScopingInfo(), scopingInfoSet);
+
+
+        // Pop.mixed
+        final SelectOneStep selectOneStepMixed = new SelectOneStep<>((Traversal.Admin) traversal, Pop.mixed, "x");
+        scopingInfoSet = new HashSet<>();
+        scopingInfo = new Scoping.ScopingInfo();
+        scopingInfo.label = "x";
+        scopingInfo.pop = Pop.mixed;
+        scopingInfoSet.add(scopingInfo);
+
+        assertEquals(selectOneStepMixed.getScopingInfo(), scopingInfoSet);
+
     }
 }

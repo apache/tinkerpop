@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -166,6 +167,13 @@ public interface Scoping {
      */
     public Set<String> getScopeKeys();
 
+    /**
+     * Used to get ScopingInfo of a Step that implements Scoping. Scoping info includes the labels it needs, and the pop type for each label.
+     *
+     * @return A Set of {@link ScopingInfo} values which contain the label and Pop value
+     */
+    public default Set<ScopingInfo> getScopingInfo() {return null; }
+
     public static class KeyNotFoundException extends Exception {
 
         private final Object key;
@@ -183,6 +191,41 @@ public interface Scoping {
 
         public Scoping getStep() {
             return step;
+        }
+    }
+
+
+    /**
+     * A class for storing the Scoping information. It has two elements:
+     * - label: String
+     * - pop: Pop value
+     */
+    public static class ScopingInfo {
+        public String label;
+        public Pop pop;
+
+        public ScopingInfo() {
+            this.label = "";
+            this.pop = null;
+        }
+
+        public ScopingInfo(String label, Pop pop) {
+            this.label = label;
+            this.pop = pop;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            ScopingInfo that = (ScopingInfo) o;
+            return Objects.equals(label, that.label) && pop == that.pop;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(label, pop);
         }
     }
 }

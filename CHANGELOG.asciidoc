@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)
 
+* Added a utility function `getScopingInfo()` in all classes implementing `Scoping` and a method `getScopingInfoForTraversal` to get the labels needed by a traversal. 
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Removed old `Translator` infrastructure.

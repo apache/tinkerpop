@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -147,6 +146,19 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public Set<String> getScopeKeys() {
         return this.selectKeysSet;
+    }
+
+    @Override
+    public Set<ScopingInfo> getScopingInfo() {
+        final Set<String> labels = this.getScopeKeys();
+        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final ScopingInfo scopingInfo = new ScopingInfo();
+            scopingInfo.label = label;
+            scopingInfo.pop = this.getPop();
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
     }
 
     /**
