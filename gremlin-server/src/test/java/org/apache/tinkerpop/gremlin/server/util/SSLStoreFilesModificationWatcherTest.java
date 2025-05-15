@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import io.cucumber.messages.internal.com.google.common.io.Files;
+import com.google.common.io.Files;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
 
