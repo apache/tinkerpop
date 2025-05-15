@@ -218,14 +218,14 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      if (typeof a === 'number' && typeof b === 'number') {
+      if (typeof this.result === 'number' && typeof expectedResult === 'number') {
         expect(toCompare(this.result)).to.be.closeTo(expectedResult, 1e+30);
       } else {
         expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       }
       break;
     case 'unordered':
-      if (typeof a === 'number' && typeof b === 'number') {
+      if (typeof this.result === 'number' && typeof expectedResult === 'number') {
         expect(toCompare(this.result)).to.be.closeTo(expectedResult, 1e+30);
       } else {
         expect(toCompare(this.result)).to.have.deep.members(expectedResult);
