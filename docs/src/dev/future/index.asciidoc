@@ -160,9 +160,11 @@ story.
 [width="100%",cols="3,10,2,^1",options="header"]
 |=========================================================
 |Proposal |Description |Targets |Resolved
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |4.0.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2[Proposal 2] |Gremlin Arrow Flight. |Future |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-transaction-4[Proposal 4] |TinkerGraph Transaction Support |3.7.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-scoping-5[Proposal 5] |Lazy vs. Eager Evaluation|3.8.0 |N
 |=========================================================
 
 = Appendix

@@ -307,12 +307,15 @@ The previous behavior attempted to round-robin the by() but this wasn't possible
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
-==== groupCount() By Modulation Semantics
+==== groupCount(), dedup(), sack(), sample(), aggregate() By Modulation Semantics
 
-The `groupCount()` step has been changed to throw an error if multiple `by()` modulators are applied. The previous 
-behavior would ignore previous `by()` modulators and apply the last one, which was not intuitive.
+The `groupCount()`, `dedup()`, `sack()`, `sample()`, and `aggregate()` steps has been changed to throw an error if
+multiple `by()` modulators are applied. The previous behavior would ignore previous `by()` modulators and apply the
+last one, which was not intuitive.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
+
+==== Additional By Modulation Semantics
 
 === Upgrading for Providers
 
