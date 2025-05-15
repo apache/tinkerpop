@@ -104,10 +104,6 @@ const ignoredScenarios = {
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
 };
 
-function isArrayOfNumbers(arr) {
-  return Array.isArray(arr) && arr.every(item => typeof item === 'number');
-}
-
 Given(/^the (.+) graph$/, function (graphName) {
   // if the scenario is ignored then skip the test
   if (ignoredScenarios[this.scenario]) {
@@ -222,26 +218,10 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   const expectedResult = resultTable.rows().map(row => parseRow.call(this, row));
   switch (characterizedAs) {
     case 'ordered':
-      let actualOrdered = toCompare(this.result);
-      if (isArrayOfNumbers(this.result) && isArrayOfNumbers(expectedResult)) {
-        expect(actualOrdered).to.have.lengthOf(expectedResult.length);
-        for (let i = 0; i < this.result.length; i++) {
-          expect(actualOrdered[i]).to.be.closeTo(expectedResult[i], 1e+30);
-        }
-      } else {
-        expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
-      }
+      expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      let actualUnordered = toCompare(this.result);
-      if (isArrayOfNumbers(actualUnordered) && isArrayOfNumbers(expectedResult)) {
-        expect(actualUnordered).to.have.lengthOf(expectedResult.length);
-        for (let i = 0; i < this.result.length; i++) {
-          expect(actualUnordered[i]).to.be.closeTo(expectedResult[i], 1e+30);
-        }
-      } else {
-        expect(toCompare(this.result)).to.have.deep.members(expectedResult);
-      }
+      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
       break;
     case 'of':
       // result is a subset of the expected
