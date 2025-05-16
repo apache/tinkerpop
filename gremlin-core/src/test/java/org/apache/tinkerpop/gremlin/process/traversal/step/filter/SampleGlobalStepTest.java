@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -58,5 +59,10 @@ public class SampleGlobalStepTest extends StepTest {
             assertEquals(i, new HashSet<>(result).size());
             assertTrue(list.containsAll(result));
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowForMultipleByModulators() {
+        __.V().sample(1).by("age").by(T.id);
     }
 }
