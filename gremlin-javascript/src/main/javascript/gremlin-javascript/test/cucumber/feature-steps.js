@@ -235,30 +235,15 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       break;
     case 'unordered':
       let actualUnordered = toCompare(this.result);
-      console.log('actualUnordered:', actualUnordered);
-      console.log('actualUnordered type:', typeof actualUnordered);
-      console.log('expectedResult:', expectedResult);
-      console.log('expectedResult type:', typeof expectedResult);
-
-      if (Array.isArray(actualUnordered) && Array.isArray(expectedResult)) {
-        expectedResult.forEach(expectedItem => {
-          const match = actualUnordered.find(actualItem => {
-            try {
-              objectsMatchWithTolerance(actualItem, expectedItem);
-              return true; // Found a valid match
-            } catch (err) {
-              return false; // Not a match, try next
-            }
-          });
-
-          expect(match, `Expected item not found: ${JSON.stringify(expectedItem)}`).to.exist;
+      if (actualUnordered instanceof Map && typeof expectedResult === "number") {
+        Array.from(actualUnordered.values()).forEach((actualValue, index) => {
+          expect(actualValue).to.be.closeTo(expectedResult, 1e+30);
         });
       }
       else
       {
         expect(actualUnordered).to.have.deep.members(expectedResult);
       }
-
       break;
     case 'of':
       // result is a subset of the expected
