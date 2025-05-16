@@ -104,19 +104,6 @@ const ignoredScenarios = {
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
 };
 
-function objectsMatchWithTolerance(actual, expected, tolerance = 1e+30) {
-  for (const key of Object.keys(expected)) {
-    const actualVal = actual[key];
-    const expectedVal = expected[key];
-
-    if (typeof expectedVal === 'number' && typeof actualVal === 'number') {
-      expect(actualVal, `Mismatch at key "${key}"`).to.be.closeTo(expectedVal, tolerance);
-    } else {
-      expect(actualVal, `Mismatch at key "${key}"`).to.equal(expectedVal);
-    }
-  }
-}
-
 Given(/^the (.+) graph$/, function (graphName) {
   // if the scenario is ignored then skip the test
   if (ignoredScenarios[this.scenario]) {
@@ -234,15 +221,14 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      let actualUnordered = toCompare(this.result);
-      if (actualUnordered instanceof Map && typeof expectedResult === "number") {
-        Array.from(actualUnordered.values()).forEach((actualValue, index) => {
-          expect(actualValue).to.be.closeTo(expectedResult, 1e+30);
-        });
+      if (Array.isArray(this.result) && this.result.length === 1 && typeof this.result === "number" &&
+          Array.isArray(expectedResult) && expectedResult.length === 1 && typeof expectedResult === "number")
+      {
+        expect(toCompare(this.result)[0]).to.be.closeTo(expectedResult[0], 1e+30);
       }
       else
       {
-        expect(actualUnordered).to.have.deep.members(expectedResult);
+        expect(toCompare(this.result)).to.have.deep.members(expectedResult);
       }
       break;
     case 'of':
