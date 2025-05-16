@@ -221,15 +221,7 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       expect(toCompare(this.result)).to.have.deep.ordered.members(expectedResult);
       break;
     case 'unordered':
-      if (Array.isArray(this.result) && this.result.length === 1 && typeof this.result === "number" &&
-          Array.isArray(expectedResult) && expectedResult.length === 1 && typeof expectedResult === "number")
-      {
-        expect(toCompare(this.result)[0]).to.be.closeTo(expectedResult[0], 1e+30);
-      }
-      else
-      {
-        expect(toCompare(this.result)).to.have.deep.members(expectedResult);
-      }
+      expect(toCompare(this.result)).to.have.deep.members(expectedResult);
       break;
     case 'of':
       // result is a subset of the expected

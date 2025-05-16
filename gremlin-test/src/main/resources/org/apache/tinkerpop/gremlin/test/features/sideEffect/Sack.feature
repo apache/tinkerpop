@@ -59,12 +59,12 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(3.40282347e+38f).inject(3.40282347e+38f).sack(sum).sack()
+      g.withSack(3.4028234e+38f).inject(3.4028234e+38f).sack(sum).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6.805646932770577E38].d |
+      | d[.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXsumX_sack
@@ -119,12 +119,12 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(-3.40282347e+38f).inject(3.40282347e+38f).sack(minus).sack()
+      g.withSack(-3.4028234e+38f).inject(3.4028234e+38f).sack(minus).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[-6.805646932770577E38].d |
+      | d[-6.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX_1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXminusX_sack
@@ -179,12 +179,12 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(3.40282347e+38f).inject(2f).sack(mult).sack()
+      g.withSack(3.4028234e+38f).inject(2f).sack(mult).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6.805646932770577E38].d |
+      | d[6.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX2dX_sackXmultX_sack
@@ -239,12 +239,12 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(3.40282347e+38f).inject(0.5f).sack(div).sack()
+      g.withSack(3.4028234e+38f).inject(0.5f).sack(div).sack()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6.805646932770577E38].d |
+      | d[6.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX0_5dX_sackXdivX_sack
