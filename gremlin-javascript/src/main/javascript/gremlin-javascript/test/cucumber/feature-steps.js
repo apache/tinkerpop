@@ -235,18 +235,30 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
       break;
     case 'unordered':
       let actualUnordered = toCompare(this.result);
-      expectedResult.forEach(expectedItem => {
-        const match = actualUnordered.find(actualItem => {
-          try {
-            objectsMatchWithTolerance(actualItem, expectedItem);
-            return true; // Found a valid match
-          } catch (err) {
-            return false; // Not a match, try next
-          }
-        });
+      console.log('actualUnordered:', actualUnordered);
+      console.log('actualUnordered type:', typeof actualUnordered);
+      console.log('expectedResult:', expectedResult);
+      console.log('expectedResult type:', typeof expectedResult);
 
-        expect(match, `Expected item not found: ${JSON.stringify(expectedItem)}`).to.exist;
-      });
+      if (Array.isArray(actualUnordered) && Array.isArray(expectedResult)) {
+        expectedResult.forEach(expectedItem => {
+          const match = actualUnordered.find(actualItem => {
+            try {
+              objectsMatchWithTolerance(actualItem, expectedItem);
+              return true; // Found a valid match
+            } catch (err) {
+              return false; // Not a match, try next
+            }
+          });
+
+          expect(match, `Expected item not found: ${JSON.stringify(expectedItem)}`).to.exist;
+        });
+      }
+      else
+      {
+        expect(actualUnordered).to.have.deep.members(expectedResult);
+      }
+
       break;
     case 'of':
       // result is a subset of the expected
