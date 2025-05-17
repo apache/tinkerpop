@@ -32,12 +32,16 @@ import static org.apache.tinkerpop.gremlin.util.NumberHelper.add;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.compare;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.div;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.getHighestCommonNumberClass;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.getHighestCommonNumberInfo;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.max;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.min;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.mul;
 import static org.apache.tinkerpop.gremlin.util.NumberHelper.sub;
+import static org.apache.tinkerpop.gremlin.util.NumberHelper.NumberInfo;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,6 +52,17 @@ public class NumberHelperTest {
 
     private final static List<Number> EACH_NUMBER_TYPE = Arrays.asList(
             (byte) 1, (short) 1, 1, 1L, 1F, 1D, BigInteger.ONE, BigDecimal.ONE
+    );
+
+    private final static List<Triplet<Number, Integer, Boolean>> NUMBER_INFO_CASES = Arrays.asList(
+            new Triplet<>((byte)1, 8, false),
+            new Triplet<>((short)1, 16, false),
+            new Triplet<>(1, 32, false),
+            new Triplet<>(1L, 64, false),
+            new Triplet<>(BigInteger.ONE, 128, false),
+            new Triplet<>(1F, 32, true),
+            new Triplet<>(1D, 64, true),
+            new Triplet<>(BigDecimal.ONE, 128, true)
     );
 
     private final static List<Quartet<Number, Number, Class<? extends Number>, Class<? extends Number>>> COMMON_NUMBER_CLASSES =
@@ -99,19 +114,35 @@ public class NumberHelperTest {
             );
 
     private final static List<Triplet<Number, Number, String>> OVERFLOW_CASES = Arrays.asList(
-            new Triplet<>(Integer.MAX_VALUE, 1, "add"),
-            new Triplet<>(Integer.MIN_VALUE, 1, "sub"),
-            new Triplet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul"),
             new Triplet<>(Long.MAX_VALUE, 1L, "add"),
             new Triplet<>(Long.MIN_VALUE, 1L, "sub"),
-            new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul"),
-            new Triplet<>(Byte.MAX_VALUE, (byte)100, "add"),
-            new Triplet<>(Byte.MIN_VALUE, (byte)100, "sub"),
-            new Triplet<>((byte)100, (byte)100, "mul"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "add"),
-            new Triplet<>(Short.MIN_VALUE, (short)100, "sub"),
-            new Triplet<>(Short.MAX_VALUE, (short)100, "mul")
+            new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul")
     );
+
+    private final static List<Quartet<Number, Number, String, String>> NO_OVERFLOW_CASES = Arrays.asList(
+            new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", "s"),
+            new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", "s"),
+            new Quartet<>((byte)100, (byte)100, "mul", "s"),
+            new Quartet<>(Byte.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "add", "i"),
+            new Quartet<>(Short.MIN_VALUE, (short)100, "sub", "i"),
+            new Quartet<>(Short.MAX_VALUE, (short)100, "mul", "i"),
+            new Quartet<>(Short.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Integer.MAX_VALUE, 1, "add", "l"),
+            new Quartet<>(Integer.MIN_VALUE, 1, "sub", "l"),
+            new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", "l"),
+            new Quartet<>(Integer.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Long.MAX_VALUE, 0.5f, "div", "d")
+    );
+
+    @Test
+    public void shouldReturnHighestCommonNumberNumberInfo() {
+        for (final Triplet<Number, Integer, Boolean> q : NUMBER_INFO_CASES) {
+            NumberInfo numberInfo = getHighestCommonNumberInfo(false, q.getValue0(), q.getValue0());
+            assertEquals(numberInfo.bits, (int)q.getValue1());
+            assertEquals(numberInfo.fp, q.getValue2());
+        }
+    }
 
     @Test
     public void shouldReturnHighestCommonNumberClass() {
@@ -461,21 +492,116 @@ public class NumberHelperTest {
     }
 
     @Test
+    public void shouldPromoteFloatToDoubleForAdd() {
+        Number value = add(Float.MAX_VALUE, Float.MAX_VALUE);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForAdd() {
+        Number value = add(Double.MAX_VALUE, Double.MAX_VALUE);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteFloatToDoubleForMul() {
+        Number value = mul(Float.MAX_VALUE, 2F);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForMul() {
+        Number value = mul(Double.MAX_VALUE, 2F);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteFloatToDoubleForDiv() {
+        Number value = div(Float.MAX_VALUE, 0.5F);
+        assertTrue(value instanceof Double);
+        assertFalse(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
+    public void shouldPromoteDoubleToInfiniteForDiv() {
+        Number value = div(Double.MAX_VALUE, 0.5F);
+        assertTrue(value instanceof Double);
+        assertTrue(Double.isInfinite(value.doubleValue()));
+    }
+
+    @Test
     public void shouldThrowArithmeticExceptionOnOverflow() {
         for (final Triplet<Number, Number, String> q : OVERFLOW_CASES) {
             try {
                 switch (q.getValue2()) {
                     case "add":
                         add(q.getValue0(), q.getValue1());
+                        break;
                     case "sub":
                         sub(q.getValue0(), q.getValue1());
+                        break;
                     case "mul":
                         mul(q.getValue0(), q.getValue1());
+                        break;
+                    default:
+                        fail("Unexpected math operation " + q.getValue2() + "'");
                 }
                 fail("ArithmeticException expected");
             }
             catch (ArithmeticException ex) {
                 // expected
+            }
+        }
+    }
+
+    @Test
+    public void shouldNotThrowArithmeticExceptionOnOverflow() {
+        for (final Quartet<Number, Number, String, String> q : NO_OVERFLOW_CASES) {
+            try {
+                Number result = 0;
+                switch (q.getValue2()) {
+                    case "add":
+                        result = add(q.getValue0(), q.getValue1());
+                        break;
+                    case "sub":
+                        result = sub(q.getValue0(), q.getValue1());
+                        break;
+                    case "mul":
+                        result = mul(q.getValue0(), q.getValue1());
+                        break;
+                    case "div":
+                        result = div(q.getValue0(), q.getValue1());
+                        break;
+                    default:
+                        fail("Unexpected math operation '" + q.getValue2() + "'");
+                }
+                String classValue = result.getClass().toString();
+                switch (q.getValue3()) {
+                    case "s":
+                        assertEquals("class java.lang.Short", classValue);
+                        break;
+                    case "i":
+                        assertEquals("class java.lang.Integer", classValue);
+                        break;
+                    case "l":
+                        assertEquals("class java.lang.Long", classValue);
+                        break;
+                    case "f":
+                        assertEquals("class java.lang.Float", classValue);
+                        break;
+                    case "d":
+                        assertEquals("class java.lang.Double", classValue);
+                        break;
+                    default:
+                        fail("Unexpected class type '" + q.getValue3() + "'");
+                }
+            }
+            catch (ArithmeticException ex) {
+                fail("ArithmeticException bot expected");
             }
         }
     }

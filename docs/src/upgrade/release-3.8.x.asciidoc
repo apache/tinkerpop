@@ -30,6 +30,10 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Auto promotion of number types
+
+Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow. For floating point the sequence is float->double->infinity.
+
 ==== The Switch from Date to OffsetDateTime
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
 
@@ -333,6 +337,10 @@ Details on implementing the Gherkin tests can be found in the
 link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gherkin-tests-suite[Provider Documentation].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
+
+==== Auto promotion of number types
+
+Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow. For floating point the sequence is float->double->infinity.
 
 ==== The Switch from Date to OffsetDateTime
 
