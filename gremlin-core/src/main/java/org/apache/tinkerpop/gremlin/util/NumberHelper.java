@@ -28,6 +28,50 @@ import java.util.function.BiFunction;
  */
 public final class NumberHelper {
 
+    static final class NumberInfo {
+
+        int bits;
+        boolean fp;
+
+        NumberInfo(int bits, boolean fp) {
+            this.bits = bits;
+            this.fp = fp;
+        }
+    }
+
+    enum MathOperation {
+        ADD {
+            @Override
+            public Number apply(NumberInfo numberInfo, Number a, Number b) {
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                return getHelper(clazz).add.apply(a, b);
+            }
+        },
+        SUBTRACT {
+            @Override
+            public Number apply(NumberInfo numberInfo, Number a, Number b) {
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                return getHelper(clazz).sub.apply(a, b);
+            }
+        },
+        MULTIPLY {
+            @Override
+            public Number apply(NumberInfo numberInfo, Number a, Number b) {
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                return getHelper(clazz).mul.apply(a, b);
+            }
+        },
+        DIVIDE {
+            @Override
+            public Number apply(NumberInfo numberInfo, Number a, Number b) {
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                return getHelper(clazz).div.apply(a, b);
+            }
+        };
+
+        public abstract Number apply(NumberInfo numberInfo, Number a, Number b);
+    }
+
     private static byte asByte(int arg) {
         if (arg > Byte.MAX_VALUE || arg < Byte.MIN_VALUE)
             throw new ArithmeticException("byte overflow");
@@ -312,11 +356,7 @@ public final class NumberHelper {
         this.cmp = cmp;
     }
 
-    public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
-        return getHighestCommonNumberClass(false, numbers);
-    }
-
-    public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
+    static NumberInfo getHighestCommonNumberInfo(final boolean forceFloatingPoint, final Number... numbers) {
         int bits = 8;
         boolean fp = forceFloatingPoint;
         for (final Number number : numbers) {
@@ -324,30 +364,75 @@ public final class NumberHelper {
             final Class<? extends Number> clazz = number.getClass();
             if (clazz.equals(Byte.class)) continue;
             if (clazz.equals(Short.class)) {
-                bits = bits < 16 ? 16 : bits;
+                bits = Math.max(bits, 16);
             } else if (clazz.equals(Integer.class)) {
-                bits = bits < 32 ? 32 : bits;
+                bits = Math.max(bits, 32);
             } else if (clazz.equals(Long.class)) {
-                bits = bits < 64 ? 64 : bits;
+                bits = Math.max(bits, 64);
             } else if (clazz.equals(BigInteger.class)) {
-                bits = bits < 128 ? 128 : bits;
+                bits = 128;
             } else if (clazz.equals(Float.class)) {
-                bits = bits < 32 ? 32 : bits;
+                bits = Math.max(bits, 32);
                 fp = true;
             } else if (clazz.equals(Double.class)) {
-                bits = bits < 64 ? 64 : bits;
+                bits = Math.max(bits, 64);
                 fp = true;
             } else /*if (clazz.equals(BigDecimal.class))*/ {
-                bits = bits < 128 ? 128 : bits;
+                bits = 128;
                 fp = true;
                 break; // maxed out, no need to check remaining numbers
             }
         }
-        return determineNumberClass(bits, fp);
+        return  new NumberInfo(bits, fp);
+    }
+
+    public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
+        return getHighestCommonNumberClass(false, numbers);
+    }
+
+    public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
+        NumberInfo numberInfo = getHighestCommonNumberInfo(forceFloatingPoint, numbers);
+        return determineNumberClass(numberInfo.bits, numberInfo.fp);
+    }
+
+    private static Number mathOperationWithPromote(final MathOperation mathOperation, final boolean forceFloatingPoint, final Number a, final Number b) {
+        if (null == a || null == b) return a;
+        NumberInfo numberInfo = getHighestCommonNumberInfo(forceFloatingPoint, a, b);
+        Number result = 0;
+        while (true) {
+            try {
+                result = mathOperation.apply(numberInfo, a, b);
+                if (result.getClass() == BigInteger.class || result.getClass() == BigDecimal.class)
+                {
+                    return result;
+                }
+                if (Double.isInfinite(result.doubleValue()))
+                {
+                    throw new ArithmeticException("Floating point overflow detected");
+                }
+                return result;
+            } catch (ArithmeticException exception) {
+                if (!numberInfo.fp && numberInfo.bits >= 64) {
+                    throw exception;
+                } else if (numberInfo.fp && numberInfo.bits >= 64) {
+                    return result;
+                }
+                numberInfo.bits <<= 1;
+            }
+        }
     }
 
     /**
      * Adds two numbers returning the highest common number class between them.
+     *
+     * <p>
+     * This method returns a result using the highest common number class between the two inputs.
+     * If an overflow occurs (either integer or floating-point), the method promotes the precision
+     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
+     * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
+     * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
+     * </p>
      *
      * <pre>
      *     a = 1, b = 1 -> 2
@@ -360,14 +445,20 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number add(final Number a, final Number b) {
-        if (null == a || null == b) return a;
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
-        return getHelper(clazz).add.apply(a, b);
+        return mathOperationWithPromote(MathOperation.ADD, false, a, b);
     }
-
 
     /**
      * Subtracts two numbers returning the highest common number class between them.
+     *
+     * <p>
+     * This method returns a result using the highest common number class between the two inputs.
+     * If an overflow occurs (either integer or floating-point), the method promotes the precision
+     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
+     * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
+     * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
+     * </p>
      *
      * <pre>
      *     a = 1, b = 1 -> 0
@@ -380,13 +471,20 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number sub(final Number a, final Number b) {
-        if (null == a || null == b) return a;
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
-        return getHelper(clazz).sub.apply(a, b);
+        return mathOperationWithPromote(MathOperation.SUBTRACT, false, a, b);
     }
 
     /**
      * Multiplies two numbers returning the highest common number class between them.
+     *
+     * <p>
+     * This method returns a result using the highest common number class between the two inputs.
+     * If an overflow occurs (either integer or floating-point), the method promotes the precision
+     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
+     * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
+     * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
+     * </p>
      *
      * <pre>
      *     a = 1, b = 2 -> 2
@@ -399,9 +497,7 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number mul(final Number a, final Number b) {
-        if (null == a || null == b) return a;
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
-        return getHelper(clazz).mul.apply(a, b);
+        return mathOperationWithPromote(MathOperation.MULTIPLY, false, a, b);
     }
 
     /**
@@ -409,12 +505,20 @@ public final class NumberHelper {
      * {@link #div(Number, Number, boolean)} with a {@code false}.
      */
     public static Number div(final Number a, final Number b) {
-        if (null == a || null == b) return a;
-        return div(a, b, false);
+        return mathOperationWithPromote(MathOperation.DIVIDE, false, a, b);
     }
 
     /**
      * Divides two numbers returning the highest common number class between them.
+     *
+     * <p>
+     * This method returns a result using the highest common number class between the two inputs.
+     * If an overflow occurs (either integer or floating-point), the method promotes the precision
+     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * If no suitable type exists (e.g., for very large integers beyond 64-bit),
+     * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
+     * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
+     * </p>
      *
      * <pre>
      *     a = 4, b = 2 -> 2
@@ -428,9 +532,7 @@ public final class NumberHelper {
      * @param forceFloatingPoint when set to {@code true} ensures that the return value is the highest common floating number class
      */
     public static Number div(final Number a, final Number b, final boolean forceFloatingPoint) {
-        if (null == a || null == b) return null;
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(forceFloatingPoint, a, b);
-        return getHelper(clazz).div.apply(a, b);
+        return mathOperationWithPromote(MathOperation.DIVIDE, forceFloatingPoint, a, b);
     }
 
     /**

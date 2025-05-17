@@ -23,11 +23,12 @@ Feature: Step - dateDiff()
     Given the empty graph
     And the traversal of
       """
-      g.inject(datetime('2023-08-02T00:00:00Z')).dateDiff(datetime('2023-08-09T00:00:00Z'))
+      g.inject(datetime('2023-08-02T00:00:00Z'), DateTime('2023-08-02T00:00:00Z')).dateDiff(datetime('2023-08-09T00:00:00Z'))
       """
     When iterated to list
     Then the result should be unordered
       | result |
+      | d[-604800].l |
       | d[-604800].l |
 
   @GraphComputerVerificationInjectionNotSupported
@@ -35,11 +36,12 @@ Feature: Step - dateDiff()
     Given the empty graph
     And the traversal of
       """
-      g.inject(datetime('2023-08-08T00:00:00Z')).dateDiff(constant(datetime('2023-08-01T00:00:00Z')))
+      g.inject(datetime('2023-08-08T00:00:00Z'), DateTime('2023-08-08T00:00:00Z')).dateDiff(constant(datetime('2023-08-01T00:00:00Z')))
       """
     When iterated to list
     Then the result should be unordered
       | result |
+      | d[604800].l |
       | d[604800].l |
 
   @GraphComputerVerificationInjectionNotSupported
@@ -47,9 +49,10 @@ Feature: Step - dateDiff()
     Given the empty graph
     And the traversal of
       """
-      g.inject(datetime('2023-08-08T00:00:00Z')).dateDiff(inject(datetime('2023-10-11T00:00:00Z')))
+      g.inject(datetime('2023-08-08T00:00:00Z'), DateTime('2023-08-08T00:00:00Z')).dateDiff(inject(datetime('2023-10-11T00:00:00Z')))
       """
     When iterated to list
     Then the result should be unordered
       | result |
+      | d[0].l |
       | d[0].l |
