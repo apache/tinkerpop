@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Added promote to next highest number type to prevent sum step overflow
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added UUID() + UUID(value) to grammar
 * Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
