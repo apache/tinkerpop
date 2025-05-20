@@ -23,7 +23,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(127b).inject(1b).sack(sum).sack()
+      g.withSack(127b).inject(1b).sack(sum).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -35,7 +35,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(32767s).inject(1s).sack(sum).sack()
+      g.withSack(32767s).inject(1s).sack(sum).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -47,7 +47,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(2147483647i).inject(1i).sack(sum).sack()
+      g.withSack(2147483647i).inject(1i).sack(sum).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -59,7 +59,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(sum).sack()
+      g.withSack(1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(sum).sack().fold()
       """
     When iterated to list
     Then the result should be unordered
@@ -71,7 +71,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(-128b).inject(1b).sack(minus).sack()
+      g.withSack(-128b).inject(1b).sack(minus).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -83,7 +83,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(-32768s).inject(1s).sack(minus).sack()
+      g.withSack(-32768s).inject(1s).sack(minus).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -95,7 +95,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(-2147483648i).inject(1i).sack(minus).sack()
+      g.withSack(-2147483648i).inject(1i).sack(minus).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -107,7 +107,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(-1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(minus).sack()
+      g.withSack(-1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(minus).sack().fold()
       """
     When iterated to list
     Then the result should be unordered
@@ -119,7 +119,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(127b).inject(2b).sack(mult).sack()
+      g.withSack(127b).inject(2b).sack(mult).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -131,7 +131,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(32767s).inject(2s).sack(mult).sack()
+      g.withSack(32767s).inject(2s).sack(mult).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -143,7 +143,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(2147483647i).inject(2i).sack(mult).sack()
+      g.withSack(2147483647i).inject(2i).sack(mult).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -155,7 +155,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(1.7976931348623157E+308d).inject(2d).sack(mult).sack()
+      g.withSack(1.7976931348623157E+308d).inject(2d).sack(mult).sack().fold()
       """
     When iterated to list
     Then the result should be unordered
@@ -167,7 +167,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(127b).inject(0.5f).sack(div).sack()
+      g.withSack(127b).inject(0.5f).sack(div).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -179,7 +179,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(32767s).inject(0.5f).sack(div).sack()
+      g.withSack(32767s).inject(0.5f).sack(div).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -191,7 +191,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(2147483647i).inject(0.5f).sack(div).sack()
+      g.withSack(2147483647i).inject(0.5f).sack(div).sack().fold()
       """
     When iterated next
     Then the result should be unordered
@@ -203,7 +203,7 @@ Feature: Step - sack()
     Given the modern graph
     And the traversal of
       """
-      g.withSack(1.7976931348623157E+308d).inject(0.5d).sack(div).sack()
+      g.withSack(1.7976931348623157E+308d).inject(0.5d).sack(div).sack().fold()
       """
     When iterated to list
     Then the result should be unordered
