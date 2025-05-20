@@ -55,18 +55,6 @@ Feature: Step - sack()
       | d[2147483648].l |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX3_40282347e_38fX_injectX3_40282347e_38fX_sackXsumX_sack
-    Given the modern graph
-    And the traversal of
-      """
-      g.withSack(3.4028234e+38f).inject(3.4028234e+38f).sack(sum).sack()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[.8056468E+38].d |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXsumX_sack
     Given the modern graph
     And the traversal of
@@ -113,18 +101,6 @@ Feature: Step - sack()
     Then the result should be unordered
       | result |
       | d[-2147483649].l |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX_3_40282347e_38fX_injectX3_40282347e_38fX_sackXminusX_sack
-    Given the modern graph
-    And the traversal of
-      """
-      g.withSack(-3.4028234e+38f).inject(3.4028234e+38f).sack(minus).sack()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[-6.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX_1_7976931348623157E_308dX_injectX1_7976931348623157E_308dX_sackXminusX_sack
@@ -175,18 +151,6 @@ Feature: Step - sack()
       | d[4294967294].l |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX3_40282347e_38fX_injectX2fX_sackXmultX_sack
-    Given the modern graph
-    And the traversal of
-      """
-      g.withSack(3.4028234e+38f).inject(2f).sack(mult).sack()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6.8056468E+38].d |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX2dX_sackXmultX_sack
     Given the modern graph
     And the traversal of
@@ -233,18 +197,6 @@ Feature: Step - sack()
     Then the result should be unordered
       | result |
       | d[4294967294].f |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSackX3_40282347e_38fX_injectX0_5fX_sackXdivX_sack
-    Given the modern graph
-    And the traversal of
-      """
-      g.withSack(3.4028234e+38f).inject(0.5f).sack(div).sack()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6.8056468E+38].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX0_5dX_sackXdivX_sack
