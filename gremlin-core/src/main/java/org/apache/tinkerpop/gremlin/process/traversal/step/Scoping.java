@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,9 +106,20 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Scoping {
+public interface Scoping extends PopContaining {
 
     public enum Variable {START, END}
+
+    @Override
+    public default Set<PopInstruction> getPopInstructions() {
+        final Set<String> labels = this.getScopeKeys();
+        final Set<PopInstruction> scopingInfoSet = new HashSet<>();
+        for (String label : labels) {
+            final PopInstruction scopingInfo = new PopInstruction(Pop.last, label);
+            scopingInfoSet.add(scopingInfo);
+        }
+        return scopingInfoSet;
+    }
 
     /**
      * Finds the object with the specified key for the current traverser and throws an exception if the key cannot

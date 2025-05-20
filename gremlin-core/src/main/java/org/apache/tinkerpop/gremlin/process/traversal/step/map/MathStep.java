@@ -199,6 +199,14 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
         return variables;
     }
 
+    @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
     /**
      * A wrapper for the {@code Expression} class. That class is not marked {@code Serializable} and therefore gives
      * problems in OLAP specifically with Spark. This wrapper allows the {@code Expression} to be serialized in that

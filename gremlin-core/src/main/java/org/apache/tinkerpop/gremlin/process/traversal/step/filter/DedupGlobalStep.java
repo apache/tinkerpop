@@ -70,6 +70,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.onGraphComputer && !this.executingAtMaster) return true;
         traverser.setBulk(1L);

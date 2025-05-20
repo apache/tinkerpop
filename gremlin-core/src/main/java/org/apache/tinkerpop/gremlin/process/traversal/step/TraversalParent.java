@@ -21,16 +21,29 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface TraversalParent extends AutoCloseable {
+public interface TraversalParent extends PopContaining, AutoCloseable {
+    @Override
+    public default Set<PopContaining.PopInstruction> getPopInstructions() {
+        final Set<PopContaining.PopInstruction> scopingInfos = new HashSet<>();
+        for (final Traversal.Admin local: this.getLocalChildren()) {
+            scopingInfos.addAll(TraversalHelper.getPopInstructions(local));
+        }
+        for (final Traversal.Admin global: this.getGlobalChildren()) {
+            scopingInfos.addAll(TraversalHelper.getPopInstructions(global));
+        }
+        return scopingInfos;
+    }
 
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();

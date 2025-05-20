@@ -145,6 +145,14 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     public Set<String> getScopeKeys() {
         return this.selectKeysSet;
     }

@@ -147,6 +147,14 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         return this.keepLabels;
     }
 
+    @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
     //////////////////////////////
 
     public static class WhereStartStep<S> extends ScalarMapStep<S, Object> implements Scoping {

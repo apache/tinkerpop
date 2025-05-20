@@ -166,6 +166,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return this.connective;
     }
 
+    @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
     public void addGlobalChild(final Traversal.Admin<?, ?> globalChildTraversal) {
         this.configureStartAndEndSteps(globalChildTraversal);
         this.matchTraversals.add(this.integrateChild(globalChildTraversal));

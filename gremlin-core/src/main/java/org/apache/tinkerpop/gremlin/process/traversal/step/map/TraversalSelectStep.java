@@ -54,6 +54,14 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     }
 
     @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     protected Traverser.Admin<E> processNextStart() {
         final Traverser.Admin<S> traverser = this.starts.next();
         final Iterator<E> keyIterator = TraversalUtil.applyAll(traverser, this.keyTraversal);

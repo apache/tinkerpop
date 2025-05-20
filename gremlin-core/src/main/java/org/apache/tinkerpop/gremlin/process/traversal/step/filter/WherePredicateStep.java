@@ -111,6 +111,14 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     }
 
     @Override
+    public Set<PopInstruction> getPopInstructions() {
+        final Set<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         final TraversalProduct product = null == this.startKey ?
                 TraversalUtil.produce(traverser, this.traversalRing.next()) :
