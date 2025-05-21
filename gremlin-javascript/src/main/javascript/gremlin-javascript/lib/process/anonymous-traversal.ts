@@ -73,7 +73,7 @@ export default class AnonymousTraversalSource {
    * reference so that traversals spawned from it will execute over that reference.
    * @param {RemoteConnection} remoteConnection
    * @return {GraphTraversalSource}
-   * @deprecated As of release 4.0.0, prefer {@link with_}.
+   * @deprecated As of release 3.8.0, prefer {@link with_}.
    */
   withRemote(remoteConnection: RemoteConnection) {
     return this.with_(remoteConnection);
