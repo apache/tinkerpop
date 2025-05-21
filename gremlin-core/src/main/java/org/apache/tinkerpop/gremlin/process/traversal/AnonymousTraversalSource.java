@@ -61,7 +61,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * reference so that traversals spawned from it will execute over that reference.
      *
      * @param configFile a path to a file that would normally be provided to configure a {@link RemoteConnection}
-     * @deprecated As of release 4.0.0, replaced by {@link #with(String)}
+     * @deprecated As of release 3.8.0, replaced by {@link #with(String)}
      */
     @Deprecated
     public T withRemote(final String configFile) throws Exception {
@@ -73,7 +73,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * reference so that traversals spawned from it will execute over that reference.
      *
      * @param conf a {@code Configuration} object that would normally be provided to configure a {@link RemoteConnection}
-     * @deprecated As of release 4.0.0, replaced by {@link #with(Configuration)}
+     * @deprecated As of release 3.8.0, replaced by {@link #with(Configuration)}
      */
     @Deprecated
     public T withRemote(final Configuration conf) {
@@ -84,7 +84,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * Creates a {@link TraversalSource} binding a {@link RemoteConnection} to a remote {@link Graph} instances as its
      * reference so that traversals spawned from it will execute over that reference.
      *
-     * @deprecated As of release 4.0.0, replaced by {@link #with(RemoteConnection)}
+     * @deprecated As of release 3.8.0, replaced by {@link #with(RemoteConnection)}
      */
     @Deprecated
     public T withRemote(final RemoteConnection remoteConnection) {
@@ -95,7 +95,7 @@ public class AnonymousTraversalSource<T extends TraversalSource> {
      * Creates the specified {@link TraversalSource} binding an embedded {@link Graph} as its reference such that
      * traversals spawned from it will execute over that reference.
      *
-     * @deprecated As of release 4.0.0, replaced by {@link #with(Graph)}
+     * @deprecated As of release 3.8.0, replaced by {@link #with(Graph)}
      */
     @Deprecated
     public T withEmbedded(final Graph graph) {
