@@ -265,6 +265,10 @@ The `GremlinLangScriptEngine` has been modified to treat float literals without 
 or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
 `GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
 
+==== Runtime Upgrades
+
+Gremlin Go has been Go 1.24, Gremlin Javascript has been upgraded to Node 22.
+
 ==== group() Value Traversal Semantics
 
 The `group()` step takes two `by()` modulators. The first defines the key for the grouping and the second acts upon the
