@@ -196,7 +196,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[4294967294].f |
+      | d[4.294967294e+09].f |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX1_7976931348623157E_308dX_injectX0_5dX_sackXdivX_sack
