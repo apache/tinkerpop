@@ -64,7 +64,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[Infinity].d |
+      | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX_128bX_injectX1bX_sackXminusX_sack
@@ -112,7 +112,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[-Infinity].d |
+      | d[-Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX127bX_injectX2bX_sackXmultX_sack
@@ -160,7 +160,7 @@ Feature: Step - sack()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[Infinity].d |
+      | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSackX127bX_injectX0_5fX_sackXdivX_sack
@@ -181,7 +181,7 @@ Feature: Step - sack()
       """
       g.withSack(32767s).inject(0.5f).sack(div).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[65534].f |
@@ -193,7 +193,7 @@ Feature: Step - sack()
       """
       g.withSack(2147483647i).inject(0.5f).sack(div).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[4294967294].f |
@@ -205,10 +205,10 @@ Feature: Step - sack()
       """
       g.withSack(1.7976931348623157E+308d).inject(0.5d).sack(div).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
-      | d[Infinity].d |
+      | d[Infinity] |
 
   Scenario: g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack
     Given the modern graph
