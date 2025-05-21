@@ -1,0 +1,178 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 6*
+
+== asNumber() Step
+
+=== Motivation
+
+Given the addition of the `asString()` and `asDate()` steps in the 3.7 line, this proposal seeks to bridge another gap in language functionality, which is number casting.
+
+=== Definition
+
+The `asNumber()` step will convert the incoming traverser to the nearest parsable type (e.g. int or double) if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided. Like the `asDate()` step, it will not be scoped (for now, scopes can be added in the future).
+
+The proposed tokens, subject to change based on final implementation, are:
+`N.byte`, `N.short`, `N.int`, `N.long`, `N.float`, `N.double`, `N.bigInt`, `N.bigDecimal`
+
+The overloads are:
+
+* `asNumber()`
+* `asNumber(N)`
+
+The incoming traverser can be of type:
+
+*Number* - the conversion will become a casting operation:
+[source]
+----
+gremlin> g.inject(5).asNumber()
+==> 5    // parses to int
+gremlin> g.inject(5.0).asNumber()
+==> 5    // parses to double
+gremlin> g.inject(5.123f).asNumber()
+==> 5.123  // will cast float to double
+----
+
+* Double to whole number types will be truncated via floor operation
+
+[source]
+----
+gremlin> g.inject(5.43).asNumber(N.int)
+==> 5
+gremlin> g.inject(5.67).asNumber(N.int)
+==> 5
+----
+* Widening of types will be a simple cast
+[source]
+----
+gremlin> g.inject(5).asNumber(N.long)
+==> 5
+----
+* Narrowing of types may result in Overflow Exception
+[source]
+----
+gremlin> g.inject(12).asNumber(N.byte)
+==> 12
+gremlin> g.inject(128).asNumber(N.byte)
+==> Overflow Exception
+gremlin> g.inject(300).asNumber(N.byte)
+==> Overflow Exception
+----
+
+*String* - the conversion will become a parsing operation:
+
+* Parsable strings will be parsed to the default type or type specified. Overflow will be treated the same way as if a number was the input.
+** Note we can keep things simple for the initial implementation, and throw Parsing Exception for all non-numerical strings, regardless if they are the recognized tokens in Java or Gremlin language. In other words, all strings below will be considered illegal inputs:
+*** Java/Groovy type - “1.0f”, “1.0d”, “1L”
+*** Java parsing function limits - “1.0f”, “1.0d”
+*** Gremlin Lang - “1B”, “1S”, “1L”, “1N”, “1.0D”, “1.0F”, “1.0M”
+[source]
+----
+gremlin> g.inject("5").asNumber()
+==> 5
+gremlin> g.inject("5").asNumber(N.int)
+==> 5
+gremlin> g.inject("1,000").asNumber(N.int)
+==> Parsing Exception
+gremlin> g.inject("128").asNumber(N.byte)
+==> Parsing/Overflow Exception
+----
+
+* Semi-parsable strings - do we throw exceptions immediately or try to find our way to the specified token type if possible? [Discussion] point.
+[source]
+----
+// Given "1.0" should be parsing into double
+gremlin> g.inject("1.0").asNumber(N.int)
+==> Parsing Exception
+// asNumber() will parse to double, then user will chain with casting to N.int
+gremlin> g.inject("1.0").asNumber().asNumber(N.int)
+==> 1
+gremlin> g.inject("1.0").subString(0,1).asNumber(N.int)
+==> 1
+
+Other Options:
+// Make the step smart to recognize it can be parsed then casted:
+// 1) parse to double
+// 2) cast to token type
+gremlin> g.inject("1.0").asNumber(N.int)
+==> 1
+
+// Or cast via substring based on types:
+// 1) trunct all decimal place of string (make sure string is parsable)
+// 2) cast to token type
+gremlin> g.inject("1.0").asNumber(N.int)
+==> 1
+// Note: this option is favorable because of potential precision loss, eg:
+// (long) Double.parseDouble("123456789123456789.0")
+// ==> 123456789123456784
+// However, this may be more complex, i.e. what if we get a very long string with letters mixed in the decimal place?
+----
+* Non-parsable strings - throw exception
+[source]
+----
+gremlin> g.inject("test").asNumber()
+==> Parsing Exception
+----
+
+*Array, List, & Set* - throws exceptions, unless unfolded:
+
+* Omit scopes in the first iteration to be consistent with `asDate()`. In this case, user would need to use `unfold()`/`fold()`, or else a Parsing Exception will be thrown.
+[source]
+----
+gremlin> g.inject([1, 2, 3, 4]).asNumber()
+==> Parsing Exception
+
+gremlin> g.inject([1, 2, 3, 4]).unfold().asNumber()
+==> 1
+==> 2
+==> 3
+==> 4
+
+gremlin> g.inject([1, 2, 3, 4]).unfold().asNumber().fold()
+==> [1, 2, 3, 4]
+----
+
+* Scopes can potentially be added in future iterations
+** `asNumber(Scope)`
+** `asNumber(Scope, N)`
+*** `Scope.global` - the default scope, will throw an exception since a list cannot be converted to a number
+*** `Scope.local` - the individual items inside will be evaluated and converted
+
+[source]
+----
+gremlin> g.inject([1, 2, 3, 4]).asNumber()
+==> Parsing Exception
+
+gremlin> g.inject([1, 2, 3, 4]).asNumber(local)
+==> [1, 2, 3, 4]
+gremlin> g.inject([1, "2", 3, "4.0"]).asNumber(local)
+==> [1.0, 2.0, 3.0, 4.0]
+gremlin> g.inject([1, "two", 3, "4.0"]).asNumber(local)
+==> Parsing Exception
+----
+
+*Non-Parsable Types* - throws exception
+[source]
+----
+gremlin> g.V(1).asNumber(N.int)
+==> Parsing Exception ("Type Vertex is not parsable to Type Integer")
+----
+
+
