@@ -25,7 +25,7 @@ Feature: Step - sack()
       """
       g.withSack(127b).inject(1b).sack(sum).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[128].s |
@@ -37,7 +37,7 @@ Feature: Step - sack()
       """
       g.withSack(32767s).inject(1s).sack(sum).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[32768].i |
@@ -49,7 +49,7 @@ Feature: Step - sack()
       """
       g.withSack(2147483647i).inject(1i).sack(sum).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[2147483648].l |
@@ -61,7 +61,7 @@ Feature: Step - sack()
       """
       g.withSack(1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(sum).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[Infinity].d |
@@ -73,7 +73,7 @@ Feature: Step - sack()
       """
       g.withSack(-128b).inject(1b).sack(minus).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[-129].s |
@@ -85,7 +85,7 @@ Feature: Step - sack()
       """
       g.withSack(-32768s).inject(1s).sack(minus).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[-32769].i |
@@ -97,7 +97,7 @@ Feature: Step - sack()
       """
       g.withSack(-2147483648i).inject(1i).sack(minus).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[-2147483649].l |
@@ -109,7 +109,7 @@ Feature: Step - sack()
       """
       g.withSack(-1.7976931348623157E+308d).inject(1.7976931348623157E+308d).sack(minus).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[-Infinity].d |
@@ -121,7 +121,7 @@ Feature: Step - sack()
       """
       g.withSack(127b).inject(2b).sack(mult).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[254].s |
@@ -133,7 +133,7 @@ Feature: Step - sack()
       """
       g.withSack(32767s).inject(2s).sack(mult).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[65534].i |
@@ -145,7 +145,7 @@ Feature: Step - sack()
       """
       g.withSack(2147483647i).inject(2i).sack(mult).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[4294967294].l |
@@ -157,7 +157,7 @@ Feature: Step - sack()
       """
       g.withSack(1.7976931348623157E+308d).inject(2d).sack(mult).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[Infinity].d |
@@ -169,7 +169,7 @@ Feature: Step - sack()
       """
       g.withSack(127b).inject(0.5f).sack(div).sack()
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[254].f |
