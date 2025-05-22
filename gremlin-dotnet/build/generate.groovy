@@ -94,7 +94,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
 
 
     // some traversals may require a static translation if the translator can't handle them for some reason
-    def staticTranslate = [:]
+    def staticTranslate = ["g_withSackX_128bX_injectX1bX_sackXminusX_sack" : "               {\"g_withSackX_128bX_injectX1bX_sackXminusX_sack\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSack((short) -128).Inject<object>((short) 1).Sack(Operator.Minus).Sack<object>()}}, "]
     // SAMPLE: g_injectXnull_nullX: "               {\"g_injectXnull_nullX\", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null,null)}}, ",1\"]).Values<object>(\"age\").Inject(null,null)}}, "
 
     gremlins.each { k,v ->
