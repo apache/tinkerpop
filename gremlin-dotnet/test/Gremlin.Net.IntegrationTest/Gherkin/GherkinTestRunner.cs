@@ -48,8 +48,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             new Dictionary<string, IgnoreReason>
             {
                 // Add here the name of scenarios to ignore and the reason, e.g.:
-                {"g_withSackX127bX_injectX1bX_sackXsumX_sac", IgnoreReason.SubgraphStepNotSupported},
-                {"g_withSackX_128bX_injectX1bX_sackXminusX_sack", IgnoreReason.SubgraphStepNotSupported},
+                {"g_withSackX_128bX_injectX1bX_sackXminusX_sack", IgnoreReason.NoReason}, // -128 not supported by byte
                 {"g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX", IgnoreReason.SubgraphStepNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
