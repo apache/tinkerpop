@@ -18,10 +18,26 @@ limitations under the License.
         <meta charset=utf-8>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="robots" content="index, follow">
         <link href="img/favicon.png" rel="shortcut icon" />
-        <title>Apache TinkerPop: Downloads</title>
-        <meta name="description" content="">
-        <meta name="keywords" content="">
+        <title>Download Graph Computing Tools | Apache TinkerPop</title>
+        <meta name="description" content="Download TinkerPop graph tools including Gremlin Console, Server, and source code. Get started with the leading graph framework for your applications.">
+        <meta name="keywords" content="download, TinkerPop, Gremlin, graph tools">
+        <link rel="canonical" href="https://tinkerpop.apache.org/download.html">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://tinkerpop.apache.org/download.html">
+        <meta property="og:title" content="Download Graph Computing Tools | Apache TinkerPop">
+        <meta property="og:description" content="Download TinkerPop graph tools including Gremlin Console, Server, and source code. Get started with the leading graph framework for your applications.">
+        <meta property="og:image" content="https://tinkerpop.apache.org/img/download/downloads-header.png">
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@apachetinkerpop">
+        <meta name="twitter:title" content="Download Graph Computing Tools | Apache TinkerPop">
+        <meta name="twitter:description" content="Download TinkerPop graph tools including Gremlin Console, Server, and source code. Get started with the leading graph framework for your applications.">
+        <meta name="twitter:image" content="https://tinkerpop.apache.org/img/download/downloads-header.png">
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/font-awesome.css" rel="stylesheet"/>
         <link href="css/custome.css" rel="stylesheet">
@@ -45,6 +61,85 @@ limitations under the License.
             })();
         </script>
         <!-- End Matomo Code -->
+        
+        <!-- Structured Data / JSON-LD -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "SoftwareApplication",
+              "name": "Apache TinkerPop",
+              "applicationCategory": "GraphDatabase",
+              "operatingSystem": "Java 8/11",
+              "softwareVersion": "3.7.3",
+              "downloadUrl": "https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-console-3.7.3-bin.zip",
+              "license": "https://www.apache.org/licenses/LICENSE-2.0",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+            },
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://tinkerpop.apache.org/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Downloads",
+                  "item": "https://tinkerpop.apache.org/download.html"
+                }
+              ]
+            },
+            {
+              "@type": "FAQPage",
+              "@id": "https://tinkerpop.apache.org/download.html#faqpage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "What are the system requirements for running TinkerPop tools?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Gremlin Console and Gremlin Server are compatible with Java 8/11. Ensure you have a compatible Java version installed before downloading."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Which TinkerPop version should I download?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For most users, we recommend the latest stable release."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How do I verify the integrity of my download?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You can verify downloads using PGP signatures or SHA512 checksums. First download the KEYS file from the Apache distribution directory, then verify using commands like 'gpg --import KEYS' followed by 'gpg --verify [download-file].asc [download-file]'."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Are there packaged artifacts available in other repositories?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, TinkerPop artifacts are available in Docker, Maven Central, PyPI, npm, and NuGet. Language-specific drivers can be installed through these respective package managers."
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        </script>
     </head>
     <body>
     <!-- header -->
@@ -53,7 +148,7 @@ limitations under the License.
             <nav class="navbar navbar-expand-lg  ">
                 <div class="container-fluid">
                     <a class="navbar-brand" href="index.html">
-                        <img src="img/logo.png" class="img-fluid" alt="img">
+                        <img src="img/logo.png" class="img-fluid" alt="Apache TinkerPop Graph Computing Framework Logo">
                     </a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                             data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -182,7 +277,7 @@ limitations under the License.
         
         <!-- hero -->
         <div class="container hero-inner">
-            <img src="img/download/bg.png" class="img-fluid w-100" alt="img">
+            <img src="img/download/bg.png" class="img-fluid w-100" alt="Apache TinkerPop Graph Database Download Background">
         </div>
 
         <!-- Content -->
@@ -202,15 +297,15 @@ limitations under the License.
                 </div>
                 <div class="row d-flex align-items-center">
                     <div class="col-lg-3 col-md-6 mb-2 mb-lg-0">
-                        <img src="img/download/icon.png" class="img-fluid me-2" alt="img"> <span class="bold">3.7.3</span> (latest, stable) <p class="d-inline-block ms-4 mb-0">23-October-2024</p>
+                        <img src="img/download/icon.png" class="img-fluid me-2" alt="TinkerPop Version Icon"> <span class="bold">3.7.3</span> (latest, stable) <p class="d-inline-block ms-4 mb-0">23-October-2024</p>
                     </div>
                     <div class="col-lg-4 col-md-6 mb-2 mb-lg-0">
                         <p class="text-blue mb-0"><a href="https://github.com/apache/tinkerpop/blob/3.7.3/CHANGELOG.asciidoc#release-3-7-3">release notes</a> | <a href="https://tinkerpop.apache.org/docs/3.7.3/upgrade/#_tinkerpop_3_7_3">upgrade</a> | <a href="https://tinkerpop.apache.org/docs/3.7.3/">documentation</a> | <a href="#" data-bs-toggle="modal" data-bs-target="#contributors-3_7_3">contributors</a></p>
                     </div>
                     <div class="col-lg-5 col-md-12 mb-2 mb-lg-2">
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-console-3.7.3-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Console</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-server-3.7.3-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Server</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-3.7.3-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Source</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-console-3.7.3-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="">Gremlin Console</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-server-3.7.3-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="">Gremlin Server</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-3.7.3-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="">Source</a>
                     </div>
                 </div>
                 <div class="row d-flex align-items-center">
@@ -221,9 +316,9 @@ limitations under the License.
                         <p class="text-blue mb-0"><a href="https://github.com/apache/tinkerpop/blob/3.6.8/CHANGELOG.asciidoc#release-3-6-8">release notes</a> | <a href="https://tinkerpop.apache.org/docs/3.6.8/upgrade/#_tinkerpop_3_6_8">upgrade</a> | <a href="https://tinkerpop.apache.org/docs/3.6.8/">documentation</a> | <a href="#" data-bs-toggle="modal" data-bs-target="#contributors-3_6_8">contributors</a></p>
                      </div>
                       <div class="col-lg-5 col-md-12 mb-2 mb-lg-2">
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-gremlin-console-3.6.8-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Console</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-gremlin-server-3.6.8-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Server</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-3.6.8-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Source</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-gremlin-console-3.6.8-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Gremlin Console</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-gremlin-server-3.6.8-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Gremlin Server</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.6.8/apache-tinkerpop-3.6.8-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Source</a>
                       </div>
                 </div>
                 <div class="row d-flex mt-4 mt-md-5">
@@ -235,15 +330,15 @@ limitations under the License.
                     <p class="mb-3 mb-md-3 medium black">Beta releases offer a public preview of an upcoming full release. Some features may be missing and
                         others may be subject to change in future betas or a final release.</p>
                     <div class="col-lg-3 col-md-6 mb-2 mb-lg-0">
-                        <img src="img/download/icon.png" class="img-fluid me-2" alt="img"> <span class="bold">4.0.0-beta.1</span> (pre-release) <p class="d-inline-block ms-4 mb-0">17-January-2025</p>
+                        <img src="img/download/icon.png" class="img-fluid me-2" alt="TinkerPop Version Icon"> <span class="bold">4.0.0-beta.1</span> (pre-release) <p class="d-inline-block ms-4 mb-0">17-January-2025</p>
                     </div>
                     <div class="col-lg-4 col-md-6 mb-2 mb-lg-0">
                         <p class="text-blue mb-0"><a href="https://github.com/apache/tinkerpop/blob/4.0.0-beta.1/CHANGELOG.asciidoc#release-4-0-0-beta-1">release notes</a> | <a href="https://tinkerpop.apache.org/docs/4.0.0-beta.1/upgrade/#_tinkerpop_4_0_0_beta_1">upgrade</a> | <a href="https://tinkerpop.apache.org/docs/4.0.0-beta.1/">documentation</a> | <a href="#" data-bs-toggle="modal" data-bs-target="#contributors-4_0_0_beta_1">contributors</a></p>
                     </div>
                     <div class="col-lg-5 col-md-12 mb-2 mb-lg-2">
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-gremlin-console-4.0.0-beta.1-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Console</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-gremlin-server-4.0.0-beta.1-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Gremlin Server</a>
-                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-4.0.0-beta.1-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="img">Source</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-gremlin-console-4.0.0-beta.1-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Gremlin Console</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-gremlin-server-4.0.0-beta.1-bin.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Gremlin Server</a>
+                        <a class="btn btn-theme me-2" href="https://www.apache.org/dyn/closer.lua/tinkerpop/4.0.0-beta.1/apache-tinkerpop-4.0.0-beta.1-src.zip"><img src="img/download/bx-download.svg" class="img-fluid me-2" alt="Download Icon">Source</a>
                     </div>
                 </div>
                 <div class="row d-flex align-items-center mt-4 mt-md-5">
@@ -342,20 +437,20 @@ limitations under the License.
                    <div class="col-lg-11 col-md-12">
                     <div class="info-box">
                         <div class="d-flex mb-3 align-items-start">
-                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="img">
+                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="Information Icon">
                             <div>
                                 Gremlin Console and Gremlin Server are compatible with Java 8/11.
                             </div>
                         </div>
                         <div class="d-flex mb-3 align-items-start">
-                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="img">
+                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="Information Icon">
                             <div>
                                 Upgrade documentation was only introduced at 3.1.1-incubating which is why there are no "upgrade" links in versions prior to that one.
                             </div>
                         </div>
 
                         <div class="d-flex  align-items-start">
-                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="img">
+                            <img src="img/download/information-circle-outline.svg" class="img-fluid me-2 pt-1" alt="Information Icon">
                             <div>
                                 This page lists official Apache releases only. TinkerPop occasionally produces unofficial binary release candidates (denoted by the suffix "-RC") which are NOT promoted or announced as actual release versions. Such releases are for early development and evaluation purposes only. They are not suitable for production.
                             </div>
@@ -2825,7 +2920,7 @@ limitations under the License.
                         <div class="ju-box">
                             <h2 class="ft-40 text-blue bold">Join Us</h2>
                             <p class="bold">Join us on our Discord Server</p>
-                            <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                            <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="Discord logo"></a>
                         </div>
                     </div>
                 </div>
@@ -2842,11 +2937,11 @@ limitations under the License.
                             <div class="bold ft-25">Apache TinkerPop™</div>
                             <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                             <ul class="list-unstyled list-inline hover-op-low">
-                                <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                                <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                                <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                                <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                                <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                                <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                                <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                                <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                                <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                                <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                             </ul>
                         </div>
                         <div class="col-md-4 ft-links">
@@ -2891,4 +2986,3 @@ limitations under the License.
         <script src="js/my.js"></script>
     </body>
 </html>
-       

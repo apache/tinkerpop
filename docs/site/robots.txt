@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /staging/
+
+# Sitemap reference
+Sitemap: https://tinkerpop.apache.org/sitemap.xml

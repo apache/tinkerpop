@@ -18,10 +18,26 @@ limitations under the License.
     <meta charset=utf-8>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="index, follow">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Community</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Computing Community | Apache TinkerPop</title>
+    <meta name="description" content="Join the Apache TinkerPop community to collaborate on graph technology. Connect with developers and contribute to the open-source graph ecosystem.">
+    <meta name="keywords" content="graph community, TinkerPop, open source, developers">
+    <link rel="canonical" href="https://tinkerpop.apache.org/community.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tinkerpop.apache.org/community.html">
+    <meta property="og:title" content="Graph Computing Community | Apache TinkerPop">
+    <meta property="og:description" content="Join the Apache TinkerPop community to collaborate on graph technology. Connect with developers and contribute to the open-source graph ecosystem.">
+    <meta property="og:image" content="https://tinkerpop.apache.org/img/community/community-banner.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@apachetinkerpop">
+    <meta name="twitter:title" content="Graph Computing Community | Apache TinkerPop">
+    <meta name="twitter:description" content="Join the Apache TinkerPop community to collaborate on graph technology. Connect with developers and contribute to the open-source graph ecosystem.">
+    <meta name="twitter:image" content="https://tinkerpop.apache.org/img/community/community-banner.png">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -46,6 +62,114 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://tinkerpop.apache.org/#organization",
+          "name": "Apache TinkerPop",
+          "url": "https://tinkerpop.apache.org/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tinkerpop.apache.org/img/logo.png",
+            "width": 280,
+            "height": 60
+          },
+          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://tinkerpop.apache.org/#website",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Apache TinkerPop",
+          "publisher": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://tinkerpop.apache.org/community.html#webpage",
+          "url": "https://tinkerpop.apache.org/community.html",
+          "name": "Graph Computing Community | Apache TinkerPop",
+          "isPartOf": {
+            "@id": "https://tinkerpop.apache.org/#website"
+          },
+          "about": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          },
+          "description": "Join the Apache TinkerPop community to collaborate on graph database technology. Connect with developers, find resources, and contribute to the open-source graph computing ecosystem."
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tinkerpop.apache.org/community.html#breadcrumblist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Home"
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/community.html",
+                "url": "https://tinkerpop.apache.org/community.html",
+                "name": "Community"
+              }
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://tinkerpop.apache.org/community.html#faqpage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What programming languages are supported by TinkerPop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Apache TinkerPop officially supports Java, Groovy, Python, .NET (C#), JavaScript, and Go. There are also community-supported libraries for many other languages including Scala, Ruby, PHP, Clojure, Elixir, Haskell, and Rust."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I contribute to Apache TinkerPop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can contribute to Apache TinkerPop by participating in discussions on Discord or mailing lists, submitting bug reports or feature requests to the issue tracker, contributing code or documentation via pull requests on GitHub, or helping other users in the community."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Where can I get help with TinkerPop and Gremlin?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The TinkerPop community offers various support channels including Discord, Answer Overflow, Stack Overflow, user mailing lists, and developer mailing lists. You can also find documentation, tutorials, and examples on the TinkerPop website."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What tools are available for working with TinkerPop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "There are many tools available for working with TinkerPop including visualization tools like Graphexp, KeyLines, and Linkurious, development tools like Gremlint and Gremlator, Docker containers, and language-specific libraries and frameworks for various programming languages."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -54,7 +178,7 @@ limitations under the License.
         <nav class="navbar navbar-expand-lg  ">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html">
-                    <img src="img/logo.png" class="img-fluid" alt="img">
+                    <img src="img/logo.png" class="img-fluid" alt="Apache TinkerPop Graph Computing Framework Logo">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -183,7 +307,7 @@ limitations under the License.
 
 <!-- hero -->
 <div class="container hero-inner">
-    <img src="img/community/bg.png" class="img-fluid w-100" alt="img">
+    <img src="img/community/bg.png" class="img-fluid w-100" alt="TinkerPop Community Banner">
 </div>
 
 <!-- Content -->
@@ -210,7 +334,7 @@ limitations under the License.
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
                 <div class="d-flex align-items-start">
-                    <img src="img/community/tinkerpop.png" class="img-fluid me-3" alt="img">
+                    <img src="img/community/tinkerpop.png" class="img-fluid me-3" alt="TinkerPop Official Support Icon">
                     <div class="text-blue bold ft-17">
                         Official TinkerPop Support
                     </div>
@@ -218,7 +342,7 @@ limitations under the License.
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
                 <div class="d-flex align-items-start">
-                    <img src="img/community/third-party.png" class="img-fluid me-3" alt="img">
+                    <img src="img/community/third-party.png" class="img-fluid me-3" alt="Community Support Icon">
                     <div class="text-blue bold ft-17">
                         Community support
                     </div>
@@ -226,7 +350,7 @@ limitations under the License.
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
                 <div class="d-flex align-items-start">
-                    <img src="img/community/tools.png" class="img-fluid me-3" alt="img">
+                    <img src="img/community/tools.png" class="img-fluid me-3" alt="Some Tools and Libraries Icon">
                     <div class="text-blue bold ft-17">
                         Some tools and libraries
                     </div>
@@ -234,7 +358,7 @@ limitations under the License.
             </div>
             <div class="col-md-6 col-lg-3 mb-3">
                 <div class="d-flex align-items-start">
-                    <img src="img/community/tool.png" class="img-fluid me-3" alt="img">
+                    <img src="img/community/tool.png" class="img-fluid me-3" alt="Many Tools and Libraries Icon">
                     <div class="text-blue bold ft-17">
                         Many tools and libraries
                     </div>
@@ -251,7 +375,7 @@ limitations under the License.
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                <img src="img/community/clojure.png" class="img-fluid me-3" alt="img">Clojure
+                                <img src="img/community/clojure.png" class="img-fluid me-3" alt="Clojure Logo">Clojure
                                 <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
                                                                        class="img-fluid " alt="img"> <img
                                         src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
@@ -280,12 +404,12 @@ limitations under the License.
                         </div>
                     </div>
 
-                    <!-- elixer -->
+                    <!-- elixir -->
                     <div class="accordion-item" id="lang-elixer">
                         <h2 class="accordion-header" >
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                <img src="img/community/elixer.png" class="img-fluid me-3" alt="img">Elixer
+                                <img src="img/community/elixer.png" class="img-fluid me-3" alt="Elixir Logo">Elixir
                                 <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
                                                                        class="img-fluid " alt="img"> <img
                                         src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
@@ -302,7 +426,7 @@ limitations under the License.
                                             Third-Party Libraries and Tools
                                         </p>
                                         <p class="ft-17">- <a class="text-blue"
-                                                              href="https://github.com/Revmaker/gremlex"
+                                                              href="https://github.com/coingaming/gremlex"
                                                               target="_blank">Gremlex</a>: A Gremlin Server driver for
                                             Elixir.</p>
                                     </div>
@@ -316,7 +440,7 @@ limitations under the License.
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
-                                <img src="img/community/go.png" class="img-fluid me-3" alt="img">Go
+                                <img src="img/community/go.png" class="img-fluid me-3" alt="Go Logo">Go
                                 <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
                                                                        class="img-fluid me-2 " alt="img">
                                                                   <img src="img/community/third-party.png"
@@ -358,7 +482,7 @@ result, err := g.V().Out("knows").In("created").ToList()
 
                                   <div class="mt-4 text-center text-blue ft-17">
                                       <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-go"
-                                         target="_blank"><u>Learn More</u></a>
+                                         target="_blank"><u>Gremlin-Go Documentation & Reference</u></a>
                                   </div>
 
                                   <div class="d-flex align-items-start">
@@ -389,7 +513,7 @@ result, err := g.V().Out("knows").In("created").ToList()
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-                                <img src="img/community/groovy.png" class="img-fluid me-3" alt="img">Groovy
+                                <img src="img/community/groovy.png" class="img-fluid me-3" alt="Groovy Logo">Groovy
                                 <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
                                                                        class="img-fluid me-2 " alt="img"> <img
                                         src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
@@ -431,7 +555,7 @@ def l = g.V().out('knows').in('created').toList()
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-groovy"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Groovy Documentation & Reference</u></a>
                                 </div>
                             </div>
                         </div>
@@ -442,7 +566,7 @@ def l = g.V().out('knows').in('created').toList()
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
-                                <img src="img/community/haskell.png" class="img-fluid me-3" alt="img">Haskell
+                                <img src="img/community/haskell.png" class="img-fluid me-3" alt="Haskell Logo">Haskell
                                 <div class="d-inline-block ms-4 "><img src="img/community/third-party.png"
                                                                        class="img-fluid " alt="img"> <img
                                         src="img/community/tools.png" class="img-fluid me-2 " alt="img"></div>
@@ -521,7 +645,7 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-java"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Java Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -559,7 +683,7 @@ List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
-                                <img src="img/community/javascript.png" class="img-fluid me-3" alt="img">Javascript
+                                <img src="img/community/javascript.png" class="img-fluid me-3" alt="JavaScript Logo">Javascript
                                 <div class="d-inline-block ms-4 "><img src="img/community/tinkerpop.png"
                                                                        class="img-fluid me-2 " alt="img"> <img
                                         src="img/community/third-party.png" class="img-fluid me-2 " alt="img"> <img
@@ -598,7 +722,7 @@ const l = await g.V().out('knows').in('created').toList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-JavaScript Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -711,7 +835,7 @@ var l = await g.V().Out("knows").In("created").ToList();</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin.NET Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -778,7 +902,7 @@ l = g.V().both()[1:3].toList()</code></pre>
 
                                 <div class="mt-4 text-center text-blue ft-17">
                                     <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python"
-                                       target="_blank"><u>Learn More</u></a>
+                                       target="_blank"><u>Gremlin-Python Documentation & Reference</u></a>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -1155,7 +1279,7 @@ l = g.V().both()[1:3].toList()</code></pre>
                 <div class="ju-box">
                     <h2 class="ft-40 text-blue bold">Join Us</h2>
                     <p class="bold">Join us on our Discord Server</p>
-                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="Discord logo"></a>
                 </div>
             </div>
         </div>
@@ -1171,11 +1295,11 @@ l = g.V().both()[1:3].toList()</code></pre>
                     <div class="bold ft-25">Apache TinkerPop™</div>
                     <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">
