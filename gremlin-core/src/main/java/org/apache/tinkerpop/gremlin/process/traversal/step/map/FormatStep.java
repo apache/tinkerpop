@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -166,6 +167,14 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
     @Override
     public Set<String> getScopeKeys() {
         return variables;
+    }
+
+    @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

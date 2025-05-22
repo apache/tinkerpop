@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -68,6 +69,14 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
+    }
+
+    @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

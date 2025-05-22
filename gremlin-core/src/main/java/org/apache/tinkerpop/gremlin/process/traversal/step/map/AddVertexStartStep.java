@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -83,6 +84,14 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
+    }
+
+    @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -87,6 +88,14 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
+    }
+
+    @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

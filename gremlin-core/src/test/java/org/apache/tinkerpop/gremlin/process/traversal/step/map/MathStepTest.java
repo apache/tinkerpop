@@ -19,14 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
@@ -69,6 +74,22 @@ public class MathStepTest extends StepTest {
         assertEquals(Arrays.asList("c", "cosa"), new ArrayList<>(MathStep.getVariables("c + cosa - 2cos(13)")));
         assertEquals(Arrays.asList("cosa", "c"), new ArrayList<>(MathStep.getVariables("cosa + c")));
         assertEquals(Arrays.asList("number1", "expected_value"), new ArrayList<>(MathStep.getVariables("number1-expected_value")));
+    }
+
+    @Test
+    public void testPopInstruction() {
+        final GraphTraversal<Object, Object> traversal = __.identity();
+
+        final MathStep mathStep = new MathStep<>((Traversal.Admin) traversal, "a + b - c");
+
+        // Expected Output
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"a", Pop.last},
+                new Object[]{"b", Pop.last},
+                new Object[]{"c", Pop.last}
+        );
+
+        assertEquals(popInstructionSet, mathStep.getPopInstructions());
     }
 
 }
