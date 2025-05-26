@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.function.Function;
 import java.util.function.BiFunction;
 
 /**
@@ -30,8 +31,20 @@ public final class NumberHelper {
 
     static final class NumberInfo {
 
-        int bits;
-        boolean fp;
+        private int bits;
+        private final boolean fp;
+
+        public int getBits() {
+            return bits;
+        }
+
+        public boolean getFp() {
+            return fp;
+        }
+
+        public void promoteBits() {
+            bits <<= 1;
+        }
 
         NumberInfo(int bits, boolean fp) {
             this.bits = bits;
@@ -43,28 +56,28 @@ public final class NumberHelper {
         ADD {
             @Override
             public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
                 return getHelper(clazz).add.apply(a, b);
             }
         },
         SUBTRACT {
             @Override
             public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
                 return getHelper(clazz).sub.apply(a, b);
             }
         },
         MULTIPLY {
             @Override
             public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
                 return getHelper(clazz).mul.apply(a, b);
             }
         },
         DIVIDE {
             @Override
             public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.bits, numberInfo.fp);
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
                 return getHelper(clazz).div.apply(a, b);
             }
         };
@@ -169,7 +182,12 @@ public final class NumberHelper {
             (a, b) -> Math.addExact(a.longValue(), b.longValue()),
             (a, b) -> Math.subtractExact(a.longValue(), b.longValue()),
             (a, b) -> Math.multiplyExact(a.longValue(), b.longValue()),
-            (a, b) -> a.longValue() / b.longValue(),
+            (a, b) -> {
+                if (a.longValue() == Long.MIN_VALUE && b.longValue() == -1) {
+                    throw new ArithmeticException("long overflow");
+                }
+                return a.longValue() / b.longValue();
+            },
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {
@@ -392,17 +410,19 @@ public final class NumberHelper {
 
     public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
         NumberInfo numberInfo = getHighestCommonNumberInfo(forceFloatingPoint, numbers);
-        return determineNumberClass(numberInfo.bits, numberInfo.fp);
+        return determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
     }
 
-    private static Number mathOperationWithPromote(final MathOperation mathOperation, final boolean forceFloatingPoint, final Number a, final Number b) {
+    private static Number mathOperationWithPromote(final Function<NumberHelper, BiFunction<Number, Number, Number>> mathFunction, final boolean forceFloatingPoint, final Number a, final Number b) {
         if (null == a || null == b) return a;
         NumberInfo numberInfo = getHighestCommonNumberInfo(forceFloatingPoint, a, b);
         Number result = 0;
         while (true) {
             try {
-                result = mathOperation.apply(numberInfo, a, b);
-                if (result.getClass() == BigInteger.class || result.getClass() == BigDecimal.class)
+                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
+                final NumberHelper helper = getHelper(clazz);
+                result = mathFunction.apply(helper).apply(a, b);
+                if (result instanceof BigInteger || result instanceof BigDecimal)
                 {
                     return result;
                 }
@@ -412,12 +432,12 @@ public final class NumberHelper {
                 }
                 return result;
             } catch (ArithmeticException exception) {
-                if (!numberInfo.fp && numberInfo.bits >= 64) {
+                if (!numberInfo.getFp() && numberInfo.getBits() >= 64) {
                     throw exception;
-                } else if (numberInfo.fp && numberInfo.bits >= 64) {
+                } else if (numberInfo.getFp() && numberInfo.getBits() >= 64) {
                     return result;
                 }
-                numberInfo.bits <<= 1;
+                numberInfo.promoteBits();
             }
         }
     }
@@ -428,7 +448,7 @@ public final class NumberHelper {
      * <p>
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
-     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * by increasing the bit width, until a suitable type is found.
      * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
@@ -445,7 +465,7 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number add(final Number a, final Number b) {
-        return mathOperationWithPromote(MathOperation.ADD, false, a, b);
+        return mathOperationWithPromote(numberHelper -> numberHelper.add, false, a, b);
     }
 
     /**
@@ -454,7 +474,7 @@ public final class NumberHelper {
      * <p>
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
-     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * by increasing the bit width, until a suitable type is found.
      * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
@@ -471,7 +491,7 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number sub(final Number a, final Number b) {
-        return mathOperationWithPromote(MathOperation.SUBTRACT, false, a, b);
+        return mathOperationWithPromote(numberHelper -> numberHelper.sub, false, a, b);
     }
 
     /**
@@ -480,7 +500,7 @@ public final class NumberHelper {
      * <p>
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
-     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * by increasing the bit width, until a suitable type is found.
      * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
@@ -497,7 +517,7 @@ public final class NumberHelper {
      * @param b the modifier to {code a}
      */
     public static Number mul(final Number a, final Number b) {
-        return mathOperationWithPromote(MathOperation.MULTIPLY, false, a, b);
+        return mathOperationWithPromote(numberHelper -> numberHelper.mul, false, a, b);
     }
 
     /**
@@ -505,7 +525,7 @@ public final class NumberHelper {
      * {@link #div(Number, Number, boolean)} with a {@code false}.
      */
     public static Number div(final Number a, final Number b) {
-        return mathOperationWithPromote(MathOperation.DIVIDE, false, a, b);
+        return mathOperationWithPromote(numberHelper -> numberHelper.div, false, a, b);
     }
 
     /**
@@ -514,7 +534,7 @@ public final class NumberHelper {
      * <p>
      * This method returns a result using the highest common number class between the two inputs.
      * If an overflow occurs (either integer or floating-point), the method promotes the precision
-     * by increasing the bit width or switching to floating-point arithmetic, until a suitable type is found.
+     * by increasing the bit width, until a suitable type is found.
      * If no suitable type exists (e.g., for very large integers beyond 64-bit),
      * an {@link ArithmeticException} is thrown. For floating-point numbers, if {@code double} overflows,
      * the result is {@code Double.POSITIVE_INFINITY} or {@code Double.NEGATIVE_INFINITY} instead of an exception.
@@ -532,7 +552,7 @@ public final class NumberHelper {
      * @param forceFloatingPoint when set to {@code true} ensures that the return value is the highest common floating number class
      */
     public static Number div(final Number a, final Number b, final boolean forceFloatingPoint) {
-        return mathOperationWithPromote(MathOperation.DIVIDE, forceFloatingPoint, a, b);
+        return mathOperationWithPromote(numberHelper -> numberHelper.div, forceFloatingPoint, a, b);
     }
 
     /**

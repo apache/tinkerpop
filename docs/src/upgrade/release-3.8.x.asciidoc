@@ -32,7 +32,8 @@ complete list of all the modifications that are part of this release.
 
 ==== Auto promotion of number types
 
-Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow. For floating point the sequence is float->double->infinity.
+Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow exception. For floating point the sequence is float->double->infinity.
+Previously on overflow values would wrap around their min/max boundaries which is not recommended as would give users unexpected results.
 
 ==== The Switch from Date to OffsetDateTime
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
@@ -258,11 +259,6 @@ The GLVs will only support GraphBinary V4 and GraphSON support has been removed.
 that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
 types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
 
-==== Improved handling of integer overflows
-
-Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
-skipped with incorrect result.
-
 ==== Gremlin Lang Float Literals Default to Double
 
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
@@ -340,7 +336,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
 
 ==== Auto promotion of number types
 
-Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow. For floating point the sequence is float->double->infinity.
+Any math operations such as Add, Sub, Mul & Div will automatically promote to next number type if an overflow is detected. For integers the promotion sequence is byte->short->integer->long->overflow exception. For floating point the sequence is float->double->infinity.
+Previously on overflow values would wrap around their min/max boundaries which is not recommended as would give users unexpected results.
 
 ==== The Switch from Date to OffsetDateTime
 

@@ -116,6 +116,8 @@ public class NumberHelperTest {
     private final static List<Triplet<Number, Number, String>> OVERFLOW_CASES = Arrays.asList(
             new Triplet<>(Long.MAX_VALUE, 1L, "add"),
             new Triplet<>(Long.MIN_VALUE, 1L, "sub"),
+            new Triplet<>(Long.MIN_VALUE, -1L, "mul"),
+            new Triplet<>(Long.MIN_VALUE, -1L, "div"),
             new Triplet<>(Long.MAX_VALUE,  Integer.MAX_VALUE, "mul")
     );
 
@@ -139,8 +141,8 @@ public class NumberHelperTest {
     public void shouldReturnHighestCommonNumberNumberInfo() {
         for (final Triplet<Number, Integer, Boolean> q : NUMBER_INFO_CASES) {
             NumberInfo numberInfo = getHighestCommonNumberInfo(false, q.getValue0(), q.getValue0());
-            assertEquals(numberInfo.bits, (int)q.getValue1());
-            assertEquals(numberInfo.fp, q.getValue2());
+            assertEquals(numberInfo.getBits(), (int)q.getValue1());
+            assertEquals(numberInfo.getFp(), (boolean)q.getValue2());
         }
     }
 
@@ -546,6 +548,9 @@ public class NumberHelperTest {
                         break;
                     case "mul":
                         mul(q.getValue0(), q.getValue1());
+                        break;
+                    case "div":
+                        div(q.getValue0(), q.getValue1());
                         break;
                     default:
                         fail("Unexpected math operation " + q.getValue2() + "'");
