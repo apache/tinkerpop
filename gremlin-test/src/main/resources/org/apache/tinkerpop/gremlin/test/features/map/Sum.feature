@@ -19,7 +19,7 @@
 Feature: Step - sum()
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_V_sum_overflow_byte
+  Scenario: g_V_injectX127b_1bX_sumXX
     Given the modern graph
     And the traversal of
       """
@@ -31,7 +31,7 @@ Feature: Step - sum()
       | d[128].s |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_V_sum_overflow_short
+  Scenario: g_V_injectX32767s_1sX_sumXX
     Given the modern graph
     And the traversal of
       """
@@ -43,7 +43,7 @@ Feature: Step - sum()
       | d[32768].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_V_sum_overflow_int
+  Scenario: g_V_injectX2147483647i_1iX_sumXX
     Given the modern graph
     And the traversal of
       """
