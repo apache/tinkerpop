@@ -31,6 +31,18 @@ Feature: Step - sum()
       | d[128].s |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_injectX_128b__1bX_sumXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(-128b, -1b).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[-129].s |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_injectX32767s_1sX_sumXX
     Given the modern graph
     And the traversal of
@@ -43,6 +55,18 @@ Feature: Step - sum()
       | d[32768].i |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_injectX_32768s__1sX_sumXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(-32768s, -1s).sum()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[-32769].i |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_injectX2147483647i_1iX_sumXX
     Given the modern graph
     And the traversal of
@@ -53,7 +77,19 @@ Feature: Step - sum()
     Then the result should be unordered
       | result |
       | d[2147483648].l |
-    
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_injectX_2147483648i__1iX_sumXX
+   Given the modern graph
+   And the traversal of
+     """
+     g.inject(-2147483648i, -1i).sum()
+     """
+   When iterated to list
+   Then the result should be unordered
+     | result |
+     | d[-2147483649].l |
+
   Scenario: g_V_age_sum
     Given the modern graph
     And the traversal of
