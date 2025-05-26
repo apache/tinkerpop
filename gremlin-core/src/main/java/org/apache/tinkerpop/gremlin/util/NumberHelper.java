@@ -52,39 +52,6 @@ public final class NumberHelper {
         }
     }
 
-    enum MathOperation {
-        ADD {
-            @Override
-            public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
-                return getHelper(clazz).add.apply(a, b);
-            }
-        },
-        SUBTRACT {
-            @Override
-            public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
-                return getHelper(clazz).sub.apply(a, b);
-            }
-        },
-        MULTIPLY {
-            @Override
-            public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
-                return getHelper(clazz).mul.apply(a, b);
-            }
-        },
-        DIVIDE {
-            @Override
-            public Number apply(NumberInfo numberInfo, Number a, Number b) {
-                final Class<? extends Number> clazz = determineNumberClass(numberInfo.getBits(), numberInfo.getFp());
-                return getHelper(clazz).div.apply(a, b);
-            }
-        };
-
-        public abstract Number apply(NumberInfo numberInfo, Number a, Number b);
-    }
-
     private static byte asByte(int arg) {
         if (arg > Byte.MAX_VALUE || arg < Byte.MIN_VALUE)
             throw new ArithmeticException("byte overflow");
