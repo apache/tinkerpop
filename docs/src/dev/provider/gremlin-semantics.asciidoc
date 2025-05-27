@@ -104,6 +104,16 @@ convert all of them to floating point.
 BigDecimal and BigInteger may not be supported depending on the language and Storage, therefore the behavior of type
 casting for these two types can vary depending on a Graph provider.
 
+**Number Promotion on Mathematical Operations**
+
+On math operations (when used in steps such as sum/sack) the highest common number class between
+the two inputs us used. Any number being floating point forces a floating point result.
+If an overflow occurs (either integer or floating-point), the method promotes the precision
+by increasing the bit width, until a suitable type is found. If no suitable type exists
+(e.g., for very large integers beyond 64-bit), an Arithmetic Exception is thrown.
+For floating-point numbers, if double overflows, the result is Double.POSITIVE_INFINITY
+or Double.NEGATIVE_INFINITY instead of an exception.
+
 [[gremlin-semantics-concepts]]
 == Comparability, Equality, Orderability, and Equivalence
 
