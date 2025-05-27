@@ -25,7 +25,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
-* Added promote to next highest number type to prevent steps such as sum, sack from overflowing.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added UUID() + UUID(value) to grammar

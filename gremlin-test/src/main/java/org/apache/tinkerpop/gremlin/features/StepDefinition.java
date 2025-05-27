@@ -723,7 +723,7 @@ public final class StepDefinition {
                 matchers.add((org.hamcrest.Matcher<? super T>) new IsPathEqualToMatcher((Path) item));
             } else if (item instanceof Double && Double.isFinite((Double) item)) {
                // Allow for minor rounding errors with Double
-               matchers.add((org.hamcrest.Matcher<? super T>) closeTo((Double) item, 1e+30));
+               matchers.add((org.hamcrest.Matcher<? super T>) closeTo((Double) item, 0.000000000000001));
             } else {
                 matchers.add(IsEqual.equalTo(item));
             }
