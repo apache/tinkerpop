@@ -18,10 +18,27 @@ limitations under the License.
     <meta charset=utf-8>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="index, follow">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Home</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Computing Framework | Apache TinkerPop</title>
+    <meta name="description" content="Graph computing framework for databases and analytics systems. Apache TinkerPop powers graph applications with the Gremlin query language.">
+    <meta name="keywords" content="graph computing, graph database, Gremlin, TinkerPop">
+    <link rel="canonical" href="https://tinkerpop.apache.org/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tinkerpop.apache.org/">
+    <meta property="og:title" content="Graph Computing Framework | Apache TinkerPop">
+    <meta property="og:description" content="Graph computing framework for databases and analytics systems. Apache TinkerPop powers graph applications with the Gremlin query language.">
+    <meta property="og:image" content="https://tinkerpop.apache.org/img/tinkerpop-splash.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@apachetinkerpop">
+    <meta name="twitter:title" content="Graph Computing Framework | Apache TinkerPop">
+    <meta name="twitter:description" content="Graph computing framework for databases and analytics systems. Apache TinkerPop powers graph applications with the Gremlin query language.">
+    <meta name="twitter:image" content="https://tinkerpop.apache.org/img/tinkerpop-splash.png">
+    
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -46,6 +63,70 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD: Used for SEO and rich search results -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": "https://tinkerpop.apache.org/#organization",
+                "name": "Apache TinkerPop",
+                "url": "https://tinkerpop.apache.org/",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://tinkerpop.apache.org/img/logo.png",
+                    "width": 280,
+                    "height": 60
+                },
+                "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).",
+                "sameAs": [
+                    "https://github.com/apache/tinkerpop/",
+                    "https://twitter.com/apachetinkerpop"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://tinkerpop.apache.org/#website",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Apache TinkerPop",
+                "publisher": {
+                    "@id": "https://tinkerpop.apache.org/#organization"
+                }
+            },
+            {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/#webpage",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Graph Computing Framework | Apache TinkerPop",
+                "isPartOf": {
+                    "@id": "https://tinkerpop.apache.org/#website"
+                },
+                "about": {
+                    "@id": "https://tinkerpop.apache.org/#organization"
+                },
+                "description": "Apache TinkerPop is a powerful open-source graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP). Build modern graph applications with the Gremlin query language."
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": "https://tinkerpop.apache.org/#breadcrumblist",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "item": {
+                            "@type": "WebPage",
+                            "@id": "https://tinkerpop.apache.org/",
+                            "url": "https://tinkerpop.apache.org/",
+                            "name": "Home"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -54,7 +135,7 @@ limitations under the License.
         <nav class="navbar navbar-expand-lg  ">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html">
-                    <img src="img/logo.png" class="img-fluid" alt="img">
+                    <img src="img/logo.png" class="img-fluid" alt="Apache TinkerPop Graph Computing Framework Logo">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -140,16 +221,16 @@ limitations under the License.
                                 Community
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                                <li><a class="dropdown-item" href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-logo.png" class="nav-icon"/>Discord</a></li>
-                                <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon"/>Answer Overflow</a></li>
-                                <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon"/>Stack Overflow</a></li>
-                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon"/>User Mailing List</a></li>
-                                <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon"/>Developer Mailing List</a></li>
-                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon"/>Issue Tracker</a></li>
-                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon"/>GitHub</a></li>
-                                <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon"/>Twitch</a></li>
-                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon"/>Twitter</a></li>
-                                <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon"/>YouTube</a></li>
+                                <li><a class="dropdown-item" href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-logo.png" class="nav-icon" alt="Discord logo"/>Discord</a></li>
+                                <li><a class="dropdown-item" href="https://www.answeroverflow.com/c/838910279550238720"><img src="img/answer-overflow-logo.png" class="nav-icon" alt="Answer Overflow logo"/>Answer Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/gremlin"><img src="img/stack-overflow-logo.png" class="nav-icon" alt="Stack Overflow logo"/>Stack Overflow</a></li>
+                                <li><a class="dropdown-item" href="https://groups.google.com/group/gremlin-users"><img src="img/mail.png" class="nav-icon" alt="Email icon for user mailing list"/>User Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://lists.apache.org/list.html?dev@tinkerpop.apache.org"><img src="img/mail.png" class="nav-icon" alt="Email icon for developer mailing list"/>Developer Mailing List</a></li>
+                                <li><a class="dropdown-item" href="https://issues.apache.org/jira/browse/TINKERPOP/"><img src="img/jira-logo.png" class="nav-icon" alt="JIRA issue tracker logo"/>Issue Tracker</a></li>
+                                <li><a class="dropdown-item" href="https://github.com/apache/tinkerpop/"><img src="img/github-logo.png" class="nav-icon" alt="GitHub logo"/>GitHub</a></li>
+                                <li><a class="dropdown-item" href="https://www.twitch.tv/apachetinkerpop"><img src="img/twitch-logo.png" class="nav-icon" alt="Twitch logo"/>Twitch</a></li>
+                                <li><a class="dropdown-item" href="https://twitter.com/apachetinkerpop"><img src="img/twitter-logo.png" class="nav-icon" alt="Twitter logo"/>Twitter</a></li>
+                                <li><a class="dropdown-item" href="https://www.youtube.com/@apachetinkerpop"><img src="img/youtube-logo.png" class="nav-icon" alt="YouTube logo"/>YouTube</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/developer/#_contributing">Contributing</a></li>
                                 <li><a  class="dropdown-item" href="https://tinkerpop.apache.org/docs/current/dev/provider/#policies">Policies</a></li>
@@ -189,7 +270,7 @@ limitations under the License.
                 <h1 class="ft-40 bold black mb-3">Apache TinkerPop™</h1>
                 <p>Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic
                     systems (OLAP).</p>
-                <a href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-button.png" alt="img"
+                <a href="https://discord.gg/tinkerpop" target="_blank"><img src="img/discord-button.png" alt="Join the TinkerPop Discord Community"
                                                                              class="img-fluid"></a>
             </div>
         </div>
@@ -199,7 +280,7 @@ limitations under the License.
 <div class="container">
     <div class="row">
         <div class="col-12 text-center">
-            <img src="img/tinkerpop-splash.png" class="img-fluid tinkerpop-splash" alt="img">
+            <img src="img/tinkerpop-splash.png" class="img-fluid tinkerpop-splash" alt="TinkerPop Character Splash">
         </div>
     </div>
 </div>
@@ -217,25 +298,25 @@ limitations under the License.
                             <h3 class="ft-25 bold black mb-6">TinkerPop 3.7.3 Downloads</h3>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <img src="img/group-24.svg" class="img-fluid mb-2" alt="img"><br>
+                                    <img src="img/group-24.svg" class="img-fluid mb-2" alt="Gremlin Console icon"><br>
                                     <a class="text-blue"
                                        href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-console-3.7.3-bin.zip"><img
-                                            src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="img">Gremlin
+                                            src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="Download icon">Gremlin
                                         Console</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <img src="img/group-25.svg" class="img-fluid mb-2" alt="img"><br>
+                                    <img src="img/group-25.svg" class="img-fluid mb-2" alt="Gremlin Server icon"><br>
                                     <a class="text-blue"
                                        href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-gremlin-server-3.7.3-bin.zip"><img
-                                            src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="img">Gremlin
+                                            src="img/download-cloud-line.svg" class="me-2 img-fluid" alt="Download icon">Gremlin
                                         Server</a>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <img src="img/group-26.svg" class="img-fluid mb-2" alt="img"><br>
+                                    <img src="img/group-26.svg" class="img-fluid mb-2" alt="Source code icon"><br>
                                     <a class="text-blue"
                                        href="https://www.apache.org/dyn/closer.lua/tinkerpop/3.7.3/apache-tinkerpop-3.7.3-src.zip"><img
                                             src="img/download-cloud-line.svg" class="me-2 img-fluid"
-                                            alt="img">Source</a>
+                                            alt="Download icon">Source</a>
                                 </div>
                             </div>
                         </div>
@@ -247,7 +328,7 @@ limitations under the License.
                                         <button class="btn btn-theme btn-cust w-100 dropdown-toggle text-start"
                                                 type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
                                                 aria-expanded="false">
-                                            <img src="img/link.svg" class="img-fluid me-2" alt="img"> Documentation
+                                            <img src="img/link.svg" class="img-fluid me-2" alt="Link icon"> Documentation
                                         </button>
                                         <ul class="dropdown-menu w-100" aria-labelledby="dropdownMenuButton1">
                                             <li><a class="dropdown-item"
@@ -266,7 +347,7 @@ limitations under the License.
                                 </div>
                                 <div class="col-md-6 mb-3"><a class="btn btn-theme btn-cust w-100 text-start"
                                                               href="https://tinkerpop.apache.org/javadocs/current/core/"><img
-                                        src="img/link.svg" class="img-fluid me-2" alt="img">Javadoc - Core</a>
+                                        src="img/link.svg" class="img-fluid me-2" alt="Link icon">Javadoc - Core</a>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <a class="btn btn-theme btn-cust w-100 text-start"
@@ -348,7 +429,7 @@ limitations under the License.
     <div class="container">
         <div class="row">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <img src="img/gremlin-logo.png" alt="img" class="img-fluid">
+                <img src="img/gremlin-logo.png" alt="Gremlin Graph Query Language Logo" class="img-fluid">
             </div>
             <div class="col-lg-6 ">
                 <h2 class="ft-30 bold text-white mb-3">Gremlin Query Language</h2>
@@ -460,7 +541,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     </div>
                 </div>
                 <a class="btn btn-theme btn-cust" href="gremlin.html"><img src="img/link.svg" class="img-fluid me-2"
-                                                                           alt="img">Learn More</a>
+                                                                           alt="img">Explore Gremlin Graph Query Language</a>
             </div>
         </div>
     </div>
@@ -472,16 +553,16 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
         <div class="row d-flex">
 
             <div class="col-lg-12">
-                <img src="img/tinkerpopfuture-home.png" class="img-fluid w-100" alt="img">
+                <img src="img/tinkerpopfuture-home.png" class="img-fluid w-100" alt="TinkerPop Banner">
             </div>
         </div>
     </div>
 </div>
 <div class="sec-pad pt-0">
     <div class="container">
-        <div class="row d-flex">
+                <div class="row d-flex">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <h2 class="ft-30 bold black mb-3 ">Benefits & Use Cases</h2>
+                            <h2 class="ft-30 bold black mb-3 mt-4">Benefits & Use Cases</h2>
                 <p class="mb-3">A graph is a structure composed of vertices and edges. Both vertices and edges can have
                     an arbitrary number of key/value-pairs called properties. Vertices denote discrete objects such as a
                     person, a place, or an event. Edges denote relationships between vertices. For instance, a person
@@ -492,7 +573,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     a graph, each vertex is seen as an atomic entity (not simply a "row in a table") that can be linked
                     to any other vertex or have properties added or removed at will.</p>
 
-                <a href="benefits-use-cases.html" class="text-blue ft-17"><u>Learn More</u></a>
+                <a href="benefits-use-cases.html" class="text-blue ft-17"><u>Explore Graph Database Benefits & Use Cases</u></a>
             </div>
             <div class="col-lg-6  ">
                 <h2 class="ft-30 bold black mb-3">How to use TinkerPop</h2>
@@ -502,7 +583,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                         <p class="mb-2 text-blue bold">Database Support</p>
                         <p class="mb-2">TinkerPop is widely supported by more than two dozen commercial and open source
                             graph databases</p>
-                        <a href="providers.html" class="text-blue ft-17"><u>Learn More</u></a>
+                        <a href="providers.html" class="text-blue ft-17"><u>Explore Graph Database Providers</u></a>
                     </div>
                 </div>
 
@@ -514,7 +595,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                             NodeJS with additional drivers provided through community contributions</p>
                         <p class="mb-2">There is a wide array of third-party managed tools and applications that are
                             TinkerPop-compatible</p>
-                        <a href="community.html" class="text-blue ft-17"><u>Learn More</u></a>
+                        <a href="community.html" class="text-blue ft-17"><u>Explore Graph Programming Languages & Tools</u></a>
                     </div>
                 </div>
             </div>
@@ -1001,7 +1082,7 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                 <div class="ju-box">
                     <h2 class="ft-40 text-blue bold">Join Us</h2>
                     <p class="bold">Join us on our Discord Server</p>
-                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                            <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="Discord logo"></a>
                 </div>
             </div>
         </div>
@@ -1017,11 +1098,11 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
                     <div class="bold ft-25">Apache TinkerPop™</div>
                     <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">
@@ -1070,4 +1151,3 @@ g.V().has("name","gremlin").out("bought").aggregate("stash").
 <script src="js/prism.js"></script>
 </body>
 </html>
-

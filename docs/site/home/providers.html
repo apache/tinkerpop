@@ -18,10 +18,26 @@ limitations under the License.
     <meta charset=utf-8>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="index, follow">
     <link href="img/favicon.png" rel="shortcut icon"/>
-    <title>Apache TinkerPop: Providers</title>
-    <meta name="description" content="">
-    <meta name="keywords" content="">
+    <title>Graph Database Providers &amp; Systems | Apache TinkerPop</title>
+    <meta name="description" content="TinkerPop-enabled graph databases and analytics tools from leading providers. Find the right graph system for your application needs.">
+    <meta name="keywords" content="graph providers, database systems, TinkerPop, analytics">
+    <link rel="canonical" href="https://tinkerpop.apache.org/providers.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tinkerpop.apache.org/providers.html">
+    <meta property="og:title" content="Graph Database Providers &amp; Systems | Apache TinkerPop">
+    <meta property="og:description" content="TinkerPop-enabled graph databases and analytics tools from leading providers. Find the right graph system for your application needs.">
+    <meta property="og:image" content="https://tinkerpop.apache.org/img/providers/providers.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@apachetinkerpop">
+    <meta name="twitter:title" content="Graph Database Providers &amp; Systems | Apache TinkerPop">
+    <meta name="twitter:description" content="TinkerPop-enabled graph databases and analytics tools from leading providers. Find the right graph system for your application needs.">
+    <meta name="twitter:image" content="https://tinkerpop.apache.org/img/providers/providers.png">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/font-awesome.css" rel="stylesheet"/>
     <link href="css/custome.css" rel="stylesheet">
@@ -44,6 +60,138 @@ limitations under the License.
         })();
     </script>
     <!-- End Matomo Code -->
+    
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://tinkerpop.apache.org/#organization",
+          "name": "Apache TinkerPop",
+          "url": "https://tinkerpop.apache.org/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://tinkerpop.apache.org/img/logo.png",
+            "width": 280,
+            "height": 60
+          },
+          "description": "Apache TinkerPop is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP)."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://tinkerpop.apache.org/#website",
+          "url": "https://tinkerpop.apache.org/",
+          "name": "Apache TinkerPop",
+          "publisher": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://tinkerpop.apache.org/providers.html#webpage",
+          "url": "https://tinkerpop.apache.org/providers.html",
+          "name": "Graph Database Providers & Systems | Apache TinkerPop",
+          "isPartOf": {
+            "@id": "https://tinkerpop.apache.org/#website"
+          },
+          "about": {
+            "@id": "https://tinkerpop.apache.org/#organization"
+          },
+          "description": "Discover TinkerPop-enabled graph databases, processors, and analytics tools from leading providers. Find the right graph database system for your application needs and use cases."
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://tinkerpop.apache.org/providers.html#itemlist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Aerospike Graph",
+              "url": "https://aerospike.com/products/graph-database/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Alibaba Graph Database",
+              "url": "https://cn.aliyun.com/product/gdb"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Amazon Neptune",
+              "url": "https://aws.amazon.com/neptune/"
+            }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://tinkerpop.apache.org/providers.html#breadcrumblist",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/",
+                "url": "https://tinkerpop.apache.org/",
+                "name": "Home"
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "WebPage",
+                "@id": "https://tinkerpop.apache.org/providers.html",
+                "url": "https://tinkerpop.apache.org/providers.html",
+                "name": "Graph Database Providers"
+              }
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://tinkerpop.apache.org/providers.html#faqpage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is a TinkerPop-enabled graph system?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A TinkerPop-enabled graph system is a graph database, processor, or analytics tool that implements the Apache TinkerPop interfaces, allowing users to query the system using the Gremlin query language and leverage the full TinkerPop stack regardless of the underlying graph database."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How can I get my graph system listed on the TinkerPop providers page?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "To get your graph system listed, you need to follow Apache TinkerPop's provider listing policy which includes implementing the required TinkerPop interfaces, passing compatibility tests, and submitting your request through the appropriate channels. See the provider documentation for details."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What types of graph systems are supported by TinkerPop?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "TinkerPop supports both OLTP (Online Transaction Processing) graph databases for real-time queries and OLAP (Online Analytical Processing) graph processors for batch analytics. Many systems support both approaches."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What are the benefits of using a TinkerPop-enabled graph database?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Using a TinkerPop-enabled graph database provides application portability across different graph systems, access to the Gremlin query language, and the ability to leverage a common ecosystem of tools, libraries, and knowledge regardless of which specific graph database you choose."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
 <!-- header -->
@@ -52,7 +200,7 @@ limitations under the License.
         <nav class="navbar navbar-expand-lg  ">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html">
-                    <img src="img/logo.png" class="img-fluid" alt="img">
+                    <img src="img/logo.png" class="img-fluid" alt="Apache TinkerPop Graph Computing Framework Logo">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -181,7 +329,7 @@ limitations under the License.
 
 <!-- hero -->
 <div class="container hero-inner">
-    <img src="img/providers/bg.png" class="img-fluid w-100" alt="img">
+    <img src="img/providers/bg.png" class="img-fluid w-100" alt="Graph Database Providers Header Banner">
 </div>
 
 <!-- Content -->
@@ -194,7 +342,7 @@ limitations under the License.
         </div>
         <div class="row d-flex align-items-center">
             <div class="col-lg-6 mb-4 md-lg-0">
-                <img src="img/providers/providers.png" class="img-fluid w-100" alt="img">
+                <img src="img/providers/providers.png" class="img-fluid w-100" alt="TinkerPop-enabled Graph Database Provider Ecosystem Illustration">
             </div>
             <div class="col-lg-6 ">
                 <div class="use-case-page-pl-3">
@@ -206,8 +354,8 @@ limitations under the License.
                         computing features. The other type of provider are language designers that have a (graph) query
                         language they wish to have execute on the Gremlin traversal machine and thus, against any
                         TinkerPop-enabled graph system.</p>
-                    <a href="https://tinkerpop.apache.org/docs/current/dev/provider/" class="text-blue "><u>Learn
-                        More</u></a>
+                    <a href="https://tinkerpop.apache.org/docs/current/dev/provider/" class="text-blue "><u>Provider
+                        Documentation & Guidelines</u></a>
                 </div>
             </div>
         </div>
@@ -230,7 +378,7 @@ limitations under the License.
             <div class="col-md-6 col-lg-4">
                 <div class="uc-box">
                     <div class="d-flex align-items-start">
-                        <img src="img/providers/25.png " class="img-fluid mb-3" alt="img">
+                        <img src="img/providers/25.png " class="img-fluid mb-3" alt="Aerospike Graph Logo">
                         <div class="text-start ms-3">
                             <a class="ft-18 bold text-blue" href="https://aerospike.com/products/graph-database/">Aerospike Graph</a>
                             <p class="mb-0 mt-2">A massively scalable, high-performance graph database for the property graph model</p>
@@ -242,7 +390,7 @@ limitations under the License.
             <div class="col-md-6 col-lg-4">
                 <div class="uc-box">
                     <div class="d-flex align-items-start">
-                        <img src="img/providers/1.png " class="img-fluid mb-3" alt="img">
+                        <img src="img/providers/1.png " class="img-fluid mb-3" alt="Alibaba Graph Database Logo">
                         <div class="text-start ms-3">
                             <a class="ft-18 bold text-blue" href="https://cn.aliyun.com/product/gdb">Alibaba Graph Database</a>
                             <p class="mb-0 mt-2">A real-time, reliable, cloud-native graph database service that
@@ -255,7 +403,7 @@ limitations under the License.
             <div class="col-md-6 col-lg-4">
                 <div class="uc-box">
                     <div class="d-flex align-items-start">
-                        <img src="img/providers/2.png " class="img-fluid mb-3" alt="img">
+                        <img src="img/providers/2.png " class="img-fluid mb-3" alt="Amazon Neptune Logo">
                         <div class="text-start ms-3">
                             <a class="ft-18 bold text-blue" href="https://aws.amazon.com/neptune/">Amazon Neptune</a>
                             <p class="mb-0 mt-2">Fully-managed graph database service.</p>
@@ -558,7 +706,7 @@ limitations under the License.
                 <div class="ju-box">
                     <h2 class="ft-40 text-blue bold">Join Us</h2>
                     <p class="bold">Join us on our Discord Server</p>
-                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="img"></a>
+                    <a href="https://discord.gg/tinkerpop"><img src="img/tpvewx.png" class="img-fluid mt-3" alt="TinkerPop Discord QR code and invitation"></a>
                 </div>
             </div>
         </div>
@@ -574,11 +722,11 @@ limitations under the License.
                     <div class="bold ft-25">Apache TinkerPop™</div>
                     <p class="mt-2 mb-4">Apache TinkerPop™ is a graph computing framework for both graph databases (OLTP) and graph analytic systems (OLAP).</p>
                     <ul class="list-unstyled list-inline hover-op-low">
-                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="img"></a></li>
-                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="img"></a></li>
+                        <li class="list-inline-item"><a href="https://discord.gg/tinkerpop"><img src="img/social/discord.svg" class="img-fluid" alt="TinkerPop Discord"></a></li>
+                        <li class="list-inline-item"><a href="https://github.com/apache/tinkerpop"><img src="img/social/github-box.svg" class="img-fluid" alt="TinkerPop GitHub"></a></li>
+                        <li class="list-inline-item"><a href="https://www.twitch.tv/apachetinkerpop"><img src="img/social/twitch.png" class="img-fluid" alt="TinkerPop Twitch"></a></li>
+                        <li class="list-inline-item"><a href="https://twitter.com/apachetinkerpop"><img src="img/social/twitter-square.svg" class="img-fluid" alt="TinkerPop Twitter"></a></li>
+                        <li class="list-inline-item"><a href="https://www.youtube.com/@apachetinkerpop"><img src="img/social/youtube.png" class="img-fluid" alt="TinkerPop YouTube"></a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 ft-links">

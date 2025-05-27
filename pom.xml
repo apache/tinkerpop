@@ -478,6 +478,8 @@ limitations under the License.
                         <exclude>docs/original/**</exclude>
                         <exclude>docs/site/home/css/**</exclude>
                         <exclude>docs/site/home/js/**</exclude>
+                        <exclude>docs/site/robots.txt</exclude>
+                        <exclude>docs/site/sitemap.xml</exclude>
                         <exclude>docs/gremlint/build/**</exclude>
                         <exclude>docs/gremlint/public/CNAME</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
