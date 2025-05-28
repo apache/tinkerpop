@@ -85,7 +85,7 @@ TinkerPop performs type promotion a.k.a type casting for Numbers. Numbers are By
 Double, BigInteger, and BigDecimal. In general, numbers are compared using semantic equivalence, without regard for
 their specific type, e.g. `1 == 1.0`.
 
-Numeric types are promoted as follows:
+For comparisons numeric types are promoted as follows:
 
 * First determine whether to use floating point or not. If any numbers in the comparison are floating point then we
 convert all of them to floating point.
@@ -103,6 +103,16 @@ convert all of them to floating point.
 
 BigDecimal and BigInteger may not be supported depending on the language and Storage, therefore the behavior of type
 casting for these two types can vary depending on a Graph provider.
+
+For numeric type mathematical operations (div/mul/add/sub), types are promoted as follows:
+
+On math operations (when used in steps such as sum/sack) the highest common number class between
+the two inputs is used. Any number being floating point forces a floating point result.
+If an overflow occurs (either integer or floating-point), the method promotes the precision
+by increasing the bit width, until a suitable type is found. If no suitable type exists
+(e.g., for very large integers beyond 64-bit), an Arithmetic Exception is thrown.
+For floating-point numbers, if double overflows, the result is Double.POSITIVE_INFINITY
+or Double.NEGATIVE_INFINITY instead of an exception.
 
 [[gremlin-semantics-concepts]]
 == Comparability, Equality, Orderability, and Equivalence
