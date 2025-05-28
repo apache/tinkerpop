@@ -133,7 +133,7 @@ public final class NumberHelper {
             (a, b) -> Math.subtractExact(a.intValue(), b.intValue()),
             (a, b) -> Math.multiplyExact(a.intValue(), b.intValue()),
             (a, b) -> {
-                if (a.longValue() == Integer.MIN_VALUE && b.intValue() == -1) {
+                if (a.intValue() == Integer.MIN_VALUE && b.intValue() == -1) {
                     throw new ArithmeticException("integer overflow");
                 }
                 return a.intValue() / b.intValue();
