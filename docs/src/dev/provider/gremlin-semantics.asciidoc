@@ -107,7 +107,7 @@ casting for these two types can vary depending on a Graph provider.
 For numeric type mathematical operations (div/mul/add/sub), types are promoted as follows:
 
 On math operations (when used in steps such as sum/sack) the highest common number class between
-the two inputs us used. Any number being floating point forces a floating point result.
+the two inputs is used. Any number being floating point forces a floating point result.
 If an overflow occurs (either integer or floating-point), the method promotes the precision
 by increasing the bit width, until a suitable type is found. If no suitable type exists
 (e.g., for very large integers beyond 64-bit), an Arithmetic Exception is thrown.
