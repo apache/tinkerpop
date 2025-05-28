@@ -34,8 +34,6 @@ complete list of all the modifications that are part of this release.
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
 
-As a result, values would previously wrap around within their current type—overflowing at their minimum or maximum boundaries—which often led to incorrect, unintuitive, or unexpected behavior. This issue has now been resolved by introducing automatic type promotion for results.
-
 Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For floating-point numbers, the sequence is: float → double → infinity.
 
 ==== The Switch from Date to OffsetDateTime
@@ -340,8 +338,6 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
 ==== Auto promotion of number types
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
-
-As a result, values would previously wrap around within their current type—overflowing at their minimum or maximum boundaries—which often led to incorrect, unintuitive, or unexpected behavior. This issue has now been resolved by introducing automatic type promotion for results.
 
 Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For floating-point numbers, the sequence is: float → double → infinity.
 
