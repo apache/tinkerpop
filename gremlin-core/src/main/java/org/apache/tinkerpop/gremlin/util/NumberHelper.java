@@ -68,7 +68,12 @@ public final class NumberHelper {
             (a, b) -> asByte(a.byteValue() + b.byteValue()),
             (a, b) -> asByte(a.byteValue() - b.byteValue()),
             (a, b) -> asByte(a.byteValue() * b.byteValue()),
-            (a, b) -> (byte) (a.byteValue() / b.byteValue()),
+            (a, b) -> {
+                if (a.byteValue() == Byte.MIN_VALUE && b.byteValue() == -1) {
+                    throw new ArithmeticException("byte overflow");
+                }
+                return (byte)(a.byteValue() / b.byteValue());
+            },
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {
@@ -95,7 +100,12 @@ public final class NumberHelper {
             (a, b) -> asShort(a.shortValue() + b.shortValue()),
             (a, b) -> asShort(a.shortValue() - b.shortValue()),
             (a, b) -> asShort(a.shortValue() * b.shortValue()),
-            (a, b) -> (short) (a.shortValue() / b.shortValue()),
+            (a, b) -> {
+                if (a.shortValue() == Short.MIN_VALUE && b.shortValue() == -1) {
+                    throw new ArithmeticException("short overflow");
+                }
+                return (short)(a.shortValue() / b.shortValue());
+            },
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {
@@ -122,7 +132,12 @@ public final class NumberHelper {
             (a, b) -> Math.addExact(a.intValue(), b.intValue()),
             (a, b) -> Math.subtractExact(a.intValue(), b.intValue()),
             (a, b) -> Math.multiplyExact(a.intValue(), b.intValue()),
-            (a, b) -> a.intValue() / b.intValue(),
+            (a, b) -> {
+                if (a.longValue() == Integer.MIN_VALUE && b.intValue() == -1) {
+                    throw new ArithmeticException("integer overflow");
+                }
+                return a.intValue() / b.intValue();
+            },
             (a, b) -> {
                 if (isNumber(a)) {
                     if (isNumber(b)) {

@@ -210,6 +210,42 @@ Feature: Step - sack()
       | result |
       | d[Infinity] |
 
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_withSackX_128bX_injectX_1bX_sackXdivX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(-128b).inject(-1b).sack(div).sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[128].s |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_withSackX_32768sX_injectX_1sX_sackXdivX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(-32768s).inject(-1s).sack(div).sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[32768].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_withSackX_2147483648iX_injectX_1iX_sackXdivX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(-2147483648i).inject(-1i).sack(div).sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2147483648].l |
+
   Scenario: g_withSackXhelloX_V_outE_sackXassignX_byXlabelX_inV_sack
     Given the modern graph
     And the traversal of

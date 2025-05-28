@@ -122,14 +122,17 @@ public class NumberHelperTest {
     );
 
     private final static List<Quartet<Number, Number, String, String>> NO_OVERFLOW_CASES = Arrays.asList(
+            new Quartet<>(Byte.MIN_VALUE, (byte)-1, "div", "s"),
             new Quartet<>(Byte.MAX_VALUE, (byte)100, "add", "s"),
             new Quartet<>(Byte.MIN_VALUE, (byte)100, "sub", "s"),
             new Quartet<>((byte)100, (byte)100, "mul", "s"),
             new Quartet<>(Byte.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Short.MIN_VALUE, (short)-1, "div", "i"),
             new Quartet<>(Short.MAX_VALUE, (short)100, "add", "i"),
             new Quartet<>(Short.MIN_VALUE, (short)100, "sub", "i"),
             new Quartet<>(Short.MAX_VALUE, (short)100, "mul", "i"),
             new Quartet<>(Short.MAX_VALUE, 0.5f, "div", "f"),
+            new Quartet<>(Integer.MIN_VALUE, -1, "div", "l"),
             new Quartet<>(Integer.MAX_VALUE, 1, "add", "l"),
             new Quartet<>(Integer.MIN_VALUE, 1, "sub", "l"),
             new Quartet<>(Integer.MAX_VALUE, Integer.MAX_VALUE, "mul", "l"),
