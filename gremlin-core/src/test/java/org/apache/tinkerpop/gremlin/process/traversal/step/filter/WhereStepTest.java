@@ -18,16 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelperTest;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
 
@@ -36,6 +46,8 @@ import static org.junit.Assert.assertEquals;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class WhereStepTest extends StepTest {
+
+    private static final Logger log = LoggerFactory.getLogger(WhereStepTest.class);
 
     @Override
     public List<Traversal> getTraversals() {
@@ -64,5 +76,31 @@ public class WhereStepTest extends StepTest {
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
         }
+    }
+
+    @Test
+    public void testPopInstruction() {
+
+        // Testing WherePredicate Step
+        final WherePredicateStep wherePredicateStep = new WherePredicateStep(__.identity().asAdmin(), Optional.of("key1"), P.neq("label1"));
+
+        HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"key1", Pop.last},
+                new Object[]{"label1", Pop.last}
+        );
+
+        assertEquals(wherePredicateStep.getPopInstructions(), popInstructionSet);
+
+        // Testing WhereTraversal Test
+        final WhereTraversalStep whereTraversalStep = new WhereTraversalStep<>(new DefaultTraversal(), __.as("x").select("a", "b").asAdmin());
+
+        popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"x", Pop.last},
+                new Object[]{"a", Pop.last},
+                new Object[]{"b", Pop.last}
+        );
+
+        assertEquals(whereTraversalStep.getPopInstructions(), popInstructionSet);
+
     }
 }
