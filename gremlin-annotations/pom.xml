@@ -78,7 +78,7 @@ limitations under the License.
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
+            <version>33.4.8-jre</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
