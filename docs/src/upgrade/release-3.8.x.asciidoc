@@ -46,7 +46,7 @@ As a example the following query...
 g.withSack(32767s).inject(1s).sack(sum).sack()
 """
 
-Before would return a overflow exception or wrap to -1 depending on language, but now returns 32769i.
+Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
 
 ==== The Switch from Date to OffsetDateTime
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
@@ -363,7 +363,7 @@ As a example the following query...
 g.withSack(32767s).inject(1s).sack(sum).sack()
 """
 
-Before would return a overflow exception or wrap to -1 depending on language, but now returns 32769i.
+Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
 
 ==== The Switch from Date to OffsetDateTime
 
