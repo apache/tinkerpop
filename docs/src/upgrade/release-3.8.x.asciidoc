@@ -40,15 +40,36 @@ Now, any mathematical operations such as Add, Sub, Mul, and Div will now automat
 if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
 floating-point numbers, the sequence is: float → double → infinity.
 
-As a example the following query...
+The following example showcases the change in overflow behavior between 3.7.3 and 3.8.0
 
-"""
-g.withSack(32767s).inject(1s).sack(sum).sack()
-"""
+[source,groovy]
+----
+// 3.7.3
+gremlin> g.inject([Byte.MAX_VALUE, (byte) 1], [Short.MAX_VALUE, (short) 1], [Integer.MAX_VALUE,1], [Long.MAX_VALUE, 1l]).sum(local)
+==>-128 // byte
+==>-32768 // short
+==>-2147483648 // int
+==>-9223372036854775808 // long
 
-Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
+gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.MAX_VALUE]).sum(local)
+==>Infinity // float
+==>Infinity // double
 
-See https://issues.apache.org/jira/browse/TINKERPOP-3115 for more details.
+// 3.8.0
+gremlin> g.inject([Byte.MAX_VALUE, (byte) 1], [Short.MAX_VALUE, (short) 1], [Integer.MAX_VALUE,1]).sum(local)
+==>128 // short
+==>32768 // int
+==>2147483648 // long
+
+gremlin> g.inject([Long.MAX_VALUE, 1l]).sum(local)
+// throws java.lang.ArithmeticException: long overflow
+
+gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.MAX_VALUE]).sum(local)
+==>6.805646932770577E38 // double
+==>Infinity // double
+----
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
 
 ==== The Switch from Date to OffsetDateTime
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
@@ -367,7 +388,7 @@ g.withSack(32767s).inject(1s).sack(sum).sack()
 
 Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
 
-See https://issues.apache.org/jira/browse/TINKERPOP-3115 for more details.
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
 
 ==== The Switch from Date to OffsetDateTime
 
