@@ -30,6 +30,47 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Auto promotion of number types
+
+Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
+to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current
+type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
+
+Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type
+if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
+floating-point numbers, the sequence is: float → double → infinity.
+
+The following example showcases the change in overflow behavior between 3.7.3 and 3.8.0
+
+[source,groovy]
+----
+// 3.7.3
+gremlin> g.inject([Byte.MAX_VALUE, (byte) 1], [Short.MAX_VALUE, (short) 1], [Integer.MAX_VALUE,1], [Long.MAX_VALUE, 1l]).sum(local)
+==>-128 // byte
+==>-32768 // short
+==>-2147483648 // int
+==>-9223372036854775808 // long
+
+gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.MAX_VALUE]).sum(local)
+==>Infinity // float
+==>Infinity // double
+
+// 3.8.0
+gremlin> g.inject([Byte.MAX_VALUE, (byte) 1], [Short.MAX_VALUE, (short) 1], [Integer.MAX_VALUE,1]).sum(local)
+==>128 // short
+==>32768 // int
+==>2147483648 // long
+
+gremlin> g.inject([Long.MAX_VALUE, 1l]).sum(local)
+// throws java.lang.ArithmeticException: long overflow
+
+gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.MAX_VALUE]).sum(local)
+==>6.805646932770577E38 // double
+==>Infinity // double
+----
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
+
 ==== The Switch from Date to OffsetDateTime
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
 
@@ -254,11 +295,6 @@ The GLVs will only support GraphBinary V4 and GraphSON support has been removed.
 that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
 types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
 
-==== Improved handling of integer overflows
-
-Integer overflows caused by addition and multiplication operations will throw an exception instead of being silently
-skipped with incorrect result.
-
 ==== Gremlin Lang Float Literals Default to Double
 
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
@@ -333,6 +369,26 @@ Details on implementing the Gherkin tests can be found in the
 link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gherkin-tests-suite[Provider Documentation].
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
+
+==== Auto promotion of number types
+
+Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
+to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current
+type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
+
+Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type
+if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
+floating-point numbers, the sequence is: float → double → infinity.
+
+As a example the following query...
+
+"""
+g.withSack(32767s).inject(1s).sack(sum).sack()
+"""
+
+Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
 
 ==== The Switch from Date to OffsetDateTime
 
