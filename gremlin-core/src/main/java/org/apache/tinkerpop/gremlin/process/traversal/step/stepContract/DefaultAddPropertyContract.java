@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,8 +41,13 @@ public class DefaultAddPropertyContract<K, V> implements AddPropertyContract<K, 
     }
 
     @Override
+    public V removeProperty(K key) {
+        return metaProperties.remove(key);
+    }
+
+    @Override
     public Map<K, V> getProperties() {
-        throw new UnsupportedOperationException();
+        return Collections.unmodifiableMap(metaProperties);
     }
 
     @Override

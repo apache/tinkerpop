@@ -306,7 +306,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return gValueRegistry;
     }
 
-    protected class GValueRegistry<T> implements Serializable {
+    public class GValueRegistry<T> implements Serializable {
         private Map<P, GValue<T>> gValueRegistry = new IdentityHashMap<>();
 
         public GValueRegistry() {}

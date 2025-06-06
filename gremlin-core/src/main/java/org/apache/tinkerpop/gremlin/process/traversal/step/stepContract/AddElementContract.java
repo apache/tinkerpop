@@ -23,4 +23,5 @@ import java.util.Map;
 public interface AddElementContract<K, V> extends StepContract {
     public Map<K, V> getProperties();
     public void addProperty(K key, V value);
+    public V removeProperty(K key);
 }

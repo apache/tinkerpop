@@ -45,6 +45,7 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -202,11 +203,16 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
     @Override
     public Map<Object, Object> getProperties() {
-        throw new UnsupportedOperationException("TODO:");
+        return Collections.unmodifiableMap(parameters.getRaw());
     }
 
     @Override
-    public void addProperty(Object key, Object value) {
+    public void addProperty(final Object key, final Object value) {
         configure(key, value);
+    }
+
+    @Override
+    public Object removeProperty(final Object key) {
+        return this.parameters.remove(key);
     }
 }

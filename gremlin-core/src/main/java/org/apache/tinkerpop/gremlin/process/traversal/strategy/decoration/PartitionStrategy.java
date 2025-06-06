@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -44,6 +45,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultAddPropertyContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
@@ -194,7 +198,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     traversal.removeStep(step);
                 } else {
                     throw new IllegalStateException(String.format("%s is not accounting for a particular %s %s",
-                            PartitionStrategy.class.getSimpleName(), PropertyType.class.toString(), step.getReturnType()));
+                            PartitionStrategy.class.getSimpleName(), PropertyType.class, step.getReturnType()));
                 }
             });
 
@@ -221,7 +225,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     TraversalHelper.insertAfterStep(new LambdaMapStep<>(traversal, new MapPropertiesConverter()), mapPropertiesFilterStep, traversal);
                 } else {
                     throw new IllegalStateException(String.format("%s is not accounting for a particular %s %s",
-                            PartitionStrategy.class.getSimpleName(), PropertyType.class.toString(), step.getReturnType()));
+                            PartitionStrategy.class.getSimpleName(), PropertyType.class, step.getReturnType()));
                 }
             });
         }
@@ -246,6 +250,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                 if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
                     final Parameters parameters = ((Parameterizing) step).getParameters();
                     final Map<Object, List<Object>> params = parameters.getRaw();
+                    final AddVertexContract contract = traversal.getGValueManager().getStepContract(step);
+
                     params.forEach((k, v) -> {
 
                         // need to filter out T based keys
@@ -257,13 +263,25 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                                 addPropertyStep.configure(partitionKey, writePartition);
                                 addPropertyStepsToAppend.add(addPropertyStep);
 
-                                // need to remove the parameter from the AddVertex/StartStep because it's now being added
-                                // via the AddPropertyStep
+                                // need to remove the parameter from the AddVertex/StartStep and move any GValue to a
+                                // different contract related because it's now being added via the AddPropertyStep
                                 parameters.remove(k);
-                            });
 
-                            Collections.reverse(addPropertyStepsToAppend);
-                            addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
+                                if (contract != null) {
+                                    final Object possibleGValue = contract.removeProperty(k);
+                                    if (possibleGValue instanceof GValue) {
+                                        final AddPropertyContract addPropertyContract = new DefaultAddPropertyContract(k, possibleGValue);
+                                        traversal.getGValueManager().register(addPropertyStep, addPropertyContract);
+                                    }
+
+                                    // remove an empty contract for the addV because we've moved all the state to
+                                    // the property() steps
+                                    if (contract.getProperties().isEmpty())
+                                        traversal.getGValueManager().remove(step);
+                                }
+
+                                TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
+                            });
                         }
                     });
                 }

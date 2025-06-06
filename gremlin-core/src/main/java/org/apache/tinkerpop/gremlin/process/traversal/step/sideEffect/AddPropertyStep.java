@@ -244,4 +244,9 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     public Object getValue() {
         throw new UnsupportedOperationException("TODO:");
     }
+
+    @Override
+    public Object removeProperty(Object key) {
+        return parameters.remove(key);
+    }
 }

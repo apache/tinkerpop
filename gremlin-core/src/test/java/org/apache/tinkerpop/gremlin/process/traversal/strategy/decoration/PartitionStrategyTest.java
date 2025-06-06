@@ -24,12 +24,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -171,22 +174,6 @@ public class PartitionStrategyTest {
                 }
             });
         }
-
-        public static GraphTraversal create() {
-            return create(null);
-        }
-
-        public static GraphTraversal create(final Class<? extends Element> clazz) {
-            final Graph mockedGraph = mock(Graph.class);
-            final Graph.Features features = mock(Graph.Features.class);
-            final Graph.Features.VertexFeatures vertexFeatures = mock(Graph.Features.VertexFeatures.class);
-            when(mockedGraph.features()).thenReturn(features);
-            when(features.vertex()).thenReturn(vertexFeatures);
-            when(vertexFeatures.getCardinality(any())).thenReturn(VertexProperty.Cardinality.single);
-            final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
-            if (clazz != null) t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), clazz, true));
-            return t;
-        }
     }
 
     public static class RewriteTest {
@@ -218,5 +205,118 @@ public class PartitionStrategyTest {
             assertEquals(3, strategy.getReadPartitions().size());
             assertEquals("p", strategy.getPartitionKey());
         }
+    }
+
+    /**
+     * Tests that GValueManager is being used correctly in PartitionStrategy
+     * to ensure that GValue state is properly maintained when steps are modified.
+     */
+    @RunWith(Parameterized.class)
+    public static class GValueTest {
+
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin<?, ?> traversal;
+
+        @Parameterized.Parameter(value = 1)
+        public PartitionStrategy strategy;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            // Create a default PartitionStrategy
+            final PartitionStrategy defaultStrategy = PartitionStrategy.build()
+                    .partitionKey("p").writePartition("a").readPartitions("a").create();
+
+            return Arrays.asList(new Object[][]{
+                    // Basic vertex steps with GValue edge labels
+                    {
+                        create().V().hasLabel("person").out(GValue.of("x", "knows")).asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().V().hasLabel("person").both(GValue.of("x", "created")).asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().V().hasLabel("person").in(GValue.of("x", "created")).asAdmin(),
+                        defaultStrategy
+                    },
+                    // Multiple GValue edge labels
+                    {
+                        create().V().hasLabel("person").out(GValue.of("x", "knows"), GValue.of("y", "created")).asAdmin(),
+                        defaultStrategy
+                    },
+                    // Edge steps with GValue
+                    {
+                        create().V().hasLabel("person").outE(GValue.of("x", "knows")).inV().asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().V().hasLabel("person").inE(GValue.of("x", "created")).outV().asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().V().hasLabel("person").bothE(GValue.of("x", "created")).otherV().asAdmin(),
+                        defaultStrategy
+                    },
+                    // Mutating steps with GValue
+                    {
+                        create().V().hasLabel("person").addE(GValue.of("x", "knows")).to("person").asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().addV("person").property("name", GValue.of("x", "john")).asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().addV("person").property("name", GValue.of("y", "john")).asAdmin(),
+                        defaultStrategy
+                    },
+                    {
+                        create().addV("person").property("name", GValue.of("y", "john")).asAdmin(),
+                        PartitionStrategy.build().partitionKey("p").
+                            writePartition("a").readPartitions("a").includeMetaProperties(true).create()
+                    },
+                    {
+                        create().addV("person").property("name", GValue.of("y", "john")).property("age", GValue.of("z", 10)).asAdmin(),
+                        PartitionStrategy.build().partitionKey("p").
+                            writePartition("a").readPartitions("a").includeMetaProperties(true).create()
+                    },
+                    // Filter steps with GValue
+                    {
+                        create().V().hasLabel(GValue.of("x", "person")).asAdmin(),
+                        defaultStrategy
+                    },
+                    // Complex traversals with GValue
+                    {
+                        create().V().hasLabel("person").out(GValue.of("x", "knows")).out(GValue.of("y", "created")).asAdmin(),
+                        defaultStrategy
+                    }
+            });
+        }
+
+        @Test
+        public void shouldMaintainGValueState() {
+            // Verify that after applying the strategy, the GValue state is properly maintained
+            GValueManagerVerifier.verify(traversal, strategy)
+                    .afterApplying()
+                    .variablesArePreserved();
+        }
+    }
+
+    public static GraphTraversal create() {
+        return create(null);
+    }
+
+    public static GraphTraversal create(final Class<? extends Element> clazz) {
+        final Graph mockedGraph = mock(Graph.class);
+        final Graph.Features features = mock(Graph.Features.class);
+        final Graph.Features.VertexFeatures vertexFeatures = mock(Graph.Features.VertexFeatures.class);
+        when(mockedGraph.features()).thenReturn(features);
+        when(features.vertex()).thenReturn(vertexFeatures);
+        when(vertexFeatures.getCardinality(any())).thenReturn(VertexProperty.Cardinality.single);
+        when(vertexFeatures.supportsMetaProperties()).thenReturn(true);
+        final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
+        if (clazz != null) t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), clazz, true));
+        return t;
     }
 }

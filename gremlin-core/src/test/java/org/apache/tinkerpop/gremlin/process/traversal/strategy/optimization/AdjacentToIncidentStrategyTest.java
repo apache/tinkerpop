@@ -60,13 +60,6 @@ public class AdjacentToIncidentStrategyTest {
         @Parameterized.Parameter(value = 1)
         public Traversal optimized;
 
-        void applyAdjacentToIncidentStrategy(final Traversal traversal) {
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(AdjacentToIncidentStrategy.instance());
-            traversal.asAdmin().setStrategies(strategies);
-            traversal.asAdmin().applyStrategies();
-        }
-
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Traversal[][]{
@@ -94,9 +87,10 @@ public class AdjacentToIncidentStrategyTest {
         @Test
         public void doTest() {
             final String repr = translator.translate(original.getBytecode()).getScript();
-            applyAdjacentToIncidentStrategy(original);
+            GValueManagerVerifier.verify(original.asAdmin(), AdjacentToIncidentStrategy.instance())
+                    .afterApplying()
+                    .managerIsEmpty();
             assertEquals(repr, optimized, original);
-            assertThat(optimized.asAdmin().getGValueManager().isEmpty(), is(true));
         }
     }
 
@@ -163,12 +157,17 @@ public class AdjacentToIncidentStrategyTest {
 
         @Test
         public void shouldCopyGValueParameters() {
-            GValueManagerVerifier.verify(traversal, AdjacentToIncidentStrategy.instance())
-                    .afterApplying()
-                    .hasVariables(expectedNames)
-                    .edgeLabelContractIsValid(traversal.getStartStep(), expectedLabelCount,
-                            expectedNames,
-                            expectedValues);
+            // get reference to the start step before we apply strategies as its going to get replaced and we need
+            // it to verify the before state.
+            final Step step = traversal.asAdmin().getSteps().get(0);
+            GValueManagerVerifier.verify(traversal, AdjacentToIncidentStrategy.instance()).
+                    beforeApplying().
+                        hasVariables(expectedNames).
+                        edgeLabelContractIsValid(step, expectedLabelCount, expectedNames, expectedValues).
+                    afterApplying().
+                        hasVariables(expectedNames).
+                        variablesArePreserved().
+                        edgeLabelContractIsValid(traversal.getStartStep(), expectedLabelCount, expectedNames, expectedValues);
         }
     }
 }

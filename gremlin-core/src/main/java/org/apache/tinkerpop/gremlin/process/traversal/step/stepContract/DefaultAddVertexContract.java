@@ -29,6 +29,7 @@ public class DefaultAddVertexContract<L, K, V> implements AddVertexContract<L, K
         this.label = label;
     }
 
+    @Override
     public void addProperty(K key, V value){
         properties.put(key, value);
     }
@@ -41,5 +42,10 @@ public class DefaultAddVertexContract<L, K, V> implements AddVertexContract<L, K
     @Override
     public Map<K, V> getProperties() {
         return properties;
+    }
+
+    @Override
+    public V removeProperty(final K key) {
+        return properties.remove(key);
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class DefaultAddEdgeContract<L, Vertex, K, Value> implements AddEdgeContr
     private Vertex to;
     private Map<K, Value> properties = new HashMap<>();
 
-    public DefaultAddEdgeContract(L label) {
+    public DefaultAddEdgeContract(final L label) {
         this.label = label;
     }
 
@@ -46,20 +47,25 @@ public class DefaultAddEdgeContract<L, Vertex, K, Value> implements AddEdgeContr
         return null;
     }
 
-    public void addFrom(Vertex from) {
+    public void addFrom(final Vertex from) {
         this.from = from;
     }
 
-    public void addTo(Vertex to) {
+    public void addTo(final Vertex to) {
         this.to = to;
     }
 
     @Override
     public Map<K, Value> getProperties() {
-        return properties;
+        return Collections.unmodifiableMap(properties);
     }
 
-    public void addProperty(K key, Value value){
+    public void addProperty(final K key, final Value value){
         properties.put(key, value);
+    }
+
+    @Override
+    public Value removeProperty(final K key) {
+        return properties.remove(key);
     }
 }

@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -29,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeContract;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -46,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -124,7 +124,7 @@ public class EarlyLimitStrategyTest {
             this.original.asAdmin().applyStrategies();
             assertEquals(repr, this.optimized, this.original);
 
-            assertThat(optimized.asAdmin().getGValueManager().isEmpty(), is(true));
+            assertThat(original.asAdmin().getGValueManager().hasVariables(), is(true));
         }
     }
 
@@ -136,7 +136,7 @@ public class EarlyLimitStrategyTest {
     public static class GValuePropagatedTest {
 
         @Parameterized.Parameter(value = 0)
-        public Traversal.Admin<?, ?> original;
+        public Traversal.Admin<?, ?> traversal;
 
         @Parameterized.Parameter(value = 1)
         public int expectedLowRange;
@@ -197,47 +197,19 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, original);
+            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
             final RangeGlobalStep originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
-            // Apply the EarlyLimitStrategy
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(EarlyLimitStrategy.instance());
-            original.setStrategies(strategies);
-
-            final GValueManager gValueManager = original.getGValueManager();
-            original.applyStrategies();
-
-            // the original step should not have any context in the GValueManager
-            assertNull(gValueManager.getStepContract(originalRangeGlobalStep));
-
-            // Find the RangeGlobalStep in the optimized traversal
-            final Optional<RangeGlobalStep> maybeOptimizedRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, original);
-            assertThat(maybeOptimizedRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStep optimizedRangeGlobalStep = maybeOptimizedRangeGlobalStep.get();
-
-            // The optimized step should exist
-            assertNotNull(optimizedRangeGlobalStep);
-
-            // better not be the same step coz we cloned stuff
-            assertNotSame(originalRangeGlobalStep, optimizedRangeGlobalStep);
-
-            // optimized step should have the same GValue parameters
-            assertThat(gValueManager.isParameterized(optimizedRangeGlobalStep), is(true));
-            final RangeContract<GValue<Long>> optimizedContract = gValueManager.getStepContract(optimizedRangeGlobalStep);
-            assertNotNull(optimizedContract);
-
-            // Verify the range values
-            assertEquals(expectedLowRange, optimizedContract.getLowRange().get().longValue());
-            assertEquals(expectedHighRange, optimizedContract.getHighRange().get().longValue());
-
-            // Verify the parameter names
-            assertEquals(expectedNames[0], optimizedContract.getLowRange().getName());
-            assertEquals(expectedNames[1], optimizedContract.getHighRange().getName());
-
-            assertEquals(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)),
-                    gValueManager.variableNames());
+            // Use GValueManagerVerifier to verify the state before and after applying the strategy
+            GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
+                    beforeApplying().
+                        rangeContractIsValid(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    afterApplying().
+                        rangeContractIsValid(
+                                TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal).get(),
+                                expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                        hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }
 
@@ -249,7 +221,7 @@ public class EarlyLimitStrategyTest {
     public static class GValueLeftAloneTest {
 
         @Parameterized.Parameter(value = 0)
-        public Traversal.Admin<?, ?> original;
+        public Traversal.Admin<?, ?> traversal;
 
         @Parameterized.Parameter(value = 1)
         public int expectedLowRange;
@@ -289,43 +261,17 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, original);
+            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
             final RangeGlobalStep originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
-            // Apply the EarlyLimitStrategy
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(EarlyLimitStrategy.instance());
-            original.setStrategies(strategies);
-
-            final GValueManager gValueManager = original.getGValueManager();
-            original.applyStrategies();
-
-            // the original step should be in the GValueManager
-            assertNotNull(gValueManager.getStepContract(originalRangeGlobalStep));
-
-            // Find the RangeGlobalStep in the optimized traversal
-            final Optional<RangeGlobalStep> maybeOptimizedRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, original);
-            assertThat(maybeOptimizedRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStep optimizedRangeGlobalStep = maybeOptimizedRangeGlobalStep.get();
-
-            // The optimized step should exist, be the same instance as the original and have the same GValue parameters
-            assertNotNull(optimizedRangeGlobalStep);
-            assertSame(originalRangeGlobalStep, optimizedRangeGlobalStep);
-            assertThat(gValueManager.isParameterized(optimizedRangeGlobalStep), is(true));
-            final RangeContract<GValue<Long>> optimizedContract = gValueManager.getStepContract(optimizedRangeGlobalStep);
-            assertNotNull(optimizedContract);
-
-            // Verify the range values
-            assertEquals(expectedLowRange, optimizedContract.getLowRange().get().longValue());
-            assertEquals(expectedHighRange, optimizedContract.getHighRange().get().longValue());
-
-            // Verify the parameter names
-            assertEquals(expectedNames[0], optimizedContract.getLowRange().getName());
-            assertEquals(expectedNames[1], optimizedContract.getHighRange().getName());
-
-            assertEquals(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)),
-                    gValueManager.variableNames());
+            // Use GValueManagerVerifier to verify the state before and after applying the strategy
+            GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
+                    beforeApplying().
+                        rangeContractIsValid(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    afterApplying().
+                        rangeContractIsValid(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                        hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }
 
@@ -337,7 +283,10 @@ public class EarlyLimitStrategyTest {
     public static class GValueExpectClearStateTest {
 
         @Parameterized.Parameter(value = 0)
-        public Traversal.Admin<?, ?> original;
+        public Traversal.Admin<?, ?> traversal;
+
+        @Parameterized.Parameter(value = 1)
+        public Set<String> expectedVariables;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
@@ -345,53 +294,40 @@ public class EarlyLimitStrategyTest {
                     {
                         __.out().range(GValue.of("x", 5L), GValue.of("y", -1L)).
                                 map(__.identity()).
-                                range(GValue.of("z", 10L), GValue.of("w", 60L)).asAdmin()
+                                range(GValue.of("z", 10L), GValue.of("w", 60L)).asAdmin(),
+                        CollectionUtil.asSet("x", "y", "z", "w")
                     },
                     {
                         __.out().limit(GValue.of("a", 15L)).
                                 map(__.identity()).
-                                limit(GValue.of("b", 10L)).asAdmin()
+                                limit(GValue.of("b", 10L)).asAdmin(),
+                        CollectionUtil.asSet("a", "b")
                     },
                     {
                         __.out().skip(GValue.of("c", 5L)).
                                 map(__.identity()).
-                                limit(GValue.of("d", 20L)).asAdmin()
+                                limit(GValue.of("d", 20L)).asAdmin(),
+                        CollectionUtil.asSet("c", "d")
                     },
                     {
                         __.out().limit(GValue.of("e", 30L)).
                                 map(__.identity()).
-                                skip(GValue.of("f", 10L)).asAdmin()
+                                skip(GValue.of("f", 10L)).asAdmin(),
+                        CollectionUtil.asSet("e", "f")
                     }
             });
         }
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final List<RangeGlobalStep> originalRangeSteps = TraversalHelper.getStepsOfAssignableClass(RangeGlobalStep.class, original);
+            final List<RangeGlobalStep> originalRangeSteps = TraversalHelper.getStepsOfAssignableClass(RangeGlobalStep.class, traversal);
 
-            // Apply the EarlyLimitStrategy
-            final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(EarlyLimitStrategy.instance());
-            original.setStrategies(strategies);
-
-            final GValueManager gValueManager = original.getGValueManager();
-            original.applyStrategies();
-
-            // the original range steps should not have any context in the GValueManager because they've merged and
-            // that context is lost
-            for (RangeGlobalStep step : originalRangeSteps) {
-                assertNull(gValueManager.getStepContract(step));
-                assertThat(gValueManager.isParameterized(step), is(false));
-            }
-
-            // Find the merged RangeGlobalStep in the optimized traversal
-            final List<RangeGlobalStep> optimizedRangeSteps = TraversalHelper.getStepsOfAssignableClass(RangeGlobalStep.class, original);
-            assertEquals(1, optimizedRangeSteps.size());
-            final RangeGlobalStep optimizedRangeGlobalStep = optimizedRangeSteps.get(0);
-
-            // The optimized step should exist but the GValue stuff should be gone
-            assertNotNull(optimizedRangeGlobalStep);
-            assertThat(gValueManager.isParameterized(optimizedRangeGlobalStep), is(false));
+            // Use GValueManagerVerifier to verify the state before and after applying the strategy
+            GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
+                    beforeApplying().
+                        hasVariables(expectedVariables).
+                    afterApplying().
+                        managerIsEmpty();
         }
     }
 }

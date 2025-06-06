@@ -116,6 +116,11 @@ public class GValue<V> implements Serializable {
         return Objects.hash(name, type, value);
     }
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return new GValue<>(this.name, this.type, this.value);
+    }
+
     /**
      * Create a new {@code Var} from a particular value but without the specified name. If the argument provide is
      * already a {@code GValue} then it is returned as-is.

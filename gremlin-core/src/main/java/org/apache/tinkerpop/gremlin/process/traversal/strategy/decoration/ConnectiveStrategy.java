@@ -77,7 +77,6 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
     }
 
     private static void processConjunctionMarker(final Class<? extends ConnectiveStep> markerClass, final Traversal.Admin<?, ?> traversal) {
-        final GValueManager manager = traversal.getGValueManager();
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
@@ -89,7 +88,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                     for (int j = i - 1; j >= 0; i--, j--) {
                         final Step previousStep = steps.get(j);
                         if (legalCurrentStep(previousStep)) {
-                            // step is moving from one traversal to another. GValue state is unchanged.
+                            // step is moving from one traversal to another. GValue state is unchanged so retain it
                             connectiveTraversal.addStep(0, previousStep);
                             traversal.removeStep(previousStep);
                         } else break;
@@ -106,7 +105,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                             } else {
                                 connectiveTraversal.addStep(nextStep);
                             }
-                            // step is moving from one traversal to another. GValue state is unchanged.
+                            // step is moving from one traversal to another. GValue state is unchanged so retain it
                             traversal.removeStep(nextStep);
                         } else break;
                     }

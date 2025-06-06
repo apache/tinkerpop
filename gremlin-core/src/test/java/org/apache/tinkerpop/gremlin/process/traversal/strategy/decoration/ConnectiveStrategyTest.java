@@ -169,9 +169,9 @@ public class ConnectiveStrategyTest {
             // where steps are being moved from the top level traversal down to child traversals.
             GValueManagerVerifier.verify(traversal, ConnectiveStrategy.instance()).
                     beforeApplying().
-                    hasVariables(expectedVariables).
+                        hasVariables(expectedVariables).
                     afterApplying().
-                    hasVariables(expectedVariables);
+                        hasVariables(expectedVariables);
         }
     }
 }

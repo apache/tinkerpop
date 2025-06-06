@@ -175,7 +175,7 @@ public final class TraversalHelper {
     }
 
     /**
-     * Replace a step with a new step.
+     * Replace a step with a new step. When a step is replaced, it is also removed from the {@link GValueManager}.
      *
      * @param removeStep the step to remove
      * @param insertStep the step to insert
