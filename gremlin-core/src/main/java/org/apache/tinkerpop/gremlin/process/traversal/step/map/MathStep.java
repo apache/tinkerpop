@@ -166,6 +166,14 @@ public final class MathStep<S> extends MapStep<S, Double> implements ByModulatin
     }
 
     @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     public void setKeepLabels(final Set<String> labels) {
         this.keepLabels = labels;
     }
