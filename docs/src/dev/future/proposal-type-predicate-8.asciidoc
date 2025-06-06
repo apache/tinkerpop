@@ -1,0 +1,105 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 7*
+
+== Type Predicate
+
+=== Motivation
+
+Following up on link:https://issues.apache.org/jira/browse/TINKERPOP-2234[TINKERPOP-2234], filtering of traversers based on types would be a very convenient addition to data manipulation in Gremlin. For example, when we
+perform union of traversals and only want vertices or edges, currently there is no simple way to assert the type and pass it through.
+
+=== Definitions
+
+For defining what types to assert, we'll be using a set of tokens. A proposed set of type tokens are listed below based on GraphBinary.
+
+* The `token` could be a defined set of `Type` enums, e.g. `Type.String`, `Type.Number`, `Type.Date`, `Type.Vertex`, `Type.Edge`, `Type.Property`.
+** Note that the `GremlinValueComparator` class contains a set of `Type` enums, which we could extract and promote to use.
+* In addition, could also recognize the `Number` type tokens used by the `asNumber()` step, i.e. `N.Int`, `N.Double`.
+
+The range of tokens are:
+[cols=",",options="header",]
+|===
+|Token |Gremlin Type Reference
+|N.Int |GraphBinary 4.0, GType
+|N.Long |GraphBinary 4.0, GType
+|N.Double |GraphBinary 4.0, GType
+|N.Float |GraphBinary 4.0, GType
+|N.BigDecimal |GraphBinary 4.0, GType
+|N.BigInteger |GraphBinary 4.0, GType
+|N.Byte |GraphBinary 4.0, GType
+|N.Short |GraphBinary 4.0, GType
+|Type.Number | Token for Java Number type
+|Type.String |GraphBinary 4.0, GType
+|Type.DateTime |GraphBinary 4.0, GType
+|Type.List |GraphBinary 4.0, GType
+|Type.Set |GraphBinary 4.0, GType
+|Type.Map |GraphBinary 4.0, GType
+|Type.UUID |GraphBinary, 4.0 GType
+|Type.Edge |GraphBinary 4.0
+|Type.Path |GraphBinary 4.0
+|Type.Property |GraphBinary 4.0
+|Type.Graph |GraphBinary 4.0
+|Type.Vertex |GraphBinary 4.0, GType
+|Type.VP |GraphBinary 4.0(VertexProperty)
+|Type.Direction |GraphBinary 4.0
+|Type.T |GraphBinary 4.0
+|Type.Binary |GraphBinary 4.0
+|Type.Boolean |GraphBinary 4.0
+|Type.Tree |GraphBinary 4.0
+|Type.Char |GraphBinary 4.0
+|Type.Duration |GraphBinary 4.0
+|Type.Marker |GraphBinary 4.0
+|Type.PDT(type)* |GraphBinary 4.0(CompositePDT & PrimitivePDT)
+|Type.Null |GraphBinary 4.0(Unspecified Null Object), GValue(UNKNOWN)
+|===
+
+*Providers are to register their custom types which can be string arguments to the token, for the Grammar to recognize.
+
+==== Addition of `P.of(token)`
+
+Given `P` is widely used by filter steps and has existing evaluation structure, we would also introduce a new predicate condition, which should be quite straight forward.
+
+* `P.of(token)`
+* `P.nof(token)` - negation "not of type"
+
+A special convenience for embedded use is to take Java class as overload for syntactic sugar.
+
+* `P.of(class)`
+* `P.nof(class)` - negation "not of type"
+
+[source]
+----
+// embedded - recognizes Java classes
+gremlin> g.V().is(P.of(Vertex)).fold()
+==> [v[1],v[2],[v3],[v4],[v5],[v6]]
+gremlin> g.inject(1.0,2,3,'hello',false).is(P.of(Number)).fold()
+==> [1.0,2,3]
+
+// remote - uses the token
+gremlin> g.V().is(P.of(Type.Vertex)).fold()
+==> [v[1],v[2],[v3],[v4],[v5],[v6]]
+gremlin> g.inject(1.0,2,3,'hello',false).is(P.of(Type.number)).fold()
+==> [1.0,2,3]
+
+gremlin> g.inject(1.0,2,3,'hello',false).is(P.nof(Type.number)).fold()
+==> ['hello',false]
+----
+

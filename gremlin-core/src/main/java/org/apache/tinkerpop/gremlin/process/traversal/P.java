@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -143,6 +144,26 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> neq(final V value) {
         return new P(Compare.neq, value);
+    }
+
+    /**
+     * Determines if values are of a type.
+     *
+     * @since 3.8.0-incubating
+     */
+    // restricting parameter type to Class for PoC
+    public static <V> P<V> of(final Class<?> value) {
+        return new P(Compare.of, value);
+    }
+
+    /**
+     * Determines if values are not of a type.
+     *
+     * @since 3.8.0-incubating
+     */
+    // restricting parameter type to Class for PoC
+    public static <V> P<V> nof(final Class<?> value) {
+        return new P(Compare.nof, value);
     }
 
     /**

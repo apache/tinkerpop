@@ -1,0 +1,75 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 7*
+
+== asBool() Step
+
+=== Motivation
+
+Given the additions of the `asString()` and `asDate()` steps in the 3.7 line, this proposal seeks to bridge another gap in language functionality, which is boolean parsing.
+
+=== Definition
+
+The `asBool()` step will convert the incoming traverser into a Boolean value.
+
+Note that `null` value will be considered `false`.
+
+The incoming traverser can be of type:
+
+*Number* - All non-zero values are considered `true`, zero, `NaN` and `null` values are considered `false`, for example:
+[cols=",",options="header",]
+|===
+|Numerical Value |Boolean Value
+|1 |true
+|0 |false
+|3.14 |true
+|-1 |true
+|-0.0 |false
+|0.0 |false
+|NaN |false
+|null| false
+|===
+
+*String* - Strings will not be convertable into bool, except boolean strings:
+[cols=",",options="header",]
+|===
+|Sting Value |Boolean Value
+|"true" |true
+|"false" |false
+|"True" |true
+|"False" |false
+|"TRUE" |true
+|"FALSE" |false
+|"trUE" |true
+|"faLSe" |false
+|"null"|Parsing Exception
+|"1" |Parsing Exception
+|"hello" |Parsing Exception
+|===
+
+*All other types* - Throws parsing exception.
+
+=== Alternative semantics
+
+Depending on how we want `asBool()` to be used, a potential alternative is to make `asBool()` an eval function and follow the `Groovy Truth` definitions.
+
+* For strings, all non-empty strings are considered `true`, and empty strings are considered `false`. Note in this case, `"false"` will be considered `true`, which could be confusing.
+
+* For collection, all non-empty collections are considered `true`, and empty collections are considered `false`.

@@ -80,6 +80,10 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         public boolean equals(final Object f, final Object s) {
             return compare(f, s) == 0;
         }
+
+        public boolean of(final Object f, final Object s) {
+            return ((Class<?>)s).isAssignableFrom(f.getClass());
+        }
     };
 
     /**
@@ -158,6 +162,11 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
                  */
                 return false;
             }
+        }
+
+        @Override
+        public boolean of(final Object f, final Object s) {
+            return ((Class<?>)s).isAssignableFrom(f.getClass());
         }
 
         private boolean containersOfDifferentSize(final Object f, final Object s) {
@@ -376,5 +385,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
      * Equals(a,b) is defined differently for Comparablity (equality) vs. Orderability (equivalence).
      */
     public abstract boolean equals(final Object f, final Object s);
+
+    public abstract boolean of(final Object f, final Object s);
 
 }

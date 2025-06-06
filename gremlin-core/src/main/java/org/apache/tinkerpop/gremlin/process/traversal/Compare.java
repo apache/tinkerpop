@@ -52,6 +52,26 @@ public enum Compare implements PBiPredicate<Object, Object> {
     },
 
     /**
+     * Evaluates if the first object is equal to the second per Gremlin Comparison semantics.
+     *
+     * @since 3.8.0
+     */
+    of {
+        @Override
+        public boolean test(final Object first, final Object second) {
+            return GremlinValueComparator.COMPARABILITY.of(first, second);
+        }
+
+        /**
+         * The negative of {@code eq} is {@link #neq}.
+         */
+        @Override
+        public Compare negate() {
+            return nof;
+        }
+    },
+
+    /**
      * Evaluates if the first object is not equal to the second per Gremlin Comparison semantics.
      *
      * @since 3.0.0-incubating
@@ -68,6 +88,26 @@ public enum Compare implements PBiPredicate<Object, Object> {
         @Override
         public Compare negate() {
             return eq;
+        }
+    },
+
+    /**
+     * Evaluates if the first object is not equal to the second per Gremlin Comparison semantics.
+     *
+     * @since 3.8.0
+     */
+    nof {
+        @Override
+        public boolean test(final Object first, final Object second) {
+            return !of.test(first, second);
+        }
+
+        /**
+         * The negative of {@code neq} is {@link #eq}
+         */
+        @Override
+        public Compare negate() {
+            return of;
         }
     },
 
