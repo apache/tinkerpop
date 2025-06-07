@@ -304,6 +304,7 @@ traversalMethod
     | traversalMethod_replace
     | traversalMethod_split
     | traversalMethod_substring
+    | traversalMethod_asBool
     | traversalMethod_asDate
     | traversalMethod_dateAdd
     | traversalMethod_dateDiff
@@ -356,6 +357,10 @@ traversalMethod_asDate
 traversalMethod_asString
     : K_ASSTRING LPAREN RPAREN #traversalMethod_asString_Empty
     | K_ASSTRING LPAREN traversalScope RPAREN #traversalMethod_asString_Scope
+    ;
+
+traversalMethod_asBool
+    : K_ASBOOL LPAREN RPAREN
     ;
 
 traversalMethod_barrier
@@ -1928,6 +1933,7 @@ K_ANY: 'any';
 K_AS: 'as';
 K_ASC: 'asc';
 K_ASDATE: 'asDate';
+K_ASBOOL: 'asBool';
 K_ASSTRING: 'asString';
 K_ASSIGN: 'assign';
 K_BARRIER: 'barrier';

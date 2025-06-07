@@ -801,6 +801,31 @@ Incoming date remains unchanged.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
+[[asBool-step]]
+=== asBool()
+
+*Description:* Parse the value of the incoming traverser as boolean.
+
+*Syntax:* `asBool()`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+None
+
+`null` values return `false`, numbers evaluate to `true` if non-zero and strings only accept "true" or "false".
+
+*Exceptions*
+* If the incoming traverser type is unsupported or a string other than "true" or "false" then an `IllegalArgumentException` is thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsBoolStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]
+
 [[barrier-step]]
 === barrier()
 

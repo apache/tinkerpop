@@ -2072,6 +2072,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_asBool(final GremlinParser.TraversalMethod_asBoolContext ctx) {
+        return graphTraversal.asBool();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) {
         return graphTraversal.asDate();
     }

@@ -829,6 +829,26 @@ g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate()++[`asDate()`]
 
+[[asBool-step]]
+=== AsBool Step
+
+The `asBool()`-step (*map*) converts the incoming traverser to a boolean value. Numbers evaluate to
+`true` when non-zero (and not `NaN`), `null` evaluates to `false` and strings are only accepted when
+equal to `"true"` or `"false"` (case-insensitive). All other types will throw an `IllegalArgumentException`.
+
+[gremlin-groovy,modern]
+----
+g.inject(1).asBool() <1>
+g.inject("false").asBool() <2>
+----
+
+<1> Convert number to boolean
+<2> Convert string to boolean
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asBool()++[`asBool()`]
+
 [[barrier-step]]
 === Barrier Step
 

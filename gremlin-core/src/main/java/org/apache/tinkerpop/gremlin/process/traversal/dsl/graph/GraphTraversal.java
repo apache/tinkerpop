@@ -83,6 +83,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsBoolStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
@@ -1850,6 +1851,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, String> format(final String format) {
         this.asAdmin().getBytecode().addStep(Symbols.format, format);
         return this.asAdmin().addStep(new FormatStep<>(this.asAdmin(), format));
+    }
+
+    /**
+     * Parse the incoming traverser as a boolean value.
+     *
+     * @return the traversal with an appended {@link AsBoolStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asBool-step" target="_blank">Reference Documentation - asBool Step</a>
+     */
+    public default GraphTraversal<S, Boolean> asBool() {
+        this.asAdmin().getBytecode().addStep(Symbols.asBool);
+        return this.asAdmin().addStep(new AsBoolStep<>(this.asAdmin()));
     }
 
     /**
@@ -4131,6 +4143,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String substring = "substring";
         public static final String split = "split";
         public static final String format = "format";
+        public static final String asBool = "asBool";
         public static final String asDate = "asDate";
         public static final String dateAdd = "dateAdd";
         public static final String dateDiff = "dateDiff";

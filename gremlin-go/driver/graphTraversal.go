@@ -108,8 +108,14 @@ func (g *GraphTraversal) As(args ...interface{}) *GraphTraversal {
 
 // AsDate adds the asDate step to the GraphTraversal.
 func (g *GraphTraversal) AsDate(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("asDate", args...)
-	return g
+        g.Bytecode.AddStep("asDate", args...)
+        return g
+}
+
+// AsBool adds the asBool step to the GraphTraversal.
+func (g *GraphTraversal) AsBool(args ...interface{}) *GraphTraversal {
+        g.Bytecode.AddStep("asBool", args...)
+        return g
 }
 
 // AsString adds the asString step to the GraphTraversal.

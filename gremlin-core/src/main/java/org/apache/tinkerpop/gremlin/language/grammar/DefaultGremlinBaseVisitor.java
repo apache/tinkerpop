@@ -1050,11 +1050,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalMethod_substring_Scope_int_int(final GremlinParser.TraversalMethod_substring_Scope_int_intContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) { notImplemented(ctx); return null; }
+        @Override public T visitTraversalMethod_substring_Scope_int_int(final GremlinParser.TraversalMethod_substring_Scope_int_intContext ctx) { notImplemented(ctx); return null; }
+        /**
+         * {@inheritDoc}
+         */
+        @Override public T visitTraversalMethod_asBool(final GremlinParser.TraversalMethod_asBoolContext ctx) { notImplemented(ctx); return null; }
+        /**
+         * {@inheritDoc}
+         */
+        @Override public T visitTraversalMethod_asDate(final GremlinParser.TraversalMethod_asDateContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
