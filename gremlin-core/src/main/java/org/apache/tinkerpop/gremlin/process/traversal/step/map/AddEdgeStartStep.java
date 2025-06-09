@@ -131,12 +131,25 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             Vertex toVertex = (Vertex) theTo;
             Vertex fromVertex = (Vertex) theFrom;
 
-            if (toVertex instanceof Attachable)
-                toVertex = ((Attachable<Vertex>) toVertex)
-                        .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-            if (fromVertex instanceof Attachable)
-                fromVertex = ((Attachable<Vertex>) fromVertex)
-                        .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            try {
+                if (toVertex instanceof Attachable)
+                    toVertex = ((Attachable<Vertex>) toVertex)
+                            .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
+            }
+
+            try {
+                if (fromVertex instanceof Attachable)
+                    fromVertex = ((Attachable<Vertex>) fromVertex)
+                            .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
+            }
 
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);

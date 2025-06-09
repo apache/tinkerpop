@@ -854,21 +854,21 @@ public class TinkerGraphTest {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", ise.getMessage());
         }
 
         try {
             g.V(1).values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", ise.getMessage());
         }
 
         try {
             g.V(1).as("v").values("name").as("a").addE("link").property(VertexProperty.Cardinality.single, "k", 100).to("v").from("a").iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).to() must resolve to a Vertex but String was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", ise.getMessage());
         }
     }
 
