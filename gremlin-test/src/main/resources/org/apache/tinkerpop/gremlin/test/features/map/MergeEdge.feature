@@ -151,7 +151,7 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -167,7 +167,7 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.withSideEffect("a",xx1).mergeE(__.select("a"))
@@ -200,7 +200,7 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\", \"weight\":\"d[0.5].d\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\", \"weight\":\"d[0.5].d\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -242,8 +242,8 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -263,8 +263,8 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -286,7 +286,7 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -306,7 +306,7 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.inject(xx1).mergeE()
@@ -324,8 +324,8 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -347,8 +347,8 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -370,8 +370,8 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -410,8 +410,8 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -431,8 +431,8 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").as("a").
         addV("person").property("name", "vadas").as("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -475,7 +475,7 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[from]\":\"v[marko]\", \"D[to]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[from]\":\"v[marko].id\", \"D[to]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1)
@@ -491,8 +491,8 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.inject(xx1, xx2).mergeE()
@@ -512,8 +512,8 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").property("weight", 1.0d).from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -741,7 +741,7 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").property("weight", 1).from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.V().mergeE(xx1).
@@ -758,7 +758,7 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").property("weight", 1).from("a").to("b")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
       g.mergeE(xx1).
@@ -788,7 +788,7 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
@@ -822,7 +822,7 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
@@ -849,7 +849,7 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("weight",1.0d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And using the parameter xx2 defined as "m[{\"weight\":null}]"
     And the traversal of
       """
@@ -870,7 +870,7 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b").
         addE("knows").from("a").to("b").property("weight",1.0d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And using the parameter xx2 defined as "m[{\"weight\":null}]"
     And the traversal of
       """
