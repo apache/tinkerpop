@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.List;
 import java.util.Set;
@@ -98,33 +99,37 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     protected Edge map(final Traverser.Admin<S> traverser) {
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
-        final Object theTo;
+        Object theTo;
         try {
             theTo = this.parameters.get(traverser, TO, traverser::get).get(0);
+            if (theTo != null && !(theTo instanceof Vertex)) {
+                theTo = new ReferenceVertex(theTo);
+            }
         } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
             throw new IllegalStateException(String.format(
                     "addE(%s) failed because the to() traversal (which should give a Vertex) failed with: %s",
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theTo instanceof Vertex))
+        if (theTo == null)
             throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                    null == theTo ? "null" : theTo.getClass().getSimpleName()));
+                    "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
 
-        final Object theFrom;
+        Object theFrom;
         try {
             theFrom  = this.parameters.get(traverser, FROM, traverser::get).get(0);
+            if (theFrom != null && !(theFrom instanceof Vertex)) {
+                theFrom = new ReferenceVertex(theFrom);
+            }
         } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
             throw new IllegalStateException(String.format(
                     "addE(%s) failed because the from() traversal (which should give a Vertex) failed with: %s",
                     edgeLabel, e.getMessage()));
         }
 
-        if (!(theFrom instanceof Vertex))
+        if (theFrom == null)
             throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                    null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
+                    "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
 
         Vertex toVertex = (Vertex) theTo;
         Vertex fromVertex = (Vertex) theFrom;

@@ -100,11 +100,6 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
     final TraversalPredicateVisitor traversalPredicateVisitor;
 
     /**
-     * Parses structure instances like {@link Vertex}.
-     */
-    final StructureElementVisitor structureVisitor;
-
-    /**
      * Constructs a new instance and is bound to an {@link EmptyGraph}. This form of construction is helpful for
      * generating {@link Bytecode} or for various forms of testing. {@link Traversal} instances constructed from this
      * form will not be capable of iterating. Assumes that "g" is the name of the {@link GraphTraversalSource}.
@@ -196,7 +191,6 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
         this.txVisitor = new TraversalSourceTxVisitor(g, this);
         this.traversalPredicateVisitor = new TraversalPredicateVisitor(this);
         this.traversalStrategyVisitor = new TraversalStrategyVisitor(this);
-        this.structureVisitor = new StructureElementVisitor(this);
         this.genericVisitor = new GenericLiteralVisitor(this);
         this.argumentVisitor = new ArgumentVisitor(variableResolver, this);
     }

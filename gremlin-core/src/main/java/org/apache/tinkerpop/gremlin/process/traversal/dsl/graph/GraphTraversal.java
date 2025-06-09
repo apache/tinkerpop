@@ -205,18 +205,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -1292,7 +1281,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> to(final Traversal<?, Vertex> toVertex) {
+    public default GraphTraversal<S, E> to(final Traversal<?, Object> toVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
@@ -1312,7 +1301,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> from(final Traversal<?, Vertex> fromVertex) {
+    public default GraphTraversal<S, E> from(final Traversal<?, Object> fromVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
@@ -1332,12 +1321,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    public default GraphTraversal<S, E> to(final Vertex toVertex) {
+    @SuppressWarnings("unchecked")
+    public default GraphTraversal<S, E> to(final Object toVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
-
+        if (toVertex instanceof Traversal)
+        {
+            this.to((Traversal<?, Object>)toVertex);
+            return this;
+        }
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
         return this;
@@ -1352,12 +1346,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    public default GraphTraversal<S, E> from(final Vertex fromVertex) {
+    @SuppressWarnings("unchecked")
+    public default GraphTraversal<S, E> from(final Object fromVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
-
+        if (fromVertex instanceof Traversal)
+        {
+            this.from((Traversal<?, Object>)fromVertex);
+            return this;
+        }
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
         return this;

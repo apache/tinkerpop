@@ -222,9 +222,6 @@ Direction.from
 Direction.OUT
 Direction.to
 Direction.BOTH
-# structureVertex
-Vertex(1,'person')
-Vertex("1", 'person')
 # genericLiteralSet
 {}
 { }
@@ -282,8 +279,6 @@ Vertex("1", 'person')
 {1..5}
 {1..5, 10..20}
 {"a".."z"}
-{Vertex("1", 'person')}
-{1, Vertex("2", 'person')}
 {1, {2, {3}}}
 {1, {}, []}
 {1, {2}, [3], 4..5, "six"}

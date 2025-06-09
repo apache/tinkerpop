@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.List;
 import java.util.Set;
@@ -110,17 +111,22 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
             // FROM/TO must be set and must be vertices
-            final Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
-            if (!(theTo instanceof Vertex))
-                throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                        null == theTo ? "null" : theTo.getClass().getSimpleName()));
+            Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
+            if (theTo != null && !(theTo instanceof Vertex)) {
+                theTo = new ReferenceVertex(theTo);
+            }
 
-            final Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
-            if (!(theFrom instanceof Vertex))
+            if (theTo == null)
                 throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).from() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                        null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
+                        "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
+
+            Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
+            if (theFrom != null && !(theFrom instanceof Vertex)) {
+                theFrom = new ReferenceVertex(theFrom);
+            }
+            if (theFrom == null)
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).from() must resolve to a Vertex but null was specified instead", edgeLabel));
 
             Vertex toVertex = (Vertex) theTo;
             Vertex fromVertex = (Vertex) theFrom;

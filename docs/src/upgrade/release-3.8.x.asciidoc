@@ -355,7 +355,6 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 All of the following types in the grammar have been renamed to follow consistent rules:
 
 `genericLiteralArgument` -> `genericArgument`
-`structureVertex` -> `structureVertexLiteral`
 `stringLiteralVarargsArgument` -> `stringNullableArgumentVarargs`
 `genericLiteralMapArgument` -> `genericMapArgument`
 `genericLiteralMapNullable` -> `genericMapNullableLiteral`
