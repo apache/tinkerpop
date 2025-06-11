@@ -174,7 +174,7 @@ Feature: Step - where()
     And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
-      g.withSideEffect("a", vid2).V(vid1).out().where(P.neq("a"))
+      g.withSideEffect("a", vid2).V(vid1).out().where(id().where(P.neq("a")))
       """
     When iterated to list
     Then the result should be unordered
