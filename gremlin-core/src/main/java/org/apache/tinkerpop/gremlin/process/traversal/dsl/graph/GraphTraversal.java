@@ -1323,6 +1323,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @SuppressWarnings("unchecked")
     public default GraphTraversal<S, E> to(final Object toVertex) {
+        if (toVertex instanceof String)
+        {
+            return this.to((String) toVertex);
+        }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
@@ -1348,6 +1352,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @SuppressWarnings("unchecked")
     public default GraphTraversal<S, E> from(final Object fromVertex) {
+        if (fromVertex instanceof String)
+        {
+            return this.from((String) fromVertex);
+        }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
