@@ -58,7 +58,12 @@ module.exports = class NumberSerializationStrategy {
         // INT32_MIN/MAX
         return this.ioc.intSerializer.serialize(item, fullyQualifiedFormat);
       }
-      return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
+      // eslint-disable-next-line no-loss-of-precision
+      if (item >= -9223372036854775808 && item < 9223372036854775807) {
+        // INT64_MIN/MAX
+        return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
+      }
+      return this.ioc.doubleSerializer.serialize(item, fullyQualifiedFormat);
     }
 
     if (typeof item === 'bigint') {
