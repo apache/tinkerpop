@@ -30,6 +30,11 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Removal of Vertex/ReferenceVertex from gtammar
+
+Previously the use of Vertex/ReferenceVertex was allowed in the grammar. This has now been removed and the Vertex ID should 
+be used instead in traversals.
+
 ==== Auto promotion of number types
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
