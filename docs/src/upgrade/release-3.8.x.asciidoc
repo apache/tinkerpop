@@ -35,6 +35,36 @@ complete list of all the modifications that are part of this release.
 Previously the use of Vertex/ReferenceVertex existed in the grammar, these have now been removed. Going forward, vertex ID should 
 be used in traversals.
 
+// 3.7.3
+gremlin> graph = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> v1 = g.V(1).next();
+==>v[1]
+gremlin> v2 = g.V(2).next();
+==>v[2]
+gremlin> g.V(v1).outE().where(inV().is(v2))
+==>e[7][1-knows->2]
+
+// 3.8.0
+gremlin> graph = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> v1 = g.V(1).next();
+==>v[1]
+gremlin> v2 = g.V(2).next();
+==>v[2]
+gremlin> g.V(v1.id()).outE().where(inV().id().is(v2.id()))
+==>e[7][1-knows->2]
+
+AddEdgeStep has been updated to detect an invalid vertex ID. In the case of an invalid id given the following
+error will be raised...
+
+"The value given to addE(%s).[to][from]() must resolve to a Vertex or the ID of a Vertex present in the graph.
+The provided value does not match any vertices in the graph"
+
 ==== Auto promotion of number types
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result

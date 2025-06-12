@@ -22,18 +22,25 @@ traversal on the paths found between them. Consider the following examples using
 
 [gremlin-groovy,modern]
 ----
-g.V(1).bothE()                                   <1>
-g.V(1).bothE().where(otherV().hasId(2))          <2>
-g.V(1).outE().where(inV().has(id, within(2,3)))  <3>
-g.V(1).out().where(__.in().hasId(6))             <4>
+g.V(1).bothE()                                          <1>
+g.V(1).bothE().where(otherV().hasId(2))                 <2>
+v1 = g.V(1).next();[]
+v2 = g.V(2).next();[]
+g.V(v1.id()).bothE().where(otherV().id().is(v2.id()))   <3>
+g.V(v1.id()).outE().where(inV().id().is(v2.id()))       <4>
+g.V(1).outE().where(inV().has(id, within(2,3)))         <5>
+g.V(1).out().where(__.in().hasId(6))                    <6>
 ----
 
 <1> There are three edges from the vertex with the identifier of "1".
 <2> Filter those three edges using the `where()`-step using the identifier of the vertex returned by `otherV()` to
 ensure it matches on the vertex of concern, which is the one with an identifier of "2".
-<3> There is also no problem with filtering the terminating side of the traversal on multiple vertices, in this case,
+<3> Note that the same traversal will work if there are actual `Vertex` instances rather than just vertex identifiers.
+<4> The vertex with identifier "1" has all outgoing edges, so it would also be acceptable to use the directional steps
+of `outE()` and `inV()` since the schema allows it.
+<5> There is also no problem with filtering the terminating side of the traversal on multiple vertices, in this case,
 vertices with identifiers "2" and "3".
-<4> There's no reason why the same pattern of exclusion used for edges with `where()` can't work for a vertex between
+<6> There's no reason why the same pattern of exclusion used for edges with `where()` can't work for a vertex between
 two vertices.
 
 The basic pattern of using `where()`-step to find the "other" known vertex can be applied in far more complex
