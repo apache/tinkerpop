@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,5 +40,12 @@ public class AddPropertyStepTest extends StepTest {
                 __.property("x", 1)
                // __.property("y", 0)
         );
+    }
+
+    @Test
+    public void testGetPopInstructions() {
+        final AddPropertyStep step = new AddPropertyStep(__.identity().select("s").asAdmin(), null, "x", 0);
+
+        assertEquals(0, step.getPopInstructions().size());
     }
 }

@@ -18,12 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
+
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
+
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -38,5 +48,25 @@ public class AddEdgeStepTest extends StepTest {
                 __.addE("knows").property("a", "b").property("c", "d"),
                 __.addE("knows").property("c", "d")
         );
+    }
+
+    @Test
+    public void shouldObtainPopInstructions() {
+        // Edge Step Test
+        final AddEdgeStep<Object> addEdgeStep = new AddEdgeStep<>(__.identity().asAdmin(),
+                (Traversal.Admin) __.select(Pop.first, "b").select("a"));
+
+        final HashSet<PopContaining.PopInstruction> expectedOutput = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"b", Pop.first},
+                new Object[]{"a", Pop.last}
+        );
+
+        assertEquals(addEdgeStep.getPopInstructions(), expectedOutput);
+
+        // Edge Step Start test
+        final AddEdgeStartStep addEdgeStartStep = new AddEdgeStartStep(__.identity().asAdmin(),
+                __.select(Pop.first, "b").select("a"));
+
+        assertEquals(addEdgeStartStep.getPopInstructions(), expectedOutput);
     }
 }

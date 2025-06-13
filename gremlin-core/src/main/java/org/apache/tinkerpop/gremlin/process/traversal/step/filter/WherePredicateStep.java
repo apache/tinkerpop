@@ -133,6 +133,14 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     }
 
     @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     public WherePredicateStep<S> clone() {
         final WherePredicateStep<S> clone = (WherePredicateStep<S>) super.clone();
         clone.predicate = this.predicate.clone();

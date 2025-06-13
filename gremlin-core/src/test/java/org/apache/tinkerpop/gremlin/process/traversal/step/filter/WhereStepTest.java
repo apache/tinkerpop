@@ -18,15 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.junit.Test;
-
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
@@ -64,5 +69,31 @@ public class WhereStepTest extends StepTest {
         for (final Object[] traversalPath : traversalPaths) {
             assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
         }
+    }
+
+    @Test
+    public void shouldObtainPopInstructions() {
+
+        // Testing WherePredicate Step
+        final WherePredicateStep wherePredicateStep = new WherePredicateStep(__.identity().asAdmin(), Optional.of("key1"), P.neq("label1"));
+
+        HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"key1", Pop.last},
+                new Object[]{"label1", Pop.last}
+        );
+
+        assertEquals(wherePredicateStep.getPopInstructions(), popInstructionSet);
+
+        // Testing WhereTraversal Test
+        final WhereTraversalStep whereTraversalStep = new WhereTraversalStep<>(new DefaultTraversal(), __.as("x").select(Pop.first, "a", "b").asAdmin());
+
+        popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"x", Pop.last},
+                new Object[]{"a", Pop.first},
+                new Object[]{"b", Pop.first}
+        );
+
+        assertEquals(whereTraversalStep.getPopInstructions(), popInstructionSet);
+
     }
 }
