@@ -386,6 +386,11 @@ func (anonymousTraversal *anonymousTraversal) AsDate(args ...interface{}) *Graph
 	return anonymousTraversal.graphTraversal().AsDate(args...)
 }
 
+// AsDate adds the AsNumber step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) AsNumber(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().AsNumber(args...)
+}
+
 // AsString adds the asString step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) AsString(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().AsString(args...)
