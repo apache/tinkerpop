@@ -865,6 +865,22 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<TStart, TEnd> From (object? fromStepLabel)
+        {
+            if (fromStepLabel is string fromStepLabelString)
+            {
+                return From(fromStepLabelString);
+            }
+            if (fromStepLabel is int fromStepLabelSInteger)
+            {
+                return From(new Vertex(fromStepLabelSInteger));
+            }
+            throw new ArgumentException($"{fromStepLabel} is not a valid step label");
+        }
+        
+        /// <summary>
+        ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<TStart, TEnd> From (string? fromStepLabel)
         {
             Bytecode.AddStep("from", fromStepLabel);
@@ -2192,6 +2208,22 @@ namespace Gremlin.Net.Process.Traversal
             args.AddRange(edgeLabels);
             Bytecode.AddStep("to", args.ToArray());
             return Wrap<TStart, Vertex>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the to step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> To (object? toStepLabel)
+        {
+            if (toStepLabel is string toStepLabelString)
+            {
+                return To(toStepLabelString);
+            }
+            if (toStepLabel is int toStepLabelSInteger)
+            {
+                return To(new Vertex(toStepLabelSInteger));
+            }
+            throw new ArgumentException($"{toStepLabel} is not a valid step label");
         }
 
         /// <summary>
