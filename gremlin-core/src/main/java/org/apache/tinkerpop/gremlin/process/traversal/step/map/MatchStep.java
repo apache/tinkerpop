@@ -219,6 +219,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.dedupLabels, this.connective, this.matchTraversals);
     }

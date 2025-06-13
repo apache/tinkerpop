@@ -134,6 +134,18 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
         return Collections.singleton(this.selectKey);
     }
 
+    @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        final Set<String> labels = this.getScopeKeys();
+        for (String label : labels) {
+            final PopInstruction scopingInfo = new PopInstruction(this.getPop(), label);
+            popInstructions.add(scopingInfo);
+        }
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
     public Pop getPop() {
         return this.pop;
     }
