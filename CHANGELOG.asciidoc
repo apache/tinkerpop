@@ -30,7 +30,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)
 
-* Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 * Added support for deserialization of `Set` for `gremlin-javascript`.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
 * Removed old `Translator` infrastructure.
@@ -177,6 +176,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 * Support hot reloading of SSL certificates.
+* Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
