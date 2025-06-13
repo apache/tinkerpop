@@ -55,7 +55,7 @@ services:
       - DOCKER_ENVIRONMENT=true
     working_dir: /gremlin-dotnet
     command: >
-      bash -c "dotnet test ./Gremlin.Net.sln -c Release;
+      bash -c "dotnet tool update -g dotnet-trx; dotnet test ./Gremlin.Net.sln -c Release --logger trx; /root/.dotnet/tools/trx;
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-dotnet:

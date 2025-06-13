@@ -490,6 +490,7 @@ limitations under the License.
                         <exclude>**/*.graffle</exclude>
                         <exclude>**/*.svg</exclude>
                         <exclude>**/goal.txt</exclude>
+                        <exclude>**/*.trx</exclude>
                         <exclude>**/src/main/resources/META-INF/services/**</exclude>
                         <exclude>**/src/test/resources/mockito-extensions/**</exclude>
                         <exclude>**/src/test/resources/META-INF/services/**</exclude>

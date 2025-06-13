@@ -6,6 +6,7 @@ target/
 *.DS_Store
 *.ipr
 *.swp
+TestResults/
 buildAll.sh
 build_output.txt
 .classpath
