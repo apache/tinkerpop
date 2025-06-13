@@ -107,6 +107,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 * Support hot reloading of SSL certificates.
+* Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)

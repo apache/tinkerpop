@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
@@ -54,7 +55,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -788,4 +788,22 @@ public final class TraversalHelper {
         } else
             return (T) traversal.addStep(new HasStep<>(traversal, hasContainer));
     }
+
+    /**
+     * Used to get PopInstruction of a traversal. Pop Instruction includes the labels it needs, and the pop type for each label.
+     *
+     * @param traversal     the traversal to get Scope Context for
+     * @param <T>           the traversal type
+     * @return              A Set of {@link org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining.PopInstruction} values which contain the label and Pop value
+     */
+    public static <T extends  Traversal.Admin<?, ?>> Set<PopContaining.PopInstruction> getPopInstructions(final T traversal) {
+        final Set<PopContaining.PopInstruction> scopingInfos = new HashSet<>();
+        for (final Step step: traversal.getSteps()) {
+            if (step instanceof PopContaining) {
+                scopingInfos.addAll(((PopContaining) step).getPopInstructions());
+            }
+        }
+        return scopingInfos;
+    }
+
 }

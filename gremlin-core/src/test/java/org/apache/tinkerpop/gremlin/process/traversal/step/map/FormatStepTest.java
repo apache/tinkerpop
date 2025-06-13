@@ -18,8 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -29,6 +32,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
@@ -179,5 +183,18 @@ public class FormatStepTest extends StepTest {
         assertEquals("Hello Stephen",
                 __.__("Marko").as("name").
                         constant(vertex).format("Hello %{name}").next());
+    }
+
+    @Test
+    public void shouldObtainPopInstructions() {
+        final FormatStep formatStep = new FormatStep(__.identity().asAdmin(), "%{Hello} %{world}");
+
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"Hello", Pop.last},
+                new Object[]{"world", Pop.last}
+        );
+
+        assertEquals(formatStep.getPopInstructions(), popInstructionSet);
+
     }
 }

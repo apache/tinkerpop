@@ -18,7 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.HashSet;
+
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
@@ -48,5 +54,26 @@ public class AddVertexStepTest {
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
         final AddVertexStep step = new AddVertexStep(t, (String) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+    }
+
+    @Test
+    public void shouldObtainPopInstructions() {
+        // Vertex Step Test
+        final AddVertexStep addVertexStep = new AddVertexStep(__.identity().asAdmin(),
+                (Traversal.Admin) __.select(Pop.first, "b").select("a").select(Pop.last, "c"));
+
+        final HashSet<PopContaining.PopInstruction> expectedOutput = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"b", Pop.first},
+                new Object[]{"a", Pop.last},
+                new Object[]{"c", Pop.last}
+        );
+
+        assertEquals(addVertexStep.getPopInstructions(), expectedOutput);
+
+        // Vertex Start Step Test
+        final AddVertexStartStep addVertexStartStep = new AddVertexStartStep(__.identity().asAdmin(),
+                __.select(Pop.first, "b").select("a").select(Pop.last, "c"));
+
+        assertEquals(addVertexStartStep.getPopInstructions(), expectedOutput);
     }
 }
