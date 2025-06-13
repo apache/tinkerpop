@@ -48,7 +48,9 @@ import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
@@ -220,6 +222,9 @@ public class PartitionStrategyTest {
         @Parameterized.Parameter(value = 1)
         public PartitionStrategy strategy;
 
+        @Parameterized.Parameter(value = 2)
+        public Set<String> expectedVariables;
+
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             // Create a default PartitionStrategy
@@ -230,75 +235,98 @@ public class PartitionStrategyTest {
                     // Basic vertex steps with GValue edge labels
                     {
                         create().V().hasLabel("person").out(GValue.of("x", "knows")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().V().hasLabel("person").both(GValue.of("x", "created")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().V().hasLabel("person").in(GValue.of("x", "created")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     // Multiple GValue edge labels
                     {
                         create().V().hasLabel("person").out(GValue.of("x", "knows"), GValue.of("y", "created")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x", "y"))
                     },
                     // Edge steps with GValue
                     {
                         create().V().hasLabel("person").outE(GValue.of("x", "knows")).inV().asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().V().hasLabel("person").inE(GValue.of("x", "created")).outV().asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().V().hasLabel("person").bothE(GValue.of("x", "created")).otherV().asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     // Mutating steps with GValue
                     {
                         create().V().hasLabel("person").addE(GValue.of("x", "knows")).to("person").asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().addV("person").property("name", GValue.of("x", "john")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     {
                         create().addV("person").property("name", GValue.of("y", "john")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("y"))
                     },
                     {
                         create().addV("person").property("name", GValue.of("y", "john")).asAdmin(),
                         PartitionStrategy.build().partitionKey("p").
-                            writePartition("a").readPartitions("a").includeMetaProperties(true).create()
+                            writePartition("a").readPartitions("a").includeMetaProperties(true).create(),
+                        new HashSet<>(Arrays.asList("y"))
                     },
                     {
                         create().addV("person").property("name", GValue.of("y", "john")).property("age", GValue.of("z", 10)).asAdmin(),
                         PartitionStrategy.build().partitionKey("p").
-                            writePartition("a").readPartitions("a").includeMetaProperties(true).create()
+                            writePartition("a").readPartitions("a").includeMetaProperties(true).create(),
+                        new HashSet<>(Arrays.asList("y", "z"))
+                    },
+                    {
+                        create().addV("person").property("city", "miami").property("name", GValue.of("y", "john")).property("age", GValue.of("z", 10)).asAdmin(),
+                        PartitionStrategy.build().partitionKey("p").
+                            writePartition("a").readPartitions("a").includeMetaProperties(true).create(),
+                        new HashSet<>(Arrays.asList("y", "z"))
                     },
                     // Filter steps with GValue
                     {
                         create().V().hasLabel(GValue.of("x", "person")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x"))
                     },
                     // Complex traversals with GValue
                     {
                         create().V().hasLabel("person").out(GValue.of("x", "knows")).out(GValue.of("y", "created")).asAdmin(),
-                        defaultStrategy
+                        defaultStrategy,
+                        new HashSet<>(Arrays.asList("x", "y"))
                     }
             });
         }
 
         @Test
         public void shouldMaintainGValueState() {
-            // Verify that after applying the strategy, the GValue state is properly maintained
+            // Verify that expected variables exist before applying the strategy
             GValueManagerVerifier.verify(traversal, strategy)
+                    .beforeApplying()
+                    .hasVariables(expectedVariables)
                     .afterApplying()
+                    .hasVariables(expectedVariables)
                     .variablesArePreserved();
         }
     }
