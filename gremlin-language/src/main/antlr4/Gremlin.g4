@@ -307,6 +307,7 @@ traversalMethod
     | traversalMethod_asDate
     | traversalMethod_dateAdd
     | traversalMethod_dateDiff
+    | traversalMethod_asNumber
     ;
 
 traversalMethod_V
@@ -352,6 +353,11 @@ traversalMethod_as
 traversalMethod_asDate
     : K_ASDATE LPAREN RPAREN
     ;
+
+ traversalMethod_asNumber
+     : K_ASNUMBER LPAREN RPAREN #traversalMethod_asNumber_Empty
+     | K_ASNUMBER LPAREN traversalN RPAREN #traversalMethod_asNumber_traversalN
+     ;
 
 traversalMethod_asString
     : K_ASSTRING LPAREN RPAREN #traversalMethod_asString_Empty
@@ -1071,6 +1077,17 @@ traversalDT
     | K_DAY | K_DT DOT K_DAY
     ;
 
+traversalN
+    : K_BYTE | K_N DOT K_BYTE
+    | K_SHORT | K_N DOT K_SHORT
+    | K_INT | K_N DOT K_INT
+    | K_LONG | K_N DOT K_LONG
+    | K_FLOAT | K_N DOT K_FLOAT
+    | K_DOUBLE | K_N DOT K_DOUBLE
+    | K_BIGINT | K_N DOT K_BIGINT
+    | K_BIGDECIMAL | K_N DOT K_BIGDECIMAL
+    ;
+
 traversalPredicate
     : traversalPredicate_eq
     | traversalPredicate_neq
@@ -1569,6 +1586,7 @@ genericLiteral
     | traversalMerge
     | traversalPick
     | traversalDT
+    | traversalN
     | structureVertexLiteral
     | genericSetLiteral
     | genericCollectionLiteral
@@ -1683,18 +1701,22 @@ keyword
     | K_AS
     | K_ASC
     | K_ASDATE
+    | K_ASNUMBER
     | K_ASSTRING
     | K_ASSIGN
     | K_BARRIER
     | K_BARRIERU
     | K_BEGIN
     | K_BETWEEN
+    | K_BIGINT
+    | K_BIGDECIMAL
     | K_BOTH
     | K_BOTHU
     | K_BOTHE
     | K_BOTHV
     | K_BRANCH
     | K_BY
+    | K_BYTE
     | K_CALL
     | K_CAP
     | K_CARDINALITY
@@ -1726,6 +1748,7 @@ keyword
     | K_DISJUNCT
     | K_DISTANCE
     | K_DIV
+    | K_DOUBLE
     | K_DROP
     | K_DT
     | K_E
@@ -1741,6 +1764,7 @@ keyword
     | K_FILTER
     | K_FIRST
     | K_FLATMAP
+    | K_FLOAT
     | K_FOLD
     | K_FORMAT
     | K_FROM
@@ -1773,6 +1797,7 @@ keyword
     | K_INFINITY
     | K_INJECT
     | K_INSIDE
+    | K_INT
     | K_INTERSECT
     | K_INV
     | K_IO
@@ -1788,6 +1813,7 @@ keyword
     | K_LIMIT
     | K_LIST
     | K_LOCAL
+    | K_LONG
     | K_LOOPS
     | K_LT
     | K_LTE
@@ -1807,6 +1833,7 @@ keyword
     | K_MINUS
     | K_MIXED
     | K_MULT
+    | K_N
     | K_NAN
     | K_NEGATE
     | K_NEW
@@ -1865,6 +1892,7 @@ keyword
     | K_SECOND
     | K_SELECT
     | K_SET
+    | K_SHORT
     | K_SHORTESTPATH
     | K_SHORTESTPATHU
     | K_SHUFFLE
@@ -1944,18 +1972,22 @@ K_ANY: 'any';
 K_AS: 'as';
 K_ASC: 'asc';
 K_ASDATE: 'asDate';
+K_ASNUMBER: 'asNumber';
 K_ASSTRING: 'asString';
 K_ASSIGN: 'assign';
 K_BARRIER: 'barrier';
 K_BARRIERU: 'Barrier';
 K_BEGIN: 'begin';
 K_BETWEEN: 'between';
+K_BIGDECIMAL: 'nbigDecimal';
+K_BIGINT: 'nbigInt';
 K_BOTH: 'both';
 K_BOTHU: 'BOTH';
 K_BOTHE: 'bothE';
 K_BOTHV: 'bothV';
 K_BRANCH: 'branch';
 K_BY: 'by';
+K_BYTE: 'nbyte';
 K_CALL: 'call';
 K_CAP: 'cap';
 K_CARDINALITY: 'Cardinality';
@@ -1987,6 +2019,7 @@ K_DIRECTION: 'Direction';
 K_DISJUNCT: 'disjunct';
 K_DISTANCE: 'distance';
 K_DIV: 'div';
+K_DOUBLE: 'ndouble';
 K_DROP: 'drop';
 K_DT: 'DT';
 K_E: 'E';
@@ -2002,6 +2035,7 @@ K_FALSE: 'false';
 K_FILTER: 'filter';
 K_FIRST: 'first';
 K_FLATMAP: 'flatMap';
+K_FLOAT: 'nfloat';
 K_FOLD: 'fold';
 K_FORMAT: 'format';
 K_FROM: 'from';
@@ -2034,6 +2068,7 @@ K_INDEX: 'index';
 K_INFINITY: 'Infinity';
 K_INJECT: 'inject';
 K_INSIDE: 'inside';
+K_INT: 'nint';
 K_INTERSECT: 'intersect';
 K_INV: 'inV';
 K_IOU: 'IO';
@@ -2049,6 +2084,7 @@ K_LENGTH: 'length';
 K_LIMIT: 'limit';
 K_LIST: 'list';
 K_LOCAL: 'local';
+K_LONG: 'nlong';
 K_LOOPS: 'loops';
 K_LT: 'lt';
 K_LTE: 'lte';
@@ -2068,6 +2104,7 @@ K_MINUTE: 'minute';
 K_MINUS: 'minus';
 K_MIXED: 'mixed';
 K_MULT: 'mult';
+K_N: 'N';
 K_NAN: 'NaN';
 K_NEGATE: 'negate';
 K_NEXT: 'next';
@@ -2129,6 +2166,7 @@ K_SET: 'set';
 K_SHORTESTPATHU: 'ShortestPath';
 K_SHORTESTPATH: 'shortestPath';
 K_SHUFFLE: 'shuffle';
+K_SHORT: 'nshort';
 K_SIDEEFFECT: 'sideEffect';
 K_SIMPLEPATH: 'simplePath';
 K_SINGLE: 'single';

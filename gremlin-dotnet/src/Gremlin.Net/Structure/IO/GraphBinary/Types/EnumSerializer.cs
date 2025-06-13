@@ -72,6 +72,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             new EnumSerializer<Merge>(DataType.Merge, Merge.GetByValue);
 
         /// <summary>
+        /// A serializer for <see cref="N"/> values.
+        /// </summary>
+        public static readonly EnumSerializer<N> NSerializer =
+            new EnumSerializer<N>(DataType.N, N.GetByValue);
+
+        /// <summary>
         /// A serializer for <see cref="Operator"/> values.
         /// </summary>
         public static readonly EnumSerializer<Operator> OperatorSerializer =

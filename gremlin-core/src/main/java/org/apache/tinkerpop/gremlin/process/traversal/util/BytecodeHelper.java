@@ -65,6 +65,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsNumberStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
@@ -247,6 +248,7 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.asDate, Collections.singletonList(AsDateStep.class));
             put(GraphTraversal.Symbols.dateAdd, Collections.singletonList(DateAddStep.class));
             put(GraphTraversal.Symbols.dateDiff, Collections.singletonList(DateDiffStep.class));
+            put(GraphTraversal.Symbols.asNumber, Collections.singletonList(AsNumberStep.class));
             put(GraphTraversal.Symbols.all, Collections.singletonList(AllStep.class));
             put(GraphTraversal.Symbols.any, Collections.singletonList(AnyStep.class));
             put(GraphTraversal.Symbols.combine, Collections.singletonList(CombineStep.class));

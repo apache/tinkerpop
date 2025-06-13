@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -2102,6 +2103,22 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         return graphTraversal.dateDiff(antlr.genericVisitor.parseDate(ctx.dateLiteral()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_asNumber_Empty(final GremlinParser.TraversalMethod_asNumber_EmptyContext ctx) {
+        return graphTraversal.asNumber();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_asNumber_traversalN(final GremlinParser.TraversalMethod_asNumber_traversalNContext ctx) {
+        return graphTraversal.asNumber(
+                TraversalEnumParser.parseTraversalEnumFromContext(N.class, ctx.traversalN()));
+    }
 
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {
         return ctx.nestedTraversalExpr().nestedTraversal()
