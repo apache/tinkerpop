@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 public class TestDataBuilder {
 
     // Helper function to create a Set of `PopInstruction` values
-    public static HashSet<PopContaining.PopInstruction> createPopInstructionSet(Object[]... pairs) {
+    public static HashSet<PopContaining.PopInstruction> createPopInstructionSet(final Object[]... pairs) {
         final HashSet<PopContaining.PopInstruction> popInstructions = new HashSet<>();
 
         // Each pair should contain a name (String) and a Pop value

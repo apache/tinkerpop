@@ -68,7 +68,7 @@ public interface PopContaining {
             this.label = label;
         }
 
-        public PopInstruction(Pop pop, String label) {
+        public PopInstruction(final Pop pop, final String label) {
             this.pop = pop;
             this.label = label;
         }
