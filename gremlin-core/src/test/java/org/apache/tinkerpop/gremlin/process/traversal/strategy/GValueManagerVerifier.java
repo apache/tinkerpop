@@ -33,14 +33,17 @@ import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Provides utilities to verify the state and behavior of {@code GValueManager} during and after traversal strategy
@@ -105,7 +108,7 @@ public class GValueManagerVerifier {
         public AfterVerifier<S, E> afterApplying() {
             // Capture pre-strategy state
             final GValueManager manager = traversal.getGValueManager();
-            final Map<Step, Set<GValue>> preStepVariables = manager.gatherStepGValues(traversal);
+            final Map<Step, Set<GValue>> preStepGValues = manager.gatherStepGValues(traversal);
             final Set<String> preVariables = manager.variableNames();
             final Set<GValue> preGValues = manager.gValues();
 
@@ -116,10 +119,10 @@ public class GValueManagerVerifier {
             }
             traversal.setStrategies(traversalStrategies);
             traversal.applyStrategies();
-            
+
             verifyStateIsConsistent();
 
-            return new AfterVerifier<>(traversal, preVariables, preStepVariables, preGValues);
+            return new AfterVerifier<>(traversal, preVariables, preStepGValues, preGValues);
         }
 
         /**
@@ -205,6 +208,63 @@ public class GValueManagerVerifier {
         public AfterVerifier<S, E> variablesArePreserved() {
             final Set<String> currentVariables = manager.variableNames();
             assertEquals("All variables should be preserved", preVariables, currentVariables);
+            return this;
+        }
+
+        /**
+         * Verifies that the contents of the GValueManager before and after applying strategies are unchanged.
+         * This ensures that they have the same Step references, StepContract objects, and the contents of the
+         * StepContracts are also the same.
+         */
+        public AfterVerifier<S, E> notModified() {
+            // Verify that the same steps are in the manager
+            // Use identity-based sets for Step objects
+            final Set<Step> preSteps = Collections.newSetFromMap(new IdentityHashMap<>());
+            preSteps.addAll(preStepGValues.keySet());
+
+            final Set<Step> currentSteps = Collections.newSetFromMap(new IdentityHashMap<>());
+            currentSteps.addAll(manager.getSteps());
+
+            assertEquals("Steps in GValueManager should be unchanged", preSteps.size(), currentSteps.size());
+
+            for (Step preStep : preSteps) {
+                boolean found = false;
+                for (Step currentStep : currentSteps) {
+                    if (preStep.toString().equals(currentStep.toString())) {
+                        found = true;
+
+                        // Verify that the step has the same GValues
+                        final Set<GValue> preGValuesForStep = preStepGValues.get(preStep);
+                        final Set<GValue> currentGValuesForStep = manager.getGValues(currentStep).stream()
+                                .collect(Collectors.toSet());
+                        assertEquals("GValues for step should be unchanged", preGValuesForStep, currentGValuesForStep);
+
+                        // Verify that the step has the same variables
+                        final Set<String> preVariablesForStep = preStepVariables.get(preStep);
+                        if (preVariablesForStep != null) {
+                            final Set<String> currentVariablesForStep = manager.getGValues(currentStep).stream()
+                                    .filter(GValue::isVariable)
+                                    .map(GValue::getName)
+                                    .collect(Collectors.toSet());
+                            assertEquals("Variables for step should be unchanged", preVariablesForStep, currentVariablesForStep);
+                        }
+
+                        // Verify that the step contract is the same if it exists
+                        if (manager.isParameterized(currentStep)) {
+                            final StepContract contract = manager.getStepContract(currentStep);
+                            assertNotNull("Step contract should exist", contract);
+                        }
+
+                        break;
+                    }
+                }
+                assertTrue("Step not found in current steps: " + preStep, found);
+            }
+
+            // Verify that the same GValues are in the manager
+            final Set<GValue> currentGValues = manager.gValues();
+            assertEquals("GValues in GValueManager should be unchanged", preGValues, currentGValues);
+
             return this;
         }
     }

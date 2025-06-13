@@ -207,7 +207,7 @@ public final class GValueManager implements Serializable, Cloneable {
 
     private Map<Step, Set<GValue>> gatherStepGValues(final Traversal.Admin<?, ?> traversal, final Map<Step, Set<GValue>> result) {
         final GValueManager manager = traversal.getGValueManager();
-        final Map<Step, Set<GValue>> r = null == result ? new HashMap<>() : result;
+        final Map<Step, Set<GValue>> r = null == result ? new IdentityHashMap<>() : result;
 
         for (Step step : traversal.getSteps()) {
             if (manager.isParameterized(step)) {
