@@ -1912,6 +1912,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
      * @since 3.7.1
      */
+    public default GraphTraversal<S, Number> asNumber() {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Parse value of the incoming traverser as an ISO-8601 {@link Number}.
+     *
+     * @return the traversal with an appended {@link AsNumberStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
+     * @since 3.7.1
+     */
     public default GraphTraversal<S, Number> asNumber(final N numberToken) {
         this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
         return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));

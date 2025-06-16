@@ -2107,11 +2107,18 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalMethod_asNumber(final GremlinParser.TraversalMethod_asNumberContext ctx) {
+    public GraphTraversal visitTraversalMethod_asNumber_Empty(final GremlinParser.TraversalMethod_asNumber_EmptyContext ctx) {
+        return graphTraversal.asNumber();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_asNumber_traversalN(final GremlinParser.TraversalMethod_asNumber_traversalNContext ctx) {
         return graphTraversal.asNumber(
                 TraversalEnumParser.parseTraversalEnumFromContext(N.class, ctx.traversalN()));
     }
-
 
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {
         return ctx.nestedTraversalExpr().nestedTraversal()

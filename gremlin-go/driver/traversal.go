@@ -364,33 +364,33 @@ type n string
 
 type ns struct {
 	// number type byte
-	Byte n
+	NByte n
 	// number type short
-	Short n
+	NShort n
 	// number type int
-	Int n
+	NInt n
 	// number type long
-	Long n
+	NLong n
     // number type float
-    Float n
+    NFloat n
     // number type double
-    Double n
+    NDouble n
     // number type bigInt
-    BigInt n
+    NBigInt n
     // number type bigDecimal
-    BigDecimal n
+    NBigDecimal n
 }
 
 // Merge is a set of operations for Vertex and Edge merging.
 var N = ns{
-	Byte:        "byte",
-	Short:       "short",
-	Int:         "int",
-	Long:        "long",
-    Float:       "float",
-    Double:      "double",
-    BigInt:      "bigInt",
-    BigDecimal:  "bigDecimal",
+	NByte:        "nbyte",
+	NShort:       "nshort",
+	NInt:         "nint",
+	NLong:        "nlong",
+    NFloat:       "nfloat",
+    NDouble:      "ndouble",
+    NBigInt:      "nbigInt",
+    NBigDecimal:  "nbigDecimal",
 }
 
 type operator string

@@ -622,6 +622,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectX1_2X_asDate", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(p["xx1"]).AsDate()}}, 
                {"g_injectXnullX_asDate", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null).AsDate()}}, 
                {"g_injectXinvalidstrX_asDate", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("This String is not an ISO 8601 Date").AsDate()}}, 
+               {"g_injectX123X_asNumberXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(123).AsNumber()}}, 
                {"g_injectX1_2X_asString", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(p["xx1"], p["xx2"]).AsString()}}, 
                {"g_injectX1_2X_asStringXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(p["xx1"], p["xx2"]).AsString<object>(Scope.Local)}}, 
                {"g_injectXlist_1_2X_asStringXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(p["xx1"]).AsString<object>(Scope.Local)}}, 

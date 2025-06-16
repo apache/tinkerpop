@@ -811,6 +811,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#asNumber()
+     */
+    public static <A> GraphTraversal<A, Number> asNumber() {
+        return __.<A>start().asNumber();
+    }
+
+    /**
      * @see GraphTraversal#asNumber(N)
      */
     public static <A> GraphTraversal<A, Number> asNumber(final N numberToken) {

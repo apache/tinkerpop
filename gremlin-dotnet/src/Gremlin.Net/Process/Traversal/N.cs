@@ -35,25 +35,25 @@ namespace Gremlin.Net.Process.Traversal
         {
         }
 
-        public static N Byte => new N("byte");
-        public static N Short => new N("short");
-        public static N Int => new N("int");
-        public static N Long => new N("long");
-        public static N Float => new N("float");
-        public static N Double => new N("double");
-        public static N BigInt => new N("bigInt");
-        public static N BigDecimal => new N("bigDecimal");
+        public static N NByte => new N("nbyte");
+        public static N NShort => new N("nshort");
+        public static N NInt => new N("nint");
+        public static N NLong => new N("nlong");
+        public static N NFloat => new N("nfloat");
+        public static N NDouble => new N("ndouble");
+        public static N NBigInt => new N("nbigInt");
+        public static N NBigDecimal => new N("nbigDecimal");
 
         private static readonly Dictionary<string, N> Properties = new()
         {
-            { "byte", Byte },
-            { "short", Short },
-            { "int", Int },
-            { "long", Long },
-            { "float", Float },
-            { "double", Double },
-            { "bigInt", BigInt },
-            { "bigDecimal", BigDecimal },
+            { "nbyte", NByte },
+            { "nshort", NShort },
+            { "nint", NInt },
+            { "nlong", NLong },
+            { "nfloat", NFloat },
+            { "ndouble", NDouble },
+            { "nbigInt", NBigInt },
+            { "nbigDecimal", NBigDecimal },
         };
 
         /// <summary>

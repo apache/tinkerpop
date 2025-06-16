@@ -355,8 +355,8 @@ traversalMethod_asDate
     ;
 
  traversalMethod_asNumber
-     : K_ASNUMBER LPAREN RPAREN
-     | K_ASNUMBER LPAREN traversalN COMMA integerLiteral RPAREN
+     : K_ASNUMBER LPAREN RPAREN #traversalMethod_asNumber_Empty
+     | K_ASNUMBER LPAREN traversalN RPAREN #traversalMethod_asNumber_traversalN
      ;
 
 traversalMethod_asString
@@ -1979,15 +1979,15 @@ K_BARRIER: 'barrier';
 K_BARRIERU: 'Barrier';
 K_BEGIN: 'begin';
 K_BETWEEN: 'between';
-K_BIGDECIMAL: 'bigDecimal';
-K_BIGINT: 'bigInt';
+K_BIGDECIMAL: 'nbigDecimal';
+K_BIGINT: 'nbigInt';
 K_BOTH: 'both';
 K_BOTHU: 'BOTH';
 K_BOTHE: 'bothE';
 K_BOTHV: 'bothV';
 K_BRANCH: 'branch';
 K_BY: 'by';
-K_BYTE: 'byte';
+K_BYTE: 'nbyte';
 K_CALL: 'call';
 K_CAP: 'cap';
 K_CARDINALITY: 'Cardinality';
@@ -2019,7 +2019,7 @@ K_DIRECTION: 'Direction';
 K_DISJUNCT: 'disjunct';
 K_DISTANCE: 'distance';
 K_DIV: 'div';
-K_DOUBLE: 'double';
+K_DOUBLE: 'ndouble';
 K_DROP: 'drop';
 K_DT: 'DT';
 K_E: 'E';
@@ -2035,7 +2035,7 @@ K_FALSE: 'false';
 K_FILTER: 'filter';
 K_FIRST: 'first';
 K_FLATMAP: 'flatMap';
-K_FLOAT: 'float';
+K_FLOAT: 'nfloat';
 K_FOLD: 'fold';
 K_FORMAT: 'format';
 K_FROM: 'from';
@@ -2068,7 +2068,7 @@ K_INDEX: 'index';
 K_INFINITY: 'Infinity';
 K_INJECT: 'inject';
 K_INSIDE: 'inside';
-K_INT: 'int';
+K_INT: 'nint';
 K_INTERSECT: 'intersect';
 K_INV: 'inV';
 K_IOU: 'IO';
@@ -2084,7 +2084,7 @@ K_LENGTH: 'length';
 K_LIMIT: 'limit';
 K_LIST: 'list';
 K_LOCAL: 'local';
-K_LONG: 'long';
+K_LONG: 'nlong';
 K_LOOPS: 'loops';
 K_LT: 'lt';
 K_LTE: 'lte';
@@ -2166,7 +2166,7 @@ K_SET: 'set';
 K_SHORTESTPATHU: 'ShortestPath';
 K_SHORTESTPATH: 'shortestPath';
 K_SHUFFLE: 'shuffle';
-K_SHORT: 'short';
+K_SHORT: 'nshort';
 K_SIDEEFFECT: 'sideEffect';
 K_SIMPLEPATH: 'simplePath';
 K_SINGLE: 'single';
