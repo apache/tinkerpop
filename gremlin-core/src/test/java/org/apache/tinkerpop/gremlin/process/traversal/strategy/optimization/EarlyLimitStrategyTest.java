@@ -124,7 +124,7 @@ public class EarlyLimitStrategyTest {
             this.original.asAdmin().applyStrategies();
             assertEquals(repr, this.optimized, this.original);
 
-            assertThat(original.asAdmin().getGValueManager().hasVariables(), is(true));
+            assertThat(original.asAdmin().getGValueManager().hasVariables(), is(false));
         }
     }
 

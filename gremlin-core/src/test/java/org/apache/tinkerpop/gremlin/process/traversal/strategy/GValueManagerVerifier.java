@@ -109,8 +109,8 @@ public class GValueManagerVerifier {
             // Capture pre-strategy state
             final GValueManager manager = traversal.getGValueManager();
             final Map<Step, Set<GValue>> preStepGValues = manager.gatherStepGValues(traversal);
-            final Set<String> preVariables = manager.variableNames();
-            final Set<GValue> preGValues = manager.gValues();
+            final Set<String> preVariables = manager.getVariableNames();
+            final Set<GValue> preGValues = manager.getGValues();
 
             // Apply strategies
             final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -187,13 +187,12 @@ public class GValueManagerVerifier {
 
             // compute the preStepVariables from the preStepGValues by converting the GValue to their name if
             // their isVariable is true
-            this.preStepVariables = preStepGValues.entrySet().stream()
-                    .collect(java.util.stream.Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> e.getValue().stream()
-                                    .filter(GValue::isVariable)
-                                    .map(GValue::getName)
-                                    .collect(java.util.stream.Collectors.toSet())
+            this.preStepVariables = preStepGValues.entrySet().stream().
+                    collect(Collectors.toMap(Map.Entry::getKey,
+                            e -> e.getValue().stream().
+                                    filter(GValue::isVariable).
+                                    map(GValue::getName).
+                                    collect(Collectors.toSet())
                     ));
         }
 
@@ -206,7 +205,7 @@ public class GValueManagerVerifier {
          * Verifies that all variables are preserved
          */
         public AfterVerifier<S, E> variablesArePreserved() {
-            final Set<String> currentVariables = manager.variableNames();
+            final Set<String> currentVariables = manager.getVariableNames();
             assertEquals("All variables should be preserved", preVariables, currentVariables);
             return this;
         }
@@ -262,7 +261,7 @@ public class GValueManagerVerifier {
             }
 
             // Verify that the same GValues are in the manager
-            final Set<GValue> currentGValues = manager.gValues();
+            final Set<GValue> currentGValues = manager.getGValues();
             assertEquals("GValues in GValueManager should be unchanged", preGValues, currentGValues);
 
             return this;
@@ -293,7 +292,7 @@ public class GValueManagerVerifier {
          * {@link GValue} you can have scenarios where there is a mix.
          */
         public T managerIsEmpty() {
-            assertThat(String.format("GValueManager should be empty but contains [%s]", manager.gValues()), manager.hasVariables(), is(true));
+            assertThat(String.format("GValueManager should be empty but contains [%s]", manager.getGValues()), manager.hasVariables(), is(false));
             return self();
         }
 
@@ -370,7 +369,7 @@ public class GValueManagerVerifier {
          */
         public T hasVariables(final Set<String> variables) {
             // Get variables from the current traversal and all child traversals
-            final Set<String> currentVariables = manager.variableNames();
+            final Set<String> currentVariables = manager.getVariableNames();
             assertEquals("Variables should match expected set", variables, currentVariables);
             return self();
         }
