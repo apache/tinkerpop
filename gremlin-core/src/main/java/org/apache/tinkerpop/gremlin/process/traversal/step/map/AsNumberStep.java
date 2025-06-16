@@ -64,26 +64,16 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         } else if (clazz.equals(BigDecimal.class)) {
             return 128;
         }
-
         boolean floatingPoint = (clazz.equals(Float.class) || clazz.equals(Double.class));
-
-        if (!floatingPoint && (number.longValue() >= Byte.MIN_VALUE) && (number.longValue() <= Byte.MAX_VALUE))
-        {
+        if (!floatingPoint && (number.longValue() >= Byte.MIN_VALUE) && (number.longValue() <= Byte.MAX_VALUE)) {
             return 8;
-        }
-        else if (!floatingPoint && (number.longValue() >= Short.MIN_VALUE) && (number.longValue() <= Short.MAX_VALUE))
-        {
+        } else if (!floatingPoint && (number.longValue() >= Short.MIN_VALUE) && (number.longValue() <= Short.MAX_VALUE)) {
             return 16;
-        }
-        else if (!floatingPoint && (number.longValue() >= Integer.MIN_VALUE) && (number.longValue() <= Integer.MAX_VALUE))
-        {
+        } else if (!floatingPoint && (number.longValue() >= Integer.MIN_VALUE) && (number.longValue() <= Integer.MAX_VALUE)) {
             return 32;
-        }
-        else if (floatingPoint && (number.doubleValue() >= Float.MIN_VALUE) && (number.doubleValue() <= Float.MAX_VALUE)) {
+        } else if (floatingPoint && (number.doubleValue() >= Float.MIN_VALUE) && (number.doubleValue() <= Float.MAX_VALUE)) {
             return 32;
-        }
-        else
-        {
+        } else {
             return 64;
         }
     }
@@ -108,8 +98,7 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     private static Number castNumber(Number number, N numberToken) {
         int sourceBits = getNumberBitsBasedOnValue(number);
         int targetBits = getNumberTokenBits(numberToken);
-        if (sourceBits > targetBits)
-        {
+        if (sourceBits > targetBits) {
             throw new ArithmeticException("Can not convert number type as would cause overflow.");
         }
         if (numberToken == N.nbyte) {
@@ -132,8 +121,7 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         return number;
     }
 
-    private static Number autoNumber(Number number)
-    {
+    private static Number autoNumber(Number number) {
         final Class<? extends Number> clazz = number.getClass();
         if (clazz.equals(Float.class)) {
             return castNumber(number, N.ndouble);
@@ -162,9 +150,7 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
                 return result.longValue();
             }
             return result;
-        }
-        catch (NumberFormatException nfe)
-        {
+        } catch (NumberFormatException nfe) {
             throw new NumberFormatException(String.format("Can not parse number: '%s'", value));
         }
     }
@@ -173,13 +159,11 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     protected Number map(Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
         if (object instanceof String) {
-            String numberText = (String)object;
+            String numberText = (String) object;
             Number number = parseNumber(numberText);
             return auto ? autoNumber(number) : castNumber(number, numberToken);
-        }
-        else if (object instanceof Number)
-        {
-            Number number = (Number)object;
+        } else if (object instanceof Number) {
+            Number number = (Number) object;
             return auto ? autoNumber(number) : castNumber(number, numberToken);
         }
         throw new IllegalArgumentException(String.format("Can't parse '%s' as number.", object == null ? "null" : object.getClass().getSimpleName()));
