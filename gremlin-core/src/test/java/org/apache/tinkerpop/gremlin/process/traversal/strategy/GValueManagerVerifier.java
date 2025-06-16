@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -187,12 +188,18 @@ public class GValueManagerVerifier {
 
             // compute the preStepVariables from the preStepGValues by converting the GValue to their name if
             // their isVariable is true
-            this.preStepVariables = preStepGValues.entrySet().stream().
-                    collect(Collectors.toMap(Map.Entry::getKey,
-                            e -> e.getValue().stream().
-                                    filter(GValue::isVariable).
-                                    map(GValue::getName).
-                                    collect(Collectors.toSet())
+            this.preStepVariables = preStepGValues.entrySet().stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> e.getValue().stream()
+                                    .filter(GValue::isVariable)
+                                    .map(GValue::getName)
+                                    .collect(java.util.stream.Collectors.toSet()),
+                            (v1, v2) -> {
+                                v1.addAll(v2);
+                                return v1;
+                            },
+                            IdentityHashMap::new
                     ));
         }
 
