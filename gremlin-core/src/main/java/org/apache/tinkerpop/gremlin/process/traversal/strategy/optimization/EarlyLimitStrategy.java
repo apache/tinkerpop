@@ -132,6 +132,11 @@ public final class EarlyLimitStrategy
             }
             remove = merge;
 
+            // optimization is dependent on the high and low values from both `step` and `other`. Both must have their
+            // GValues pinned as a result.
+            traversal.getGValueManager().pinGValues(step);
+            traversal.getGValueManager().pinGValues(other);
+
             // a step is being permanently removed - remove from manager
             final Step stepToRemove = merge ? insertAfter : step;
             traversal.getGValueManager().remove(stepToRemove);

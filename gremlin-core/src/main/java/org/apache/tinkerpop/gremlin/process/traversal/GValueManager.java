@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -54,7 +55,8 @@ import java.util.stream.Collectors;
 public final class GValueManager implements Serializable, Cloneable {
 
     private boolean locked = false;
-    private final Map<String, GValue> gValueRegistry = new IdentityHashMap();
+    private final Map<String, GValue> gValueRegistry = new HashMap<>();
+    private final Map<String, GValue> pinnedGValues = new HashMap<>();
     private final Map<Step, StepContract> stepRegistry = new IdentityHashMap();
 
     public GValueManager() {
@@ -122,10 +124,10 @@ public final class GValueManager implements Serializable, Cloneable {
      * Copy the registry state from one step to another.
      */
     public <S, E> void copyRegistryState(final Step<S,E> sourceStep, final Step<S,E> targetStep) {
-        if (this.locked) {
-            throw Traversal.Exceptions.traversalIsLocked();
-        }
         if (stepRegistry.containsKey(sourceStep)) {
+            if (this.locked) {
+                throw Traversal.Exceptions.traversalIsLocked();
+            }
             // todo: oh boy - should has stuff even be handled this way?
             // todo: is it ok that the StepContract can be tied to two different steps? like, can happen with Traversal.clone() where you gotta copy
 
@@ -195,6 +197,22 @@ public final class GValueManager implements Serializable, Cloneable {
     }
 
     /**
+     * Gets the set of variable names used in this traversal which have not been pinned to specific values. Note that
+     * this set won't be consistent until {@link #lock()} is called first. Calls to this method prior to locking will
+     * force iteration through traversal steps to real-time gather then variable names.
+     */
+    public Set<String> getUnpinnedVariableNames() {
+        Set<String> variableNames = new HashSet<>();
+        if (locked) {
+            variableNames.addAll(gValueRegistry.keySet());
+        } else {
+            variableNames.addAll(getGValues().stream().map(GValue::getName).collect(Collectors.toSet()));
+        }
+        variableNames.removeAll(pinnedGValues.keySet());
+        return Collections.unmodifiableSet(variableNames);
+    }
+
+    /**
      * Gets the set of {@link GValue} objects used in this traversal. Note that this set won't be consistent until
      * {@link #lock()} is called first. Calls to this method prior to locking will force iteration through traversal
      * steps to real-time gather them.
@@ -235,6 +253,13 @@ public final class GValueManager implements Serializable, Cloneable {
     }
 
     /**
+     * Determines whether the manager has unpinned GValues.
+     */
+    public boolean hasUnpinnedVariables() {
+        return !getUnpinnedVariableNames().isEmpty();
+    }
+
+    /**
      * Delete all data.
      */
     public void reset() {
@@ -254,11 +279,46 @@ public final class GValueManager implements Serializable, Cloneable {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         final StepContract removedContract = stepRegistry.remove(step);
 
-        if (removedContract != null) {
-            removeGValues(extractGValues(removedContract));
-        }
+        //TODO:: should we automatically pin GValues for removed steps?
 
         return removedContract;
+    }
+
+    /**
+     * Pins the GValues associated with the step to their current values. This should be called anytime an optimization
+     * alters the Traversal based on the current value of a GValue. This indicates that the resulting traversal is only
+     * valid for this specific value of a GValue, and is not generalizable to any parameter value.
+     *
+     * @param step the {@link Step} in which to pin associated GValues
+     * @return the pinned contract or null if there was no mapping for the key
+     * @throws IllegalStateException if the manager is locked
+     */
+    public StepContract pinGValues(final Step step) {
+        if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
+        final StepContract contract = stepRegistry.get(step);
+
+        if (contract != null) {
+            pinGValues(extractGValues(contract));
+        }
+        return contract;
+    }
+
+    /**
+     * Pins any GValue with the provided name. This should be called anytime an optimization
+     * alters the Traversal based on the current value of a GValue. This indicates that the resulting traversal is only
+     * valid for this specific value of a GValue, and is not generalizable to any parameter value.
+     *
+     * @param name the name of the GValue to be pinned
+     * @return true if name matches a registered GValue which was successfully pinned, false otherwise.
+     * @throws IllegalStateException if the manager is locked
+     */
+    public boolean pinVariable(final String name) {
+        if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
+        if (!gValueRegistry.containsKey(name)) {
+            return false;
+        }
+        pinnedGValues.put(name, gValueRegistry.get(name));
+        return true;
     }
 
     @Override
@@ -473,6 +533,18 @@ public final class GValueManager implements Serializable, Cloneable {
     private void removeGValues(final Collection<GValue<?>> gValues) {
         for (GValue<?> gValue : gValues) {
             gValueRegistry.remove(gValue.getName(), gValue);
+        }
+    }
+
+    /**
+     * Pin a collection of {@link GValue} instances from the internal registry. Iteratively processes each
+     * {@link GValue} to pin it to its current value.
+     */
+    private void pinGValues(final Collection<GValue<?>> gValues) {
+        for (GValue<?> gValue : gValues) {
+            if (gValue.isVariable()) {
+                pinnedGValues.put(gValue.getName(), gValue);
+            }
         }
     }
 

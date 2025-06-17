@@ -181,7 +181,7 @@ public class CountStrategyTest {
      * instances are being introduced by CountStrategy.
      */
     @RunWith(Parameterized.class)
-    public static class GValueClearedBecauseItWasAccessedToInformTest {
+    public static class GValuePinnedBecauseItWasAccessedToInformTest {
 
         @Parameterized.Parameter(value = 0)
         public Traversal.Admin<?, ?> traversal;
@@ -300,7 +300,7 @@ public class CountStrategyTest {
                     beforeApplying().
                     stepsOfClassAreParameterized(true, IsStep.class).
                     afterApplying().
-                    managerIsEmpty();
+                    allGValuesArePinned();
         }
     }
 

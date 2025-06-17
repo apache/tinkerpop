@@ -120,7 +120,7 @@ public class OrderLimitStrategyTest {
                     beforeApplying().
                         hasVariables(expectedNames).
                     afterApplying().
-                        managerIsEmpty();
+                        allGValuesArePinned();
         }
     }
 }

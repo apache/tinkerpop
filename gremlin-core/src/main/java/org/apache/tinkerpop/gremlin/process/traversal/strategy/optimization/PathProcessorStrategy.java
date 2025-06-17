@@ -168,7 +168,9 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                     final List<Step> byChildSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, byTraversal);
                     for (int ix = 0; ix < byChildSteps.size(); ix++) {
                         manager.copyRegistryState(byChildSteps.get(ix), clonedByTraversal.getSteps().get(ix));
+                        manager.pinGValues(byChildSteps.get(ix));
                         manager.remove(byChildSteps.get(ix));
+                        clonedByTraversal.getGValueManager().pinGValues(byChildSteps.get(ix));
                         clonedByTraversal.getGValueManager().remove(byChildSteps.get(ix));
                     }
 
@@ -198,7 +200,9 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                         manager.copyRegistryState(localChildSteps.get(ix), localChildClone.getSteps().get(ix));
 
                         // todo: look at cases where we clone() traversal more carefully. so much to think about in these cases
+                        manager.pinGValues(localChildSteps.get(ix));
                         manager.remove(localChildSteps.get(ix));
+                        localChildClone.getGValueManager().pinGValues(localChildSteps.get(ix));
                         localChildClone.getGValueManager().remove(localChildSteps.get(ix));
                     }
 

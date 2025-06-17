@@ -304,6 +304,18 @@ public class GValueManagerVerifier {
         }
 
         /**
+         * Verifies that and GValues in GValueManager have been pinned to indicate that optimizations have been applied
+         * which cannot be generalized for any parameter values. Pinning of GValues only applies to variables. There
+         * might yet be unnamed {@link GValue} instances which are unpinned, but since we don't bind to those and they
+         * are usually incident to something like {@code V(1, x=2, 3)} where one variable implies that all arguments
+         * must be converted to {@link GValue} you can have scenarios where there is a mix.
+         */
+        public T allGValuesArePinned() {
+            assertThat(String.format("GValueManager only contain pinned GValues but [%s] is unpinned", manager.getUnpinnedVariableNames()), manager.hasUnpinnedVariables(), is(false));
+            return self();
+        }
+
+        /**
          * Verifies that specific steps have been cleared from GValueManager
          */
         public T stepsAreParameterized(final boolean isParameterized, final Step... steps) {

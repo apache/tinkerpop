@@ -99,8 +99,8 @@ public final class OrderLimitStrategy extends AbstractTraversalStrategy<Traversa
             if (null != range) {
                 order.setLimit(range.getHighRange());
 
-                // remove GValueManager state because the step contract value has been used to set up order()
-                traversal.getGValueManager().remove(range);
+                // pin GValues because the step contract value has been used to set up order()
+                traversal.getGValueManager().pinGValues(range);
             }
         }
     }

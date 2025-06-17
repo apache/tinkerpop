@@ -257,7 +257,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         if (process) {
             final HasStep hasStep = new HasStep<>(traversal, new HasContainer(key, predicate));
             TraversalHelper.replaceStep(step, hasStep, traversal);
-            stepsToRemoveFromManager.forEach(s -> traversal.getGValueManager().remove(s));
+            stepsToRemoveFromManager.forEach(s -> {
+                traversal.getGValueManager().pinGValues(s);
+                traversal.getGValueManager().remove(s);
+            });
             traversal.getGValueManager().register(hasStep, hasStep);
             TraversalHelper.copyLabels(step, hasStep, false);
             for (final String label : labels) {

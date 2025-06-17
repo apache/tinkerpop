@@ -154,7 +154,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                     // this, we nullify the possibility of using that GValue for downstream optimizations as it
                     // would tie the dynamic GValue to a statically constructed literal (i.e. the highRange) that
                     // only applies for this current strategy application.
-                    traversal.getGValueManager().remove(isStep);
+                    traversal.getGValueManager().pinGValues(isStep);
 
                     if (useNotStep || dismissCountIs) {
                         TraversalHelper.removeStep(isStep, traversal); // IsStep
