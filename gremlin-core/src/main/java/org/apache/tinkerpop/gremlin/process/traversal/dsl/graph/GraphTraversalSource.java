@@ -455,7 +455,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        final MergeVertexStep<Vertex> step = new MergeVertexStep(traversal, true, searchCreate.get());
+        final MergeVertexStep<Vertex> step = new MergeVertexStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get());
         traversal.asAdmin().getGValueManager().register(step, new DefaultMergeElementContract<>(searchCreate));
         return traversal.addStep(step);
     }
@@ -503,7 +503,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        final MergeEdgeStep<Edge> step = new MergeEdgeStep(traversal, true, searchCreate.get());
+        final MergeEdgeStep<Edge> step = new MergeEdgeStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get());
         traversal.asAdmin().getGValueManager().register(step, new DefaultMergeElementContract<>(searchCreate));
         return traversal.addStep(step);
     }
