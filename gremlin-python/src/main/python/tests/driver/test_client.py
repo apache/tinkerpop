@@ -26,7 +26,7 @@ from gremlin_python.driver.client import Client
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
-from gremlin_python.process.traversal import TraversalStrategies, GValue
+from gremlin_python.process.traversal import TraversalStrategies
 from gremlin_python.process.strategies import OptionsStrategy
 from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
@@ -213,25 +213,6 @@ def test_client_bytecode_options(client):
     message = RequestMessage('traversal', 'bytecode', {'gremlin': t.bytecode, 'aliases': {'g': 'gmodern'}})
     result_set = client.submit(message)
     assert len(result_set.all().result()) == 6
-
-
-def test_client_gremlin_lang_request_options_with_binding(client):
-    g = GraphTraversalSource(Graph(), TraversalStrategies())
-    # Note that bindings for constructed traversals is done via Parameter only
-    t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'params': {'x': [1, 2, 3]}}
-    message = create_basic_request_message(t)
-    result_set = client.submit(message, request_options=request_opts)
-    assert result_set.all().result()[0] == 3
-    # We can re-use the extracted request options in script submission
-    result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
-    assert result_set.all().result()[0] == 'marko'
-    # For script submission only, we can also add bindings to request options and they will be applied
-    request_opts['bindings'] = {'y': 4}
-    result_set = client.submit('g.V(y).values("name")', request_options=request_opts)
-    assert result_set.all().result()[0] == 'josh'
-    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5}, request_options=request_opts)
-    assert result_set.all().result()[0] == 'ripple'
 
 
 def test_iterate_result_set(client):

@@ -290,7 +290,6 @@ Feature: Step - product()
   Scenario: g_injectX3_threeX_productXfive_three_7X_unfold
     Given the empty graph
     And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
       g.inject(xx1).product(["five","three",7i]).unfold()

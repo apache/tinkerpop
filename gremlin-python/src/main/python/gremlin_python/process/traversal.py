@@ -20,7 +20,6 @@
 import copy
 import warnings
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex, Edge, Path, Property
 from .. import statics
 from ..statics import long
 
@@ -800,6 +799,9 @@ class Bytecode(object):
         elif isinstance(arg, Binding):
             self.bindings[arg.key] = arg.value
             return Binding(arg.key, self.__convertArgument(arg.value))
+        elif isinstance(arg, GValue):
+            self.bindings[arg.get_name()] = arg.get()
+            return Binding(arg.get_name(), self.__convertArgument(arg.get()))
         else:
             return arg
 
@@ -915,21 +917,3 @@ class GValue:
 
     def get(self):
         return self.value
-
-
-class CardinalityValue(Bytecode):
-    def __init__(self, cardinality, val):
-        super().__init__()
-        self.add_source("CardinalityValueTraversal", cardinality, val)
-
-    @classmethod
-    def single(cls, val):
-        return CardinalityValue(Cardinality.single, val)
-
-    @classmethod
-    def list_(cls, val):
-        return CardinalityValue(Cardinality.list_, val)
-
-    @classmethod
-    def set_(cls, val):
-        return CardinalityValue(Cardinality.set_, val)
