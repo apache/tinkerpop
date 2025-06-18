@@ -30,15 +30,13 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
-==== Removal of Vertex/ReferenceVertex from gtammar
+==== Removal of Vertex/ReferenceVertex from grammar
 
 Previously the use of Vertex/ReferenceVertex existed in the grammar, these have now been removed. Going forward, vertex ID should 
 be used in traversals.
 
 // 3.7.3
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal()
+gremlin> g = TinkerFactory.createModern().traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> v1 = g.V(1).next();
 ==>v[1]
@@ -48,9 +46,7 @@ gremlin> g.V(v1).outE().where(inV().is(v2))
 ==>e[7][1-knows->2]
 
 // 3.8.0
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal()
+gremlin> g = TinkerFactory.createModern().traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
 gremlin> v1 = g.V(1).next();
 ==>v[1]

@@ -113,7 +113,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
         if (theTo == null)
             throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
+                    "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
         Object theFrom;
         try {
@@ -129,7 +129,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
         if (theFrom == null)
             throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
+                    "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
         Vertex toVertex = (Vertex) theTo;
         Vertex fromVertex = (Vertex) theFrom;

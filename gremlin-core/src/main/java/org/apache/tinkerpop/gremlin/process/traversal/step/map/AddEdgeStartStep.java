@@ -118,7 +118,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
             if (theTo == null)
                 throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).to() must resolve to a Vertex but null was specified instead", edgeLabel));
+                        "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
             Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
             if (theFrom != null && !(theFrom instanceof Vertex)) {
@@ -126,7 +126,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             }
             if (theFrom == null)
                 throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).from() must resolve to a Vertex but null was specified instead", edgeLabel));
+                        "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
             Vertex toVertex = (Vertex) theTo;
             Vertex fromVertex = (Vertex) theFrom;
