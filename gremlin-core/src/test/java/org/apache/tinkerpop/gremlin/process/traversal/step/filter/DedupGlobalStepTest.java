@@ -18,12 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -36,5 +43,17 @@ public class DedupGlobalStepTest extends StepTest {
                 __.dedup(),
                 __.dedup().by("name")
         );
+    }
+
+    @Test
+    public void shouldObtainPopInstructions() {
+        final DedupGlobalStep dedupGlobalStep = new DedupGlobalStep(__.identity().asAdmin(), "label1", "label2", "label1");
+
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"label1", Pop.last},
+                new Object[]{"label2", Pop.last}
+        );
+
+        assertEquals(dedupGlobalStep.getPopInstructions(), popInstructionSet);
     }
 }
