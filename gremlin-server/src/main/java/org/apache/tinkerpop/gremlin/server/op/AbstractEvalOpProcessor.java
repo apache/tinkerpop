@@ -131,6 +131,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
     /**
      * Provides an operation for evaluating a Gremlin script.
+     *
      * @return
      */
     public abstract ThrowingConsumer<Context> getEvalOp();
@@ -138,6 +139,7 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
     /**
      * A sub-class may have additional "ops" that it will service.  Calls to {@link OpProcessor#select(Context)} that are not
      * handled will be passed to this method to see if the sub-class can service the requested op code.
+     *
      * @return
      */
     public abstract Optional<ThrowingConsumer<Context>> selectOther(final Context ctx) throws OpProcessorException;
@@ -201,12 +203,13 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
      * iteration timeouts, metrics and building bindings.  Note that result iteration is delegated to the
      * {@link #handleIterator(Context, Iterator)} method, so those extending this class could override that method for
      * better control over result iteration.
-     * @param ctx The current Gremlin Server {@link Context}. This handler ensures that only a single final
-     *            response is sent to the client.
+     *
+     * @param ctx                     The current Gremlin Server {@link Context}. This handler ensures that only a single final
+     *                                response is sent to the client.
      * @param gremlinExecutorSupplier A function that returns the {@link GremlinExecutor} to use in executing the
      *                                script evaluation.
-     * @param bindingsSupplier A function that returns the {@link Bindings} to provide to the
- *                         {@link GremlinExecutor#eval} method.
+     * @param bindingsSupplier        A function that returns the {@link Bindings} to provide to the
+     *                                {@link GremlinExecutor#eval} method.
      */
     protected void evalOpInternal(final Context ctx, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
                                   final BindingSupplier bindingsSupplier) {
@@ -233,15 +236,23 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
 
         final GremlinExecutor.LifeCycle lifeCycle = GremlinExecutor.LifeCycle.build()
                 .evaluationTimeoutOverride(seto)
-                .afterFailure((b,t) -> {
+                .afterFailure((b, t) -> {
                     graphManager.onQueryError(msg, t);
-                    if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
+                    if (managedTransactionsForRequest)
+                        attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
+                    graphManager.afterQueryEnd(msg);
                 })
                 .afterTimeout((b, t) -> {
-                  graphManager.onQueryError(msg, t);
+                    graphManager.onQueryError(msg, t);
+                    graphManager.afterQueryEnd(msg);
                 })
                 .beforeEval(b -> {
-                    graphManager.beforeQueryStart(msg);
+                    AuthenticatedUser user = ctx.getChannelHandlerContext().channel().attr(StateKey.AUTHENTICATED_USER).get();
+                    if (null == user) {
+                        // This is expected when using the AllowAllAuthenticator
+                        user = AuthenticatedUser.ANONYMOUS_USER;
+                    }
+                    graphManager.beforeQueryStart(msg, user);
                     try {
                         b.putAll(bindingsSupplier.get());
                     } catch (OpProcessorException ope) {
@@ -268,13 +279,16 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                         handleIterator(ctx, itty);
                         graphManager.onQuerySuccess(msg);
                     } catch (Exception ex) {
-                        if (managedTransactionsForRequest) attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
-
+                        graphManager.onQueryError(msg, ex);
+                        if (managedTransactionsForRequest)
+                            attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
                         CloseableIterator.closeIterator(itty);
 
                         // wrap up the exception and rethrow. the error will be written to the client by the evalFuture
                         // as it will completeExceptionally in the GremlinExecutor
                         throw new RuntimeException(ex);
+                    } finally {
+                        graphManager.afterQueryEnd(msg);
                     }
                 }).create();
 
