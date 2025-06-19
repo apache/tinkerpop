@@ -159,11 +159,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P(Compare.eq, value);
     }
 
-    //TODO:: Deal with GValue in predicates
-//    public static <V> P<V> eq(final GValue<V> value) {
-//        return new P(Compare.eq, value);
-//    }
-
     /**
      * Determines if values are not equal.
      *

@@ -52,7 +52,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, ElementIdsContract<Object>, GValueContracting<ElementIdsContract<GValue<?>>> { //TODO Raw contract type{
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, ElementIdsContract<Object>, GValueContracting<ElementIdsContract<GValue<?>>> {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
