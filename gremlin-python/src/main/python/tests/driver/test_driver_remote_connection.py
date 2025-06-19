@@ -81,7 +81,7 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results[0]['a'])
         assert 2 == len(results[0]['b'])
         # #
-        results = g.V(1).inject(g.V(2).next()).values('name').to_list()
+        results = g.V(1, 2).inject().values('name').to_list()
         assert 2 == len(results)
         assert 'marko' in results
         assert 'vadas' in results
@@ -173,7 +173,7 @@ class TestDriverRemoteConnection(object):
         assert 2 == len(results[0]['a'])
         assert 2 == len(results[0]['b'])
         # #
-        results = g.V(1).inject(g.V(2).next()).values('name').to_list()
+        results = g.V(1, 2).values('name').to_list()
         assert 2 == len(results)
         assert 'marko' in results
         assert 'vadas' in results

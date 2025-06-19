@@ -91,6 +91,13 @@ namespace Gremlin.Net.Process.Traversal
             }
             else
             {
+                for (int i = 0; i < vertexIdsOrElements.Length; i++)
+                {
+                    if (vertexIdsOrElements[i] is Vertex vertex)
+                    {
+                        vertexIdsOrElements[i] = vertex.Id;
+                    }
+                }
                 var args = new List<object?>(vertexIdsOrElements.Length);
                 args.AddRange(vertexIdsOrElements);
                 Bytecode.AddStep("V", args.ToArray());
@@ -874,6 +881,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<TStart, TEnd> From (object? fromStepVertexIdOrLabel)
+        {
+            Bytecode.AddStep("from", fromStepVertexIdOrLabel is Vertex vertex ? vertex.Id : fromStepVertexIdOrLabel);
+            return Wrap<TStart, TEnd>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<TStart, TEnd> From (string? fromStepLabel)
         {
             Bytecode.AddStep("from", fromStepLabel);
@@ -894,7 +910,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TEnd> From (Vertex? fromVertex)
         {
-            Bytecode.AddStep("from", fromVertex);
+            Bytecode.AddStep("from", fromVertex?.Id);
             return Wrap<TStart, TEnd>(this);
         }
 
@@ -1441,8 +1457,14 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the mergeE step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, Edge> MergeE (IDictionary<object,object>? m)
+        public GraphTraversal<TStart, Edge> MergeE (IDictionary<object,object?>? m)
         {
+            if (m != null && m[Direction.Out] is Vertex outV) {
+                m[Direction.Out] = outV.Id;
+            }
+            if (m != null && m[Direction.In] is Vertex inV) {
+                m[Direction.In] = inV.Id;
+            }
             Bytecode.AddStep("mergeE", m);
             return Wrap<TStart, Edge>(this);
         }
@@ -2202,6 +2224,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("to", args.ToArray());
             return Wrap<TStart, Vertex>(this);
         }
+        
+        /// <summary>
+        ///     Adds the to step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> To (object? toStepVertexIdOrLabel)
+        {
+            Bytecode.AddStep("to", toStepVertexIdOrLabel is Vertex vertex ? vertex.Id : toStepVertexIdOrLabel );
+            return Wrap<TStart, TEnd>(this);
+        }
 
         /// <summary>
         ///     Adds the to step to this <see cref="GraphTraversal{SType, EType}" />.
@@ -2226,7 +2257,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TEnd> To (Vertex? toVertex)
         {
-            Bytecode.AddStep("to", toVertex);
+            Bytecode.AddStep("to", toVertex?.Id);
             return Wrap<TStart, TEnd>(this);
         }
 

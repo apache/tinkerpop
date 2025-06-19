@@ -47,11 +47,11 @@ Feature: Step - union()
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_unionXVXv1X_VX4XX_name
     Given the modern graph
-    And using the parameter v1 defined as "v[vadas]"
-    And using the parameter v4 defined as "v[josh]"
+    And using the parameter vid1 defined as "v[vadas].id"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
        """
-       g.union(__.V(v1), __.V(v4)).values("name")
+       g.union(__.V(vid1), __.V(vid4)).values("name")
        """
     When iterated to list
     Then the result should be unordered
@@ -139,10 +139,10 @@ Feature: Step - union()
     And using the parameter xx1 defined as "d[1].i"
     And using the parameter xx2 defined as "d[2].i"
     And using the parameter xx3 defined as "d[3].i"
-    And using the parameter v2 defined as "v[vadas]"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
        """
-       g.V(v2).union(constant(xx1), constant(xx2), constant(xx3))
+       g.V(vid2).union(constant(xx1), constant(xx2), constant(xx3))
        """
     When iterated to list
     Then the result should be unordered
