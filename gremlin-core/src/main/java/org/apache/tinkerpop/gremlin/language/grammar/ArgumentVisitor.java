@@ -80,13 +80,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Wrapper for visit function for {@link Vertex} types.
-     */
-    public Vertex parseVertex(final GremlinParser.StructureVertexArgumentContext ctx) {
-        return (Vertex) visitStructureVertexArgument(ctx);
-    }
-
-    /**
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericMapArgumentContext ctx) {
@@ -179,15 +172,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitGenericArgument(final GremlinParser.GenericArgumentContext ctx) {
         if (ctx.genericLiteral() != null) {
             return antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral());
-        } else {
-            return visitVariable(ctx.variable());
-        }
-    }
-
-    @Override
-    public Object visitStructureVertexArgument(final GremlinParser.StructureVertexArgumentContext ctx) {
-        if (ctx.structureVertexLiteral() != null) {
-            return antlr.structureVisitor.visitStructureVertexLiteral(ctx.structureVertexLiteral());
         } else {
             return visitVariable(ctx.variable());
         }

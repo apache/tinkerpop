@@ -19,23 +19,6 @@
 Feature: Step - inject()
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_VX1X_out_injectXv2X_name
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter v2 defined as "v[vadas]"
-    And the traversal of
-      """
-      g.V(vid1).out().inject(v2).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | vadas |
-      | lop   |
-      | vadas |
-      | josh  |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -50,24 +33,6 @@ Feature: Step - inject()
       | p[v[marko],v[lop],lop,d[3].i] |
       | p[v[marko],v[vadas],vadas,d[5].i] |
       | p[v[marko],v[josh],josh,d[4].i] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_VX1X_injectXg_VX4XX_out_name
-    Given the modern graph
-    And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter v2 defined as "v[josh]"
-    And the traversal of
-      """
-      g.V(vid1).inject(v2).out().values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | ripple |
-      | lop   |
-      | lop   |
-      | vadas |
-      | josh  |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_1_3_nullX
