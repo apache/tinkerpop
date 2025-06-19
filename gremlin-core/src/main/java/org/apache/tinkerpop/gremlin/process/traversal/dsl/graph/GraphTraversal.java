@@ -1332,21 +1332,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    @SuppressWarnings("unchecked")
     public default GraphTraversal<S, E> to(final Object toVertex) {
-        if (toVertex instanceof String)
-        {
+        if (toVertex instanceof String) {
             return this.to((String) toVertex);
+        } else if (toVertex instanceof Traversal) {
+            this.to((Traversal<?, Object>)toVertex);
+            return this;
         }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
-        if (toVertex instanceof Traversal)
-        {
-            this.to((Traversal<?, Object>)toVertex);
-            return this;
-        }
+
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
         return this;
@@ -1361,21 +1358,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    @SuppressWarnings("unchecked")
     public default GraphTraversal<S, E> from(final Object fromVertex) {
-        if (fromVertex instanceof String)
-        {
+        if (fromVertex instanceof String) {
             return this.from((String) fromVertex);
+        } else if (fromVertex instanceof Traversal) {
+            this.from((Traversal<?, Object>)fromVertex);
+            return this;
         }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
-        if (fromVertex instanceof Traversal)
-        {
-            this.from((Traversal<?, Object>)fromVertex);
-            return this;
-        }
+
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
         return this;

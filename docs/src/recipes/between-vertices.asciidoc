@@ -22,14 +22,14 @@ traversal on the paths found between them. Consider the following examples using
 
 [gremlin-groovy,modern]
 ----
-g.V(1).bothE()                                          <1>
-g.V(1).bothE().where(otherV().hasId(2))                 <2>
+g.V(1).bothE()                                   <1>
+g.V(1).bothE().where(otherV().hasId(2))          <2>
 v1 = g.V(1).next();[]
 v2 = g.V(2).next();[]
-g.V(v1.id()).bothE().where(otherV().id().is(v2.id()))   <3>
-g.V(v1.id()).outE().where(inV().id().is(v2.id()))       <4>
-g.V(1).outE().where(inV().has(id, within(2,3)))         <5>
-g.V(1).out().where(__.in().hasId(6))                    <6>
+g.V(v1).bothE().where(otherV().is(v2))           <3>
+g.V(v1).outE().where(inV().is(v2))               <4>
+g.V(1).outE().where(inV().has(id, within(2,3)))  <5>
+g.V(1).out().where(__.in().hasId(6))             <6>
 ----
 
 <1> There are three edges from the vertex with the identifier of "1".

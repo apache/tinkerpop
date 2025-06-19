@@ -833,21 +833,21 @@ public class TinkerGraphTest {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).to(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).from() must resolve to a Vertex but null was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).from() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property(VertexProperty.Cardinality.single, "k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", ise.getMessage());
         }
 
         try {
             g.addE("link").property("k", 100).from(__.V(1)).iterate();
             fail("Should have thrown an error");
         } catch (IllegalStateException ise) {
-            assertEquals("The value given to addE(link).to() must resolve to a Vertex but null was specified instead", ise.getMessage());
+            assertEquals("The value given to addE(link).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", ise.getMessage());
         }
 
         try {

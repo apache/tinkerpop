@@ -32,34 +32,35 @@ complete list of all the modifications that are part of this release.
 
 ==== Removal of Vertex/ReferenceVertex from grammar
 
-Previously the use of Vertex/ReferenceVertex existed in the grammar, these have now been removed. Going forward, vertex ID should 
-be used in traversals.
+`StructureVertex`, previously used to construct new vertices in the grammar, now been removed. The `V()` step, as well
+as the `from()` and `to()` modulators used with `addE()`, previously accepted `StructureVertex` as arguments in the
+grammar. In its place, the `from()` and `to()` modulators can now directly accept a vertex id in place of a `Vertex`
+when used with `addE()` (`V()` has always accepted ids in addition to vertices). When using these steps in `gremlin-lang`
+scripts, the vertex id must be used directly. This change has no effect on the `GraphTraversal` API, nor on
+`gremlin-groovy` scripts. Vertices can continue to be used directly such places.
 
+[source,groovy]
+----
 // 3.7.3
-gremlin> g = TinkerFactory.createModern().traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> v1 = g.V(1).next();
+gremlin> v1 = g.V(1).next()
 ==>v[1]
-gremlin> v2 = g.V(2).next();
+gremlin> v2 = g.V(2).next()
 ==>v[2]
-gremlin> g.V(v1).outE().where(inV().is(v2))
+gremlin> script = String.format("g.V(new Vertex(%s)).outE().where(inV().is(new Vertex(%s)))", v1.id(), v2.id())
+==>g.V(new Vertex(1)).outE().where(inV().is(new Vertex(2)))
+gremlin> client.submit(script).all().get().get(0).getEdge()
 ==>e[7][1-knows->2]
 
 // 3.8.0
-gremlin> g = TinkerFactory.createModern().traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> v1 = g.V(1).next();
+gremlin> v1 = g.V(1).next()
 ==>v[1]
-gremlin> v2 = g.V(2).next();
+gremlin> v2 = g.V(2).next()
 ==>v[2]
-gremlin> g.V(v1.id()).outE().where(inV().id().is(v2.id()))
+gremlin> script = String.format("g.V(%s).outE().where(inV().id().is(%s))", v1.id(), v2.id())
+==>g.V(1).outE().where(inV().id().is(2))
+gremlin> client.submit(script).all().get().get(0).getEdge()
 ==>e[7][1-knows->2]
-
-AddEdgeStep has been updated to detect an invalid vertex ID. In the case of an invalid id given the following
-error will be raised...
-
-"The value given to addE(%s).[to][from]() must resolve to a Vertex or the ID of a Vertex present in the graph.
-The provided value does not match any vertices in the graph"
+----
 
 ==== Auto promotion of number types
 
