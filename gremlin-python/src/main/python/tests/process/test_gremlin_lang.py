@@ -413,7 +413,7 @@ class TestGremlinLang(object):
         # 106
         vertex = Vertex(0, "person")
         tests.append([g.V(vertex),
-                      "g.V(new ReferenceVertex(0,'person'))"])
+                      "g.V(0)"])
 
         # 107
         outVertex = Vertex(0, "person")
