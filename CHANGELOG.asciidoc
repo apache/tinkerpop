@@ -45,6 +45,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 * Changed `gremlin-go` Client `ReadBufferSize` and `WriteBufferSize` defaults to 1048576 (1MB) to align with DriverRemoteConnection.
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
+* Fixed bug in `CallStep` which prevented Java serialization due to non-serializable `ServiceCallContext` and `Service` usage.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 * Support hot reloading of SSL certificates.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
