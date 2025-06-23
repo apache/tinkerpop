@@ -291,6 +291,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         if (mapTraversal != null)
             this.integrateChild(mapTraversal);
         parameters.getTraversals().forEach(this::integrateChild);
+        ctx = null;
     }
 
     @Override
