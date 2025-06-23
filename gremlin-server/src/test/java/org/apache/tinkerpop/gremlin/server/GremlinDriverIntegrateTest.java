@@ -754,6 +754,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
             stopServer();
 
+            // the client used to be quiet about an unavailable host and i'm not sure why we liked the description
+            // that follows:
+            //
             // We create a new client here which will fail to initialize but the original client still has
             // host marked as connected. Since the second client failed during initialization, it has no way to
             // test if a host is indeed unreachable because it doesn't have any established connections. It will not add
@@ -763,7 +766,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             // keepAlive message or the next request, whichever is earlier. In this case, we will simulate the second
             // scenario by sending a new request on first client. The request would fail (since server is down) and
             // client should mark the host unavailable.
-            cluster.connect().init();
+            // ...
+            // at 3.7.4 we don't let cluster level host availability determine for the client if
+            // NoHostAvailableException should be thrown. we rely on the ground truth of the actually initialization of
+            // the ConnectionPool and if at least one Host managed to create one. as such, it's more likely now that
+            // a NoHostAvailableException be thrown in this scenario, rather than it silently succeeding because
+            // client1 thinks it's still good.
+            try {
+                cluster.connect().init();
+                fail("Should have thrown NHA");
+            } catch (NoHostAvailableException ex) {
+
+            }
 
             try {
                 client1.submit("g.inject(2)").all().join();

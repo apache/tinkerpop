@@ -159,6 +159,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added server metrics to help better detect and diagnose write pauses due to the `writeBufferHighWaterMark`: `channels.paused`, `channels.total`, and `channels.write-pauses`.
 * Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
 * Changed Gremlin grammar to make use of `g` to spawn child traversals a syntax error.
+* Fixed bug where the `Host` to `ConnectionPool` mapping on the `Client` in `gremlin-driver` can have no entries and therefore lead to a `NullPointerException` when borrowing a connection.
 * Added `unexpected-response` handler to `ws` for `gremlin-javascript`
 * Fixed bug in `TinkerTransactionGraph` where a read-only transaction may leave elements trapped in a "zombie transaction".
 * Fixed bug in `gremlin.sh` where it couldn't accept a directory name containing spaces.
