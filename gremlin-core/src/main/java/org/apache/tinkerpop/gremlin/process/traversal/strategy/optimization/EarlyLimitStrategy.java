@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.util.StepOutputArityPredictor;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -68,12 +69,12 @@ public final class EarlyLimitStrategy
         boolean merge = false;
         for (int i = 0, j = steps.size(); i < j; i++) {
             final Step step = steps.get(i);
-            if (step instanceof RangeGlobalStep) {
+            if (step instanceof RangeGlobalStepInterface) {
                 if (insertAfter != null) {
                     // RangeStep was found, move it to the earliest possible step or merge it with a
                     // previous RangeStep; keep the RangeStep's labels at its preceding step
                     TraversalHelper.copyLabels(step, step.getPreviousStep(), true);
-                    insertAfter = moveRangeStep((RangeGlobalStep) step, insertAfter, traversal, merge);
+                    insertAfter = moveRangeStep((RangeGlobalStepInterface) step, insertAfter, traversal, merge);
                     if (insertAfter instanceof NoneStep) {
                         // any step besides a SideEffectCapStep after a NoneStep would be pointless
                         final int noneStepIndex = TraversalHelper.stepIndex(insertAfter, traversal);
@@ -98,24 +99,23 @@ public final class EarlyLimitStrategy
             }
         }
     }
-
     private boolean isMapStepMovable(final Step<?,?> step) {
         return step instanceof MapStep && StepOutputArityPredictor.hasAlwaysBoundResult(step);
     }
 
     @SuppressWarnings("unchecked")
-    private Step moveRangeStep(final RangeGlobalStep step, final Step insertAfter, final Traversal.Admin<?, ?> traversal,
+    private Step moveRangeStep(final RangeGlobalStepInterface step, final Step insertAfter, final Traversal.Admin<?, ?> traversal,
                                final boolean merge) {
         final Step rangeStep;
         boolean remove = true;
-        if (insertAfter instanceof RangeGlobalStep) {
+        if (insertAfter instanceof RangeGlobalStepInterface) {
             // there's a previous RangeStep which might affect the effective range of the current RangeStep
             // recompute this step's low and high; if the result is still a valid range, create a new RangeStep,
             // otherwise a NoneStep
             //
             // GValue instances that merge here are discarded when the original steps are removed in favor of the
             // merged one. no reasonable way to resolve that.
-            final RangeGlobalStep other = (RangeGlobalStep) insertAfter;
+            final RangeGlobalStepInterface other = (RangeGlobalStepInterface) insertAfter;
             final long low = other.getLowRange() + step.getLowRange();
             if (other.getHighRange() == -1L) {
                 rangeStep = new RangeGlobalStep(traversal, low, other.getLowRange() + step.getHighRange());
@@ -132,14 +132,7 @@ public final class EarlyLimitStrategy
             }
             remove = merge;
 
-            // optimization is dependent on the high and low values from both `step` and `other`. Both must have their
-            // GValues pinned as a result.
-            traversal.getGValueManager().pinGValues(step);
-            traversal.getGValueManager().pinGValues(other);
-
-            // a step is being permanently removed - remove from manager
             final Step stepToRemove = merge ? insertAfter : step;
-            traversal.getGValueManager().remove(stepToRemove);
             TraversalHelper.replaceStep(stepToRemove, rangeStep, traversal);
         } else if (!step.getPreviousStep().equals(insertAfter, true)) {
             // move the RangeStep behind the earliest possible map- or sideEffect-step.
@@ -152,8 +145,6 @@ public final class EarlyLimitStrategy
             return step;
         }
         if (remove) {
-            // a step is being permanently removed - remove from manager
-            traversal.getGValueManager().remove(step);
             traversal.removeStep(step);
         }
         return rangeStep;

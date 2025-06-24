@@ -57,7 +57,7 @@ import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCall
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStep<S, E> extends AbstractStep<S, E> implements TraversalParent, AutoCloseable, Configuring, CallContract<Map<?, ?>>, GValueContracting<CallContract<GValue<Map<?, ?>>>> {
+public final class CallStep<S, E> extends AbstractStep<S, E> implements TraversalParent, AutoCloseable, Configuring {
 
     private final boolean isStart;
     private boolean first = true;
@@ -105,12 +105,10 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         return serviceName;
     }
 
-    @Override
     public Map<?, ?> getStaticParams() {
         return staticParams;
     }
 
-    @Override
     public void setStaticParams(Map<?, ?> params) {
         this.staticParams = staticParams;
     }
@@ -355,16 +353,5 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     @Override
     public Parameters getParameters() {
         return this.parameters;
-    }
-
-    @Override
-    public CallContract<GValue<Map<?, ?>>> getGValueContract() {
-        //TODO better type safety?
-        return (CallContract<GValue<Map<?,?>>>) this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
     }
 }

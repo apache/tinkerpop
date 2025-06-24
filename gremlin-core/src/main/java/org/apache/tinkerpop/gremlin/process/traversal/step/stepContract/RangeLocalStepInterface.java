@@ -18,10 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 
-public interface AddEdgeContract<L, Vertex, K, Value> extends AddElementContract<K, Value> {
-    public L getLabel();
-    public Vertex getFrom();
-    public Vertex getTo();
+/**
+ * Defines the contract for {@code range} related steps.
+ */
+public interface RangeLocalStepInterface<S> extends Step<S, S> {
+
+    /**
+     * Retrieves the lower bound of the range.
+     *
+     * @return the value representing the lower bound of the range
+     */
+    public Long getLowRange();
+
+    /**
+     * Retrieves the higher bound of the range.
+     *
+     * @return the higher bound of the range as an object of type V
+     */
+    public Long getHighRange();
 }

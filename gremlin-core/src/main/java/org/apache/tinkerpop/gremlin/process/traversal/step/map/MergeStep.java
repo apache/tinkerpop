@@ -419,12 +419,12 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     @Override
     public MergeElementContract<GValue<Map<?, ?>>> getGValueContract() {
-        return (MergeElementContract<GValue<Map<?, ?>>>) this.traversal.getGValueManager().getStepContract(this);
+        return null;
     }
 
     @Override
     public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
+        return false;
     }
 
     @Override

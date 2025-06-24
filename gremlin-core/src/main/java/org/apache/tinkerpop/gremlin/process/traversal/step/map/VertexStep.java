@@ -139,11 +139,11 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     @Override
     public EdgeLabelContract<GValue<String>> getGValueContract() {
-        return (EdgeLabelContract<GValue<String>>) this.traversal.getGValueManager().getStepContract(this);
+        return null;
     }
 
     @Override
     public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
+        return false;
     }
 }

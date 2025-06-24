@@ -167,11 +167,11 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
 
                     final List<Step> byChildSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, byTraversal);
                     for (int ix = 0; ix < byChildSteps.size(); ix++) {
-                        manager.copyRegistryState(byChildSteps.get(ix), clonedByTraversal.getSteps().get(ix));
-                        manager.pinGValues(byChildSteps.get(ix));
-                        manager.remove(byChildSteps.get(ix));
-                        clonedByTraversal.getGValueManager().pinGValues(byChildSteps.get(ix));
-                        clonedByTraversal.getGValueManager().remove(byChildSteps.get(ix));
+                        // TODO:: manager.copyRegistryState(byChildSteps.get(ix), clonedByTraversal.getSteps().get(ix));
+                        // TODO:: manager.pinGValues(byChildSteps.get(ix));
+                        // TODO:: manager.remove(byChildSteps.get(ix));
+                        // TODO:: clonedByTraversal.getGValueManager().pinGValues(byChildSteps.get(ix));
+                        // TODO:: clonedByTraversal.getGValueManager().remove(byChildSteps.get(ix));
                     }
 
                 }
@@ -197,13 +197,13 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                     final Traversal.Admin<?, ?> localChildClone = localChild.clone();
                     final List<Step> localChildSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, localChild);
                     for (int ix = 0; ix < localChildSteps.size(); ix++) {
-                        manager.copyRegistryState(localChildSteps.get(ix), localChildClone.getSteps().get(ix));
+                        // TODO:: manager.copyRegistryState(localChildSteps.get(ix), localChildClone.getSteps().get(ix));
 
                         // todo: look at cases where we clone() traversal more carefully. so much to think about in these cases
-                        manager.pinGValues(localChildSteps.get(ix));
-                        manager.remove(localChildSteps.get(ix));
-                        localChildClone.getGValueManager().pinGValues(localChildSteps.get(ix));
-                        localChildClone.getGValueManager().remove(localChildSteps.get(ix));
+                        // TODO:: manager.pinGValues(localChildSteps.get(ix));
+                        // TODO:: manager.remove(localChildSteps.get(ix));
+                        // TODO:: localChildClone.getGValueManager().pinGValues(localChildSteps.get(ix));
+                        // TODO:: localChildClone.getGValueManager().remove(localChildSteps.get(ix));
                     }
 
                     selectOneStep.removeLocalChild(localChild);

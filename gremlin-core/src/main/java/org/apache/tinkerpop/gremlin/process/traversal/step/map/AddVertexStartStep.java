@@ -50,7 +50,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexContract<String, Object, Object>, GValueContracting<AddVertexContract<GValue<String>, ?, GValue<?>>> {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -158,33 +158,18 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         return clone;
     }
 
-
-    @Override
     public String getLabel() {
         return parameters.get(T.label, ()->"Edge").get(0);
     }
 
-    @Override
-    public AddVertexContract<GValue<String>, ?, GValue<?>> getGValueContract() {
-        return (AddVertexContract<GValue<String>, ?, GValue<?>>) traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return traversal.getGValueManager().isParameterized(this);
-    }
-
-    @Override
     public Map<Object, Object> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
     }
 
-    @Override
     public void addProperty(final Object key, final Object value) {
         configure(key, value);
     }
 
-    @Override
     public Object removeProperty(final Object key) {
         return parameters.remove(key);
     }

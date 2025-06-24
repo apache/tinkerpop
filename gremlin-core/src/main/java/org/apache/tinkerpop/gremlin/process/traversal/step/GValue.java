@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.Serializable;
@@ -375,6 +376,49 @@ public class GValue<V> implements Serializable {
             values[i] = gvalues[i].get();
         }
         return values;
+    }
+
+    /**
+     * Converts possible {@link GValue} objects argument array to their values to prevent them from leaking to the Graph API.
+     * Providers extending from this step should use this method to get actual values to prevent any {@link GValue}
+     * objects from leaking to the Graph API.
+     */
+    public static Object[] resolveToValues(final Object[] gvalues) {
+        final Object[] values = new Object[gvalues.length];
+        for (int i = 0; i < gvalues.length; i++) {
+            values[i] = gvalues[i] instanceof GValue ? ((GValue<?>) gvalues[i]).get() : gvalues[i];
+            if (values[i] instanceof GValueConstantTraversal) {
+                // TODO:: This seems out of place here, find a better home for this.
+                values[i] = ((GValueConstantTraversal<?, ?>) values[i]).getConstantTraversal();
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Tests if any of the objects are GValues.
+     */
+    public static boolean containsGValues(final Object... args) {
+        for (Object arg : args) {
+            if (arg instanceof GValue) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tests if any of the objects are GValues or GValueConstantTraversal, and if so, if they are variables.
+     */
+    public static boolean containsVariables(final Object... args) {
+        for (Object arg : args) {
+            if (arg instanceof GValue && ((GValue<?>) arg).isVariable()) {
+                return true;
+            } else if (arg instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) arg).isParameterized()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -30,18 +30,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultAddEdgeContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultAddVertexContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultCallContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultElementIdsContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultMergeElementContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -362,9 +363,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        AddVertexStartStep step = new AddVertexStartStep(traversal, vertexLabel.get());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultAddVertexContract<>(vertexLabel));
-        return traversal.addStep(step);
+        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel.get())); //TODO
     }
 
     /**
@@ -376,7 +375,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddEdgeStartStep(traversal, label));
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, label));
     }
 
     /**
@@ -388,7 +387,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, edgeLabelTraversal.asAdmin()));
     }
 
     /**
@@ -400,9 +399,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        AddEdgeStartStep step = new AddEdgeStartStep(traversal, label.get());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultAddEdgeContract<>(label));
-        return traversal.addStep(step);
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, label));
     }
 
     /**
@@ -455,9 +452,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        final MergeVertexStep<Vertex> step = new MergeVertexStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultMergeElementContract<>(searchCreate));
-        return traversal.addStep(step);
+        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get())); //TODO
     }
 
     /**
@@ -504,8 +499,7 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         final MergeEdgeStep<Edge> step = new MergeEdgeStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultMergeElementContract<>(searchCreate));
-        return traversal.addStep(step);
+        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate == null ? (Map) null : searchCreate.get())); //TODO
     }
 
     /**
@@ -532,8 +526,12 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        GraphStep<Vertex, Vertex> step = new GraphStep<>(traversal, Vertex.class, true, GValue.resolveToValues(GValue.ensureGValues(ids))); //TODO cleanup
-        traversal.asAdmin().getGValueManager().register(step, new DefaultElementIdsContract(GValue.ensureGValues(ids)));
+        GraphStepInterface<Vertex, Vertex> step;
+        if (GValue.containsGValues(ids)) {
+            step = new GraphStepPlaceholder<>(traversal, Vertex.class, false, GValue.ensureGValues(ids));
+        } else {
+            step = new GraphStep<>(traversal, Vertex.class, false, ids);
+        }
         return traversal.addStep(step);
     }
 
@@ -549,8 +547,12 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        GraphStep<Edge, Edge> step = new GraphStep<>(traversal, Edge.class, true, GValue.resolveToValues(GValue.ensureGValues(ids)));
-        traversal.asAdmin().getGValueManager().register(step, new DefaultElementIdsContract(GValue.ensureGValues(ids)));
+        GraphStepInterface<Edge, Edge> step;
+        if (GValue.containsGValues(ids)) {
+            step = new GraphStepPlaceholder<>(traversal, Edge.class, false, GValue.ensureGValues(ids));
+        } else {
+            step = new GraphStep<>(traversal, Edge.class, false, ids);
+        }
         return traversal.addStep(step);
     }
 
@@ -643,9 +645,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        final CallStep<S, S> step = new CallStep<>(traversal, true, service, params.get());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultCallContract<>(params));
-        return traversal.addStep(step);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params.get())); //TODO
     }
 
     /**
@@ -661,8 +661,7 @@ public class GraphTraversalSource implements TraversalSource {
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         CallStep<S,S> step = new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin());
-        traversal.asAdmin().getGValueManager().register(step, new DefaultCallContract<>(params));
-        return traversal.addStep(step);
+        return traversal.addStep(new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin())); //TODO
     }
 
     /**

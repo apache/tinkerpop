@@ -346,9 +346,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             resetTraverserRequirements();
         }
 
-        // lock up the GValueManager which will finalize GValue variables for the traversal
-        gValueManager.lock();
-
         // lock the parent before the children
         this.locked = true;
 

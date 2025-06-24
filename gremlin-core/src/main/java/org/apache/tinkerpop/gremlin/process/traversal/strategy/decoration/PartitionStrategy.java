@@ -250,7 +250,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                 if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
                     final Parameters parameters = ((Parameterizing) step).getParameters();
                     final Map<Object, List<Object>> params = parameters.getRaw();
-                    final AddVertexContract contract = traversal.getGValueManager().getStepContract(step);
+                    // TODO:: final AddVertexContract contract = traversal.getGValueManager().getStepContract(step);
 
                     params.forEach((k, v) -> {
 
@@ -259,7 +259,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
                             final VertexProperty.Cardinality cardinality = vertexFeatures.get().getCardinality((String) k);
                             v.forEach(o -> {
-                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
+                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o); //TODO:: should this use AddPropertyStepGValueContract?
                                 addPropertyStep.configure(partitionKey, writePartition);
                                 addPropertyStepsToAppend.add(addPropertyStep);
 
@@ -267,7 +267,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                                 // different contract related because it's now being added via the AddPropertyStep
                                 parameters.remove(k);
 
-                                if (contract != null) {
+                                //TODO::
+                                /*if (contract != null) {
                                     final Object possibleGValue = contract.removeProperty(k);
                                     if (possibleGValue instanceof GValue) {
                                         final AddPropertyContract addPropertyContract = new DefaultAddPropertyContract(k, possibleGValue);
@@ -278,7 +279,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                                     // the property() steps
                                     if (contract.getProperties().isEmpty())
                                         traversal.getGValueManager().remove(step);
-                                }
+                                }*/
 
                                 TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
                             });

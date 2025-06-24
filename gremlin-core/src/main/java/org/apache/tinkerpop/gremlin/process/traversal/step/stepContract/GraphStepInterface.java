@@ -18,38 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.structure.Element;
+
+import java.util.Iterator;
+import java.util.function.Supplier;
+
 /**
- * Represents a default implementation of the {@link RangeContract} interface.
- * This class defines a range with a specified low and high bound.
- *
- * @param <V> the type that defines the boundaries of the range
+ * Defines the contract for {@code range} related steps.
  */
-public class DefaultRangeContract<V> implements RangeContract<V> {
-    private V low;
-    private V high;
+public interface GraphStepInterface<S, E extends Element> extends Step<S, E>, GraphComputing {
 
-    public DefaultRangeContract(V low, V high) {
-        this.low = low;
-        this.high = high;
-    }
+    public Class<E> getReturnClass();
 
-    /**
-     * Retrieves the lower bound of the range.
-     *
-     * @return the lower bound of the range as an object of type V
-     */
-    @Override
-    public V getLowRange() {
-        return low;
-    }
+    public boolean isStartStep();
 
-    /**
-     * Retrieves the high boundary of the range.
-     *
-     * @return the high boundary value of the range
-     */
-    @Override
-    public V getHighRange() {
-        return high;
-    }
+    public boolean returnsVertex();
+
+    public boolean returnsEdge();
+
+    public Object[] getIds();
+
+    public void clearIds();
 }

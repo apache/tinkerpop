@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.ElementIdsContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -52,7 +53,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, ElementIdsContract<Object>, GValueContracting<ElementIdsContract<GValue<?>>> {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, GraphStepInterface<S, E> {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
@@ -67,16 +68,13 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
     public GraphStep(final Traversal.Admin traversal, final Class<E> returnClass, final boolean isStart, final Object... ids) {
         super(traversal);
         this.returnClass = returnClass;
-
+        this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         //TODO:: Better Check
-        for (Object id : ids) {
+        for (Object id : this.ids) {
             if (id instanceof GValue) {
                 throw new IllegalArgumentException("GValue Not Allowed as id in GraphStep");
             }
         }
-
-
-        this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         this.isStart = isStart;
         this.iteratorSupplier = () -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ?
                 this.getTraversal().getGraph().get().vertices(this.ids) :
@@ -97,10 +95,12 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.parameters.set(null, keyValues);
     }
 
+    @Override
     public Class<E> getReturnClass() {
         return this.returnClass;
     }
 
+    @Override
     public boolean isStartStep() {
         return this.isStart;
     }
@@ -109,10 +109,12 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         return step instanceof GraphStep && ((GraphStep) step).isStart;
     }
 
+    @Override
     public boolean returnsVertex() {
         return this.returnClass.equals(Vertex.class);
     }
 
+    @Override
     public boolean returnsEdge() {
         return this.returnClass.equals(Edge.class);
     }
@@ -121,6 +123,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.iteratorSupplier = iteratorSupplier;
     }
 
+    @Override
     public Object[] getIds() {
         return this.ids;
     }
@@ -137,6 +140,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
                             newIds);
     }
 
+    @Override
     public void clearIds() {
         this.ids = new Object[0];
     }
@@ -221,15 +225,5 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
             return true;
         }
         return false;
-    }
-
-    @Override
-    public ElementIdsContract<GValue<?>> getGValueContract() {
-        return (ElementIdsContract<GValue<?>>) this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
     }
 }

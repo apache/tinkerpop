@@ -28,7 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -42,7 +44,6 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -197,17 +198,17 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal);
+            final Optional<RangeGlobalStepInterface> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStep originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
+            final RangeGlobalStepInterface originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
                     beforeApplying().
-                        rangeContractIsValid(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalGValueContract(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
-                        rangeContractIsValid(
-                                TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal).get(),
+                    isRangeGlobalGValueContract(
+                                TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),
                                 expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                         hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
@@ -261,16 +262,16 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStep> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal);
+            final Optional<RangeGlobalStepInterface> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStep originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
+            final RangeGlobalStepInterface originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
                     beforeApplying().
-                        rangeContractIsValid(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalGValueContract(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
-                        rangeContractIsValid(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStep.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalGValueContract(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                         hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }
@@ -320,10 +321,8 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final List<RangeGlobalStep> originalRangeSteps = TraversalHelper.getStepsOfAssignableClass(RangeGlobalStep.class, traversal);
-
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
-            GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
+            GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance(), Collections.singletonList(GValueReductionStrategy.instance())).
                     beforeApplying().
                         hasVariables(expectedVariables).
                     afterApplying().

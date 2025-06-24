@@ -16,25 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-/**
- * Defines the contract for {@code range} related steps.
- * @param <V> the type that controls the start and end of the range
- */
-public interface RangeContract<V> extends StepContract {
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 
+public interface Predicated {
     /**
-     * Retrieves the lower bound of the range.
+     * Retrieves the step's predicate.
      *
-     * @return the value representing the lower bound of the range
+     * @return the predicate associated with the step
      */
-    public V getLowRange();
-
-    /**
-     * Retrieves the higher bound of the range.
-     *
-     * @return the higher bound of the range as an object of type V
-     */
-    public V getHighRange();
+    public P<?> getPredicate();
 }

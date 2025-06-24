@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailLocalStep<S> extends ScalarMapStep<S, S> implements TailContract<Long>, GValueContracting<TailContract<GValue<Long>>> {
+public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
 
     private final long limit;
 
@@ -79,17 +79,6 @@ public final class TailLocalStep<S> extends ScalarMapStep<S, S> implements TailC
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    @Override
-    public TailContract<GValue<Long>> getGValueContract() {
-        return this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
-    }
-
-    @Override
     public Long getLimit() {
         return limit;
     }

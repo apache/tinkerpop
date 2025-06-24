@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>>, TailContract<Long>, GValueContracting<TailContract<GValue<Long>>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
@@ -169,18 +169,6 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         });
     }
 
-    @Override
-    public TailContract<GValue<Long>> getGValueContract() {
-        //TODO better type safety?
-        return (TailContract<GValue<Long>>) this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
-    }
-
-    @Override
     public Long getLimit() {
         return limit;
     }

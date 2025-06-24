@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -44,7 +42,7 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>>, RangeContract<Long>, GValueContracting<RangeContract<GValue<Long>>> {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>>, RangeGlobalStepInterface<S> {
 
     private long low;
     private long high;
@@ -184,17 +182,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });
-    }
-
-    @Override
-    public RangeContract<GValue<Long>> getGValueContract() {
-        //TODO better type safety?
-        return (RangeContract<GValue<Long>>) this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
     }
 
     ////////////////

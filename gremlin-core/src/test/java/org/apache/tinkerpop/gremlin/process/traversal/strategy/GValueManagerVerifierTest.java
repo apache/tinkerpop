@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier.AfterVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier.BeforeVerifier;
@@ -207,42 +207,6 @@ public class GValueManagerVerifierTest {
         GValueManagerVerifier.verify(traversal, NoOpStrategy.instance())
                 .beforeApplying()
                 .stepsOfClassAreParameterized(true, HasStep.class);
-    }
-
-    /**
-     * Tests the edgeLabelContractIsValid method of AbstractVerifier.
-     */
-    @Test
-    public void testEdgeLabelContractIsValid() {
-        // Create a traversal with edge labels
-        final Traversal.Admin<?, ?> traversal = __.V().out(GValue.of("x", "knows"), GValue.of("y", "created")).asAdmin();
-
-        // Get the VertexStep from the traversal
-        final VertexStep<?> vertexStep = TraversalHelper.getStepsOfClass(VertexStep.class, traversal).get(0);
-
-        // Verify that the EdgeLabelContract is valid
-        GValueManagerVerifier.verify(traversal, NoOpStrategy.instance())
-                .beforeApplying()
-                .edgeLabelContractIsValid(vertexStep, 2, 
-                        new String[]{"x", "y"}, 
-                        new String[]{"knows", "created"});
-    }
-
-    /**
-     * Tests the rangeContractIsValid method of AbstractVerifier.
-     */
-    @Test
-    public void testRangeContractIsValid() {
-        // Create a traversal with a range step
-        final Traversal.Admin<?, ?> traversal = __.V().range(GValue.ofLong("low", 1L), GValue.ofLong("high", 10L)).asAdmin();
-
-        // Get the RangeGlobalStep from the traversal
-        final RangeGlobalStep<?> rangeStep = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal).get(0);
-
-        // Verify that the RangeContract is valid
-        GValueManagerVerifier.verify(traversal, NoOpStrategy.instance())
-                .beforeApplying()
-                .rangeContractIsValid(rangeStep, 1, 10, "low", "high");
     }
 
     /**

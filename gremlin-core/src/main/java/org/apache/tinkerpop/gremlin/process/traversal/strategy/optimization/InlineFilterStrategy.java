@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
@@ -124,7 +125,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             }
 
             // merged has() steps so GValue state from later has() steps must be merged into the previous has()
-            manager.copyRegistryState((Step) step, previousStep);
+            //TODO:: manager.copyRegistryState((Step) step, previousStep);
 
             TraversalHelper.copyLabels(step, previousStep, false);
             TraversalHelper.removeStep(step, traversal);
@@ -187,7 +188,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 if (!edgeLabelGValues.isEmpty()) {
                     final GValue<String>[] edgeLabelGValuesArray = edgeLabelGValues.stream().toArray(GValue[]::new);
                     final StepContract contract = new DefaultEdgeLabelContract<>(edgeLabelGValuesArray);
-                    manager.register(newVertexStep, contract);
+                    // TODO:: manager.register(newVertexStep, contract);
                 }
                 return true;
             }
@@ -258,10 +259,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             final HasStep hasStep = new HasStep<>(traversal, new HasContainer(key, predicate));
             TraversalHelper.replaceStep(step, hasStep, traversal);
             stepsToRemoveFromManager.forEach(s -> {
-                traversal.getGValueManager().pinGValues(s);
-                traversal.getGValueManager().remove(s);
+                if (s instanceof GValueStepPlaceholder) {
+                    traversal.getGValueManager().pinGValues(((GValueStepPlaceholder<?, ?>) s).getGValues()); //TODO
+                }
             });
-            traversal.getGValueManager().register(hasStep, hasStep);
             TraversalHelper.copyLabels(step, hasStep, false);
             for (final String label : labels) {
                 hasStep.addLabel(label);

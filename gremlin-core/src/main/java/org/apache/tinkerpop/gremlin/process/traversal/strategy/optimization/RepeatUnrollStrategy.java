@@ -97,10 +97,10 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                         final Traversal.Admin<?, ?> repeatClone = repeatTraversal.clone();
                         final List<Step> repeatSteps = repeatTraversal.getSteps();
                         for (int ix = 0; ix < repeatSteps.size(); ix++) {
-                            manager.copyRegistryState(repeatSteps.get(ix), repeatClone.getSteps().get(ix));
+                            // TODO:: manager.copyRegistryState(repeatSteps.get(ix), repeatClone.getSteps().get(ix));
 
                             // todo: PathProcessorStrategy showed some state can hang about in the manager - really need to investigate clone more
-                            repeatClone.getGValueManager().remove(repeatSteps.get(ix)); // don't need to pin GValues as RepeatUnroll isn't based on specific GValue Values
+                            // TODO:: repeatClone.getGValueManager().remove(repeatSteps.get(ix)); // don't need to pin GValues as RepeatUnroll isn't based on specific GValue Values
                         }
 
                         TraversalHelper.insertTraversal(insertIndex, repeatClone, traversal);
@@ -126,7 +126,7 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
                     // drop the steps that have GValue state from the manager. since we're killing the entire traversal
                     // we must remove the child steps too
-                    TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, repeatTraversal).forEach(manager::remove);
+                    // TODO:: TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, repeatTraversal).forEach(manager::remove);
                 }
             }
         }

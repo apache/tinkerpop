@@ -18,17 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import java.io.Serializable;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 
-public class DefaultElementIdsContract<V> implements ElementIdsContract<V>, Serializable {
-    private V[] ids;
+/**
+ * Defines the contract for {@code range} related steps.
+ */
+public interface RangeGlobalStepInterface<S> extends Step<S, S> {
 
-    public DefaultElementIdsContract(V[] ids) {
-        this.ids = ids;
-    }
+    /**
+     * Retrieves the lower bound of the range.
+     *
+     * @return the value representing the lower bound of the range
+     */
+    public Long getLowRange();
 
-    @Override
-    public V[] getIds() {
-        return ids;
-    }
+    /**
+     * Retrieves the higher bound of the range.
+     *
+     * @return the higher bound of the range as an object of type V
+     */
+    public Long getHighRange();
 }

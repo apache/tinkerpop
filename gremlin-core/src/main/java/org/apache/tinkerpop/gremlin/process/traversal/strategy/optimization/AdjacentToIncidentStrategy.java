@@ -127,7 +127,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         }
 
         // the newStep assumes the StepContract of original step
-        traversal.getGValueManager().copyRegistryState(step, newStep);
+        // TODO:: traversal.getGValueManager().copyRegistryState(step, newStep);
         TraversalHelper.replaceStep(step, newStep, traversal);
     }
 

@@ -20,13 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -41,7 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +45,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
-        implements Writing<Event.EdgeAddedEvent>, TraversalParent, Scoping, FromToModulating, AddEdgeContract<String, Traversal.Admin<?,?>, Object, Object>, GValueContracting<AddEdgeContract<GValue<String>, GValue<Vertex>, ?, GValue<?>>> {
+        implements AddEdgeStepInterface<S>, Writing<Event.EdgeAddedEvent> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -186,37 +180,22 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     }
 
     @Override
-    public Traversal.Admin<?, ?> getFrom() {
-        return parameters.get(FROM, ()->(Traversal.Admin<?, ?>) null).get(0);
-    }
-
-    @Override
-    public Traversal.Admin<?, ?> getTo() {
-        return parameters.get(TO, ()->(Traversal.Admin<?, ?>) null).get(0);
-    }
-
-    @Override
-    public AddEdgeContract<GValue<String>, GValue<Vertex>, ?, GValue<?>> getGValueContract() {
-        return (AddEdgeContract<GValue<String>, GValue<Vertex>, ?, GValue<?>>) traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return traversal.getGValueManager().isParameterized(this);
-    }
-
-    @Override
-    public Map<Object, Object> getProperties() {
-        return Collections.unmodifiableMap(parameters.getRaw());
-    }
-
-    @Override
-    public void addProperty(final Object key, final Object value) {
+    public void addProperty(Object key, Object value) {
         configure(key, value);
     }
 
     @Override
-    public Object removeProperty(Object key) {
-        return parameters.remove(key);
+    public Map<Object, List<Object>> getProperties() {
+        return parameters.getRaw(T.label, TO, FROM); //TODO:: any more exclusions needed?
+    }
+
+    @Override
+    public Vertex getFrom() {
+        return (Vertex) parameters.get(FROM, ()->null).get(0);
+    }
+
+    @Override
+    public Vertex getTo() {
+        return (Vertex) parameters.get(TO, ()->null).get(0);
     }
 }

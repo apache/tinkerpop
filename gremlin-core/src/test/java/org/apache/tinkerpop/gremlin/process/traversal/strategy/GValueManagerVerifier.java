@@ -24,8 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.EdgeLabelContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -36,7 +37,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -109,9 +109,9 @@ public class GValueManagerVerifier {
         public AfterVerifier<S, E> afterApplying() {
             // Capture pre-strategy state
             final GValueManager manager = traversal.getGValueManager();
-            final Map<Step, Set<GValue>> preStepGValues = manager.gatherStepGValues(traversal);
+            final Map<Step, Set<GValue<?>>> preStepGValues = TraversalHelper.gatherStepGValues(traversal);
             final Set<String> preVariables = manager.getVariableNames();
-            final Set<GValue> preGValues = manager.getGValues();
+            final Set<GValue<?>> preGValues = manager.getGValues();
 
             // Apply strategies
             final TraversalStrategies traversalStrategies = new DefaultTraversalStrategies();
@@ -121,26 +121,7 @@ public class GValueManagerVerifier {
             traversal.setStrategies(traversalStrategies);
             traversal.applyStrategies();
 
-            verifyStateIsConsistent();
-
             return new AfterVerifier<>(traversal, preVariables, preStepGValues, preGValues);
-        }
-
-        /**
-         * Verifies that the manager is not referencing any steps that aren't in the traversal after strategy
-         * application.
-         */
-        private void verifyStateIsConsistent() {
-            // Get all steps in the traversal including nested ones
-            final List<Step> allSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, traversal);
-            final GValueManager manager = traversal.getGValueManager();
-
-            // Check that manager only references valid steps
-            final Set<Step> stepsInManager = manager.getSteps();
-            for (Step step : stepsInManager) {
-                assertThat("GValueManager references step not in traversal: " + step,
-                        allSteps.stream().anyMatch(s -> s == step), is(true));
-            }
         }
     }
 
@@ -173,14 +154,14 @@ public class GValueManagerVerifier {
      */
     public static class AfterVerifier<S, E> extends AbstractVerifier<S, E, AfterVerifier<S, E>> {
         protected final Set<String> preVariables;
-        protected final Set<GValue> preGValues;
-        protected final Map<Step, Set<GValue>> preStepGValues;
+        protected final Set<GValue<?>> preGValues;
+        protected final Map<Step, Set<GValue<?>>> preStepGValues;
         protected final Map<Step, Set<String>> preStepVariables;
 
         private AfterVerifier(final Traversal.Admin<S, E> traversal,
                               final Set<String> preVariables,
-                              final Map<Step, Set<GValue>> preStepGValues,
-                              final Set<GValue> preGValues) {
+                              final Map<Step, Set<GValue<?>>> preStepGValues,
+                              final Set<GValue<?>> preGValues) {
             super(traversal);
             this.preVariables = preVariables;
             this.preStepGValues = preStepGValues;
@@ -229,7 +210,7 @@ public class GValueManagerVerifier {
             preSteps.addAll(preStepGValues.keySet());
 
             final Set<Step> currentSteps = Collections.newSetFromMap(new IdentityHashMap<>());
-            currentSteps.addAll(manager.getSteps());
+            currentSteps.addAll(TraversalHelper.gatherGValuePlaceholders(traversal));
 
             assertEquals("Steps in GValueManager should be unchanged", preSteps.size(), currentSteps.size());
 
@@ -240,27 +221,23 @@ public class GValueManagerVerifier {
                         found = true;
 
                         // Verify that the step has the same GValues
-                        final Set<GValue> preGValuesForStep = preStepGValues.get(preStep);
-                        final Set<GValue> currentGValuesForStep = manager.getGValues(currentStep).stream()
-                                .collect(Collectors.toSet());
+                        final Set<GValue<?>> preGValuesForStep = preStepGValues.get(preStep);
+                        final Set<GValue<?>> currentGValuesForStep = currentStep instanceof GValueStepPlaceholder ?
+                                ((GValueStepPlaceholder<?, ?>) currentStep).getGValues() :
+                                Collections.emptySet();
                         assertEquals("GValues for step should be unchanged", preGValuesForStep, currentGValuesForStep);
 
                         // Verify that the step has the same variables
                         final Set<String> preVariablesForStep = preStepVariables.get(preStep);
                         if (preVariablesForStep != null) {
-                            final Set<String> currentVariablesForStep = manager.getGValues(currentStep).stream()
+                            final Set<String> currentVariablesForStep = currentGValuesForStep.stream()
                                     .filter(GValue::isVariable)
                                     .map(GValue::getName)
                                     .collect(Collectors.toSet());
                             assertEquals("Variables for step should be unchanged", preVariablesForStep, currentVariablesForStep);
                         }
 
-                        // Verify that the step contract is the same if it exists
-                        if (manager.isParameterized(currentStep)) {
-                            final StepContract contract = manager.getStepContract(currentStep);
-                            assertNotNull("Step contract should exist", contract);
-                        }
-
+                        // TODO:: Verify that the GValues are the same if they exist
                         break;
                     }
                 }
@@ -268,7 +245,7 @@ public class GValueManagerVerifier {
             }
 
             // Verify that the same GValues are in the manager
-            final Set<GValue> currentGValues = manager.getGValues();
+            final Set<GValue<?>> currentGValues = manager.getGValues();
             assertEquals("GValues in GValueManager should be unchanged", preGValues, currentGValues);
 
             return this;
@@ -299,7 +276,9 @@ public class GValueManagerVerifier {
          * {@link GValue} you can have scenarios where there is a mix.
          */
         public T managerIsEmpty() {
-            assertThat(String.format("GValueManager should be empty but contains [%s]", manager.getGValues()), manager.hasVariables(), is(false));
+            assertThat(String.format("All GValues should be pinned, but contains unpinned variables [%s]", manager.getUnpinnedVariableNames()), manager.hasUnpinnedVariables(), is(false));
+            List<GValueStepPlaceholder> gValueSteps = TraversalHelper.getStepsOfAssignableClassRecursively(GValueStepPlaceholder.class, traversal);
+            assertThat(String.format("No GValue placeholder steps should be in the traversal, but contains [%s]", gValueSteps), gValueSteps.isEmpty());
             return self();
         }
 
@@ -322,7 +301,7 @@ public class GValueManagerVerifier {
             assertThat("At least one step must be provided", steps.length > 0, is(true));
             for (Step step : steps) {
                 final GValueManager manager = step.getTraversal().getGValueManager();
-                assertThat("Step should not be parameterized", manager.isParameterized(step), is(isParameterized));
+                assertThat("Step should not be parameterized", step instanceof GValueStepPlaceholder && ((GValueStepPlaceholder<?, ?>) step).isParameterized(), is(isParameterized));
             }
             return self();
         }
@@ -336,42 +315,18 @@ public class GValueManagerVerifier {
         }
 
         /**
-         * Verifies that an EdgeLabelContract is properly set up
-         */
-        public T edgeLabelContractIsValid(final Step step, final int expectedCount,
-                                          final String[] expectedNames,
-                                          final String[] expectedValues) {
-            assertThat("Step should be parameterized", manager.isParameterized(step), is(true));
-
-            final EdgeLabelContract<GValue<String>> contract = manager.getStepContract(step);
-            assertNotNull("EdgeLabelContract should exist", contract);
-
-            final GValue<String>[] edgeLabels = contract.getEdgeLabels();
-            assertEquals("EdgeLabelContract should have correct label count",
-                    expectedCount, edgeLabels.length);
-
-            for (int i = 0; i < expectedCount; i++) {
-                assertEquals("Label name should match", expectedNames[i], edgeLabels[i].getName());
-                assertEquals("Label value should match", expectedValues[i], edgeLabels[i].get());
-            }
-
-            return self();
-        }
-
-        /**
          * Verifies that a RangeContract is properly set up
          */
-        public T rangeContractIsValid(final Step step, final long expectedLow, final long expectedHigh,
-                                      final String lowName, final String highName) {
-            assertThat("Step should be parameterized", manager.isParameterized(step), is(true));
+        public T isRangeGlobalGValueContract(final Step step, final long expectedLow, final long expectedHigh,
+                                             final String lowName, final String highName) {
+            assertThat("Step should be parameterized", step instanceof RangeGlobalStepPlaceholder && ((RangeGlobalStepPlaceholder<?>) step).isParameterized(), is(true));
 
-            final RangeContract<GValue<Long>> contract = manager.getStepContract(step);
-            assertNotNull("RangeContract should exist", contract);
+            RangeGlobalStepPlaceholder<?> rangeGValueContract = (RangeGlobalStepPlaceholder<?>) step;
 
-            assertEquals("Low range should match", expectedLow, contract.getLowRange().get().longValue());
-            assertEquals("High range should match", expectedHigh, contract.getHighRange().get().longValue());
-            assertEquals("Low range name should match", lowName, contract.getLowRange().getName());
-            assertEquals("High range name should match", highName, contract.getHighRange().getName());
+            assertEquals("Low range should match", expectedLow, rangeGValueContract.getLowRangeGValueSafe());
+            assertEquals("High range should match", expectedHigh, rangeGValueContract.getHighRangeGValueSafe());
+            assertEquals("Low range name should match", lowName, rangeGValueContract.getLowName());
+            assertEquals("High range name should match", highName, rangeGValueContract.getHighName());
 
             return self();
         }

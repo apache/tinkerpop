@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -40,7 +38,7 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeContract<Long>, GValueContracting<RangeContract<GValue<Long>>> {
+public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeLocalStepInterface<S> {
 
     private long low;
     private long high;
@@ -161,16 +159,5 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements Rang
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
-    }
-
-    @Override
-    public RangeContract<GValue<Long>> getGValueContract() {
-        //TODO better type safety?
-        return (RangeContract<GValue<Long>>) this.traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return this.traversal.getGValueManager().isParameterized(this);
     }
 }

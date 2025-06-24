@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -384,22 +383,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         /**
-         * Adds a step to the end of the current traversal while registering it with a specified contract. Internally,
-         * the {@link StepContract} will get registered to the {@link GValueManager} for the traversal so that its state
-         * is automatically maintained.
-         *
-         * @param <E2>       The type of the elements output by the step.
-         * @param step       The step to be added to the traversal.
-         * @param contract   The contract under which the step is registered.
-         * @return The updated traversal administration instance including the new step.
-         * @throws IllegalStateException if the step cannot be properly registered or added.
-         */
-        public default <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step, final StepContract contract) throws IllegalStateException {
-            getGValueManager().register(step, contract);
-            return this.addStep(step);
-        }
-
-        /**
          * Add a {@link Step} to an arbitrary point in the traversal.
          *
          * @param index the location in the traversal to insert the step
@@ -410,24 +393,6 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
          * @throws IllegalStateException if the {@link TraversalStrategies} have already been applied
          */
         public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
-
-        /**
-         * Adds a step to the traversal at the specified index with an associated contract. Internally, the
-         * {@link StepContract} will get registered to the {@link GValueManager} for the traversal so that its state
-         * is automatically maintained.
-         *
-         * @param <S2> The source element type for the traversal.
-         * @param <E2> The end element type for the traversal.
-         * @param index The position in the traversal to insert the step.
-         * @param step The step to be added.
-         * @param contract The contract associated with the step.
-         * @return The modified traversal with the new step added.
-         * @throws IllegalStateException If the step cannot be registered or added due to invalid state.
-         */
-        public default <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step, final StepContract contract) throws IllegalStateException {
-            getGValueManager().register(step, contract);
-            return this.addStep(index, step);
-        }
 
         /**
          * Remove a {@link Step} from the traversal. Those overriding this method should take care to reset state for

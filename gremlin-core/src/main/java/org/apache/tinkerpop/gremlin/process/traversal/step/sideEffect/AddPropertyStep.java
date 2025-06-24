@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*;
@@ -52,7 +53,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, TraversalParent, Scoping, AddPropertyContract<Object, Object>, GValueContracting<AddPropertyContract<?, GValue<Object>>> {
+        implements AddPropertyStepInterface<S>, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
@@ -199,6 +200,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         this.parameters.getTraversals().forEach(this::integrateChild);
     }
 
+    @Override
     public VertexProperty.Cardinality getCardinality() {
         return cardinality;
     }
@@ -213,40 +215,5 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
         final AddPropertyStep<S> clone = (AddPropertyStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
         return clone;
-    }
-
-    @Override
-    public Map<Object, Object> getProperties() {
-        throw new UnsupportedOperationException("TODO:");
-    }
-
-    @Override
-    public void addProperty(Object key, Object value) {
-        configure(key, value);
-    }
-
-    @Override
-    public AddPropertyContract<?, GValue<Object>> getGValueContract() {
-        return (AddPropertyContract<?, GValue<Object>>) traversal.getGValueManager().getStepContract(this);
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return traversal.getGValueManager().isParameterized(this);
-    }
-
-    @Override
-    public String getKey() {
-        throw new UnsupportedOperationException("TODO:");
-    }
-
-    @Override
-    public Object getValue() {
-        throw new UnsupportedOperationException("TODO:");
-    }
-
-    @Override
-    public Object removeProperty(Object key) {
-        return parameters.remove(key);
     }
 }
