@@ -301,6 +301,17 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeN(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+
+            var serializedEnum = writer.WriteObject(N.Byte);
+
+            var expectedGraphSON = "{\"@type\":\"g:N\",\"@value\":\"byte\"}";
+            Assert.Equal(expectedGraphSON, serializedEnum);
+        }
+
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldSerializeList(int version)
         {
             var writer = CreateGraphSONWriter(version);

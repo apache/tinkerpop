@@ -359,6 +359,40 @@ var Merge = merges{
 	InV:      "inV",
 }
 
+
+type n string
+
+type ns struct {
+	// number type byte
+	NByte n
+	// number type short
+	NShort n
+	// number type int
+	NInt n
+	// number type long
+	NLong n
+    // number type float
+    NFloat n
+    // number type double
+    NDouble n
+    // number type bigInt
+    NBigInt n
+    // number type bigDecimal
+    NBigDecimal n
+}
+
+// Merge is a set of operations for Vertex and Edge merging.
+var N = ns{
+	NByte:        "nbyte",
+	NShort:       "nshort",
+	NInt:         "nint",
+	NLong:        "nlong",
+    NFloat:       "nfloat",
+    NDouble:      "ndouble",
+    NBigInt:      "nbigInt",
+    NBigDecimal:  "nbigDecimal",
+}
+
 type operator string
 
 type operators struct {
