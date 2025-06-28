@@ -19,46 +19,54 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsStep<S> extends FilterStep<S> implements IsStepInterface<S> {
+public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S>, IsStepInterface<S> {
 
     private P<S> predicate;
 
-    public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
+    public IsStepPlaceholder(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
         this.predicate = predicate;
+        traversal.getGValueManager().track(predicate.getGValues());
     }
 
     @Override
-    protected boolean filter(final Traverser.Admin<S> traverser) {
-        return this.predicate.test(traverser.get());
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, this.predicate);
+    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
+        throw new IllegalStateException("IsStepPlaceholder is not executable");
     }
 
     @Override
     public P<S> getPredicate() {
+        if (predicate.isParameterized()) {
+            traversal.getGValueManager().pinGValues(predicate.getGValues());
+        }
+        return this.predicate;
+    }
+
+    public P<S> getPredicateGValueSafe() {
         return this.predicate;
     }
 
     @Override
-    public IsStep<S> clone() {
-        final IsStep<S> clone = (IsStep<S>) super.clone();
+    public IsStepPlaceholder<S> clone() {
+        final IsStepPlaceholder<S> clone = (IsStepPlaceholder<S>) super.clone();
         clone.predicate = this.predicate.clone();
         return clone;
     }
@@ -73,4 +81,24 @@ public final class IsStep<S> extends FilterStep<S> implements IsStepInterface<S>
         return EnumSet.of(TraverserRequirement.OBJECT);
     }
 
+    @Override
+    public Step<S, S> asConcreteStep() {
+        //TODO:: does the predicate need any altering?
+        return new IsStep<>(traversal, predicate);
+    }
+
+    @Override
+    public boolean isParameterized() {
+        return predicate.isParameterized();
+    }
+
+    @Override
+    public void updateVariable(String name, Object value) {
+        predicate.updateVariable(name, (S) value);
+    }
+
+    @Override
+    public Collection<GValue<?>> getGValues() {
+        return predicate.getGValues();
+    }
 }

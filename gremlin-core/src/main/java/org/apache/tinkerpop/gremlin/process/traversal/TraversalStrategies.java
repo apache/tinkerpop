@@ -301,7 +301,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     OrderLimitStrategy.instance(),
                     PathProcessorStrategy.instance(),
                     ComputerFinalizationStrategy.instance(),
-                    GValueReductionStrategy.instance(),
+                    // TODO:: Do we need GValueReductionStrategy here? No other strategy is repeated for GraphComputer
                     ComputerVerificationStrategy.instance());
             registerStrategies(GraphComputer.class, graphComputerStrategies);
         }

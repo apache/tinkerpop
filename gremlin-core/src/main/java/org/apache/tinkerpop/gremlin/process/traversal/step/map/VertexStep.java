@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.EdgeLabelContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -47,7 +45,7 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring, EdgeLabelContract<String>, GValueContracting<EdgeLabelContract<GValue<String>>> {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring, VertexStepInterface<E> {
 
     protected Parameters parameters = new Parameters();
     private final String[] edgeLabels;
@@ -78,18 +76,22 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
                 (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
     }
 
+    @Override
     public Direction getDirection() {
         return this.direction;
     }
 
+    @Override
     public String[] getEdgeLabels() {
         return this.edgeLabels;
     }
 
+    @Override
     public Class<E> getReturnClass() {
         return this.returnClass;
     }
 
+    @Override
     public void reverseDirection() {
         this.direction = this.direction.opposite();
     }
@@ -97,6 +99,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     /**
      * Determines if the step returns vertices.
      */
+    @Override
     public boolean returnsVertex() {
         return this.returnClass.equals(Vertex.class);
     }
@@ -104,6 +107,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     /**
      * Determines if the step returns edges.
      */
+    @Override
     public boolean returnsEdge() {
         return this.returnClass.equals(Edge.class);
     }
@@ -135,15 +139,5 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     @Override
     public void close() throws Exception {
         closeIterator();
-    }
-
-    @Override
-    public EdgeLabelContract<GValue<String>> getGValueContract() {
-        return null;
-    }
-
-    @Override
-    public boolean hasGValueContract() {
-        return false;
     }
 }

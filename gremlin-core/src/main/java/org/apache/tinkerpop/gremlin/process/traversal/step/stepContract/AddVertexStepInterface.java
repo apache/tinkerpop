@@ -18,20 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-public class DefaultCallContract<V> implements CallContract<V> {
-    private V staticParams;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-    public DefaultCallContract(V staticParams) {
-        this.staticParams = staticParams;
-    }
+import java.util.List;
+import java.util.Map;
 
-    @Override
-    public V getStaticParams() {
-        return staticParams;
-    }
+/**
+ * Defines the contract for {@code range} related steps.
+ */
+public interface AddVertexStepInterface<S> extends Step<S, Vertex>, PropertyAdding {
 
-    @Override
-    public void setStaticParams(V params) {
-        throw new UnsupportedOperationException();
-    }
+    public String getLabel();
+    public boolean hasUserProvidedLabel();
 }

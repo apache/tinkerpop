@@ -18,42 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-public class DefaultMergeElementContract<V> implements MergeElementContract<V> {
-    private V mergeMap;
-    private V onCreateMap;
-    private V onMatchMap;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
-    public DefaultMergeElementContract(V mergeMap) {
-        this.mergeMap = mergeMap;
-    }
+import java.util.Set;
 
-    @Override
-    public void setMergeMap(V mergeMap) {
-        this.mergeMap = mergeMap;
-    }
+/**
+ * Defines the contract for steps containing a single {@link P}.
+ */
+public interface IsStepInterface<S> extends Step<S, S> {
 
-    @Override
-    public void setOnCreateMap(V onCreateMap) {
-        this.onCreateMap = onCreateMap;
-    }
+    /**
+     * Retrieves the step's predicate.
+     *
+     * @return the predicate associated with the step
+     */
+    public P<?> getPredicate();
 
-    @Override
-    public void setOnMatchMap(V onMatchMap) {
-        this.onMatchMap = onMatchMap;
-    }
-
-    @Override
-    public V getMergeMap() {
-        return mergeMap;
-    }
-
-    @Override
-    public V getOnCreateMap() {
-        return onCreateMap;
-    }
-
-    @Override
-    public V getOnMatchMap() {
-        return onMatchMap;
-    }
+    public Set<TraverserRequirement> getRequirements();
 }

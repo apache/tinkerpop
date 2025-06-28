@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -298,7 +299,7 @@ public class CountStrategyTest {
             // After applying strategies, all IsSteps should have no GValue references
             GValueManagerVerifier.verify(traversal, CountStrategy.instance()).
                     beforeApplying().
-                    stepsOfClassAreParameterized(true, IsStep.class).
+                    stepsOfClassAreParameterized(true, IsStepInterface.class).
                     afterApplying().
                     allGValuesArePinned();
         }
@@ -329,7 +330,7 @@ public class CountStrategyTest {
             // After applying strategies, all IsSteps should have no GValue references
             GValueManagerVerifier.verify(traversal, CountStrategy.instance()).
                     beforeApplying().
-                    stepsOfClassAreParameterized(true, IsStep.class).
+                    stepsOfClassAreParameterized(true, IsStepInterface.class).
                     afterApplying().
                     variablesArePreserved();
         }

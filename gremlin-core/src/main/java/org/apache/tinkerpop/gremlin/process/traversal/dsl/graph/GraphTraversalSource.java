@@ -29,9 +29,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
@@ -39,9 +39,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultAddVertexContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultCallContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.DefaultMergeElementContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -323,7 +320,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
     }
 
     /**
@@ -337,7 +334,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabelTraversal));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabelTraversal.asAdmin()));
     }
 
     /**
@@ -349,7 +346,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, (String) null));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, (String) null));
     }
 
     /**
@@ -363,7 +360,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel.get())); //TODO
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
     }
 
     /**

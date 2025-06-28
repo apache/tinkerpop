@@ -37,6 +37,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -90,7 +92,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
         for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
             if (i < size - 1 && doStrategy(curr)) {
-                final IsStep isStep = (IsStep) traversal.getSteps().get(i + 1);
+                final IsStepInterface isStep = (IsStepInterface) traversal.getSteps().get(i + 1);
                 final P isStepPredicate = isStep.getPredicate();
                 Long highRange = null;
                 boolean useNotStep = false, dismissCountIs = false, hasGtOrLtNegative = false;
@@ -149,13 +151,6 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                 }
 
                 if (highRange != null) {
-                    // if this strategy decides it can add a limit() then it means we've accessed the GValue for
-                    // logic to reach this point and now intend to insert a new step based on that logic. by doing
-                    // this, we nullify the possibility of using that GValue for downstream optimizations as it
-                    // would tie the dynamic GValue to a statically constructed literal (i.e. the highRange) that
-                    // only applies for this current strategy application.
-                    traversal.getGValueManager().pinGValues(isStep.getPredicate().gValueRegistry.getGValues());
-
                     if (useNotStep || dismissCountIs) {
                         TraversalHelper.removeStep(isStep, traversal); // IsStep
                         TraversalHelper.removeStep(curr, traversal); // CountStep
@@ -226,8 +221,8 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
 
     private boolean doStrategy(final Step step) {
         if (!(step instanceof CountGlobalStep) ||
-                !(step.getNextStep() instanceof IsStep) ||
-                step.getPreviousStep() instanceof RangeGlobalStep) // if a RangeStep was provided, assume that the user knows what he's doing
+                !(step.getNextStep() instanceof IsStepInterface) ||
+                step.getPreviousStep() instanceof RangeGlobalStepInterface) // if a RangeStep was provided, assume that the user knows what he's doing
             return false;
 
         final Step parent = step.getTraversal().getParent().asStep();

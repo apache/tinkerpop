@@ -22,9 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.TailContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -32,13 +30,12 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
+public final class TailLocalStep<S> extends ScalarMapStep<S, S> implements TailLocalStepInterface<S> {
 
     private final long limit;
 

@@ -30,8 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.MergeElementContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -45,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
+public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
@@ -57,11 +55,11 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
         super(traversal, isStart);
     }
 
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         super(traversal, isStart, merge);
     }
 
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map<Object, Object>> mergeTraversal) {
         super(traversal, isStart, mergeTraversal);
     }
 
@@ -197,17 +195,17 @@ public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map> {
     }
 
     @Override
-    public Map<?, ?> getMergeMap() {
+    public Map<Object, Object> getMergeMap() {
         throw new UnsupportedOperationException("Cannot access merge map from step"); //TODO::
     }
 
     @Override
-    public Map<?, ?> getOnCreateMap() {
+    public Map<Object, Object> getOnCreateMap() {
         throw new UnsupportedOperationException("Cannot access onCreate map from step"); //TODO::
     }
 
     @Override
-    public Map<?, ?> getOnMatchMap() {
+    public Map<Object, Object> getOnMatchMap() {
         throw new UnsupportedOperationException("Cannot access onMatch map from step"); //TODO::
     }
 }

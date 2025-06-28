@@ -158,7 +158,7 @@ public class InlineFilterStrategyTest {
 
             GValueManagerVerifier.verify(original.asAdmin(), InlineFilterStrategy.instance(), extras)
                     .afterApplying()
-                    .managerIsEmpty();
+                    .allGValuesArePinned();
 
             assertEquals(repr, this.optimized, this.original);
         }

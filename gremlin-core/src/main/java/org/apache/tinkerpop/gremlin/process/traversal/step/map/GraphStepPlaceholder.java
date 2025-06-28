@@ -21,22 +21,21 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueStepPlaceholder<S, E>, GraphStepInterface<S, E> {
+public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueHolder<S, E>, GraphStepInterface<S, E> {
 
 //    private final Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
@@ -147,7 +146,7 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
     }
 
     @Override
-    public Set<GValue<?>> getGValues() {
+    public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         for (GValue<?> id : ids) {
             if (id.isVariable()) {

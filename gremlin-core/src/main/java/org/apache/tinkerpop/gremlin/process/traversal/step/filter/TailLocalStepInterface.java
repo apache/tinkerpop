@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-public interface CallContract<V> extends StepContract {
-    public V getStaticParams();
-    public void setStaticParams(final V params);
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+
+public interface TailLocalStepInterface<S> extends Step<S, S> {
+    Long getLimit();
 }

@@ -19,17 +19,19 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface HasContainerHolder extends StepContract {
+public interface HasContainerHolder<S, E> extends GValueHolder<S, E> { //TODO raw type
 
     public List<HasContainer> getHasContainers();
 
@@ -41,5 +43,28 @@ public interface HasContainerHolder extends StepContract {
 
     public default Collection<P<?>> getPredicates() {
         return getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
+    }
+
+    public default Step<S, E> asConcreteStep() {
+        return this; // TODO do we need to alter the predicates at all?
+    }
+
+    public default boolean isParameterized() {
+        return getPredicates().stream().anyMatch(P::isParameterized);
+    }
+
+    public default void updateVariable(final String name, final Object value) {
+        getPredicates().stream().map((p) -> {
+            p.updateVariable(name, value);
+            return p;
+        });
+    }
+
+    public default Collection<GValue<?>> getGValues() {
+        Set<GValue<?>> allGValues = new HashSet<>();
+        for (final P<?> p : getPredicates()) {
+            allGValues.addAll(p.getGValues());
+        }
+        return allGValues;
     }
 }

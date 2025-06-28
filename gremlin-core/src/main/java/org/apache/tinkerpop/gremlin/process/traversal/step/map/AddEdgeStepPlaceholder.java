@@ -24,19 +24,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -44,7 +46,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
-        implements AddEdgeStepInterface<S>, GValueStepPlaceholder<S, Edge>, PropertyAdding {
+        implements AddEdgeStepInterface<S>, GValueHolder<S, Edge> {
 
     private final Traversal.Admin<S,String> label;
     private Traversal.Admin<?,?> from;
@@ -62,6 +64,9 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
         super(traversal);
         this.label = edgeLabelTraversal;
+        if (edgeLabelTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().track(((GValueConstantTraversal<S, String>) edgeLabelTraversal).getGValue());
+        }
     }
 
     @Override
@@ -93,7 +98,28 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
 
     @Override
     protected Traverser.Admin<Edge> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("GraphStepGValueContract is not executable");
+        throw new IllegalStateException("GValuePlaceholder step is not executable");
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        if (label != null) {
+            hash ^= label.hashCode();
+        }
+        if (from != null) {
+            hash ^= from.hashCode();
+        }
+        if (to != null) {
+            hash ^= to.hashCode();
+        }
+        if (properties != null) {
+            for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+                hash ^= Objects.hashCode(entry.getKey());
+                hash ^= Objects.hashCode(entry.getValue());
+            };
+        }
+        return hash;
     }
 
     @Override
@@ -108,8 +134,8 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
             step.addFrom(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) to).getConstantTraversal() : to);
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
-            for (final Object value : entry.getValue()) {
-                step.addProperty(entry.getKey(), value);
+            for (Object value : entry.getValue()) {
+                step.addProperty(entry.getKey(), value instanceof GValue ? ((GValue<?>) value).get() : value);
             }
         }
 
@@ -218,7 +244,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
     }
 
     @Override
-    public Set<GValue<?>> getGValues() {
+    public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) label).getGValue());

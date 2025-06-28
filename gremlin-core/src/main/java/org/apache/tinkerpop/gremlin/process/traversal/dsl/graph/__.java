@@ -663,7 +663,7 @@ public class __ {
     /**
      * @see GraphTraversal#mergeV(GValue)
      */
-    public static <A> GraphTraversal<A, Vertex> mergeV(final GValue<Map<?, ?>> searchCreate) {
+    public static <A> GraphTraversal<A, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
         return __.<A>start().mergeV(searchCreate);
     }
 
@@ -712,7 +712,7 @@ public class __ {
     /**
      * @see GraphTraversal#mergeE(GValue)
      */
-    public static <A> GraphTraversal<A, Edge> mergeE(final GValue<Map<?, ?>> searchCreate) {
+    public static <A> GraphTraversal<A, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         return __.<A>start().mergeE(searchCreate);
     }
 

@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -47,7 +47,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
@@ -118,7 +117,8 @@ public final class TraversalHelper {
             } else if (step instanceof EdgeVertexStep) {
                 state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
-                for (final HasContainer hasContainer : ((HasContainerHolder) step).getHasContainers()) {
+                List<HasContainer> hasContainers = ((HasContainerHolder) step).getHasContainers();
+                for (final HasContainer hasContainer : hasContainers) {
                     if (!hasContainer.getKey().equals(T.id.getAccessor()))
                         return 'x';
                 }
@@ -192,7 +192,7 @@ public final class TraversalHelper {
     }
 
     /**
-     * Moves a step to a new position while maintaining any {@link StepContract} reference.
+     * Moves a step to a new position.
      *
      * @param stepToMove the step to move
      * @param indexToMoveTo the index in the traversal to move it to
@@ -788,28 +788,31 @@ public final class TraversalHelper {
      * @return the has container folded or appended traversal
      */
     public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
+        if (hasContainer.getPredicate().isParameterized()) {
+            traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
+        }
         if (traversal.getEndStep() instanceof HasContainerHolder) {
             ((HasContainerHolder) traversal.getEndStep()).addHasContainer(hasContainer);
             if (hasContainer.getPredicate().isParameterized()) {
-                traversal.getGValueManager().track(hasContainer.getPredicate().getGValueRegistry().getGValues());
+                traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
             }
             return traversal;
         } else {
             HasStep<?> step = new HasStep<>(traversal, hasContainer);
             if (hasContainer.getPredicate().isParameterized()) {
-                traversal.getGValueManager().track(hasContainer.getPredicate().getGValueRegistry().getGValues());
+                traversal.getGValueManager().track(hasContainer.getPredicate().getGValues());
             }
             return (T) traversal.addStep(step);
         }
     }
 
-    public static Map<Step, Set<GValue<?>>> gatherStepGValues(final Traversal.Admin<?, ?> traversal) {
-        Map<Step, Set<GValue<?>>> gValues = new HashMap<>();
+    public static Map<Step, Collection<GValue<?>>> gatherStepGValues(final Traversal.Admin<?, ?> traversal) {
+        Map<Step, Collection<GValue<?>>> gValues = new HashMap<>();
         applyTraversalRecursively(
                 (t) -> {
                     for (final Step step : traversal.getSteps()) {
-                        if (step instanceof GValueStepPlaceholder) {
-                            gValues.put(step, ((GValueStepPlaceholder) step).getGValues());
+                        if (step instanceof GValueHolder) {
+                            gValues.put(step, ((GValueHolder) step).getGValues());
                         }
                     }
                 },
@@ -822,7 +825,7 @@ public final class TraversalHelper {
         applyTraversalRecursively(
                 (t) -> {
                     for (final Step step : traversal.getSteps()) {
-                        if (step instanceof GValueStepPlaceholder) {
+                        if (step instanceof GValueHolder) {
                             steps.add(step);
                         }
                     }

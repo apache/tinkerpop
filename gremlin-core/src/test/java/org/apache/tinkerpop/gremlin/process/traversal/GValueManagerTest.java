@@ -20,35 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.CallContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.EdgeLabelContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.ElementIdsContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.MergeElementContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.PredicateContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.TailContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import static org.mockito.Mockito.withSettings;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class GValueManagerTest {
 
@@ -207,9 +185,4 @@ public class GValueManagerTest {
 //        verify(targetStep).addHasContainer(hasContainer2);
 //    }
 
-    /**
-     * Interface that combines Step and HasContainerHolder for testing.
-     */
-    private interface HasContainerHolderStep<S, E> extends Step<S, E>, HasContainerHolder {
-    }
 }

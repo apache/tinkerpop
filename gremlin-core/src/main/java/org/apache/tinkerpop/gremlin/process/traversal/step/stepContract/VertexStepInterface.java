@@ -18,9 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public interface AddPropertyContract<K, V> extends AddElementContract<K, V> {
-    public K getKey();
-    public V getValue();
+import java.util.Set;
+
+public interface VertexStepInterface<E extends Element> extends Step<Vertex, E> {
+    Direction getDirection();
+
+    String[] getEdgeLabels();
+
+    Class<E> getReturnClass();
+
+    void reverseDirection();
+
+    boolean returnsVertex();
+
+    boolean returnsEdge();
+
+    Set<TraverserRequirement> getRequirements();
 }

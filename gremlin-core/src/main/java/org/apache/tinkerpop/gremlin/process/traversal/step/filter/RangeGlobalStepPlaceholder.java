@@ -22,15 +22,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements GValueStepPlaceholder<S, S>, RangeGlobalStepInterface<S> {
+public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S>, RangeGlobalStepInterface<S> {
 
     private GValue<Long> low;
     private GValue<Long> high;
@@ -121,7 +122,7 @@ public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements 
     }
 
     @Override
-    public Set<GValue<?>> getGValues() {
+    public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         if (low.isVariable()) {
             gValues.add(low);

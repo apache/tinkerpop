@@ -24,10 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.EdgeLabelContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.StepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -101,15 +100,10 @@ public class GValueManagerVerifier {
             return new BeforeVerifier<>(traversal, this);
         }
 
-        /**
-         * Applies the strategies and returns the verifier while ensuring that the step state is consistent where
-         * every step in the manager is in the traversal and every step that is a parameterized {@link StepContract}
-         * is in the manager.
-         */
         public AfterVerifier<S, E> afterApplying() {
             // Capture pre-strategy state
             final GValueManager manager = traversal.getGValueManager();
-            final Map<Step, Set<GValue<?>>> preStepGValues = TraversalHelper.gatherStepGValues(traversal);
+            final Map<Step, Collection<GValue<?>>> preStepGValues = TraversalHelper.gatherStepGValues(traversal);
             final Set<String> preVariables = manager.getVariableNames();
             final Set<GValue<?>> preGValues = manager.getGValues();
 
@@ -155,12 +149,12 @@ public class GValueManagerVerifier {
     public static class AfterVerifier<S, E> extends AbstractVerifier<S, E, AfterVerifier<S, E>> {
         protected final Set<String> preVariables;
         protected final Set<GValue<?>> preGValues;
-        protected final Map<Step, Set<GValue<?>>> preStepGValues;
+        protected final Map<Step, Collection<GValue<?>>> preStepGValues;
         protected final Map<Step, Set<String>> preStepVariables;
 
         private AfterVerifier(final Traversal.Admin<S, E> traversal,
                               final Set<String> preVariables,
-                              final Map<Step, Set<GValue<?>>> preStepGValues,
+                              final Map<Step, Collection<GValue<?>>> preStepGValues,
                               final Set<GValue<?>> preGValues) {
             super(traversal);
             this.preVariables = preVariables;
@@ -221,9 +215,9 @@ public class GValueManagerVerifier {
                         found = true;
 
                         // Verify that the step has the same GValues
-                        final Set<GValue<?>> preGValuesForStep = preStepGValues.get(preStep);
-                        final Set<GValue<?>> currentGValuesForStep = currentStep instanceof GValueStepPlaceholder ?
-                                ((GValueStepPlaceholder<?, ?>) currentStep).getGValues() :
+                        final Collection<GValue<?>> preGValuesForStep = preStepGValues.get(preStep);
+                        final Collection<GValue<?>> currentGValuesForStep = currentStep instanceof GValueHolder ?
+                                ((GValueHolder<?, ?>) currentStep).getGValues() :
                                 Collections.emptySet();
                         assertEquals("GValues for step should be unchanged", preGValuesForStep, currentGValuesForStep);
 
@@ -277,8 +271,14 @@ public class GValueManagerVerifier {
          */
         public T managerIsEmpty() {
             assertThat(String.format("All GValues should be pinned, but contains unpinned variables [%s]", manager.getUnpinnedVariableNames()), manager.hasUnpinnedVariables(), is(false));
-            List<GValueStepPlaceholder> gValueSteps = TraversalHelper.getStepsOfAssignableClassRecursively(GValueStepPlaceholder.class, traversal);
-            assertThat(String.format("No GValue placeholder steps should be in the traversal, but contains [%s]", gValueSteps), gValueSteps.isEmpty());
+            List<GValueHolder> gValueSteps = TraversalHelper.getStepsOfAssignableClassRecursively(GValueHolder.class, traversal);
+
+            List<GValueHolder> parameterizedSteps = gValueSteps.stream().filter(GValueHolder::isParameterized).collect(Collectors.toList());
+            assertThat(String.format("No parameterized steps should be in the traversal, but contains [%s]", parameterizedSteps), parameterizedSteps.isEmpty());
+
+            // HasContainerHolder is the only permitable GValueHolder to remain, as only the predicate is reduced not the step itself.
+            gValueSteps = gValueSteps.stream().filter((s) -> !(s instanceof HasContainerHolder)).collect(Collectors.toList());
+            assertThat(String.format("No GValueHolders should be in the traversal except for HasContainerHolder, but contains [%s]", gValueSteps), gValueSteps.isEmpty());
             return self();
         }
 
@@ -301,7 +301,7 @@ public class GValueManagerVerifier {
             assertThat("At least one step must be provided", steps.length > 0, is(true));
             for (Step step : steps) {
                 final GValueManager manager = step.getTraversal().getGValueManager();
-                assertThat("Step should not be parameterized", step instanceof GValueStepPlaceholder && ((GValueStepPlaceholder<?, ?>) step).isParameterized(), is(isParameterized));
+                assertThat("Step should not be parameterized", step instanceof GValueHolder && ((GValueHolder<?, ?>) step).isParameterized(), is(isParameterized));
             }
             return self();
         }
@@ -345,6 +345,23 @@ public class GValueManagerVerifier {
             // Get variables from the current traversal and all child traversals
             final Set<String> currentVariables = manager.getVariableNames();
             assertEquals("Variables should match expected set", variables, currentVariables);
+            return self();
+        }
+
+        /**
+         * Verifies that specific variables exist.
+         */
+        public T hasUnpinnedVariables(final String... variables) {
+            return hasUnpinnedVariables(CollectionUtil.asSet(variables));
+        }
+
+        /**
+         * Verifies that specific variables exist.
+         */
+        public T hasUnpinnedVariables(final Set<String> variables) {
+            // Get variables from the current traversal and all child traversals
+            final Set<String> currentVariables = manager.getUnpinnedVariableNames();
+            assertEquals("Unpinned variables should match expected set", variables, currentVariables);
             return self();
         }
     }

@@ -19,12 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.Element;
-
-import java.util.Iterator;
-import java.util.function.Supplier;
 
 /**
  * Defines the contract for {@code range} related steps.

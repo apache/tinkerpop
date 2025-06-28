@@ -90,6 +90,9 @@ public class OrderLimitStrategyTest {
         public String[] expectedNames;
 
         @Parameterized.Parameter(value = 2)
+        public String[] expectedUnpinnedNames;
+
+        @Parameterized.Parameter(value = 3)
         public Collection<TraversalStrategy> additionalStrategies;
 
         @Parameterized.Parameters(name = "{0}")
@@ -98,16 +101,19 @@ public class OrderLimitStrategyTest {
                     {
                         __.order().limit(GValue.ofLong("x", 5L)).asAdmin(),
                         new String[]{"x"},
+                        new String[]{},
                         Collections.emptyList(),
                     },
                     {
                         __.out().order().range(GValue.ofLong("low", 3L), GValue.ofLong("high", 10L)).asAdmin(),
                         new String[]{"low", "high"},
+                        new String[]{"low"},
                         Collections.emptyList(),
                     },
                     {
                         __.order().select("a").limit(GValue.ofLong("x", 7L)).asAdmin(),
                         new String[]{"x"},
+                        new String[]{},
                         Collections.emptyList(),
                     }
             });
@@ -120,7 +126,7 @@ public class OrderLimitStrategyTest {
                     beforeApplying().
                         hasVariables(expectedNames).
                     afterApplying().
-                        allGValuesArePinned();
+                        hasUnpinnedVariables(expectedUnpinnedNames);
         }
     }
 }

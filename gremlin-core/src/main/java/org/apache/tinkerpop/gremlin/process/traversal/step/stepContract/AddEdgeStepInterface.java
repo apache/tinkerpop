@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -31,11 +32,9 @@ import java.util.Map;
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating {
+public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, PropertyAdding {
 
     public String getLabel();
-    public void addProperty(Object key, Object value);
-    public Map<Object, List<Object>> getProperties();
     public Vertex getFrom();
     public Vertex getTo();
 }

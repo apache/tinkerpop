@@ -41,11 +41,12 @@ public final class GValueManager implements Serializable, Cloneable {
     private final Map<String, GValue<?>> pinnedGValues = new HashMap<>();
 
     public GValueManager() {
-        this(Collections.EMPTY_MAP);
+        this(Collections.EMPTY_MAP, Collections.EMPTY_MAP);
     }
 
-    private GValueManager(final Map<String, GValue<?>> gValueRegistry) {
+    private GValueManager(final Map<String, GValue<?>> gValueRegistry, final Map<String, GValue<?>> pinnedGValues) {
         this.gValueRegistry.putAll(gValueRegistry);
+        this.pinnedGValues.putAll(pinnedGValues);
     }
 
     /**
@@ -56,11 +57,9 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param other the target {@code GValueManager} into which the current instance's registries will be merged
      */
     public void mergeInto(final GValueManager other) {
-        //TODO, how to proceed when locked? Often end up here with locked traversals in OLAP as Traversals are cloned after strategies have finished running.
-        // if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
-
         //TODO deal with conflicts
         other.gValueRegistry.putAll(gValueRegistry);
+        other.pinnedGValues.putAll(pinnedGValues);
     }
 
     /**
@@ -81,10 +80,24 @@ public final class GValueManager implements Serializable, Cloneable {
     }
 
     /**
+     * Gets the set of variable names used in this traversal which have not been pinned to specific values.
+     */
+    public Set<String> getPinnedVariableNames() {
+        return Collections.unmodifiableSet(pinnedGValues.keySet());
+    }
+
+    /**
      * Gets the set of {@link GValue} objects used in this traversal.
      */
     public Set<GValue<?>> getGValues() {
         return Collections.unmodifiableSet(new HashSet(gValueRegistry.values()));
+    }
+
+    /**
+     * Gets the set of pinned GValues used in this traversal.
+     */
+    public Set<GValue<?>> getPinnedGValues() {
+        return Collections.unmodifiableSet(new HashSet(pinnedGValues.values()));
     }
 
     /**
@@ -127,7 +140,7 @@ public final class GValueManager implements Serializable, Cloneable {
 
     @Override
     public GValueManager clone() {
-        return new GValueManager(gValueRegistry);
+        return new GValueManager(gValueRegistry, pinnedGValues);
     }
 
     /**

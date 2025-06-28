@@ -25,11 +25,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
@@ -42,18 +42,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected PBiPredicate<V, V> biPredicate;
     protected V value;
     protected V originalValue;
-
-    public GValueRegistry gValueRegistry;
+    protected Optional<GValue<V>> gValue = Optional.empty();
+    protected Optional<GValue<V>[]> gValues = Optional.empty();
 
     public P(final PBiPredicate<V, V> biPredicate, V value) {
         if (value instanceof GValue) {
-            gValueRegistry = new GValueRegistry(this, (GValue<V>) value);
+            this.gValue = Optional.of((GValue<V>) value);
             this.value = ((GValue<V>) value).get();
         } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
-            gValueRegistry = new GValueRegistry(this, GValue.ensureGValues(((List) value).toArray()));
+            this.gValues = Optional.of(GValue.ensureGValues(((List) value).toArray()));
             this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
         } else {
-            gValueRegistry = new GValueRegistry();
             this.value = value;
         }
         this.originalValue = this.value;
@@ -61,7 +60,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
-        gValueRegistry = new GValueRegistry(this, value);
+        this.gValue = Optional.of(value);
         this.value = value.get();
         this.originalValue = value.get();
         this.biPredicate = biPredicate;
@@ -294,40 +293,34 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public boolean isParameterized() {
-        return !gValueRegistry.isEmpty();
+        return gValue.isPresent() || gValues.isPresent();
     }
 
-    public GValueRegistry getGValueRegistry() {
-        return gValueRegistry;
-    }
-
-    public class GValueRegistry<T> implements Serializable {
-        private Map<P, GValue<T>> gValueRegistry = new IdentityHashMap<>();
-
-        public GValueRegistry() {}
-
-        public GValueRegistry(P predicate, GValue<T> gValue) {
-            gValueRegistry.put(predicate, gValue);
+    public void updateVariable(final String name, final Object value) {
+        if (this.gValue.isPresent() && name.equals(this.gValue.get().getName())) {
+            this.gValue = Optional.of(GValue.of(name, (V) value));
+            this.value = (V) value;
+            this.originalValue = (V) value; //TODO is this right?
         }
-
-        public GValueRegistry(P predicate, GValue<T>[] gValues) {
-            for (GValue<T> gValue : gValues) {
-                if (gValue.isVariable()) {
-                    gValueRegistry.put(predicate, gValue);
+        if (this.gValues.isPresent()) {
+            GValue<V>[] gValueArgs = this.gValues.get();
+            for (int i = 0; i < gValueArgs.length; i++) {
+                if (name.equals(gValueArgs[i].getName())) {
+                    gValueArgs[i] = GValue.of(name, (V) value);
+                    ((List<V>) value).set(i, (V) value);
                 }
             }
         }
+    }
 
-        public void addAll(final GValueRegistry other) {
-            this.gValueRegistry.putAll(other.gValueRegistry);
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> results = new HashSet<>();
+        if (gValue.isPresent()) {
+            results.add(gValue.get());
         }
-
-        public boolean isEmpty(){
-            return this.gValueRegistry.isEmpty();
+        if (gValues.isPresent()) {
+            results.addAll(Arrays.asList(gValues.get()));
         }
-
-        public Collection<GValue<T>> getGValues() {
-            return gValueRegistry.values();
-        }
+        return results;
     }
 }

@@ -22,12 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -50,7 +48,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<Vertex> {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -158,19 +156,18 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         return clone;
     }
 
+    @Override
     public String getLabel() {
         return parameters.get(T.label, ()->"Edge").get(0);
     }
 
-    public Map<Object, Object> getProperties() {
+    @Override
+    public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
     }
 
+    @Override
     public void addProperty(final Object key, final Object value) {
         configure(key, value);
-    }
-
-    public Object removeProperty(final Object key) {
-        return parameters.remove(key);
     }
 }

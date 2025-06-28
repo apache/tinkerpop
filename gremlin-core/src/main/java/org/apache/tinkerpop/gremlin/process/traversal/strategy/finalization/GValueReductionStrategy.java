@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -41,8 +41,8 @@ public final class GValueReductionStrategy extends AbstractTraversalStrategy<Tra
             // we get accused of concurrentmodification if we try a for(Iterable)
             final List<Step> steps = traversal.getSteps();
             for (int i = 0; i < steps.size(); i++) {
-                if (steps.get(i) instanceof GValueStepPlaceholder) {
-                    ((GValueStepPlaceholder) steps.get(i)).reduce();
+                if (steps.get(i) instanceof GValueHolder) {
+                    ((GValueHolder) steps.get(i)).reduce();
                 }
             }
         }, traversal);

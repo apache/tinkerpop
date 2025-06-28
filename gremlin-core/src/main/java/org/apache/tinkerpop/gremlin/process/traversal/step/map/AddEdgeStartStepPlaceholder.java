@@ -24,13 +24,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
-        implements AddEdgeStepInterface<S>, GValueStepPlaceholder<S, Edge>, PropertyAdding {
+        implements AddEdgeStepInterface<S>, GValueHolder<S, Edge>, PropertyAdding {
 
     private final Traversal.Admin<S,String> label;
     private Traversal.Admin<?,?> from;
@@ -62,6 +63,9 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
     public AddEdgeStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
         super(traversal);
         this.label = edgeLabelTraversal;
+        if (edgeLabelTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().track(((GValueConstantTraversal<S, String>) edgeLabelTraversal).getGValue());
+        }
     }
 
     @Override
@@ -219,7 +223,7 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
     }
 
     @Override
-    public Set<GValue<?>> getGValues() {
+    public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) label).getGValue());

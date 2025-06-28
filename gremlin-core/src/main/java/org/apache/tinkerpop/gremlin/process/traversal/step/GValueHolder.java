@@ -16,8 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-public interface EdgeLabelContract<V> extends StepContract {
-    public V[] getEdgeLabels();
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.Collection;
+
+public interface GValueHolder<S, E> extends Step<S, E> {
+
+    public default void reduce() {
+        TraversalHelper.replaceStep(this, this.asConcreteStep(), this.getTraversal());
+    }
+
+    public Step<S, E> asConcreteStep();
+
+    public boolean isParameterized();
+
+    public void updateVariable(String name, Object value);
+
+    public Collection<GValue<?>> getGValues();
 }

@@ -20,12 +20,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GValueContracting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -46,7 +44,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<S> {
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
@@ -64,6 +62,7 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
+    @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
     }
@@ -145,19 +144,18 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
         return clone;
     }
 
+    @Override
     public String getLabel() {
         return parameters.get(T.label, ()->"Edge").get(0);
     }
 
-    public Map<Object, Object> getProperties() {
+    @Override
+    public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
     }
 
+    @Override
     public void addProperty(final Object key, final Object value) {
         configure(key, value);
-    }
-
-    public Object removeProperty(final Object key) {
-        return parameters.remove(key);
     }
 }

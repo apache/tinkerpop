@@ -68,11 +68,11 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         super(traversal, isStart);
     }
 
-    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         super(traversal, isStart, merge);
     }
 
-    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map<Object, Object>> mergeTraversal) {
         super(traversal, isStart, mergeTraversal);
     }
 
@@ -428,17 +428,17 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
     }
 
     @Override
-    public Map<?, ?> getMergeMap() {
+    public Map<Object, Object> getMergeMap() {
         throw new UnsupportedOperationException("Cannot access merge map from step"); //TODO::
     }
 
     @Override
-    public Map<?, ?> getOnCreateMap() {
+    public Map<Object, Object> getOnCreateMap() {
         throw new UnsupportedOperationException("Cannot access onCreate map from step"); //TODO::
     }
 
     @Override
-    public Map<?, ?> getOnMatchMap() {
+    public Map<Object, Object> getOnMatchMap() {
         throw new UnsupportedOperationException("Cannot access onMatch map from step"); //TODO::
     }
 }
