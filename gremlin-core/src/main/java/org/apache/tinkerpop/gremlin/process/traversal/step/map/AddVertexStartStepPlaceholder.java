@@ -49,6 +49,7 @@ public class AddVertexStartStepPlaceholder extends AbstractStep<Vertex, Vertex>
     private boolean userProvidedLabel;
     private Map<Object, List<Object>> properties = new HashMap<>();
     private Traversal.Admin<?,String> label;
+    private GValue<Object> elementId;
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final String label) {
         this(traversal, new ConstantTraversal<>(label));
@@ -70,6 +71,28 @@ public class AddVertexStartStepPlaceholder extends AbstractStep<Vertex, Vertex>
     @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
+    }
+
+    @Override
+    public Object getElementId() {
+        if (elementId == null) {
+            return null;
+        }
+        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        return elementId.get();
+    }
+
+    public Object getElementIdGValueSafe() {
+        if (elementId == null) {
+            return null;
+        }
+        return elementId.get();
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
+        this.traversal.getGValueManager().track(this.elementId);
     }
 
     @Override

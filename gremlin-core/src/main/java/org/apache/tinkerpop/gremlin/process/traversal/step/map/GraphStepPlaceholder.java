@@ -37,7 +37,6 @@ import java.util.Set;
 
 public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueHolder<S, E>, GraphStepInterface<S, E> {
 
-//    private final Parameters parameters = new Parameters();
     protected final Class<E> returnClass;
     protected GValue<?>[] ids;
     private final boolean isStart;
@@ -48,7 +47,6 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         this.returnClass = returnClass;
 
         this.ids = ids;
-        //this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         this.isStart = isStart;
 
         for (GValue id : ids) {

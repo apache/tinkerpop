@@ -72,6 +72,16 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     }
 
     @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
+    }
+
+    @Override
     public Parameters getParameters() {
         return this.parameters;
     }

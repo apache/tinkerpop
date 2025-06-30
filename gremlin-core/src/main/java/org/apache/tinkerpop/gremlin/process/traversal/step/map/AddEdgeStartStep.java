@@ -99,6 +99,16 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     }
 
     @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
+    }
+
+    @Override
     protected Traverser.Admin<Edge> processNextStart() {
         if (this.first) {
             this.first = false;

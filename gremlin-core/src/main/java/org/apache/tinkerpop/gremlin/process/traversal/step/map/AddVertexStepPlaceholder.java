@@ -27,16 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +49,7 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
     private boolean userProvidedLabel;
     private Map<Object, List<Object>> properties = new HashMap<>();
     private Traversal.Admin<S,String> label;
+    private GValue<Object> elementId;
 
     public AddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
         this(traversal, new ConstantTraversal<>(label));
@@ -76,6 +71,28 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
     @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
+    }
+
+    @Override
+    public Object getElementId() {
+        if (elementId == null) {
+            return null;
+        }
+        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        return elementId.get();
+    }
+
+    public Object getElementIdGValueSafe() {
+        if (elementId == null) {
+            return null;
+        }
+        return elementId.get();
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
+        this.traversal.getGValueManager().track(this.elementId);
     }
 
     @Override

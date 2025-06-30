@@ -32,9 +32,8 @@ import java.util.Map;
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, PropertyAdding {
+public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, AddElementStepInterface {
 
-    public String getLabel();
     public Vertex getFrom();
     public Vertex getTo();
 }

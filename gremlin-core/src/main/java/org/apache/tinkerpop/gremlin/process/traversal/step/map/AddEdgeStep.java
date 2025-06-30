@@ -94,6 +94,16 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     }
 
     @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
+    }
+
+    @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 

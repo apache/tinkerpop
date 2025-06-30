@@ -52,6 +52,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;
     private Map<Object, List<Object>> properties = new HashMap<>();
+    private GValue<Object> elementId;
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final String edgeLabel) {
         this(traversal, new ConstantTraversal<>(edgeLabel));
@@ -217,6 +218,28 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
             traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) to).getGValue().getName());
         }
         return to == null ? null : (Vertex) to.next();
+    }
+
+    @Override
+    public Object getElementId() {
+        if (elementId == null) {
+            return null;
+        }
+        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        return elementId.get();
+    }
+
+    public Object getElementIdGValueSafe() {
+        if (elementId == null) {
+            return null;
+        }
+        return elementId.get();
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
+        this.traversal.getGValueManager().track(this.elementId);
     }
 
     public Vertex getToGValueSafe() {
