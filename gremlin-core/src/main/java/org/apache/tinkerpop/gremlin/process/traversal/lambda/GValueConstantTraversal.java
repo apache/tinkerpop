@@ -31,7 +31,7 @@ import java.util.Objects;
 public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
     private GValue<E> end;
-    private final ConstantTraversal<S, E> constantTraversal;
+    private ConstantTraversal<S, E> constantTraversal;
 
     public GValueConstantTraversal(final GValue<E> end) {
         this.end = end;
@@ -75,6 +75,7 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
         if (name.equals(end.getName())) {
             //TODO type check?
             end = (GValue<E>) GValue.of(name, value);
+            this.constantTraversal = new ConstantTraversal<>(end.get());
         }
     }
 }

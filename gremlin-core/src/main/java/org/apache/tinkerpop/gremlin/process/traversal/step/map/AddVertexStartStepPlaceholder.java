@@ -52,11 +52,11 @@ public class AddVertexStartStepPlaceholder extends AbstractStep<Vertex, Vertex>
     private GValue<Object> elementId;
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        this(traversal, new ConstantTraversal<>(label));
+        this(traversal, null ==  label ? null : new ConstantTraversal<>(label));
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        this(traversal, new GValueConstantTraversal<>(label));
+        this(traversal, null ==  label ? null : new GValueConstantTraversal<>(label));
     }
 
     public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,String> vertexLabelTraversal) {

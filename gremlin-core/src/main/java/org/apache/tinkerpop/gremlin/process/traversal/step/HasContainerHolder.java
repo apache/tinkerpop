@@ -54,9 +54,8 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> { //TODO ra
     }
 
     public default void updateVariable(final String name, final Object value) {
-        getPredicates().stream().map((p) -> {
+        getPredicates().forEach((p) -> {
             p.updateVariable(name, value);
-            return p;
         });
     }
 

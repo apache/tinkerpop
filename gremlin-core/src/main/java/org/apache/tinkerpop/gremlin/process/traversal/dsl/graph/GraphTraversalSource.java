@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -525,9 +524,9 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         GraphStepInterface<Vertex, Vertex> step;
         if (GValue.containsGValues(ids)) {
-            step = new GraphStepPlaceholder<>(traversal, Vertex.class, false, GValue.ensureGValues(ids));
+            step = new GraphStepPlaceholder<>(traversal, Vertex.class, true, GValue.ensureGValues(ids));
         } else {
-            step = new GraphStep<>(traversal, Vertex.class, false, ids);
+            step = new GraphStep<>(traversal, Vertex.class, true, ids);
         }
         return traversal.addStep(step);
     }
@@ -546,9 +545,9 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
         GraphStepInterface<Edge, Edge> step;
         if (GValue.containsGValues(ids)) {
-            step = new GraphStepPlaceholder<>(traversal, Edge.class, false, GValue.ensureGValues(ids));
+            step = new GraphStepPlaceholder<>(traversal, Edge.class, true, GValue.ensureGValues(ids));
         } else {
-            step = new GraphStep<>(traversal, Edge.class, false, ids);
+            step = new GraphStep<>(traversal, Edge.class, true, ids);
         }
         return traversal.addStep(step);
     }

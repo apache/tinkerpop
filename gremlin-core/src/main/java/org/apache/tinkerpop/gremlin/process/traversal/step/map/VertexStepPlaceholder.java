@@ -114,6 +114,7 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
         return StringFactory.stepString(this, this.direction, Arrays.asList(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase());
     }
 
+    // todo: why commented out?
 //    @Override
 //    public int hashCode() {
 //        int result = Objects.hash(super.hashCode(), direction, returnClass);
@@ -135,7 +136,9 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
 
     @Override
     public Step<Vertex, E> asConcreteStep() {
-        return new VertexStep<>(traversal, returnClass, direction, (String[]) GValue.resolveToValues(edgeLabels));
+        return new VertexStep<>(traversal, returnClass, direction, Arrays.stream(GValue.resolveToValues(edgeLabels))
+                .map(String.class::cast)
+                .toArray(String[]::new));
     }
 
     @Override

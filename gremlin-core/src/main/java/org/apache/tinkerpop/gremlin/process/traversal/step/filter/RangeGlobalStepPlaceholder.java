@@ -64,6 +64,7 @@ public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements 
         }
 
         if (name.equals(high.getName())) {
+            // todo: chill on the Long and allow Integer???
             if (!(value instanceof Long)) {
                 throw new IllegalArgumentException("The variable " + name + " must have a value of type Long");
             }

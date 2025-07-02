@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -26,6 +27,11 @@ import java.util.Collection;
 public interface GValueHolder<S, E> extends Step<S, E> {
 
     public default void reduce() {
+        // todo: maybe check to see if GValueManager was updated after traversal construction to spare this updateVariable
+        final GValueManager manger = this.getTraversal().getGValueManager();
+        manger.getGValues().forEach(gValue -> {
+            updateVariable(gValue.getName(), gValue.get());
+        });
         TraversalHelper.replaceStep(this, this.asConcreteStep(), this.getTraversal());
     }
 

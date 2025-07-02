@@ -340,8 +340,8 @@ public class Bytecode implements Cloneable, Serializable {
             }
             return set;
         } else if (argument instanceof GValue) {
-            String variable = ((GValue<?>) argument).getName();
-            Object value = ((GValue<?>) argument).get();
+            final String variable = ((GValue<?>) argument).getName();
+            final Object value = ((GValue<?>) argument).get();
             return variable == null
                     ? convertArgument(value, searchBindings)
                     : new Binding<>(variable, convertArgument(value, false)); //TODO:: can you put a binding in a GValue?
