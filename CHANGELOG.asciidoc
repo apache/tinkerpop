@@ -153,6 +153,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
 * Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
