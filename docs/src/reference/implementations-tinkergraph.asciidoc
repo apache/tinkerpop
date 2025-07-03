@@ -263,7 +263,7 @@ public class GraphService {
 // to run in a variety of scenarios. here we decide that TinkerTransactionGraph is a
 // suitable test graph replacement for our actual production graph.
 public class GraphServiceTest {
-    private static final TinkerTransactionGraph graph = TinkerTransactionGraph().open();
+    private static final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
     private static final GraphTraversalSource g = traversal.with(graph);
     private static final GraphService service = new GraphService(g);
 
