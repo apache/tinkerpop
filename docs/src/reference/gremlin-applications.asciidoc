@@ -2594,6 +2594,10 @@ Gremlin Server performs automated transaction handling for "sessionless" request
 for "in-session" requests with that feature enabled. It will automatically commit or rollback transactions depending
 on the success or failure of the request.
 
+IMPORTANT: Understand the transactional capabilities of the graph configured in Gremlin Server when using sessions. For
+example, a basic `TinkerGraph` in its non-transactional form won't be able to rollback a failed traversal, therefore it
+is quite possible to get partial updates if the first part of a traversal succeeds and the rest fails.
+
 Another aspect of Transaction Management that should be considered is the usage of the `strictTransactionManagement`
 setting.  It is `false` by default, but when set to `true`, it forces the user to pass `aliases` for all requests.
 The aliases are then used to determine which graphs will have their transactions closed for that request. Running
