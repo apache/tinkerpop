@@ -94,6 +94,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added UUID() + UUID(value) to grammar
