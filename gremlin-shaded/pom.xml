@@ -60,7 +60,7 @@ limitations under the License.
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>shade-kryo</id>
+                        <id>shade-packages</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -94,6 +94,23 @@ limitations under the License.
                                 <relocation>
                                     <pattern>com.fasterxml.jackson</pattern>
                                     <shadedPattern>org.apache.tinkerpop.shaded.jackson</shadedPattern>
+                                </relocation>
+                                <!-- shaded plugin needs us to explicitly relocate multi-release files -->
+                                <relocation>
+                                    <pattern>META-INF/versions/9/com.fasterxml.jackson</pattern>
+                                    <shadedPattern>META-INF/versions/9/org.apache.tinkerpop.shaded.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>META-INF/versions/11/com.fasterxml.jackson</pattern>
+                                    <shadedPattern>META-INF/versions/11/org.apache.tinkerpop.shaded.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>META-INF/versions/17/com.fasterxml.jackson</pattern>
+                                    <shadedPattern>META-INF/versions/17/org.apache.tinkerpop.shaded.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>META-INF/versions/19/com.fasterxml.jackson</pattern>
+                                    <shadedPattern>META-INF/versions/19/org.apache.tinkerpop.shaded.jackson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
@@ -148,6 +165,18 @@ limitations under the License.
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
                                     <resource>META-INF/LICENSE</resource>
                                     <file>src/main/static/LICENSE</file>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <!--
+                                        makes sure multi-release jar like jackson gets handled properly though
+                                        still have to manually relocate as noted above. dont think this is going
+                                        to be changed:
+                                          - https://github.com/apache/maven-shade-plugin/issues/652
+                                          - https://stackoverflow.com/a/76638014/1831717
+                                        -->
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                         </configuration>
