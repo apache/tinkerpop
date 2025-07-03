@@ -46,18 +46,6 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
-        sb.append("new ");
-        sb.append(vertexClassName);
-        sb.append("(");
-        visit(ctx.getChild(3)); // id
-        sb.append(", ");
-        visit(ctx.getChild(5)); // label
-        sb.append(")");
-        return null;
-    }
-
-    @Override
     public Void visitIntegerLiteral(final GremlinParser.IntegerLiteralContext ctx) {
         final String integerLiteral = ctx.getText().toLowerCase();
 

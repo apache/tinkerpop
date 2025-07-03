@@ -865,6 +865,15 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        public GraphTraversal<TStart, TEnd> From (object? fromStepVertexIdOrLabel)
+        {
+            Bytecode.AddStep("from", fromStepVertexIdOrLabel);
+            return Wrap<TStart, TEnd>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the from step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
         public GraphTraversal<TStart, TEnd> From (string? fromStepLabel)
         {
             Bytecode.AddStep("from", fromStepLabel);
@@ -2192,6 +2201,15 @@ namespace Gremlin.Net.Process.Traversal
             args.AddRange(edgeLabels);
             Bytecode.AddStep("to", args.ToArray());
             return Wrap<TStart, Vertex>(this);
+        }
+        
+        /// <summary>
+        ///     Adds the to step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> To (object? toStepVertexIdOrLabel)
+        {
+            Bytecode.AddStep("to", toStepVertexIdOrLabel);
+            return Wrap<TStart, TEnd>(this);
         }
 
         /// <summary>
