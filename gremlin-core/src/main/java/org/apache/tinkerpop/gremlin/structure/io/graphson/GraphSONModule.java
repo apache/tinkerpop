@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -185,6 +186,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             Direction.class,
                             DT.class,
                             Merge.class,
+                            N.class,
                             Operator.class,
                             Order.class,
                             Pop.class,
@@ -277,6 +279,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Direction.class,
                     DT.class,
                     Merge.class,
+                    N.class,
                     Operator.class,
                     Order.class,
                     Pop.class,
@@ -324,6 +327,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Direction.values(),
                     DT.values(),
                     Merge.values(),
+                    N.values(),
                     Operator.values(),
                     Order.values(),
                     Pop.values(),
@@ -445,6 +449,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             Direction.class,
                             DT.class,
                             Merge.class,
+                            N.class,
                             Operator.class,
                             Order.class,
                             Pop.class,
@@ -531,6 +536,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Direction.class,
                     DT.class,
                     Merge.class,
+                    N.class,
                     Operator.class,
                     Order.class,
                     Pop.class,
@@ -570,6 +576,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Direction.values(),
                     DT.values(),
                     Merge.values(),
+                    N.values(),
                     Operator.values(),
                     Order.values(),
                     Pop.values(),
