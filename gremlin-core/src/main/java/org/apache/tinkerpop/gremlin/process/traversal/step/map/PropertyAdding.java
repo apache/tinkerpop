@@ -25,4 +25,5 @@ import java.util.Map;
 public interface PropertyAdding {
     void addProperty(Object key, Object value);
     public Map<Object, List<Object>> getProperties();
+    public void removeProperty(Object k);
 }

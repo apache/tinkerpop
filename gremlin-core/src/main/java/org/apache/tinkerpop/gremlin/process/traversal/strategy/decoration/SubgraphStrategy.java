@@ -197,8 +197,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
 
-                // move StepContract from out() to outE() for example
-                // TODO:: traversal.getGValueManager().copyRegistryState(step, (Step) someEStep);
+                // TODO:: preserve GValues from out() to outE() for example
 
                 TraversalHelper.replaceStep((Step<Vertex, Edge>) step, someEStep, traversal);
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);

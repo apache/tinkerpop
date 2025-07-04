@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 
 public interface AddElementStepInterface extends PropertyAdding {
     String getLabel();

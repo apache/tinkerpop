@@ -49,7 +49,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements AddPropertyStepInterface<S>, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
+        implements AddPropertyStepInterface<S>, Configuring {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
@@ -221,5 +221,10 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     @Override
     public Map<Object, List<Object>> getProperties() {
         return parameters.getRaw(T.key, T.value); //TODO:: are these the right exclusions?
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
     }
 }

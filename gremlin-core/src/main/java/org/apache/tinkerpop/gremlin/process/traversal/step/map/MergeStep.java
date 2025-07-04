@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
@@ -56,7 +57,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, MergeStepInterface<S, E, C> {
+        implements TraversalOptionParent<Merge, S, C>, MergeStepInterface<S, E, C> {
 
     protected final boolean isStart;
     protected boolean first = true;
@@ -167,16 +168,6 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         if (onMatchTraversal != null) children.add((Traversal.Admin<S, C>) onMatchTraversal);
         if (onCreateTraversal != null) children.add((Traversal.Admin<S, C>) onCreateTraversal);
         return children;
-    }
-
-    @Override
-    public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
-    }
-
-    @Override
-    public Parameters getParameters() {
-        return this.parameters;
     }
 
     @Override
@@ -401,6 +392,24 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchMap) {
         this.onMatchTraversal = integrateChild(new ConstantTraversal<>(onMatchMap));
         this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        if (properties.containsKey(key)) {
+            throw new IllegalArgumentException("MergeElement.addProperty only support properties with single cardinality");
+        }
+        properties.put(key, Collections.singletonList(value));
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
     }
 
     /**

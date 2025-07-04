@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -136,9 +137,11 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
 
     @Override
     public Step<Vertex, E> asConcreteStep() {
-        return new VertexStep<>(traversal, returnClass, direction, Arrays.stream(GValue.resolveToValues(edgeLabels))
+        VertexStep<E> step = new VertexStep<>(traversal, returnClass, direction, Arrays.stream(GValue.resolveToValues(edgeLabels))
                 .map(String.class::cast)
                 .toArray(String[]::new));
+        TraversalHelper.copyLabels(this, step, false);
+        return step;
     }
 
     @Override

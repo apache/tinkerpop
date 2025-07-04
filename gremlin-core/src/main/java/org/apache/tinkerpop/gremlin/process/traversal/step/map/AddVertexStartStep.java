@@ -50,7 +50,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<Vertex> {
+        implements TraversalParent, Scoping, AddVertexStepInterface<Vertex>, Configuring {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -176,6 +176,11 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     @Override
     public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
     }
 
     @Override

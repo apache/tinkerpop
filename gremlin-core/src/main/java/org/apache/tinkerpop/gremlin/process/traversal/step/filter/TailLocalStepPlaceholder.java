@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -72,7 +73,9 @@ public final class TailLocalStepPlaceholder<S> extends AbstractStep<S, S> implem
 
     @Override
     public Step<S, S> asConcreteStep() {
-        return new TailLocalStep<>(traversal, limit.get());
+        TailLocalStep<S> step = new TailLocalStep<>(traversal, limit.get());
+        TraversalHelper.copyLabels(this, step, false);
+        return step;
     }
 
     @Override
