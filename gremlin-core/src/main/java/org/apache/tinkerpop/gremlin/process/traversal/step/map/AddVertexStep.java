@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -45,7 +46,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<S> {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<S>, Configuring {
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
@@ -170,6 +171,11 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     @Override
     public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
     }
 
     @Override

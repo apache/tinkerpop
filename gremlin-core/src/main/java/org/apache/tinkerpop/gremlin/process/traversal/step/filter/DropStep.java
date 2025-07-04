@@ -62,17 +62,4 @@ public class DropStep<S> extends FilterStep<S> implements Deleting<Event> {
         if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
         return callbackRegistry;
     }
-
-    /**
-     * This method doesn't do anything as {@code drop()} doesn't take property mutation arguments.
-     */
-    @Override
-    public void configure(final Object... keyValues) {
-        // do nothing
-    }
-
-    @Override
-    public Parameters getParameters() {
-        return Parameters.EMPTY;
-    }
 }
