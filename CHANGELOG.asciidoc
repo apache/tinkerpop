@@ -92,6 +92,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Fixed translation of numeric literals for Go losing type definitions
 * Added `ParseBigInt()` in `gremlin-go` for parsing string into `big.Int`
 * Expanded gherkin syntax to directly configure traversal side effects in feature tests
+* Made `Mutating` interface independent from `Configuring`
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

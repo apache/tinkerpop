@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,7 +48,9 @@ public class RangeLocalStepPlaceholder<S> extends AbstractStep<S,S> implements G
 
     @Override
     public Step<S, S> asConcreteStep() {
-        return new RangeLocalStep<>(traversal, low.get(), high.get());
+        RangeLocalStep<S> step = new RangeLocalStep<>(traversal, low.get(), high.get());
+        TraversalHelper.copyLabels(this, step, false);
+        return step;
     }
 
     @Override

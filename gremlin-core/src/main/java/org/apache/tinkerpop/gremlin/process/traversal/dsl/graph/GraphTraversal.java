@@ -197,6 +197,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateL
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -3850,8 +3851,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // semantics than we've had in previous versions so right/wrong could be argued, but since it's a breaking
         // change we'll just arbitrarily account for it to maintain the former behavior.
         if ((endStep instanceof AddEdgeStepInterface) ||
-                ((endStep instanceof AddVertexStep || endStep instanceof AddVertexStartStep) && //TODO AddVertexStepInterface
-                  keyValues.length == 0 &&
+                ((endStep instanceof AddVertexStepInterface) && keyValues.length == 0 &&
                   (key instanceof T || (key instanceof String && null == cardinality) || key instanceof Traversal))) {
             ((PropertyAdding) endStep).addProperty(key, value);
         } else {

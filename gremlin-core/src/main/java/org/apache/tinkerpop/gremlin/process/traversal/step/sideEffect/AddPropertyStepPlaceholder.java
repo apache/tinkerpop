@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -44,7 +45,7 @@ import java.util.Set;
 public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
         implements AddPropertyStepInterface<S>, GValueHolder<S, S> {
 
-    private Parameters parameters = new Parameters();
+    private Parameters parameters = new Parameters(); //TODO:: get parameters out of here
     private final VertexProperty.Cardinality cardinality;
     private Map<Object, List<Object>> properties = new HashMap<>();
 
@@ -126,6 +127,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
             }
         }
 
+        TraversalHelper.copyLabels(this, step, false);
         return step;
     }
 
@@ -172,5 +174,15 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
         return properties;
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
+    }
+
+    @Override
+    public CallbackRegistry<Event.ElementPropertyChangedEvent> getMutatingCallbackRegistry() {
+        throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
     }
 }

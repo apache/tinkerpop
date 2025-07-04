@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -84,7 +85,9 @@ public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GVa
     @Override
     public Step<S, S> asConcreteStep() {
         //TODO:: does the predicate need any altering?
-        return new IsStep<>(traversal, predicate);
+        IsStep<S> step = new IsStep<>(traversal, predicate);
+        TraversalHelper.copyLabels(this, step, false);
+        return step;
     }
 
     @Override

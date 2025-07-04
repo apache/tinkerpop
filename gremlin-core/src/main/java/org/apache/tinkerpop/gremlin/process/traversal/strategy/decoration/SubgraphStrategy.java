@@ -40,6 +40,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -115,12 +119,12 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         while (!(step instanceof EmptyStep)) {
             if (step instanceof FilterStep || step instanceof SideEffectStep)
                 step = step.getPreviousStep();
-            else if (step instanceof GraphStep && ((GraphStep) step).returnsVertex())
+            else if (step instanceof GraphStepInterface && ((GraphStepInterface) step).returnsVertex())
                 return 'v';
             else if (step instanceof EdgeVertexStep)
                 return 'v';
-            else if (step instanceof VertexStep)
-                return ((VertexStep) step).returnsVertex() ? 'v' : 'p';
+            else if (step instanceof VertexStepInterface)
+                return ((VertexStepInterface) step).returnsVertex() ? 'v' : 'p';
             else if (step instanceof PropertyMapStep || step instanceof PropertiesStep)
                 return 'p';
             else
@@ -137,34 +141,33 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             return;
         }
 
-        final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
-        final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
+        final List<GraphStepInterface> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStepInterface.class, traversal);
+        final List<VertexStepInterface> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStepInterface.class, traversal);
         if (null != this.vertexCriterion) {
             final List<Step> vertexStepsToInsertFilterAfter = new ArrayList<>();
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
-            vertexStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsVertex).collect(Collectors.toList()));
+            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStepInterface.class, traversal));
+            vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStepInterface::returnsVertex).collect(Collectors.toList()));
+            vertexStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStepInterface::returnsVertex).collect(Collectors.toList()));
             applyCriterion(vertexStepsToInsertFilterAfter, traversal, s -> Optional.of(this.vertexCriterion.clone()));
         }
 
         if (null != this.edgeCriterion || checkAdjacentVertices) {
             final List<Step> edgeStepsToInsertFilterAfter = new ArrayList<>();
-            edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
-            edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
-            edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
+            edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStepInterface.class, traversal));
+            edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStepInterface::returnsEdge).collect(Collectors.toList()));
+            edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStepInterface::returnsEdge).collect(Collectors.toList()));
             applyCriterion(edgeStepsToInsertFilterAfter, traversal, s -> {
                 if (checkAdjacentVertices && this.vertexCriterion != null) {
-                    if (s instanceof VertexStep) {
+                    if (s instanceof VertexStepInterface) {
                         // based on the directionality of the step choose the appropriate filter direction to apply.
                         // we scan skip AddEdgeStep, because its vertices must be in the Subgraph for it to even work.
-                        final Direction d = ((VertexStep) s).getDirection();
+                        final Direction d = ((VertexStepInterface) s).getDirection();
                         final Traversal.Admin<Edge, ? extends Element> vertexPredicate;
                         vertexPredicate = getVertexPredicateGivenDirection(d);
                         return applyVertexPredicate(vertexPredicate);
-                    } else if (s instanceof GraphStep) {
+                    } else if (s instanceof GraphStepInterface) {
                         // for E() we need to test both incident vertices as there is no directionality
                         final Traversal.Admin<Edge, ? extends Element> vertexPredicate = __.<Edge>and(
                                 __.inV().filter(this.vertexCriterion.clone()),
@@ -184,18 +187,17 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate
-        for (final VertexStep<?> step : vertexSteps) {
+        for (final VertexStepInterface<?> step : vertexSteps) {
             if (step.returnsEdge())
                 continue;
 
             if (edgeCriterion != null) {
-                final VertexStep<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
+                final VertexStepInterface<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
                 final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
 
-                // move StepContract from out() to outE() for example
-                // TODO:: traversal.getGValueManager().copyRegistryState(step, (Step) someEStep);
+                // TODO:: preserve GValues from out() to outE() for example
 
                 TraversalHelper.replaceStep((Step<Vertex, Edge>) step, someEStep, traversal);
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);
