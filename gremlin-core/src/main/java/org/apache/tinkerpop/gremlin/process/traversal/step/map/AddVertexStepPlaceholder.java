@@ -27,6 +27,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -143,6 +146,11 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
     }
 
     @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
+    }
+
+    @Override
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
@@ -168,6 +176,7 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
             }
         }
 
+        TraversalHelper.copyLabels(this, step, false);
         return step;
     }
 
@@ -213,5 +222,10 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
             }
         }
         return gValues;
+    }
+
+    @Override
+    public CallbackRegistry<Event.VertexAddedEvent> getMutatingCallbackRegistry() {
+        throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
     }
 }

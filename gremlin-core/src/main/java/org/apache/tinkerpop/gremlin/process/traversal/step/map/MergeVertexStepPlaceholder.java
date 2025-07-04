@@ -27,13 +27,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTrave
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +51,7 @@ import java.util.Set;
 public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> implements MergeStepInterface<S, Vertex, Map>, GValueHolder<S, Vertex> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+    private Map<Object, List<Object>> properties = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
@@ -62,10 +68,12 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
 
     public MergeVertexStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         this(traversal, isStart, new ConstantTraversal<>(merge));
+        validateMapInput(merge, false);
     }
 
     public MergeVertexStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final GValue<Map<Object, Object>> merge) {
         this(traversal, isStart, new GValueConstantTraversal<>(merge));
+        validateMapInput(merge.get(), false);
     }
 
     public MergeVertexStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<?,Map<Object, Object>> mergeTraversal) {
@@ -89,37 +97,31 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
         return super.getRequirements();
     }
 
-    /**
-     * Fuse the mergeMap with any additional key/values from the onCreateTraversal. No overrides allowed.
-     */
-    @Override
-    public Map<Object, Object> getMergeMap() {
-        throw new UnsupportedOperationException("Cannot access merge map from step"); //TODO::
-    }
-
-    @Override
-    public Map<Object, Object> getOnCreateMap() {
-        throw new UnsupportedOperationException("Cannot access onCreate map from step"); //TODO::
-    }
-
-    @Override
-    public Map<Object, Object> getOnMatchMap() {
-        throw new UnsupportedOperationException("Cannot access onMatch map from step"); //TODO::
-    }
-
     @Override
     public Traversal.Admin getMergeTraversal() {
+        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue().getName());
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getConstantTraversal();
+        }
         return mergeTraversal;
     }
 
     @Override
     public Traversal.Admin getOnCreateTraversal() {
+        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getGValue().getName());
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getConstantTraversal();
+        }
         return onCreateTraversal;
     }
 
     @Override
     public Traversal.Admin getOnMatchTraversal() {
-        return onMatchTraversal;
+        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getGValue().getName());
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getConstantTraversal();
+        }
+        return onCreateTraversal;
     }
 
     @Override
@@ -129,7 +131,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
 
     @Override
     public boolean isFirst() {
-        return false; //TODO
+        return true; // Step cannot be iterated so isFirst() is always true
     }
 
     @Override
@@ -175,21 +177,89 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
                 ((GValueConstantTraversal) onCreateTraversal).getConstantTraversal() : onCreateTraversal);
         step.setOnMatch(onMatchTraversal instanceof GValueConstantTraversal ?
                 ((GValueConstantTraversal) onMatchTraversal).getConstantTraversal() : onMatchTraversal);
+        TraversalHelper.copyLabels(this, step, false);
+
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object value : entry.getValue()) {
+                step.addProperty(entry.getKey(), value);
+            }
+        }
+
         return step;
     }
 
     @Override
     public boolean isParameterized() {
-        return false; //TODO
+        return onMatchTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) onMatchTraversal).isParameterized() ||
+                onCreateTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) onCreateTraversal).isParameterized() ||
+                mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) mergeTraversal).isParameterized();
     }
 
     @Override
     public void updateVariable(String name, Object value) {
-        //TODO
+        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).updateVariable(name, value);
+        }
+        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).updateVariable(name, value);
+        }
+        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).updateVariable(name, value);
+        }
     }
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        return null; //TODO
+        Set<GValue<?>> gValues = new HashSet<>();
+        if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) mergeTraversal).getGValue().isVariable()) {
+            gValues.add(((GValueConstantTraversal<?, ?>) mergeTraversal).getGValue());
+        }
+        if (onMatchTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) onMatchTraversal).getGValue().isVariable()) {
+            gValues.add(((GValueConstantTraversal<?, ?>) onMatchTraversal).getGValue());
+        }
+        if (onCreateTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) onCreateTraversal).getGValue().isVariable()) {
+            gValues.add(((GValueConstantTraversal<?, ?>) onCreateTraversal).getGValue());
+        }
+        return gValues;
+    }
+
+    @Override
+    public CallbackRegistry<Event> getMutatingCallbackRegistry() {
+        throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        if (key instanceof GValue) {
+            throw new IllegalArgumentException("GValue cannot be used as a property key");
+        }
+        if (value instanceof GValue) { //TODO could value come in as a traversal?
+            traversal.getGValueManager().track((GValue<?>) value);
+        }
+        if (properties.containsKey(key)) {
+            throw new IllegalArgumentException("MergeElement.addProperty only support properties with single cardinality");
+        }
+        properties.put(key, Collections.singletonList(value));
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        for (List<Object> list : properties.values()) {
+            for (Object value : list) {
+                if (value instanceof GValue) {
+                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
+                }
+            }
+        }
+        return properties;
+    }
+
+    public Map<Object, List<Object>> getPropertiesGValueSafe() {
+        return properties;
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
     }
 }

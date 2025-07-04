@@ -25,9 +25,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -53,6 +57,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
     private Traversal.Admin<?,?> to;
     private Map<Object, List<Object>> properties = new HashMap<>();
     private GValue<Object> elementId;
+    private Set<String> scopeKeys = new HashSet<>();
 
     public AddEdgeStepPlaceholder(final Traversal.Admin traversal, final String edgeLabel) {
         this(traversal, new ConstantTraversal<>(edgeLabel));
@@ -68,16 +73,21 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
         if (edgeLabelTraversal instanceof GValueConstantTraversal) {
             traversal.getGValueManager().track(((GValueConstantTraversal<S, String>) edgeLabelTraversal).getGValue());
         }
+        addTraversal(edgeLabelTraversal);
     }
 
     @Override
     public Set<String> getScopeKeys() {
-        throw new IllegalStateException("TODO:: not implemented");
-//        return this.parameters.getReferencedLabels();
+        return Collections.unmodifiableSet(scopeKeys);
+    }
+
+    private void addTraversal(final Traversal.Admin<?, ?> traversal) {
+        TraversalHelper.getStepsOfAssignableClassRecursively(Scoping.class, traversal).forEach(s -> scopeKeys.addAll(s.getScopeKeys()));
     }
 
     @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
+        addTraversal(toObject);
         if (toObject instanceof GValueConstantTraversal) {
             traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) toObject).getGValue());
         }
@@ -86,6 +96,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
 
     @Override
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
+        addTraversal(fromObject);
         if (fromObject instanceof GValueConstantTraversal) {
             traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
         }
@@ -132,7 +143,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
             step.addFrom(from instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) from).getConstantTraversal() : from);
         }
         if (to != null) {
-            step.addFrom(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) to).getConstantTraversal() : to);
+            step.addTo(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) to).getConstantTraversal() : to);
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
@@ -140,6 +151,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
             }
         }
 
+        TraversalHelper.copyLabels(this, step, false);
         return step;
     }
 
@@ -198,6 +210,11 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
         return properties;
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
     }
 
     @Override
@@ -286,5 +303,10 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
             }
         }
         return gValues;
+    }
+
+    @Override
+    public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
+        throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
     }
 }

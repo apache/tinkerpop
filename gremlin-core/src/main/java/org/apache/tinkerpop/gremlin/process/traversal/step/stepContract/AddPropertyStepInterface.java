@@ -19,14 +19,17 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.HashSet;
 
-public interface AddPropertyStepInterface<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding {
+public interface AddPropertyStepInterface<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
     public VertexProperty.Cardinality getCardinality();
 
     @Override

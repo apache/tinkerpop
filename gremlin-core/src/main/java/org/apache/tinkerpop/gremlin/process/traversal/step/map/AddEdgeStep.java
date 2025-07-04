@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -47,7 +48,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
-        implements AddEdgeStepInterface<S>, Writing<Event.EdgeAddedEvent> {
+        implements AddEdgeStepInterface<S>, Configuring {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -134,7 +135,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
         } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
             throw new IllegalStateException(String.format(
                     "addE(%s) failed because the from() traversal (which should give a Vertex) failed with: %s",
-                    edgeLabel, e.getMessage()));
+                    edgeLabel, e.getMessage()), e);
         }
 
         if (theFrom == null)
@@ -217,6 +218,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     @Override
     public Map<Object, List<Object>> getProperties() {
         return parameters.getRaw(T.label, TO, FROM); //TODO:: any more exclusions needed?
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
     }
 
     @Override

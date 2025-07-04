@@ -21,31 +21,31 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -143,8 +143,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         // in order to write to it. Seems like ElementStep isn't necessary here? a Property can't be loaded that
         // isn't within the partition so element() could only ever traverse back to something within the partition.
         final List<Step> stepsToInsertHasAfter = new ArrayList<>();
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStepInterface.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStepInterface.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
 
@@ -227,10 +227,9 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
-                step instanceof MergeVertexStep || step instanceof MergeEdgeStep ||
-                step instanceof AddEdgeStep || step instanceof AddVertexStep ||
-                        step instanceof AddEdgeStartStep || step instanceof AddVertexStartStep ||
-                        (includeMetaProperties && step instanceof AddPropertyStep)
+                step instanceof MergeStepInterface ||
+                step instanceof AddEdgeStepInterface || step instanceof AddVertexStepInterface ||
+                        (includeMetaProperties && step instanceof AddPropertyStepInterface)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {
@@ -238,15 +237,14 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             // ends up being a Vertex or not.  AddPropertyStep currently chooses to simply not bother
             // to use the additional "property mutations" if the Element being mutated is a Edge or
             // VertexProperty
-            ((Mutating) step).configure(partitionKey, writePartition);
+            ((PropertyAdding) step).addProperty(partitionKey, writePartition);
 
             if (vertexFeatures.isPresent()) {
                 // GraphTraversal folds g.addV().property('k','v') to just AddVertexStep/AddVertexStartStep so this
                 // has to be exploded back to g.addV().property(cardinality, 'k','v','partition','A')
-                if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
-                    final Parameters parameters = ((Parameterizing) step).getParameters();
-                    final Map<Object, List<Object>> params = parameters.getRaw();
-                    // TODO:: final AddVertexContract contract = traversal.getGValueManager().getStepContract(step);
+                if (step instanceof AddVertexStartStep || step instanceof AddVertexStep ||
+                        step instanceof AddVertexStartStepPlaceholder || step instanceof AddEdgeStartStepPlaceholder) {
+                    final Map<Object, List<Object>> params = ((PropertyAdding) step).getProperties();
 
                     params.forEach((k, v) -> {
 
@@ -255,27 +253,15 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
                             final VertexProperty.Cardinality cardinality = vertexFeatures.get().getCardinality((String) k);
                             v.forEach(o -> {
-                                final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o); //TODO:: should this use AddPropertyStepGValueContract?
-                                addPropertyStep.configure(partitionKey, writePartition);
+                                final AddPropertyStepInterface addPropertyStep = new AddPropertyStepPlaceholder(traversal, cardinality, k, o);
+                                addPropertyStep.addProperty(partitionKey, writePartition);
                                 addPropertyStepsToAppend.add(addPropertyStep);
 
-                                // need to remove the parameter from the AddVertex/StartStep and move any GValue to a
-                                // different contract related because it's now being added via the AddPropertyStep
-                                parameters.remove(k);
+                                // need to remove the property from the AddVertex/StartStep because it's now being
+                                // added via the AddPropertyStep
+                                ((PropertyAdding) step).removeProperty(k);
 
-                                //TODO::
-                                /*if (contract != null) {
-                                    final Object possibleGValue = contract.removeProperty(k);
-                                    if (possibleGValue instanceof GValue) {
-                                        final AddPropertyContract addPropertyContract = new DefaultAddPropertyContract(k, possibleGValue);
-                                        traversal.getGValueManager().register(addPropertyStep, addPropertyContract);
-                                    }
-
-                                    // remove an empty contract for the addV because we've moved all the state to
-                                    // the property() steps
-                                    if (contract.getProperties().isEmpty())
-                                        traversal.getGValueManager().remove(step);
-                                }*/
+                                //TODO:: Extract properties as GValue from addV/addE and preserve GValue in AddPropertyStepPlaceholder
 
                                 TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
                             });

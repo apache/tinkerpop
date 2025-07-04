@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -51,7 +52,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
-        implements Writing<Event.EdgeAddedEvent>, AddEdgeStepInterface<Edge> {
+        implements AddEdgeStepInterface<Edge>, Configuring {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
@@ -218,6 +219,11 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     @Override
     public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
     }
 
     @Override
