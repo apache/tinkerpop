@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
@@ -28,7 +30,7 @@ import java.util.Map;
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface AddVertexStepInterface<S> extends Step<S, Vertex>, AddElementStepInterface {
+public interface AddVertexStepInterface<S> extends Step<S, Vertex>, AddElementStepInterface, Writing<Event.VertexAddedEvent> {
 
     public boolean hasUserProvidedLabel();
 }

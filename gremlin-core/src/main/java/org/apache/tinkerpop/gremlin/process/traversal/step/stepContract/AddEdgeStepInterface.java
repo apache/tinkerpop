@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -33,16 +35,13 @@ import java.util.Map;
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, AddElementStepInterface {
+public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, AddElementStepInterface, Writing<Event.EdgeAddedEvent> {
 
     public Vertex getFrom();
     public Vertex getTo();
 
     @Override
     default HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(Scoping.super.getPopInstructions());
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
+        return TraversalParent.super.getPopInstructions();
     }
 }
