@@ -329,8 +329,10 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         // lock the parent before the children
         this.locked = true;
 
-        // now lock all the children
-        TraversalHelper.applyTraversalRecursively(Admin::lock, this, true);
+        // now lock all the children. since it's being called recursively here, we don't need each child to then
+        // also call this recursively TINKERPOP-3100
+        if (isRoot() || parent instanceof VertexProgramStep)
+            TraversalHelper.applyTraversalRecursively(Admin::lock, this, true);
     }
 
     /**
