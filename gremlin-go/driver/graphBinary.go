@@ -82,7 +82,7 @@ const (
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
 	dtType                dataType = 0x2f
-	nType                dataType = 0x30
+	nType                 dataType = 0x30
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81

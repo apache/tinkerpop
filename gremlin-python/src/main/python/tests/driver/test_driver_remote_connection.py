@@ -25,7 +25,7 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import Bindings
-from gremlin_python.process.traversal import P, Order, T
+from gremlin_python.process.traversal import P, Order, T, N
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex

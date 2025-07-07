@@ -158,7 +158,7 @@ Feature: Step - asNumber()
       g.inject(32768).asNumber(N.nshort)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can not convert number type as would cause overflow."
+    Then the traversal will raise an error with message containing text of "Can't convert number of type Integer to Short due to overflow."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX300X_asNumberXN_nbyteX
@@ -168,7 +168,7 @@ Feature: Step - asNumber()
       g.inject(300).asNumber(N.nbyte)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can not convert number type as would cause overflow."
+    Then the traversal will raise an error with message containing text of "Can't convert number of type Integer to Byte due to overflow."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5X_asNumberXX
@@ -202,17 +202,7 @@ Feature: Step - asNumber()
       g.inject("1,000").asNumber(N.nint)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can not parse number: '1,000'"
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX32768X_asNumberXN_nshortX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject("32768").asNumber(N.nshort)
-      """
-    When iterated to list
-    Then the traversal will raise an error with message containing text of "Can not convert number type as would cause overflow."
+    Then the traversal will raise an error with message containing text of "Can't parse string '1,000' as number."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXtestX_asNumberXX
@@ -222,7 +212,7 @@ Feature: Step - asNumber()
       g.inject("test").asNumber()
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can not parse number: 'test'"
+    Then the traversal will raise an error with message containing text of "Can't parse string 'test' as number."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX_1__2__3__4_X_asNumberXX
@@ -232,7 +222,7 @@ Feature: Step - asNumber()
       g.inject([1, 2, 3, 4]).asNumber()
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can't parse 'ArrayList' as number."
+    Then the traversal will raise an error with message containing text of "Can't parse type ArrayList as number."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX_1__2__3__4_X_unfoldXX_asNumberXX
@@ -266,10 +256,7 @@ Feature: Step - asNumber()
     Given the empty graph
     And the traversal of
       """
-      g.V(1).asNumber(N.nint)
+      g.inject(null).asNumber(N.nint)
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[1].i |
-#  ==> Parsing Exception ("Type Vertex is not parsable to Type Integer")
+    Then the traversal will raise an error with message containing text of "Can't parse type null as number."

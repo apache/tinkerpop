@@ -208,6 +208,16 @@ statics.add_static('on_match', Merge.on_match)
 statics.add_static('in_v', Merge.in_v)
 statics.add_static('out_v', Merge.out_v)
 
+N = Enum('N', ' nbyte nshort nint nlong nfloat ndouble nbigInt nbigDecimal')
+statics.add_static('nbyte', N.nbyte)
+statics.add_static('nshort', N.nshort)
+statics.add_static('nint', N.nint)
+statics.add_static('nlong', N.nlong)
+statics.add_static('nfloat', N.nfloat)
+statics.add_static('ndouble', N.ndouble)
+statics.add_static('nbigInt', N.nbigInt)
+statics.add_static('nbigDecimal', N.nbigDecimal)
+
 Order = Enum('Order', ' asc desc shuffle')
 
 statics.add_static('shuffle', Order.shuffle)

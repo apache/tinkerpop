@@ -16,30 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsNumberStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
-/**
- * Tokens that are used to denote different units of number.
- * Used with {@link AsNumberStep} step.
- */
-public enum N {
-    nbyte("Byte"),
-    nshort("Short"),
-    nint("Integer"),
-    nlong("Long"),
-    nfloat("Float"),
-    ndouble("Double"),
-    nbigInt("BigInt"),
-    nbigDecimal("BigDecimal"),;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-    private final String typeName;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-    N(String name) {typeName = name;}
+public class AsNumberStepTest extends StepTest {
 
     @Override
-    public String toString() {
-        return typeName;
+    protected List<Traversal> getTraversals() {
+        return Collections.singletonList(__.asNumber());
     }
+
+    @Test
+    public void testReturnTypes() {
+        assertEquals(1, __.__(1).asNumber().next());
+    }
+
 }
