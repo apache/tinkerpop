@@ -637,7 +637,7 @@ const gremlins = {
     g_injectX32768X_asNumberXN_nshortX: [function({g}) { return g.inject(32768).asNumber(N.nshort) }], 
     g_injectX300X_asNumberXN_nbyteX: [function({g}) { return g.inject(300).asNumber(N.nbyte) }], 
     g_injectX5X_asNumberXX: [function({g}) { return g.inject("5").asNumber() }], 
-    g_injectX5X_asNumberXN_nintX: [function({g}) { return g.inject("5").asNumber(N.nint) }], 
+    g_injectX5X_asNumberXN_byteX: [function({g}) { return g.inject("5").asNumber(N.nbyte) }], 
     g_injectX1_000X_asNumberXN_nintX: [function({g}) { return g.inject("1,000").asNumber(N.nint) }], 
     g_injectXtestX_asNumberXX: [function({g}) { return g.inject("test").asNumber() }], 
     g_injectX_1__2__3__4_X_asNumberXX: [function({g}) { return g.inject([1, 2, 3, 4]).asNumber() }], 

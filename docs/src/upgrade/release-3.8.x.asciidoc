@@ -30,6 +30,53 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Number Conversion Step
+
+We have introduced a number conversion step, `asNumber()`, which converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+
+Numerical input will pass through unless a type is specified by the number token, with the exception that any float number will be converted into double. `ArithmeticException` will be thrown for any overflow during narrowing of types:
+
+[source,text]
+----
+gremlin> g.inject(5).asNumber()
+==> 5    // parses to int
+gremlin> g.inject(5.0).asNumber()
+==> 5    // parses to double
+gremlin> g.inject(5.123f).asNumber()
+==> 5.123  // will cast float to double
+// Narrowing of types may result in ArithmeticException due to overflow
+gremlin> g.inject(12).asNumber(N.byte)
+==> 12
+gremlin> g.inject(128).asNumber(N.byte)
+==> ArithmeticException
+gremlin> g.inject(300).asNumber(N.byte)
+==> ArithmeticException
+----
+
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is provided. `NumberFormatException` will be thrown for any unparsable strings:
+
+[source,text]
+----
+gremlin> g.inject("5").asNumber()
+==> 5
+gremlin> g.inject("5.7").asNumber(N.int)
+==> 5
+gremlin> g.inject("1,000").asNumber(N.nint)
+==> NumberFormatException
+gremlin> g.inject("128").asNumber(N.nbyte)
+==> ArithmeticException
+----
+
+All other input types will result in `IllegalArgumentException`:
+[source,text]
+----
+gremlin> g.inject([1, 2, 3, 4]).asNumber()
+==> IllegalArgumentException
+----
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
+
 ==== Auto promotion of number types
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result

@@ -636,7 +636,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectX32768X_asNumberXN_nshortX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(32768).AsNumber(N.Nshort)}}, 
                {"g_injectX300X_asNumberXN_nbyteX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(300).AsNumber(N.Nbyte)}}, 
                {"g_injectX5X_asNumberXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("5").AsNumber()}}, 
-               {"g_injectX5X_asNumberXN_nintX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("5").AsNumber(N.Nint)}}, 
+               {"g_injectX5X_asNumberXN_byteX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("5").AsNumber(N.Nbyte)}}, 
                {"g_injectX1_000X_asNumberXN_nintX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("1,000").AsNumber(N.Nint)}}, 
                {"g_injectXtestX_asNumberXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("test").AsNumber()}}, 
                {"g_injectX_1__2__3__4_X_asNumberXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new List<object> { 1, 2, 3, 4 }).AsNumber()}}, 

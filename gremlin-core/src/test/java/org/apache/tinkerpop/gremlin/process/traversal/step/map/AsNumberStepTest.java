@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -40,6 +42,43 @@ public class AsNumberStepTest extends StepTest {
     @Test
     public void testReturnTypes() {
         assertEquals(1, __.__(1).asNumber().next());
+        assertEquals((byte) 1, __.__(1).asNumber(N.nbyte).next());
+        assertEquals(1, __.__(1.8).asNumber(N.nint).next());
+        assertEquals(1, __.__(1L).asNumber(N.nint).next());
+        assertEquals(1L, __.__(1L).asNumber().next());
+        assertEquals(1, __.__("1").asNumber(N.nint).next());
+        assertEquals(1, __.__("1").asNumber().next());
+        assertEquals((byte) 1, __.__("1").asNumber(N.nbyte).next());
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void shouldThrowExceptionWhenInvalidStringInput() {
+        __.__("This String is not a number").asNumber().next();
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void shouldThrowParseExceptionWithInvalidNumberStringInput() {
+        __.__("128abc").asNumber().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenArrayInput() {
+        __.__(Arrays.asList(1, 2)).asNumber().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenUUIDInput() {
+        __.__(UUID.randomUUID()).asNumber().next();
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldThrowOverflowExceptionWhenParsedNumberOverflows() {
+        __.__("128").asNumber(N.nbyte).next();
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldThrowOverflowExceptionWhenCastNumberOverflows() {
+        __.__(128).asNumber(N.nbyte).next();
     }
 
 }

@@ -829,6 +829,37 @@ g.inject(datetime("2023-08-24T00:00:00Z")).asDate() <3>
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asDate()++[`asDate()`]
 
+[[asNumber-step]]
+=== AsNumber Step
+
+The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (N) provided.
+
+Numerical input will pass through unless a type is specified by the number token, with the exception that any float number will be converted into double. `ArithmeticException` will be thrown for any overflow during narrowing of types.
+
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is provided. `NumberFormatException` will be thrown for any unparsable strings.
+
+All other input types will result in `IllegalArgumentException`.
+
+[gremlin-groovy,modern]
+----
+g.inject(1).asNumber() <1>
+g.inject(1.76).asNumber() <2>
+g.inject(1.76).asNumber(N.nint) <3>
+g.inject("1b").asNumber() <4>
+g.inject(33550336).asNumber(N.nbyte) <5>
+----
+
+<1> An int will be passed through.
+<2> A double will be passed through.
+<3> A double is converted into an in.
+<4> String containing any character other than numerical ones will result in `NumberFormatException`.
+<5> Narrowing of int to byte that overflows will throw `ArithmeticException`.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber()++[`asNumber()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asNumber(org.apache.tinkerpop.gremlin.process.traversal.N)++[`asNumber(N)`]
+
 [[barrier-step]]
 === Barrier Step
 

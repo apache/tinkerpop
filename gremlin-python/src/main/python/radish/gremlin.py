@@ -609,7 +609,7 @@ world.gremlins = {
     'g_injectX32768X_asNumberXN_nshortX': [(lambda g:g.inject(32768).as_number(N.nshort))], 
     'g_injectX300X_asNumberXN_nbyteX': [(lambda g:g.inject(300).as_number(N.nbyte))], 
     'g_injectX5X_asNumberXX': [(lambda g:g.inject('5').as_number())], 
-    'g_injectX5X_asNumberXN_nintX': [(lambda g:g.inject('5').as_number(N.nint))], 
+    'g_injectX5X_asNumberXN_byteX': [(lambda g:g.inject('5').as_number(N.nbyte))], 
     'g_injectX1_000X_asNumberXN_nintX': [(lambda g:g.inject('1,000').as_number(N.nint))], 
     'g_injectXtestX_asNumberXX': [(lambda g:g.inject('test').as_number())], 
     'g_injectX_1__2__3__4_X_asNumberXX': [(lambda g:g.inject([1, 2, 3, 4]).as_number())], 

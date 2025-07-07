@@ -106,11 +106,7 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
                 return result;
             }
             BigInteger result = new BigInteger(value.trim());
-            if (result.bitLength() <= 7) {
-                return result.byteValue();
-            } else if (result.bitLength() <= 15) {
-                return result.shortValue();
-            } else if (result.bitLength() <= 31) {
+            if (result.bitLength() <= 31) { // default to int if not specified, smaller sizes need to be intentionally set
                 return result.intValue();
             } else if (result.bitLength() <= 63) {
                 return result.longValue();

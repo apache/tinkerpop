@@ -606,7 +606,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_injectX32768X_asNumberXN_nshortX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(32768).AsNumber(gremlingo.N.Nshort)}}, 
     "g_injectX300X_asNumberXN_nbyteX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(300).AsNumber(gremlingo.N.Nbyte)}}, 
     "g_injectX5X_asNumberXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("5").AsNumber()}}, 
-    "g_injectX5X_asNumberXN_nintX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("5").AsNumber(gremlingo.N.Nint)}}, 
+    "g_injectX5X_asNumberXN_byteX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("5").AsNumber(gremlingo.N.Nbyte)}}, 
     "g_injectX1_000X_asNumberXN_nintX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("1,000").AsNumber(gremlingo.N.Nint)}}, 
     "g_injectXtestX_asNumberXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("test").AsNumber()}}, 
     "g_injectX_1__2__3__4_X_asNumberXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject([]interface{}{1, 2, 3, 4}).AsNumber()}}, 

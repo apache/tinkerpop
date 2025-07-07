@@ -180,19 +180,19 @@ Feature: Step - asNumber()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[5].b |
+      | d[5].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX5X_asNumberXN_nintX
+  Scenario: g_injectX5X_asNumberXN_byteX
     Given the empty graph
     And the traversal of
       """
-      g.inject("5").asNumber(N.nint)
+      g.inject("5").asNumber(N.nbyte)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[5].i |
+      | d[5].b |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_000X_asNumberXN_nintX
