@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
@@ -41,15 +42,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected PBiPredicate<V, V> biPredicate;
     protected V value;
-    protected Optional<GValue<V>> gValue = Optional.empty();
-    protected Optional<GValue<V>[]> gValues = Optional.empty();
+    protected GValue<V> gValue;
+    protected GValue<V>[] gValues;
 
     public P(final PBiPredicate<V, V> biPredicate, V value) {
         if (value instanceof GValue) {
-            this.gValue = Optional.of((GValue<V>) value);
+            this.gValue = (GValue<V>) value;
             this.value = ((GValue<V>) value).get();
         } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
-            this.gValues = Optional.of(GValue.ensureGValues(((List) value).toArray()));
+            this.gValues = GValue.ensureGValues(((List) value).toArray());
             this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
         } else {
             this.value = value;
@@ -58,7 +59,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
-        this.gValue = Optional.of(value);
+        this.gValue = value;
         this.value = value.get();
         this.biPredicate = biPredicate;
     }
@@ -282,19 +283,28 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public boolean isParameterized() {
-        return gValue.isPresent() || gValues.isPresent();
+        if (gValue != null && gValue.isVariable()) {
+            return true;
+        }
+        if (gValues != null) {
+            for (final GValue<V> gValue : gValues) {
+                if (gValue != null && gValue.isVariable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void updateVariable(final String name, final Object value) {
-        if (this.gValue.isPresent() && name.equals(this.gValue.get().getName())) {
-            this.gValue = Optional.of(GValue.of(name, (V) value));
+        if (this.gValue != null && name.equals(this.gValue.getName())) {
+            this.gValue = GValue.of(name, (V) value);
             this.value = (V) value;
         }
-        if (this.gValues.isPresent()) {
-            GValue<V>[] gValueArgs = this.gValues.get();
-            for (int i = 0; i < gValueArgs.length; i++) {
-                if (name.equals(gValueArgs[i].getName())) {
-                    gValueArgs[i] = GValue.of(name, (V) value);
+        if (this.gValues != null) {
+            for (int i = 0; i < this.gValues.length; i++) {
+                if (name.equals(this.gValues[i].getName())) {
+                    this.gValues[i] = GValue.of(name, (V) value);
                     ((List<V>) value).set(i, (V) value);
                 }
             }
@@ -303,11 +313,11 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public Set<GValue<?>> getGValues() {
         Set<GValue<?>> results = new HashSet<>();
-        if (gValue.isPresent()) {
-            results.add(gValue.get());
+        if (gValue != null && gValue.isVariable()) {
+            results.add(gValue);
         }
-        if (gValues.isPresent()) {
-            results.addAll(Arrays.asList(gValues.get()));
+        if (gValues!= null) {
+            results.addAll(Arrays.stream(gValues).filter(GValue::isVariable).collect(Collectors.toList()));
         }
         return results;
     }

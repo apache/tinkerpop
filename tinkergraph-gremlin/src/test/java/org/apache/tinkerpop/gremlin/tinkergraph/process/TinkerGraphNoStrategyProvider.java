@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SideEffectStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -50,7 +51,8 @@ public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
             ProfileStrategy.class,
             ProductiveByStrategy.class, // this strategy is required to maintain 3.5.x null behaviors defined in tests
             ConnectiveStrategy.class,
-            SideEffectStrategy.class));
+            SideEffectStrategy.class,
+            GValueReductionStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {

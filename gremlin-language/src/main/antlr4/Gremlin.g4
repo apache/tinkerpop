@@ -1630,7 +1630,7 @@ booleanLiteral
 dateLiteral
     : K_DATETIME LPAREN stringLiteral RPAREN
     | K_DATETIME LPAREN RPAREN
-    | K_DATETIMEU LPAREN stringArgument RPAREN
+    | K_DATETIMEU LPAREN stringLiteral RPAREN
     | K_DATETIMEU LPAREN RPAREN
     ;
 

@@ -37,21 +37,28 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
         implements AddPropertyStepInterface<S>, GValueHolder<S, S> {
 
-    private Parameters parameters = new Parameters(); //TODO:: get parameters out of here
-    private final VertexProperty.Cardinality cardinality;
+    private Object key;
+    private GValue<?> value;
+    private VertexProperty.Cardinality cardinality;
     private Map<Object, List<Object>> properties = new HashMap<>();
 
     public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);
-        this.parameters.set(this, T.key, keyObject, T.value, valueObject);
+        if (keyObject instanceof GValue) {
+            throw new IllegalArgumentException("GValue is not allowed for property keys");
+        }
+        this.key = keyObject;
+        this.value = GValue.of(valueObject);
         this.cardinality = cardinality;
         if (valueObject instanceof GValue) {
             traversal.getGValueManager().track((GValue<?>) valueObject);
@@ -60,12 +67,12 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.parameters.getReferencedLabels();
+        return Collections.emptySet(); //TODO:: is this right?
     }
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.parameters.getTraversals();
+        return Collections.emptyList(); //TODO:: is this right?
     }
 
     @Override
@@ -75,19 +82,12 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public int hashCode() {
-        final int hash = super.hashCode() ^ this.parameters.hashCode();
-        return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
-    }
-
-    @Override
-    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
-        super.setTraversal(parentTraversal);
-        this.parameters.getTraversals().forEach(this::integrateChild);
+        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality);
     }
 
     @Override
     protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("GraphStepGValueContract is not executable");
+        throw new IllegalStateException("GValueHolder is not executable");
     }
 
     @Override
@@ -98,28 +98,16 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     @Override
     public AddPropertyStepPlaceholder<S> clone() {
         final AddPropertyStepPlaceholder<S> clone = (AddPropertyStepPlaceholder<S>) super.clone();
-        clone.parameters = this.parameters.clone();
+        clone.cardinality = cardinality;
+        clone.key = key;
+        clone.value = value;
+        clone.properties.putAll(properties);
         return clone;
     }
 
     @Override
     public AddPropertyStep<S> asConcreteStep() {
-        Object key = parameters.get(T.label, () -> "Edge").get(0);
-        if (key instanceof GValue) {
-            key = ((GValue) key).get();
-        }
-        if (key instanceof GValueConstantTraversal) {
-            key = ((GValueConstantTraversal) key).getConstantTraversal();
-        }
-        Object label = parameters.get(T.label, () -> "Edge").get(0);
-        if (label instanceof GValue) {
-            label = ((GValue) label).get();
-        }
-        if (label instanceof GValueConstantTraversal) {
-            label = ((GValueConstantTraversal) label).getConstantTraversal();
-        }
-        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, label);
-        step.configure(GValue.resolveToValues(parameters.getRawKeyValues(T.key, T.value)));
+        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value.get());
 
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
@@ -133,17 +121,45 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public boolean isParameterized() {
-        return GValue.containsVariables(parameters.getRawKeyValues());
+        if (value.isVariable()) {
+            return true;
+        }
+        for (List<Object> list : properties.values()) {
+            if (GValue.containsVariables(list.toArray())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public void updateVariable(String name, Object value) {
-        // TODO
+        if (name.equals(this.value.getName())) {
+            this.value = GValue.of(name, value);
+        }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object propertyVal : entry.getValue()) {
+                if (propertyVal instanceof GValue && name.equals(((GValue<?>) propertyVal).getName())) {
+                    properties.put(entry.getKey(), Collections.singletonList(GValue.of(name, value)));
+                }
+            }
+        }
     }
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        return Collections.EMPTY_SET; //TODO::
+        Set<GValue<?>> gValues = new HashSet<>();
+        if (value.isVariable()) {
+            gValues.add(value);
+        }
+        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            for (final Object propertyVal : entry.getValue()) {
+                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
+                    gValues.add((GValue<?>) propertyVal);
+                }
+            }
+        }
+        return gValues;
     }
 
     @Override

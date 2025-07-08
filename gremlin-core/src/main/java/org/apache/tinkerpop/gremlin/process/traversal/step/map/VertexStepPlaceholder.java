@@ -36,8 +36,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles the logic of traversing to adjacent vertices or edges given a direction and edge labels for steps like,
@@ -115,20 +119,37 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
         return StringFactory.stepString(this, this.direction, Arrays.asList(this.edgeLabels), this.returnClass.getSimpleName().toLowerCase());
     }
 
-    // todo: why commented out?
-//    @Override
-//    public int hashCode() {
-//        int result = Objects.hash(super.hashCode(), direction, returnClass);
-//        // edgeLabel's order does not matter because in("x", "y") and in("y", "x") must be considered equal.
-//        if (edgeLabels != null && edgeLabels.length > 0) {
-//            final List<String> sortedEdgeLabels = Arrays.stream(edgeLabels)
-//                    .sorted(Comparator.nullsLast(Comparator.naturalOrder())).collect(Collectors.toList());
-//            for (final String edgeLabel : sortedEdgeLabels) {
-//                result = 31 * result + Objects.hashCode(edgeLabel);
-//            }
-//        }
-//        return result;
-//    }
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), direction, returnClass);
+        // edgeLabel's order does not matter because in("x", "y") and in("y", "x") must be considered equal.
+        if (edgeLabels != null && edgeLabels.length > 0) {
+            final List<GValue<String>> sortedEdgeLabels = Arrays.stream(edgeLabels)
+                    .sorted(Comparator.nullsLast(new Comparator<GValue<String>>() {
+                        @Override
+                        public int compare(GValue<String> o1, GValue<String> o2) {
+                            // variables come before non-variables
+                            if (o1.isVariable() && !o2.isVariable()) {
+                                return -1;
+                            } else if (!o1.isVariable() && o2.isVariable()) {
+                                return 1;
+                            } else if (o1.isVariable()) {
+                                if (!o2.getName().equals(o1.getName())) {
+                                    return o1.getName().compareTo(o2.getName()); // compare by variable name
+                                } else {
+                                    return o1.get().compareTo(o2.get()); // use value as tie-breaker
+                                }
+                            } else {
+                                return o1.get().compareTo(o2.get()); // comparison of 2 non-variables
+                            }
+                        }
+                    })).collect(Collectors.toList());
+            for (final GValue<String> edgeLabel : sortedEdgeLabels) {
+                result = 31 * result + Objects.hashCode(edgeLabel);
+            }
+        }
+        return result;
+    }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
