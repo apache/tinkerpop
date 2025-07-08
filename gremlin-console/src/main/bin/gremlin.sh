@@ -112,6 +112,7 @@ fi
 JAVA_VERSION=$($JAVA -version 2>&1 | awk -F '"' '/version/ {print $2}')
 if [[ "$JAVA_VERSION" == 17* ]]; then
     JVM_OPTS+=( "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" )
+    JVM_OPTS+=( "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED" )
 fi
 
 # Start the JVM, execute the application, and return its exit code

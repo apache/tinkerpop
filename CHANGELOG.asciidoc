@@ -88,6 +88,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
+* Fixed bug in Gremlin Console for field accessor issue with JDK17.
 * Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
 * Added server metrics to help better detect and diagnose write pauses due to the `writeBufferHighWaterMark`: `channels.paused`, `channels.total`, and `channels.write-pauses`.
 * Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
@@ -109,8 +110,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 * Changed `gremlin-go` Client `ReadBufferSize` and `WriteBufferSize` defaults to 1048576 (1MB) to align with DriverRemoteConnection.
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
+* Fixed bug in `CallStep` which prevented Java serialization due to non-serializable `ServiceCallContext` and `Service` usage.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 * Support hot reloading of SSL certificates.
+* Increase default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 
 [[release-3-7-3]]
