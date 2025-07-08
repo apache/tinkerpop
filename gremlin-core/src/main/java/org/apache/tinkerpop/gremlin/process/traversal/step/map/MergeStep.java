@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
@@ -57,7 +56,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements TraversalOptionParent<Merge, S, C>, MergeStepInterface<S, E, C> {
+        implements MergeStepInterface<S, E, C> {
 
     protected final boolean isStart;
     protected boolean first = true;

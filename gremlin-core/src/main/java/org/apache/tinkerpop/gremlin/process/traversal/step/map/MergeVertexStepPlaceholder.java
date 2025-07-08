@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -52,6 +53,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
     private Map<Object, List<Object>> properties = new HashMap<>();
+    private Map<Merge, Traversal.Admin<S, Map<Object, Object>>> childOptions = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
@@ -63,7 +65,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
     private final boolean isStart;
 
     public MergeVertexStepPlaceholder(final Traversal.Admin traversal, final boolean isStart) {
-        this(traversal, isStart, Collections.emptyMap());
+        this(traversal, isStart, new IdentityTraversal<>());
     }
 
     public MergeVertexStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
@@ -136,7 +138,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
 
     @Override
     public void addChildOption(Merge token, Traversal.Admin traversalOption) {
-
+        childOptions.put(token, traversalOption);
     }
 
     @Override
@@ -184,6 +186,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
                 step.addProperty(entry.getKey(), value);
             }
         }
+        childOptions.forEach((k, v) -> step.addChildOption(k, v));
 
         return step;
     }
