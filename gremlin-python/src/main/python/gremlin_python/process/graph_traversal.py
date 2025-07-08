@@ -314,12 +314,12 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("as", *args)
         return self
 
-    def as_date(self, *args):
-        self.bytecode.add_step("asDate", *args)
+    def as_bool(self, *args):
+        self.bytecode.add_step("asBool", *args)
         return self
 
-    def as_bool(self, *args):
-        self.gremlin_lang.add_step("asBool", *args)
+    def as_date(self, *args):
+        self.bytecode.add_step("asDate", *args)
         return self
 
     def as_string(self, *args):
@@ -1100,12 +1100,12 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).as_(*args)
 
     @classmethod
-    def as_date(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
+    def as_bool(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_bool(*args)
 
     @classmethod
-    def as_bool(cls, *args):
-        return cls.graph_traversal(None, None, GremlinLang()).as_bool(*args)
+    def as_date(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
 
     @classmethod
     def as_string(cls, *args):
@@ -1875,11 +1875,13 @@ def as_(*args):
     return __.as_(*args)
 
 
+def as_bool(*args):
+    return __.as_bool(*args)
+
+
 def as_date(*args):
     return __.as_date(*args)
 
-def as_bool(*args):
-    return __.as_bool(*args)
 
 def as_string(*args):
     return __.as_string(*args)
@@ -2423,9 +2425,9 @@ statics.add_static('and_', and_)
 
 statics.add_static('as_', as_)
 
-statics.add_static('as_date', as_date)
-
 statics.add_static('as_bool', as_bool)
+
+statics.add_static('as_date', as_date)
 
 statics.add_static('as_string', as_string)
 

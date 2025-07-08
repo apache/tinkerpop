@@ -31,6 +31,18 @@ Feature: Step - asBool()
       | true |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXneg_1X_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(-1).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX0X_asBool
     Given the empty graph
     And the traversal of
@@ -43,7 +55,19 @@ Feature: Step - asBool()
       | false |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXstr_trueX_asBool
+  Scenario: g_injectXneg_0X_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(-0.0).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | false |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXtrueX_asBool
     Given the empty graph
     And the traversal of
       """
@@ -55,11 +79,36 @@ Feature: Step - asBool()
       | true |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXinvalidstrX_asBool
+  Scenario: g_injectXnullX_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXhelloX_asBool
     Given the empty graph
     And the traversal of
       """
       g.inject('hello').asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX1_2X_asBool
+    Given the empty graph
+    And using the parameter xx1 defined as "l[1,2]"
+    And the traversal of
+      """
+      g.inject(xx1).asBool()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"

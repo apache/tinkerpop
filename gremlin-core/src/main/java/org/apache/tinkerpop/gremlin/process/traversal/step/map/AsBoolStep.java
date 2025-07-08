@@ -37,17 +37,18 @@ public final class AsBoolStep<S> extends ScalarMapStep<S, Boolean> {
     @Override
     protected Boolean map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
-        if (object == null) return false;
+        if (object == null) return null;
         if (object instanceof Boolean) return (Boolean) object;
         if (object instanceof Number) {
             final double d = ((Number) object).doubleValue();
-            return !Double.isNaN(d) && d != 0d;
+            if (Double.isNaN(d)) return null;
+            return d != 0d;
         }
         if (object instanceof String) {
             final String str = (String) object;
             if (str.equalsIgnoreCase("true")) return true;
             if (str.equalsIgnoreCase("false")) return false;
-            throw new IllegalArgumentException("Can't parse " + object + " as Boolean.");
+            return null;
         }
         throw new IllegalArgumentException("Can't parse " + object.getClass().getName() + " as Boolean.");
     }

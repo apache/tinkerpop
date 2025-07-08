@@ -23,10 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
+import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class AsBoolStepTest extends StepTest {
 
@@ -37,17 +40,21 @@ public class AsBoolStepTest extends StepTest {
 
     @Test
     public void shouldParseBoolean() {
-        assertEquals(true, __.__(1).asBool().next());
+        assertEquals(true, __.__(-1).asBool().next());
         assertEquals(false, __.__(0).asBool().next());
+        assertEquals(true, __.__(1).asBool().next());
         assertEquals(true, __.__(3.14).asBool().next());
-        assertEquals(false, __.__(Double.NaN).asBool().next());
-        assertEquals(false, __.__(null).asBool().next());
+        assertEquals(true, __.__(new BigInteger("1000000000000000000000")).asBool().next());
         assertEquals(true, __.__("TRUE").asBool().next());
         assertEquals(false, __.__("false").asBool().next());
+        assertNull(__.__(Double.NaN).asBool().next());
+        assertNull(__.__((Object) null).asBool().next());
+        assertNull(__.__("hello world").asBool().next());
+        assertNull(__.__("1").asBool().next());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnInvalidString() {
-        __.__("hello").asBool().next();
+        __.__(Arrays.asList(1, 2)).asBool().next();
     }
 }

@@ -350,6 +350,10 @@ traversalMethod_as
     : K_AS LPAREN stringLiteral (COMMA stringNullableLiteralVarargs)? RPAREN
     ;
 
+traversalMethod_asBool
+    : K_ASBOOL LPAREN RPAREN
+    ;
+
 traversalMethod_asDate
     : K_ASDATE LPAREN RPAREN
     ;
@@ -357,10 +361,6 @@ traversalMethod_asDate
 traversalMethod_asString
     : K_ASSTRING LPAREN RPAREN #traversalMethod_asString_Empty
     | K_ASSTRING LPAREN traversalScope RPAREN #traversalMethod_asString_Scope
-    ;
-
-traversalMethod_asBool
-    : K_ASBOOL LPAREN RPAREN
     ;
 
 traversalMethod_barrier
@@ -1672,6 +1672,7 @@ keyword
     | K_AND
     | K_ANY
     | K_AS
+    | K_ASBOOL
     | K_ASC
     | K_ASDATE
     | K_ASSTRING
@@ -1931,9 +1932,9 @@ K_ALL: 'all';
 K_AND: 'and';
 K_ANY: 'any';
 K_AS: 'as';
+K_ASBOOL: 'asBool';
 K_ASC: 'asc';
 K_ASDATE: 'asDate';
-K_ASBOOL: 'asBool';
 K_ASSTRING: 'asString';
 K_ASSIGN: 'assign';
 K_BARRIER: 'barrier';
