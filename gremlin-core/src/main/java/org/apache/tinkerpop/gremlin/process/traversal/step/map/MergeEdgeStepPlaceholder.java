@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -49,13 +51,14 @@ import java.util.Set;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implements MergeStepInterface<S, Edge, Map>, GValueHolder<S, Edge> {
+public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implements MergeStepInterface<S, Edge, Map<Object, Object>>, GValueHolder<S, Edge> {
 
-    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
     private Map<Object, List<Object>> properties = new HashMap<>();
+    private Map<Merge, Traversal.Admin<S, Map<Object, Object>>> childOptions = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
+        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
     private Traversal.Admin<?,Map<Object,Object>> mergeTraversal;
@@ -64,7 +67,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     private final boolean isStart;
 
     public MergeEdgeStepPlaceholder(final Traversal.Admin traversal, final boolean isStart) {
-        this(traversal, isStart, Collections.emptyMap());
+        this(traversal, isStart, new IdentityTraversal<>());
     }
 
     public MergeEdgeStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
@@ -137,7 +140,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
 
     @Override
     public void addChildOption(Merge token, Traversal.Admin traversalOption) {
-
+        childOptions.put(token, traversalOption);
     }
 
     @Override
@@ -184,6 +187,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
                 step.addProperty(entry.getKey(), value);
             }
         }
+        childOptions.forEach((k, v) -> step.addChildOption(k, v));
 
         TraversalHelper.copyLabels(this, step, false);
         return step;

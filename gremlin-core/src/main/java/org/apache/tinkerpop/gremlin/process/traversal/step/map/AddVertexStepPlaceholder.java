@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -129,6 +130,12 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
         return label.next();
     }
 
+    private void setLabel(Object label) {// TODO this be public and added to step interface?
+        if (getLabelGValueSafe().equals(Vertex.DEFAULT_LABEL)) {
+            this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
+        }
+    }
+
     @Override
     public Map<Object, List<Object>> getProperties() {
         for (List<Object> list : properties.values()) {
@@ -157,6 +164,14 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
         }
         if (value instanceof GValue) { //TODO could value come in as a traversal?
             traversal.getGValueManager().track((GValue<?>) value);
+        }
+        if (key == T.label) { //todo copy to similar steps
+            setLabel(value);
+            return;
+        }
+        if (key == T.id) {
+            setElementId(value);
+            return;
         }
         List<Object> values = properties.get(key);
         if (values == null) {
@@ -197,6 +212,9 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
     public void updateVariable(String name, Object value) {
         if (label instanceof GValueConstantTraversal) {
             ((GValueConstantTraversal<S, String>) label).updateVariable(name, value);
+        }
+        if (elementId != null && name.equals(elementId.getName())) {
+            elementId = GValue.of(name, value);
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             List<Object> values = entry.getValue();

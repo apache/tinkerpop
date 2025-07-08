@@ -105,7 +105,7 @@ public class GValue<V> implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(final Object o) { //TODO revisit equality and hash.
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final GValue<?> gValue = (GValue<?>) o;
