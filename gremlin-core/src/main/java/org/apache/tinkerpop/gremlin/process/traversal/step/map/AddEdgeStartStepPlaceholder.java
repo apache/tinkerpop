@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
@@ -51,7 +52,7 @@ import java.util.Set;
 public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
         implements AddEdgeStepInterface<S>, GValueHolder<S, Edge>, PropertyAdding {
 
-    private final Traversal.Admin<S,String> label;
+    private Traversal.Admin<S,String> label;
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;
     private Map<Object, List<Object>> properties = new HashMap<>();
@@ -160,6 +161,12 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
         return label.next();
     }
 
+    private void setLabel(Object label) {// TODO this be public and added to step interface?
+        if (getLabelGValueSafe().equals(Vertex.DEFAULT_LABEL)) {
+            this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
+        }
+    }
+
     @Override
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
@@ -167,6 +174,14 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
         }
         if (value instanceof GValue) { //TODO could value come in as a traversal?
             traversal.getGValueManager().track((GValue<?>) value);
+        }
+        if (key == T.label) { //todo copy to similar steps
+            setLabel(value);
+            return;
+        }
+        if (key == T.id) {
+            setElementId(value);
+            return;
         }
         if (properties.containsKey(key)) {
             throw new IllegalArgumentException("Edges only support properties with single cardinality");
@@ -251,6 +266,9 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
         }
         if (to instanceof GValueConstantTraversal) {
             ((GValueConstantTraversal<S, String>) to).updateVariable(name, value);
+        }
+        if (elementId != null && name.equals(elementId.getName())) {
+            elementId = GValue.of(name, value); //TODO add to equivalent steps
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (final Object propertyVal : entry.getValue()) {

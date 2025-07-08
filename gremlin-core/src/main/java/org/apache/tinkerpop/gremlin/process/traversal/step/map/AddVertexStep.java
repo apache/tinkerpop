@@ -71,7 +71,8 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
 
     @Override
     public Object getElementId() {
-        return this.parameters.get(T.id, null);
+        List<Object> ids = this.parameters.get(T.id, null);
+        return ids.isEmpty() ? null : ids.get(0);
     }
 
     @Override

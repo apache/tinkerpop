@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
@@ -112,9 +113,9 @@ public final class TraversalHelper {
         for (final Step step : traversal.getSteps()) {
             if ((step instanceof PropertiesStep || step instanceof LabelStep || step instanceof PropertyMapStep) && state == 'u')
                 return 'x';
-            else if (step instanceof VertexStep) {
+            else if (step instanceof VertexStepInterface) {
                 if (state == 'u') return 'x';
-                state = ((VertexStep) step).returnsVertex() ? 'u' : 'e';
+                state = ((VertexStepInterface) step).returnsVertex() ? 'u' : 'e';
             } else if (step instanceof EdgeVertexStep) {
                 state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {

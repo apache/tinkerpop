@@ -53,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 /**
  * Implementation for the {@code mergeE()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
+public class MergeEdgeStep<S> extends MergeStep<S, Edge, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
@@ -93,7 +93,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
     }
 
     @Override
-    public void addChildOption(final Merge token, final Traversal.Admin<S, Object> traversalOption) {
+    public void addChildOption(final Merge token, final Traversal.Admin<S, Map<Object, Object>> traversalOption) {
         if (token == Merge.outV) {
             this.outVTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.inV) {
