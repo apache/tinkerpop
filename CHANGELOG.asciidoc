@@ -50,6 +50,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `CallStep` which prevented Java serialization due to non-serializable `ServiceCallContext` and `Service` usage.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
 * Support hot reloading of SSL certificates.
+* Increase default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 
 [[release-3-7-3]]
