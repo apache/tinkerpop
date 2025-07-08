@@ -414,7 +414,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalMethod_from_Vertex(final GremlinParser.TraversalMethod_from_VertexContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_from_GenricArgument(GremlinParser.TraversalMethod_from_GenricArgumentContext ctx) { return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -854,7 +854,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalMethod_to_Vertex(final GremlinParser.TraversalMethod_to_VertexContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_to_GenricArgument(final GremlinParser.TraversalMethod_to_GenricArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1382,10 +1382,6 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) { notImplemented(ctx); return null; }
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override public T visitTraversalSourceSpawnMethod_mergeV_Map(final GremlinParser.TraversalSourceSpawnMethod_mergeV_MapContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1699,8 +1695,4 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitNakedKey(final GremlinParser.NakedKeyContext ctx) { notImplemented(ctx); return null;}
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override public T visitStructureVertexArgument(final GremlinParser.StructureVertexArgumentContext ctx) { notImplemented(ctx); return null; }
 }

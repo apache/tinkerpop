@@ -1789,16 +1789,16 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public Traversal visitTraversalMethod_from_Vertex(final GremlinParser.TraversalMethod_from_VertexContext ctx) {
-        return graphTraversal.from(antlr.argumentVisitor.parseVertex(ctx.structureVertexArgument()));
+    public GraphTraversal visitTraversalMethod_from_GenricArgument(final GremlinParser.TraversalMethod_from_GenricArgumentContext ctx) {
+        return graphTraversal.from(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Traversal visitTraversalMethod_to_Vertex(final GremlinParser.TraversalMethod_to_VertexContext ctx) {
-        return graphTraversal.to(antlr.argumentVisitor.parseVertex(ctx.structureVertexArgument()));
+    public Traversal visitTraversalMethod_to_GenricArgument(final GremlinParser.TraversalMethod_to_GenricArgumentContext ctx) {
+        return graphTraversal.to(antlr.argumentVisitor.visitGenericArgument(ctx.genericArgument()));
     }
 
     /**

@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.HashSet;
 import java.util.List;
@@ -118,27 +119,45 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
             // FROM/TO must be set and must be vertices
-            final Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
-            if (!(theTo instanceof Vertex))
-                throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).to() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                        null == theTo ? "null" : theTo.getClass().getSimpleName()));
+            Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
+            if (theTo != null && !(theTo instanceof Vertex)) {
+                theTo = new ReferenceVertex(theTo);
+            }
 
-            final Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
-            if (!(theFrom instanceof Vertex))
+            if (theTo == null)
                 throw new IllegalStateException(String.format(
-                        "The value given to addE(%s).from() must resolve to a Vertex but %s was specified instead", edgeLabel,
-                        null == theFrom ? "null" : theFrom.getClass().getSimpleName()));
+                        "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
+
+            Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
+            if (theFrom != null && !(theFrom instanceof Vertex)) {
+                theFrom = new ReferenceVertex(theFrom);
+            }
+            if (theFrom == null)
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
             Vertex toVertex = (Vertex) theTo;
             Vertex fromVertex = (Vertex) theFrom;
 
-            if (toVertex instanceof Attachable)
-                toVertex = ((Attachable<Vertex>) toVertex)
-                        .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
-            if (fromVertex instanceof Attachable)
-                fromVertex = ((Attachable<Vertex>) fromVertex)
-                        .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            try {
+                if (toVertex instanceof Attachable)
+                    toVertex = ((Attachable<Vertex>) toVertex)
+                            .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
+            }
+
+            try {
+                if (fromVertex instanceof Attachable)
+                    fromVertex = ((Attachable<Vertex>) fromVertex)
+                            .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalStateException(String.format(
+                        "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
+            }
 
             final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
