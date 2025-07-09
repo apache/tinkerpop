@@ -342,6 +342,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pick.class, 137));
             add(GryoTypeReg.of(DT.class, 198));
             add(GryoTypeReg.of(Merge.class, 196));
+            add(GryoTypeReg.of(DT.class, 199));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
 
@@ -550,6 +551,7 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Pick.class, 137));
             add(GryoTypeReg.of(DT.class, 198));
             add(GryoTypeReg.of(Merge.class, 196));
+            add(GryoTypeReg.of(DT.class, 199));
             add(GryoTypeReg.of(HashSetSupplier.class, 136, new UtilSerializers.HashSetSupplierSerializer()));
             add(GryoTypeReg.of(MultiComparator.class, 165));
 
