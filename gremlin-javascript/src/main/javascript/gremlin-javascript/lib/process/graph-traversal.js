@@ -434,6 +434,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal asBool method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asBool(...args) {
+    this.bytecode.addStep('asBool', args);
+    return this;
+  }
+
+  /**
    * Graph traversal asDate method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1740,6 +1750,7 @@ const statics = {
   and: (...args) => callOnEmptyTraversal('and', args),
   any: (...args) => callOnEmptyTraversal('any', args),
   as: (...args) => callOnEmptyTraversal('as', args),
+  asBool: (...args) => callOnEmptyTraversal('asBool', args),
   asDate: (...args) => callOnEmptyTraversal('asDate', args),
   asString: (...args) => callOnEmptyTraversal('asString', args),
   barrier: (...args) => callOnEmptyTraversal('barrier', args),
