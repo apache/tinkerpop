@@ -20,12 +20,16 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.hamcrest.CoreMatchers;
@@ -42,6 +46,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
@@ -49,6 +54,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -125,6 +131,53 @@ public class DefaultTraversalTest {
         sideEffects.add("a", new HashSet<>(Arrays.asList("marko", "x", "x", "bob")));
         sideEffects.add("b", 10);
         recursiveTestTraversals(traversal, sideEffects, new HashSet<>(Arrays.asList("marko", "bob", "x")), 13);
+    }
+
+    @Test
+    public void shouldLock() {
+        final Traversal t = getBigDeepTraversal();
+        t.asAdmin().lock();
+        recursiveTestLock(t.asAdmin());
+    }
+
+
+    @Test
+    public void shouldLockAfterApplyingStrategies() {
+        final Traversal t = getBigDeepTraversal();
+        t.asAdmin().applyStrategies();
+        recursiveTestLock(t.asAdmin());
+    }
+
+    private static Traversal getBigDeepTraversal() {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = traversal().withEmbedded(graph);
+
+        final Traversal t = g.V().or(
+                __.has("name", P.within(new HashSet<>(Arrays.asList("DARK STAR", "ST. STEPHEN", "CHINA CAT SUNFLOWER")))),
+                __.has("songType", P.eq("cover"))).where(
+                __.coalesce(
+                        __.where(
+                                __.union(
+                                        __.as("a").inE("sungBy").choose(
+                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
+                                        ).outV().filter(__.has("weight", P.lt(1))),
+                                        __.as("a").outE("followedBy").choose(
+                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
+                                        ).inV().where(__.identity())
+                                ).dedup().select("a")
+                        )
+                ));
+        return t;
+    }
+
+    private void recursiveTestLock(final Traversal.Admin<?, ?> traversal) {
+        assertThat(traversal.isLocked(), is(true));
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                ((TraversalParent) step).getGlobalChildren().forEach(this::recursiveTestLock);
+                ((TraversalParent) step).getLocalChildren().forEach(this::recursiveTestLock);
+            }
+        }
     }
 
     private void recursiveTestTraversals(final Traversal.Admin<?, ?> traversal, final TraversalSideEffects sideEffects, final Set aValue, final int bValue) {

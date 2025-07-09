@@ -154,6 +154,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
+* Improved performance of `Traversal.lock()` which was being called excessively.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
 * Fixed bug in Gremlin Console for field accessor issue with JDK17.
