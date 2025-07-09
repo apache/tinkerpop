@@ -163,47 +163,7 @@ public class DefaultTraversalTest {
                                         ).outV().filter(__.has("weight", P.lt(1))),
                                         __.as("a").outE("followedBy").choose(
                                                 __.has("weight"), __.has("weight", P.gt(1)), __.identity()
-                                        ).inV().where(
-                                                __.coalesce(
-                                                        __.where(
-                                                                __.union(
-                                                                        __.as("a").outE("followedBy").choose(
-                                                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
-                                                                        ).inV().has("songType", P.neq("cover")).where(
-                                                                                __.coalesce(
-                                                                                        __.where(
-                                                                                                __.union(
-                                                                                                        __.as("a").outE("followedBy").choose(
-                                                                                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
-                                                                                                        ).inV().where(
-                                                                                                                __.coalesce(
-                                                                                                                        __.where(
-                                                                                                                                __.union(
-                                                                                                                                        __.as("a").outE("followedBy").choose(
-                                                                                                                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
-                                                                                                                                        ).inV().where(
-                                                                                                                                                __.coalesce(
-                                                                                                                                                        __.where(
-                                                                                                                                                                __.union(
-                                                                                                                                                                        __.as("a").outE("followedBy").choose(
-                                                                                                                                                                                __.has("weight"), __.has("weight", P.gt(1)), __.identity()
-                                                                                                                                                                        ).inV().has("songType", P.within("original"))
-                                                                                                                                                                )
-                                                                                                                                                        )
-                                                                                                                                                )
-                                                                                                                                        )
-                                                                                                                                )
-                                                                                                                        )
-                                                                                                                )
-                                                                                                        )
-                                                                                                )
-                                                                                        )
-                                                                                )
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
+                                        ).inV().where(__.identity())
                                 ).dedup().select("a")
                         )
                 ));
