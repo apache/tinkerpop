@@ -54,6 +54,8 @@ class AiohttpTransport(AbstractBaseTransport):
         self._enable_compression = enable_compression
         if "max_content_length" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["max_msg_size"] = self._aiohttp_kwargs.pop("max_content_length")
+        if "max_msg_size" not in self._aiohttp_kwargs:
+            self._aiohttp_kwargs["max_msg_size"] = 10 * 1024 * 1024
         if "ssl_options" in self._aiohttp_kwargs:
             self._aiohttp_kwargs["ssl"] = self._aiohttp_kwargs.pop("ssl_options")
         if self._enable_compression and "compress" not in self._aiohttp_kwargs:
