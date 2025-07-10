@@ -305,7 +305,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             for (int i = 0; i < this.gValues.length; i++) {
                 if (name.equals(this.gValues[i].getName())) {
                     this.gValues[i] = GValue.of(name, (V) value);
-                    ((List<V>) value).set(i, (V) value);
+                    ((List<V>) this.value).set(i, (V) value);
                 }
             }
         }

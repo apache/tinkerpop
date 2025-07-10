@@ -32,7 +32,9 @@ public interface GValueHolder<S, E> extends Step<S, E> {
         manger.getGValues().forEach(gValue -> {
             updateVariable(gValue.getName(), gValue.get());
         });
-        TraversalHelper.replaceStep(this, this.asConcreteStep(), this.getTraversal());
+        Step<S, E> concreteStep = this.asConcreteStep();
+        concreteStep.setId(this.getId());
+        TraversalHelper.replaceStep(this, concreteStep, this.getTraversal());
     }
 
     public Step<S, E> asConcreteStep();

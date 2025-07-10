@@ -4706,7 +4706,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Step<?, ?> lastStep = this.asAdmin().getEndStep();
 
         // CardinalityValueTraversal doesn't make sense for any prior step other than mergeV()
-        if (!(lastStep instanceof MergeVertexStep) && m != null) {
+        if (!(lastStep instanceof MergeVertexStep || lastStep instanceof MergeVertexStepPlaceholder) && m != null) {
             for (Object k : m.keySet()) {
                 final Object o = m.get(k);
                 if (o instanceof CardinalityValueTraversal)
@@ -4734,7 +4734,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Step<?, ?> lastStep = this.asAdmin().getEndStep();
 
         // CardinalityValueTraversal doesn't make sense for any prior step other than mergeV()
-        if (!(lastStep instanceof MergeVertexStep)) {
+        if (!(lastStep instanceof MergeVertexStep || lastStep instanceof MergeVertexStepPlaceholder)) {
             throw new IllegalStateException("option() with the Cardinality argument can only be used following mergeV()");
         }
 
