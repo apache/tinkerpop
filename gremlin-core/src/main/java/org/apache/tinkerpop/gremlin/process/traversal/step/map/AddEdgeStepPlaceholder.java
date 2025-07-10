@@ -327,4 +327,22 @@ public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
     public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
         throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
     }
+
+    @Override
+    public AddEdgeStepPlaceholder<S> clone() { //TODO for equivalent steps
+        final AddEdgeStepPlaceholder<S> clone = (AddEdgeStepPlaceholder) super.clone();
+        if (label != null) {
+            clone.label = label.clone();
+        }
+        if (from != null){
+            clone.from = from.clone();
+        }
+        if (to != null){
+            clone.to = to.clone();
+        }
+        clone.properties.putAll(properties);
+        clone.elementId = elementId;
+        clone.scopeKeys.addAll(scopeKeys);
+        return clone;
+    }
 }

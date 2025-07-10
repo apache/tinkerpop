@@ -185,6 +185,10 @@ public class AddVertexStepPlaceholder<S> extends AbstractStep<S, Vertex>
     public Step asConcreteStep() {
         AddVertexStep<S> step = new AddVertexStep<>(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) label).getConstantTraversal() : label);
 
+        if (elementId != null) {
+            step.setElementId(elementId.get()); //TODO copy to similar steps
+        }
+
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
                 step.addProperty(entry.getKey(), value instanceof GValue ? ((GValue<?>) value).get() : value);
