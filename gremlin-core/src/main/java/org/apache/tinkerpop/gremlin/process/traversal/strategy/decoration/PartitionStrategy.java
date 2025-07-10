@@ -246,8 +246,9 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                         step instanceof AddVertexStartStepPlaceholder || step instanceof AddEdgeStartStepPlaceholder) {
                     final Map<Object, List<Object>> params = ((PropertyAdding) step).getProperties();
 
-                    params.forEach((k, v) -> {
-
+                    // we get accused of ConcurrentModification if we rely on either the entry set or key set iterators in HashMap here
+                    for (Object k : params.keySet().toArray()) {
+                        final List<Object> v = params.get(k);
                         // need to filter out T based keys
                         if (k instanceof String) {
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
@@ -266,7 +267,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                                 TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
                             });
                         }
-                    });
+                    }
                 }
             }
         });

@@ -94,6 +94,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this(traversalSource.getGraph(), traversalSource.getStrategies(), traversal.getBytecode());
         this.g = traversalSource;
         steps.addAll(traversal.getSteps());
+        for (Step step : traversal.getSteps()) {
+            step.setTraversal(this);
+        }
     }
 
     public DefaultTraversal() {
