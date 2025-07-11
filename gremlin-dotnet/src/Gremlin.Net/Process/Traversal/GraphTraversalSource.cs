@@ -328,6 +328,13 @@ namespace Gremlin.Net.Process.Traversal
             }
             else
             {
+                for (int i = 0; i < vertexIds.Length; i++)
+                {
+                    if (vertexIds[i] is Vertex vertex)
+                    {
+                        vertexIds[i] = vertex.Id;
+                    }
+                }
                 var args = new List<object?>(vertexIds.Length);
                 args.AddRange(vertexIds);
                 traversal.Bytecode.AddStep("V", args.ToArray());
@@ -361,8 +368,14 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> off this graph traversal source and adds the mergeE step to that
         ///     traversal.
         /// </summary>
-        public GraphTraversal<Edge, Edge> MergeE(IDictionary<object,object>? m)
+        public GraphTraversal<Edge, Edge> MergeE(IDictionary<object,object?>? m)
         {
+            if (m != null && m[Direction.Out] is Vertex outV) {
+                m[Direction.Out] = outV.Id;
+            }
+            if (m != null && m[Direction.In] is Vertex inV) {
+                m[Direction.In] = inV.Id;
+            }
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode));
             traversal.Bytecode.AddStep("mergeE", m);
             return traversal;

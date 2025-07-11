@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.UnitTest.Process.Traversal
 {
@@ -178,6 +179,74 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             var expectedObjs = UnfoldBulks(objs, bulks);
             Assert.Equal(expectedObjs, traversedObjs);
+        }
+
+        [Fact]
+        public void ShouldExtractIdFromVertex()
+        {
+            var g = AnonymousTraversalSource.Traversal().With(null);
+
+            // Test basic V() step with mixed ID types
+            var vStart = g.V(1, new Vertex(2));
+            var vStartBytecode = vStart.Bytecode;
+            Assert.Single(vStartBytecode.StepInstructions);
+            Assert.Equal("V", vStartBytecode.StepInstructions[0].OperatorName);
+            Assert.Equal(1, (int)vStartBytecode.StepInstructions[0].Arguments[0]);
+            Assert.Equal(2, (int)vStartBytecode.StepInstructions[0].Arguments[1]); // ID should be extracted from Vertex
+
+            // Test V() step in the middle of a traversal
+            var vMid = g.Inject("foo").V(1, new Vertex(2));
+            var vMidBytecode = vMid.Bytecode;
+            Assert.Equal(2, vMidBytecode.StepInstructions.Count);
+            Assert.Equal("inject", vMidBytecode.StepInstructions[0].OperatorName);
+            Assert.Equal("foo", (string)vMidBytecode.StepInstructions[0].Arguments[0]);
+            Assert.Equal("V", vMidBytecode.StepInstructions[1].OperatorName);
+            Assert.Equal(1, (int)vMidBytecode.StepInstructions[1].Arguments[0]);
+            Assert.Equal(2, (int)vMidBytecode.StepInstructions[1].Arguments[1]); // ID should be extracted from Vertex
+
+            // Test edge creation with from/to vertices
+            var fromTo = g.AddE("Edge").From(new Vertex(1)).To(new Vertex(2));
+            var fromToBytecode = fromTo.Bytecode;
+            Assert.Equal(3, fromToBytecode.StepInstructions.Count);
+            Assert.Equal("addE", fromToBytecode.StepInstructions[0].OperatorName);
+            Assert.Equal("Edge", (string)fromToBytecode.StepInstructions[0].Arguments[0]);
+            Assert.Equal("from", fromToBytecode.StepInstructions[1].OperatorName);
+            Assert.Equal(1, (int)fromToBytecode.StepInstructions[1].Arguments[0]); // ID should be extracted from Vertex
+            Assert.Equal("to", fromToBytecode.StepInstructions[2].OperatorName);
+            Assert.Equal(2, (int)fromToBytecode.StepInstructions[2].Arguments[0]); // ID should be extracted from Vertex
+
+            // Test mergeE() with Vertex in dictionary
+            var mergeMap = new Dictionary<object, object>
+            {
+                { T.Label, "knows" },
+                { Direction.Out, new Vertex(1) },
+                { Direction.In, new Vertex(2) }
+            };
+
+            var mergeEStart = g.MergeE(mergeMap);
+            var mergeEStartBytecode = mergeEStart.Bytecode;
+            Assert.Single(mergeEStartBytecode.StepInstructions);
+            Assert.Equal("mergeE", mergeEStartBytecode.StepInstructions[0].OperatorName);
+            
+            // Check that the dictionary contains extracted IDs
+            var mergeMapArg = (Dictionary<object, object>)mergeEStartBytecode.StepInstructions[0].Arguments[0];
+            Assert.Equal("knows", (string)mergeMapArg[T.Label]);
+            Assert.Equal(1, (int)mergeMapArg[Direction.Out]); // ID should be extracted from Vertex
+            Assert.Equal(2, (int)mergeMapArg[Direction.In]); // ID should be extracted from Vertex
+
+            // Test mergeE() in the middle of a traversal
+            var mergeEMid = g.Inject("foo").MergeE(mergeMap);
+            var mergeEMidBytecode = mergeEMid.Bytecode;
+            Assert.Equal(2, mergeEMidBytecode.StepInstructions.Count);
+            Assert.Equal("inject", mergeEMidBytecode.StepInstructions[0].OperatorName);
+            Assert.Equal("foo", (string)mergeEMidBytecode.StepInstructions[0].Arguments[0]);
+            Assert.Equal("mergeE", mergeEMidBytecode.StepInstructions[1].OperatorName);
+
+            // Check that the dictionary contains extracted IDs
+            var mergeMapArg2 = (Dictionary<object, object>)mergeEMidBytecode.StepInstructions[1].Arguments[0];
+            Assert.Equal("knows", (string)mergeMapArg2[T.Label]);
+            Assert.Equal(1, (int)mergeMapArg2[Direction.Out]); // ID should be extracted from Vertex
+            Assert.Equal(2, (int)mergeMapArg2[Direction.In]); // ID should be extracted from Vertex
         }
     }
 }

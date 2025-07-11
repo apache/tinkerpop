@@ -25,9 +25,9 @@ from pytest import fail
 
 from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.structure.graph import Graph
+from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.traversal import P, Direction
+from gremlin_python.process.traversal import P, Direction, T
 from gremlin_python.process.graph_traversal import __
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
@@ -356,6 +356,35 @@ class TestTraversal(object):
         assert g.V().count().next() == 0
 
         drop_graph_check_count(g)
+
+    def test_should_extract_id_from_vertex(self):
+        g = traversal().with_(None)
+
+        # Test basic V() step with mixed ID types
+        v_start = g.V(1, Vertex(2))
+        assert "g.V(1,2)" == v_start.gremlin_lang.get_gremlin()
+
+        # Test V() step in the middle of a traversal
+        v_mid = g.inject("foo").V(1, Vertex(2))
+        assert "g.inject('foo').V(1,2)" == v_mid.gremlin_lang.get_gremlin()
+
+        # Test edge creation with from/to vertices
+        from_to = g.add_e("Edge").from_(Vertex(1)).to(Vertex(2))
+        assert "g.addE('Edge').from(1).to(2)" == from_to.gremlin_lang.get_gremlin()
+
+        # Test mergeE() with Vertex in dictionary
+        merge_map = {
+            T.label: "knows",
+            Direction.OUT: Vertex(1),
+            Direction.IN: Vertex(2)
+        }
+
+        merge_e_start = g.merge_e(merge_map)
+        assert "g.mergeE([(T.label):'knows',(Direction.OUT):1,(Direction.IN):2])" == merge_e_start.gremlin_lang.get_gremlin()
+
+        # Test mergeE() in the middle of a traversal
+        merge_e_mid = g.inject("foo").merge_e(merge_map)
+        assert "g.inject('foo').mergeE([(T.label):'knows',(Direction.OUT):1,(Direction.IN):2])" == merge_e_mid.gremlin_lang.get_gremlin()
 
 
 def create_connection_to_gtx():

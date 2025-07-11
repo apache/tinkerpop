@@ -160,6 +160,11 @@ func (gts *GraphTraversalSource) E(args ...interface{}) *GraphTraversal {
 
 // V reads vertices from the graph to start the traversal.
 func (gts *GraphTraversalSource) V(args ...interface{}) *GraphTraversal {
+	for i := 0; i < len(args); i++ {
+		if v, ok := args[i].(*Vertex); ok {
+			args[i] = v.Id
+		}
+	}
 	traversal := gts.GetGraphTraversal()
 	traversal.Bytecode.AddStep("V", args...)
 	return traversal
@@ -203,6 +208,16 @@ func (gts *GraphTraversalSource) Io(args ...interface{}) *GraphTraversal {
 
 // MergeE uses an upsert-like operation to add an Edge to start the traversal.
 func (gts *GraphTraversalSource) MergeE(args ...interface{}) *GraphTraversal {
+	if len(args) != 0 {
+		if m, ok := args[0].(map[interface{}]interface{}); ok {
+			if v, ok := m[Direction.Out].(*Vertex); ok {
+				m[Direction.Out] = v.Id
+			}
+			if v, ok := m[Direction.In].(*Vertex); ok {
+				m[Direction.In] = v.Id
+			}
+		}
+	}
 	traversal := gts.GetGraphTraversal()
 	traversal.Bytecode.AddStep("mergeE", args...)
 	return traversal
