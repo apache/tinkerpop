@@ -21,9 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -33,6 +38,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -151,5 +157,28 @@ public class GraphTraversalTest {
                 g.V().hasId(
                         GValue.of("a", new Integer[]{1, 2, 3}), GValue.of("b", new Integer[]{4, 5}),
                         GValue.of("c", Arrays.asList(6, 7)), GValue.ofInteger("d", 8)));
+    }
+
+    @Test
+    public void shouldExtractIdFromVertex() {
+        GraphTraversal VStart = g.V(1, new ReferenceVertex(2));
+        assertEquals("g.V(1,2)", VStart.asAdmin().getGremlinLang().getGremlin());
+
+        GraphTraversal VMid = g.inject("foo").V(1, new ReferenceVertex(2));
+        assertEquals("g.inject(\"foo\").V(1,2)", VMid.asAdmin().getGremlinLang().getGremlin());
+
+        GraphTraversal fromTo = g.addE("Edge").from(new ReferenceVertex(1)).to(new ReferenceVertex(2));
+        assertEquals("g.addE(\"Edge\").from(1).to(2)", fromTo.asAdmin().getGremlinLang().getGremlin());
+
+        Map mergeMap = new LinkedHashMap();
+        mergeMap.put(T.label, "knows");
+        mergeMap.put(Direction.OUT, new ReferenceVertex(1));
+        mergeMap.put(Direction.IN, new ReferenceVertex(2));
+
+        GraphTraversal mergeEStart = g.mergeE(mergeMap);
+        assertEquals("g.mergeE([(T.label):\"knows\",(Direction.OUT):1,(Direction.IN):2])", mergeEStart.asAdmin().getGremlinLang().getGremlin());
+
+        GraphTraversal mergeEMid = g.inject("foo").mergeE(mergeMap);
+        assertEquals("g.inject(\"foo\").mergeE([(T.label):\"knows\",(Direction.OUT):1,(Direction.IN):2])", mergeEMid.asAdmin().getGremlinLang().getGremlin());
     }
 }

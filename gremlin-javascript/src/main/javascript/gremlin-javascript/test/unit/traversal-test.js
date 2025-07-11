@@ -23,7 +23,7 @@
 
 import assert from 'assert';
 import { expect } from 'chai';
-import { Graph } from '../../lib/structure/graph.js';
+import { Graph, Vertex } from '../../lib/structure/graph.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { P, order, direction, Traverser, Traversal } from '../../lib/process/traversal.js';
 import { statics } from '../../lib/process/graph-traversal.js';
@@ -303,6 +303,68 @@ describe('Traversal', function () {
       assert.throws(function () {
         tx.begin();
       });
+    });
+  });
+
+  describe('#shouldExtractIdFromVertex()', function () {
+    const g = anon.traversal().with_(new Graph());
+    it('should extract ID from Vertex objects for V()', function () {
+      // Test basic V() step with mixed ID types
+      const vStart = g.V(1, new Vertex(2, 'person'));
+      const vStartBytecode = vStart.getBytecode();
+      assert.strictEqual(vStartBytecode.stepInstructions[0][0], 'V');
+      assert.strictEqual(vStartBytecode.stepInstructions[0][1], 1);
+      assert.strictEqual(vStartBytecode.stepInstructions[0][2], 2); // ID should be extracted from Vertex
+
+      // Test V() step in the middle of a traversal
+      const vMid = g.inject('foo').V(1, new Vertex(2, 'person'));
+      const vMidBytecode = vMid.getBytecode();
+      assert.strictEqual(vMidBytecode.stepInstructions[0][0], 'inject');
+      assert.strictEqual(vMidBytecode.stepInstructions[0][1], 'foo');
+      assert.strictEqual(vMidBytecode.stepInstructions[1][0], 'V');
+      assert.strictEqual(vMidBytecode.stepInstructions[1][1], 1);
+      assert.strictEqual(vMidBytecode.stepInstructions[1][2], 2); // ID should be extracted from Vertex
+    });
+    it('should extract ID from Vertex objects for from()/to()', function () {
+      // Test edge creation with from/to vertices
+      const fromTo = g.addE('Edge').from_(new Vertex(1, 'person')).to(new Vertex(2, 'person'));
+      const fromToBytecode = fromTo.getBytecode();
+      assert.strictEqual(fromToBytecode.stepInstructions[0][0], 'addE');
+      assert.strictEqual(fromToBytecode.stepInstructions[0][1], 'Edge');
+      assert.strictEqual(fromToBytecode.stepInstructions[1][0], 'from');
+      assert.strictEqual(fromToBytecode.stepInstructions[1][1], 1); // ID should be extracted from Vertex
+      assert.strictEqual(fromToBytecode.stepInstructions[2][0], 'to');
+      assert.strictEqual(fromToBytecode.stepInstructions[2][1], 2); // ID should be extracted from Vertex
+    });
+    it('should extract ID from Vertex objects for mergeE()', function () {
+      // Test mergeE() with Vertex in map
+      const mergeMap = new Map();
+      mergeMap.set('label', 'knows');
+      mergeMap.set(direction.out, new Vertex(1, 'person'));
+      mergeMap.set(direction.in, new Vertex(2, 'person'));
+
+      const mergeEStart = g.mergeE(mergeMap);
+      const mergeEStartBytecode = mergeEStart.getBytecode();
+      assert.strictEqual(mergeEStartBytecode.stepInstructions[0][0], 'mergeE');
+
+      // Check that the map contains extracted IDs
+      const mergeMapArg = mergeEStartBytecode.stepInstructions[0][1];
+      assert.strictEqual(mergeMapArg.get('label'), 'knows');
+      assert.strictEqual(mergeMapArg.get(direction.out), 1); // ID should be extracted from Vertex
+      assert.strictEqual(mergeMapArg.get(direction.in), 2); // ID should be extracted from Vertex
+
+      // Test mergeE() in the middle of a traversal
+      const mergeEMid = g.inject('foo').mergeE(mergeMap);
+      const mergeEMidBytecode = mergeEMid.getBytecode();
+      assert.strictEqual(mergeEMidBytecode.stepInstructions[0][0], 'inject');
+      assert.strictEqual(mergeEMidBytecode.stepInstructions[0][1], 'foo');
+      assert.strictEqual(mergeEMidBytecode.stepInstructions[1][0], 'mergeE');
+
+      // Check that the map contains extracted IDs
+      const mergeMapArg2 = mergeEMidBytecode.stepInstructions[1][1];
+      assert.strictEqual(mergeMapArg2.get('label'), 'knows');
+      assert.strictEqual(mergeMapArg2.get(direction.out), 1); // ID should be extracted from Vertex
+      assert.strictEqual(mergeMapArg2.get(direction.in), 2); // ID should be extracted from Vertex
     });
   });
 });

@@ -30,6 +30,38 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Removal of Vertex/ReferenceVertex from grammar
+
+`StructureVertex`, previously used to construct new vertices in the grammar, now been removed. The `V()` step, as well
+as the `from()` and `to()` modulators used with `addE()`, previously accepted `StructureVertex` as arguments in the
+grammar. In its place, the `from()` and `to()` modulators can now directly accept a vertex id in place of a `Vertex`
+when used with `addE()` (`V()` has always accepted ids in addition to vertices). When using these steps in `gremlin-lang`
+scripts, the vertex id must be used directly. This change has no effect on the `GraphTraversal` API, nor on
+`gremlin-groovy` scripts. Vertices can continue to be used directly such places.
+
+[source,groovy]
+----
+// 3.7.3
+gremlin> v1 = g.V(1).next()
+==>v[1]
+gremlin> v2 = g.V(2).next()
+==>v[2]
+gremlin> script = String.format("g.V(new Vertex(%s)).outE().where(inV().is(new Vertex(%s)))", v1.id(), v2.id())
+==>g.V(new Vertex(1)).outE().where(inV().is(new Vertex(2)))
+gremlin> client.submit(script).all().get().get(0).getEdge()
+==>e[7][1-knows->2]
+
+// 3.8.0
+gremlin> v1 = g.V(1).next()
+==>v[1]
+gremlin> v2 = g.V(2).next()
+==>v[2]
+gremlin> script = String.format("g.V(%s).outE().where(inV().id().is(%s))", v1.id(), v2.id())
+==>g.V(1).outE().where(inV().id().is(2))
+gremlin> client.submit(script).all().get().get(0).getEdge()
+==>e[7][1-knows->2]
+----
+
 ==== Auto promotion of number types
 
 Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
@@ -411,7 +443,6 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 All of the following types in the grammar have been renamed to follow consistent rules:
 
 `genericLiteralArgument` -> `genericArgument`
-`structureVertex` -> `structureVertexLiteral`
 `stringLiteralVarargsArgument` -> `stringNullableArgumentVarargs`
 `genericLiteralMapArgument` -> `genericMapArgument`
 `genericLiteralMapNullable` -> `genericMapNullableLiteral`

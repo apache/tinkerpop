@@ -155,7 +155,7 @@ public class GremlinLang implements Cloneable, Serializable {
         }
 
         if (arg instanceof Vertex)
-            return String.format("new ReferenceVertex(%s,\"%s\")", argAsString(((Vertex) arg).id()), ((Vertex) arg).label());
+            return argAsString(((Vertex) arg).id());
 
         if (arg instanceof P) {
             return asString((P<?>) arg);
