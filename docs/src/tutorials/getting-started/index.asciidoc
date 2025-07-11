@@ -75,6 +75,10 @@ gremlin>
 TIP: Windows users may use the included `bin/gremlin.bat` (`bin/gremlin-java8.bat` for Java 8) file to start the Gremlin
 Console.
 
+TIP: If you make a mistake when entering a command and the prompt gets "stuck" (for example, after a syntax error or an
+incomplete statement), you can use the `:clear` (or `:c`) command to reset the console's input buffer and return to a
+normal prompt.
+
 The Gremlin Console is a link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL environment],
 which provides a nice way to learn Gremlin as you get immediate feedback for the code that you enter. This eliminates
 the more complex need to "create a project" to try things out. The console is not just for "getting started", however.
