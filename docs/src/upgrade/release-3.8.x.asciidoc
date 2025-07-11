@@ -30,6 +30,10 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Set minimum Java version to 11
+
+TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
+
 ==== Removal of Vertex/ReferenceVertex from grammar
 
 `StructureVertex`, previously used to construct new vertices in the grammar, now been removed. The `V()` step, as well
@@ -384,6 +388,10 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+==== Set minimum Java version to 11
+
+TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
 
 ===== Test Suite Changes
 

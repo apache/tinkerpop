@@ -29,9 +29,7 @@ RUN apt-get install apt-transport-https gnupg ca-certificates
 RUN sh -c 'echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list'
 RUN apt-get update
 
-# include both java 8/11 so that we can use the same docker image for future builds on that version of the jdk as we do
-# for the older release branches. the java version to use is just controlled by JAVA_HOME hardcoded below
-RUN apt-get install -y openjdk-8-jdk openjdk-11-jdk gawk git maven openssh-server subversion zip
+RUN apt-get install -y openjdk-11-jdk gawk git maven openssh-server subversion zip
 RUN apt-get install -y --force-yes dotnet-sdk-8.0 mono-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -45,7 +43,6 @@ RUN python3 -m pip install --upgrade pip
 RUN pip install virtualenv
 RUN pip install virtualenvwrapper --no-deps
 
-RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-8-jdk
 RUN rm -rf /var/lib/apt/lists/* /var/cache/openjdk-11-jdk
 
 RUN sed -i 's@PermitRootLogin without-password@PermitRootLogin yes@' /etc/ssh/sshd_config
