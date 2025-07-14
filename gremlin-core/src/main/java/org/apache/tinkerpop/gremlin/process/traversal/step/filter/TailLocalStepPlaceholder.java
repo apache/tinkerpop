@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.TailLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
