@@ -18,14 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 
-public interface AddElementStepInterface extends PropertyAdding {
+import java.util.HashSet;
+
+public interface AddElementStepInterface<S, E> extends Step<S, E>, PropertyAdding, TraversalParent, Scoping {
     String getLabel();
 
     Object getElementId();
 
     void setElementId(Object elementId);
+
+    @Override
+    default HashSet<PopInstruction> getPopInstructions() {
+        return TraversalParent.super.getPopInstructions();
+    }
 }

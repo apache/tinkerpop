@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -32,24 +34,17 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S>, RangeGlobalStepInterface<S> {
+public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S> {
 
-    private GValue<Long> low;
-    private GValue<Long> high;
+    protected GValue<Long> low;
+    protected GValue<Long> high;
 
-    public RangeGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
+    public RangeStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
         this.low = low;
         this.high = high;
         traversal.getGValueManager().track(low);
         traversal.getGValueManager().track(high);
-    }
-
-    @Override
-    public Step<S, S> asConcreteStep() {
-        RangeGlobalStep<S> step = new RangeGlobalStep<>(traversal, low.get(), high.get());
-        TraversalHelper.copyLabels(this, step, false);
-        return step;
     }
 
     @Override
@@ -75,13 +70,11 @@ public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements 
         }
     }
 
-    @Override
     public Long getLowRange() {
         this.traversal.getGValueManager().pinVariable(low.getName());
         return low.get();
     }
 
-    @Override
     public Long getHighRange() {
         this.traversal.getGValueManager().pinVariable(high.getName());
         return high.get();
@@ -121,11 +114,6 @@ public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements 
     }
 
     @Override
-    public RangeGlobalStepPlaceholder<S> clone() {
-        return new RangeGlobalStepPlaceholder<>(traversal, low, high);
-    }
-
-    @Override
     public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         if (low.isVariable()) {
@@ -135,5 +123,43 @@ public class RangeGlobalStepPlaceholder<S> extends AbstractStep<S,S> implements 
             gValues.add(high);
         }
         return gValues;
+    }
+
+    public static class RangeGlobalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeGlobalStepInterface<S> {
+
+        public RangeGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
+            super(traversal, low, high);
+        }
+
+        @Override
+        public Step<S, S> asConcreteStep() {
+            RangeGlobalStep<S> step = new RangeGlobalStep<>(traversal, low.get(), high.get());
+            TraversalHelper.copyLabels(this, step, false);
+            return step;
+        }
+
+        @Override
+        public RangeGlobalStepPlaceholder<S> clone() {
+            return new RangeGlobalStepPlaceholder<>(traversal, low, high);
+        }
+    }
+
+    public static class RangeLocalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeLocalStepInterface<S> {
+
+        public RangeLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
+            super(traversal, low, high);
+        }
+
+        @Override
+        public Step<S, S> asConcreteStep() {
+            RangeLocalStep<S> step = new RangeLocalStep<>(traversal, low.get(), high.get());
+            TraversalHelper.copyLabels(this, step, false);
+            return step;
+        }
+
+        @Override
+        public RangeLocalStepPlaceholder<S> clone() {
+            return new RangeLocalStepPlaceholder<>(traversal, low, high);
+        }
     }
 }
