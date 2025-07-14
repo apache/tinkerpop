@@ -54,6 +54,11 @@ func (g *GraphTraversal) Clone() *GraphTraversal {
 
 // V adds the v step to the GraphTraversal.
 func (g *GraphTraversal) V(args ...interface{}) *GraphTraversal {
+	for i := 0; i < len(args); i++ {
+		if v, ok := args[i].(*Vertex); ok {
+			args[i] = v.Id
+		}
+	}
 	g.Bytecode.AddStep("V", args...)
 	return g
 }
@@ -320,6 +325,11 @@ func (g *GraphTraversal) Format(args ...interface{}) *GraphTraversal {
 
 // From adds the from step to the GraphTraversal.
 func (g *GraphTraversal) From(args ...interface{}) *GraphTraversal {
+	for i := 0; i < len(args); i++ {
+		if v, ok := args[i].(*Vertex); ok {
+			args[i] = v.Id
+		}
+	}
 	g.Bytecode.AddStep("from", args...)
 	return g
 }
@@ -508,6 +518,16 @@ func (g *GraphTraversal) Merge(args ...interface{}) *GraphTraversal {
 
 // MergeE adds the mergeE step to the GraphTraversal.
 func (g *GraphTraversal) MergeE(args ...interface{}) *GraphTraversal {
+	if len(args) != 0 {
+		if m, ok := args[0].(map[interface{}]interface{}); ok {
+			if v, ok := m[Direction.Out].(*Vertex); ok {
+				m[Direction.Out] = v.Id
+			}
+			if v, ok := m[Direction.In].(*Vertex); ok {
+				m[Direction.In] = v.Id
+			}
+		}
+	}
 	g.Bytecode.AddStep("mergeE", args...)
 	return g
 }
@@ -774,6 +794,11 @@ func (g *GraphTraversal) Times(args ...interface{}) *GraphTraversal {
 
 // To adds the to step to the GraphTraversal.
 func (g *GraphTraversal) To(args ...interface{}) *GraphTraversal {
+	for i := 0; i < len(args); i++ {
+		if v, ok := args[i].(*Vertex); ok {
+			args[i] = v.Id
+		}
+	}
 	g.Bytecode.AddStep("to", args...)
 	return g
 }

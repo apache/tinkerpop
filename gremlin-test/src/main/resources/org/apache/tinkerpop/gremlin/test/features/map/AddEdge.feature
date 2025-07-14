@@ -265,23 +265,23 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter v6 defined as "v[peter]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And the traversal of
       """
-      g.withSideEffect("b", v6).V(v1).addE("knows").to("b").property("weight", 0.5D)
+      g.withSideEffect("b", vid6).V(vid1).addE("knows").to("b").property("weight", 0.5D)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 4 for count of "g.V(v1).bothE()"
-    And the graph should return 0 for count of "g.V(v1).inE(\"knows\")"
-    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
-    And the graph should return 2 for count of "g.V(v1).bothE(\"knows\").has(\"weight\",0.5)"
-    And the graph should return 2 for count of "g.V(v6).bothE()"
-    And the graph should return 1 for count of "g.V(v6).inE(\"knows\")"
-    And the graph should return 0 for count of "g.V(v6).outE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v6).bothE(\"knows\").has(\"weight\",0.5)"
+    And the graph should return 4 for count of "g.V(vid1).bothE()"
+    And the graph should return 0 for count of "g.V(vid1).inE(\"knows\")"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 2 for count of "g.V(vid1).bothE(\"knows\").has(\"weight\",0.5)"
+    And the graph should return 2 for count of "g.V(vid6).bothE()"
+    And the graph should return 1 for count of "g.V(vid6).inE(\"knows\")"
+    And the graph should return 0 for count of "g.V(vid6).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid6).bothE(\"knows\").has(\"weight\",0.5)"
 
   Scenario: g_addV_asXfirstX_repeatXaddEXnextX_toXaddVX_inVX_timesX5X_addEXnextX_toXselectXfirstXX
     Given the empty graph
@@ -315,7 +315,7 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V().has("name", "marko").as("a").outE("created").as("b").inV().addE(__.select("b").label()).to("a")
@@ -323,10 +323,10 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 4 for count of "g.V(v1).bothE()"
-    And the graph should return 1 for count of "g.V(v1).inE(\"created\")"
-    And the graph should return 1 for count of "g.V(v1).in(\"created\").has(\"name\",\"lop\")"
-    And the graph should return 1 for count of "g.V(v1).outE(\"created\")"
+    And the graph should return 4 for count of "g.V(vid1).bothE()"
+    And the graph should return 1 for count of "g.V(vid1).inE(\"created\")"
+    And the graph should return 1 for count of "g.V(vid1).in(\"created\").has(\"name\",\"lop\")"
+    And the graph should return 1 for count of "g.V(vid1).outE(\"created\")"
 
   Scenario: g_addEXV_outE_label_groupCount_orderXlocalX_byXvalues_descX_selectXkeysX_unfold_limitX1XX_fromXV_hasXname_vadasXX_toXV_hasXname_lopXX
     Given the empty graph
@@ -345,7 +345,7 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v2 defined as "v[vadas]"
+    And using the parameter vid2 defined as "v[vadas].id"
     And the traversal of
       """
       g.addE(__.V().outE().label().groupCount().order(Scope.local).by(Column.values, Order.desc).select(Column.keys).unfold().limit(1)).from(__.V().has("name", "vadas")).to(__.V().has("name", "lop"))
@@ -353,10 +353,10 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 2 for count of "g.V(v2).bothE()"
-    And the graph should return 1 for count of "g.V(v2).inE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v2).outE(\"created\")"
-    And the graph should return 1 for count of "g.V(v2).out(\"created\").has(\"name\",\"lop\")"
+    And the graph should return 2 for count of "g.V(vid2).bothE()"
+    And the graph should return 1 for count of "g.V(vid2).inE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid2).outE(\"created\")"
+    And the graph should return 1 for count of "g.V(vid2).out(\"created\").has(\"name\",\"lop\")"
 
   Scenario: g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X
     Given the empty graph
@@ -375,18 +375,18 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter v6 defined as "v[peter]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE("knows").from(v1).to(v6).property("weight", xx1)
+      g.addE("knows").from(vid1).to(vid6).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
   Scenario: g_addEXknowsvarX_fromXaX_toXbX_propertyXweight_0_1X
     Given the empty graph
@@ -405,19 +405,19 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter v6 defined as "v[peter]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And using the parameter xx1 defined as "knows"
     And using the parameter xx2 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE(xx1).from(v1).to(v6).property("weight", xx2)
+      g.addE(xx1).from(vid1).to(vid6).property("weight", xx2)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
   Scenario: g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X
     Given the empty graph
@@ -436,18 +436,18 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter v6 defined as "v[peter]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.V(v1).addE("knows").to(v6).property("weight", xx1)
+      g.V(vid1).addE("knows").to(vid6).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
   @AllowNullPropertyValues
   Scenario: g_addEXknowsXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX

@@ -137,9 +137,6 @@ public class ArgumentVisitorTest {
                 {Object.class, "[1,2,3]", Arrays.asList(1, 2, 3), createAntlr(VariableResolver.NoVariableResolver.instance())},
                 {Object.class, "x", GValue.of("x", P.eq(100)), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
                 {Object.class, "x", P.eq(100), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", P.eq(100))))},
-                {Vertex.class, "x", new VariableResolverException("x"), createAntlr(VariableResolver.NoVariableResolver.instance())},
-                {Vertex.class, "new Vertex(1i,'person')", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DefaultVariableResolver(ElementHelper.asMap("x", Direction.from)))},
-                {Vertex.class, "x", new ReferenceVertex(1, "person"), createAntlr(new VariableResolver.DirectVariableResolver(ElementHelper.asMap("x", new ReferenceVertex(1, "person"))))},
         });
     }
 
@@ -186,11 +183,6 @@ public class ArgumentVisitorTest {
             assertParsing(() -> {
                 final GremlinParser.GenericArgumentVarargsContext ctx = parser.genericArgumentVarargs();
                 return antlrToLanguage.argumentVisitor.parseObjectVarargs(ctx);
-            });
-        } else if (clazz.equals(Vertex.class)) {
-            assertParsing(() -> {
-                final GremlinParser.StructureVertexArgumentContext ctx = parser.structureVertexArgument();
-                return antlrToLanguage.argumentVisitor.visitStructureVertexArgument(ctx);
             });
         } else {
             fail("Missing an assertion type: " + clazz.getSimpleName());

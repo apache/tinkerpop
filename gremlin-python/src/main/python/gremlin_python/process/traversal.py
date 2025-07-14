@@ -843,7 +843,7 @@ class GremlinLang(object):
                 return tmp
 
         if isinstance(arg, Vertex):
-            return f'new ReferenceVertex({self._arg_as_string(arg.id)},\'{arg.label}\')'
+            return f'{self._arg_as_string(arg.id)}'
 
         if isinstance(arg, P):
             return self._process_predicate(arg)

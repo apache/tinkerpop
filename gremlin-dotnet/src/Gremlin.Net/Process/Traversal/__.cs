@@ -1051,7 +1051,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the mergeE step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, Edge> MergeE (IDictionary<object,object>? m)
+        public static GraphTraversal<object, Edge> MergeE (IDictionary<object,object?>? m)
         {
             return new GraphTraversal<object, Edge>().MergeE(m);
         }
