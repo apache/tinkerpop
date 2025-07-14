@@ -94,13 +94,6 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     }
 
     @Override
-    public HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
-    }
-
-    @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return this.parameters.getTraversals();
     }

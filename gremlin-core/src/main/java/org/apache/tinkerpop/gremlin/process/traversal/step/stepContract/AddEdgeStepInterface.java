@@ -18,30 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface AddEdgeStepInterface<S> extends Step<S, Edge>, TraversalParent, Scoping, FromToModulating, AddElementStepInterface, Writing<Event.EdgeAddedEvent> {
-
+public interface AddEdgeStepInterface<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepInterface<S, Edge>, Writing<Event.EdgeAddedEvent> {
     public Vertex getFrom();
     public Vertex getTo();
-
-    @Override
-    default HashSet<PopInstruction> getPopInstructions() {
-        return TraversalParent.super.getPopInstructions();
-    }
 }
