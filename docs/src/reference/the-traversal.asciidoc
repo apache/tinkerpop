@@ -1677,6 +1677,14 @@ Metadata > {}
 The code example above exemplifies the latter use case where there is essentially an assertion that there is a vertex
 with a particular "name" value prior to updating the property "k" and explicitly failing when that vertex is not found.
 
+The `fail()` step does not guarantee that mutations are not partially applied. Triggering `fail()` produces an
+exception, but it's effect on any open transactions or the underlying graph's behavior ends there. Generally speaking,
+mutations made to the point of `fail()` being triggered are applied and `fail()` itself has no influence on rolling back
+those changes. It is up to the application catching that exception to act in a fashion that will allow for that
+rollback. Moreover, the ability to rollback at all is graph provider dependent. For example, a basic TinkerGraph,
+configured without transaction support, will simply be left in a partially mutated state whether the action to rollback
+on `fail()` was implemented or not.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#fail()++[`fail()`],

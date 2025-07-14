@@ -190,6 +190,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
+    }
+
+    @Override
     public void processAllStarts() {
 
     }

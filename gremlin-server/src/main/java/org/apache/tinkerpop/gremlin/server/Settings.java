@@ -282,7 +282,6 @@ public class Settings {
         settingsDescription.addPropertyParameters("graphs", String.class, String.class);
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
-        settingsDescription.addPropertyParameters("plugins", String.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
