@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.keyed.KeyedVertexProperty;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +49,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements AddPropertyStepInterface<S>, Configuring {
+        implements AddPropertyStepInterface<S>, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, Configuring {
 
     private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;

@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier.AfterVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier.BeforeVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier.VerificationBuilder;

@@ -49,8 +49,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder.RangeGlobalStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder.RangeLocalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailLocalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
@@ -1469,7 +1469,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
         this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.mergeV, searchCreate);
-        return this.asAdmin().addStep(new MergeVertexStepPlaceholder<>(this.asAdmin(), false, searchCreate));
+        final MergeVertexStepPlaceholder<S> step = null == searchCreate ? new MergeVertexStepPlaceholder<>(this.asAdmin(), false, (Map) null) :
+                new MergeVertexStepPlaceholder<>(this.asAdmin(), false, searchCreate);
+        return this.asAdmin().addStep(step);
     }
 
     /**
@@ -1523,7 +1525,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         // get a construction time exception if the Map is bad
         this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.mergeE, searchCreate);
-        return this.asAdmin().addStep(new MergeEdgeStepPlaceholder<>(this.asAdmin(), false, searchCreate));
+        final MergeEdgeStepPlaceholder<S> step = null == searchCreate ? new MergeEdgeStepPlaceholder<>(this.asAdmin(), false,  (Map) null) :
+                new MergeEdgeStepPlaceholder<>(this.asAdmin(), false, searchCreate);
+        return this.asAdmin().addStep(step);
     }
 
     /**
