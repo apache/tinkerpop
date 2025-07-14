@@ -145,6 +145,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
 * Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs"
+* Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
