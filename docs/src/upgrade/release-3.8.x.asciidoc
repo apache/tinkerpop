@@ -30,6 +30,35 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Boolean Conversion Step
+
+We have introduced a boolean conversion step, `asBool()`, which converts the incoming traverser to a boolean value.
+Numbers evaluate to `true` when non-zero (and not `NaN`), `null` evaluates to `null`. Strings are only accepted when
+equal to `"true"` or `"false"` (case-insensitive), otherwise `null` will be returned.
+All other types will throw an `IllegalArgumentException`.
+
+[source,text]
+----
+gremlin> g.inject(5).asBool()
+==> true
+gremlin> g.inject(5.0).asBool()
+==> true
+gremlin> g.inject(0).asBool()
+==> false
+gremlin> g.inject(0.0).asBool()
+==> false
+gremlin> g.inject("true").asBool()
+==> true
+gremlin> g.inject("123hello").asBool()
+==> null
+gremlin> g.inject(null).asBool()
+==> null
+gremlin> g.inject([1, 2, 3, 4]).asBool()
+==> IllegalArgumentException
+----
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
+
 ==== Removal of Vertex/ReferenceVertex from grammar
 
 `StructureVertex`, previously used to construct new vertices in the grammar, now been removed. The `V()` step, as well
