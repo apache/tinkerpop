@@ -1592,7 +1592,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "InjectX1dX_isXerror_or_errorX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Is(gremlingo.P.Lt(math.NaN()).Or(gremlingo.P.Gt(math.NaN())))}}, 
     "InjectX1dX_notXtrueX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Not(gremlingo.T__.Is(gremlingo.P.Gt(0)))}}, 
     "InjectX1dX_notXfalseX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Not(gremlingo.T__.Is(gremlingo.P.Lt(0)))}}, 
-    "InjectX1dX_notXerrorX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Not(gremlingo.T__.Is(gremlingo.P.Gt(math.NaN())))}}, 
+    "InjectX1dX_notXNaNX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Not(gremlingo.T__.Is(gremlingo.P.Gt(math.NaN())))}}, 
     "InjectX1dX_notXisXeqXNaNXXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1).Not(gremlingo.T__.Is(gremlingo.P.Eq(math.NaN())))}}, 
     "InjectXInfX_eqXInfX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(math.Inf(1)).Is(gremlingo.P.Eq(math.Inf(1)))}}, 
     "InjectXInfX_neqXInfX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(math.Inf(1)).Is(gremlingo.P.Neq(math.Inf(1)))}}, 

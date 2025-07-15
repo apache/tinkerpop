@@ -1623,7 +1623,7 @@ const gremlins = {
     InjectX1dX_isXerror_or_errorX: [function({g}) { return g.inject(1).is(P.lt(Number.NaN).or(P.gt(Number.NaN))) }], 
     InjectX1dX_notXtrueX: [function({g}) { return g.inject(1).not(__.is(P.gt(0))) }], 
     InjectX1dX_notXfalseX: [function({g}) { return g.inject(1).not(__.is(P.lt(0))) }], 
-    InjectX1dX_notXerrorX: [function({g}) { return g.inject(1).not(__.is(P.gt(Number.NaN))) }], 
+    InjectX1dX_notXNaNX: [function({g}) { return g.inject(1).not(__.is(P.gt(Number.NaN))) }], 
     InjectX1dX_notXisXeqXNaNXXX: [function({g}) { return g.inject(1).not(__.is(P.eq(Number.NaN))) }], 
     InjectXInfX_eqXInfX: [function({g}) { return g.inject(Number.POSITIVE_INFINITY).is(P.eq(Number.POSITIVE_INFINITY)) }], 
     InjectXInfX_neqXInfX: [function({g}) { return g.inject(Number.POSITIVE_INFINITY).is(P.neq(Number.POSITIVE_INFINITY)) }], 

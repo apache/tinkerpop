@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -153,7 +154,14 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
         // the predicate name is either a static method of P or an instance method when a type ConnectiveP
         final boolean isConnectedP = value instanceof ConnectiveP;
         final String predicateName = value.getPredicateName();
-        final Object args = isConnectedP ? ((ConnectiveP<?>) value).getPredicates() : value.getValue();
+        final Object args;
+        if (value instanceof ConnectiveP) {
+            args = ((ConnectiveP<?>) value).getPredicates();
+        } else if (value instanceof NotP) {
+            args = value.negate();
+        } else {
+            args = value.getValue();
+        }
 
         final List<Object> argsAsList = args instanceof Collection ? new ArrayList<>((Collection) args) : Collections.singletonList(args);
         final int length = argsAsList.size();

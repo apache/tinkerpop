@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -70,6 +71,8 @@ public class GryoClassResolverV1 extends AbstractGryoClassResolver {
         else if (InetAddress.class.isAssignableFrom(clazz))
             type = InetAddress.class;
         else if (ConnectiveP.class.isAssignableFrom(clazz))
+            type = P.class;
+        else if (NotP.class.isAssignableFrom(clazz))
             type = P.class;
         else
             type = clazz;

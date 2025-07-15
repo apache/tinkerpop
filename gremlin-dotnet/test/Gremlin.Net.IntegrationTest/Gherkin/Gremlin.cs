@@ -1622,7 +1622,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"InjectX1dX_isXerror_or_errorX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Is(P.Lt(Double.NaN).Or(P.Gt(Double.NaN)))}}, 
                {"InjectX1dX_notXtrueX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Not(__.Is(P.Gt(0)))}}, 
                {"InjectX1dX_notXfalseX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Not(__.Is(P.Lt(0)))}}, 
-               {"InjectX1dX_notXerrorX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Not(__.Is(P.Gt(Double.NaN)))}}, 
+               {"InjectX1dX_notXNaNX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Not(__.Is(P.Gt(Double.NaN)))}}, 
                {"InjectX1dX_notXisXeqXNaNXXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1d).Not(__.Is(P.Eq(Double.NaN)))}}, 
                {"InjectXInfX_eqXInfX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Double.PositiveInfinity).Is(P.Eq(Double.PositiveInfinity))}}, 
                {"InjectXInfX_neqXInfX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Double.PositiveInfinity).Is(P.Neq(Double.PositiveInfinity))}}, 

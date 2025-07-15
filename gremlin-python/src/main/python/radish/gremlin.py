@@ -1595,7 +1595,7 @@ world.gremlins = {
     'InjectX1dX_isXerror_or_errorX': [(lambda g:g.inject(1).is_(P.lt(float('nan')).or_(P.gt(float('nan')))))], 
     'InjectX1dX_notXtrueX': [(lambda g:g.inject(1).not_(__.is_(P.gt(0))))], 
     'InjectX1dX_notXfalseX': [(lambda g:g.inject(1).not_(__.is_(P.lt(0))))], 
-    'InjectX1dX_notXerrorX': [(lambda g:g.inject(1).not_(__.is_(P.gt(float('nan')))))], 
+    'InjectX1dX_notXNaNX': [(lambda g:g.inject(1).not_(__.is_(P.gt(float('nan')))))], 
     'InjectX1dX_notXisXeqXNaNXXX': [(lambda g:g.inject(1).not_(__.is_(P.eq(float('nan')))))], 
     'InjectXInfX_eqXInfX': [(lambda g:g.inject(float('inf')).is_(P.eq(float('inf'))))], 
     'InjectXInfX_neqXInfX': [(lambda g:g.inject(float('inf')).is_(P.neq(float('inf'))))], 

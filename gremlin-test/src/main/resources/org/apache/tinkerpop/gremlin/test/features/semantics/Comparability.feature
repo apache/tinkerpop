@@ -834,14 +834,16 @@ Feature: Comparability
       | d[1].d |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: InjectX1dX_notXerrorX
+  Scenario: InjectX1dX_notXNaNX
     Given the empty graph
     And the traversal of
       """
       g.inject(1d).not(is(P.gt(NaN)))
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | d[1].d |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectX1dX_notXisXeqXNaNXXX

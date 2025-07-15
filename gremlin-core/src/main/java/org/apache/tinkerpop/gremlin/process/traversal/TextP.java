@@ -48,8 +48,8 @@ public class TextP extends P<String> {
     }
 
     @Override
-    public TextP negate() {
-        return new TextP(this.biPredicate.negate(), this.literals, this.variables);
+    public P<String> negate() {
+        return new NotP<>(this);
     }
 
     public TextP clone() {
