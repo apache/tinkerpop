@@ -2942,19 +2942,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
             //using ArrayList given P.within() turns all arguments into lists
             final List<Object> ids = new ArrayList<>();
-            //TODO:: Revisit once GValue predicates are working
-            if (id instanceof GValue) {
-                // the logic for dealing with hasId([]) is sketchy historically, just trying to maintain what we were
-                // originally testing prior to GValue.
-                Object value = ((GValue) id).get();
-                if (value instanceof Object[]) {
-                    ids.addAll(Arrays.asList(GValue.resolveToValues(GValue.ensureGValues((Object[]) value))));
-                } else if (value instanceof Collection) {
-                    ids.addAll(Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((Collection<?>) value).toArray()))));
-                } else {
-                    ids.add(((GValue<?>) id).get());
-                }
-            } else if (id instanceof Object[]) {
+            //TODO:: Is it ok to not unroll GValue<Collection>? How would we even substitute a variable later if we've unrolled the GValue?
+            if (id instanceof Object[]) {
                 Collections.addAll(ids, (Object[]) id);
             } else if (id instanceof Collection) {
                 // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
@@ -2968,19 +2957,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
             // be turned into array first
             if (otherIds != null) {
                 for (final Object i : otherIds) {
-                    // to retain existing behavior, GValue's containing collections are unrolled by 1 layer.
-                    // For example, GValue.of([1, 2]) is processed to [GValue.of(1), GValue.of(2)]
-                    if(i instanceof GValue) {
-                        Object value = ((GValue) i).get();
-                        if (value instanceof Object[]) {
-                            ids.addAll(Arrays.asList(GValue.resolveToValues(GValue.ensureGValues((Object[]) value))));
-                        } else if(value instanceof Collection) {
-                            ids.addAll(Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((Collection<?>) value).toArray()))));
-                        } else {
-                            ids.add(((GValue<?>) i).get());
-                        }
-                    }
-                    else if (i instanceof Object[]) {
+                    if (i instanceof Object[]) {
                         Collections.addAll(ids, (Object[]) i);
                     } else if (i instanceof Collection) {
                         ids.addAll((Collection<?>) i);
