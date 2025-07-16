@@ -55,18 +55,17 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
     @Override
     public void updateVariable(String name, Object value) {
         if (name.equals(low.getName())) {
-            if (!(value instanceof Long)) {
-                throw new IllegalArgumentException("The variable " + name + " must have a value of type Long");
+            if (!(value instanceof Number)) {
+                throw new IllegalArgumentException("The variable " + name + " must have a value of type Number");
             }
-            this.low = GValue.ofLong(name, (Long) value);
+            this.low = GValue.ofLong(name, ((Number) value).longValue());
         }
 
         if (name.equals(high.getName())) {
-            // todo: chill on the Long and allow Integer???
-            if (!(value instanceof Long)) {
-                throw new IllegalArgumentException("The variable " + name + " must have a value of type Long");
+            if (!(value instanceof Number)) {
+                throw new IllegalArgumentException("The variable " + name + " must have a value of type Number");
             }
-            this.high = GValue.ofLong(name, (Long) value);
+            this.high = GValue.ofLong(name, ((Number) value).longValue());
         }
     }
 
