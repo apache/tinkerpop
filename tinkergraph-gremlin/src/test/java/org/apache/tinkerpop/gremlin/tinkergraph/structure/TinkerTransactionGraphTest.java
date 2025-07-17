@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -1502,5 +1503,54 @@ public class TinkerTransactionGraphTest {
         assertFalse(vertex.isRead());
 
         assertFalse(vertex.inUse());
+    }
+
+    @Test
+    public void shouldAllowDropThenInsertInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+        final int vertexId = 1;
+
+        // create initial vertex with a property
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vertexId).property("name", "test").next();
+        gtx.tx().commit();
+
+        verifyCommittedSingleVertexWithId(g, vertexId);
+        final TinkerVertex originalVertex = g.getVertices().get(vertexId).getUnmodified();
+        assertEquals("test", originalVertex.properties.get("name").get(0).value());
+        final long originalVersion = originalVertex.version();
+
+        // drop the vertex and re-create it without any properties in the same transaction
+        final GraphTraversalSource gtx2 = tx.begin();
+        gtx2.V().drop().iterate();
+        gtx2.addV().property(T.id, vertexId).next();
+        gtx2.tx().commit();
+
+        verifyCommittedSingleVertexWithId(g, vertexId);
+        final TinkerElementContainer<TinkerVertex> container = g.getVertices().get(vertexId);
+        final TinkerVertex updatedVertex = container.getUnmodified();
+        assertNull(updatedVertex.properties);
+        // version should have been updated
+        assertNotEquals(originalVersion, updatedVertex.version());
+    }
+
+    private static void verifyCommittedSingleVertexWithId(TinkerTransactionGraph g, int vertexId) {
+        // graph should only have a single vertex
+        assertEquals(1, g.getVertices().size());
+        
+        // the single vertex should have the given id
+        TinkerElementContainer<TinkerVertex> vertexContainer = g.getVertices().get(vertexId);
+        
+        // container should be committed and not have an update in progress
+        assertFalse(vertexContainer.isChanged());
+        assertFalse(vertexContainer.inUse());
+        
+        // the element in the container should have the same id
+        // there are multiple ways to obtain the container element's id and they should be consistent
+        assertEquals(vertexId, vertexContainer.getElementId());
+        assertEquals(vertexId, vertexContainer.get().id());
+        TinkerVertex unmodified = vertexContainer.getUnmodified();
+        assertEquals(vertexId, unmodified.id());
     }
 }
