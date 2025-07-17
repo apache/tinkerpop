@@ -318,6 +318,16 @@ gremlin> GremlinTranslator.translate("g.V().out('knows')", Translator.GO)
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
+==== Deprecated UnifiedChannelizer
+
+The `UnifiedChannelizer` was added in 3.5.0 in any attempt to streamline Gremlin Server code paths and resource usage.
+It was offered as an experimental feature and as releases went on was not further developed, particularly because of the
+major changes to Gremlin Server expected in 4.0.0 when websockets are removed. The removal of websockets with a pure
+reliance on HTTP will help do what the `UnifiedChannelizer` tried to do with its changes. As a result, there is no need
+to continue to refine this `Channelizer` implementation and it can be deprecated.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
+
 ==== OptionsStrategy in Python
 
 The `\\__init__()` syntax has been updated to be both more Pythonic and more aligned to the `gremlin-lang` syntax.

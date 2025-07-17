@@ -89,7 +89,10 @@ import static org.apache.tinkerpop.gremlin.server.op.AbstractOpProcessor.writePa
  * take care in understanding the way that different methods are called as they do depend on one another a bit. It
  * maybe best to examine the source code to determine how best to use this class or to extend from the higher order
  * classes of {@link SingleTaskSession} or {@link MultiTaskSession}.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public abstract class AbstractSession implements Session, AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(AbstractSession.class);
     private static final Logger auditLogger = LoggerFactory.getLogger(GremlinServer.AUDIT_LOGGER_NAME);

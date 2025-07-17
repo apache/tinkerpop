@@ -50,7 +50,10 @@ import static org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor.
  * to execute is supplied on the constructor and additional ones may be added as they arrive with
  * {@link #submitTask(SessionTask)} where they will be added to a queue where they will await execution in the thread
  * bound to this session.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public class MultiTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(MultiTaskSession.class);
     protected final BlockingQueue<SessionTask> queue;
