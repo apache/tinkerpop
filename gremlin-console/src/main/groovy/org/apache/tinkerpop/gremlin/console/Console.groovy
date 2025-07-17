@@ -158,7 +158,8 @@ class Console {
                 if (!io.quiet)
                     io.out.println(Colorizer.render(Preferences.infoColor, "plugin activated: " + pluggedIn.getPlugin().getName()))
             } else if (!io.quiet) {
-                    io.out.println(Colorizer.render(Preferences.infoColor, "invalid plugin: " + pluginName))
+                io.out.println(Colorizer.render(Preferences.infoColor, "invalid plugin: " + pluginName + " -- removing reference to this plugin."))
+
             }
         }
 
