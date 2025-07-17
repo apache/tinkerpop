@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.binary.types;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
@@ -51,6 +52,7 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     public static final EnumSerializer<Direction> DirectionSerializer = new EnumSerializer<>(DataType.DIRECTION, Direction::valueOf);
     public static final EnumSerializer<DT> DTSerializer = new EnumSerializer<>(DataType.DT, DT::valueOf);
     public static final EnumSerializer<Merge> MergeSerializer = new EnumSerializer<>(DataType.MERGE, Merge::valueOf);
+    public static final EnumSerializer<N> NSerializer = new EnumSerializer<>(DataType.N, N::valueOf);
     public static final EnumSerializer<Operator> OperatorSerializer = new EnumSerializer<>(DataType.OPERATOR, Operator::valueOf);
     public static final EnumSerializer<Order> OrderSerializer = new EnumSerializer<>(DataType.ORDER, Order::valueOf);
     public static final EnumSerializer<Pick> PickSerializer = new EnumSerializer<>(DataType.PICK, Pick::valueOf);
