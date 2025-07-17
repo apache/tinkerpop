@@ -836,13 +836,13 @@ The `asNumber()`-step (*map*) converts the incoming traverser to the nearest par
 
 Numerical input will pass through unless a type is specified by the number token, with the exception that any float number will be converted into double. `ArithmeticException` will be thrown for any overflow during narrowing of types.
 
-String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is provided. `NumberFormatException` will be thrown for any unparsable strings.
+String inputs are parsed into numeric values. By default, the value will be parsed as an integer if it represents a whole number, or as a double if it contains a decimal point. A `NumberFormatException` will be thrown if the string cannot be parsed into a valid number format.
 
 All other input types will result in `IllegalArgumentException`.
 
 [gremlin-groovy,modern]
 ----
-g.inject(1).asNumber() <1>
+g.inject(1234).asNumber() <1>
 g.inject(1.76).asNumber() <2>
 g.inject(1.76).asNumber(N.nint) <3>
 g.inject("1b").asNumber() <4>
@@ -851,7 +851,7 @@ g.inject(33550336).asNumber(N.nbyte) <5>
 
 <1> An int will be passed through.
 <2> A double will be passed through.
-<3> A double is converted into an in.
+<3> A double is converted into an int.
 <4> String containing any character other than numerical ones will result in `NumberFormatException`.
 <5> Narrowing of int to byte that overflows will throw `ArithmeticException`.
 

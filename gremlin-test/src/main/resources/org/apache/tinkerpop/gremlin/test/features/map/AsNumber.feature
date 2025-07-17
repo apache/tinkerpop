@@ -100,7 +100,7 @@ Feature: Step - asNumber()
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[5.75].d |
+      | d[5.75].f |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5_43X_asNumberXN_nintX

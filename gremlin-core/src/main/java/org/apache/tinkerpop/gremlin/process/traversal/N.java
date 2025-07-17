@@ -20,26 +20,33 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsNumberStep;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * Tokens that are used to denote different units of number.
  * Used with {@link AsNumberStep} step.
  */
 public enum N {
-    nbyte("Byte"),
-    nshort("Short"),
-    nint("Integer"),
-    nlong("Long"),
-    nfloat("Float"),
-    ndouble("Double"),
-    nbigInt("BigInt"),
-    nbigDecimal("BigDecimal"),;
+    nbyte(Byte.class),
+    nshort(Short.class),
+    nint(Integer.class),
+    nlong(Long.class),
+    nfloat(Float.class),
+    ndouble(Double.class),
+    nbigInt(BigInteger.class),
+    nbigDecimal(BigDecimal.class),;
 
-    private final String typeName;
+    private final Class<?> type;
 
-    N(String name) {typeName = name;}
+    N(Class<?> type) {this.type = type;}
+
+    public Class<?> getType() {
+        return this.type;
+    }
 
     @Override
     public String toString() {
-        return typeName;
+        return this.type.getSimpleName();
     }
 }

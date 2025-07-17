@@ -26,19 +26,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Reference implementation for number parsing step.
  */
-public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
+public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
 
     private N numberToken;
 
@@ -58,10 +52,10 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         if (object instanceof String) {
             String numberText = (String) object;
             Number number = parseNumber(numberText);
-            return numberToken == null ? autoNumber(number) : castNumber(number, numberToken);
+            return numberToken == null ? number : castNumber(number, numberToken);
         } else if (object instanceof Number) {
             Number number = (Number) object;
-            return numberToken == null ? autoNumber(number) : castNumber(number, numberToken);
+            return numberToken == null ? number : castNumber(number, numberToken);
         }
         throw new IllegalArgumentException(String.format("Can't parse type %s as number.", object == null ? "null" : object.getClass().getSimpleName()));
     }
@@ -96,97 +90,14 @@ public final class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     }
 
     public static Number parseNumber(final String value) {
-        try {
-            boolean isFloatingPoint = value.contains(".") || value.contains("e") || value.contains("E");
-            if (isFloatingPoint) {
-                BigDecimal result = new BigDecimal(value.trim());
-                if (BigDecimal.valueOf(result.doubleValue()).compareTo(result) == 0) {
-                    return result.doubleValue();
-                }
-                return result;
-            }
-            BigInteger result = new BigInteger(value.trim());
-            if (result.bitLength() <= 31) { // default to int if not specified, smaller sizes need to be intentionally set
-                return result.intValue();
-            } else if (result.bitLength() <= 63) {
-                return result.longValue();
-            }
-            return result;
-        } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(String.format("Can't parse string '%s' as number.", value));
+        if (NumberUtils.isCreatable(value.trim())) {
+            return NumberUtils.createNumber(value.trim());
         }
+        throw new NumberFormatException(String.format("Can't parse string '%s' as number.", value));
     }
 
-    private static Number autoNumber(Number number) {
-        final Class<? extends Number> clazz = number.getClass();
-        if (clazz.equals(Float.class)) {
-            return castNumber(number, N.ndouble);
-        }
-        return number;
+    private static Number castNumber(final Number number, final N numberToken) {
+        return NumberHelper.castTo(number, numberToken);
     }
 
-    private static Number castNumber(Number number, N numberToken) {
-        int sourceBits = getNumberBitsBasedOnValue(number);
-        int targetBits = getNumberTokenBits(numberToken);
-        if (sourceBits > targetBits) {
-            throw new ArithmeticException(String.format("Can't convert number of type %s to %s due to overflow.",
-                    number.getClass().getSimpleName(), numberToken.toString()));
-        }
-        if (numberToken == N.nbyte) {
-            return number.byteValue();
-        } else if (numberToken == N.nshort) {
-            return number.shortValue();
-        } else if (numberToken == N.nint) {
-            return number.intValue();
-        } else if (numberToken == N.nlong) {
-            return number.longValue();
-        } else if (numberToken == N.nfloat) {
-            return number.floatValue();
-        } else if (numberToken == N.ndouble) {
-            return number.doubleValue();
-        } else if (numberToken == N.nbigInt) {
-            return BigInteger.valueOf(number.longValue());
-        } else if (numberToken == N.nbigDecimal) {
-            return BigDecimal.valueOf(number.doubleValue());
-        }
-        return number;
-    }
-
-    private static int getNumberBitsBasedOnValue(Number number) {
-        final Class<? extends Number> clazz = number.getClass();
-        if (clazz.equals(BigInteger.class)) {
-            return 128;
-        } else if (clazz.equals(BigDecimal.class)) {
-            return 128;
-        }
-        boolean floatingPoint = (clazz.equals(Float.class) || clazz.equals(Double.class));
-        if (!floatingPoint && (number.longValue() >= Byte.MIN_VALUE) && (number.longValue() <= Byte.MAX_VALUE)) {
-            return 8;
-        } else if (!floatingPoint && (number.longValue() >= Short.MIN_VALUE) && (number.longValue() <= Short.MAX_VALUE)) {
-            return 16;
-        } else if (!floatingPoint && (number.longValue() >= Integer.MIN_VALUE) && (number.longValue() <= Integer.MAX_VALUE)) {
-            return 32;
-        } else if (floatingPoint && (number.doubleValue() >= Float.MIN_VALUE) && (number.doubleValue() <= Float.MAX_VALUE)) {
-            return 32;
-        } else {
-            return 64;
-        }
-    }
-
-    private static int getNumberTokenBits(N numberToken) {
-        if (numberToken == N.nbyte) {
-            return 8;
-        } else if (numberToken == N.nshort) {
-            return 16;
-        } else if (numberToken == N.nint) {
-            return 32;
-        } else if (numberToken == N.nlong) {
-            return 64;
-        } else if (numberToken == N.nfloat) {
-            return 32;
-        } else if (numberToken == N.ndouble) {
-            return 64;
-        }
-        return 128;
-    }
 }

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.N;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -719,6 +721,79 @@ public final class NumberHelper {
 
         // return as-is since it didn't fit the type we wanted to coerce to
         return a;
+    }
+
+    /**
+     * Casts the given number to the specified numeric type if it can fit into it.
+     * Otherwise, throw.
+     *
+     * @param a the number to be cast
+     * @param numberToken the number token denoting the desired type to cast
+     * @return the number cast to the specified type
+     * @throws IllegalArgumentException if the specified numeric type is unsupported
+     * @throws ArithmeticException if the number overflows
+     */
+    public static Number castTo(final Number a, final N numberToken) {
+        Class<?> clazz = numberToken.getType();
+        if (a.getClass().equals(clazz)) {
+            return a;
+        } else if (clazz.equals(Integer.class)) {
+            Long val = getLong(a, numberToken);
+            if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+                return a.intValue();
+            }
+        } else if (clazz.equals(Long.class)) {
+            return getLong(a, numberToken);
+        } else if (clazz.equals(Float.class)) {
+            // BigDecimal to double will overflow into Infinity, we want to throw instead of passing through
+            if (!a.getClass().equals(BigDecimal.class) &&
+                    (Double.isInfinite(a.doubleValue()) || Double.isNaN(a.doubleValue())))  {
+                return a.floatValue();
+            }
+            if (a.doubleValue() >= -Float.MAX_VALUE && a.doubleValue() <= Float.MAX_VALUE) {
+                return a.floatValue();
+            }
+        } else if (clazz.equals(Double.class)) {
+            // BigDecimal to double will overflow into Infinity,  we want to throw instead of passing through
+            if (!a.getClass().equals(BigDecimal.class) &&
+                    (Double.isInfinite(a.doubleValue()) || Double.isNaN(a.doubleValue()))) {
+                return a.doubleValue();
+            }
+            if (!Double.isInfinite(a.doubleValue())) {
+                // float losses precision, use string intermediate
+                return a.getClass().equals(Float.class) ? Double.parseDouble(a.toString()) : a.doubleValue();
+            }
+        } else if (clazz.equals(Byte.class)) {
+            Long val = getLong(a, numberToken);
+            if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
+                return a.byteValue();
+            }
+        } else if (clazz.equals(Short.class)) {
+            Long val = getLong(a, numberToken);
+            if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+                return a.shortValue();
+            }
+        } else if (clazz.equals(BigInteger.class)) {
+            return NumberHelper.bigIntegerValue(a);
+        } else if (clazz.equals(BigDecimal.class)) {
+            // float losses precision, use string intermediate
+            return a.getClass().equals(Float.class) ? new BigDecimal(a.toString()) : NumberHelper.bigDecimalValue(a);
+        } else {
+            throw new IllegalArgumentException("Unsupported number type token: " + numberToken);
+        }
+
+        throw new ArithmeticException(String.format("Can't convert number of type %s to %s due to overflow.",
+                a.getClass().getSimpleName(), numberToken));
+    }
+
+    private static Long getLong(Number num, N numberToken) {
+        try {
+            return num.getClass().equals(BigInteger.class) ? ((BigInteger) num).longValueExact() : num.longValue();
+        } catch (ArithmeticException ae) {
+            throw new ArithmeticException(String.format("Can't convert number of type %s to %s due to overflow.",
+                    num.getClass().getSimpleName(), numberToken));
+        }
+
     }
 
     private static NumberHelper getHelper(final Class<? extends Number> clazz) {

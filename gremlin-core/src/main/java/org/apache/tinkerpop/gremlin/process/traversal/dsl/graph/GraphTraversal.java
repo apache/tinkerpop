@@ -1918,11 +1918,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Parse value of the incoming traverser as an ISO-8601 {@link Number}.
+     * Parse value of the incoming traverser as a {@link Number}.
      *
      * @return the traversal with an appended {@link AsNumberStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
-     * @since 3.7.1
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Number> asNumber() {
         this.asAdmin().getBytecode().addStep(Symbols.asNumber);
@@ -1930,11 +1930,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Parse value of the incoming traverser as an ISO-8601 {@link Number}.
+     * Parse value of the incoming traverser as a {@link Number}.
      *
      * @return the traversal with an appended {@link AsNumberStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
-     * @since 3.7.1
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Number> asNumber(final N numberToken) {
         this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
