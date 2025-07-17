@@ -218,7 +218,9 @@ public class Settings {
      * configuration only applies to the {@link UnifiedChannelizer}. By default this value is set to 4096.
      *
      * @see #maxWorkQueueSize
+     * @deprecated As of release 3.8.0, not replaced.
      */
+    @Deprecated
     public int maxSessionTaskQueueSize = 4096;
 
     /**
@@ -234,14 +236,20 @@ public class Settings {
      * to interrupt it which will result in a timeout error to the client. If there are existing requests enqueued for
      * the session when this timeout is reached, those requests will not be executed and will be closed with server
      * errors. Open transactions will be issued a rollback. The default is 10 minutes.
+     *
+     * @deprecated As of release 3.8.0, not replaced.
      */
+    @Deprecated
     public long sessionLifetimeTimeout = 600000;
 
     /**
      * Enable the global function cache for sessions when using the {@link UnifiedChannelizer}. This setting is only
      * relevant when {@link #useGlobalFunctionCacheForSessions} is {@code false}. When {@link true} it means that
      * functions created in one request to a session remain available on the next request to that session.
+     *
+     * @deprecated As of release 3.8.0, not replaced.
      */
+    @Deprecated
     public boolean useGlobalFunctionCacheForSessions = true;
 
     /**
@@ -252,7 +260,10 @@ public class Settings {
      * rapidly. Setting this value to {@code false} is mostly present to support specific use cases that may require
      * each session having its own engine or to match previous functionality provided by the older channelizers
      * produced prior to 3.5.0.
+     *
+     * @deprecated As of release 3.8.0, not replaced.
      */
+    @Deprecated
     public boolean useCommonEngineForSessions = true;
 
     /**

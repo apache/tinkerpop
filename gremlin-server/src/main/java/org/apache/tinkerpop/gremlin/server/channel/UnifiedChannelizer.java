@@ -21,16 +21,23 @@ package org.apache.tinkerpop.gremlin.server.channel;
 import io.netty.channel.ChannelPipeline;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.Channelizer;
+import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import org.apache.tinkerpop.gremlin.server.handler.UnifiedHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsAndHttpChannelizerHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link Channelizer} that supports websocket and HTTP requests and does so with the most streamlined processing
  * model for Gremlin Server introduced with 3.5.0.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public class UnifiedChannelizer extends AbstractChannelizer {
+    private static final Logger logger = LoggerFactory.getLogger(UnifiedChannelizer.class);
 
     private WsAndHttpChannelizerHandler wsAndHttpChannelizerHandler;
     private UnifiedHandler unifiedHandler;
@@ -39,6 +46,8 @@ public class UnifiedChannelizer extends AbstractChannelizer {
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
+
+        logger.warn("The UnifiedChannelizer is deprecated and will be removed in a future release");
 
         wsAndHttpChannelizerHandler = new WsAndHttpChannelizerHandler();
         wsAndHttpChannelizerHandler.init(serverGremlinExecutor, new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings));

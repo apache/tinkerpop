@@ -27,7 +27,10 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A simple {@link Session} implementation that accepts one request, processes it and exits.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public class SingleTaskSession extends AbstractSession {
     private static final Logger logger = LoggerFactory.getLogger(SingleTaskSession.class);
     protected final SessionTask onlySessionTask;
