@@ -727,7 +727,7 @@ public class NumberHelperTest {
     @Test
     public void shouldCastToConvertToShort() {
         final Integer value = 42;
-        assertEquals(Short.valueOf((short) 42), NumberHelper.castTo(value, N.nbyte));
+        assertEquals(Short.valueOf((short) 42), NumberHelper.castTo(value, N.nshort));
     }
 
     @Test

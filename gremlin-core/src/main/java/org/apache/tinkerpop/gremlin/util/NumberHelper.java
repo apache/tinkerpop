@@ -787,6 +787,12 @@ public final class NumberHelper {
     }
 
     private static Long getLong(Number num, N numberToken) {
+        // Explicitly throw when converting floating point infinity and NaN to whole numbers
+        if (Double.isNaN(num.doubleValue())) {
+            throw new ArithmeticException(String.format("Can't convert NaN to %s.", numberToken));
+        } else if (Double.isInfinite(num.doubleValue())) {
+            throw new ArithmeticException(String.format("Can't convert floating point infinity to %s.", numberToken));
+        }
         try {
             return num.getClass().equals(BigInteger.class) ? ((BigInteger) num).longValueExact() : num.longValue();
         } catch (ArithmeticException ae) {

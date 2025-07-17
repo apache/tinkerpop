@@ -188,8 +188,6 @@ public class AsNumberStepTest extends StepTest {
         assertEquals(Float.POSITIVE_INFINITY, __.__(Double.POSITIVE_INFINITY).asNumber(N.nfloat).next());
         assertEquals(Float.NEGATIVE_INFINITY, __.__(Double.NEGATIVE_INFINITY).asNumber(N.nfloat).next());
         assertEquals(Float.NaN, __.__(Double.NaN).asNumber(N.nfloat).next());
-        assertEquals(Long.MAX_VALUE, __.__(Double.POSITIVE_INFINITY).asNumber(N.nlong).next());
-        assertEquals(0, __.__(Double.NaN).asNumber(N.nint).next());
     }
 
     @Test
@@ -232,6 +230,16 @@ public class AsNumberStepTest extends StepTest {
 // ===== OVERFLOW EXCEPTION TESTS =====
 
     @Test(expected = ArithmeticException.class)
+    public void shouldThrowCastExceptionConvertingInfinityToWholeNumber() {
+        __.__(Double.POSITIVE_INFINITY).asNumber(N.nlong).next();
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldThrowCastExceptionConvertingNaNToWholeNumber() {
+        __.__(Double.NaN).asNumber(N.nint).next();
+    }
+
+    @Test(expected = ArithmeticException.class)
     public void shouldThrowOverflowExceptionWhenStringByteOverflowsPositive() {
         __.__("128").asNumber(N.nbyte).next();
     }
@@ -239,7 +247,6 @@ public class AsNumberStepTest extends StepTest {
     @Test(expected = ArithmeticException.class)
     public void shouldThrowOverflowExceptionWhenStringByteOverflowsNegative() {
         __.__("-129").asNumber(N.nbyte).next();
-
     }
 
     @Test(expected = ArithmeticException.class)
