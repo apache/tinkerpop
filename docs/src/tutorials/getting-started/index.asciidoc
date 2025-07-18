@@ -72,7 +72,7 @@ plugin activated: tinkerpop.tinkergraph
 gremlin>
 ----
 
-TIP: Windows users may use the included `bin/gremlin.bat` (`bin/gremlin-java8.bat` for Java 8) file to start the Gremlin
+TIP: Windows users may use the included `bin/gremlin.bat` file to start the Gremlin
 Console.
 
 TIP: If you make a mistake when entering a command and the prompt gets "stuck" (for example, after a syntax error or an
