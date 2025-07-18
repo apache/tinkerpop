@@ -46,7 +46,7 @@
     "grunt": "^1.5.3",
     "grunt-cli": "~1.5.0",
     "grunt-jsdoc": "~2.4.1",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.1",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
