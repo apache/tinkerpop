@@ -32,32 +32,30 @@ complete list of all the modifications that are part of this release.
 
 ==== Boolean Conversion Step
 
-We have introduced a boolean conversion step, `asBool()`, which converts the incoming traverser to a boolean value.
-Numbers evaluate to `true` when non-zero (and not `NaN`), `null` evaluates to `null`. Strings are only accepted when
-equal to `"true"` or `"false"` (case-insensitive), otherwise `null` will be returned.
-All other types will throw an `IllegalArgumentException`.
+The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse strings and numbers into boolean values, both for normalization and to perform boolean logic with numerical values.
 
 [source,text]
 ----
-gremlin> g.inject(5).asBool()
-==> true
-gremlin> g.inject(5.0).asBool()
-==> true
-gremlin> g.inject(0).asBool()
-==> false
-gremlin> g.inject(0.0).asBool()
-==> false
-gremlin> g.inject("true").asBool()
-==> true
-gremlin> g.inject("123hello").asBool()
-==> null
-gremlin> g.inject(null).asBool()
-==> null
-gremlin> g.inject([1, 2, 3, 4]).asBool()
-==> IllegalArgumentException
+gremlin> g.inject(2, "true", 1, 0, false, "FALSE").asBool().fold()
+==>[true,true,true,false,false,false]
+
+// using the modern graph, we can turn count() results into boolean values
+gremlin> g.V().local(outE().count()).fold()
+==>[3,0,0,2,0,1]
+gremlin> g.V().local(outE().count()).asBool().fold()
+==>[true,false,false,true,false,true]
+// a slightly more complex one using sack for boolean operations for vertices with both 'person' label and has out edges
+gremlin> g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and).by(__.outE().count().asBool()).sack().path()
+==>[v[1],true]
+==>[v[2],false]
+==>[v[3],false]
+==>[v[4],true]
+==>[v[5],false]
+==>[v[6],true]
 ----
 
 See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
 
 ==== Removal of Vertex/ReferenceVertex from grammar
 

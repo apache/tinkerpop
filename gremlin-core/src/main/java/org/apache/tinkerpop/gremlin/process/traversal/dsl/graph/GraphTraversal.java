@@ -1858,6 +1858,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link AsBoolStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#asBool-step" target="_blank">Reference Documentation - asBool Step</a>
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Boolean> asBool() {
         this.asAdmin().getBytecode().addStep(Symbols.asBool);

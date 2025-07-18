@@ -786,18 +786,18 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#as-step[reference]
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`Number`/`String`/`null` |`boolean`
+|N |Y |N |`Number`/`String`/`null` |`Boolean`
 |=========================================================
 
 *Arguments:*
 
 None
 
-`null` values return `null`, numbers evaluate to `true` if non-zero. Strings only accept "true" or "false", any other strings will return `null`.
+`null` values return `null`, numbers evaluate to `true` if non-zero. Strings only accept "true" or "false" (case-insensitive), any other strings will return `null`.
 
 *Exceptions*
 
-If the incoming traverser type is unsupported or a string other than "true" or "false" then an `IllegalArgumentException` is thrown.
+If the incoming traverser type is unsupported or a string other than "true" or "false" then `null` will be returned.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsBoolStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asBool-step[reference]

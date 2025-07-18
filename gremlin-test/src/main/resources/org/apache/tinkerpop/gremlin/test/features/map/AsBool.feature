@@ -31,6 +31,18 @@ Feature: Step - asBool()
       | true |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectX3_14X_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(3.14).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXneg_1X_asBool
     Given the empty graph
     And the traversal of
@@ -67,11 +79,47 @@ Feature: Step - asBool()
       | false |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXbool_trueX_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(true).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXfalseX_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(false).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | false |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXtrueX_asBool
     Given the empty graph
     And the traversal of
       """
       g.inject('true').asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXmixed_trueX_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject('tRUe').asBool()
       """
     When iterated to list
     Then the result should be unordered
@@ -112,3 +160,36 @@ Feature: Step - asBool()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"
+
+  Scenario: g_VXX_localX_outE_countX_asBool
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(outE().count()).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+      | false |
+      | false |
+      | true |
+      | false |
+      | true |
+
+  @GraphComputerVerificationReferenceOnly
+  Scenario: g_V_sackXassignX_byX_hasLabelXpersonX_count_asBoolX_sackXandX_byX_outE_count_asBoolX_sack_path
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and).by(__.outE().count().asBool()).sack().path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[marko],true] |
+      | p[v[vadas],false] |
+      | p[v[lop],false] |
+      | p[v[josh],true] |
+      | p[v[ripple],false] |
+      | p[v[peter],true] |
