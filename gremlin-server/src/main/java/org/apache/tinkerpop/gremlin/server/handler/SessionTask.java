@@ -31,7 +31,10 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * A {@code SessionTask} equates to a particular incoming request to the {@link UnifiedHandler} and is analogous to
  * a {@link Context} in the {@link OpProcessor} approach to handling requests to the server.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public class SessionTask extends Context {
     public SessionTask(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                        final Settings settings, final GraphManager graphManager,
