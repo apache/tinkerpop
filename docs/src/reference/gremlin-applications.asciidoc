@@ -70,7 +70,7 @@ analysis, small to medium sized data loading projects and other exploratory func
 highly extensible, featuring a rich plugin system that allows new tools, commands,
 link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
 
-To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat` (`gremlin-java8.bat` for Java 8):
+To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat`:
 
 [source,text]
 ----
@@ -848,7 +848,7 @@ The following table describes the various YAML configuration options that Gremli
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
 |ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|ssl.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default) |_none_
+|ssl.keyStoreType |`PKCS12` |_none_
 |ssl.needClientAuth | Optional. One of NONE, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
 |ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_

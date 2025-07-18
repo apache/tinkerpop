@@ -796,7 +796,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.idleConnectionTimeout | Duration of time in milliseconds that the driver will allow a channel to not receive read or writes before it automatically closes. |180000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
+|connectionPool.keyStoreType |`PKCS12` |_none_
 |connectionPool.maxResponseContentLength |The maximum length in bytes that a message can be received from the server. |2147483647
 |connectionPool.maxSize |The maximum size of a connection pool for a host. |128
 |connectionPool.maxWaitForConnection |The amount of time in milliseconds to wait for a new connection before timing out. |3000
