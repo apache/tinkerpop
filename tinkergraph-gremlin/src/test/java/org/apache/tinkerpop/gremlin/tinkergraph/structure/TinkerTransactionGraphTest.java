@@ -1513,15 +1513,18 @@ public class TinkerTransactionGraphTest {
 
         // create initial vertex with a property
         final GraphTraversalSource gtx = tx.begin();
-        gtx.addV().property(T.id, vertexId).property("name", "test").next();
+        Vertex vertex = gtx.addV().property(T.id, vertexId).property("name", "test").next();
+        // add self-referencing edge
+        gtx.addE("tests").from(vertex).to(vertex).next();
         gtx.tx().commit();
 
         verifyCommittedSingleVertexWithId(g, vertexId);
         final TinkerVertex originalVertex = g.getVertices().get(vertexId).getUnmodified();
         assertEquals("test", originalVertex.properties.get("name").get(0).value());
+        assertEquals(1, g.getEdgesCount());
         final long originalVersion = originalVertex.version();
 
-        // drop the vertex and re-create it without any properties in the same transaction
+        // drop the vertex and re-create it without any properties or edges in the same transaction
         final GraphTraversalSource gtx2 = tx.begin();
         gtx2.V().drop().iterate();
         gtx2.addV().property(T.id, vertexId).next();
@@ -1531,6 +1534,7 @@ public class TinkerTransactionGraphTest {
         final TinkerElementContainer<TinkerVertex> container = g.getVertices().get(vertexId);
         final TinkerVertex updatedVertex = container.getUnmodified();
         assertNull(updatedVertex.properties);
+        assertEquals(0, g.getEdgesCount());
         // version should have been updated
         assertNotEquals(originalVersion, updatedVertex.version());
     }
