@@ -832,7 +832,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[asNumber-step]]
 === AsNumber Step
 
-The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (N) provided.
+The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
 
 Numerical input will pass through unless a type is specified by the number token, with the exception that any float number will be converted into double. `ArithmeticException` will be thrown for any overflow during narrowing of types.
 

@@ -47,7 +47,7 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     }
 
     @Override
-    protected Number map(Traverser.Admin<S> traverser) {
+    protected Number map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
         if (object instanceof String) {
             String numberText = (String) object;
@@ -89,7 +89,7 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         return StringFactory.stepString(this);
     }
 
-    public static Number parseNumber(final String value) {
+    private static Number parseNumber(final String value) {
         if (NumberUtils.isCreatable(value.trim())) {
             return NumberUtils.createNumber(value.trim());
         }
