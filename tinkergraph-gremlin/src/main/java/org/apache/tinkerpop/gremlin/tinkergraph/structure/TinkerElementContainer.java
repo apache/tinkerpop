@@ -154,6 +154,20 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
+     * Unmark element as deleted in the current transaction. Does nothing if the element was not previously marked as deleted.
+     *
+     * @see #markDeleted(TinkerTransaction)
+     */
+    public void unmarkDeleted(final TinkerTransaction tx) {
+        // only unmark as deleted if it was previously marked as deleted
+        if (isDeletedInTx.get()) {
+            usesInTransactions.decrementAndGet();
+            isDeletedInTx.set(false);
+            tx.markChanged(this);
+        }
+    }
+
+    /**
      * Mark element as changed in the current transaction.
      * A copy of the element is made and set as a value in the transaction.
      * @param transactionElement updated element
