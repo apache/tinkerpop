@@ -41,6 +41,9 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     public TailGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
+        if (this.limit.isVariable()) {
+            traversal.getGValueManager().track(limit);
+        }
     }
 
     @Override
@@ -86,7 +89,10 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     @Override
     public void updateVariable(String name, Object value) {
         if (name.equals(limit.getName())) {
-            limit = GValue.ofLong(name, (Long) value);
+            if (!(value instanceof Number)) {
+                throw new IllegalArgumentException("The variable " + name + " must have a value of type Number");
+            }
+            this.limit = GValue.ofLong(name, ((Number) value).longValue());
         }
     }
 
