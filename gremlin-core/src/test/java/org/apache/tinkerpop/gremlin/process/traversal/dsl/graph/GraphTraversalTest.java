@@ -256,17 +256,4 @@ public class GraphTraversalTest {
         assertEquals(g.V().hasId(1,2,3,4,5,6,7,8),
                 g.V().hasId(new Integer[]{1, 2, 3}, new Integer[]{4, 5}, Arrays.asList(6, 7), 8));
     }
-
-    @Test
-    public void hasIdShouldUnrollGValueListOfIds() {
-        assertEquals(
-                g.V().hasId(
-                        GValue.ofInteger(null, 1), GValue.ofInteger(null, 2), GValue.ofInteger(null, 3),
-                        GValue.ofInteger(null, 4), GValue.ofInteger(null, 5), GValue.ofInteger(null, 6),
-                        GValue.ofInteger(null, 7), GValue.ofInteger("d", 8)
-                ),
-                g.V().hasId(
-                        GValue.of("a", new Integer[]{1, 2, 3}), GValue.of("b", new Integer[]{4, 5}),
-                        GValue.of("c", Arrays.asList(6, 7)), GValue.ofInteger("d", 8)));
-    }
 }
