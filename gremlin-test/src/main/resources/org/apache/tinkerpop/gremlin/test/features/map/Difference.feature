@@ -208,10 +208,9 @@ Feature: Step - difference()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_differenceXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).difference(["a","c"])
+      g.inject(["a",null,"b"]).difference(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -221,10 +220,9 @@ Feature: Step - difference()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_differenceXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).difference(["a",null,"c"])
+      g.inject(["a",null,"b"]).difference(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -234,10 +232,9 @@ Feature: Step - difference()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_differenceXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).difference(["five","three",7i])
+      g.inject([3,"three"]).difference(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

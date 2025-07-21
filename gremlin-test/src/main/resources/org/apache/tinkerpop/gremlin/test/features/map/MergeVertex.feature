@@ -299,11 +299,11 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the side effect c defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the side effect m defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\", \"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
+      g.withSideEffect("c", [T.label:"person", name:"stephen"]).
+        withSideEffect("m", [T.label:"person", name:"stephen", age:19]).
+        mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -315,11 +315,11 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the side effect c defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the side effect m defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age:19]).
+        mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -409,11 +409,11 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the side effect c defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the side effect m defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\", \"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.inject(0).mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
+      g.withSideEffect("c", [T.label:"person", name:"stephen"]).
+        withSideEffect("m", [T.label:"person", name:"stephen", age:19]).
+        inject(0).mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -425,11 +425,11 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the side effect c defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the side effect m defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.inject(0).mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age: 19]).
+        inject(0).mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -544,11 +544,11 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
-    And using the side effect c defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the side effect m defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.mergeV(__.select("c")).
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age:19]).
+        mergeV(__.select("c")).
           option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
       """
     When iterated to list
@@ -563,10 +563,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
-    And using the side effect m defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.V().has("person", "name", "marko").
+      g.withSideEffect("m", [age:19]).
+        V().has("person", "name", "marko").
         mergeV([:]).
           option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
       """

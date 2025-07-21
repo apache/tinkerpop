@@ -65,7 +65,7 @@ Feature: Step - math()
     Given the modern graph
     And the traversal of
       """
-      g.withSideEffect("x", 100i).V().values("age").math("_ + x")
+      g.withSideEffect("x", 100).V().values("age").math("_ + x")
       """
     When iterated to list
     Then the result should be unordered

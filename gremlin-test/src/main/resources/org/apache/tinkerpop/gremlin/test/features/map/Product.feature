@@ -249,10 +249,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_productXa_cX_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).product(["a","c"]).unfold()
+      g.inject(["a",null,"b"]).product(["a","c"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -267,10 +266,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_productXa_null_cX_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).product(["a",null,"c"]).unfold()
+      g.inject(["a",null,"b"]).product(["a",null,"c"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -288,10 +286,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_productXfive_three_7X_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).product(["five","three",7i]).unfold()
+      g.inject([3,"three"]).product(["five","three",7i]).unfold()
       """
     When iterated to list
     Then the result should be unordered

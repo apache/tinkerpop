@@ -68,7 +68,7 @@ Feature: Step - inject()
     Given the modern graph
     And the traversal of
       """
-      g.inject([name:"marko",age:null]).select("name","age")
+      g.inject([name:"marko", age:null]).select("name","age")
       """
     When iterated to list
     Then the result should be unordered

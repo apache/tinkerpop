@@ -80,8 +80,8 @@ traversalSourceSelfMethod_withSack
     ;
 
 traversalSourceSelfMethod_withSideEffect
-    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument RPAREN
-    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument COMMA traversalBiFunction RPAREN
+    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral RPAREN
+    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies

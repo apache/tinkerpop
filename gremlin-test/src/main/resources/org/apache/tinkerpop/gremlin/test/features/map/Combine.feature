@@ -211,10 +211,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_combineXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).combine(["a","c"])
+      g.inject(["a",null,"b"]).combine(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -224,10 +223,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_combineXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).combine(["a",null,"c"])
+      g.inject(["a",null,"b"]).combine(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -237,10 +235,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_combineXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).combine(["five","three",7i])
+      g.inject([3,"three"]).combine(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

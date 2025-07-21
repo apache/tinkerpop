@@ -520,7 +520,7 @@ Feature: Step - aggregate()
     Given the modern graph
     And the traversal of
     """
-    g.withSideEffect("a", [1i,2i,3i], Operator.addAll).V().aggregate("a").by("age").cap("a")
+    g.withSideEffect("a", [1,2,3], Operator.addAll).V().aggregate("a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -537,7 +537,7 @@ Feature: Step - aggregate()
     Given the modern graph
     And the traversal of
     """
-    g.withSideEffect("a", [1i,2i,3i], Operator.addAll).V().aggregate(Scope.local, "a").by("age").cap("a")
+    g.withSideEffect("a", [1,2,3], Operator.addAll).V().aggregate(Scope.local, "a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -555,7 +555,7 @@ Feature: Step - aggregate()
     Given the modern graph
     And the traversal of
     """
-    g.withSideEffect("a", [1i,2i,3i], Operator.assign).V().aggregate("a").by("age").cap("a")
+    g.withSideEffect("a", [1,2,3], Operator.assign).V().aggregate("a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -571,7 +571,7 @@ Feature: Step - aggregate()
     And the traversal of
     # add order().by("age") to deterministically assign a vertex with the largest age value at the end
     """
-    g.withSideEffect("a", [1i,2i,3i], Operator.assign).V().order().by("age").aggregate(Scope.local, "a").by("age").cap("a")
+    g.withSideEffect("a", [1,2,3], Operator.assign).V().order().by("age").aggregate(Scope.local, "a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered

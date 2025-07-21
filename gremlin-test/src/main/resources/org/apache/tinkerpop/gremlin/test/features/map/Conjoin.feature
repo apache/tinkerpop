@@ -144,7 +144,7 @@ Feature: Step - conjoin()
     Given the empty graph
     And the traversal of
       """
-      g.inject([3i,"three"]).conjoin(";")
+      g.inject([3,"three"]).conjoin(";")
       """
     When iterated to list
     Then the result should be unordered
