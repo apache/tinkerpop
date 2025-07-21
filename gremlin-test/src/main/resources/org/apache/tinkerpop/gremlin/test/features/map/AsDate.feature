@@ -57,10 +57,9 @@ Feature: Step - asDate()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1694017708000LX_asDate
     Given the empty graph
-    And using the parameter xx1 defined as "d[1694017708000].l"
     And the traversal of
       """
-      g.inject(xx1).asDate()
+      g.inject(1694017708000L).asDate()
       """
     When iterated to list
     Then the result should be unordered
@@ -70,10 +69,9 @@ Feature: Step - asDate()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1694017709000dX_asDate
     Given the empty graph
-    And using the parameter xx1 defined as "d[1694017709000.1].d"
     And the traversal of
       """
-      g.inject(xx1).asDate()
+      g.inject(1694017709000.1d).asDate()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"
@@ -81,10 +79,9 @@ Feature: Step - asDate()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asDate
     Given the empty graph
-    And using the parameter xx1 defined as "l[1,2]"
     And the traversal of
       """
-      g.inject(xx1).asDate()
+      g.inject([1,2]).asDate()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"

@@ -80,8 +80,8 @@ traversalSourceSelfMethod_withSack
     ;
 
 traversalSourceSelfMethod_withSideEffect
-    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument RPAREN
-    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericArgument COMMA traversalBiFunction RPAREN
+    : K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral RPAREN
+    | K_WITHSIDEEFFECT LPAREN stringLiteral COMMA genericLiteral COMMA traversalBiFunction RPAREN
     ;
 
 traversalSourceSelfMethod_withStrategies
@@ -130,7 +130,7 @@ traversalSourceSpawnMethod_V
     ;
 
 traversalSourceSpawnMethod_inject
-    : K_INJECT LPAREN genericArgumentVarargs RPAREN
+    : K_INJECT LPAREN genericLiteralVarargs RPAREN
     ;
 
 traversalSourceSpawnMethod_io
@@ -600,7 +600,7 @@ traversalMethod_index
     ;
 
 traversalMethod_inject
-    : K_INJECT LPAREN genericArgumentVarargs RPAREN
+    : K_INJECT LPAREN genericLiteralVarargs RPAREN
     ;
 
 traversalMethod_is

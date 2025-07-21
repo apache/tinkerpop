@@ -35,10 +35,9 @@ Feature: Step - toUpper()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXfeature_test_nullX_toUpperXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[feature,tESt,null]"
     And the traversal of
       """
-      g.inject(xx1).toUpper(Scope.local)
+      g.inject(["feature","tESt",null]).toUpper(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -62,10 +61,9 @@ Feature: Step - toUpper()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_toUpper
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1).toUpper()
+      g.inject(["a","b"]).toUpper()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The toUpper() step can only take string as argument"

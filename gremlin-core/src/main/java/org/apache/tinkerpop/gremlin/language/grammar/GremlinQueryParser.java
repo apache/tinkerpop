@@ -88,7 +88,7 @@ public class GremlinQueryParser {
             // We just log ex here for debugging purposes.
             log.debug("Converting a java.lang.ClassCastException to GremlinParserException," +
                     " assuming that it indicates a semantic parse error.", ex);
-            throw new GremlinParserException("Failed to interpret Gremlin query: " + ex.getMessage());
+            throw new GremlinParserException("Failed to interpret Gremlin query: " + ex.getMessage(), ex);
         }
     }
 }
