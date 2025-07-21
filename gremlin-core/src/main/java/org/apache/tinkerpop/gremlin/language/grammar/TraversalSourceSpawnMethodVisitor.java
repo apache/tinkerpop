@@ -112,7 +112,7 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_inject(final GremlinParser.TraversalSourceSpawnMethod_injectContext ctx) {
-        return this.traversalSource.inject(GValue.resolveToValues(GValue.ensureGValues(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs())))); //TODO GValue temporary for inject()
+        return this.traversalSource.inject(antlr.genericVisitor.parseObjectVarargs(ctx.genericLiteralVarargs()));
     }
 
     /**

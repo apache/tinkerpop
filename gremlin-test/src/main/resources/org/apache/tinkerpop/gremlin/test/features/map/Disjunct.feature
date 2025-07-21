@@ -185,10 +185,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_disjunctXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(["a","c"])
+      g.inject(["a",null,"b"]).disjunct(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -198,10 +197,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_disjunctXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(["a",null,"c"])
+      g.inject(["a",null,"b"]).disjunct(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -211,10 +209,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_disjunctXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(["five","three",7i])
+      g.inject([3,"three"]).disjunct(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered
