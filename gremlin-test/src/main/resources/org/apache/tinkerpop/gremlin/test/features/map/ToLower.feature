@@ -35,10 +35,9 @@ Feature: Step - toLower()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXfeature_test_nullX_toLowerXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[FEATURE,tESt,null]"
     And the traversal of
       """
-      g.inject(xx1).toLower(Scope.local)
+      g.inject(["FEATURE","tESt",null]).toLower(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -48,10 +47,9 @@ Feature: Step - toLower()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_toLower
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1).toLower()
+      g.inject(["a","b"]).toLower()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The toLower() step can only take string as argument"

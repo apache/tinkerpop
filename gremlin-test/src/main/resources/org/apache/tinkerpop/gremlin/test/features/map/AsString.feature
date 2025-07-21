@@ -21,11 +21,9 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asString
     Given the empty graph
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[2].i"
     And the traversal of
       """
-      g.inject(xx1, xx2).asString()
+      g.inject(1, 2).asString()
       """
     When iterated to list
     Then the result should be unordered
@@ -36,11 +34,9 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asStringXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[2].i"
     And the traversal of
       """
-      g.inject(xx1, xx2).asString(Scope.local)
+      g.inject(1, 2).asString(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -51,10 +47,9 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlist_1_2X_asStringXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
     And the traversal of
       """
-      g.inject(xx1).asString(Scope.local)
+      g.inject([1,2]).asString(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -64,10 +59,9 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_nullX_asString
     Given the empty graph
-    And using the parameter xx1 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(null, xx1).asString()
+      g.inject(null, 1).asString()
       """
     When iterated to list
     Then the result should be unordered
@@ -78,10 +72,9 @@ Feature: Step - asString()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_nullX_asStringXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].i,null]"
     And the traversal of
       """
-      g.inject(xx1).asString(Scope.local)
+      g.inject([1,null]).asString(Scope.local)
       """
     When iterated to list
     Then the result should be unordered

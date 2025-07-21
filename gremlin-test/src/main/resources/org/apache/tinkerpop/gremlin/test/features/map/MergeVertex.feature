@@ -457,11 +457,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeV(__.identity())
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"stephen"]).mergeV(__.identity())
       """
     When iterated to list
     Then the result should have a count of 2
@@ -475,11 +473,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeV()
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"stephen"]).mergeV()
       """
     When iterated to list
     Then the result should have a count of 2
@@ -935,11 +931,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"marko"], [created:"N"]).
         fold().
         mergeV(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).
@@ -956,11 +950,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.inject([T.label:"person", name:"stephen"], [T.label:"person", name:"stephen"], [created:"N"]).
         fold().
         mergeV(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).

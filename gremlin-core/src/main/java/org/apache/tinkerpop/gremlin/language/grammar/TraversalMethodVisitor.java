@@ -961,7 +961,7 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      */
     @Override
     public GraphTraversal visitTraversalMethod_inject(final GremlinParser.TraversalMethod_injectContext ctx) {
-        return graphTraversal.inject(GValue.resolveToValues(GValue.ensureGValues(antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs())))); //TODO:: revert GValue in inject()
+        return graphTraversal.inject(antlr.genericVisitor.parseObjectVarargs(ctx.genericLiteralVarargs()));
     }
 
     @Override
