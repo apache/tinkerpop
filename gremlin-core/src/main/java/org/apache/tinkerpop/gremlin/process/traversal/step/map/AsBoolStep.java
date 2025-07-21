@@ -37,7 +37,7 @@ public final class AsBoolStep<S> extends ScalarMapStep<S, Boolean> {
     @Override
     protected Boolean map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
-        if (object == null) return null;
+        if (object == null)  throw new IllegalArgumentException("Can't parse null as Boolean.");
         if (object instanceof Boolean) return (Boolean) object;
         if (object instanceof Number) {
             final double d = ((Number) object).doubleValue();
@@ -48,7 +48,7 @@ public final class AsBoolStep<S> extends ScalarMapStep<S, Boolean> {
             final String str = (String) object;
             if (str.equalsIgnoreCase("true")) return true;
             if (str.equalsIgnoreCase("false")) return false;
-            return null;
+            throw new IllegalArgumentException("Can't parse " + object + " as Boolean.");
         }
         throw new IllegalArgumentException("Can't parse " + object.getClass().getName() + " as Boolean.");
     }

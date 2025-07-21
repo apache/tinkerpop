@@ -134,9 +134,7 @@ Feature: Step - asBool()
       g.inject(null).asBool()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | null |
+    Then the traversal will raise an error with message containing text of "Can't parse null as Boolean."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXhelloX_asBool
@@ -146,9 +144,7 @@ Feature: Step - asBool()
       g.inject('hello').asBool()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | null |
+    Then the traversal will raise an error with message containing text of "Can't parse hello as Boolean."
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asBool

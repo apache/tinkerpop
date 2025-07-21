@@ -50,15 +50,31 @@ public class AsBoolStepTest extends StepTest {
         assertEquals(false, __.__(0.0).asBool().next());
         assertEquals(false, __.__(-0.0).asBool().next());
         assertNull(__.__(Float.NaN).asBool().next());
-        assertNull(__.__("").asBool().next());
         assertNull(__.__(Double.NaN).asBool().next());
-        assertNull(__.__((Object) null).asBool().next());
-        assertNull(__.__("hello world").asBool().next());
-        assertNull(__.__("1").asBool().next());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnInvalidInput() {
         __.__(Arrays.asList(1, 2)).asBool().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnEmptyString() {
+        __.__("").asBool().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnInvalidString() {
+        __.__("hello world").asBool().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnInvalidNumString() {
+        __.__("1").asBool().next();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnNull() {
+        __.__((Object) null).asBool().next();
     }
 }
