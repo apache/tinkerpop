@@ -23,6 +23,11 @@ import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -39,6 +44,8 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
@@ -207,6 +214,46 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldSubgraphWithGraphSONV3Serialization() throws Exception {
+        // validating subgraph() serialization here b/c we don't have feature tests for it yet in gherkin
+        final GraphSONMapper.Builder builder = GraphSONMapper.build().addRegistry(TinkerIoRegistryV3.instance());
+        final GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3(builder);
+        final Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().E().hasLabel('knows').subgraph('x').cap('x')").all().join();
+            assertEquals(1, r.size());
+
+            final Graph graph = r.get(0).get(Graph.class);
+            final GraphTraversalSource g = traversal().withEmbedded(graph);
+            assertEquals(2, g.E().count().next().longValue());
+            assertEquals(3, g.V().count().next().longValue());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldSubgraphWithGraphBinaryV1Serialization() throws Exception {
+        // validating subgraph() serialization here b/c we don't have feature tests for it yet in gherkin
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        final Client client = cluster.connect();
+
+        try {
+            final List<Result> r = client.submit("TinkerFactory.createModern().traversal().E().hasLabel('knows').subgraph('x').cap('x')").all().join();
+            assertEquals(1, r.size());
+
+            final Graph graph = r.get(0).get(Graph.class);
+            final GraphTraversalSource g = traversal().withEmbedded(graph);
+            assertEquals(2, g.E().count().next().longValue());
+            assertEquals(3, g.V().count().next().longValue());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
