@@ -27,17 +27,21 @@ limitations under the License.
 ----
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
-persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with
-TinkerPop and serves as the reference implementation for other providers to study in order to understand the
-semantics of the various methods of the TinkerPop API. Its status as a reference implementation does not however imply
-that it is not suitable for production. TinkerGraph has many practical use cases in production applications and their
-development. Some examples of TinkerGraph use cases include:
+persistence), graph engine that provides both OLTP and OLAP functionality. It is non-transactional by default but does
+have a lightweight transactional form that can be instantiated offering simple `ThreadLocal` transactions supporting
+`read committed` transaction isolation. TinkerGraph is deployed with TinkerPop and serves as the reference
+implementation for other providers to study in order to understand the semantics of the various methods of the
+TinkerPop API. Its status as a reference implementation does not however imply that it is not suitable for production.
+TinkerGraph has many practical use cases in production applications and their development. Some examples of TinkerGraph
+use cases include:
 
 * Ad-hoc analysis of large immutable graphs that fit in memory.
 * Extract subgraphs, from larger graphs that don't fit in memory, into TinkerGraph for further analysis or other
 purposes.
 * Use TinkerGraph as a sandbox to develop and debug complex traversals by simulating data from a larger graph inside
 a TinkerGraph.
+* Configure it to match the semantics of a production graph database for unit testing purpose to simplify development
+setup and automated builds.
 
 Constructing a simple graph using TinkerGraph in Java is presented below:
 
@@ -259,7 +263,7 @@ public class GraphService {
 // to run in a variety of scenarios. here we decide that TinkerTransactionGraph is a
 // suitable test graph replacement for our actual production graph.
 public class GraphServiceTest {
-    private static final TinkerTransactionGraph graph = TinkerTransactionGraph().open();
+    private static final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
     private static final GraphTraversalSource g = traversal.with(graph);
     private static final GraphService service = new GraphService(g);
 

@@ -292,7 +292,7 @@ public abstract class Client {
      */
     public final static class ClusteredClient extends Client {
 
-        ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
+        final ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
         private Throwable initializationFailure = null;
 
@@ -380,9 +380,20 @@ public abstract class Client {
                 this.initializationFailure = ex;
             }
 
-            // throw an error if there is no host available after initializing connection pool.
-            if (cluster.availableHosts().isEmpty())
+            // throw an error if there is no host available after initializing connection pool. we used
+            // to test cluster.availableHosts().isEmpty() but checking if we actually have hosts in
+            // the connection pool seems a bit more fireproof. if we look at initializeConnectionSetupForHost
+            // we can see that a successful initialization of the host/connection pool pair is followed by
+            // marking the host available and notifying the load balancing strategy. by relying directly on
+            // the state of hostConnectionPools we ensure that there is actually a concrete
+            // host/connection pool pair. even if the connection pool has immediate problems, it can fallback
+            // to its normal reconnection operation and won't put chooseConnection in a state where it can
+            // get a NPE if hostConnectionPools ends up being empty. it seems as if the safest minimum
+            // requirement for leaving this method is to ensure that at least one ConnectionPool constructor
+            // completed for at least one Host.
+            if (hostConnectionPools.isEmpty()) {
                 throwNoHostAvailableException();
+            }
 
             // try to re-initiate any unavailable hosts in the background.
             final List<Host> unavailableHosts = cluster.allHosts()
@@ -424,7 +435,7 @@ public abstract class Client {
                 // hosts that don't initialize connection pools will come up as a dead host.
                 hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this));
 
-                // hosts are not marked as available at cluster initialization, and are made available here instead.
+                // hosts are not marked as available at cluster initialization and are made available here instead.
                 host.makeAvailable();
 
                 // added a new host to the cluster so let the load-balancer know.
