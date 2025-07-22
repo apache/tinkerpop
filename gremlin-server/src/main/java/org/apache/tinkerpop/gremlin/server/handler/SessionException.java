@@ -23,7 +23,10 @@ import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 /**
  * An exception that holds the error-related {@link ResponseMessage} which is meant to be returned to the calling
  * client.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
+@Deprecated
 public class SessionException extends Exception {
     private final ResponseMessage responseMessage;
 
