@@ -522,6 +522,71 @@ func TestTraversal(t *testing.T) {
 		assert.True(t, results[0].GetType().Kind() == reflect.Map)
 
 	})
+
+	t.Run("Test should extract ID from Vertex", func(t *testing.T) {
+		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+
+		// Test basic V() step with mixed ID types
+		vStart := g.V(1, &Vertex{Element: Element{Id: 2}})
+		vStartBytecode := vStart.Bytecode
+		assert.Equal(t, 1, len(vStartBytecode.stepInstructions))
+		assert.Equal(t, "V", vStartBytecode.stepInstructions[0].operator)
+		assert.Equal(t, 1, vStartBytecode.stepInstructions[0].arguments[0])
+		assert.Equal(t, 2, vStartBytecode.stepInstructions[0].arguments[1]) // ID should be extracted from Vertex
+
+		// Test V() step in the middle of a traversal
+		vMid := g.Inject("foo").V(1, &Vertex{Element: Element{Id: 2}})
+		vMidBytecode := vMid.Bytecode
+		assert.Equal(t, 2, len(vMidBytecode.stepInstructions))
+		assert.Equal(t, "inject", vMidBytecode.stepInstructions[0].operator)
+		assert.Equal(t, "foo", vMidBytecode.stepInstructions[0].arguments[0])
+		assert.Equal(t, "V", vMidBytecode.stepInstructions[1].operator)
+		assert.Equal(t, 1, vMidBytecode.stepInstructions[1].arguments[0])
+		assert.Equal(t, 2, vMidBytecode.stepInstructions[1].arguments[1]) // ID should be extracted from Vertex
+
+		// Test edge creation with from/to vertices
+		fromTo := g.AddE("Edge").From(&Vertex{Element: Element{Id: 1}}).To(&Vertex{Element: Element{Id: 2}})
+		fromToBytecode := fromTo.Bytecode
+		assert.Equal(t, 3, len(fromToBytecode.stepInstructions))
+		assert.Equal(t, "addE", fromToBytecode.stepInstructions[0].operator)
+		assert.Equal(t, "Edge", fromToBytecode.stepInstructions[0].arguments[0])
+		assert.Equal(t, "from", fromToBytecode.stepInstructions[1].operator)
+		assert.Equal(t, 1, fromToBytecode.stepInstructions[1].arguments[0]) // ID should be extracted from Vertex
+		assert.Equal(t, "to", fromToBytecode.stepInstructions[2].operator)
+		assert.Equal(t, 2, fromToBytecode.stepInstructions[2].arguments[0]) // ID should be extracted from Vertex
+
+		// Test mergeE() with Vertex in map
+		mergeMap := map[interface{}]interface{}{
+			T.Label:       "knows",
+			Direction.Out: &Vertex{Element: Element{Id: 1}},
+			Direction.In:  &Vertex{Element: Element{Id: 2}},
+		}
+
+		mergeEStart := g.MergeE(mergeMap)
+		mergeEStartBytecode := mergeEStart.Bytecode
+		assert.Equal(t, 1, len(mergeEStartBytecode.stepInstructions))
+		assert.Equal(t, "mergeE", mergeEStartBytecode.stepInstructions[0].operator)
+
+		// Check that the map contains extracted IDs
+		mergeMapArg := mergeEStartBytecode.stepInstructions[0].arguments[0].(map[interface{}]interface{})
+		assert.Equal(t, "knows", mergeMapArg[T.Label])
+		assert.Equal(t, 1, mergeMapArg[Direction.Out]) // ID should be extracted from Vertex
+		assert.Equal(t, 2, mergeMapArg[Direction.In])  // ID should be extracted from Vertex
+
+		// Test mergeE() in the middle of a traversal
+		mergeEMid := g.Inject("foo").MergeE(mergeMap)
+		mergeEMidBytecode := mergeEMid.Bytecode
+		assert.Equal(t, 2, len(mergeEMidBytecode.stepInstructions))
+		assert.Equal(t, "inject", mergeEMidBytecode.stepInstructions[0].operator)
+		assert.Equal(t, "foo", mergeEMidBytecode.stepInstructions[0].arguments[0])
+		assert.Equal(t, "mergeE", mergeEMidBytecode.stepInstructions[1].operator)
+
+		// Check that the map contains extracted IDs
+		mergeMapArg2 := mergeEMidBytecode.stepInstructions[1].arguments[0].(map[interface{}]interface{})
+		assert.Equal(t, "knows", mergeMapArg2[T.Label])
+		assert.Equal(t, 1, mergeMapArg2[Direction.Out]) // ID should be extracted from Vertex
+		assert.Equal(t, 2, mergeMapArg2[Direction.In])  // ID should be extracted from Vertex
+	})
 }
 
 func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {

@@ -386,11 +386,6 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return antlr.tvisitor.visitNestedTraversal(ctx);
     }
 
-    @Override
-    public Object visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
-        return antlr.structureVisitor.visitStructureVertexLiteral(ctx);
-    }
-
     /**
      * {@inheritDoc}
      */

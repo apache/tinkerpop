@@ -168,20 +168,20 @@ Feature: Step - has()
 
   Scenario: g_VXv1X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v1 defined as "v[marko]"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1).has("age", P.gt(30))
+      g.V(vid1).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be empty
 
   Scenario: g_VXv4X_hasXage_gt_30X
     Given the modern graph
-    And using the parameter v4 defined as "v[josh]"
+    And using the parameter vid4 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v4).has("age", P.gt(30))
+      g.V(vid4).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be unordered
@@ -190,10 +190,10 @@ Feature: Step - has()
 
   Scenario: g_VX1X_out_hasXid_2X
     Given the modern graph
-    And using the parameter v2 defined as "v[josh]"
+    And using the parameter vid2 defined as "v[josh].id"
     And the traversal of
       """
-      g.V(v2).has("age", P.gt(30))
+      g.V(vid2).has("age", P.gt(30))
       """
     When iterated to list
     Then the result should be unordered

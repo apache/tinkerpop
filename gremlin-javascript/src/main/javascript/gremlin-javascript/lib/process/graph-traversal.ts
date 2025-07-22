@@ -21,11 +21,11 @@
  * @author Jorge Bay Gondra
  */
 
-import { EnumValue, Traversal, cardinality } from './traversal.js';
+import { EnumValue, Traversal, cardinality, direction } from './traversal.js';
 import { Transaction } from './transaction.js';
 import Bytecode from './bytecode.js';
 import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
-import { Graph } from '../structure/graph.js';
+import {Graph, Vertex} from '../structure/graph.js';
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
 
 /**
@@ -255,6 +255,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   V(...args: any[]): GraphTraversal {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] instanceof Vertex) {
+        args[i] = args[i].id
+      }
+    }
     const b = new Bytecode(this.bytecode).addStep('V', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -275,6 +280,14 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   mergeE(...args: any[]): GraphTraversal {
+    if (args && args[0]) {
+      if (args[0].get(direction.out) instanceof Vertex) {
+        args[0].set(direction.out, args[0].get(direction.out).id);
+      }
+      if (args[0].get(direction.in) instanceof Vertex) {
+        args[0].set(direction.in, args[0].get(direction.in).id);
+      }
+    }
     const b = new Bytecode(this.bytecode).addStep('mergeE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
   }
@@ -361,6 +374,11 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   V(...args: any[]): this {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] instanceof Vertex) {
+        args[i] = args[i].id
+      }
+    }
     this.bytecode.addStep('V', args);
     return this;
   }
@@ -799,6 +817,11 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   from_(...args: any[]): this {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] instanceof Vertex) {
+        args[i] = args[i].id
+      }
+    }
     this.bytecode.addStep('from', args);
     return this;
   }
@@ -1109,6 +1132,14 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   mergeE(...args: any[]): this {
+    if (args && args[0]) {
+      if (args[0].get(direction.OUT) instanceof Vertex) {
+        args[0].set(direction.OUT, args[0].get(direction.OUT).id);
+      }
+      if (args[0].get(direction.IN) instanceof Vertex) {
+        args[0].set(direction.IN, args[0].get(direction.IN).id);
+      }
+    }
     this.bytecode.addStep('mergeE', args);
     return this;
   }
@@ -1549,6 +1580,11 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   to(...args: any[]): this {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] instanceof Vertex) {
+        args[i] = args[i].id
+      }
+    }
     this.bytecode.addStep('to', args);
     return this;
   }

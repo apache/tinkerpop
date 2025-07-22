@@ -65,7 +65,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXlistXv1_v2_v3XX_name
     Given the modern graph
-    And using the parameter xx1 defined as "l[v[marko],v[vadas],v[lop]]"
+    And using the parameter xx1 defined as "l[v[marko].id,v[vadas].id,v[lop].id]"
     And the traversal of
       """
       g.V(xx1).values("name")
@@ -95,10 +95,10 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
 
   Scenario: g_VXv1X_out
     Given the modern graph
-    And using the parameter v1 defined as "v[marko]"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1).out()
+      g.V(vid1).out()
       """
     When iterated to list
     Then the result should be unordered
@@ -521,7 +521,7 @@ Feature: Step - V(), out(), in(), both(), inE(), outE(), bothE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "l[v[lop],v[ripple]]"
+    And using the parameter xx1 defined as "l[v[lop].id,v[ripple].id]"
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid2 defined as "v[vadas].id"
     And using the parameter vid3 defined as "v[lop].id"

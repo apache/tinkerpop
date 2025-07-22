@@ -387,6 +387,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
         // a single null is [null]
         final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
+        // convert any vertices to ids
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] instanceof Vertex) {
+                ids[i] = ((Vertex) ids[i]).id();
+            }
+        }
         this.asAdmin().getGremlinLang().addStep(Symbols.V, ids);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, ids));
     }
@@ -402,6 +408,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, Edge> E(final Object... edgeIdsOrElements) {
         // a single null is [null]
         final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
+        // convert any vertices to ids
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] instanceof Edge) {
+                ids[i] = ((Edge) ids[i]).id();
+            }
+        }
         this.asAdmin().getGremlinLang().addStep(Symbols.E, ids);
         return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Edge.class, false, ids));
     }
@@ -1455,7 +1467,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final Map<Object, Object> searchCreate) {
         // get a construction time exception if the Map is bad
+
+        // Replace any vertices with ids for purposes of GremlinLang
+        if (searchCreate != null && searchCreate.get(Direction.OUT) instanceof Vertex) {
+            searchCreate.put(Direction.OUT, ((Vertex) searchCreate.get(Direction.OUT)).id());
+        }
+        if (searchCreate != null && searchCreate.get(Direction.IN) instanceof Vertex) {
+            searchCreate.put(Direction.IN, ((Vertex) searchCreate.get(Direction.IN)).id());
+        }
         this.asAdmin().getGremlinLang().addStep(Symbols.mergeE, searchCreate);
+
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, searchCreate);
         return this.asAdmin().addStep(step);
     }
@@ -1484,6 +1505,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         // get a construction time exception if the Map is bad
+
+        // Replace any vertices with ids for purposes of GremlinLang
+        if (searchCreate != null && !searchCreate.isNull()) {
+            Map<Object, Object> searchCreateMap = searchCreate.get();
+            if (searchCreateMap != null && searchCreateMap.get(Direction.OUT) instanceof Vertex) {
+                searchCreateMap.put(Direction.OUT, ((Vertex) searchCreateMap.get(Direction.OUT)).id());
+            }
+            if (searchCreateMap != null && searchCreateMap.get(Direction.IN) instanceof Vertex) {
+                searchCreateMap.put(Direction.IN, ((Vertex) searchCreateMap.get(Direction.IN)).id());
+            }
+        }
+
         this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final MergeEdgeStep<S> step = new MergeEdgeStep(this.asAdmin(), false, null == searchCreate ? GValue.ofMap(null, null) : searchCreate);
         return this.asAdmin().addStep(step);
@@ -1536,7 +1569,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> from(final Traversal<?, Vertex> fromVertex) {
+    public default GraphTraversal<S, E> from(final Traversal<?, Object> fromVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
@@ -1575,14 +1608,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, E> from(final GValue<Vertex> fromVertex) {
+    public default GraphTraversal<S, E> from(final GValue<Object> fromVertexOrId) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.from, fromVertex);
-        ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
+        // Convert vertex to id for the purposes of GremlinLang
+        GValue<Object> fromId;
+        if (fromVertexOrId.get() instanceof Vertex) {
+            fromId = GValue.of(fromVertexOrId.getName(), ((Vertex) fromVertexOrId.get()).id());
+        } else {
+            fromId = fromVertexOrId;
+        }
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.from, fromId);
+
+        ((FromToModulating) prev).addFrom(__.constant(fromId).asAdmin());
         return this;
     }
 
@@ -1590,19 +1631,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
      * outgoing vertex of the newly added {@link Edge}.
      *
-     * @param fromVertex the vertex for selecting the outgoing vertex
+     * @param fromVertexOrId the vertex for selecting the outgoing vertex
      * @return the traversal with the modified {@link AddEdgeStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    public default GraphTraversal<S, E> from(final Vertex fromVertex) {
+    public default GraphTraversal<S, E> from(final Object fromVertexOrId) {
+        if (fromVertexOrId instanceof String) {
+            return this.from((String) fromVertexOrId);
+        } else if (fromVertexOrId instanceof Traversal) {
+            this.from((Traversal<?, Object>)fromVertexOrId);
+            return this;
+        }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The from() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getGremlinLang().addStep(Symbols.from, fromVertex);
-        ((FromToModulating) prev).addFrom(__.constant(fromVertex).asAdmin());
+        // Convert vertex to id for the purposes of GremlinLang
+        Object fromId = fromVertexOrId instanceof Vertex ? ((Vertex) fromVertexOrId).id() : fromVertexOrId;
+        this.asAdmin().getGremlinLang().addStep(Symbols.from, fromId);
+        ((FromToModulating) prev).addFrom(__.constant(fromId).asAdmin());
         return this;
     }
 
@@ -1629,19 +1678,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
      * incoming vertex of the newly added {@link Edge}.
      *
-     * @param toVertex the vertex for selecting the incoming vertex
+     * @param toVertexOrId the vertex for selecting the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 4.0.0
      */
-    public default GraphTraversal<S, E> to(final GValue<Vertex> toVertex) {
+    public default GraphTraversal<S, E> to(final GValue<Object> toVertexOrId) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.to, toVertex);
-        ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
+        // Convert vertex to id for the purposes of GremlinLang
+        GValue<Object> toId;
+        if (toVertexOrId.get() instanceof Vertex) {
+            toId = GValue.of(toVertexOrId.getName(), ((Vertex) toVertexOrId.get()).id());
+        } else {
+            toId = toVertexOrId;
+        }
+        this.asAdmin().getGremlinLang().addStep(GraphTraversal.Symbols.to, toId);
+
+        ((FromToModulating) prev).addTo(__.constant(toId).asAdmin());
         return this;
     }
 
@@ -1654,7 +1711,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
-    public default GraphTraversal<S, E> to(final Traversal<?, Vertex> toVertex) {
+    public default GraphTraversal<S, E> to(final Traversal<?, Object> toVertex) {
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
@@ -1669,19 +1726,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * When used as a modifier to {@link #addE(String)} this method specifies the traversal to use for selecting the
      * incoming vertex of the newly added {@link Edge}.
      *
-     * @param toVertex the vertex for selecting the incoming vertex
+     * @param toVertexOrId the vertex for selecting the incoming vertex
      * @return the traversal with the modified {@link AddEdgeStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
-    public default GraphTraversal<S, E> to(final Vertex toVertex) {
+    public default GraphTraversal<S, E> to(final Object toVertexOrId) {
+        if (toVertexOrId instanceof String) {
+            return this.to((String) toVertexOrId);
+        } else if (toVertexOrId instanceof Traversal) {
+            this.to((Traversal<?, Object>)toVertexOrId);
+            return this;
+        }
         final Step<?,?> prev = this.asAdmin().getEndStep();
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
 
-        this.asAdmin().getGremlinLang().addStep(Symbols.to, toVertex);
-        ((FromToModulating) prev).addTo(__.constant(toVertex).asAdmin());
+        Object toId = toVertexOrId instanceof Vertex ? ((Vertex) toVertexOrId).id() : toVertexOrId;
+        this.asAdmin().getGremlinLang().addStep(Symbols.to, toId);
+        ((FromToModulating) prev).addTo(__.constant(toId).asAdmin());
         return this;
     }
 

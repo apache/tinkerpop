@@ -164,10 +164,10 @@ Feature: Step - math()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_VX1X_outE_asXexpectedWeightX_mathXexpectedWeightPlusOneXbyXweightX
     Given the modern graph
-    And using the parameter v1 defined as "v[marko]"
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(v1).outE().as("expectedWeight").math("expectedWeight + 1").by("weight")
+      g.V(vid1).outE().as("expectedWeight").math("expectedWeight + 1").by("weight")
       """
     When iterated to list
     Then the result should be unordered

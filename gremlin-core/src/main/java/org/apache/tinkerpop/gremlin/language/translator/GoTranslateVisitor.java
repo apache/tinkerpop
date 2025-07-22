@@ -200,16 +200,6 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitStructureVertexLiteral(final GremlinParser.StructureVertexLiteralContext ctx) {
-        sb.append(GO_PACKAGE_NAME).append("Vertex{Element{");
-        visit(ctx.getChild(3)); // id
-        sb.append(", ");
-        visit(ctx.getChild(5)); // label
-        sb.append("}}");
-        return null;
-    }
-
-    @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         if (ctx.getChildCount() == 1)
             sb.append(GO_PACKAGE_NAME).append(ctx.getText()).append("()");

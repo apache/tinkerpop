@@ -43,10 +43,6 @@ import static org.junit.Assert.assertFalse;
 @RunWith(GremlinProcessRunner.class)
 public abstract class InjectTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
-
-    public abstract Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id);
-
     public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX();
 
     public abstract Traversal<Integer, Integer> get_g_injectXnull_nullX();
@@ -66,22 +62,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Map<String,Object>, Map<String, Object>> get_g_injectXname_marko_age_nullX_selectXname_ageX();
 
     public abstract Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX_asXaX_selectXaX();
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_VX1X_out_injectXv2X_name() {
-        final Traversal<Vertex, String> traversal = get_g_VX1X_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
-        printTraversalForm(traversal);
-        final Map<String, Long> counter = new HashMap<>();
-        while (traversal.hasNext()) {
-            MapHelper.incr(counter, traversal.next(), 1l);
-        }
-        assertEquals(3, counter.size());
-        assertEquals(1l, counter.get("josh").longValue());
-        assertEquals(1l, counter.get("lop").longValue());
-        assertEquals(2l, counter.get("vadas").longValue());
-        assertFalse(traversal.hasNext());
-    }
 
     @Test
     public void g_injectXnull_1_3_nullX() {
@@ -153,14 +133,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(MODERN)
-    public void g_VX1X_injectXg_VX4XX_out_name() {
-        final Traversal<Vertex, String> traversal = get_g_VX1X_injectXg_VX4XX_out_name(convertToVertexId("marko"), convertToVertexId("josh"));
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("ripple", "lop", "lop", "vadas", "josh"), traversal);
-    }
-
-    @Test
     public void g_injectXnull_1_3_nullX_asXaX_selectXaX() {
         final Traversal<Integer, Integer> traversal = get_g_injectXnull_1_3_nullX_asXaX_selectXaX();
         printTraversalForm(traversal);
@@ -168,16 +140,6 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     }
 
     public static class Traversals extends InjectTest {
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id) {
-            return g.V(v1Id).out().inject(g.V(v2Id).next()).values("name");
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_injectXg_VX4XX_out_name(final Object v1Id, final Object v4Id) {
-            return g.V(v1Id).inject(g.V(v4Id).next()).out().values("name");
-        }
 
         @Override
         public Traversal<Integer, Integer> get_g_injectXnull_1_3_nullX() {
