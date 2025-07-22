@@ -860,6 +860,24 @@ ensure compatibility when making requests. Obviously, it is possible to switch t
 the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3` or `GraphBinaryMessageSerializerV1` respectively)
 in the same way and building that into the `Cluster` object.
 
+A particularly important configuration along these lines is easily overlooked when choosing to use GraphSON rather than
+GraphBinary. GraphBinary offers a bit of help in dynamically detecting available classpath items and will dynamically
+include `TinkerGraph` as a serialization target which allows the <<subgraph-step>> to work properly in remote contexts.
+GraphSON does not. When using GraphSON, you must manually include the `TinkerIoRegistryV3` in the configuration for the
+driver.
+
+[source,java]
+----
+GraphSONMapper.Builder builder = GraphSONMapper.build().addRegistry(TinkerIoRegistryV3.instance());
+GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3(builder);
+Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+Client client = cluster.connect();
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
+----
+
+IMPORTANT: Prefer GraphBinary over GraphSON when using the driver. If you do choose GraphSON, prefer GraphSON 3 and
+know that GraphSON 2 is not compatible with <<subgraph-step>.
+
 [[gremlin-java-lambda]]
 === The Lambda Solution
 
