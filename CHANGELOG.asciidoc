@@ -158,6 +158,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
 * Improved performance of `Traversal.lock()` which was being called excessively.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
+* Improved invalid plugin error message in Gremlin Console.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
 * Fixed bug in Gremlin Console for field accessor issue with JDK17.
 * Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
@@ -186,6 +187,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Support hot reloading of SSL certificates.
 * Increase default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
+* Fixed bug preventing a vertex from being dropped and then re-added in the same `TinkerTransaction`
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
