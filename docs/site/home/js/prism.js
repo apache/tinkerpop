@@ -1,5 +1,5 @@
-/* PrismJS 1.27.0
-https://prismjs.com/download.html#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+go+go-module+groovy+java+python */
+/* PrismJS 1.30.0
+https://prismjs.com/download#themes=prism-tomorrow&languages=markup+css+clike+javascript+csharp+go+go-module+groovy+java+python+xml-doc */
 /// <reference lib="WebWorker"/>
 
 var _self = (typeof window !== 'undefined')
@@ -224,7 +224,7 @@ var Prism = (function (_self) {
 				if (typeof document === 'undefined') {
 					return null;
 				}
-				if ('currentScript' in document && 1 < 2 /* hack to trip TS' flow analysis */) {
+				if (document.currentScript && document.currentScript.tagName === 'SCRIPT' && 1 < 2 /* hack to trip TS' flow analysis */) {
 					return /** @type {any} */ (document.currentScript);
 				}
 
@@ -1317,7 +1317,10 @@ Prism.languages.markup = {
 							pattern: /^=/,
 							alias: 'attr-equals'
 						},
-						/"|'/
+						{
+							pattern: /^(\s*)["']|["']$/,
+							lookbehind: true
+						}
 					]
 				}
 			},
@@ -1455,7 +1458,7 @@ Prism.languages.rss = Prism.languages.xml;
 	Prism.languages.css = {
 		'comment': /\/\*[\s\S]*?\*\//,
 		'atrule': {
-			pattern: /@[\w-](?:[^;{\s]|\s+(?![\s{]))*(?:;|(?=\s*\{))/,
+			pattern: RegExp('@[\\w-](?:' + /[^;{\s"']|\s+(?!\s)/.source + '|' + string.source + ')*?' + /(?:;|(?=\s*\{))/.source),
 			inside: {
 				'rule': /^@[\w-]+/,
 				'selector-function-argument': {
@@ -2262,7 +2265,8 @@ Prism.languages['go-mod'] = Prism.languages['go-module'] = {
 		'operator': {
 			pattern: /(^|[^.])(?:<<=?|>>>?=?|->|--|\+\+|&&|\|\||::|[?:~]|[-+*/%&|^!=<>]=?)/m,
 			lookbehind: true
-		}
+		},
+		'constant': /\b[A-Z][A-Z_\d]+\b/
 	});
 
 	Prism.languages.insertBefore('java', 'string', {
@@ -2394,3 +2398,44 @@ Prism.languages.python = {
 Prism.languages.python['string-interpolation'].inside['interpolation'].inside.rest = Prism.languages.python;
 
 Prism.languages.py = Prism.languages.python;
+
+(function (Prism) {
+
+	/**
+	 * If the given language is present, it will insert the given doc comment grammar token into it.
+	 *
+	 * @param {string} lang
+	 * @param {any} docComment
+	 */
+	function insertDocComment(lang, docComment) {
+		if (Prism.languages[lang]) {
+			Prism.languages.insertBefore(lang, 'comment', {
+				'doc-comment': docComment
+			});
+		}
+	}
+
+	var tag = Prism.languages.markup.tag;
+
+	var slashDocComment = {
+		pattern: /\/\/\/.*/,
+		greedy: true,
+		alias: 'comment',
+		inside: {
+			'tag': tag
+		}
+	};
+	var tickDocComment = {
+		pattern: /'''.*/,
+		greedy: true,
+		alias: 'comment',
+		inside: {
+			'tag': tag
+		}
+	};
+
+	insertDocComment('csharp', slashDocComment);
+	insertDocComment('fsharp', slashDocComment);
+	insertDocComment('vbnet', tickDocComment);
+
+}(Prism));
