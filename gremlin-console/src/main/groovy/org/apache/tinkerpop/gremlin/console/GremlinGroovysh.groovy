@@ -25,10 +25,8 @@ import org.apache.groovy.groovysh.ParseCode
 import org.apache.groovy.groovysh.Parser
 import org.apache.groovy.groovysh.Parsing
 import org.apache.groovy.groovysh.util.CommandArgumentParser
-import org.apache.groovy.groovysh.util.ScriptVariableAnalyzer
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.tools.shell.IO
 
@@ -43,7 +41,7 @@ class GremlinGroovysh extends Groovysh {
     private final static CompilerConfiguration compilerConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT) {{
         addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class))
     }}
-    private Parsing remoteParser = new RemoteParser()
+    private Parsing remoteParser = new LocalSafeParser()
 
     public GremlinGroovysh(final Mediator mediator, final IO io) {
         super(io, compilerConfig)

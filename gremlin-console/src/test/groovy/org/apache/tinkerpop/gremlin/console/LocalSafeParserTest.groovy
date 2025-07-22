@@ -25,18 +25,17 @@ import org.junit.Test
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNotNull
-import static org.junit.Assert.assertTrue
 
 /**
- * Unit tests for {@link RemoteParser}.
+ * Unit tests for {@link LocalSafeParser}.
  */
-class RemoteParserTest {
+class LocalSafeParserTest {
     
-    private RemoteParser parser
+    private LocalSafeParser parser
     
     @Before
     void setUp() {
-        parser = new RemoteParser()
+        parser = new LocalSafeParser()
     }
     
     @Test

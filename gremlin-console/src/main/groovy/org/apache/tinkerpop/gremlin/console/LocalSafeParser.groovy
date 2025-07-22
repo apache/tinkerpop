@@ -31,13 +31,13 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage
  * the Groovy compiler to try to compile the script and analyzes any compilation errors to determine if the script is
  * incomplete. It does not evaluate the script, which prevents local execution and potential local failure.
  */
-class RemoteParser implements Parsing {
+class LocalSafeParser implements Parsing {
 
     // Try to compile the script
-    def config = new CompilerConfiguration()
+    private final CompilerConfiguration config = new CompilerConfiguration()
 
     // Create a custom GroovyClassLoader that doesn't write class files
-    def gcl = new GroovyClassLoader(this.class.classLoader, config) {
+    private final GroovyClassLoader gcl = new GroovyClassLoader(this.class.classLoader, config) {
         @Override
         public Class defineClass(String name, byte[] bytes) {
             // Skip writing to disk, just define the class in memory
