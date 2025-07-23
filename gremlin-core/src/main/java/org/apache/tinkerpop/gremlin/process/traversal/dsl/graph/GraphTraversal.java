@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
@@ -3357,12 +3358,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * like semantics within a traversal. A {@code choose} is modified by {@link #option} which provides the various
      * branch choices.
      *
+     * @param t extracts this value from an incoming element to match against an option
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     * @since 3.8.0
+     */
+    public default <E2> GraphTraversal<S, E2> choose(final T t) {
+        this.asAdmin().getBytecode().addStep(Symbols.choose, t);
+        return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), new TokenTraversal<>(t)));
+    }
+
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal. A {@code choose} is modified by {@link #option} which provides the various
+     * branch choices.
+     *
      * @param choiceFunction the function used to determine the value for the branch
      * @return the traversal with the appended {@link ChooseStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
      * @since 3.0.0-incubating
      */
     public default <M, E2> GraphTraversal<S, E2> choose(final Function<E, M> choiceFunction) {
+        if (choiceFunction instanceof T) return choose((T) choiceFunction);
+
         this.asAdmin().getBytecode().addStep(Symbols.choose, choiceFunction);
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) __.map(new FunctionTraverser<>(choiceFunction))));
     }
@@ -3380,8 +3398,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        if (choosePredicate instanceof P) return choose((P) choosePredicate, trueChoice, falseChoice);
+
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
+    }
+
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then-else
+     * like semantics within a traversal.
+     *
+     * @param choosePredicate the {@link P} used to determine the "if" portion of the if-then-else
+     * @param trueChoice      the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @param falseChoice     the traversal to execute in the event the {@code traversalPredicate} returns false
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     * @since 3.8.0
+     */
+    public default <E2> GraphTraversal<S, E2> choose(final P<E> choosePredicate,
+                                                     final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice, falseChoice);
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
     /**
@@ -3396,8 +3433,26 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
                                                      final Traversal<?, E2> trueChoice) {
+        if (choosePredicate instanceof P) return choose((P) choosePredicate, trueChoice);
+
         this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.filter(new PredicateTraverser<>(choosePredicate)), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
+    }
+
+    /**
+     * Routes the current traverser to a particular traversal branch option which allows the creation of if-then
+     * like semantics within a traversal.
+     *
+     * @param choosePredicate the {@link P} used to determine the "if" portion of the if-then-else
+     * @param trueChoice      the traversal to execute in the event the {@code traversalPredicate} returns true
+     * @return the traversal with the appended {@link ChooseStep}
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
+     * @since 3.8.0
+     */
+    public default <E2> GraphTraversal<S, E2> choose(final P<E> choosePredicate,
+                                                     final Traversal<?, E2> trueChoice) {
+        this.asAdmin().getBytecode().addStep(Symbols.choose, choosePredicate, trueChoice);
+        return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) __.is(choosePredicate), (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) __.identity()));
     }
 
     /**

@@ -517,7 +517,7 @@ module.exports = {
   merge: toEnum('Merge', 'onCreate onMatch outV inV'),
   operator: toEnum('Operator', 'addAll and assign div max min minus mult or sum sumLong'),
   order: toEnum('Order', 'asc desc shuffle'),
-  pick: toEnum('Pick', 'any none'),
+  pick: toEnum('Pick', 'any none unproductive'),
   pop: toEnum('Pop', 'all first last mixed'),
   scope: toEnum('Scope', 'global local'),
   t: toEnum('T', 'id key label value'),

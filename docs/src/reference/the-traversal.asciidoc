@@ -1077,24 +1077,33 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 image::choose-step.png[width=700]
 
 The `choose()`-step (*branch*) routes the current traverser to a particular traversal branch option. With `choose()`,
-it is possible to implement if/then/else-semantics as well as more complicated selections.
+it is possible to implement two different types of semantics: if-then-else (conditional branching) and switch
+(value-based selection).
+
+==== If-Then-Else
+
+The if-the-else semantics of `choose()` evaluate a predicate traversal and route the traverser to either the "true"
+branch or the "false" branch based on the result.
 
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').
       choose(values('age').is(lte(30)),
-        __.in(),
-        __.out()).values('name') <1>
+             __.in(),
+             __.out()).values('name') <1>
 g.V().hasLabel('person').
-      choose(values('age')).
-        option(27, __.in()).
-        option(32, __.out()).values('name') <2>
+      choose(outE('knows').count().is(gt(0)),
+             __.out('knows'),
+             __.identity()).values('name') <2>
 ----
 
-<1> If the traversal yields an element, then do `in`, else do `out` (i.e. true/false-based option selection).
-<2> Use the result of the traversal as a key to the map of traversal options (i.e. value-based option selection).
+<1> If the person's age is less than or equal to 30, then traverse to incoming vertices, else traverse to outgoing
+vertices.
+<2> If the person has outgoing "knows" edges, then traverse to those known vertices, else return the person vertex
+itself.
 
-If the "false"-branch is not provided, then if/then-semantics are implemented.
+If the "false"-branch is not provided, then simple if-then-semantics are implemented, where traversers that don't match
+the condition are passed through unchanged.
 
 [gremlin-groovy,modern]
 ----
@@ -1103,9 +1112,12 @@ g.V().choose(hasLabel('person'), out('created'), identity()).values('name') <2>
 ----
 
 <1> If the vertex is a person, emit the vertices they created, else emit the vertex.
-<2> If/then/else with an `identity()` on the false-branch is equivalent to if/then with no false-branch.
+<2> if-the-else with an `identity()` on the false-branch is equivalent to if-then with no false-branch.
 
-Note that `choose()` can have an arbitrary number of options and moreover, can take an anonymous traversal as its choice function.
+==== Switch
+
+The switch semantics of `choose()` use the result of a traversal as a key to select from multiple traversal options.
+This allows for more complex branching logic beyond simple true/false conditions.
 
 [gremlin-groovy,modern]
 ----
@@ -1114,18 +1126,88 @@ g.V().hasLabel('person').
         option('marko', values('age')).
         option('josh', values('name')).
         option('vadas', elementMap()).
-        option('peter', label())
+        option('peter', label()) <1>
+g.V().hasLabel('person').
+      choose(values('age')).
+        option(27, __.in().values('name')).
+        option(32, __.out().values('name')) <2>
 ----
 
-The `choose()`-step can leverage the `Pick.none` option match. For anything that does not match a specified option, the `none`-option is taken.
+<1> Use the person's name to select which property or operation to return.
+<2> Use the person's age value to select which traversal to apply, noting that traversers matching no age values simply
+pass through.
+
+The `choose()`-step can use predicates with options to match ranges of values or other conditions.
 
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').
-      choose(values('name')).
-        option('marko', values('age')).
-        option(none, values('name'))
+      choose(values('age')).
+        option(P.between(26, 30), constant('younger')).
+        option(P.gt(30), constant('older')).
+        option(Pick.none, constant('unknown')) <1>
 ----
+
+<1> If the person's age is between 26 and 30, classify them as 'younger', if greater than 30, classify as 'older',
+otherwise 'unknown'.
+
+The token `T.label` can be used as shorthand for `__.label()` when selecting options based on element labels.
+
+[gremlin-groovy,modern]
+----
+g.V().choose(T.label).
+        option('person', out('created')).
+        option('software', in('created')).
+        values('name') <1>
+----
+
+<1> For person vertices, traverse to the software they created; for software vertices, traverse to the people who
+created them.
+
+The `Pick` enum was introduced in an example earlier to handle non-matching scenarios. The following `Pick` options may
+be used with `choose()`:
+
+* `Pick.none` - Matches when no other options match
+* `Pick.unproductive` - Matches when the choice in `choose()` produces no results
+
+[gremlin-groovy,modern]
+----
+g.V().choose(values('age')).
+        option(P.between(26, 30), values('name')).
+        option(Pick.none, values('name')).
+        option(Pick.unproductive, label()) <1>
+g.V().hasLabel('person').
+      choose(out('knows').count()).
+        option(0, constant('noFriends')).
+        option(Pick.none, constant('hasFriends')) <2>
+g.V().choose(values('age')).
+        option(27, __.in().values('name')).
+        option(32, __.out().values('name')).
+        option(Pick.unproductive, discard()).
+        option(Pick.none, discard()) <3>
+----
+
+<1> For vertices with age between 26-30, return the name. For vertices with age outside that range, return the name.
+For vertices without an age property, return the label.
+<2> For people with no outgoing "knows" edges, return 'noFriends', otherwise return 'hasFriends'.
+<3> Use `none()` step in combination with `Pick.none` and `Pick.unproductive` to filter unproductive traversals and
+unmatched values.
+
+IMPORTANT: It is important to think of `choose()` as a branching step and not a filter. The if-then semantics can
+intuitively lead to thinking the latter, where no match would mean to remove the traverser from the stream. As shown in
+the examples, this is not what happens.
+
+The `choose()`-step can be used within a `map()` step to apply the branching logic to each element in a collection.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('person').
+      map(choose(values('age')).
+            option(P.between(26, 30), values('name').fold()).
+            option(Pick.none, values('name').fold())) <1>
+----
+
+<1> For each person, create a list containing their name, using the same traversal regardless of age.
 
 *Additional References*
 

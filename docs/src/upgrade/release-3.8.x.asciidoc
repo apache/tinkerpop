@@ -389,6 +389,101 @@ g.with_strategies(OptionsStrategy(options=myOptions))
 g.with_strategies(OptionsStrategy(**myOptions))
 ----
 
+==== choose() Semantics
+
+Several enhancements and clarifications have been made to the `choose()` step in TinkerPop 3.8.0 to improve its behavior
+and make it more consistent:
+
+*First Matched Option Only*
+
+The `choose()` step now only executes the first matching option traversal. In previous versions, if multiple options
+could match, all matching options would be executed. This change provides more predictable behavior and better aligns
+with common switch/case semantics in programming languages.
+
+[source,text]
+----
+// In 3.7.x and earlier, if multiple options matched, all would be executed
+gremlin> g.V().hasLabel("person").
+......1>   choose(__.values("age")).
+......2>     option(P.between(26, 30), __.constant("young")).
+......3>     option(P.between(20, 30), __.constant("also young"))
+==>young
+==>also young
+==>young
+==>also young
+
+
+// In 3.8.x, only the first matching option is executed
+gremlin> g.V().hasLabel("person").
+......1>   choose(__.values("age")).
+......2>     option(P.between(26, 30), __.constant("young")).
+......3>     option(P.between(20, 30), __.constant("never reached for ages 26-30"))
+==>young
+==>young
+----
+
+*Automatic Pass-through for Unproductive and Unmatched Predicates*
+
+The `choose()` step now passes through traversers when the choice traversal is unproductive or the determined choice
+unmatched. Before this version, unproductive traversals produced an error and unmatched choices were filtered by
+default.
+
+[source,text]
+----
+gremlin> g.V().choose(__.values("age")).
+......1>         option(P.between(26, 30), __.values("name")).
+......2>         option(Pick.none, __.values("name"))
+==>marko
+==>vadas
+==>v[3]
+==>josh
+==>v[5]
+==>peter
+gremlin> g.V().choose(T.label).
+......1>        option("person", __.out("knows").values("name")).
+......2>        option("bleep", __.out("created").values("name"))
+==>vadas
+==>josh
+==>v[3]
+==>v[5]
+----
+
+This change makes the switch semantics for `choose()` consistent with those of the if-then-else semantics for
+`choose()`.
+
+*Pick.unproductive for Unproductive Predicates*
+
+A new special option token `Pick.unproductive` has been added to handle cases where the choice traversal produces no
+results. This is particularly useful for handling elements that don't have the properties being evaluated.
+
+[source,text]
+----
+// In 3.7.x, vertices without an age property would pass through unchanged
+gremlin> g.V().choose(__.values("age")).
+......1>         option(P.between(26, 30), __.values("name")).
+......2>         option(Pick.none, __.values("name"))
+==>marko
+==>vadas
+The provided traverser does not map to a value: v[3][TinkerVertex]->[PropertiesStep([age],value)][DefaultGraphTraversal] parent[[TinkerGraphStep(vertex,[]), ChooseStep([PropertiesStep([age],value)],[[none, [[PropertiesStep([name],value), EndStep]]], [(and(gte(26), lt(30))), [PropertiesStep([name],value), EndStep]]])]]
+Type ':help' or ':h' for help.
+Display stack trace? [yN]
+
+// In 3.8.x, you can specifically handle vertices where the choice traversal is unproductive
+gremlin> g.V().choose(__.values("age")).
+......1>         option(P.between(26, 30), __.values("name")).
+......2>         option(Pick.none, __.values("name")).
+......3>         option(Pick.unproductive, __.label())
+==>marko
+==>vadas
+==>software
+==>josh
+==>software
+==>peter
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3178[TINKERPOP-3178],
+link:https://tinkerpop.apache.org/docs/3.8.0/reference/#choose-step[Reference Documentation - choose()]
+
 ==== Float Defaults to Double
 
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
@@ -493,6 +588,29 @@ g.withSack(32767s).inject(1s).sack(sum).sack()
 would return a `short` overflow exception or wrap to `-1` depending on language, but now returns `32769i`.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115]
+
+===== choose() Semantics
+
+The semantics for the `choose()` step where adjusted a bit for consistency and clarity. The current semantics can be
+found in the link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#choose-step[Provider Documentation]. In
+addition the following points could be important for providers when upgrading.
+
+*T.label Usage*
+
+When using `T.label` with `choose()`, the implementation now uses a more efficient `TokenTraversal` instead of a
+`LambdaMapTraversal`.
+
+*Predicate Usage*
+
+When using predicates (`P`) with `choose()`, the implementation now prefers the use of `is()` for more concrete
+predicate handling rather than using a more abstract `PredicateTraverser`.
+
+*ChooseSemantics enum*
+
+The `ChooseStep` now provides a `ChooseSemantics` enum which helps indicate if the step is configured to work with
+`IF_THEN` or `SWITCH` semantics which might be helpful in trying to optimize the step.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3178[TINKERPOP-3178]
 
 ===== Prefer OffsetDateTime
 
