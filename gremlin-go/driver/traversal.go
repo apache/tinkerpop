@@ -243,13 +243,15 @@ var Order = orders{
 type pick string
 
 type picks struct {
-	Any  pick
-	None pick
+	Any          pick
+	None         pick
+	Unproductive pick
 }
 
 var Pick = picks{
-	Any:  "any",
-	None: "none",
+	Any:          "any",
+	None:         "none",
+	Unproductive: "unproductive",
 }
 
 type pop string
