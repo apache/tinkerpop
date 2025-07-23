@@ -75,6 +75,8 @@ const gremlins = {
     g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount: [function({g, xx1}) { return g.V().hasLabel("person").choose(__.values("age")).option(xx1, __.constant("young")).option(Pick.none, __.constant("old")).groupCount() }], 
     g_injectX1X_chooseXisX1X__constantX10Xfold__foldX: [function({g, xx1, xx2}) { return g.inject(xx2).choose(__.is(xx2), __.constant(xx1).fold(), __.fold()) }], 
     g_injectX2X_chooseXisX1X__constantX10Xfold__foldX: [function({g, xx1, xx3, xx2}) { return g.inject(xx3).choose(__.is(xx2), __.constant(xx1).fold(), __.fold()) }], 
+    g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_constantXxXX_optionXbetweenX20_30X_constantXzXX_optionXnone_constantXzXX: [function({g}) { return g.V().hasLabel("person").choose(__.values("age")).option(P.between(26, 30), __.constant("x")).option(P.between(20, 30), __.constant("y")).option(Pick.none, __.constant("z")) }], 
+    g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX: [function({g}) { return g.V().hasLabel("person").choose(__.values("age")).option(P.between(26, 30), __.values("name")).option(Pick.none, __.values("name")) }], 
     g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value: [function({g}) { return g.V().local(__.properties("location").order().by(T.value, Order.asc).range(0, 2)).value() }], 
     g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX: [function({g}) { return g.V().has(T.label, "person").as("a").local(__.out("created").as("b")).select("a", "b").by("name").by(T.id) }], 
     g_V_localXoutE_countX: [function({g}) { return g.V().local(__.outE().count()) }], 

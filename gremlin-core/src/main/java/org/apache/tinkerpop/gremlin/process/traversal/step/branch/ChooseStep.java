@@ -20,7 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A step which offers a choice of two or more Traversals to take.
@@ -50,5 +57,11 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
                 throw new IllegalArgumentException("Choose step can only have one traversal per pick token: " + pickToken);
         }
         super.addChildOption(pickToken, traversalOption);
+    }
+
+    @Override
+    protected List<Traversal.Admin<S, E>> pickBranches(final M choice) {
+        final List<Traversal.Admin<S, E>> branches = super.pickBranches(choice);
+        return branches != null ? branches.subList(0, 1) : null;
     }
 }

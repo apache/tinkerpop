@@ -53,7 +53,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     protected List<Pair<Traversal.Admin<M, ?>, Traversal.Admin<S, E>>> traversalOptions = new ArrayList<>();
 
     private boolean first = true;
-    private boolean hasBarrier;
+    protected boolean hasBarrier;
 
     public BranchStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -142,7 +142,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
     /**
      * Choose the right traversal option to apply and seed those options with this traverser.
      */
-    private void applyCurrentTraverser(final Traverser.Admin<S> start) {
+    protected void applyCurrentTraverser(final Traverser.Admin<S> start) {
         // first get the value of the choice based on the current traverser and use that to select the right traversal
         // option to which that traverser should be routed
         final M choice = TraversalUtil.apply(start, this.branchTraversal);
@@ -188,7 +188,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         return ends.iterator();
     }
 
-    private List<Traversal.Admin<S, E>> pickBranches(final M choice) {
+    protected List<Traversal.Admin<S, E>> pickBranches(final M choice) {
         final List<Traversal.Admin<S, E>> branches = new ArrayList<>();
         if (choice instanceof Pick) {
             if (this.traversalPickOptions.containsKey(choice)) {

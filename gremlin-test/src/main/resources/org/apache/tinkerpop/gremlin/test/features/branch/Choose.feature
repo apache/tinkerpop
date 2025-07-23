@@ -152,3 +152,38 @@ Feature: Step - choose()
     Then the result should be unordered
       | result |
       | l[d[2].i] |
+
+  Scenario: g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_constantXxXX_optionXbetweenX20_30X_constantXzXX_optionXnone_constantXzXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").
+        choose(__.values("age")).
+          option(P.between(26, 30), __.constant("x")).
+          option(P.between(20, 30), __.constant("y")).
+          option(Pick.none, __.constant("z"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | x |
+      | x |
+      | z |
+      | z |
+
+  Scenario: g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").
+        choose(__.values("age")).
+          option(P.between(26, 30), __.values("name")).
+          option(Pick.none, __.values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |

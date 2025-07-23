@@ -48,6 +48,8 @@ world.gremlins = {
     'g_V_hasLabelXpersonX_chooseXageX__optionX27L__constantXyoungXX_optionXnone__constantXoldXX_groupCount': [(lambda g, xx1=None:g.V().has_label('person').choose(__.values('age')).option(xx1, __.constant('young')).option(Pick.none, __.constant('old')).group_count())], 
     'g_injectX1X_chooseXisX1X__constantX10Xfold__foldX': [(lambda g, xx1=None,xx2=None:g.inject(xx2).choose(__.is_(xx2), __.constant(xx1).fold(), __.fold()))], 
     'g_injectX2X_chooseXisX1X__constantX10Xfold__foldX': [(lambda g, xx1=None,xx3=None,xx2=None:g.inject(xx3).choose(__.is_(xx2), __.constant(xx1).fold(), __.fold()))], 
+    'g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_constantXxXX_optionXbetweenX20_30X_constantXzXX_optionXnone_constantXzXX': [(lambda g:g.V().has_label('person').choose(__.values('age')).option(P.between(26, 30), __.constant('x')).option(P.between(20, 30), __.constant('y')).option(Pick.none, __.constant('z')))], 
+    'g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX': [(lambda g:g.V().has_label('person').choose(__.values('age')).option(P.between(26, 30), __.values('name')).option(Pick.none, __.values('name')))], 
     'g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value': [(lambda g:g.V().local(__.properties('location').order().by(T.value, Order.asc).range_(0, 2)).value())], 
     'g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX': [(lambda g:g.V().has(T.label, 'person').as_('a').local(__.out('created').as_('b')).select('a', 'b').by('name').by(T.id_))], 
     'g_V_localXoutE_countX': [(lambda g:g.V().local(__.out_e().count()))], 
