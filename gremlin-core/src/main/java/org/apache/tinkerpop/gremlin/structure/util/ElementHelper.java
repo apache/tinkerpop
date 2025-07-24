@@ -550,6 +550,7 @@ public final class ElementHelper {
     public static boolean idExists(final Object id, final Object... providedIds) {
         if (0 == providedIds.length) return true;
 
+        //TODO still necessary? Can GValues ever leak into here?
         //unbox any GValues which may be present in providedIds
         Object[] idValues = GValue.resolveToValues(GValue.ensureGValues(providedIds));
 

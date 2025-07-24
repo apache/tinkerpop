@@ -82,6 +82,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs"
 * Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
 * Made `Mutating` interface independent from `Configuring`
+* Updated which steps are able to accept arguments in grammar
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
