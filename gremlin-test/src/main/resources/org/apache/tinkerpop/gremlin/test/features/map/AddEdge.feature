@@ -405,19 +405,19 @@ Feature: Step - addE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter v1 defined as "v[marko]"
-    And using the parameter v6 defined as "v[peter]"
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
     And using the parameter xx1 defined as "knows"
     And using the parameter xx2 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE(xx1).from(v1).to(v6).property("weight", xx2)
+      g.addE(xx1).from(vid1).to(vid6).property("weight", xx2)
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 7 for count of "g.E()"
-    And the graph should return 3 for count of "g.V(v1).outE(\"knows\")"
-    And the graph should return 1 for count of "g.V(v1).out(\"knows\").has(\"name\",\"peter\")"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
   Scenario: g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X
     Given the empty graph
