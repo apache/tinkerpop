@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.junit.Test;
 
 import java.util.Set;

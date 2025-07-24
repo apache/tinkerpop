@@ -316,7 +316,7 @@ public class GValueManagerVerifier {
 
         /**
          * Verifies that a RangeContract is properly set up
-         */
+         */ //TODO rename
         public T isRangeGlobalGValueContract(final Step step, final long expectedLow, final long expectedHigh,
                                              final String lowName, final String highName) {
             assertThat("Step should be parameterized", step instanceof RangeGlobalStepPlaceholder && ((RangeGlobalStepPlaceholder<?>) step).isParameterized(), is(true));

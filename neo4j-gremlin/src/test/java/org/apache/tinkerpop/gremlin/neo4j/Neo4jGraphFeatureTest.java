@@ -52,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 @CucumberOptions(
         tags = "not @MultiProperties and not @MetaProperties and not @GraphComputerOnly and " +
                "not @AllowNullPropertyValues and not @UserSuppliedVertexPropertyIds and not @UserSuppliedEdgeIds and " +
-               "not @UserSuppliedVertexIds and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepHasId",
+               "not @UserSuppliedVertexIds and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepHasId", //TODO:: can we include hasId?
         glue = { "org.apache.tinkerpop.gremlin.features" },
         objectFactory = GuiceFactory.class,
         features = { "classpath:/org/apache/tinkerpop/gremlin/test/features" },
