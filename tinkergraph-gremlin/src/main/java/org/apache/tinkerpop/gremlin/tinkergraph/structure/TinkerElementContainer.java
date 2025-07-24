@@ -59,7 +59,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     private final ThreadLocal<Boolean> isReadInTx = ThreadLocal.withInitial(() -> false);
 
     /**
-     * Count of usages of container in different transactions.
+     * Count of modification/deletion/addition usages of container in different transactions (reads do not contribute to this count).
      * Needed to understand whether this element is used in other transactions or it can be deleted during rollback.
      */
     private final AtomicInteger usesInTransactions = new AtomicInteger(0);
@@ -97,7 +97,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
         if (!isReadInTx.get()) {
             isReadInTx.set(true);
-            usesInTransactions.incrementAndGet();
             tx.markRead(this);
         }
 
@@ -205,7 +204,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
-     * Used to understand if element is in use by any transaction.
+     * Used to understand if element is in use (added, modified, or deleted) by any transaction.
      */
     public boolean inUse() {
         return usesInTransactions.get() > 0;
@@ -245,8 +244,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
         if (isDeletedInTx.get())
             usesInTransactions.decrementAndGet();
         if (isModifiedInTx.get())
-            usesInTransactions.decrementAndGet();
-        if (isReadInTx.get())
             usesInTransactions.decrementAndGet();
     }
 

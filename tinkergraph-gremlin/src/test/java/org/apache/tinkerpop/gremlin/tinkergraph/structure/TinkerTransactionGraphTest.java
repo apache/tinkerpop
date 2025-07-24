@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -1704,6 +1705,92 @@ public class TinkerTransactionGraphTest {
             assertEquals("Conflict: element modified in another transaction", e.getMessage());
             verifyCommittedSingleVertex(g, "updated");
         }
+    }
+
+    @Test
+    public void readVertexShouldNotConflictWithDropAddUpdateVertexInSeparateTransaction() throws InterruptedException {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final int vertexId = 1;
+
+        // commit the initial vertex
+        gtx.addV().property(T.id, vertexId).next();
+        gtx.tx().commit();
+
+        // reader thread which is constantly reading the vertex ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        Thread reader = new Thread(() -> {
+            while (signal.getCount() > 0) {
+                g.V().id().toList();
+            }
+        });
+        reader.start();
+
+        // drop, add, update the same vertex a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.V(vertexId).drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            g.addV().property(T.id, vertexId).next();
+            g.tx().commit();
+            g.V(vertexId).property(VertexProperty.Cardinality.single, "name", "test").next();
+            g.tx().commit();
+            g.V(vertexId).property(VertexProperty.Cardinality.single, "name", "updated").next();
+            g.tx().commit();
+        }
+
+        // stop the reader thread
+        signal.countDown();
+        reader.join();
+
+        assertEquals(1, graph.getVertices().size());
+    }
+
+    @Test
+    public void readEdgeShouldNotConflictWithDropAddUpdateEdgeInSeparateTransaction() throws InterruptedException {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final int vertexId = 1;
+        final int edgeId = 2;
+
+        // commit the initial vertex with self-referencing edge
+        Vertex vertex = gtx.addV().property(T.id, vertexId).next();
+        gtx.addE("tests").from(vertex).to(vertex).property(T.id, edgeId).next();
+        gtx.tx().commit();
+
+        // reader thread which is constantly reading the edge ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        Thread reader = new Thread(() -> {
+            while (signal.getCount() > 0) {
+                g.E().id().toList();
+            }
+        });
+        reader.start();
+
+        // drop, add, update the same edge a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.E().drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            Vertex v = g.V(vertexId).next();
+            g.addE("tests").property(T.id, edgeId).from(v).to(v).next();
+            g.tx().commit();
+            g.E(edgeId).property(VertexProperty.Cardinality.single, "weight", 10.12);
+            g.tx().commit();
+            g.E(edgeId).property(VertexProperty.Cardinality.single, "weight", 8.6);
+            g.tx().commit();
+        }
+
+        // stop the reader thread
+        signal.countDown();
+        reader.join();
+
+        assertEquals(1, graph.getVertices().size());
+        assertEquals(1, graph.getEdges().size());
     }
     
     private void runInNewThread(final Runnable runnable) {
