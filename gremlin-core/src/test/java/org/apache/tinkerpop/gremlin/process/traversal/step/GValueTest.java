@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.math.BigDecimal;

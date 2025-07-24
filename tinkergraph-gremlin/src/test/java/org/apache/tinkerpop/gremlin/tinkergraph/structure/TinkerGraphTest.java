@@ -23,7 +23,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.GraphHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
-import org.apache.tinkerpop.gremlin.process.traversal.Bindings;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -98,57 +97,6 @@ import static org.mockito.Mockito.mock;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraphTest {
-
-    //TODO:: Remove tests, for experimental purposes only
-//    @Test
-//    public void testRepeatUnroll(){
-//        final GraphTraversalSource g = TinkerGraph.open().traversal();
-//
-//        GraphTraversal traversal = g.V(1).repeat(__.V(GValue.ofInteger("x",1), 2, GValue.ofInteger("y",3), GValue.ofInteger(null, 4))).times(3);
-//        traversal.asAdmin().applyStrategies();
-//        System.out.println(traversal);
-//    }
-//
-//    @Test
-//    public void testIncidentToAdjacent(){
-//        final GraphTraversalSource g = TinkerGraph.open().traversal();
-//
-//        GraphTraversal traversal = g.V(1).outE(GValue.ofString("x","person"), GValue.ofString(null, "software")).inV();
-//        traversal.asAdmin().applyStrategies();
-//        System.out.println(traversal);
-//    }
-//
-//    @Test
-//    public void testRange() {
-//        final GraphTraversalSource g = TinkerGraph.open().traversal();
-//
-//        GraphTraversal traversal = g.V().range(GValue.ofLong("low", 2l), GValue.ofLong("high", 5l));
-//        traversal.asAdmin().applyStrategies();
-//        RangeContract<GValue<Long>> contract = ((RangeGlobalStep) traversal.asAdmin().getEndStep()).getGValueContract();
-//        GValue<Long> high = contract.getHighRange();
-//
-//        System.out.println(high);
-//    }
-//
-//    @Test
-//    public void testInlineFilter(){
-//        final GraphTraversalSource g = TinkerGraph.open().traversal();
-//
-//        GraphTraversal traversal = g.V(1).outE().hasLabel(P.eq(GValue.ofString("x", "knows")).or(P.eq(GValue.ofString("y", "created")))).inV();
-//        traversal.asAdmin().applyStrategies();
-//        System.out.println(traversal);
-//    }
-//
-//    @Test
-//    public void testCount(){ // Reminder, count strategy alters traversal based on predicate value, not safe for any parameter value.
-//        final GraphTraversalSource g = TinkerGraph.open().traversal();
-//        //P predicate = P.lt(GValue.ofInteger("x", 4)).and(P.gt(GValue.ofInteger("y", 1))).or(P.eq(GValue.ofInteger("z", 10)));
-//
-//
-//        GraphTraversal traversal = g.V().outE().count().is(P.lt(GValue.ofInteger("x", 3)));
-//        traversal.asAdmin().applyStrategies();
-//        System.out.println(traversal);
-//    }
 
     @Test
     public void shouldManageIndices() {

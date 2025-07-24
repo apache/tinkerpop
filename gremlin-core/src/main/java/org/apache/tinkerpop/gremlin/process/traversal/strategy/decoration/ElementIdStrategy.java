@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddElementStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;

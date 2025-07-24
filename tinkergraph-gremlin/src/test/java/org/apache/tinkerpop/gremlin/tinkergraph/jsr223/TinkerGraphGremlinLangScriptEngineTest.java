@@ -194,7 +194,7 @@ public class TinkerGraphGremlinLangScriptEngineTest {
             bindings.put("g", g);
 
             // execute the script
-            final Object result = scriptEngine.eval(gremlinScript, bindings);
+            final Object result = scriptEngine.eval(gremlinScript, bindings); // TODO::ensure cache was hit if i > 0
             assertThat(result, instanceOf(Traversal.Admin.class));
 
             // store the result for later comparison

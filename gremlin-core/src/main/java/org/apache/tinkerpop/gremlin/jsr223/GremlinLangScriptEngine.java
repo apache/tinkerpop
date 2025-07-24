@@ -195,7 +195,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
             final Traversal.Admin<?,?> traversal = (Traversal.Admin) GremlinQueryParser.parse(script, antlr);
 
             // add the traversal to the cache in its executable form - note that the cache is really just sparing us
-            // traversal execution
+            // script parsing
             if (cacheEnabled) traversalCache.put(script, traversal.clone());
 
             return traversal;
