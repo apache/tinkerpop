@@ -187,3 +187,75 @@ Feature: Step - choose()
       | vadas |
       | josh |
       | peter |
+
+  Scenario: g_V_chooseXhasLabelXpersonX_localXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").
+        local(choose(__.values("age")).
+                option(P.between(26, 30), __.values("name").fold()).
+                option(Pick.none, __.values("name").fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko] |
+      | l[vadas] |
+      | l[josh] |
+      | l[peter] |
+
+  Scenario: g_V_chooseXhasLabelXpersonX_mapXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").
+        map(choose(__.values("age")).
+              option(P.between(26, 30), __.values("name").fold()).
+              option(Pick.none, __.values("name").fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko] |
+      | l[vadas] |
+      | l[josh] |
+      | l[peter] |
+
+  Scenario: g_unionXV_VXhasLabelXpersonX_barrier_localXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.union(__.V(), __.V()).hasLabel("person").barrier().
+        local(choose(__.values("age")).
+                option(P.between(26, 30), __.values("name").fold()).
+                option(Pick.none, __.values("name").fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko, marko] |
+      | l[vadas, vadas] |
+      | l[josh, josh] |
+      | l[peter, peter] |
+
+  Scenario: g_unionXV_VXhasLabelXpersonX_barrier_mapXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.union(__.V(), __.V()).hasLabel("person").barrier().
+        map(choose(__.values("age")).
+              option(P.between(26, 30), __.values("name").fold()).
+              option(Pick.none, __.values("name").fold()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[marko] |
+      | l[marko] |
+      | l[vadas] |
+      | l[vadas] |
+      | l[josh] |
+      | l[josh] |
+      | l[peter] |
+      | l[peter] |
