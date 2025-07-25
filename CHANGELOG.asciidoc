@@ -43,6 +43,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in 'gremlin-server.sh' to account for spaces in directory names.
 * Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
 * Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
+* Added `ClientSettings.Session` configuration in `gremlin-go` to configure a sessioned client.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
 * Change signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
 * Improved error message for when `emit()` is used without `repeat()`.
