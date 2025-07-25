@@ -21,8 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +44,9 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal) {
         super(traversal);
         this.setBranchTraversal(choiceTraversal);
+        final Traversal.Admin<S,E> identityPassthrough = new DefaultGraphTraversal<>();
+        identityPassthrough.addStep(new IdentityStep<>(traversal));
+        this.addChildOption((M) Pick.unproductive, identityPassthrough);
     }
 
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> predicateTraversal, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {

@@ -22,5 +22,5 @@ package org.apache.tinkerpop.gremlin.process.traversal;
  * A token used with {@code option()}.
  */
 public enum Pick {
-    any, none
+    any, none, unproductive
 }

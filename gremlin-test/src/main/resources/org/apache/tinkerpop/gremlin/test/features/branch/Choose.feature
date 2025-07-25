@@ -34,13 +34,30 @@ Feature: Step - choose()
       | d[29].i |
       | josh |
 
-  Scenario: g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX__identityX_name
+  Scenario: g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX_identityX_name
     Given the modern graph
     And the traversal of
       """
       g.V().choose(__.hasLabel("person").and().out("created"),
                    __.out("knows"),
                    __.identity()).
+        values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |
+      | josh |
+      | vadas |
+      | vadas |
+
+  Scenario: g_V_chooseXhasLabelXpersonX_and_outXcreatedX_outXknowsX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(__.hasLabel("person").and().out("created"),
+                   __.out("knows")).
         values("name")
       """
     When iterated to list
@@ -71,6 +88,38 @@ Feature: Step - choose()
       | josh |
       | lop |
       | ripple |
+
+  Scenario: g_V_chooseXTlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(T.label).
+             option("blah", __.out("knows")).
+             option("bleep", __.out("created")).
+             option(Pick.none, __.identity()).
+        values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | peter |
+      | josh |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_chooseXTlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(T.label).
+             option("blah", __.out("knows")).
+             option("bleep", __.out("created")).
+        values("name")
+      """
+    When iterated to list
+    Then the result should be empty
 
   Scenario: g_V_chooseXoutXknowsX_count_isXgtX0XX__outXknowsXX_name
     Given the modern graph
@@ -171,7 +220,7 @@ Feature: Step - choose()
       | z |
       | z |
 
-  Scenario: g_V_chooseXhasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX
+  Scenario: g_V_hasLabelXpersonX_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX
     Given the modern graph
     And the traversal of
       """
@@ -261,3 +310,52 @@ Feature: Step - choose()
       | l[josh] |
       | l[peter] |
       | l[peter] |
+
+  Scenario: g_V_chooseXageX_optionXbetweenX26_30X_nameX_optionXnone_nameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(__.values("age")).
+              option(P.between(26, 30), __.values("name")).
+              option(Pick.none, __.values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | v[lop] |
+      | josh |
+      | v[ripple] |
+      | peter |
+
+  Scenario: g_V_chooseXage_nameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(__.values("age"), __.values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | v[lop] |
+      | josh |
+      | v[ripple] |
+      | peter |
+
+  Scenario: g_V_chooseXageX_optionXbetweenX26_30X_nameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(__.values("age")).
+              option(P.between(26, 30), __.values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | v[lop] |
+      | v[ripple] |
