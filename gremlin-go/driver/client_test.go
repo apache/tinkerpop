@@ -146,6 +146,38 @@ func TestClient(t *testing.T) {
 
 		AssertVertexPropertiesWithProperties(t, result)
 	})
+
+	t.Run("Test sessioned client", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.Session = "sessionID"
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		resultSet, err := client.Submit("x = 1+1")
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+		assert.EqualValues(t, 2, result.Data)
+
+		resultSet, err = client.Submit("x+1")
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err = resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+		assert.EqualValues(t, 3, result.Data)
+	})
 }
 
 func AssertVertexPropertiesWithProperties(t *testing.T, result *Result) {

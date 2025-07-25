@@ -22,10 +22,13 @@ import org.apache.tinkerpop.gremlin.console.commands.RemoteCommand
 import org.apache.tinkerpop.gremlin.console.jsr223.AbstractGremlinServerIntegrationTest
 import org.apache.tinkerpop.gremlin.console.jsr223.DriverRemoteAcceptor
 import org.apache.tinkerpop.gremlin.console.jsr223.MockGroovyGremlinShellEnvironment
+import org.apache.tinkerpop.gremlin.jsr223.console.RemoteException
 import org.codehaus.groovy.tools.shell.IO
 import org.junit.Test
 
 import java.nio.file.Paths
+
+import static org.junit.Assert.fail;
 
 class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
     private IO testio
@@ -92,9 +95,30 @@ class GremlinGroovyshTest extends AbstractGremlinServerIntegrationTest {
     void shouldNotSubmitIncompleteLinesFromRemoteConsole() {
         setupRemote(shell)
         shell.execute(":remote console")
-        shell.execute("if (0 == g.V().count()) {")
+        shell.execute("if (0 == g.V().count().next()) {")
 
         assert (0 != shell.buffers.current().size())
+    }
+
+    /**
+     * TINKERPOP-3040 - prior to 3.7.4, the console evaluated scripts locally before sending to the server which could
+     * create a situation where there were classes needed locally for that eval to succeed for the script to be sent
+     * and would therefore end in exception and not allow the send. the console shouldn't be evaluating scripts locally
+     * to determine their validity. The console only wants to determine if they are complete for multi-line submission
+     * on <enter>. This test simulates this situation by throwing an exception and asserting it is coming from the
+     * server as a RemoteException. If it had executed locally we would have just gotten a DefaultTemporaryException.
+     */
+    @Test
+    void shouldNotEvalToDetermineIncompleteLinesToSubmitForRemoteConsole() {
+        setupRemote(shell)
+        shell.execute(":remote console")
+
+        try {
+            shell.execute("throw new org.apache.tinkerpop.gremlin.server.util.DefaultTemporaryException('kaboom!!')")
+            fail("Should have thrown a remote exception")
+        } catch (RemoteException ex) {
+            assert ("kaboom!!" == ex.message)
+        }
     }
 
     @Test
