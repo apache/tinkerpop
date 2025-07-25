@@ -222,6 +222,7 @@ Feature: Step - choose()
       | l[josh] |
       | l[peter] |
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_unionXV_VXhasLabelXpersonX_barrier_localXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
     Given the modern graph
     And the traversal of
@@ -234,11 +235,12 @@ Feature: Step - choose()
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[marko, marko] |
-      | l[vadas, vadas] |
-      | l[josh, josh] |
-      | l[peter, peter] |
+      | l[marko,marko] |
+      | l[vadas,vadas] |
+      | l[josh,josh] |
+      | l[peter,peter] |
 
+  @GraphComputerVerificationMidVNotSupported
   Scenario: g_unionXV_VXhasLabelXpersonX_barrier_mapXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX
     Given the modern graph
     And the traversal of
