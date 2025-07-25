@@ -44,7 +44,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
 * Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
-* Change signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
+* Fixed limitation in multi-line detection preventing `:remote console` scripts from being sent to the server.
+* Changed signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
 * Improved error message for when `emit()` is used without `repeat()`.
 * Fixed incomplete shading of Jackson multi-release.
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
@@ -52,8 +53,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
 * Fixed bug in `CallStep` which prevented Java serialization due to non-serializable `ServiceCallContext` and `Service` usage.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
-* Support hot reloading of SSL certificates.
-* Increase default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
+* Addded support for hot reloading of SSL certificates in Gremlin Server.
+* Increased default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 * Fixed bug preventing a vertex from being dropped and then re-added in the same `TinkerTransaction`
 
