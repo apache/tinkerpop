@@ -72,4 +72,17 @@ describe('Client', function () {
     customClient._connection = connectionMock;
     customClient.submit(query, null, {'evaluationTimeout': 123, 'materializeProperties': 'tokens'})
   });
+
+  it('should disable compression by default', function () {
+    const client = new Client('ws://localhost:9321');
+    assert.strictEqual(client._connection._enableCompression, false);
+  });
+
+  it('should passthrough compression setting', function () {
+    const uncompressedClient = new Client('ws://localhost:9321', {enableCompression: false});
+    const compressedClient = new Client('ws://localhost:9321', {enableCompression: true});
+
+    assert.strictEqual(uncompressedClient._connection._enableCompression, false);
+    assert.strictEqual(compressedClient._connection._enableCompression, true);
+  });
 });

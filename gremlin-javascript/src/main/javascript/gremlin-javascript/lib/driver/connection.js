@@ -95,6 +95,7 @@ class Connection extends EventEmitter {
     this.traversalSource = options.traversalSource || 'g';
     this._authenticator = options.authenticator;
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
+    this._enableCompression = this.options.enableCompression || false;
   }
 
   /**
@@ -151,7 +152,7 @@ class Connection extends EventEmitter {
             pfx: this.options.pfx,
             rejectUnauthorized: this.options.rejectUnauthorized,
             agent: this.options.agent,
-            perMessageDeflate: this.options.enableCompression,
+            perMessageDeflate: this._enableCompression,
           }
         : undefined,
     );
