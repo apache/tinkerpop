@@ -248,16 +248,17 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         context.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                         graphManager.onQueryError(msg, t);
+                        graphManager.afterQueryEnd(msg);
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
-                                                             .statusMessage(errorMessage)
-                                                             .statusAttributeException(ex).create());
+                                .statusMessage(errorMessage)
+                                .statusAttributeException(ex).create());
                     } else {
                         logger.warn(String.format("Exception processing a Traversal on iteration for request [%s].", msg.getRequestId()), ex);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR)
-                                                             .statusMessage(ex.getMessage())
-                                                             .statusAttributeException(ex).create());
+                                .statusMessage(ex.getMessage())
+                                .statusAttributeException(ex).create());
                     }
                     onError(graph, context, ex);
                 }
@@ -322,17 +323,24 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
-      final GraphManager graphManager = ctx.getGraphManager();
-      final RequestMessage msg = ctx.getRequestMessage();
-      graphManager.beforeQueryStart(msg);
+        final GraphManager graphManager = ctx.getGraphManager();
+        final RequestMessage msg = ctx.getRequestMessage();
+
+        AuthenticatedUser user = ctx.getChannelHandlerContext().channel().attr(StateKey.AUTHENTICATED_USER).get();
+        if (null == user) {    // This is expected when using the AllowAllAuthenticator
+            user = AuthenticatedUser.ANONYMOUS_USER;
+        }
+        graphManager.beforeQueryStart(msg, user);
+
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onError(final Graph graph, final Context ctx, Throwable error) {
         final GraphManager graphManager = ctx.getGraphManager();
         final RequestMessage msg = ctx.getRequestMessage();
-        graphManager.onQueryError(msg, error); 
+        graphManager.onQueryError(msg, error);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
+        graphManager.afterQueryEnd(msg);
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
@@ -340,6 +348,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final RequestMessage msg = ctx.getRequestMessage();
         graphManager.onQuerySuccess(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
+        graphManager.afterQueryEnd(msg);
     }
 
     protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws InterruptedException {
@@ -398,7 +407,8 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush) aggregate.add(itty.next());
+            if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush)
+                aggregate.add(itty.next());
 
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
@@ -427,7 +437,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     Frame frame = null;
                     try {
                         frame = makeFrame(context, msg, serializer, useBinary, aggregate, code,
-                                          metadata, statusAttrb);
+                                metadata, statusAttrb);
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
