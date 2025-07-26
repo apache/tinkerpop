@@ -22,9 +22,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -38,7 +40,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,7 +50,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
+        implements TraversalParent, Scoping, AddVertexStepInterface<Vertex>, Configuring {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -70,6 +74,16 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     }
 
     @Override
+    public Object getElementId() {
+        return this.parameters.get(T.id, null);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
+    }
+
+    @Override
     public Parameters getParameters() {
         return this.parameters;
     }
@@ -77,13 +91,6 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
-    }
-
-    @Override
-    public HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
     }
 
     @Override
@@ -159,5 +166,25 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         clone.parameters = this.parameters.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
+    }
+
+    @Override
+    public String getLabel() {
+        return parameters.get(T.label, ()->"Edge").get(0);
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        parameters.remove(k);
+    }
+
+    @Override
+    public void addProperty(final Object key, final Object value) {
+        configure(key, value);
     }
 }

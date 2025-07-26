@@ -55,10 +55,9 @@ Feature: Step - trim()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_trim
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
     """
-    g.inject(xx1).trim()
+    g.inject(["a","b"]).trim()
     """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The trim() step can only take string as argument"
@@ -66,10 +65,9 @@ Feature: Step - trim()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListX1_2XX_trimXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
     And the traversal of
     """
-    g.inject(xx1).trim(Scope.local)
+    g.inject([1,2]).trim(Scope.local)
     """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The trim(local) step can only take string or list of strings"

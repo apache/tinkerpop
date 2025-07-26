@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -114,6 +113,9 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
         for (final String label : (Iterable<String>) step2.getLabels()) {
             newStep.addLabel(label);
         }
+
+        // the newStep assumes the StepContract of original step
+        // TODO:: traversal.getGValueManager().copyRegistryState(step1, newStep);
         TraversalHelper.replaceStep(step1, newStep, traversal);
         traversal.removeStep(step2);
     }

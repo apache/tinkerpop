@@ -48,10 +48,9 @@ Feature: Step - replace()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_replaceXa_bX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1).replace("a", "b")
+      g.inject(["a","b"]).replace("a", "b")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The replace() step can only take string as argument"

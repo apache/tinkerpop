@@ -49,10 +49,9 @@ Feature: Step - length()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_length
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1).length()
+      g.inject(["a","b"]).length()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The length() step can only take string as argument"

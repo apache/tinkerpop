@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -31,7 +32,7 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsStep<S> extends FilterStep<S> {
+public final class IsStep<S> extends FilterStep<S> implements IsStepInterface<S> {
 
     private P<S> predicate;
 
@@ -50,7 +51,7 @@ public final class IsStep<S> extends FilterStep<S> {
         return StringFactory.stepString(this, this.predicate);
     }
 
-
+    @Override
     public P<S> getPredicate() {
         return this.predicate;
     }

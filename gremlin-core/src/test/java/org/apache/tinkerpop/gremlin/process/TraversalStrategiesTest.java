@@ -81,7 +81,7 @@ public class TraversalStrategiesTest {
             assertTrue(strategies.getStrategy(strategy.getClass()).isPresent());
         }
         for (final TraversalStrategy strategy : TraversalStrategies.GlobalCache.getStrategies(TestGraphComputer.class)) {
-            assertFalse(strategies.getStrategy(strategy.getClass()).isPresent());
+            assertFalse("Found unexpected strategy: "+strategy.getClass().getSimpleName(), strategies.getStrategy(strategy.getClass()).isPresent());
         }
         assertTrue(strategies.getStrategy(StrategyA.class).isPresent());
         assertTrue(strategies.getStrategy(StrategyB.class).isPresent());

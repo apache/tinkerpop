@@ -31,6 +31,8 @@ from isodate import parse_duration, duration_isoformat
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, FunctionType, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, SingleChar
 from gremlin_python.process.traversal import Binding, Bytecode, Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar, to_bigdecimal
+from gremlin_python.process.traversal import Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
 
@@ -543,35 +545,18 @@ class FloatIO(_NumberIO):
         return cls.python_type(v)
 
 
-class BigDecimalIO(_NumberIO):
-    python_type = Decimal
+class BigDecimalIO(_GraphSONTypeIO):
+    python_type = BigDecimal
     graphson_type = "gx:BigDecimal"
     graphson_base_type = "BigDecimal"
 
     @classmethod
     def dictify(cls, n, writer):
-        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
-            return n
-        elif math.isnan(n):
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "gx")
-        elif math.isinf(n) and n > 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "gx")
-        elif math.isinf(n) and n < 0:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "gx")
-        else:
-            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "gx")
+        return GraphSONUtil.typed_value(cls.graphson_base_type, str(n.value), "gx")
 
     @classmethod
     def objectify(cls, v, _):
-        if isinstance(v, str):
-            if v == 'NaN':
-                return Decimal('nan')
-            elif v == "Infinity":
-                return Decimal('inf')
-            elif v == "-Infinity":
-                return Decimal('-inf')
-
-        return Decimal(v)
+        return to_bigdecimal(v)
 
 
 class DoubleIO(FloatIO):
@@ -800,3 +785,12 @@ class MetricsDeserializer(_GraphSONTypeIO):
     @classmethod
     def objectify(cls, d, reader):
         return reader.to_object(d)
+
+
+class EnumSerializer(_GraphSONTypeIO):
+    python_type = Enum
+
+    @classmethod
+    def dictify(cls, enum, _):
+        return GraphSONUtil.typed_value(SymbolUtil.to_camel_case(type(enum).__name__),
+                                        SymbolUtil.to_camel_case(str(enum.name)))

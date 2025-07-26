@@ -53,7 +53,7 @@ import java.util.function.BiPredicate;
  * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
 @Deprecated
-public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder {
+public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder<S, E> {
 
     private final List<HasContainer> hasContainers = new ArrayList<>();
 

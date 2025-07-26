@@ -201,6 +201,22 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V()"
 
+  @GremlinGroovyNotSupported
+  Scenario: g_mergeVXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.mergeV(xx1)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V()"
+
   Scenario: g_V_mergeVXnullX
     Given the empty graph
     And the graph initializer of
@@ -283,12 +299,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\", \"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("c", xx1).
-        withSideEffect("m", xx2).
+      g.withSideEffect("c", [T.label:"person", name:"stephen"]).
+        withSideEffect("m", [T.label:"person", name:"stephen", age:19]).
         mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
       """
     When iterated to list
@@ -301,12 +315,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("c", xx1).
-        withSideEffect("m", xx2).
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age:19]).
         mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
@@ -397,12 +409,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\", \"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("c", xx1).
-        withSideEffect("m", xx2).
+      g.withSideEffect("c", [T.label:"person", name:"stephen"]).
+        withSideEffect("m", [T.label:"person", name:"stephen", age:19]).
         inject(0).mergeV(__.select("c")).option(Merge.onCreate, __.select("m"))
       """
     When iterated to list
@@ -415,12 +425,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("c", xx1).
-        withSideEffect("m", xx2).
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age: 19]).
         inject(0).mergeV(__.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
@@ -449,11 +457,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeV(__.identity())
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"stephen"]).mergeV(__.identity())
       """
     When iterated to list
     Then the result should have a count of 2
@@ -467,11 +473,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeV()
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"stephen"]).mergeV()
       """
     When iterated to list
     Then the result should have a count of 2
@@ -540,12 +544,10 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("c", xx1).
-        withSideEffect("m", xx2).
+      g.withSideEffect("c", [T.label:"person", name:"marko"]).
+        withSideEffect("m", [age:19]).
         mergeV(__.select("c")).
           option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
       """
@@ -561,10 +563,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property(Cardinality.list, "age", 29).property(Cardinality.list, "age", 31).property(Cardinality.list, "age", 32)
       """
-    And using the parameter xx1 defined as "m[{\"age\": \"d[19].i\"}]"
     And the traversal of
       """
-      g.withSideEffect("m", xx1).
+      g.withSideEffect("m", [age:19]).
         V().has("person", "name", "marko").
         mergeV([:]).
           option(Merge.onMatch, __.sideEffect(__.properties("age").drop()).select("m"))
@@ -930,11 +931,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.inject([T.label:"person", name:"marko"], [T.label:"person", name:"marko"], [created:"N"]).
         fold().
         mergeV(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).
@@ -951,11 +950,9 @@ Feature: Step - mergeV()
       """
       g.addV("person").property("name", "marko").property("age", 29)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"stephen\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.inject([T.label:"person", name:"stephen"], [T.label:"person", name:"stephen"], [created:"N"]).
         fold().
         mergeV(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).
@@ -965,39 +962,3 @@ Feature: Step - mergeV()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"stephen\").hasNot(\"created\")"
     And the graph should return 2 for count of "g.V()"
-
-  @AllowNullPropertyValues
-  Scenario: g_mergeVXlabel_person_name_marko_age_29X_optionXonMatch_age_nullX_allowed
-    Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"age\": null}]"
-    And the graph initializer of
-      """
-      g.addV("person").property("name", "marko").property("age", 29)
-      """
-    And the traversal of
-      """
-      g.mergeV(xx1).option(Merge.onMatch, xx2)
-      """
-    When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V()"
-    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\",null)"
-
-  @DisallowNullPropertyValues
-  Scenario: g_mergeVXlabel_person_name_marko_age_29X_optionXonMatch_age_nullX
-    Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"person\", \"name\":\"marko\"}]"
-    And using the parameter xx2 defined as "m[{\"age\": null}]"
-    And the graph initializer of
-      """
-      g.addV("person").property("name", "marko").property("age", 29)
-      """
-    And the traversal of
-      """
-      g.mergeV(xx1).option(Merge.onMatch, xx2)
-      """
-    When iterated to list
-    Then the result should have a count of 1
-    And the graph should return 1 for count of "g.V()"
-    And the graph should return 0 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"age\")"

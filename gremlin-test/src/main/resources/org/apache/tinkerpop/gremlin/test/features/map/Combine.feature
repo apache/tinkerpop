@@ -124,10 +124,9 @@ Feature: Step - combine()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_combineXMARKOX
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).combine(xx1)
+      g.V().out().path().by(values("name").toUpper()).combine(["MARKO"])
       """
     When iterated to list
     Then the result should be unordered
@@ -142,10 +141,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXxx1X_combineXV_valuesXnameX_foldX_unfold
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).combine(__.V().values("name").fold()).unfold()
+      g.inject(["marko"]).combine(__.V().values("name").fold()).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -161,10 +159,9 @@ Feature: Step - combine()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_combineXseattle_vancouverX_orderXlocalX
     Given the crew graph
-    And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().combine(xx1).order(Scope.local)
+      g.V().valueMap("location").select(values).unfold().combine(["seattle","vancouver"]).order(Scope.local)
       """
     When iterated to list
     Then the result should be unordered
@@ -177,10 +174,9 @@ Feature: Step - combine()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_combineXempty_listX
     Given the modern graph
-    And using the parameter xx1 defined as "l[]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").combine(xx1)
+      g.V().out().out().path().by("name").combine([])
       """
     When iterated to list
     Then the result should be unordered
@@ -202,10 +198,9 @@ Feature: Step - combine()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_combineXdave_kelvinX
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").combine(xx1)
+      g.V().out().out().path().by("name").combine(["dave","kelvin"])
       """
     When iterated to list
     Then the result should be unordered
@@ -216,11 +211,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_combineXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,c]"
     And the traversal of
       """
-      g.inject(xx1).combine(xx2)
+      g.inject(["a",null,"b"]).combine(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -230,11 +223,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_combineXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,null,c]"
     And the traversal of
       """
-      g.inject(xx1).combine(xx2)
+      g.inject(["a",null,"b"]).combine(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -244,11 +235,9 @@ Feature: Step - combine()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_combineXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1).combine(xx2)
+      g.inject([3,"three"]).combine(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

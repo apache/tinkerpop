@@ -18,13 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Predefined {@code Predicate} values that can be used to define filters to {@code has()} and {@code where()}.
@@ -37,10 +43,27 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected PBiPredicate<V, V> biPredicate;
     protected V value;
     protected V originalValue;
+    protected GValue<V> gValue;
+    protected GValue<V>[] gValues;
 
-    public P(final PBiPredicate<V, V> biPredicate, final V value) {
-        this.value = value;
-        this.originalValue = value;
+    public P(final PBiPredicate<V, V> biPredicate, V value) {
+        if (value instanceof GValue) {
+            this.gValue = (GValue<V>) value;
+            this.value = ((GValue<V>) value).get();
+        } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = GValue.ensureGValues(((List) value).toArray());
+            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
+        } else {
+            this.value = value;
+        }
+        this.originalValue = this.value;
+        this.biPredicate = biPredicate;
+    }
+
+    public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
+        this.gValue = value;
+        this.value = value.get();
+        this.originalValue = value.get();
         this.biPredicate = biPredicate;
     }
 
@@ -56,7 +79,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return originalValue;
     }
 
-    /*
+    /**
      * Get the name of the predicate
      */
     public String getPredicateName() { return biPredicate.getPredicateName(); }
@@ -215,7 +238,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
-        final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
 
@@ -268,5 +291,46 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
+    }
+
+    public boolean isParameterized() {
+        if (gValue != null && gValue.isVariable()) {
+            return true;
+        }
+        if (gValues != null) {
+            for (final GValue<V> gValue : gValues) {
+                if (gValue != null && gValue.isVariable()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void updateVariable(final String name, final Object value) {
+        if (this.gValue != null && name.equals(this.gValue.getName())) {
+            this.gValue = GValue.of(name, (V) value);
+            this.value = (V) value;
+            this.originalValue = (V) value; //TODO is this right?
+        }
+        if (this.gValues != null) {
+            for (int i = 0; i < this.gValues.length; i++) {
+                if (name.equals(this.gValues[i].getName())) {
+                    this.gValues[i] = GValue.of(name, (V) value);
+                    ((List<V>) this.value).set(i, (V) value);
+                }
+            }
+        }
+    }
+
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> results = new HashSet<>();
+        if (gValue != null && gValue.isVariable()) {
+            results.add(gValue);
+        }
+        if (gValues!= null) {
+            results.addAll(Arrays.stream(gValues).filter(GValue::isVariable).collect(Collectors.toList()));
+        }
+        return results;
     }
 }

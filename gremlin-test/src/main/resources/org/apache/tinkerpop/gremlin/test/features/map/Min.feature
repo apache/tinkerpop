@@ -193,10 +193,9 @@ Feature: Step - min()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_V_foo_injectX9999999999X_min
     Given the modern graph
-    And using the parameter xx1 defined as "d[9999999999].l"
     And the traversal of
       """
-      g.V().values("foo").inject(xx1).min()
+      g.V().values("foo").inject(9999999999l).min()
       """
     When iterated to list
     Then the result should be unordered
