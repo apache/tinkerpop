@@ -807,8 +807,8 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[asBool-step]]
 === AsBool Step
 
-The `asBool()`-step (*map*) converts the incoming traverser to a boolean value. Numbers evaluate to
-`true` when non-zero (and not `NaN`). Strings are only accepted when
+The `asBool()`-step (*map*) converts the incoming traverser to a boolean value. If the traverser is already a boolean value, it is passed as-is. Numbers evaluate to
+`true` if non-zero, and to `false` if zero or `NaN`. Strings are only accepted when
 equal to `"true"` or `"false"` (case-insensitive), otherwise an `IllegalArgumentException` is thrown.
 All other types (including `null`) will throw an `IllegalArgumentException`.
 

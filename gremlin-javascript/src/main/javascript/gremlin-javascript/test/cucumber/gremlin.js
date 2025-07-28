@@ -619,6 +619,7 @@ const gremlins = {
     g_injectXneg_1X_asBool: [function({g}) { return g.inject(-1).asBool() }], 
     g_injectX0X_asBool: [function({g}) { return g.inject(0).asBool() }], 
     g_injectXneg_0X_asBool: [function({g}) { return g.inject(-0.0).asBool() }], 
+    g_injectXNaNX_asBool: [function({g}) { return g.inject(Number.NaN).asBool() }], 
     g_injectXbool_trueX_asBool: [function({g}) { return g.inject(true).asBool() }], 
     g_injectXfalseX_asBool: [function({g}) { return g.inject(false).asBool() }], 
     g_injectXtrueX_asBool: [function({g}) { return g.inject("true").asBool() }], 

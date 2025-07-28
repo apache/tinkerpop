@@ -619,6 +619,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectXneg_1X_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(-1).AsBool()}}, 
                {"g_injectX0X_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(0).AsBool()}}, 
                {"g_injectXneg_0X_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(-0.0).AsBool()}}, 
+               {"g_injectXNaNX_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(Double.NaN).AsBool()}}, 
                {"g_injectXbool_trueX_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(true).AsBool()}}, 
                {"g_injectXfalseX_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(false).AsBool()}}, 
                {"g_injectXtrueX_asBool", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("true").AsBool()}}, 

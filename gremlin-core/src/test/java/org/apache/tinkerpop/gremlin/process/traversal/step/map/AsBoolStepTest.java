@@ -49,8 +49,9 @@ public class AsBoolStepTest extends StepTest {
         assertEquals(false, __.__("false").asBool().next());
         assertEquals(false, __.__(0.0).asBool().next());
         assertEquals(false, __.__(-0.0).asBool().next());
-        assertNull(__.__(Float.NaN).asBool().next());
-        assertNull(__.__(Double.NaN).asBool().next());
+        assertEquals(false, __.__(Float.NaN).asBool().next());
+        assertEquals(false, __.__(Double.NaN).asBool().next());
+        assertEquals(true, __.__(Double.POSITIVE_INFINITY).asBool().next());
     }
 
     @Test(expected = IllegalArgumentException.class)

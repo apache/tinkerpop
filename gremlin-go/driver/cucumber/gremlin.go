@@ -589,6 +589,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_injectXneg_1X_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(-1).AsBool()}}, 
     "g_injectX0X_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(0).AsBool()}}, 
     "g_injectXneg_0X_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(-0.0).AsBool()}}, 
+    "g_injectXNaNX_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(math.NaN()).AsBool()}}, 
     "g_injectXbool_trueX_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(true).AsBool()}}, 
     "g_injectXfalseX_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(false).AsBool()}}, 
     "g_injectXtrueX_asBool": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("true").AsBool()}}, 

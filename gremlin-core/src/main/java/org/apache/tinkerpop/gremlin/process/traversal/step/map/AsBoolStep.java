@@ -41,11 +41,11 @@ public final class AsBoolStep<S> extends ScalarMapStep<S, Boolean> {
         if (object instanceof Boolean) return (Boolean) object;
         if (object instanceof Number) {
             final double d = ((Number) object).doubleValue();
-            if (Double.isNaN(d)) return null;
+            if (Double.isNaN(d)) return false;
             return d != 0d;
         }
         if (object instanceof String) {
-            final String str = (String) object;
+            final String str = ((String) object).trim();
             if (str.equalsIgnoreCase("true")) return true;
             if (str.equalsIgnoreCase("false")) return false;
             throw new IllegalArgumentException("Can't parse " + object + " as Boolean.");

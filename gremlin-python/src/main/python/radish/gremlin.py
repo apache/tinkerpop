@@ -592,6 +592,7 @@ world.gremlins = {
     'g_injectXneg_1X_asBool': [(lambda g:g.inject(-1).as_bool())], 
     'g_injectX0X_asBool': [(lambda g:g.inject(0).as_bool())], 
     'g_injectXneg_0X_asBool': [(lambda g:g.inject(-0.0).as_bool())], 
+    'g_injectXNaNX_asBool': [(lambda g:g.inject(float('nan')).as_bool())], 
     'g_injectXbool_trueX_asBool': [(lambda g:g.inject(True).as_bool())], 
     'g_injectXfalseX_asBool': [(lambda g:g.inject(False).as_bool())], 
     'g_injectXtrueX_asBool': [(lambda g:g.inject('true').as_bool())], 

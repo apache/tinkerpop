@@ -79,6 +79,18 @@ Feature: Step - asBool()
       | false |
 
   @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXNaNX_asBool
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).asBool()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | false |
+
+  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXbool_trueX_asBool
     Given the empty graph
     And the traversal of
