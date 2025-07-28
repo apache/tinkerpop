@@ -17,7 +17,7 @@
 
 module github.com/apache/tinkerpop/gremlin-go/v3
 
-go 1.22.0
+go 1.24
 
 require (
 	github.com/cucumber/godog v0.15.0
@@ -25,7 +25,6 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.5.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/text v0.21.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -38,4 +37,5 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

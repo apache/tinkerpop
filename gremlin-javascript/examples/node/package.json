@@ -9,6 +9,6 @@
   "author": "Ryan Tan",
   "license": "Apache-2.0",
   "dependencies": {
-    "gremlin": "^3.7.0"
+    "gremlin": "^3.7.3"
   }
 }
