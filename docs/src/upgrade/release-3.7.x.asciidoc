@@ -53,6 +53,10 @@ into channel (websocket and http) operations to use as a tool in understanding s
 
 See: link:https://tinkerpop.apache.org/docs/3.7.4/reference/#metrics[Reference Documentation - Metrics]
 
+==== Runtime Upgrades
+
+Gremlin .NET has been upgraded to .NET version 8.0.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
