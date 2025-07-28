@@ -804,6 +804,27 @@ g.V().hasLabel('person').values('age').fold().asString(local) <3>
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString()++[`asString()`]
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asString(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`asString(Scope)`]
 
+[[asBool-step]]
+=== AsBool Step
+
+The `asBool()`-step (*map*) converts the incoming traverser to a boolean value. If the traverser is already a boolean value, it is passed as-is. Numbers evaluate to
+`true` if non-zero, and to `false` if zero or `NaN`. Strings are only accepted when
+equal to `"true"` or `"false"` (case-insensitive), otherwise an `IllegalArgumentException` is thrown.
+All other types (including `null`) will throw an `IllegalArgumentException`.
+
+[gremlin-groovy,modern]
+----
+g.inject(1).asBool() <1>
+g.inject("false").asBool() <2>
+----
+
+<1> Convert number to boolean
+<2> Convert string to boolean
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#asBool()++[`asBool()`]
+
 [[asDate-step]]
 === AsDate Step
 

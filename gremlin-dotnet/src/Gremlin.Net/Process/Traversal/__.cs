@@ -177,6 +177,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asBool step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, bool> AsBool()
+        {
+            return new GraphTraversal<object, bool>().AsBool();
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the barrier step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Barrier()
