@@ -55,7 +55,7 @@ See: link:https://tinkerpop.apache.org/docs/3.7.4/reference/#metrics[Reference D
 
 ==== Runtime Upgrades
 
-Gremlin Javascript has been upgraded to Node 22.
+Gremlin Javascript has been upgraded to Node 20.
 
 === Upgrading for Providers
 

@@ -28,8 +28,8 @@ limitations under the License.
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <npm.version>10.9.2</npm.version>
-        <node.version>v22.17.1</node.version>
+        <npm.version>10.8.2</npm.version>
+        <node.version>v20.19.4</node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
