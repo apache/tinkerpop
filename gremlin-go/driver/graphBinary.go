@@ -85,6 +85,7 @@ const (
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
+	offsetDateTimeType    dataType = 0x88
 	nullType              dataType = 0xFE
 )
 
@@ -506,6 +507,40 @@ func timeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSeria
 	if err != nil {
 		return nil, err
 	}
+	return buffer.Bytes(), nil
+}
+
+// Datetime remains serialized as Date by default, real use is the ability to deserialize OffsetDateTime
+func offsetDateTimeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+	t := value.(time.Time)
+	err := binary.Write(buffer, binary.BigEndian, int32(t.Year()))
+	if err != nil {
+		return nil, err
+	}
+
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Month()))
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Write(buffer, binary.BigEndian, byte(t.Day()))
+	if err != nil {
+		return nil, err
+	}
+	// construct time of day in nanoseconds
+	h := int64(t.Hour())
+	m := int64(t.Minute())
+	s := int64(t.Second())
+	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + int64(t.Nanosecond())
+	err = binary.Write(buffer, binary.BigEndian, ns)
+	if err != nil {
+		return nil, err
+	}
+	_, os := t.Zone()
+	err = binary.Write(buffer, binary.BigEndian, int32(os))
+	if err != nil {
+		return nil, err
+	}
+
 	return buffer.Bytes(), nil
 }
 
@@ -1042,6 +1077,43 @@ func readUuid(data *[]byte, i *int) (interface{}, error) {
 
 func timeReader(data *[]byte, i *int) (interface{}, error) {
 	return time.UnixMilli(readLongSafe(data, i)), nil
+}
+
+func offsetDateTimeReader(data *[]byte, i *int) (interface{}, error) {
+	year := readIntSafe(data, i)
+	month := readByteSafe(data, i)
+	day := readByteSafe(data, i)
+	totalNS := readLongSafe(data, i)
+	// calculate hour, minute, second, and ns from totalNS (int64) to prevent int overflow in the nanoseconds arg
+	ns := totalNS % 1e9
+	totalS := totalNS / 1e9
+	s := totalS % 60
+	totalM := totalS / 60
+	m := totalM % 60
+	h := totalM / 60
+
+	offset := readIntSafe(data, i)
+	datetime := time.Date(int(year), time.Month(month), int(day), int(h), int(m), int(s), int(ns), GetTimezoneFromOffset(int(offset)))
+	return datetime, nil
+}
+
+// GetTimezoneFromOffset is a helper function to convert an offset in seconds to a time.Location
+func GetTimezoneFromOffset(offsetSeconds int) *time.Location {
+	// calculate hours and minutes from seconds
+	hours := offsetSeconds / 3600
+	minutes := (offsetSeconds % 3600) / 60
+
+	// format the timezone name in the format that go expects
+	// for example: "UTC+01:00" or "UTC-05:30"
+	sign := "+"
+	if hours < 0 {
+		sign = "-"
+		hours = -hours
+		minutes = -minutes
+	}
+	tzName := fmt.Sprintf("UTC%s%02d:%02d", sign, hours, minutes)
+
+	return time.FixedZone(tzName, offsetSeconds)
 }
 
 func durationReader(data *[]byte, i *int) (interface{}, error) {
