@@ -43,7 +43,7 @@ services:
 
   gremlin-js-integration-tests:
     container_name: gremlin-js-integration-tests
-    image: node:18
+    image: node:20
     volumes:
       - .:/js_app
       - ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
