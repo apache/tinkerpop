@@ -125,6 +125,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
 * Fixed bug preventing a vertex from being dropped and then re-added in the same `TinkerTransaction`
 * Fixed bug which could cause a 'Conflict: element modified in another transaction' when a transaction is attempting to add/drop/update a vertex or edge while another transaction is reading the same vertex or edge.
+* Upgraded Node version from 18 to 20
+* Upgraded Go to version 1.24
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
