@@ -82,4 +82,17 @@ describe('Client', function () {
     const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false, mimeType: 'application/vnd.gremlin-v2.0+json'});
     assert.strictEqual(customClient._connection.mimeType, 'application/vnd.gremlin-v2.0+json')
   });
+
+  it('should disable compression by default', function () {
+    const client = new Client('ws://localhost:9321');
+    assert.strictEqual(client._connection._enableCompression, false);
+  });
+
+  it('should passthrough compression setting', function () {
+    const uncompressedClient = new Client('ws://localhost:9321', {enableCompression: false});
+    const compressedClient = new Client('ws://localhost:9321', {enableCompression: true});
+
+    assert.strictEqual(uncompressedClient._connection._enableCompression, false);
+    assert.strictEqual(compressedClient._connection._enableCompression, true);
+  });
 });

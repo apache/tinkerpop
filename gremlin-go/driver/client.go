@@ -42,6 +42,7 @@ type ClientSettings struct {
 	EnableCompression bool
 	ReadBufferSize    int
 	WriteBufferSize   int
+	Session           string
 
 	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
 	NewConnectionThreshold int
@@ -124,7 +125,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		logHandler:      logHandler,
 		transporterType: settings.TransporterType,
 		connections:     pool,
-		session:         "",
+		session:         settings.Session,
 	}
 
 	return client, nil

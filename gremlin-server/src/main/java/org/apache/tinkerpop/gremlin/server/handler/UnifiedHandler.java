@@ -60,8 +60,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Handler for websockets to be used with the {@link UnifiedChannelizer}.
+ *
+ * @deprecated As of release 3.8.0, not replaced.
  */
 @ChannelHandler.Sharable
+@Deprecated
 public class UnifiedHandler extends SimpleChannelInboundHandler<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(UnifiedHandler.class);
 

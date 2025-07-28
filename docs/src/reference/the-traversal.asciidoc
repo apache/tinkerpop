@@ -5055,7 +5055,7 @@ To turn list of values into single items, the `by()` modulator can be used as sh
 [gremlin-groovy,theCrew]
 ----
 g.V().valueMap().by(unfold())
-g.V().valueMap('name','location').by().by(unfold())
+g.V().valueMap('name','location').by(unfold())
 ----
 
 If the `id`, `label`, `key`, and `value` of the `Element` is desired, then the `with()` modulator can be used to

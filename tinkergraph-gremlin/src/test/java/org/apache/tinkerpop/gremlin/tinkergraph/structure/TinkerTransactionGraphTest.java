@@ -18,21 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
-import org.junit.Test;
-
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.TransactionException;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +48,10 @@ import static org.junit.Assert.fail;
 
 public class TinkerTransactionGraphTest {
 
+    private static final String PROPERTY_NAME = "name";
+    private static final String PROPERTY_WEIGHT = "weight";
+    private static final String EDGE_LABEL = "tests";
+    private static final int EDGE_ID = 200;
     final Object vid = 100;
 
     ///// vertex tests
@@ -251,13 +263,13 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(1, (long) gtx.E().count().next());
 
-        gtx.E().hasLabel("tests").drop().iterate();
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
@@ -280,8 +292,8 @@ public class TinkerTransactionGraphTest {
         final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
         final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
         assertNull(v1afterTx.inEdgesId);
-        assertEquals(0, v1afterTx.outEdgesId.get("tests").size());
-        assertEquals(0, v2afterTx.inEdgesId.get("tests").size());
+        assertEquals(0, v1afterTx.outEdgesId.get(EDGE_LABEL).size());
+        assertEquals(0, v2afterTx.inEdgesId.get(EDGE_LABEL).size());
         assertNull(v2afterTx.outEdgesId);
 
         // should remove unused container
@@ -298,13 +310,13 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(1, (long) gtx.E().count().next());
 
-        gtx.E().hasLabel("tests").drop().iterate();
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
@@ -316,7 +328,7 @@ public class TinkerTransactionGraphTest {
             assertEquals(1L, (long) gtx2.E().count().next());
 
             // try to remove edge
-            gtx2.E().hasLabel("tests").drop().iterate();
+            gtx2.E().hasLabel(EDGE_LABEL).drop().iterate();
 
             // should be ok
             assertEquals(2, (long) gtx2.V().count().next());
@@ -345,8 +357,8 @@ public class TinkerTransactionGraphTest {
         final TinkerVertex v1afterTx = g.getVertices().get(v1.id()).get();
         final TinkerVertex v2afterTx = g.getVertices().get(v2.id()).get();
         assertNull(v1afterTx.inEdgesId);
-        assertEquals(0, v1afterTx.outEdgesId.get("tests").size());
-        assertEquals(0, v2afterTx.inEdgesId.get("tests").size());
+        assertEquals(0, v1afterTx.outEdgesId.get(EDGE_LABEL).size());
+        assertEquals(0, v2afterTx.inEdgesId.get(EDGE_LABEL).size());
         assertNull(v2afterTx.outEdgesId);
 
         countElementsInNewThreadTx(g, 2, 0);
@@ -525,7 +537,7 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
 
         assertEquals(1L, (long) gtx.E().has("test-property", 1).count().next());
         assertEquals(1L, (long) gtx.E().count().next());
@@ -565,7 +577,7 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
         gtx.tx().commit();
 
         gtx.E(edge.id()).property("test-property", 2).iterate();
@@ -612,7 +624,7 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).from(v1).to(v2).next();
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).from(v1).to(v2).next();
         gtx.tx().commit();
 
         gtx.E(edge.id()).drop().iterate();
@@ -654,7 +666,7 @@ public class TinkerTransactionGraphTest {
 
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", nullValue).
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", nullValue).
                 from(v1).to(v2).next();
 
         assertEquals(1L, (long) gtx.E().has("test-property", nullValue).count().next());
@@ -697,7 +709,7 @@ public class TinkerTransactionGraphTest {
         // create initial edge with indexed property
         final TinkerVertex v1 = (TinkerVertex) gtx.addV().next();
         final TinkerVertex v2 = (TinkerVertex) gtx.addV().next();
-        final TinkerEdge edge = (TinkerEdge) gtx.addE("tests").property("test-property", 1).
+        final TinkerEdge edge = (TinkerEdge) gtx.addE(EDGE_LABEL).property("test-property", 1).
                 from(v1).to(v2).next();
 
         gtx.tx().commit();
@@ -1026,7 +1038,7 @@ public class TinkerTransactionGraphTest {
 
         final Vertex v1 = gtx.addV().next();
         final Vertex v2 = gtx.addV().next();
-        final Edge edge = gtx.addE("tests").from(v1).to(v2).next();
+        final Edge edge = gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         // tx1 try to add property
@@ -1095,13 +1107,13 @@ public class TinkerTransactionGraphTest {
 
         final Vertex v1 = gtx.addV().next();
         final Vertex v2 = gtx.addV().next();
-        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(1, (long) gtx.E().count().next());
 
-        gtx.E().hasLabel("tests").drop().iterate();
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
@@ -1130,7 +1142,7 @@ public class TinkerTransactionGraphTest {
 
         final Vertex v1 = gtx.addV().next();
         final Vertex v2 = gtx.addV().next();
-        final Edge edge = gtx.addE("tests").from(v1).to(v2).next();
+        final Edge edge = gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         // change test property
@@ -1231,13 +1243,13 @@ public class TinkerTransactionGraphTest {
 
         final Vertex v1 = gtx.addV().next();
         final Vertex v2 = gtx.addV().next();
-        gtx.addE("tests").from(v1).to(v2).next();
+        gtx.addE(EDGE_LABEL).from(v1).to(v2).next();
         gtx.tx().commit();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(1, (long) gtx.E().count().next());
 
-        gtx.E().hasLabel("tests").drop().iterate();
+        gtx.E().hasLabel(EDGE_LABEL).drop().iterate();
 
         assertEquals(2, (long) gtx.V().count().next());
         assertEquals(0, (long) gtx.E().count().next());
@@ -1249,7 +1261,7 @@ public class TinkerTransactionGraphTest {
             assertEquals(1L, (long) gtx2.E().count().next());
 
             // try to remove edge
-            gtx2.E().hasLabel("tests").drop().iterate();
+            gtx2.E().hasLabel(EDGE_LABEL).drop().iterate();
 
             // should be ok
             assertEquals(2, (long) gtx2.V().count().next());
@@ -1502,5 +1514,390 @@ public class TinkerTransactionGraphTest {
         assertFalse(vertex.isRead());
 
         assertFalse(vertex.inUse());
+    }
+
+    @Test
+    public void shouldAllowDropAddVertexInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex with a property
+        final GraphTraversalSource gtx = tx.begin();
+        Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        gtx.tx().commit();
+
+        verifyCommittedSingleVertex(g, "test");
+        assertEquals(1, g.getEdgesCount());
+        final long originalVersion = g.getVertices().get(vid).getUnmodified().version();
+
+        // drop the vertex and re-create it without any properties or edges in the same transaction
+        final GraphTraversalSource gtx2 = tx.begin();
+        gtx2.V().drop().iterate();
+        gtx2.addV().property(T.id, vid).next();
+        gtx2.tx().commit();
+
+        verifyCommittedSingleVertex(g);
+        final TinkerVertex updatedVertex = g.getVertices().get(vid).getUnmodified();
+        assertEquals(0, g.getEdgesCount());
+        // version should have been updated
+        assertNotEquals(originalVersion, updatedVertex.version());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddVertexInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        final GraphTraversalSource gtx = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx.V(vid).drop().iterate();
+        // add vertex again with different properties but no edges
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        gtx.tx().commit();
+        
+        verifyCommittedSingleVertex(g, "updated name");
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddDropVertexInSameTransaction() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        final GraphTraversalSource gtx = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx.V(vid).drop().iterate();
+        // add vertex again with different properties but no edges
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        // drop the vertex again
+        gtx.V(vid).drop().iterate();
+        gtx.tx().commit();
+        
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowAddDropAddDropVertexInMultipleTransactions() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // first transaction
+        final GraphTraversalSource gtx1 = tx.begin();
+        // create vertex with a property
+        final Vertex vertex = gtx1.addV().property(T.id, vid).property(PROPERTY_NAME, "test").next();
+        // add self-referencing edge
+        gtx1.addE(EDGE_LABEL).from(vertex).to(vertex).next();
+        // drop vertex
+        gtx1.V(vid).drop().iterate();
+        gtx1.tx().commit();
+
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+
+        // second transaction
+        final GraphTraversalSource gtx2 = tx.begin();
+        // add vertex again with different properties but no edges
+        gtx2.addV().property(T.id, vid).property(PROPERTY_NAME, "updated name").next();
+        // drop the vertex again
+        gtx2.V(vid).drop().iterate();
+        gtx2.tx().commit();
+
+        assertEquals(0, g.getVerticesCount());
+        assertEquals(0, g.getEdgesCount());
+    }
+
+    @Test
+    public void shouldAllowDropAddUniqueVertexInConcurrentTransactions() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create first vertex and commit
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g);
+        
+        // drop and add but don't commit
+        gtx.V(vid).drop().iterate();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "main thread").next();
+        
+        // in another thread add, drop, add a different vertex and commit
+        int vid2 = (int) vid + 1;
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.addV().property(T.id, vid2).next();
+            gtx2.V(vid2).drop().iterate();
+            gtx2.addV().property(T.id, vid2).property(PROPERTY_NAME, "another thread").next();
+            gtx2.tx().commit();
+        });
+
+        // commit the drop add
+        gtx.tx().commit();
+        // both vertices should exist
+        assertEquals(2, g.getVerticesCount());
+        assertEquals("main thread", g.getVertices().get(vid).getUnmodified().properties.get(PROPERTY_NAME).get(0).value());
+        assertEquals("another thread", g.getVertices().get(vid2).getUnmodified().properties.get(PROPERTY_NAME).get(0).value());
+    }
+
+    @Test
+    public void shouldPreventDropAddVertexInConcurrentTransactions() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex and commit transaction
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "original").next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g, "original");
+
+        // drop the vertex and add it back but don't commit
+        gtx.V(vid).drop().iterate();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "should fail!").next();
+
+        // drop the vertex and add it back in another thread and commit
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).drop().iterate();
+            gtx2.addV().property(T.id, vid).property(PROPERTY_NAME, "updated").next();
+            gtx2.tx().commit();
+        });
+
+        // try to commit the drop and add in main thread - should fail
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+            verifyCommittedSingleVertex(g, "updated");
+        }
+    }
+
+    @Test
+    public void shouldPreventDropUpdateVertexInConcurrentTransactions() {
+        final TinkerTransactionGraph g = TinkerTransactionGraph.open();
+        final TinkerTransaction tx = (TinkerTransaction) g.tx();
+
+        // create initial vertex and commit transaction
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV().property(T.id, vid).property(PROPERTY_NAME, "original").next();
+        gtx.tx().commit();
+        verifyCommittedSingleVertex(g, "original");
+        
+        // drop but don't commit
+        gtx.V(vid).drop().iterate();
+        
+        // modify the vertex in another thread and commit
+        runInNewThread(() -> {
+            final GraphTraversalSource gtx2 = g.tx().begin();
+            gtx2.V(vid).property(PROPERTY_NAME, "updated").next();
+            gtx2.tx().commit();
+        });
+        
+        // try to commit the drop vertex - should fail
+        try {
+            gtx.tx().commit();
+            fail("should throw TransactionException");
+        } catch (TransactionException e) {
+            assertEquals("Conflict: element modified in another transaction", e.getMessage());
+            verifyCommittedSingleVertex(g, "updated");
+        }
+    }
+
+    @Test
+    public void readVertexShouldNotConflictWithDropAddUpdateVertexInSeparateTransaction() throws InterruptedException {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final AtomicReference<AssertionError> validationException = new AtomicReference<>();
+
+        // commit the initial vertex
+        gtx.addV().property(T.id, vid).next();
+        gtx.tx().commit();
+
+        // reader threads which are constantly reading the vertex ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        List<Thread> readers = startInNewThreads(() -> {
+            while (signal.getCount() > 0) {
+                List<Object> vertexIds = g.V().id().toList();
+                // vertexIds should be empty or have a single id equal to the vertexId
+                if (validationException.get() == null && vertexIds.size() > 1 || (vertexIds.size() == 1 && !vertexIds.get(0).equals(vid))) {
+                    validationException.set(new AssertionError("Unexpected vertexIds: " + vertexIds));
+                }
+            }
+        }, 2);
+
+        // drop, add, update the same vertex a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.V(vid).drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            g.addV().property(T.id, vid).next();
+            g.tx().commit();
+            g.V(vid).property(VertexProperty.Cardinality.single, "name", "test").next();
+            g.tx().commit();
+            g.V(vid).property(VertexProperty.Cardinality.single, "name", "updated").next();
+            g.tx().commit();
+        }
+
+        // stop the reader thread
+        signal.countDown();
+        readers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        verifyCommittedSingleVertex(graph, "updated");
+        if (validationException.get() != null) {
+            throw validationException.get();
+        }
+    }
+
+    @Test
+    public void readEdgeShouldNotConflictWithDropAddUpdateEdgeInSeparateTransaction() throws InterruptedException {
+        final TinkerTransactionGraph graph = TinkerTransactionGraph.open();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource gtx = g.tx().begin();
+        final AtomicReference<AssertionError> validationException = new AtomicReference<>();
+
+        // commit the initial vertex with self-referencing edge
+        Vertex vertex = gtx.addV().property(T.id, vid).next();
+        gtx.addE(EDGE_LABEL).from(vertex).to(vertex).property(T.id, EDGE_ID).next();
+        gtx.tx().commit();
+
+        // reader threads which are constantly reading the edge ids in a separate transaction
+        CountDownLatch signal = new CountDownLatch(1);
+        List<Thread> readers = startInNewThreads(() -> {
+            while (signal.getCount() > 0) {
+                List<Object> edgIds = g.E().id().toList();
+                if (validationException.get() == null && (edgIds.size() > 1 || (edgIds.size() == 1 && !edgIds.get(0).equals(EDGE_ID)))) {
+                    validationException.set(new AssertionError("Unexpected edgeIds: " + edgIds));
+                }
+
+            }
+        }, 2);
+
+        // drop, add, update the same edge a number of times to validate that the reader thread should not interfere with the updates
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep(50);
+            g.E().drop().iterate();
+            g.tx().commit();
+            Thread.sleep(50);
+            Vertex v = g.V(vid).next();
+            g.addE(EDGE_LABEL).property(T.id, EDGE_ID).from(v).to(v).next();
+            g.tx().commit();
+            g.E(EDGE_ID).property(PROPERTY_WEIGHT, 10.12).next();
+            g.tx().commit();
+            g.E(EDGE_ID).property(PROPERTY_WEIGHT, 8.6).next();
+            g.tx().commit();
+        }
+
+        // stop the reader threads
+        signal.countDown();
+        readers.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        
+        verifyCommittedSingleVertex(graph);
+        verifyCommittedSingleEdge(graph, 8.6);
+        if (validationException.get() != null) {
+            throw validationException.get();
+        }
+    }
+    
+    private void runInNewThread(final Runnable runnable) {
+        final Thread thread = new Thread(runnable);
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<Thread> startInNewThreads(final Runnable runnable, int numThreads) {
+        return IntStream.range(0, numThreads).mapToObj(i -> {
+            final Thread thread = new Thread(runnable);
+            thread.start();
+            return thread;
+        }).collect(Collectors.toList());
+    }
+    
+    private void verifyCommittedSingleEdge(final TinkerTransactionGraph g, final Object weightValue) {
+        // graph should only have a single edge
+        assertEquals(1, g.getEdges().size());
+
+        // the single edge should have the expected id
+        final TinkerElementContainer<TinkerEdge> edgeContainer = g.getEdges().get(EDGE_ID);
+
+        // container should be committed and not have an update in progress
+        assertFalse(edgeContainer.isChanged());
+        assertFalse(edgeContainer.inUse());
+
+        // the element in the container should have the same id
+        // there are multiple ways to obtain the container element's id and they should be consistent
+        assertEquals(EDGE_ID, edgeContainer.getElementId());
+        assertEquals(EDGE_ID, edgeContainer.get().id());
+        final TinkerEdge unmodified = edgeContainer.getUnmodified();
+        assertEquals(EDGE_ID, unmodified.id());
+        assertEquals(EDGE_LABEL, unmodified.label());
+
+        if (weightValue != null) {
+            Iterator<Property<Object>> properties = unmodified.properties(PROPERTY_WEIGHT);
+            assertEquals(weightValue, properties.next().value());
+        } else {
+            assertNull(unmodified.properties);
+        }
+    }
+
+    private void verifyCommittedSingleVertex(final TinkerTransactionGraph g) {
+        verifyCommittedSingleVertex(g, null);
+    }
+
+    private void verifyCommittedSingleVertex(final TinkerTransactionGraph g, final String namePropertyValue) {
+        // graph should only have a single vertex
+        assertEquals(1, g.getVertices().size());
+        
+        // the single vertex should have the expected id
+        final TinkerElementContainer<TinkerVertex> vertexContainer = g.getVertices().get(vid);
+        
+        // container should be committed and not have an update in progress
+        assertFalse(vertexContainer.isChanged());
+        assertFalse(vertexContainer.inUse());
+        
+        // the element in the container should have the same id
+        // there are multiple ways to obtain the container element's id and they should be consistent
+        assertEquals(vid, vertexContainer.getElementId());
+        assertEquals(vid, vertexContainer.get().id());
+        final TinkerVertex unmodified = vertexContainer.getUnmodified();
+        assertEquals(vid, unmodified.id());
+
+        if (namePropertyValue != null) {
+            final Map<String, List<VertexProperty>> properties = unmodified.properties;
+            assertEquals(1, properties.size());
+            final List<VertexProperty> nameProperties = properties.get(PROPERTY_NAME);
+            assertEquals(1, nameProperties.size());
+            assertEquals(namePropertyValue, nameProperties.get(0).value());
+        } else {
+            assertNull(unmodified.properties);
+        }
     }
 }

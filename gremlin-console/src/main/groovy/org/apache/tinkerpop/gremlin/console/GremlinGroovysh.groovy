@@ -23,11 +23,10 @@ import org.apache.groovy.groovysh.Command
 import org.apache.groovy.groovysh.Groovysh
 import org.apache.groovy.groovysh.ParseCode
 import org.apache.groovy.groovysh.Parser
+import org.apache.groovy.groovysh.Parsing
 import org.apache.groovy.groovysh.util.CommandArgumentParser
-import org.apache.groovy.groovysh.util.ScriptVariableAnalyzer
 import org.apache.tinkerpop.gremlin.console.commands.GremlinSetCommand
 import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.tools.shell.IO
 
@@ -42,6 +41,7 @@ class GremlinGroovysh extends Groovysh {
     private final static CompilerConfiguration compilerConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT) {{
         addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class))
     }}
+    private Parsing remoteParser = new LocalSafeParser()
 
     public GremlinGroovysh(final Mediator mediator, final IO io) {
         super(io, compilerConfig)
@@ -107,41 +107,10 @@ class GremlinGroovysh extends Groovysh {
                 String importsSpec = this.getImportStatements()
 
                 // determine if this script is complete or not - if not it's a multiline script
-                def status = parser.parse([importsSpec] + current)
+                def status = remoteParser.parse([importsSpec] + current)
 
                 switch (status.code) {
                     case ParseCode.COMPLETE:
-                        if (!Boolean.valueOf(getPreference(INTERPRETER_MODE_PREFERENCE_KEY, 'false')) || isTypeOrMethodDeclaration(current)) {
-                            // Evaluate the current buffer w/imports and dummy statement
-                            List buff = [importsSpec] + [ 'true' ] + current
-                            try {
-                                interp.evaluate(buff)
-                            } catch(MultipleCompilationErrorsException t) {
-                                if (isIncompleteCaseOfAntlr4(t)) {
-                                    // treat like INCOMPLETE case
-                                    buffers.updateSelected(current)
-                                    break
-                                }
-                                throw t
-                            } catch (MissingPropertyException mpe) {
-                                // Ignore any local missing properties since it doesn't affect remote execution.
-                            }
-                        } else {
-                            // Evaluate Buffer wrapped with code storing bounded vars
-                            try {
-                                evaluateWithStoredBoundVars(importsSpec, current)
-                            } catch(MultipleCompilationErrorsException t) {
-                                if (isIncompleteCaseOfAntlr4(t)) {
-                                    // treat like INCOMPLETE case
-                                    buffers.updateSelected(current)
-                                    break
-                                }
-                                throw t
-                            } catch (MissingPropertyException mpe) {
-                                // Ignore any local missing properties since it doesn't affect remote execution.
-                            }
-                        }
-
                         // concat script here because commands don't support multi-line
                         def script = String.join(Parser.getNEWLINE(), current)
                         setLastResult(mediator.currentRemote().submit([script]))
@@ -174,49 +143,5 @@ class GremlinGroovysh extends Groovysh {
         interp.context['_'] = result
 
         maybeRecordResult(result)
-    }
-
-    private Object evaluateWithStoredBoundVars(String importsSpec, List<String> current) {
-        Object result
-        String variableBlocks = null
-        // To make groovysh behave more like an interpreter, we need to retrieve all bound
-        // vars at the end of script execution, and then update them into the groovysh Binding context.
-        Set<String> boundVars = ScriptVariableAnalyzer.getBoundVars(importsSpec + Parser.NEWLINE + current.join(Parser.NEWLINE), interp.classLoader)
-        if (boundVars) {
-            variableBlocks = "$COLLECTED_BOUND_VARS_MAP_VARNAME = new HashMap();"
-            boundVars.each({ String varname ->
-                // bound vars can be in global or some local scope.
-                // We discard locally scoped vars by ignoring MissingPropertyException
-                variableBlocks += """
-try {$COLLECTED_BOUND_VARS_MAP_VARNAME[\"$varname\"] = $varname;
-} catch (MissingPropertyException e){}"""
-            })
-        }
-        // Evaluate the current buffer w/imports and dummy statement
-        List<String> buff
-        if (variableBlocks) {
-            buff = [importsSpec] + ['try {', 'true'] + current + ['} finally {' + variableBlocks + '}']
-        } else {
-            buff = [importsSpec] + ['true'] + current
-        }
-        interp.evaluate(buff)
-
-        if (variableBlocks) {
-            def boundVarValues = (Map<String, Object>) interp.context.getVariable(COLLECTED_BOUND_VARS_MAP_VARNAME)
-            boundVarValues.each({ String name, Object value -> interp.context.setVariable(name, value) })
-        }
-
-        return result
-    }
-
-    private boolean isIncompleteCaseOfAntlr4(MultipleCompilationErrorsException t) {
-        // TODO antlr4 parser errors pop out here - can we rework to be like antlr2?
-        (
-            (t.message.contains('Unexpected input: ') || t.message.contains('Unexpected character: ')) && !(
-                t.message.contains("Unexpected input: '}'")
-                    || t.message.contains("Unexpected input: ')'")
-                    || t.message.contains("Unexpected input: ']'")
-            )
-        )
     }
 }
