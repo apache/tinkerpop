@@ -56,6 +56,7 @@ See: link:https://tinkerpop.apache.org/docs/3.7.4/reference/#metrics[Reference D
 ==== Runtime Upgrades
 
 Gremlin Go has been upgraded to Go version 1.24.
+Gremlin Javascript has been upgraded to Node 20.
 
 === Upgrading for Providers
 
