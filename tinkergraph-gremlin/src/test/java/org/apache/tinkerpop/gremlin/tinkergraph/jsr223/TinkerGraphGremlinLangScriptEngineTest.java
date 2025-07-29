@@ -42,7 +42,6 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -224,26 +223,12 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.V().as(\"a\").in().as(\"b\").in().as(\"c\").select(\"a\",\"b\",\"c\").by(\"name\").limit(Scope.local, xx1)",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", 2), Arrays.asList(
-                            new HashMap<String, Object>() {{
-                                put("a", "lop");
-                                put("b", "josh");
-                            }},
-                            new HashMap<String, Object>() {{
-                                put("a", "ripple");
-                                put("b", "josh");
-                            }}
+                            Map.of("a", "lop", "b", "josh"),
+                            Map.of("a", "ripple", "b", "josh")
                         )),
                         Pair.of(createBindings("xx1", 3), Arrays.asList(
-                            new HashMap<String, Object>() {{
-                                put("a", "lop");
-                                put("b", "josh");
-                                put("c", "marko");
-                            }},
-                            new HashMap<String, Object>() {{
-                                put("a", "ripple");
-                                put("b", "josh");
-                                put("c", "marko");
-                            }}
+                            Map.of("a", "lop", "b", "josh", "c", "marko"),
+                            Map.of("a", "ripple", "b", "josh", "c", "marko")
                         )),
                         Pair.of(createBindings("xx1", 0), Arrays.asList(
                             Collections.EMPTY_MAP,
@@ -256,26 +241,12 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.V().as(\"a\").out().as(\"b\").out().as(\"c\").select(\"a\",\"b\",\"c\").by(\"name\").range(Scope.local, xx1, xx2)",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", 1, "xx2", 3), Arrays.asList(
-                                new HashMap<String, Object>() {{
-                                    put("b", "josh");
-                                    put("c", "ripple");
-                                }},
-                                new HashMap<String, Object>() {{
-                                put("b", "josh"); 
-                                put("c", "lop"); 
-                            }}
+                                Map.of("b", "josh", "c", "ripple"),
+                                Map.of("b", "josh", "c", "lop")
                         )),
                         Pair.of(createBindings("xx1", 0, "xx2", 3), Arrays.asList(
-                            new HashMap<String, Object>() {{
-                                put("a", "marko");
-                                put("b", "josh");
-                                put("c", "ripple");
-                            }},
-                            new HashMap<String, Object>() {{
-                                put("a", "marko");
-                                put("b", "josh");
-                                put("c", "lop");
-                            }}
+                            Map.of("a", "marko", "b", "josh", "c", "ripple"),
+                            Map.of("a", "marko", "b", "josh", "c", "lop")
                         )),
                         Pair.of(createBindings("xx1", 1, "xx2", 1), Arrays.asList(
                             Collections.EMPTY_MAP,
@@ -307,22 +278,13 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.addE(\"knows\").from(v1).to(v2).project(\"from\", \"to\").by(outV()).by(inV())",
                     Arrays.asList(
                         Pair.of(createBindings("v1", V_MARKO, "v2", V_PETER), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("from", V_MARKO);
-                                    put("to", V_PETER);
-                                }}
+                                Map.of("from", V_MARKO, "to", V_PETER)
                         )),
                         Pair.of(createBindings("v1", V_JOSH, "v2", V_MARKO), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("from", V_JOSH);
-                                    put("to", V_MARKO);
-                                }}
+                                Map.of("from", V_JOSH, "to", V_MARKO)
                         )),
                         Pair.of(createBindings("v1", V_PETER, "v2", V_JOSH), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("from", V_PETER);
-                                    put("to", V_JOSH);
-                                }}
+                                Map.of("from", V_PETER, "to", V_JOSH)
                         ))
                     ),
                     TinkerGraph.open()
@@ -331,28 +293,13 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.addE(xx1).from(v1).to(v2).property(\"weight\", xx2).project(\"label\", \"from\", \"to\", \"weight\").by(label).by(outV()).by(inV()).by(\"weight\")",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", "knows", "v1", V_MARKO, "v2", V_PETER, "xx2", 0.1d), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("label", "knows");
-                                    put("from", V_MARKO);
-                                    put("to", V_PETER);
-                                    put("weight", 0.1d);
-                                }}
+                                Map.of("label", "knows", "from", V_MARKO, "to", V_PETER, "weight", 0.1d)
                         )),
                         Pair.of(createBindings("xx1", "created", "v1", V_JOSH, "v2", V_MARKO, "xx2", 0.2d), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("label", "created");
-                                    put("from", V_JOSH);
-                                    put("to", V_MARKO);
-                                    put("weight", 0.2d);
-                                }}
+                                Map.of("label", "created", "from", V_JOSH, "to", V_MARKO, "weight", 0.2d)
                         )),
                         Pair.of(createBindings("xx1", "knows", "v1", V_PETER, "v2", V_JOSH, "xx2", 0.3d), Arrays.asList(
-                                new HashMap<Object, Object>() {{
-                                    put("label", "knows");
-                                    put("from", V_PETER);
-                                    put("to", V_JOSH);
-                                    put("weight", 0.3d);
-                                }}
+                                Map.of("label", "knows", "from", V_PETER, "to", V_JOSH, "weight", 0.3d)
                         ))
                     ),
                     TinkerGraph.open()
@@ -361,22 +308,13 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.V(v1).addE(\"knows\").to(v2).project(\"from\", \"to\").by(outV()).by(inV())",
                     Arrays.asList(
                             Pair.of(createBindings("v1", V_MARKO, "v2", V_PETER), Arrays.asList(
-                                    new HashMap<Object, Object>() {{
-                                        put("from", V_MARKO);
-                                        put("to", V_PETER);
-                                    }}
+                                    Map.of("from", V_MARKO, "to", V_PETER)
                             )),
                             Pair.of(createBindings("v1", V_JOSH, "v2", V_MARKO), Arrays.asList(
-                                    new HashMap<Object, Object>() {{
-                                        put("from", V_JOSH);
-                                        put("to", V_MARKO);
-                                    }}
+                                    Map.of("from", V_JOSH, "to", V_MARKO)
                             )),
                             Pair.of(createBindings("v1", V_PETER, "v2", V_JOSH), Arrays.asList(
-                                    new HashMap<Object, Object>() {{
-                                        put("from", V_PETER);
-                                        put("to", V_JOSH);
-                                    }}
+                                    Map.of("from", V_PETER, "to", V_JOSH)
                             ))
                     ),
                     TinkerFactory.createModern()
@@ -529,34 +467,16 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.inject(1,2).addV(xx1).property(\"age\", xx2).project(\"label\", \"age\").by(label).by(\"age\")",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", "animal", "xx2", 0), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "animal");
-                                put("age", 0);
-                            }},
-                            new HashMap<Object, Object>() {{
-                                put("label", "animal");
-                                put("age", 0);
-                            }}
+                            Map.of("label", "animal", "age", 0),
+                            Map.of("label", "animal", "age", 0)
                         )),
                         Pair.of(createBindings("xx1", "person", "xx2", 5), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "person");
-                                put("age", 5);
-                            }},
-                            new HashMap<Object, Object>() {{
-                                put("label", "person");
-                                put("age", 5);
-                            }}
+                            Map.of("label", "person", "age", 5),
+                            Map.of("label", "person", "age", 5)
                         )),
                         Pair.of(createBindings("xx1", "software", "xx2", 10), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "software");
-                                put("age", 10);
-                            }},
-                            new HashMap<Object, Object>() {{
-                                put("label", "software");
-                                put("age", 10);
-                            }}
+                            Map.of("label", "software", "age", 10),
+                            Map.of("label", "software", "age", 10)
                         ))
                     ),
                     TinkerGraph.open()
@@ -565,22 +485,13 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.addV(xx1).property(\"name\", xx2).project(\"label\", \"name\").by(label).by(\"name\")",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", "person", "xx2", "stephen"), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "person");
-                                put("name", "stephen");
-                            }}
+                            Map.of("label", "person", "name", "stephen")
                         )),
                         Pair.of(createBindings("xx1", "software", "xx2", "tinkergraph"), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "software");
-                                put("name", "tinkergraph");
-                            }}
+                            Map.of("label", "software", "name", "tinkergraph")
                         )),
                         Pair.of(createBindings("xx1", "animal", "xx2", "puppy"), Arrays.asList(
-                            new HashMap<Object, Object>() {{
-                                put("label", "animal");
-                                put("name", "puppy");
-                            }}
+                            Map.of("label", "animal", "name", "puppy")
                         ))
                     ),
                     TinkerGraph.open()
@@ -626,34 +537,16 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     "g.V().as(\"a\").out().as(\"b\").out().as(\"c\").select(\"a\",\"b\",\"c\").by(\"name\").tail(Scope.local, xx1)",
                     Arrays.asList(
                         Pair.of(createBindings("xx1", 2), Arrays.asList(
-                            new HashMap<String, Object>() {{ 
-                                put("b", "josh"); 
-                                put("c", "ripple"); 
-                            }},
-                            new HashMap<String, Object>() {{ 
-                                put("b", "josh"); 
-                                put("c", "lop"); 
-                            }}
+                            Map.of("b", "josh", "c", "ripple"),
+                            Map.of("b", "josh", "c", "lop")
                         )),
                         Pair.of(createBindings("xx1", 1), Arrays.asList(
-                            new HashMap<String, Object>() {{ 
-                                put("c", "ripple"); 
-                            }},
-                            new HashMap<String, Object>() {{ 
-                                put("c", "lop"); 
-                            }}
+                            Map.of("c", "ripple"),
+                            Map.of("c", "lop")
                         )),
                         Pair.of(createBindings("xx1", 3), Arrays.asList(
-                            new HashMap<String, Object>() {{ 
-                                put("a", "marko"); 
-                                put("b", "josh"); 
-                                put("c", "ripple"); 
-                            }},
-                            new HashMap<String, Object>() {{ 
-                                put("a", "marko"); 
-                                put("b", "josh"); 
-                                put("c", "lop"); 
-                            }}
+                            Map.of("a", "marko", "b", "josh", "c", "ripple"),
+                            Map.of("a", "marko", "b", "josh", "c", "lop")
                         ))
                     ),
                     TinkerFactory.createModern()
