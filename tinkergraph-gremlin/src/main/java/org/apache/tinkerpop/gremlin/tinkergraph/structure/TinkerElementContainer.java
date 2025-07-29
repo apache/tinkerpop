@@ -59,7 +59,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     private final ThreadLocal<Boolean> isReadInTx = ThreadLocal.withInitial(() -> false);
 
     /**
-     * Count of usages of container in different transactions.
+     * Count of modification/deletion/addition usages of container in different transactions (reads do not contribute to this count).
      * Needed to understand whether this element is used in other transactions or it can be deleted during rollback.
      */
     private final AtomicInteger usesInTransactions = new AtomicInteger(0);
@@ -97,7 +97,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
 
         if (!isReadInTx.get()) {
             isReadInTx.set(true);
-            usesInTransactions.incrementAndGet();
             tx.markRead(this);
         }
 
@@ -154,6 +153,20 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
+     * Unmark element as deleted in the current transaction. Does nothing if the element was not previously marked as deleted.
+     *
+     * @see #markDeleted(TinkerTransaction)
+     */
+    public void unmarkDeleted(final TinkerTransaction tx) {
+        // only unmark as deleted if it was previously marked as deleted
+        if (isDeletedInTx.get()) {
+            usesInTransactions.decrementAndGet();
+            isDeletedInTx.set(false);
+            tx.markChanged(this);
+        }
+    }
+
+    /**
      * Mark element as changed in the current transaction.
      * A copy of the element is made and set as a value in the transaction.
      * @param transactionElement updated element
@@ -191,7 +204,7 @@ final class TinkerElementContainer<T extends TinkerElement> {
     }
 
     /**
-     * Used to understand if element is in use by any transaction.
+     * Used to understand if element is in use (added, modified, or deleted) by any transaction.
      */
     public boolean inUse() {
         return usesInTransactions.get() > 0;
@@ -231,8 +244,6 @@ final class TinkerElementContainer<T extends TinkerElement> {
         if (isDeletedInTx.get())
             usesInTransactions.decrementAndGet();
         if (isModifiedInTx.get())
-            usesInTransactions.decrementAndGet();
-        if (isReadInTx.get())
             usesInTransactions.decrementAndGet();
     }
 

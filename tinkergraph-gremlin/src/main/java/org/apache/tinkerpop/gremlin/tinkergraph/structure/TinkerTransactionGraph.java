@@ -152,11 +152,19 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (container != null && container.get() != null)
             throw Exceptions.vertexWithIdAlreadyExists(idValue);
 
+        long version = txNumber;
+        if (container != null && container.isDeleted() && container.getModified() != null) {
+            // vertex being added was previously deleted 
+            // we need to reference the version from the deleted state when adding the vertex back
+            version = container.getModified().version();
+            container.unmarkDeleted((TinkerTransaction) tx());
+        }
+        
         // no existing container, let's use new one
         if (container == null)
             container = newContainer;
 
-        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, txNumber);
+        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, version);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         container.setDraft(vertex, (TinkerTransaction) tx());
 

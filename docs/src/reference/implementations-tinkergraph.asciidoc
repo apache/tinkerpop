@@ -221,8 +221,8 @@ supported. You can think of the transaction as belonging to a thread, any traver
 will share the same transaction even if you attempt to start a new transaction.
 
 `TinkerTransactionGraph` provides the `read committed` transaction isolation level. This means that it will always try to
-guard against dirty reads. While you may notice stricter isolation semantics in some cases, you should not depend on
-this behavior as it may change in the future.
+guard against dirty reads but will not prevent non-repeatable reads or phantom reads. While you may notice stricter 
+isolation semantics in some cases, you should not depend on this behavior as it may change in the future.
 
 `TinkerTransactionGraph` employs optimistic locking as its locking strategy. This reduces complexity in the design as
 there are fewer timeouts that the user needs to manage. However, a consequence of this approach is that a transaction

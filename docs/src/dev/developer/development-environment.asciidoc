@@ -26,9 +26,7 @@ image:conspiracy.png[]
 [[system-configuration]]
 == System Configuration
 
-At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk8/[Java 8] but it is
-preferable to use link:https://openjdk.java.net/projects/jdk/11/[Java 11] cross-compiled to Java 8 (the
-cross-compilation happens automatically as part of the build). Starting with 3.7.0, you can also build with
+At a minimum, development of TinkerPop requires link:https://openjdk.java.net/projects/jdk/11/[Java 11]. Since 3.7.0, you can also build with
 link:https://openjdk.org/projects/jdk/17/[Java 17]. Note, however, that there are some issues with deep reflection
 so there are `--add-opens` JVM options included in the pom files to enable this to work. Maven (requiring a minimum of
 link:https://maven.apache.org/download.cgi[Maven 3.5.3+]) is used as the common build system, which even

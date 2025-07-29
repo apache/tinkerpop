@@ -59,10 +59,10 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
     private final boolean isStart;
     private boolean first = true;
 
-    private ServiceCallContext ctx;
-    private String serviceName;
-    private Service<S, E> service;
-    private Map staticParams;
+    private transient ServiceCallContext ctx;
+    private final String serviceName;
+    private transient Service<S, E> service;
+    private final Map staticParams;
     private Traversal.Admin<S,Map> mapTraversal;
     private Parameters parameters;
 
@@ -90,12 +90,15 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         this.staticParams = staticParams == null ? new LinkedHashMap() : staticParams;
         this.mapTraversal = mapTraversal == null ? null : integrateChild(mapTraversal);
         this.parameters = new Parameters();
-        this.ctx = new ServiceCallContext(traversal, this);
     }
 
     protected Service<S, E> service() {
         // throws exception for unrecognized service
         return service != null ? service : (service = getServiceRegistry().get(serviceName, isStart, staticParams));
+    }
+
+    private ServiceCallContext ctx() {
+        return ctx != null ? ctx : (ctx = new ServiceCallContext(traversal, this));
     }
 
     public String getServiceName() {
@@ -244,17 +247,17 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
 
     protected CloseableIterator start() {
         final Map params = getMergedParams();
-        return service().execute(this.ctx, params);
+        return service().execute(this.ctx(), params);
     }
 
     protected CloseableIterator flatMap(final Traverser.Admin<S> traverser) {
         final Map params = getMergedParams(traverser);
-        return service().execute(this.ctx, traverser, params);
+        return service().execute(this.ctx(), traverser, params);
     }
 
     protected CloseableIterator flatMap(final TraverserSet<S> traverserSet) {
         final Map params = getMergedParams(traverserSet);
-        return service().execute(this.ctx, traverserSet, params);
+        return service().execute(this.ctx(), traverserSet, params);
     }
 
     protected ServiceRegistry getServiceRegistry() {
@@ -288,7 +291,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         if (mapTraversal != null)
             this.integrateChild(mapTraversal);
         parameters.getTraversals().forEach(this::integrateChild);
-        ctx = new ServiceCallContext(parentTraversal, this);
+        ctx = null;
     }
 
     @Override
@@ -328,7 +331,6 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         final CallStep<S, E> clone = (CallStep<S, E>) super.clone();
         clone.mapTraversal = mapTraversal != null ? mapTraversal.clone() : null;
         clone.parameters = parameters.clone();
-        clone.ctx = new ServiceCallContext(traversal, clone);
         clone.iterator = EmptyCloseableIterator.instance();
         clone.head = null;
         return clone;

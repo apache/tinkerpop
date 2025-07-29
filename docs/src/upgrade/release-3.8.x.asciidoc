@@ -93,51 +93,52 @@ gremlin> g.inject([1, 2, 3, 4]).asNumber()
 See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
 
-==== Removal of Vertex/ReferenceVertex from grammar
+==== Boolean Conversion Step
 
-`StructureVertex`, previously used to construct new vertices in the grammar, now been removed. The `V()` step, as well
-as the `from()` and `to()` modulators used with `addE()`, previously accepted `StructureVertex` as arguments in the
-grammar. In its place, the `from()` and `to()` modulators can now directly accept a vertex id in place of a `Vertex`
-when used with `addE()` (`V()` has always accepted ids in addition to vertices). When using these steps in `gremlin-lang`
-scripts, the vertex id must be used directly. This change has no effect on the `GraphTraversal` API, nor on
-`gremlin-groovy` scripts. Vertices can continue to be used directly such places.
+The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse strings and 
+numbers into boolean values, both for normalization and to perform boolean logic with numerical values.
 
-[source,groovy]
+[source,text]
 ----
-// 3.7.3
-gremlin> v1 = g.V(1).next()
-==>v[1]
-gremlin> v2 = g.V(2).next()
-==>v[2]
-gremlin> script = String.format("g.V(new Vertex(%s)).outE().where(inV().is(new Vertex(%s)))", v1.id(), v2.id())
-==>g.V(new Vertex(1)).outE().where(inV().is(new Vertex(2)))
-gremlin> client.submit(script).all().get().get(0).getEdge()
-==>e[7][1-knows->2]
+gremlin> g.inject(2, "true", 1, 0, false, "FALSE").asBool().fold()
+==>[true,true,true,false,false,false]
 
-// 3.8.0
-gremlin> v1 = g.V(1).next()
-==>v[1]
-gremlin> v2 = g.V(2).next()
-==>v[2]
-gremlin> script = String.format("g.V(%s).outE().where(inV().id().is(%s))", v1.id(), v2.id())
-==>g.V(1).outE().where(inV().id().is(2))
-gremlin> client.submit(script).all().get().get(0).getEdge()
-==>e[7][1-knows->2]
+// using the modern graph, we can turn count() results into boolean values
+gremlin> g.V().local(outE().count()).fold()
+==>[3,0,0,2,0,1]
+gremlin> g.V().local(outE().count()).asBool().fold()
+==>[true,false,false,true,false,true]
+// a slightly more complex one using sack for boolean operations for vertices with both 'person' label and has out edges
+gremlin> g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and).by(__.outE().count().asBool()).sack().path()
+==>[v[1],true]
+==>[v[2],false]
+==>[v[3],false]
+==>[v[4],true]
+==>[v[5],false]
+==>[v[6],true]
 ----
 
-==== Auto promotion of number types
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
 
-Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
-to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current
-type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
+==== Set minimum Java version to 11
 
-Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type
-if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
-floating-point numbers, the sequence is: float → double → infinity.
+TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
+
+==== Auto-promotion of Numbers
+
+Previously, operations like `sum` or `sack` that involved mathematical calculations did not automatically promote the
+result to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their
+current type leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for
+results.
+
+Now, any mathematical operations such as `Add`, `Sub`, `Mul`, and `Div` will now automatically promote to the next
+numeric type if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow
+exception. For floating-point numbers, the sequence is: float → double → infinity.
 
 The following example showcases the change in overflow behavior between 3.7.3 and 3.8.0
 
-[source,groovy]
+[source,text]
 ----
 // 3.7.3
 gremlin> g.inject([Byte.MAX_VALUE, (byte) 1], [Short.MAX_VALUE, (short) 1], [Integer.MAX_VALUE,1], [Long.MAX_VALUE, 1l]).sum(local)
@@ -164,20 +165,34 @@ gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.
 ==>Infinity // double
 ----
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115]
 
-==== The Switch from Date to OffsetDateTime
-The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+==== Prefer OffsetDateTime
 
-`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
+The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
+`java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`,
+`dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string
+representation will be in ISO 8601 format.
 
-If one is using a persisted TinkerGraph that stored `Date` objects inside properties, one may notice `OffsetDateTime` being returned after traversal manipulation. The recommended solution is to update all existing `Date` objects into `OffsetDateTime`. This can be done by querying for the properties and transforming them using `asDate()`. Do note that all dates are assumed to be in `UTC` (given epoch time).
+`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for
+compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
 
-For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and `OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
+If one is using a persisted TinkerGraph that stored `Date` objects inside properties, one may notice `OffsetDateTime`
+being returned after traversal manipulation. The recommended solution is to update all existing `Date` objects into
+`OffsetDateTime`. This can be done by querying for the properties and transforming them using `asDate()`. Note that all
+dates are assumed to be in `UTC` (given epoch time).
 
-For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version upgrade.
+For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization
+level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and
+`OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users
+of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a
+database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
 
-==== Simplification to g creation
+For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their
+application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version
+upgrade.
+
+==== Simplify g Construction
 
 The creation of "g" is the start point to writing Gremlin. There are a number of ways to create it, but TinkerPop has
 long recommended the use of the anonymous `traversal()` function for this creation.
@@ -202,8 +217,8 @@ g = traversal().with(graph)
 g = traversal().with(DriverRemoteConnection.using(...)))
 ----
 
-That's a bit less to type, but also removes need to programmatically decide which function to call which hopefully
-strengthens the abstraction further. To demonstrate this further consider this next example:
+That's a bit less to type, but also removes the need to programmatically decide which function to call, which hopefully
+strengthens the abstraction further. To demonstrate this further, consider this next example:
 
 [source,groovy]
 ----
@@ -215,23 +230,24 @@ The properties file in the above example can either point to a remote configurat
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 
-==== Splitting a string into characters using split()
+==== split() on Empty String
 
 The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
 
-[source,groovy]
+[source,text]
 ----
-// previous implementation
+// 3.7.3
 g.inject("Hello").split("")
 ==>[Hello]
-// new implementation
+
+// 3.8.0
 g.inject("Hello").split("")
 ==>[H,e,l,l,o]
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
-==== Changes to deserialization for gremlin-javascript
+==== Javascript Set Deserialization
 
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
@@ -239,6 +255,43 @@ these were deserialized into arrays.
 ==== Gremlin Grammar Changes
 
 A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
+
+*Removed Vertex References for Grammar*
+
+The grammar allowed the construction of a `Vertex` by way of syntax like `new Vertex(1,'person')` (or with similar
+arguments to `ReferenceVertex`). This syntax has been removed as it served little purpose within the grammar as it
+merely adds more characters to wrap around the identifier, which could simply be used by itself.
+
+The `V()` step, as well as the `from()` and `to()` modulators used with `addE()`, previously accepted `Vertex` as
+arguments in the grammar. In its place, the `from()` and `to()` modulators can now directly accept a vertex id in place
+of a `Vertex` when used with `addE()` (`V()` has always accepted ids in addition to vertices). When using these steps in
+`gremlin-lang` scripts, the vertex id must be used directly.
+
+This change has no effect on the `GraphTraversal` API, nor on `gremlin-groovy` scripts. Vertices can continue to be used
+directly in those contexts.
+
+[source,text]
+----
+// 3.7.3
+gremlin> v1 = g.V(1).next()
+==>v[1]
+gremlin> v2 = g.V(2).next()
+==>v[2]
+gremlin> script = String.format("g.V(new Vertex(%s)).outE().where(inV().is(new Vertex(%s)))", v1.id(), v2.id())
+==>g.V(new Vertex(1)).outE().where(inV().is(new Vertex(2)))
+gremlin> client.submit(script).all().get().get(0).getEdge()
+==>e[7][1-knows->2]
+
+// 3.8.0
+gremlin> v1 = g.V(1).next()
+==>v[1]
+gremlin> v2 = g.V(2).next()
+==>v[2]
+gremlin> script = String.format("g.V(%s).outE().where(inV().id().is(%s))", v1.id(), v2.id())
+==>g.V(1).outE().where(inV().id().is(2))
+gremlin> client.submit(script).all().get().get(0).getEdge()
+==>e[7][1-knows->2]
+----
 
 *`new` keyword is now optional*
 
@@ -257,7 +310,7 @@ In a future version, it is likely that the `new` keyword will be removed entirel
 *Supports withoutStrategies()*
 
 The `withoutStrategies()` configuration step is now supported syntax for the grammar. While this option is not commonly
-used it is still a part of the Gremlin language and there are times where it is helpful to have this fine-grained
+used it is still a part of the Gremlin language and there are times when it is helpful to have this fine-grained
 control over how a traversal works.
 
 [source,groovy]
@@ -281,7 +334,7 @@ A `Map` is still defined in the same way it always has been, where the following
 ["label": 100]
 ----
 
-Note that when quotes are not use to denote a string, Gremlin will assume that the intention is to shorthand a string
+Note that when quotes are not used to denote a string, Gremlin will assume that the intention is to shorthand a string
 key and not reference a Gremlin keyword. To reference an allowable keyword as the key, either wrap it with parenthesis
 or use its longhand form as shown in the following examples which all produce the same `Map`:
 
@@ -293,12 +346,12 @@ or use its longhand form as shown in the following examples which all produce th
 ----
 
 Note that the first example is a Gremlin convenience that is not compatible in Groovy. This does produce a syntax error
-in Groovy's case. When upgrading to 3.8.0, it will be important to evaluate any code that is using scripts with `Map`
-keys that match keywords that are not wrapped in parentheses. On upgrade they will begin to be treated as `String` keys
-rather than their `Enum` value. This is particularly relevant for `property(Map)`, `mergeV` and `mergeE` which use a
-'Map` for their arguments and commonly require that `T` and `Direction` be used as keys.
+in Groovy's case. When upgrading to 3.8.0, it will be important to evaluate any code using scripts with `Map` keys that
+match keywords that are not wrapped in parentheses. On upgrade they will begin to be treated as `String` keys rather
+than their `Enum` value. This is particularly relevant for `property(Map)`, `mergeV` and `mergeE` which use a 'Map`
+for their arguments and commonly require that `T` and `Direction` be used as keys.
 
-The following examples show some `Map` usage from older versions that will work without need for changes in 3.8.0:
+The following examples show some `Map` usage from older versions that will work without a need for changes in 3.8.0:
 
 [source,groovy]
 ----
@@ -329,12 +382,13 @@ g.mergeE([label:'Sibling',created:'2022-02-07',from:1,to:2])
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046],
-link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047]
+link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
 
 ==== SeedStrategy Construction
 
 The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
-to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed in a consistent manner.
+to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed consistently.
 
 ==== Improved Translators
 
@@ -346,7 +400,7 @@ Gremlin that doesn't need to rely on reflection and positional arguments to dete
 
 Another important change was the introduction of specific translators for Groovy and Java. While Groovy translation
 tends to work for most Java cases, there is syntax specific to Groovy where it does not. With a specific Java
-translator, the translation process can be more accurate and less error prone.
+translator, the translation process can be more accurate and less error-prone.
 
 The syntax for the translators has simplified as well. The translator function now takes a Gremlin string and a target
 language to translate to. Consider the following example:
@@ -357,14 +411,21 @@ gremlin> GremlinTranslator.translate("g.V().out('knows')", Translator.GO)
 ==>g.V().Out("knows")
 ----
 
-Further note that Gremlin language variants produce `gremlin-language` compliant strings directly since bytecode was
-removed. As a result, all translators in .NET, Python, Go and Javascript have been removed.
-
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3028[TINKERPOP-3028]
 
-==== Change to `OptionsStrategy` in `gremlin-python`
+==== Deprecated UnifiedChannelizer
 
-The `\\__init__()` syntax has been updated to be both more pythonic and more aligned to the `gremlin-lang` syntax.
+The `UnifiedChannelizer` was added in 3.5.0 in any attempt to streamline Gremlin Server code paths and resource usage.
+It was offered as an experimental feature and as releases went on was not further developed, particularly because of the
+major changes to Gremlin Server expected in 4.0.0 when websockets are removed. The removal of websockets with a pure
+reliance on HTTP will help do what the `UnifiedChannelizer` tried to do with its changes. As a result, there is no need
+to continue to refine this `Channelizer` implementation and it can be deprecated.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
+
+==== OptionsStrategy in Python
+
+The `\\__init__()` syntax has been updated to be both more Pythonic and more aligned to the `gremlin-lang` syntax.
 Previously, `OptionsStrategy()` took a single argument `options` which was a `dict` of all options to be set.
 Now, all options should be set directly as keyword arguments.
 
@@ -384,24 +445,17 @@ g.with_strategies(OptionsStrategy(options=myOptions))
 g.with_strategies(OptionsStrategy(**myOptions))
 ----
 
-==== Changes to Serialization
-
-The GLVs will only support GraphBinary V4 and GraphSON support has been removed. This means that the serializer option
-that was available in most GLVs has been removed. GraphBinary is a more compact format and has support for the same
-types. This should lead to increased performance for users upgrading from any version of GraphSON to GraphBinary.
-
-==== Gremlin Lang Float Literals Default to Double
+==== Float Defaults to Double
 
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
-or 'd') as Double by default. Users who need BigDecimal precision can still use the 'm' suffix (e.g., 1.0m). 
-`GremlinGroovyScriptEngine` will still default to BigDecimal for float literals.
+or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
+`GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
 
 ==== group() Value Traversal Semantics
 
-The `group()` step takes two `by()` modulators. The first defines the key for the grouping and the second acts upon the
-values that were grouped to each key. The latter is referred to as the "value traversal". In earlier versions of
-TinkerPop, using `order()` in the value traversal could produce an unexpected result if combined with a step like
-`fold()`.
+The `group()` step takes two `by()` modulators. The first defines the key for the grouping, and the second acts upon the
+values grouped to each key. The latter is referred to as the "value traversal". In earlier versions of TinkerPop,
+using `order()` in the value traversal could produce an unexpected result if combined with a step like `fold()`.
 
 [source,text]
 ----
@@ -411,11 +465,11 @@ gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__
 ==>[v[6]:[v[3]]]
 ----
 
-The example above shows that `v[2]` gets filtered away when `order()` is included. Obviously, this was not expected
-behavior. The problem can be more generally explained as an issue where a `Barrier` like `order()` can return an empty
-result. If this step is followed by another `Barrier` that always produces an output like `sum()`, `count()` or `fold()`
-then the empty result would not feed through to that following step. This issue has now been fixed and the two
-traversals from the previous example now return the same results.
+The example above shows that `v[2]` gets filtered away when `order()` is included. This was not expected behavior. The
+problem can be more generally explained as an issue where a `Barrier` like `order()` can return an empty result. If this
+step is followed by another `Barrier` that always produces an output like `sum()`, `count()` or `fold()` then the empty
+result would not feed through to that following step. This issue has now been fixed and the two traversals from the
+previous example now return the same results.
 
 [source,text]
 ----
@@ -427,37 +481,40 @@ gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2971[TINKERPOP-2971]
 
-==== valueMap() and propertyMap() By Modulation Semantics
+==== By Modulation Semantics
 
-The `valueMap()` and `propertyMap()`steps have been changed to throw an error if multiple `by()` modulators are applied.
-The previous behavior attempted to round-robin the by() but this wasn't possible for all providers.
+*valueMap() and propertyMap() Semantics*
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
+The `valueMap()` and `propertyMap()` steps have been changed to throw an error if multiple `by()` modulators are applied.
+The previous behavior attempted to round-robin the `by()` but this wasn't possible for all providers.
 
-==== groupCount(), dedup(), sack(), sample(), aggregate() By Modulation Semantics
+**groupCount(), dedup(), sack(), sample(), aggregate() By Modulation Semantics**
 
 The `groupCount()`, `dedup()`, `sack()`, `sample()`, and `aggregate()` steps has been changed to throw an error if
 multiple `by()` modulators are applied. The previous behavior would ignore previous `by()` modulators and apply the
 last one, which was not intuitive.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121]
-
-==== Additional By Modulation Semantics
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121],
+link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
 === Upgrading for Providers
 
 ==== Graph System Providers
 
+==== Set minimum Java version to 11
+
+TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
+
 ===== Test Suite Changes
 
 In 3.6.0, providers were encouraged to begin using the Gherkin test suite for testing Gremlin rather than the original
-Java based testing found in the `ProcessStandardSuite` and/or the `ProcessComputerSuite`. At that stage, the Gherkin
-suite was still being developed to match the features of the earlier framework. As of 3.8.0, the Gherkin based tests now
-represent the primary way that Gremlin tests are developed and the old system has fallen behind. The old suites have
-been deprecated in favor of the Gherkin test suite and providers should upgrade their implementations accordingly. Going
-forward, the expectation is that the old Java-based suite will continue to exist, but will be focused on covering test
-scenarios that cover either Java-specific syntax, lambdas or other cases that only fall into Gremlin embedded use cases.
-Graphs that need to support those cases would implement the `ProcessEmbeddedStandardSuite` and/or
+Java-based testing found in the `ProcessStandardSuite` and/or the `ProcessComputerSuite`. At that stage, the Gherkin
+suite was still being developed to match the features of the earlier framework. As of 3.8.0, the Gherkin-based tests now
+represent the primary way that Gremlin tests are developed, and the old system has fallen behind. The old suites have
+been deprecated in favor of the Gherkin test suite, and providers should upgrade their implementations accordingly.
+Going forward, the expectation is that the old Java-based suite will continue to exist, but will be focused on covering
+test scenarios that cover either Java-specific syntax, lambdas, or other cases that only fall into Gremlin embedded use
+cases. Graphs that need to support those cases would implement the `ProcessEmbeddedStandardSuite` and/or
 `ProcessEmbeddedComputerSuite`.
 
 Details on implementing the Gherkin tests can be found in the
@@ -465,45 +522,54 @@ link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gherkin-tests-suite[P
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
 
-==== Auto promotion of number types
+===== Auto-promotion of Numbers
 
-Previously, operations like sum or sack that involved mathematical calculations did not automatically promote the result
-to a larger numeric type (e.g., from int to long) when needed. As a result, values could wrap around within their current
-type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type promotion for results.
+Previously, operations like `sum` or `sack` that involved mathematical calculations did not automatically promote the
+result to a larger numeric type (e.g., from `int` to `long`) when needed. As a result, values could wrap around within
+their current type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type
+promotion for results.
 
-Now, any mathematical operations such as Add, Sub, Mul, and Div will now automatically promote to the next numeric type
+Now, any mathematical operations such as `Add`, `Sub`, `Mul`, and Div will now automatically promote to the next numeric type
 if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
 floating-point numbers, the sequence is: float → double → infinity.
 
-As a example the following query...
+As a example, in earlier versions, the following query:
 
-"""
+[source,groovy]
+----
 g.withSack(32767s).inject(1s).sack(sum).sack()
-"""
+----
 
-Before would return a short overflow exception or wrap to -1 depending on language, but now returns 32769i.
+would return a `short` overflow exception or wrap to `-1` depending on language, but now returns `32769i`.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115] for more details.
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115]
 
-==== The Switch from Date to OffsetDateTime
+===== Prefer OffsetDateTime
 
-The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more
+encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps,
+`asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose
+string representation will be in ISO 8601 format.
 
-`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
+`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for
+compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
 
-This may impact providers who use TinkerGraph or whose implementation store dates as `java.util.Date`. While steps will support `Date`, all date manipulations will output `OffsetDateTime`. If a user had persisted `Date` objects in the database, upgrading to 3.8 may lead to the database having both types stored. It is recommended for users to perform transformation of `Date` to `OffsetDateTime` to retain consistency.
+This may impact providers who use TinkerGraph or whose implementation store dates as `java.util.Date`. While steps will
+support `Date`, all date manipulations will output `OffsetDateTime`. If a user had persisted `Date` objects in the
+database, upgrading to 3.8 may lead to the database having both types stored. It is recommended for users to perform
+transformation of `Date` to `OffsetDateTime` to retain consistency.
 
-===== Semantics change for PropertyMapStep
+===== PropertyMapStep Semantics
 
 The semantics have changed for the handling of by modulators to the `valueMap` and `propertyMap` steps. Only one by
-modulator is required to be accepted and an exception should be thrown when there are more than one by() modulators.
-The exception thrown should contain the following: "valueMap()/propertyMap() step can only have one by modulator".
+modulator is required to be accepted and an exception should be thrown when there are more than one `by()` modulators.
+The exception thrown should contain the following: `valueMap()` and `propertyMap()` step can only have one by modulator".
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
 ===== Grammar Type Renaming
 
-All of the following types in the grammar have been renamed to follow consistent rules:
+All the following types in the grammar have been renamed to follow consistent rules:
 
 `genericLiteralArgument` -> `genericArgument`
 `stringLiteralVarargsArgument` -> `stringNullableArgumentVarargs`
@@ -518,12 +584,17 @@ All of the following types in the grammar have been renamed to follow consistent
 `stringLiteralVarargs` -> `stringNullableLiteralVarargs`
 `genericLiteralMap` -> `genericMapLiteral`
 
-Additionally, `genericLiteralListArgument` and `stringLiteralList` have been removed in favor of `genericArgumentVarags` and `stringNullableLiteralVarargs` respectively.
+Additionally, `genericLiteralListArgument` and `stringLiteralList` have been removed in favor of `genericArgumentVarags`
+and `stringNullableLiteralVarargs` respectively.
 
 ==== Graph Driver Providers
 
-==== The Switch from Date to OffsetDateTime
+===== Prefer OffsetDateTime
 
-The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string representation will be in ISO 8601 format.
+The default implementation for date type in Gremlin is now changed from the deprecated `java.util.Date` to the more
+encompassing `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps,
+`asDate()`, `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose
+string representation will be in ISO 8601 format.
 
-This means that drivers should use the extended `OffsetDateTime` type in the IO specs to serialize and deserialize native date objects.
+This means that drivers should use the extended `OffsetDateTime` type in the IO specs to serialize and deserialize
+native date objects.

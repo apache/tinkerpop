@@ -789,7 +789,7 @@ The following table describes the various configuration options for the Gremlin 
 |connectionPool.keepAliveInterval |Length of time in milliseconds to wait on an idle connection before sending a keep-alive request. Set to zero to disable this feature. |180000
 |connectionPool.keyStore |The private key in JKS or PKCS#12 format. |_none_
 |connectionPool.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|connectionPool.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default)|_none_
+|connectionPool.keyStoreType |`PKCS12` |_none_
 |connectionPool.maxContentLength |The maximum length in bytes that a message can be sent to the server. This number can be no greater than the setting of the same name in the server configuration. |65536
 |connectionPool.maxInProcessPerConnection |The maximum number of in-flight requests that can occur on a connection. |4
 |connectionPool.maxSimultaneousUsagePerConnection |The maximum number of times that a connection can be borrowed from the pool simultaneously. |16
@@ -859,6 +859,24 @@ Gremlin Server roughly uses this same approach when it configures its serializer
 ensure compatibility when making requests. Obviously, it is possible to switch to GraphSON or GraphBinary by using
 the appropriate `MessageSerializer` (e.g. `GraphSONMessageSerializerV3` or `GraphBinaryMessageSerializerV1` respectively)
 in the same way and building that into the `Cluster` object.
+
+A particularly important configuration along these lines is easily overlooked when choosing to use GraphSON rather than
+GraphBinary. GraphBinary offers a bit of help in dynamically detecting available classpath items and will dynamically
+include `TinkerGraph` as a serialization target which allows the <<subgraph-step>> to work properly in remote contexts.
+GraphSON does not. When using GraphSON, you must manually include the `TinkerIoRegistryV3` in the configuration for the
+driver.
+
+[source,java]
+----
+GraphSONMapper.Builder builder = GraphSONMapper.build().addRegistry(TinkerIoRegistryV3.instance());
+GraphSONMessageSerializerV3 serializer = new GraphSONMessageSerializerV3(builder);
+Cluster cluster = TestClientFactory.build().serializer(serializer).create();
+Client client = cluster.connect();
+GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(client, "g"));
+----
+
+IMPORTANT: Prefer GraphBinary over GraphSON when using the driver. If you do choose GraphSON, prefer GraphSON 3 and
+know that GraphSON 2 is not compatible with <<subgraph-step>.
 
 [[gremlin-java-lambda]]
 === The Lambda Solution

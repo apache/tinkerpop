@@ -70,7 +70,7 @@ analysis, small to medium sized data loading projects and other exploratory func
 highly extensible, featuring a rich plugin system that allows new tools, commands,
 link:http://en.wikipedia.org/wiki/Domain-specific_language[DSLs], etc. to be exposed to users.
 
-To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat` (`gremlin-java8.bat` for Java 8):
+To start the Gremlin Console, run `gremlin.sh` or `gremlin.bat`:
 
 [source,text]
 ----
@@ -863,10 +863,6 @@ channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 [source,yaml]
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WsAndHttpChannelizer
 
-NOTE: The `UnifiedChannelizer` introduced in 3.5.0 can also be used to support HTTP requests as its functionality
-is similar to `WsAndHttpChannelizer`. Please see the Gremlin Server UnifiedChannelizer Section of the Upgrade
-Documentation for 3.5.0 for more link:https://tinkerpop.apache.org/docs/x.y.z/upgrade/#_tinkerpop_3_5_0[details].
-
 The `HttpChannelizer` is already configured in the `gremlin-server-rest-modern.yaml` file that is packaged with the Gremlin
 Server distribution.  To utilize it, start Gremlin Server as follows:
 
@@ -1004,6 +1000,9 @@ bin/gremlin-server.sh conf/gremlin-server-min.yaml
 WARNING: On Windows, gremlin-server.bat will always start in the foreground. When no parameter is provided, it will
 start with the default `conf/gremlin-server.yaml` file.
 
+NOTE: The following configuration options may reference the `UnifiedChannelizer`. It was deprecated in 3.8.0 and will
+be removed in a future version.
+
 The following table describes the various YAML configuration options that Gremlin Server expects:
 
 [width="100%",cols="3,10,^2",options="header"]
@@ -1066,7 +1065,7 @@ The following table describes the various YAML configuration options that Gremli
 |ssl.enabled |Determines if SSL is turned on or not. |false
 |ssl.keyStore |The private key in JKS or PKCS#12 format.  |_none_
 |ssl.keyStorePassword |The password of the `keyStore` if it is password-protected. |_none_
-|ssl.keyStoreType |`JKS` (Java 8 default) or `PKCS12` (Java 9+ default) |_none_
+|ssl.keyStoreType |`PKCS12` |_none_
 |ssl.needClientAuth | Optional. One of NONE, REQUIRE.  Enables client certificate authentication at the enforcement level specified. Can be used in combination with Authenticator. |_none_
 |ssl.sslCipherSuites |The list of JSSE ciphers to support for SSL connections. If specified, only the ciphers that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
 |ssl.sslEnabledProtocols |The list of SSL protocols to support for SSL connections. If specified, only the protocols that are listed and supported will be enabled. If not specified, the JVM default is used.  |_none_
@@ -1087,8 +1086,8 @@ See the <<metrics,Metrics>> section for more information on how to configure Gan
 [[opprocessor-configurations]]
 ==== OpProcessor Configurations
 
-IMPORTANT: The `UnifiedChannelizer` does not rely on `OpProcessor` infrastructure. If using that channelizer, these
-configuration options can be ignored.
+IMPORTANT: The `UnifiedChannelizer` (deprecated in 3.8.0) does not rely on `OpProcessor` infrastructure. If using that
+channelizer, these configuration options can be ignored.
 
 An `OpProcessor` provides a way to plug-in handlers to Gremlin Server's processing flow. Gremlin Server uses this
 plug-in system itself to expose the packaged functionality that it exposes. Configurations can be supplied to an
@@ -2570,12 +2569,6 @@ To avoid unexpected problems with state in relation to errors in sessions, it is
 simply executed serially as they arrive to the session. A failed asynchronous request could leave an invalid state
 in the session which may not allow later requests to succeed. Either use synchronous requests only or carefully
 consider error conditions with asynchronous requests.
-
-If using the `UnifiedChannelizer`, failures in evaluation will result in the session being closed and state being
-lost. Asynchronous requests that are queued on the server will be cancelled and additional requests, in-flight or
-otherwise will be rejected. Users should create a new session from the `Cluster` object in this case. The alternative,
-to match the old `OpProcessor` GremlinServer behavior, is to add the `maintainStateAfterException` session setting to
-`true` which will instead have similar behavior to that described in this section.
 
 [source,java]
 ----

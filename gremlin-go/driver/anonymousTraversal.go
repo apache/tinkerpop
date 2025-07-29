@@ -383,7 +383,12 @@ func (anonymousTraversal *anonymousTraversal) As(args ...interface{}) *GraphTrav
 
 // AsDate adds the AsDate step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) AsDate(args ...interface{}) *GraphTraversal {
-	return anonymousTraversal.graphTraversal().AsDate(args...)
+        return anonymousTraversal.graphTraversal().AsDate(args...)
+}
+
+// AsBool adds the AsBool step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) AsBool(args ...interface{}) *GraphTraversal {
+        return anonymousTraversal.graphTraversal().AsBool(args...)
 }
 
 // AsDate adds the AsNumber step to the GraphTraversal.

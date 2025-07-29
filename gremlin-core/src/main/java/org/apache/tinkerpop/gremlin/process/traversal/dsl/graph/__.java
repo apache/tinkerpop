@@ -774,6 +774,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#asBool()
+     */
+    public static <A> GraphTraversal<A, Boolean> asBool() {
+        return __.<A>start().asBool();
+    }
+
+    /**
      * @see GraphTraversal#asDate()
      */
     public static <A> GraphTraversal<A, OffsetDateTime> asDate() {

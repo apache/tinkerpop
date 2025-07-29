@@ -28,7 +28,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
-* Added UUID() + UUID(value) to grammar
+* Added `UUID()` and `UUID(value)` to grammar.
+* Deprecated the `UnifiedChannelizer`.
 * Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
 * Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.
 * Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
@@ -69,15 +70,18 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added and made `OffsetDateTime` serializers the default for existing date types in Python, Go, JavaScript, and .NET. `Date` is only used to deserialize from server.
 * Added missing strategies in `gremlin-go`, updated certain strategies to take varargs and updated `GoTranslatorVisitor` for corresponding translations.
 * Fixed `BigInt` and `BigDecimal` parsing in `gremlin-go` cucumber test suite, fixed `UnscaledValue` type in `BigDecimal` struct and added `ParseBigDecimal` method.
+* Added boolean parsing step `asBool()`.
 * Added validation to `valueMap()`, `propertyMap()`, `groupCount()`, `sack()`, `dedup()`, `sample()`, and `aggregate()` to prevent the invalid usage of multiple `by()` modulators.
 * Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
 * Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.
 * Removed lambda oriented Gremlin testing from Gherkin test suite.
+* Increase minimum Java version from 1.8 to 11 for building and running.
 * Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
 * Added the `asNumber()` step to perform number conversion.
 * Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs"
+* Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -87,8 +91,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
 
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
+* Improved performance of `Traversal.lock()` which was being called excessively.
 * Added log entry in `WsAndHttpChannelizerHandler` to catch general errors that escape the handlers.
+* Improved invalid plugin error message in Gremlin Console.
 * Added a `MessageSizeEstimator` implementation to cover `Frame` allowing Gremlin Server to better estimate message sizes for the direct buffer.
+* Fixed bug in Gremlin Console for field accessor issue with JDK17.
 * Improved logging around triggers of the `writeBufferHighWaterMark` so that they occur more than once but do not excessively fill the logs.
 * Added server metrics to help better detect and diagnose write pauses due to the `writeBufferHighWaterMark`: `channels.paused`, `channels.total`, and `channels.write-pauses`.
 * Changed `IdentityRemovalStrategy` to omit `IdentityStep` if only with `RepeatEndStep` under `RepeatStep`.
@@ -103,16 +110,25 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed bug in 'gremlin-server.sh' to account for spaces in directory names.
 * Deprecated `gremlin_python.process.__.has_key_` in favor of `gremlin_python.process.__.has_key`.
 * Added `gremlin.spark.outputRepartition` configuration to customize the partitioning of HDFS files from `OutputRDD`.
+* Added `ClientSettings.Session` configuration in `gremlin-go` to configure a sessioned client.
 * Allowed `mergeV()` and `mergeE()` to supply `null` in `Map` values.
-* Change signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
+* Fixed limitation in multi-line detection preventing `:remote console` scripts from being sent to the server.
+* Changed signature of `hasId(P<Object>)` and `hasValue(P<Object>)` to `hasId(P<?>)` and `hasValue(P<?>)`.
 * Improved error message for when `emit()` is used without `repeat()`.
 * Fixed incomplete shading of Jackson multi-release.
 * Changed `PythonTranslator` to generate snake case step naming instead of camel case.
 * Changed `gremlin-go` Client `ReadBufferSize` and `WriteBufferSize` defaults to 1048576 (1MB) to align with DriverRemoteConnection.
 * Fixed bug in `IndexStep` which prevented Java serialization due to non-serializable lambda usage by creating serializable function classes.
+* Fixed bug in `CallStep` which prevented Java serialization due to non-serializable `ServiceCallContext` and `Service` usage.
 * Fixed bug in `Operator` which was caused only a single method parameter to be Collection type checked instead of all parameters.
-* Support hot reloading of SSL certificates.
+* Addded support for hot reloading of SSL certificates in Gremlin Server.
+* Fixed default `enableCompression` setting to be `false` instead of `undefined` in `gremlin-javascript`
+* Increased default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
+* Fixed bug preventing a vertex from being dropped and then re-added in the same `TinkerTransaction`
+* Fixed bug which could cause a 'Conflict: element modified in another transaction' when a transaction is attempting to add/drop/update a vertex or edge while another transaction is reading the same vertex or edge.
+* Upgraded Node version from 18 to 20
+* Upgraded Go to version 1.24
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
