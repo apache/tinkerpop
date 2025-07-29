@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 3.3.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-mozart.png[width=225]
+image::gremlin-mozart.png[width=225]
 
 *Gremlin Symphony #40 in G Minor*
 
