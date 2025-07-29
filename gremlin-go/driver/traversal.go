@@ -364,33 +364,33 @@ type n string
 
 type ns struct {
 	// number type byte
-	Nbyte n
+	Byte n
 	// number type short
-	Nshort n
+	Short n
 	// number type int
-	Nint n
+	Int n
 	// number type long
-	Nlong n
+	Long n
     // number type float
-    Nfloat n
+	Float n
     // number type double
-    Ndouble n
+	Double n
     // number type bigInt
-    NbigInt n
+	BigInt n
     // number type bigDecimal
-    NbigDecimal n
+	BigDecimal n
 }
 
 // N is a set of operations for denoting number types during conversion.
 var N = ns{
-	Nbyte:       "nbyte",
-	Nshort:      "nshort",
-	Nint:        "nint",
-	Nlong:       "nlong",
-    Nfloat:      "nfloat",
-    Ndouble:     "ndouble",
-    NbigInt:     "nbigInt",
-    NbigDecimal: "nbigDecimal",
+	Byte:       "byte",
+	Short:      "short",
+	Int:        "int",
+	Long:       "long",
+	Float:      "float",
+	Double:     "double",
+	BigInt:     "bigInt",
+	BigDecimal: "bigDecimal",
 }
 
 type operator string

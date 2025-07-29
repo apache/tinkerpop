@@ -28,25 +28,21 @@ import java.math.BigInteger;
  * Used with {@link AsNumberStep} step.
  */
 public enum N {
-    nbyte(Byte.class),
-    nshort(Short.class),
-    nint(Integer.class),
-    nlong(Long.class),
-    nfloat(Float.class),
-    ndouble(Double.class),
-    nbigInt(BigInteger.class),
-    nbigDecimal(BigDecimal.class),;
+    byte_(Byte.class),
+    short_(Short.class),
+    int_(Integer.class),
+    long_(Long.class),
+    float_(Float.class),
+    double_(Double.class),
+    bigInt(BigInteger.class),
+    bigDecimal(BigDecimal.class),;
 
-    private final Class<?> type;
+    private final Class<? extends Number> type;
 
-    N(Class<?> type) {this.type = type;}
+    N(Class<? extends Number> type) {this.type = type;}
 
-    public Class<?> getType() {
+    public Class<? extends Number> getType() {
         return this.type;
     }
 
-    @Override
-    public String toString() {
-        return this.type.getSimpleName();
-    }
 }

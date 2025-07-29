@@ -51,7 +51,7 @@ gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum()
 ==>15.0
 
 // given sum() step returned a double, one can use asNumber() to further cast the result into desired type
-gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.nint)
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.int_)
 ==>15
 ----
 
@@ -61,11 +61,11 @@ Numerical input will pass through unless a type is specified by the number token
 
 [source,text]
 ----
-gremlin> g.inject(5.0).asNumber(N.nint)
+gremlin> g.inject(5.0).asNumber(N.int_)
 ==> 5    // casts double to int
-gremlin> g.inject(12).asNumber(N.nbyte)
+gremlin> g.inject(12).asNumber(N.byte_)
 ==> 12
-gremlin> g.inject(128).asNumber(N.nbyte)
+gremlin> g.inject(128).asNumber(N.byte_)
 ==> ArithmeticException
 ----
 
@@ -75,11 +75,11 @@ String input will be parsed. By default, the smalled unit of number to be parsed
 ----
 gremlin> g.inject("5").asNumber()
 ==> 5
-gremlin> g.inject("5.7").asNumber(N.nint)
+gremlin> g.inject("5.7").asNumber(N.int_)
 ==> 5
-gremlin> g.inject("1,000").asNumber(N.nint)
+gremlin> g.inject("1,000").asNumber(N.int_)
 ==> NumberFormatException
-gremlin> g.inject("128").asNumber(N.nbyte)
+gremlin> g.inject("128").asNumber(N.byte_)
 ==> ArithmeticException
 ----
 

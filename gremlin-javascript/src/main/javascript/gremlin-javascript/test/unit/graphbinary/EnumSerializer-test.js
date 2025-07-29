@@ -36,6 +36,7 @@ describe('GraphBinary.EnumSerializer', () => {
     { name: 'Cardinality', code: from([0x16]), enum: t.cardinality },
     { name: 'Column',      code: from([0x17]), enum: t.column },
     { name: 'Direction',   code: from([0x18]), enum: t.direction },
+    { name: 'N',           code: from([0x30]), enum: t.n },
     { name: 'Operator',    code: from([0x19]), enum: t.operator },
     { name: 'Order',       code: from([0x1A]), enum: t.order },
     { name: 'Pick',        code: from([0x1B]), enum: t.pick },

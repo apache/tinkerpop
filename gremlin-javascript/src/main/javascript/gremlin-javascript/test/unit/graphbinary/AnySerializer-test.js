@@ -176,8 +176,8 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new t.EnumValue('Merge', 'onMatch'),
         b: [ DataType.MERGE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x07, ...from('onMatch') ]
       },
-      { v: new t.EnumValue('N', 'nbyte'),
-        b: [ DataType.N,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x05, ...from('nbyte') ]
+      { v: new t.EnumValue('N', 'byte'),
+        b: [ DataType.N,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('byte') ]
       },
       { v: new t.EnumValue('Operator', 'addAll'),
         b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
@@ -522,7 +522,7 @@ describe('GraphBinary.AnySerializer', () => {
 
       // N
       { v:null,                                   b:[0x30,0x01] },
-      { v:new t.EnumValue('N','nbyte'),         b:[0x30,0x00, 0x03,0x00, 0x00,0x00,0x00,0x05, ...from('nbyte')] },
+      { v:new t.EnumValue('N','byte'),         b:[0x30,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('byte')] },
 
       // OPERATOR
       { v:null,                                   b:[0x19,0x01] },

@@ -122,6 +122,8 @@ public class DocumentationReader {
                 replace(".getClass()", "").
                 replace("result.toArray()", "4").
                 replace("vA.value('amount')", "0.0").
-                replace("vA", "\"vA\"");
+                replace("vA", "\"vA\"").
+                replace("N.int_", "N.int").
+                replace("N.byte_", "N.byte");
     }
 }

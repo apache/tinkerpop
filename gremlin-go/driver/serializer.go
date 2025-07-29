@@ -328,7 +328,7 @@ func initDeserializers() {
 		tType:              enumReader,
 		directionType:      enumReader,
 		dtType:             enumReader,
-		nType:             enumReader,
+		nType:             	enumReader,
 		bindingType:        bindingReader,
 
 		// Metrics

@@ -49,52 +49,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigDecimalSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigIntegerSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BindingSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.BulkSetSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteBufferSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ByteCodeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CharSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ClassSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.DurationSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.EdgeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.EnumSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.GraphSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.InetAddressSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.InstantSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LambdaSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ListSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalDateSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalDateTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.LocalTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MetricsSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.MonthDaySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetDateTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetTimeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PeriodSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TransformSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalExplanationSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalMetricsSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraversalStrategySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TraverserSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.YearMonthSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ZoneOffsetSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.ZonedDateTimeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.*;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
 import org.javatuples.Pair;
 
@@ -167,7 +122,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
             new RegistryEntry<>(DT.class, EnumSerializer.DTSerializer),
             new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
-            new RegistryEntry<>(N.class, EnumSerializer.NSerializer),
+            new RegistryEntry<>(N.class, new NSerializer()),
             new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
             new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
             new RegistryEntry<>(Pick.class, EnumSerializer.PickSerializer),

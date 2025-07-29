@@ -103,11 +103,11 @@ Feature: Step - asNumber()
       | d[5.75].f |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX5_43X_asNumberXN_nintX
+  Scenario: g_injectX5_43X_asNumberXN_intX
     Given the empty graph
     And the traversal of
       """
-      g.inject(5.43).asNumber(N.nint)
+      g.inject(5.43).asNumber(N.int)
       """
     When iterated to list
     Then the result should be unordered
@@ -115,11 +115,11 @@ Feature: Step - asNumber()
       | d[5].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX5_67X_asNumberXN_nintX
+  Scenario: g_injectX5_67X_asNumberXN_intX
     Given the empty graph
     And the traversal of
       """
-      g.inject(5.67).asNumber(N.nint)
+      g.inject(5.67).asNumber(N.int)
       """
     When iterated to list
     Then the result should be unordered
@@ -127,11 +127,11 @@ Feature: Step - asNumber()
       | d[5].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX5X_asNumberXN_nlongX
+  Scenario: g_injectX5X_asNumberXN_longX
     Given the empty graph
     And the traversal of
       """
-      g.inject(5).asNumber(N.nlong)
+      g.inject(5).asNumber(N.long)
       """
     When iterated to list
     Then the result should be unordered
@@ -139,11 +139,11 @@ Feature: Step - asNumber()
       | d[5].l |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX12X_asNumberXN_nbyteX
+  Scenario: g_injectX12X_asNumberXN_byteX
     Given the empty graph
     And the traversal of
       """
-      g.inject(12).asNumber(N.nbyte)
+      g.inject(12).asNumber(N.byte)
       """
     When iterated to list
     Then the result should be unordered
@@ -151,21 +151,21 @@ Feature: Step - asNumber()
       | d[12].b |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX32768X_asNumberXN_nshortX
+  Scenario: g_injectX32768X_asNumberXN_shortX
     Given the empty graph
     And the traversal of
       """
-      g.inject(32768).asNumber(N.nshort)
+      g.inject(32768).asNumber(N.short)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't convert number of type Integer to Short due to overflow."
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX300X_asNumberXN_nbyteX
+  Scenario: g_injectX300X_asNumberXN_byteX
     Given the empty graph
     And the traversal of
       """
-      g.inject(300).asNumber(N.nbyte)
+      g.inject(300).asNumber(N.byte)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't convert number of type Integer to Byte due to overflow."
@@ -187,7 +187,7 @@ Feature: Step - asNumber()
     Given the empty graph
     And the traversal of
       """
-      g.inject("5").asNumber(N.nbyte)
+      g.inject("5").asNumber(N.byte)
       """
     When iterated to list
     Then the result should be unordered
@@ -195,11 +195,11 @@ Feature: Step - asNumber()
       | d[5].b |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_000X_asNumberXN_nintX
+  Scenario: g_injectX1_000X_asNumberXN_bigIntX
     Given the empty graph
     And the traversal of
       """
-      g.inject("1,000").asNumber(N.nint)
+      g.inject("1,000").asNumber(N.bigInt)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse string '1,000' as number."
@@ -252,14 +252,14 @@ Feature: Step - asNumber()
       | l[d[1].i,d[2].i,d[3].i,d[4].i] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXnbyteX
+  Scenario: g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX
     Given the empty graph
     And using the parameter xx1 defined as "d[1.0].d"
     And using the parameter xx2 defined as "d[2].i"
     And using the parameter xx3 defined as "d[3].l"
     And the traversal of
       """
-      g.inject(xx1, xx2, xx3, "4", "0x5").asNumber().sum().asNumber(N.nbyte)
+      g.inject(xx1, xx2, xx3, "4", "0x5").asNumber().sum().asNumber(N.byte)
       """
     When iterated to list
     Then the result should be unordered
@@ -267,21 +267,21 @@ Feature: Step - asNumber()
       | d[15].b |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_VX1X_asNumberXN_nintX
+  Scenario: g_VX1X_asNumberXN_intX
     Given the empty graph
     And the traversal of
       """
-      g.inject(null).asNumber(N.nint)
+      g.inject(null).asNumber(N.int)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse type null as number."
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXnintX
+  Scenario: g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(N.nint)
+      g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(N.int)
       """
     When iterated to list
     Then the result should be unordered
@@ -289,12 +289,12 @@ Feature: Step - asNumber()
       | d[56].i |
       | d[61].i |
 
-  Scenario: g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXnlongX
+  Scenario: g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX
     Given the modern graph
     And using the parameter xx1 defined as "d[100].i"
     And the traversal of
       """
-      g.withSideEffect("x", xx1).V().values("age").math("_ + x").asNumber(N.nlong)
+      g.withSideEffect("x", xx1).V().values("age").math("_ + x").asNumber(N.long)
       """
     When iterated to list
     Then the result should be unordered

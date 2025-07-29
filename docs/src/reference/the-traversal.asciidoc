@@ -844,9 +844,9 @@ All other input types will result in `IllegalArgumentException`.
 ----
 g.inject(1234).asNumber() <1>
 g.inject(1.76).asNumber() <2>
-g.inject(1.76).asNumber(N.nint) <3>
+g.inject(1.76).asNumber(N.int_) <3>
 g.inject("1b").asNumber() <4>
-g.inject(33550336).asNumber(N.nbyte) <5>
+g.inject(33550336).asNumber(N.byte_) <5>
 ----
 
 <1> An int will be passed through.
@@ -854,6 +854,21 @@ g.inject(33550336).asNumber(N.nbyte) <5>
 <3> A double is converted into an int.
 <4> String containing any character other than numerical ones will result in `NumberFormatException`.
 <5> Narrowing of int to byte that overflows will throw `ArithmeticException`.
+
+[NOTE, caption=Java]
+====
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Java, and therefore must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+====
+
+[NOTE, caption=Groovy & Gremlin Console]
+====
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Groovy, therefore as the Gremlin Console is Groovy-based, they must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+====
+
+[NOTE, caption=JavaScript]
+====
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Javascript, and therefore must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+====
 
 *Additional References*
 
