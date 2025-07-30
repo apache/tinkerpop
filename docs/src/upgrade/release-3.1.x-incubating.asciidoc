@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 3.1.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-gangster.png[width=225]
+image::gremlin-gangster.png[width=225]
 
 *A 187 On The Undercover Gremlinz*
 
