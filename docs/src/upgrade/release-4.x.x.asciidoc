@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 4.0.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlins-wildest-dreams.png[width=185]
+image::gremlins-wildest-dreams.png[width=185]
 
 *Gremlin's Wildest Dreams*
 

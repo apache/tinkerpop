@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 3.0.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+image::gremlin-hindu.png[width=225]
 
 *A Gremlin Rāga in 7/16 Time*
 
