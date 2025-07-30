@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 3.8.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-running.png[width=185]
+image::gremlin-running.png[width=185]
 
 *NOT OFFICIALLY NAMED YET*
 

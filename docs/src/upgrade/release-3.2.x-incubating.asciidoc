@@ -17,7 +17,7 @@ limitations under the License.
 
 = TinkerPop 3.2.0
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/nine-inch-gremlins.png[width=225]
+image::nine-inch-gremlins.png[width=225]
 
 *Nine Inch Gremlins*
 
