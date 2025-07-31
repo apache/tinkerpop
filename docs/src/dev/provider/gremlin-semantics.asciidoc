@@ -1192,27 +1192,22 @@ The `choose()` step can be used with the following special `Pick` tokens:
 * `Pick.none` - Used to specify a default option when no other options match.
 * `Pick.unproductive` - Used when the choice traversal produces no value.
 
-`choose` does not allow more than one traversal to be assigned to a single `Pick`. The last `Pick` assigned via `option`
-is the one that will be used.
+`choose` does not allow more than one traversal to be assigned to a single `Pick`. The first `Pick` assigned via `option`
+is the one that will be used, similar to how the first pickValue match that is found is used.
 
 The `choose()` step ensures that only one option is selected for each traverser, unlike other branch steps like
 `union()` that can route a traverser to multiple paths. As it is like `union()`, note that each `option` stream will
 behave like one:
 
-[source,text]
+[gremlin-groovy,modern]
 ----
-gremlin> g.V().union(__.has("name", "vadas").values('age').fold(), __.has('name',neq('vadas')).values('name').fold())
-==>[27]
-==>[marko,lop,josh,ripple,peter]
-gremlin> g.V().choose(__.has("name", "vadas"), __.values('age').fold(), __.values('name').fold())
-==>[27]
-==>[marko,lop,josh,ripple,peter]
+g.V().union(__.has("name", "vadas").values('age').fold(), __.has('name',neq('vadas')).values('name').fold())
+g.V().choose(__.has("name", "vadas"), __.values('age').fold(), __.values('name').fold())
 ----
 
 *Exceptions*
 
 * `IllegalArgumentException` - If `Pick.any` is used as an option token, as only one option per traverser is allowed.
-* `IllegalArgumentException` - If the same pick token is used more than once.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/ChooseStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#choose-step[reference]
