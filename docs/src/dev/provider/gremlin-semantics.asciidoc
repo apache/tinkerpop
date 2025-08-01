@@ -827,6 +827,37 @@ Incoming date remains unchanged.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
+[[asString-step]]
+=== asString()
+
+*Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
+incoming list traverser as string.
+
+*Syntax:* `asString()` | `asString(Scope scope)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`String`/`List`
+|=========================================================
+
+*Arguments:*
+
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
+`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
+list of string instead.
+
+Null values from the incoming traverser are not processed and remain as null when returned.
+
+*Exceptions*
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
+
+
 [[barrier-step]]
 === barrier()
 
@@ -1030,36 +1061,6 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SideEffectCapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#cap-step[reference]
 
-[[asString-step]]
-=== asString()
-
-*Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
-incoming list traverser as string.
-
-*Syntax:* `asString()` | `asString(Scope scope)`
-
-[width="100%",options="header"]
-|=========================================================
-|Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`String`/`List`
-|=========================================================
-
-*Arguments:*
-
-* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
-`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
-list of string instead.
-
-Null values from the incoming traverser are not processed and remain as null when returned.
-
-*Exceptions*
-None
-
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
-
 [[call-step]]
 === call()
 
@@ -1144,6 +1145,67 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/Service.java[Service],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/structure/service/ServiceRegistry.java[ServiceRegistry],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
+
+[[choose-step]]
+=== choose()
+
+*Description:* A branch step that routes the traverser to different paths based on a choice criterion.
+
+*Syntax:* `choose(Traversal|T choice)` | `choose(Traversal|P choice, Traversal trueChoice)` |`choose(Traversal|P choice, Traversal trueChoice, Traversal falseChoice)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |Y |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `choice` - A `Traversal`, or `T` that produces a value used to determine which option to take. In the `if-then` forms, this value may be a `P` to determine `true` or `false`.
+* `trueChoice` - The traversal to take if the predicate traversal returns a value (has a next element).
+* `falseChoice` - The traversal to take if the predicate traversal returns no value (has no next element).
+
+*Modulation:*
+
+* `option(pickToken, traversalOption)` - Adds a traversal option to the `choose` step. The `pickToken` is matched
+against the result of the choice traversal. The `pickToken` may be a literal value, a predicate `P`, a `Traversal`
+(whose first returned value is used for matching) or a `Pick` enum value. If a match is found, the traverser is routed
+to the corresponding `traversalOption`.
+
+*Considerations:*
+
+The `choose()` step is a branch step that routes the traverser to different paths based on a choice criterion. There are
+two main forms of the `choose()` step:
+
+1. *if-then form*: `choose(predicate, trueChoice, falseChoice)` - If the predicate traversal or `P` returns a value
+(has a next element), the traverser is routed to the trueChoice traversal. Otherwise, it is routed to the falseChoice
+traversal. If the predicate is unproductive or if the falseChoice is not specified, then the traverser passes through.
+
+2. *switch form*: `choose(choice).option(pickValue, resultTraversal)` - The choice which may be a `Traversal` or
+`T` produces a value that is matched against the pickValue of each option. If a match is found, the traverser is routed
+to the corresponding resultTraversal and no further matches are attempted. If no match is found then the traverser
+passes through by default or can be matched on `Pick.none`. If the choiceTraversal is unproductive, then the traverser
+passes through by default or can be matched on `Pick.unproductive`.
+
+`choose` does not allow more than one traversal to be assigned to a single `Pick`. The first `Pick` assigned via
+`option` is the one that will be used, similar to how the first pickValue match that is found is used.
+
+The `choose()` step ensures that only one option is selected for each traverser, unlike other branch steps like
+`union()` that can route a traverser to multiple paths. As it is like `union()`, note that each `option` stream will
+behave like one:
+
+[gremlin-groovy,modern]
+----
+g.V().union(__.has("name", "vadas").values('age').fold(), __.has('name',neq('vadas')).values('name').fold())
+g.V().choose(__.has("name", "vadas"), __.values('age').fold(), __.values('name').fold())
+----
+
+*Exceptions*
+
+* `IllegalArgumentException` - If `Pick.any` is used as an option token, as only one option per traverser is allowed.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/ChooseStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#choose-step[reference]
 
 [[combine-step]]
 === combine()

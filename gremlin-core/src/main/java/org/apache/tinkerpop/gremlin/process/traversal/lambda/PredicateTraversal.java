@@ -37,6 +37,10 @@ public final class PredicateTraversal<S> extends AbstractLambdaTraversal<S, S> {
         this.predicate = value instanceof Predicate ? (Predicate) value : P.eq(value);
     }
 
+    public Predicate getPredicate() {
+        return predicate;
+    }
+
     @Override
     public S next() {
         if (this.pass)
