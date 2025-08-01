@@ -32,6 +32,27 @@ Feature: Step - choose()
     Then the result should be unordered
       | result |
       | d[29].i |
+      | v[vadas] |
+      | v[lop] |
+      | josh |
+      | v[ripple] |
+      | v[peter] |
+
+  Scenario: g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX_optionXnone_noneX
+    Given the modern graph
+    And using the parameter xx1 defined as "d[2].l"
+    And using the parameter xx2 defined as "d[3].l"
+    And the traversal of
+      """
+      g.V().choose(__.out().count()).
+        option(xx1, __.values("name")).
+        option(xx2, __.values("age")).
+        option(Pick.none, __.none())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
       | josh |
 
   Scenario: g_V_chooseXhasLabelXpersonX_and_outXcreatedX__outXknowsX_identityX_name
@@ -89,6 +110,22 @@ Feature: Step - choose()
       | lop |
       | ripple |
 
+  Scenario: g_V_chooseXTlabelX_optionXperson__outXknowsX_nameX_optionXbleep_constantXbleepXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(T.label).
+              option("person", __.out("knows").values("name")).
+              option("bleep", __.constant("bleep"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas |
+      | josh |
+      | v[lop] |
+      | v[ripple] |
+
   Scenario: g_V_chooseXTlabelX_optionXblah__outXknowsXX_optionXbleep__outXcreatedXX_optionXnone__identityX_name
     Given the modern graph
     And the traversal of
@@ -116,6 +153,7 @@ Feature: Step - choose()
       g.V().choose(T.label).
              option("blah", __.out("knows")).
              option("bleep", __.out("created")).
+             option(Pick.none, __.none()).
         values("name")
       """
     When iterated to list
@@ -410,7 +448,8 @@ Feature: Step - choose()
     And the traversal of
       """
       g.V().choose(__.values("age")).
-              option(P.between(26, 30), __.values("name"))
+              option(P.between(26, 30), __.values("name")).
+              option(Pick.none, __.none())
       """
     When iterated to list
     Then the result should be unordered

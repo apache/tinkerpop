@@ -52,9 +52,14 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     private final ChooseSemantics chooseSemantics;
 
     /**
-     * Determines if the default identity traversal is being used for the unproductive match.
+     * Determines if the default identity traversal is being used for the {@link Pick#unproductive} match.
      */
     private boolean hasDefaultUnproductive = true;
+
+    /**
+     * Determines if the default identity traversal is being used for the {@link Pick#none} match.
+     */
+    private boolean hasDefaultNone = true;
 
     private ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal,
                       final ChooseSemantics chooseSemantics) {
@@ -62,12 +67,15 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
         this.chooseSemantics = chooseSemantics;
         this.setBranchTraversal(choiceTraversal);
         
-        // Add a default Pick.unproductive option that returns the identity.
-        final Traversal.Admin<S,E> identityPassthrough = new DefaultGraphTraversal<>();
-        identityPassthrough.addStep(new IdentityStep<>(traversal));
+        // defaults Pick.unproductive/none options are just identity()
+        final Traversal.Admin<S,E> unproductivePassthrough = new DefaultGraphTraversal<>();
+        unproductivePassthrough.addStep(new IdentityStep<>(traversal));
+        final Traversal.Admin<S,E> nonePassthrough = new DefaultGraphTraversal<>();
+        nonePassthrough.addStep(new IdentityStep<>(traversal));
 
         // calling super here to prevent hitting the Pick branch of code
-        super.addChildOption((M) Pick.unproductive, identityPassthrough);
+        super.addChildOption((M) Pick.unproductive, unproductivePassthrough);
+        super.addChildOption((M) Pick.none, nonePassthrough);
     }
 
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal) {
@@ -103,6 +111,10 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
             // none that means we only add the first but not the future ones.
             if (Pick.unproductive.equals(pickToken) && hasDefaultUnproductive) {
                 this.hasDefaultUnproductive = false;
+                this.traversalPickOptions.remove(pickToken);
+                super.addChildOption(pickToken, traversalOption);
+            } else if (Pick.none.equals(pickToken) && hasDefaultNone) {
+                this.hasDefaultNone = false;
                 this.traversalPickOptions.remove(pickToken);
                 super.addChildOption(pickToken, traversalOption);
             } else if (pickToken == Pick.none && !this.traversalPickOptions.containsKey(Pick.none)) {

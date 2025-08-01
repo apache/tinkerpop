@@ -415,11 +415,11 @@ gremlin> g.V().hasLabel("person").
 ==>young
 ----
 
-*Automatic Pass-through for Unproductive Predicates*
+*Automatic Pass-through for Unproductive and Unmatched Predicates*
 
-The `choose()` step now automatically passes through traversers when the choice traversal is unproductive. This means
-that elements that don't have the properties being evaluated will continue through the traversal unchanged, rather than
-being filtered out.
+The `choose()` step now passes through traversers when the choice traversal is unproductive or the determined choice
+unmatched. Before this version, unproductive traversals produced an error and unmatched choices were filtered by
+default.
 
 [source,text]
 ----
@@ -432,6 +432,13 @@ gremlin> g.V().choose(__.values("age")).
 ==>josh
 ==>v[5]
 ==>peter
+gremlin> g.V().choose(T.label).
+......1>        option("person", __.out("knows").values("name")).
+......2>        option("bleep", __.out("created").values("name"))
+==>vadas
+==>josh
+==>v[3]
+==>v[5]
 ----
 
 This change makes the switch semantics for `choose()` consistent with those of the if-then-else semantics for

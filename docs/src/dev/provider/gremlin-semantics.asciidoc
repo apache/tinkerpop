@@ -1183,17 +1183,12 @@ traversal. If the predicate is unproductive or if the falseChoice is not specifi
 
 2. *switch form*: `choose(choice).option(pickValue, resultTraversal)` - The choice which may be a `Traversal` or
 `T` produces a value that is matched against the pickValue of each option. If a match is found, the traverser is routed
-to the corresponding resultTraversal and no further matches are attempted. If no match is found then the traverser is
-filtered, but, for these cases, the `Pick.none` option can be provided to match those cases. If the choiceTraversal is
-unproductive, then the traverser passes through by default or can be matched on `Pick.unproductive`.
+to the corresponding resultTraversal and no further matches are attempted. If no match is found then the traverser
+passes through by default or can be matched on `Pick.none`. If the choiceTraversal is unproductive, then the traverser
+passes through by default or can be matched on `Pick.unproductive`.
 
-The `choose()` step can be used with the following special `Pick` tokens:
-
-* `Pick.none` - Used to specify a default option when no other options match.
-* `Pick.unproductive` - Used when the choice traversal produces no value.
-
-`choose` does not allow more than one traversal to be assigned to a single `Pick`. The first `Pick` assigned via `option`
-is the one that will be used, similar to how the first pickValue match that is found is used.
+`choose` does not allow more than one traversal to be assigned to a single `Pick`. The first `Pick` assigned via
+`option` is the one that will be used, similar to how the first pickValue match that is found is used.
 
 The `choose()` step ensures that only one option is selected for each traverser, unlike other branch steps like
 `union()` that can route a traverser to multiple paths. As it is like `union()`, note that each `option` stream will
