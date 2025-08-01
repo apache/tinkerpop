@@ -403,7 +403,7 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-            return g.V().as("a").in().as("a").in().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).limit(local, 1);
+            return g.V().as("a").in().as("a").in().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).limit(local, 1).unfold();
         }
 
         @Override
@@ -413,12 +413,12 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 1, 2);
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 1, 2).unfold();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 4, 5);
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select(Pop.mixed, "a").by(unfold().values("name").fold()).range(local, 4, 5).unfold();
         }
 
         @Override

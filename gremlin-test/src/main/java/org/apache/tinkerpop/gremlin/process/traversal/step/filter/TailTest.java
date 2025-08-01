@@ -284,17 +284,17 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
-            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local, 1);
+            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local, 1).unfold();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
-            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local);
+            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local).unfold();
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X() {
-            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(limit(local, 0)).tail(local, 1);
+            return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(limit(local, 0)).tail(local, 1).unfold();
         }
 
         @Override
