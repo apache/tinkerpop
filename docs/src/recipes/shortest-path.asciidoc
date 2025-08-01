@@ -168,8 +168,8 @@ result = g.withComputer().V().
   filter(count(local).is(gt(1))).
   group().
     by(project('from','to').
-         by(limit(local, 1)).
-         by(tail(local, 1))).
+         by(limit(local, 1).unfold()).
+         by(tail(local, 1).unfold())).
   unfold().
   order().
     by(select(keys).select('from').id()).

@@ -509,6 +509,52 @@ The `GremlinLangScriptEngine` has been modified to treat float literals without 
 or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
 `GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
 
+==== Consistent Collection Output for range(), limit(), and tail() Local Steps
+
+The `range(local)`, `limit(local)`, and `tail(local)` steps now consistently return collections rather than automatically 
+unfolding single-element results when operating on iterable collections (List, Set, etc.). Previously, when these steps 
+operated on collections and the result contained only one element, the step would return the single element directly 
+instead of a collection containing that element.
+
+This change ensures predictable return types based on the input type, making the behavior more consistent and intuitive.
+Note that this change only affects iterable collections - Map objects continue to behave as before.
+
+[source,text]
+----
+// 3.7.x and earlier - inconsistent output types for collections
+gremlin> g.inject([1, 2, 3]).limit(local, 1)
+==>1  // single element returned directly
+
+gremlin> g.inject([1, 2, 3]).limit(local, 2) 
+==>[1,2]  // collection returned
+
+// 3.8.0 - consistent collection output for collections
+gremlin> g.inject([1, 2, 3]).limit(local, 1)
+==>[1]  // collection always returned
+
+gremlin> g.inject([1, 2, 3]).limit(local, 2)
+==>[1,2]  // collection returned
+
+// Map behavior unchanged in both versions
+gremlin> g.inject([a: 1, b: 2, c: 3]).limit(local, 1)
+==>[a:1]  // Map entry returned (behavior unchanged)
+----
+
+If you need the old behavior of extracting single elements from collections, you can add `.unfold()` after the local step:
+
+[source,text]
+----
+gremlin> g.inject([1, 2, 3]).limit(local, 1).unfold()
+==>1
+----
+
+This change affects all three local collection manipulation steps when operating on iterable collections:
+- `range(local, low, high)` 
+- `limit(local, count)`
+- `tail(local, count)`
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2491[TINKERPOP-2491]
+
 ==== group() Value Traversal Semantics
 
 The `group()` step takes two `by()` modulators. The first defines the key for the grouping, and the second acts upon the

@@ -864,7 +864,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
     And the graph should return 0 for count of "g.V().has(\"weight\")"
 
-    Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_match
+    Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
     Given the empty graph
     And the graph initializer of
       """
@@ -886,9 +886,9 @@ Feature: Step - mergeE()
       """
       g.union(select("m"), select("m"), constant([created: "N"])).
         fold().
-        mergeE(__.limit(Scope.local,1)).
-          option(Merge.onCreate, __.range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.tail(Scope.local))
+        mergeE(__.limit(Scope.local,1).unfold()).
+          option(Merge.onCreate, __.range(Scope.local, 1, 2).unfold()).
+          option(Merge.onMatch, __.tail(Scope.local).unfold())
       """
     When iterated to list
     Then the result should have a count of 1
@@ -897,7 +897,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().has(\"created\",\"N\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").has(\"created\",\"N\").inV().has(\"person\",\"name\",\"vadas\")"
 
-   Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_create
+   Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_create
     Given the empty graph
     And the graph initializer of
       """
@@ -919,9 +919,9 @@ Feature: Step - mergeE()
       """
       g.union(select("m"), select("m"), constant([created:"N"])).
         fold().
-        mergeE(__.limit(Scope.local,1)).
-          option(Merge.onCreate, __.range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.tail(Scope.local))
+        mergeE(__.limit(Scope.local,1).unfold()).
+          option(Merge.onCreate, __.range(Scope.local, 1, 2).unfold()).
+          option(Merge.onMatch, __.tail(Scope.local).unfold())
       """
     When iterated to list
     Then the result should have a count of 1

@@ -265,7 +265,7 @@ Feature: Step - range()
       """
       g.V().fold().range(Scope.local, 6, 7)
       """
-    When iterated to list
+    When iterated next
     Then the result should be empty
 
   Scenario: g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X
@@ -347,3 +347,65 @@ Feature: Step - range()
       """
     When iterated next
     Then the traversal will raise an error with message containing text of "Not a legal range: [3, 2]"
+
+  # Test consistent collection output for range(local) - single element should return collection
+  Scenario: g_injectXlistX1_2_3XX_rangeXlocal_1_2X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3]).range(Scope.local, 1, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[2].i] |
+
+  # Test consistent collection output for limit(local) - single element should return collection
+  Scenario: g_injectXlistX1_2_3XX_limitXlocal_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3]).limit(Scope.local, 1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[1].i] |
+
+  # Test unfold() can be used to extract single elements from collections
+  Scenario: g_injectXlistX1_2_3X_limitXlocal_1X_unfold
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3]).limit(Scope.local, 1).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  # Test multiple collections with consistent output
+  Scenario: g_injectX1_2_3_4_5X_limitXlocal_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2], [3, 4, 5]).limit(Scope.local, 1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[1].i] |
+      | l[d[3].i] |
+
+  # Test range(local) with multiple collections
+  Scenario: g_injectX1_2_3_4_5_6X_rangeXlocal_1_2X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3], [4, 5, 6]).range(Scope.local, 1, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[2].i] |
+      | l[d[5].i] |
