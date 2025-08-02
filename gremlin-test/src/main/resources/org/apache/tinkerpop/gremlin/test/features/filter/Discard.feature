@@ -15,8 +15,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
-@StepClassFilter @StepDiscard
+@StepClassMap @StepDiscard
 Feature: Step - discard()
+
+  Scenario: g_V_count_discard
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().count().discard()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_hasLabelXpersonX_discard
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").discard()
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_VX1X_outXcreatedX_discard
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).out("created").discard()
+      """
+    When iterated to list
+    Then the result should be empty
 
   Scenario: g_V_discard
     Given the modern graph
