@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.junit.Test;
@@ -709,4 +710,84 @@ public class NumberHelperTest {
         final Double value = 42.0;
         assertEquals(Float.valueOf(42.0f), NumberHelper.coerceTo(value, Float.class));
     }
+
+
+    @Test
+    public void shouldCastToReturnSameInstanceForSameClass() {
+        final Integer value = 42;
+        assertEquals(value, NumberHelper.castTo(value, N.int_));
+    }
+
+    @Test
+    public void shouldCastToConvertToByte() {
+        final Integer value = 42;
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.castTo(value, N.byte_));
+    }
+
+    @Test
+    public void shouldCastToConvertToShort() {
+        final Integer value = 42;
+        assertEquals(Short.valueOf((short) 42), NumberHelper.castTo(value, N.short_));
+    }
+
+    @Test
+    public void shouldCastToConvertToLong() {
+        final Integer value = 42;
+        assertEquals(Long.valueOf(42L), NumberHelper.castTo(value, N.long_));
+    }
+
+    @Test
+    public void shouldCastToConvertToFloat() {
+        final Integer value = 42;
+        assertEquals(Float.valueOf(42.0f), NumberHelper.castTo(value, N.float_));
+    }
+
+    @Test
+    public void shouldCastToConvertToDouble() {
+        final Integer value = 42;
+        assertEquals(Double.valueOf(42.0), NumberHelper.castTo(value, N.double_));
+    }
+
+    @Test
+    public void shouldCastToConvertToBigInteger() {
+        final Integer value = 42;
+        assertEquals(BigInteger.valueOf(42), NumberHelper.castTo(value, N.bigInt));
+    }
+
+    @Test
+    public void shouldCastToConvertDoubleToBigInteger() {
+        final Double value = new Double("1000000000000000000000");
+        assertEquals(new BigInteger("1000000000000000000000"), NumberHelper.castTo(value, N.bigInt));
+    }
+
+    @Test
+    public void shouldCastToConvertToBigDecimal() {
+        final Integer value = 42;
+        assertEquals(BigDecimal.valueOf(42), NumberHelper.castTo(value, N.bigDecimal));
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldOverflowIfCannotFitInByte() {
+        final Integer value = 128;
+        NumberHelper.castTo(value, N.byte_);
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldOverflowIfCannotFitInShort() {
+        final Integer value = 32768;
+        NumberHelper.castTo(value, N.short_);
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldOverflowIfCannotFitInInteger() {
+        final Long value = 2147483648L;
+        NumberHelper.castTo(value, N.int_);
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldOverflowIfCannotFitInFloat() {
+        final Double value = Double.MAX_VALUE;
+        NumberHelper.castTo(value, N.float_);
+    }
+
 }

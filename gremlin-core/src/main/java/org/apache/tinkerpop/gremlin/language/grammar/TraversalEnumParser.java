@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 
@@ -64,5 +65,15 @@ public class TraversalEnumParser {
         if (text.startsWith(Direction.class.getSimpleName()))
             text = text.substring(Direction.class.getSimpleName().length() + 1);
         return Direction.directionValueOf(text);
+    }
+
+    /**
+     * Parsing of {@link N} requires some special handling because of java keyword collision.
+     */
+    public static N parseTraversalNFromContext(final GremlinParser.TraversalNContext context) {
+        String text = context.getText();
+        if (text.startsWith(N.class.getSimpleName()))
+            text = text.substring(N.class.getSimpleName().length() + 1);
+        return text.startsWith("big") ? N.valueOf(text) : N.valueOf(text + "_");
     }
 }

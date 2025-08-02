@@ -680,6 +680,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the asNumber step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object> AsNumber(N numberToken)
+        {
+            Bytecode.AddStep("asNumber", numberToken);
+            return Wrap<TStart, object>(this);
+        }
+
+        /// <summary>
         ///     Adds the dedup step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> Dedup (Scope scope, params string?[] dedupLabels)

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -185,6 +186,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             Direction.class,
                             DT.class,
                             Merge.class,
+                            N.class,
                             Operator.class,
                             Order.class,
                             Pop.class,
@@ -284,6 +286,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Scope.class,
                     Pick.class,
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV3.EnumJacksonSerializer()));
+            addSerializer(N.class, new TraversalSerializersV3.NJacksonSerializer());
             addSerializer(P.class, new TraversalSerializersV3.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new TraversalSerializersV3.BindingJacksonSerializer());
@@ -331,6 +334,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Scope.values(),
                     Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV3.EnumJacksonDeserializer(e.getDeclaringClass())));
+            addDeserializer(N.class, new TraversalSerializersV3.NJacksonDeserializer());
             addDeserializer(P.class, new TraversalSerializersV3.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV3.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV3.LambdaJacksonDeserializer());
@@ -445,6 +449,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             Direction.class,
                             DT.class,
                             Merge.class,
+                            N.class,
                             Operator.class,
                             Order.class,
                             Pop.class,
@@ -538,6 +543,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Scope.class,
                     Pick.class,
                     T.class).forEach(e -> addSerializer(e, new TraversalSerializersV2.EnumJacksonSerializer()));
+            addSerializer(N.class, new TraversalSerializersV2.NJacksonSerializer());
             addSerializer(P.class, new TraversalSerializersV2.PJacksonSerializer());
             addSerializer(Lambda.class, new TraversalSerializersV2.LambdaJacksonSerializer());
             addSerializer(Bytecode.Binding.class, new TraversalSerializersV2.BindingJacksonSerializer());
@@ -577,6 +583,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     Scope.values(),
                     Pick.values(),
                     T.values()).flatMap(Stream::of).forEach(e -> addDeserializer(e.getClass(), new TraversalSerializersV2.EnumJacksonDeserializer(e.getDeclaringClass())));
+            addDeserializer(N.class, new TraversalSerializersV2.NJacksonDeserializer());
             addDeserializer(P.class, new TraversalSerializersV2.PJacksonDeserializer());
             addDeserializer(TextP.class, new TraversalSerializersV2.TextPJacksonDeserializer());
             addDeserializer(Lambda.class, new TraversalSerializersV2.LambdaJacksonDeserializer());

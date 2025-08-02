@@ -30,6 +30,69 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Number Conversion Step
+
+We have been iteratively introducing new language features into Gremlin, with the most recent major additions being string, list and date manipulation
+steps introduced in the 3.7 line. In 3.8.0, we are now introducing a number conversion step, `asNumber()`, to bridge
+a gap in casting functionalities.
+
+The new `asNumber()` serves as an umbrella step that parses strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these number types are denoted by a set of number tokens (`N`).
+
+This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a consistent format, making it easier to perform downstream mathematical operations. As an example:
+
+[source,text]
+----
+// sum() step can only take numbers
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").sum()
+class java.lang.String cannot be cast to class java.lang.Number
+
+// use asNumber() to avoid casting exceptions
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum()
+==>15.0
+
+// given sum() step returned a double, one can use asNumber() to further cast the result into desired type
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.int_)
+==>15
+----
+
+Semantically, the `asNumber()` step will convert the incoming traverser to a logical parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+
+Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown for any overflow as a result of narrowing of types:
+
+[source,text]
+----
+gremlin> g.inject(5.0).asNumber(N.int_)
+==> 5    // casts double to int
+gremlin> g.inject(12).asNumber(N.byte_)
+==> 12
+gremlin> g.inject(128).asNumber(N.byte_)
+==> ArithmeticException
+----
+
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is provided. `NumberFormatException` will be thrown for any unparsable strings:
+
+[source,text]
+----
+gremlin> g.inject("5").asNumber()
+==> 5
+gremlin> g.inject("5.7").asNumber(N.int_)
+==> 5
+gremlin> g.inject("1,000").asNumber(N.int_)
+==> NumberFormatException
+gremlin> g.inject("128").asNumber(N.byte_)
+==> ArithmeticException
+----
+
+All other input types will result in `IllegalArgumentException`:
+[source,text]
+----
+gremlin> g.inject([1, 2, 3, 4]).asNumber()
+==> IllegalArgumentException
+----
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
+
 ==== Boolean Conversion Step
 
 The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse strings and 
