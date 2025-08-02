@@ -51,7 +51,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
@@ -325,7 +325,7 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.as, Collections.emptyList());
             put(GraphTraversal.Symbols.option, Collections.emptyList());
             put(Traversal.Symbols.profile, Collections.singletonList(ProfileStep.class));
-            put(Traversal.Symbols.none, Collections.singletonList(NoneStep.class));
+            put(Traversal.Symbols.discard, Collections.singletonList(DiscardStep.class));
             put(TraversalSource.Symbols.withSack, Collections.emptyList());
             put(TraversalSource.Symbols.withoutStrategies, Collections.emptyList());
             put(TraversalSource.Symbols.withStrategies, Collections.emptyList());

@@ -1078,10 +1078,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#none()
+     * @see GraphTraversal#discard()
      */
-    public static <A> GraphTraversal<A, A> none() {
-        return __.<A>start().none();
+    public static <A> GraphTraversal<A, A> discard() {
+        return __.<A>start().discard();
     }
 
     /**

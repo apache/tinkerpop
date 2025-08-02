@@ -77,7 +77,7 @@ public class StandardVerificationStrategyTest {
         if (legalTraversal) {
             copy.asAdmin().applyStrategies();
 
-            // try to also apply strategies with iterate() so that a NoneStep is added - for consistency sake we want
+            // try to also apply strategies with iterate() so that a DiscardStep is added - for consistency sake we want
             // to be able to run a profile and get no result back with this.
             final Traversal forIteration = copyAndConfigureTraversal(traversal);
             forIteration.iterate();

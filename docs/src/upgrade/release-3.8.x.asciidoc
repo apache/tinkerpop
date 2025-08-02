@@ -58,6 +58,13 @@ gremlin> g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and)
 See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
 
+==== none() and discard()
+
+There is a complicated relationship with the `none()` and `discard()` steps that begs some discussion. Prior to this
+version, the `none()` step was used to "throw away" all traversers that passed into it. In 3.8.0, that step has been
+renamed to `discard()`. The `discard()` step with its verb tone arguably makes for a better name for that feature, but
+it also helped make room for `none()` to be repurposed as `none(P)` which is a complement to `any(P)` and `all(P) steps.
+
 ==== Set minimum Java version to 11
 
 TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
@@ -437,6 +444,12 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+===== NoneStep Renaming
+
+The `DiscardStep` is now renamed to `DiscardStep`. Providers who developed strategies or other optimizations around
+`DiscardStep` should switch to `DiscardStep`. Note that `DiscardStep` has been repurposed as `none(P)` for filtering
+collections as a complement to `any(P)` and `all(P)`.
 
 ==== Set minimum Java version to 11
 

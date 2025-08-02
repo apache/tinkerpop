@@ -683,6 +683,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal discard method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  discard(...args) {
+    this.bytecode.addStep('discard', args);
+    return this;
+  }
+
+  /**
    * Graph traversal disjunct method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1118,16 +1128,6 @@ class GraphTraversal extends Traversal {
    */
   min(...args) {
     this.bytecode.addStep('min', args);
-    return this;
-  }
-
-  /**
-   * Graph traversal none method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  none(...args) {
-    this.bytecode.addStep('none', args);
     return this;
   }
 
@@ -1770,6 +1770,7 @@ const statics = {
   dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
   dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
+  discard: (...args) => callOnEmptyTraversal('discard', args),
   disjunct: (...args) => callOnEmptyTraversal('disjunct', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
   element: (...args) => callOnEmptyTraversal('element', args),
@@ -1811,7 +1812,6 @@ const statics = {
   mergeE: (...args) => callOnEmptyTraversal('mergeE', args),
   mergeV: (...args) => callOnEmptyTraversal('mergeV', args),
   min: (...args) => callOnEmptyTraversal('min', args),
-  none: (...args) => callOnEmptyTraversal('none', args),
   not: (...args) => callOnEmptyTraversal('not', args),
   optional: (...args) => callOnEmptyTraversal('optional', args),
   or: (...args) => callOnEmptyTraversal('or', args),

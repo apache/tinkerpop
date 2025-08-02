@@ -77,7 +77,7 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.Bytecode.AddStep("none"); err != nil {
+		if err := t.Bytecode.AddStep("discard"); err != nil {
 			r <- err
 			return
 		}

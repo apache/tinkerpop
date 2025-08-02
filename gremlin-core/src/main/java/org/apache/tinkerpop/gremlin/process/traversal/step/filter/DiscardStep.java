@@ -26,9 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class NoneStep<S> extends FilterStep<S> {
+public final class DiscardStep<S> extends FilterStep<S> {
 
-    public NoneStep(final Traversal.Admin traversal) {
+    public DiscardStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

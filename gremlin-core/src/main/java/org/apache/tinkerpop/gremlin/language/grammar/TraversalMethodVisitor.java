@@ -1111,8 +1111,8 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalMethod_none(final GremlinParser.TraversalMethod_noneContext ctx) {
-        return this.graphTraversal.none();
+    public GraphTraversal visitTraversalMethod_discard(final GremlinParser.TraversalMethod_discardContext ctx) {
+        return this.graphTraversal.discard();
     }
 
     /**

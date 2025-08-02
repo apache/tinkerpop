@@ -442,6 +442,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("difference", *args)
         return self
 
+    def discard(self, *args):
+        self.bytecode.add_step("discard", *args)
+        return self
+
     def disjunct(self, *args):
         self.bytecode.add_step("disjunct", *args)
         return self
@@ -701,10 +705,6 @@ class GraphTraversal(Traversal):
 
     def min_(self, *args):
         self.bytecode.add_step("min", *args)
-        return self
-
-    def none(self, *args):
-        self.bytecode.add_step("none", *args)
         return self
 
     def not_(self, *args):
@@ -1216,6 +1216,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).difference(*args)
 
     @classmethod
+    def discard(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).discard(*args)
+
+    @classmethod
     def disjunct(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).disjunct(*args)
 
@@ -1482,10 +1486,6 @@ class __(object, metaclass=MagicType):
     @classmethod
     def min_(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).min_(*args)
-
-    @classmethod
-    def none(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).none(*args)
 
     @classmethod
     def not_(cls, *args):
@@ -1967,6 +1967,10 @@ def dedup(*args):
     return __.dedup(*args)
 
 
+def discard(*args):
+    return __.discard(*args)
+
+
 def disjunct(*args):
     return __.disjunct(*args)
 
@@ -2175,10 +2179,6 @@ def merge_v(*args):
 
 def min_(*args):
     return __.min_(*args)
-
-
-def none(*args):
-    return __.none(*args)
 
 
 def not_(*args):
@@ -2471,6 +2471,8 @@ statics.add_static('date_diff', date_diff)
 
 statics.add_static('dedup', dedup)
 
+statics.add_static('discard', discard)
+
 statics.add_static('disjunct', disjunct)
 
 statics.add_static('drop', drop)
@@ -2572,8 +2574,6 @@ statics.add_static('merge_e', merge_e)
 statics.add_static('merge_v', merge_v)
 
 statics.add_static('min_', min_)
-
-statics.add_static('none', none)
 
 statics.add_static('not_', not_)
 

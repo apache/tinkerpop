@@ -479,6 +479,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the discard step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> discard()
+        {
+            return new GraphTraversal<object, object>().Discard();
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the disjunct step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Disjunct(object disjunctObject)
@@ -1102,14 +1110,6 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, E2> Min<E2>(Scope scope)
         {
             return new GraphTraversal<object, E2>().Min<E2>(scope);            
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the none step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> None()
-        {
-            return new GraphTraversal<object, object>().None();
         }
 
         /// <summary>

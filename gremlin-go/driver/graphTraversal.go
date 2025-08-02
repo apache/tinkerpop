@@ -258,6 +258,12 @@ func (g *GraphTraversal) Difference(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// Discard adds the discard step to the GraphTraversal.
+func (g *GraphTraversal) Discard(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("discard", args...)
+	return g
+}
+
 // Disjunct adds the disjunct step to the GraphTraversal.
 func (g *GraphTraversal) Disjunct(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("disjunct", args...)
@@ -521,12 +527,6 @@ func (g *GraphTraversal) MergeV(args ...interface{}) *GraphTraversal {
 // Min adds the min step to the GraphTraversal.
 func (g *GraphTraversal) Min(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("min", args...)
-	return g
-}
-
-// None adds the none step to the GraphTraversal.
-func (g *GraphTraversal) None(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("none", args...)
 	return g
 }
 

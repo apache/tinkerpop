@@ -1508,6 +1508,32 @@ g.V().values("name").fold().difference(__.V().limit(2).values("name").fold())
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#difference(java.lang.Object)++[`difference(Object)`]
 link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`Semantics`]
 
+[[discard-step]]
+=== Discard Step
+
+The `discard()`-step (*filter*) filters all objects from a traversal stream. It is helpful with <<branch-step>> types
+of steps where a particular branch of code should "throw away" traversers. In the following example, traversers that
+don't match are filtered out of the traversal stream.
+
+[gremlin-groovy,modern]
+----
+g.V().choose(T.label).
+        option("person", __.out("knows").values("name")).
+        option("bleep", __.out("created").values("name")).
+        option(none, discard())
+----
+
+It is also useful for traversals that are executed remotely where returning results is not useful and the traversal is
+only meant to generate side-effects. Choosing not to return results saves in serialization and network costs as the
+objects are filtered on the remote end and not returned to the client side. Typically, this step does not need to be
+used directly and is quietly used by the `iterate()` terminal step which appends `discard()` to the traversal before
+actually cycling through results.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#discard()++[`discard()`]
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
+
 [[disjunct-step]]
 === Disjunct Step
 
@@ -3228,23 +3254,6 @@ g.inject([null,null,null]).min(local)
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#min()++[`min()`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#min(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`min(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
-
-[[none-step]]
-=== None Step
-
-The `none()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
-that are executed remotely where returning results is not useful and the traversal is only meant to generate
-side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
-the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
-quietly used by the `iterate()` terminal step which appends `none()` to the traversal before actually cycling through
-results.
-
-NOTE: As of release 4.0.0, `none()` will be renamed to `discard()`.
-
-*Additional References*
-
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#none()++[`none()`]
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Traversal.html#iterate()++[`iterate()`]
 
 [[not-step]]
 === Not Step
