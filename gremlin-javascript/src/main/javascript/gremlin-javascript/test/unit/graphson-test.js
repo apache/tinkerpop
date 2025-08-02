@@ -89,6 +89,12 @@ describe('GraphSONReader', function () {
     const result = reader.read(obj);
     assert.ok(result instanceof Date);
   });
+  it('should parse OffsetDateTime', function() {
+    const obj = { "@type" : "gx:OffsetDateTime", "@value" : "2016-12-14T21:14:36.295Z" };
+    const reader = new GraphSONReader();
+    const result = reader.read(obj);
+    assert.ok(result instanceof Date);
+  });
   it('should parse vertices from GraphSON', function () {
     const obj = {
       "@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
