@@ -21,7 +21,7 @@ limitations under the License.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-4]]
-=== TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.4 (August 1, 2025)
 
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
 * Improved performance of `Traversal.lock()` which was being called excessively.
@@ -63,6 +63,44 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Upgraded Node version from 18 to 20
 * Upgraded Go to version 1.24
 * Fixed broken image links in published documentation
+
+==== Bugs
+
+* TINKERPOP-3146 Support SSL Certificates Reloading
+* TINKERPOP-2966 Change PythonTranslator to generate underscore based step naming
+* TINKERPOP-3015 Use wildcard instead of Object for hasId predicates
+* TINKERPOP-3070 Cannot run console if working directory contains spaces
+* TINKERPOP-3111 Update documentation in gremlin-python driver section
+* TINKERPOP-3130 Better consistency for none()/discard() usage
+* TINKERPOP-3133 Customize the file count by repartition the OutputRDD in Spark to reduce HDFS small files
+* TINKERPOP-3137 Allow null to be used as Map value to mergeV and mergeE
+* TINKERPOP-3177 Sessioned Client in Go
+
+==== Improvements
+
+* TINKERPOP-2489 Server doesn't start if folder has spaces
+* TINKERPOP-2647 :uninstall without first disabling a plugin will lead to error on startup
+* TINKERPOP-2886 Inconsistent results when executing equivalent queries
+* TINKERPOP-3038 Console plugins file can't accept empty lines
+* TINKERPOP-3040 Remote Console won't send queries that cause exceptions locally
+* TINKERPOP-3067 gremlin-shaded incomplete shading due to Jackson multi-release classes
+* TINKERPOP-3100 Traversal.Admin.lock() has excessive recursion
+* TINKERPOP-3120 Closing a session with an Authorizer enabled throws an Exception
+* TINKERPOP-3123 TinkerGraphParameterizedWorld # useParametersLteraly() removes overried identifier
+* TINKERPOP-3124 MessageSizeEstimator is not sizing Frame instances properly
+* TINKERPOP-3135 Gremlin Console complains about missing plugins field
+* TINKERPOP-3138 JS gremlin library "enableCompression" option cause Connection the be closed
+* TINKERPOP-3139 IndexStep serialization
+* TINKERPOP-3140 emit() without repeat() throws an NPE
+* TINKERPOP-3141 TinkerTransactionGraph doesn't allow deleting and adding element back in same transaction
+* TINKERPOP-3142 TinkerTransactionGraph doesn't remove deleted elements in threaded scenario
+* TINKERPOP-3144 Traversal not closed after interruption
+* TINKERPOP-3155 Operator.addAll checks for instanceof on the wrong parameter
+* TINKERPOP-3160 Node.js 22+: Gremlin Fails with network error and HTTP 101 Status Due to WebSocket Limitation in undici
+* TINKERPOP-3162 Gryo writes illegal reflective access operations for AtomicLong in JDK17
+* TINKERPOP-3163 CallStep serialization
+* TINKERPOP-3167 Possible NullPointerException when borrowing a connection
+* TINKERPOP-3174 Site images linked to github are broken
 
 [[release-3-7-3]]
 === TinkerPop 3.7.3 (October 23, 2024)
