@@ -1132,6 +1132,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal none method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  none(...args) {
+    this.bytecode.addStep('none', args);
+    return this;
+  }
+
+  /**
    * Graph traversal not method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1812,6 +1822,7 @@ const statics = {
   mergeE: (...args) => callOnEmptyTraversal('mergeE', args),
   mergeV: (...args) => callOnEmptyTraversal('mergeV', args),
   min: (...args) => callOnEmptyTraversal('min', args),
+  none: (...args) => callOnEmptyTraversal('none', args),
   not: (...args) => callOnEmptyTraversal('not', args),
   optional: (...args) => callOnEmptyTraversal('optional', args),
   or: (...args) => callOnEmptyTraversal('or', args),

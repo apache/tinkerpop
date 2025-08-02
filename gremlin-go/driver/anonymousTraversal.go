@@ -207,6 +207,8 @@ type AnonymousTraversal interface {
 	MergeV(args ...interface{}) *GraphTraversal
 	// Min adds the min step to the GraphTraversal.
 	Min(args ...interface{}) *GraphTraversal
+	// None adds the not step to the GraphTraversal.
+	None(args ...interface{}) *GraphTraversal
 	// Not adds the not step to the GraphTraversal.
 	Not(args ...interface{}) *GraphTraversal
 	// Option adds the option step to the GraphTraversal.
@@ -729,6 +731,11 @@ func (anonymousTraversal *anonymousTraversal) MergeV(args ...interface{}) *Graph
 // Min adds the min step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Min(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Min(args...)
+}
+
+// None adds the none step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) None(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().None(args...)
 }
 
 // Not adds the not step to the GraphTraversal.

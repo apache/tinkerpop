@@ -1213,6 +1213,11 @@ public class __ {
      */
     public static <A> GraphTraversal<A, A> any(final P<A> predicate) { return __.<A>start().any(predicate); }
 
+    /**
+     * @see GraphTraversal#none(P)
+     */
+    public static <A> GraphTraversal<A, A> none(final P<A> predicate) { return __.<A>start().none(predicate); }
+
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
     /**

@@ -1119,6 +1119,14 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
+    public GraphTraversal visitTraversalMethod_none_P(final GremlinParser.TraversalMethod_none_PContext ctx) {
+        return graphTraversal.none(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public GraphTraversal visitTraversalMethod_not(final GremlinParser.TraversalMethod_notContext ctx) {
         return this.graphTraversal.not(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }

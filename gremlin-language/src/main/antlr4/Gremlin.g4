@@ -239,6 +239,7 @@ traversalMethod
     | traversalMethod_max
     | traversalMethod_mean
     | traversalMethod_min
+    | traversalMethod_none
     | traversalMethod_not
     | traversalMethod_option
     | traversalMethod_optional
@@ -685,6 +686,10 @@ traversalMethod_mergeE
 traversalMethod_min
     : K_MIN LPAREN RPAREN #traversalMethod_min_Empty
     | K_MIN LPAREN traversalScope RPAREN #traversalMethod_min_Scope
+    ;
+
+traversalMethod_none
+    : K_NONE LPAREN traversalPredicate RPAREN #traversalMethod_none_P
     ;
 
 traversalMethod_not

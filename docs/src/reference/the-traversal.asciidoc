@@ -3255,6 +3255,29 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#min(org.apache.tinkerpop.gremlin.process.traversal.Scope)++[`min(Scope)`],
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/Scope.html++[`Scope`]
 
+[[none-step]]
+=== None Step
+
+It is possible to filter list traversers using `none()`-step (*filter*). Every item in the list will be tested against
+the supplied predicate and if none of the items pass then the traverser is passed along the stream, otherwise it is
+filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
+
+NOTE: Prior to release 3.8.0, `none()` was a traversal discarding step primarily used by <<iterate-step,`iterate()`>>.
+This step has since been renamed to <<discard-step,`discard()`>>
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().none(gt(25)) <1>
+----
+
+<1> Return the list of ages only if no one's age is greater than 25.
+
+*Additional References*
+
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#none(org.apache.tinkerpop.gremlin.process.traversal.P)++[`none(P)`],
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/P.html++[`P`]
+
+
 [[not-step]]
 === Not Step
 

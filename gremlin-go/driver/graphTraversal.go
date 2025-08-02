@@ -530,6 +530,12 @@ func (g *GraphTraversal) Min(args ...interface{}) *GraphTraversal {
 	return g
 }
 
+// None adds the none step to the GraphTraversal.
+func (g *GraphTraversal) None(args ...interface{}) *GraphTraversal {
+	g.Bytecode.AddStep("none", args...)
+	return g
+}
+
 // Not adds the not step to the GraphTraversal.
 func (g *GraphTraversal) Not(args ...interface{}) *GraphTraversal {
 	g.Bytecode.AddStep("not", args...)
