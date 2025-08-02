@@ -117,6 +117,8 @@ type AnonymousTraversal interface {
 	Dedup(args ...interface{}) *GraphTraversal
 	// Difference adds the difference step to the GraphTraversal.
 	Difference(args ...interface{}) *GraphTraversal
+	// Discard adds the discard step to the GraphTraversal.
+	Discard(args ...interface{}) *GraphTraversal
 	// Disjunct adds the disjunct step to the GraphTraversal.
 	Disjunct(args ...interface{}) *GraphTraversal
 	// Drop adds the drop step to the GraphTraversal.
@@ -205,7 +207,7 @@ type AnonymousTraversal interface {
 	MergeV(args ...interface{}) *GraphTraversal
 	// Min adds the min step to the GraphTraversal.
 	Min(args ...interface{}) *GraphTraversal
-	// None adds the none step to the GraphTraversal.
+	// None adds the not step to the GraphTraversal.
 	None(args ...interface{}) *GraphTraversal
 	// Not adds the not step to the GraphTraversal.
 	Not(args ...interface{}) *GraphTraversal
@@ -504,6 +506,11 @@ func (anonymousTraversal *anonymousTraversal) Dedup(args ...interface{}) *GraphT
 // Difference adds the difference step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Difference(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Difference(args...)
+}
+
+// Discard adds the discard step to the GraphTraversal.
+func (anonymousTraversal *anonymousTraversal) Discard(args ...interface{}) *GraphTraversal {
+	return anonymousTraversal.graphTraversal().Discard(args...)
 }
 
 // Disjunct adds the disjunct step to the GraphTraversal.

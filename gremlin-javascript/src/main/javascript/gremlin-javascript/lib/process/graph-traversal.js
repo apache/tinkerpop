@@ -683,6 +683,16 @@ class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal discard method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  discard(...args) {
+    this.bytecode.addStep('discard', args);
+    return this;
+  }
+
+  /**
    * Graph traversal disjunct method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1770,6 +1780,7 @@ const statics = {
   dateAdd: (...args) => callOnEmptyTraversal('dateAdd', args),
   dateDiff: (...args) => callOnEmptyTraversal('dateDiff', args),
   dedup: (...args) => callOnEmptyTraversal('dedup', args),
+  discard: (...args) => callOnEmptyTraversal('discard', args),
   disjunct: (...args) => callOnEmptyTraversal('disjunct', args),
   drop: (...args) => callOnEmptyTraversal('drop', args),
   element: (...args) => callOnEmptyTraversal('element', args),

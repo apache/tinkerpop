@@ -69,10 +69,10 @@ public class PythonTranslatorTest {
     }
 
     @Test
-    public void shouldTranslateNone() {
+    public void shouldTranslateDiscard() {
         final String gremlinAsPython = translator.translate(
-                g.V().none().asAdmin().getBytecode()).getScript();
-        assertEquals("g.V().none()", gremlinAsPython);
+                g.V().discard().asAdmin().getBytecode()).getScript();
+        assertEquals("g.V().discard()", gremlinAsPython);
     }
 
     @Test

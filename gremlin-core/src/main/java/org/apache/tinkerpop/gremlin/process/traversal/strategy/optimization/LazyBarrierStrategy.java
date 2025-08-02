@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -120,7 +120,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                 // so additionally injected ProfileSideEffectStep instances should not have effect here.
                 if (foundFlatMap && !labeledPath &&
                         !(step.getNextStep() instanceof Barrier) &&
-                        !(step.getNextStep() instanceof NoneStep) &&
+                        !(step.getNextStep() instanceof DiscardStep) &&
                         !(step.getNextStep() instanceof EmptyStep) &&
                         !(step.getNextStep() instanceof ProfileSideEffectStep)) {
                     final Step noOpBarrierStep = new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE);

@@ -1832,6 +1832,40 @@ resolve to a `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/MergeVertexStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
+[[none-step]]
+=== none()
+
+*Description:* Filters array data from the traversal stream if none of the array's items match the supplied predicate.
+
+*Syntax:* `none(P predicate)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`List`/`array`/`Iterable`/`Iterator` |`List`/`array`/`Iterable`/`Iterator`
+|=========================================================
+
+*Arguments:*
+
+* `predicate` - The predicate used to test each value in the array data.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
+will be filtered out of the traversal stream.
+
+*Exceptions*
+
+* A GremlinTypeErrorException will be thrown if one occurs and no other value evaluates to true.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/filter/NoneStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#none-step[reference]
+
+
 [[product-step]]
 === product()
 

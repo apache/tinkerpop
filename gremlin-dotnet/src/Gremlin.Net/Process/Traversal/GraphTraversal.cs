@@ -715,6 +715,15 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Adds the discard step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Discard ()
+        {
+            Bytecode.AddStep("discard");
+            return Wrap<TStart, TEnd>(this);
+        }
+
+        /// <summary>
         ///     Adds the disjunct step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
         public GraphTraversal<TStart, TEnd> Disjunct (object disjunctObject)
@@ -1513,9 +1522,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the none step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> None ()
+        public GraphTraversal<TStart, TEnd> None (P? predicate)
         {
-            Bytecode.AddStep("none");
+            Bytecode.AddStep("none", predicate);
             return Wrap<TStart, TEnd>(this);
         }
 

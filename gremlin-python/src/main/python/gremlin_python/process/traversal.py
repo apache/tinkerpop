@@ -75,7 +75,7 @@ class Traversal(object):
         return set(iter(self))
 
     def iterate(self):
-        self.bytecode.add_step("none")
+        self.bytecode.add_step("discard")
         while True:
             try: self.next_traverser()
             except StopIteration: return self

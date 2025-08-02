@@ -202,6 +202,7 @@ traversalMethod
     | traversalMethod_cyclicPath
     | traversalMethod_dedup
     | traversalMethod_difference
+    | traversalMethod_discard
     | traversalMethod_disjunct
     | traversalMethod_drop
     | traversalMethod_elementMap
@@ -474,6 +475,10 @@ traversalMethod_difference
     : K_DIFFERENCE LPAREN genericArgument RPAREN #traversalMethod_difference_Object
     ;
 
+traversalMethod_discard
+    : K_DISCARD LPAREN RPAREN
+    ;
+
 traversalMethod_disjunct
     : K_DISJUNCT LPAREN genericArgument RPAREN #traversalMethod_disjunct_Object
     ;
@@ -684,7 +689,7 @@ traversalMethod_min
     ;
 
 traversalMethod_none
-    : K_NONE LPAREN RPAREN
+    : K_NONE LPAREN traversalPredicate RPAREN #traversalMethod_none_P
     ;
 
 traversalMethod_not
@@ -1715,6 +1720,7 @@ keyword
     | K_DESC
     | K_DIFFERENCE
     | K_DIRECTION
+    | K_DISCARD
     | K_DISJUNCT
     | K_DISTANCE
     | K_DIV
@@ -1974,6 +1980,7 @@ K_DECR: 'decr';
 K_DEDUP: 'dedup';
 K_DESC: 'desc';
 K_DIFFERENCE: 'difference';
+K_DISCARD: 'discard';
 K_DIRECTION: 'Direction';
 K_DISJUNCT: 'disjunct';
 K_DISTANCE: 'distance';

@@ -442,6 +442,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("difference", *args)
         return self
 
+    def discard(self, *args):
+        self.bytecode.add_step("discard", *args)
+        return self
+
     def disjunct(self, *args):
         self.bytecode.add_step("disjunct", *args)
         return self
@@ -1216,6 +1220,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).difference(*args)
 
     @classmethod
+    def discard(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).discard(*args)
+
+    @classmethod
     def disjunct(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).disjunct(*args)
 
@@ -1967,6 +1975,10 @@ def dedup(*args):
     return __.dedup(*args)
 
 
+def discard(*args):
+    return __.discard(*args)
+
+
 def disjunct(*args):
     return __.disjunct(*args)
 
@@ -2470,6 +2482,8 @@ statics.add_static('date_add', date_add)
 statics.add_static('date_diff', date_diff)
 
 statics.add_static('dedup', dedup)
+
+statics.add_static('discard', discard)
 
 statics.add_static('disjunct', disjunct)
 

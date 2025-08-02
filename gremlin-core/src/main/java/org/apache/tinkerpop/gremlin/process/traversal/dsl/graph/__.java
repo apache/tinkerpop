@@ -1078,10 +1078,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#none()
+     * @see GraphTraversal#discard()
      */
-    public static <A> GraphTraversal<A, A> none() {
-        return __.<A>start().none();
+    public static <A> GraphTraversal<A, A> discard() {
+        return __.<A>start().discard();
     }
 
     /**
@@ -1212,6 +1212,11 @@ public class __ {
      * @see GraphTraversal#any(P)
      */
     public static <A> GraphTraversal<A, A> any(final P<A> predicate) { return __.<A>start().any(predicate); }
+
+    /**
+     * @see GraphTraversal#none(P)
+     */
+    public static <A> GraphTraversal<A, A> none(final P<A> predicate) { return __.<A>start().none(predicate); }
 
     ///////////////////// SIDE-EFFECT STEPS /////////////////////
 
