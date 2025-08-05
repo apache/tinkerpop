@@ -1824,7 +1824,7 @@ public class __ {
     /**
      * @see GraphTraversal#call(String, GValue, Traversal)
      */
-    public static <A, B> GraphTraversal<A, B> call(final String service, final GValue<Map<?,?>> params, final Traversal<?, Map<?,?>> childTraversal) {
+    public static <A, B> GraphTraversal<A, B> call(final String service, final GValue<Map<?,?>> params, final Traversal<A, Map<?,?>> childTraversal) {
         return __.<A>start().call(service, params, childTraversal);
     }
 }

@@ -680,7 +680,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new CallStep<>(traversal, true, service, params.get())); //TODO
+        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params));
     }
 
     /**
@@ -691,12 +691,11 @@ public class GraphTraversalSource implements TraversalSource {
      * @param params static parameter map (no nested traversals)
      * @since 4.0.0
      */
-    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map> childTraversal) {
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map<?,?>> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        CallStep<S,S> step = new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin());
-        return traversal.addStep(new CallStep<>(traversal, true, service, params.get(), childTraversal.asAdmin())); //TODO
+        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
 
     /**

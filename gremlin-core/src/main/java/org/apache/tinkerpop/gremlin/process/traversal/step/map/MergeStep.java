@@ -376,20 +376,20 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected abstract Set getAllowedTokens();
 
     @Override
-    public void setMerge(final Traversal.Admin<?,Map<Object, Object>> mergeMap) {
-        this.mergeTraversal = integrateChild(new ConstantTraversal<>(mergeMap));
+    public void setMerge(final Traversal.Admin<?,Map<Object, Object>> mergeTraversal) {
+        this.mergeTraversal = integrateChild(mergeTraversal);
         this.reset(); //TODO:: should we reset?
     }
 
     @Override
-    public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateMap) {
-        this.onCreateTraversal = integrateChild(new ConstantTraversal<>(onCreateMap));
+    public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateTraversal) {
+        this.onCreateTraversal = integrateChild(onCreateTraversal);
         this.reset(); //TODO:: should we reset?
     }
 
     @Override
-    public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchMap) {
-        this.onMatchTraversal = integrateChild(new ConstantTraversal<>(onMatchMap));
+    public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchTraversal) {
+        this.onMatchTraversal = integrateChild(onMatchTraversal);
         this.reset(); //TODO:: should we reset?
     }
 

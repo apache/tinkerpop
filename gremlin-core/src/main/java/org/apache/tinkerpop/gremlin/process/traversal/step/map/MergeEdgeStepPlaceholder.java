@@ -55,7 +55,6 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
     private Map<Object, List<Object>> properties = new HashMap<>();
-    private Map<Merge, Traversal.Admin<S, Map<Object, Object>>> childOptions = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
@@ -84,6 +83,9 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
         super(traversal);
         this.isStart = isStart;
         this.mergeTraversal = mergeTraversal;
+        if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).isParameterized()) {
+            traversal.getGValueManager().track(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue());
+        }
     }
 
     @Override
@@ -140,7 +142,13 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
 
     @Override
     public void addChildOption(Merge token, Traversal.Admin traversalOption) {
-        childOptions.put(token, traversalOption);
+        if (token == Merge.onCreate) {
+            setOnCreate(traversalOption);
+        } else if (token == Merge.onMatch) {
+            setOnMatch(traversalOption);
+        } else {
+            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
+        }
     }
 
     @Override
@@ -187,7 +195,6 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
                 step.addProperty(entry.getKey(), value);
             }
         }
-        childOptions.forEach((k, v) -> step.addChildOption(k, v));
 
         TraversalHelper.copyLabels(this, step, false);
         return step;

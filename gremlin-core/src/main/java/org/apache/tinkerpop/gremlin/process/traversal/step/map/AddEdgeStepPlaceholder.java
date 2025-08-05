@@ -46,12 +46,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
-public class AddEdgeStepPlaceholder<S> extends AbstractStep<S, Edge>
-        implements AddEdgeStepInterface<S>, GValueHolder<S, Edge> {
+public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
+        implements AddEdgeStepInterface<S> {
 
     private Traversal.Admin<S,String> label;
     private Traversal.Admin<?,?> from;
