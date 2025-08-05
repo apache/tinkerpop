@@ -168,11 +168,9 @@ Feature: Step - mean()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_10_20_nullX_mean
     Given the modern graph
-    And using the parameter xx1 defined as "d[10].i"
-    And using the parameter xx2 defined as "d[20].i"
     And the traversal of
       """
-      g.inject(null, xx1, xx2, null).mean()
+      g.inject(null, 10, 20, null).mean()
       """
     When iterated to list
     Then the result should be unordered
@@ -182,10 +180,9 @@ Feature: Step - mean()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlistXnull_10_20_nullXX_meanXlocalX
     Given the modern graph
-    And using the parameter xx1 defined as "l[null,d[10].i,d[20].i,null]"
     And the traversal of
       """
-      g.inject(xx1).mean(local)
+      g.inject([null,10,20,null]).mean(local)
       """
     When iterated to list
     Then the result should be unordered

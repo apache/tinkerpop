@@ -35,10 +35,9 @@ Feature: Step - substring()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_substringX1_2X
     Given the empty graph
-    And using the parameter xx1 defined as "l[aa,bb]"
     And the traversal of
       """
-      g.inject(xx1).substring(1, 2)
+      g.inject(["aa","bb"]).substring(1, 2)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The substring() step can only take string as argument"

@@ -150,7 +150,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(this::parseString)
+                .map(antlr.genericVisitor::parseString)
                 .toArray(String[]::new);
     }
 
@@ -503,9 +503,9 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
-        if (ctx.stringArgument() == null)
+        if (ctx.stringLiteral() == null)
             return DatetimeHelper.datetime();
-        return DatetimeHelper.parse((String) antlr.argumentVisitor.visitStringArgument(ctx.stringArgument()));
+        return DatetimeHelper.parse((String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
@@ -674,5 +674,19 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             return null;
         else
             return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
+    }
+
+    @Override
+    public Object[] visitStringNullableLiteralVarargs(final GremlinParser.StringNullableLiteralVarargsContext ctx) {
+        if (ctx == null) {
+            return new Object[0];
+        }
+        return ctx.children
+                .stream()
+                .filter(Objects::nonNull)
+                .filter(p -> p instanceof GremlinParser.StringNullableArgumentContext)
+                .map(p -> (GremlinParser.StringNullableArgumentContext) p)
+                .map(antlr.argumentVisitor::visitStringNullableArgument)
+                .toArray(Object[]::new);
     }
 }

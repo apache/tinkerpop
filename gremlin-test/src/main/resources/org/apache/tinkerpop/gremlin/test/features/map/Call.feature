@@ -87,6 +87,7 @@ Feature: Step - call()
       | result |
       | tinker.search |
 
+# The parameterized xx1 map will fail, but just passing in the map will pass, need to check
   Scenario: g_callXlist_map_traversalX
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"x\": \"y\"}]"

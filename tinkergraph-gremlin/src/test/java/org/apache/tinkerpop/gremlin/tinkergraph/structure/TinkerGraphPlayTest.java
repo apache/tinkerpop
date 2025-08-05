@@ -254,7 +254,6 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
-    @Ignore
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();

@@ -90,10 +90,9 @@ Feature: Step - conjoin()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXmarkoX_conjoinX_X
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).conjoin("-")
+      g.inject(["marko"]).conjoin("-")
       """
     When iterated to list
     Then the result should be unordered
@@ -131,10 +130,9 @@ Feature: Step - conjoin()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_conjoinXxyzX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
     And the traversal of
       """
-      g.inject(xx1).conjoin("xyz")
+      g.inject(["a",null,"b"]).conjoin("xyz")
       """
     When iterated to list
     Then the result should be unordered
@@ -144,10 +142,9 @@ Feature: Step - conjoin()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_conjoinX_X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).conjoin(";")
+      g.inject([3,"three"]).conjoin(";")
       """
     When iterated to list
     Then the result should be unordered

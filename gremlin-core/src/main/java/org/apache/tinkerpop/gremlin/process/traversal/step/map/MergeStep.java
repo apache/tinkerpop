@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,10 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
@@ -58,7 +56,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C> {
+        implements MergeStepInterface<S, E, C> {
 
     protected final boolean isStart;
     protected boolean first = true;
@@ -68,7 +66,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     protected CallbackRegistry<Event> callbackRegistry;
 
-    private Parameters parameters = new Parameters();
+    private Map<Object, List<Object>> properties = new HashMap<>(); // Used to support PartitionStrategy
 
     protected boolean usesPartitionStrategy;
 
@@ -81,7 +79,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         validate(mergeMap, false);
     }
 
-    public MergeStep(final Traversal.Admin traversal, final boolean isStart, 
+    public MergeStep(final Traversal.Admin traversal, final boolean isStart,
                      final Traversal.Admin mergeTraversal) {
         super(traversal);
         this.isStart = isStart;
@@ -100,6 +98,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * This {@code Map} also will be used as the default data set to be used to create the element if the search is not
      * successful.
      */
+    @Override
     public Traversal.Admin<S, Map> getMergeTraversal() {
         return mergeTraversal;
     }
@@ -108,6 +107,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * Gets the traversal that will be used to provide the {@code Map} that will be used to create elements that
      * do not match the search criteria of {@link #getMergeTraversal()}.
      */
+    @Override
     public Traversal.Admin<S, Map> getOnCreateTraversal() {
         return onCreateTraversal;
     }
@@ -116,6 +116,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
      * Gets the traversal that will be used to provide the {@code Map} that will be used to modify elements that
      * match the search criteria of {@link #getMergeTraversal()}.
      */
+    @Override
     public Traversal.Admin<S, Map<String, ?>> getOnMatchTraversal() {
         return onMatchTraversal;
     }
@@ -123,6 +124,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     /**
      * Determines if this is a start step.
      */
+    @Override
     public boolean isStart() {
         return isStart;
     }
@@ -130,6 +132,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     /**
      * Determine if this is the first pass through {@link #processNextStart()}.
      */
+    @Override
     public boolean isFirst() {
         return first;
     }
@@ -166,22 +169,7 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         return children;
     }
 
-    /**
-     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}. Using this
-     * with {@link GraphTraversal#with(String,Object)} will have an ill effect of simply acting like a call to
-     * {@link GraphTraversal#property(Object, Object, Object...)}. No mutating steps currently support use of
-     * {@link GraphTraversal#with(String,Object)} so perhaps it's best to not start with that now.
-     */
     @Override
-    public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
-    }
-
-    @Override
-    public Parameters getParameters() {
-        return this.parameters;
-    }
-
     public boolean isUsingPartitionStrategy() {
         return usesPartitionStrategy;
     }
@@ -330,11 +318,10 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected Map materializeMap(final Traverser.Admin<S> traverser, Traversal.Admin<S, ?> mapTraversal) {
         Map map = (Map) TraversalUtil.apply(traverser, mapTraversal);
 
-        // PartitionStrategy uses parameters as a mechanism for setting the partition key. trying to be as specific
-        // as possible here wrt parameters usage to avoid misuse
+        // PartitionStrategy uses properties as a mechanism for setting the partition key.
         if (usesPartitionStrategy) {
             map = null == map ? new LinkedHashMap() : map;
-            for (Map.Entry<Object, List<Object>> entry : parameters.getRaw().entrySet()) {
+            for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
                 final Object k = entry.getKey();
                 final List<Object> v = entry.getValue();
                 map.put(k, v.get(0));
@@ -387,6 +374,42 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected abstract Iterator<E> flatMap(final Traverser.Admin<S> traverser);
 
     protected abstract Set getAllowedTokens();
+
+    @Override
+    public void setMerge(final Traversal.Admin<?,Map<Object, Object>> mergeTraversal) {
+        this.mergeTraversal = integrateChild(mergeTraversal);
+        this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateTraversal) {
+        this.onCreateTraversal = integrateChild(onCreateTraversal);
+        this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchTraversal) {
+        this.onMatchTraversal = integrateChild(onMatchTraversal);
+        this.reset(); //TODO:: should we reset?
+    }
+
+    @Override
+    public void addProperty(Object key, Object value) {
+        if (properties.containsKey(key)) {
+            throw new IllegalArgumentException("MergeElement.addProperty only support properties with single cardinality");
+        }
+        properties.put(key, Collections.singletonList(value));
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    @Override
+    public void removeProperty(Object k) {
+        properties.remove(k);
+    }
 
     /**
      * Guard rail to ensure that the incoming object is not an {@link Element}.

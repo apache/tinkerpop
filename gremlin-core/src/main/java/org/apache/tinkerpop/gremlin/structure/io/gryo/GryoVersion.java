@@ -39,6 +39,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Text;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
@@ -428,6 +430,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(Stack.class, 181));
             add(GryoTypeReg.of(ReferenceMap.class, 182));
 
+            add(GryoTypeReg.of(GValue.class, 199, new JavaSerializer()));
+            add(GryoTypeReg.of(GType.class, 200, new JavaSerializer()));        // ***LAST ID***
+
             // placeholder serializers for classes that don't live here in core. this will allow them to be used if
             // present  or ignored if the class isn't available. either way the registration numbers are held as
             // placeholders so that the format stays stable
@@ -639,6 +644,9 @@ public enum GryoVersion {
             add(GryoTypeReg.of(LabelledCounter.class, 180));
             add(GryoTypeReg.of(Stack.class, 181));
             add(GryoTypeReg.of(ReferenceMap.class, 182));
+
+            add(GryoTypeReg.of(GValue.class, 199, new JavaSerializer()));
+            add(GryoTypeReg.of(GType.class, 200, new JavaSerializer()));        // ***LAST ID***
         }};
     }
 

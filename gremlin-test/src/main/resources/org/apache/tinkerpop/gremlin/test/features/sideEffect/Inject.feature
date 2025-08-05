@@ -66,10 +66,9 @@ Feature: Step - inject()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXname_marko_age_nullX_selectXname_ageX
     Given the modern graph
-    And using the parameter xx1 defined as "m[{\"name\":\"marko\", \"age\":null}]"
     And the traversal of
       """
-      g.inject(xx1).select("name","age")
+      g.inject([name:"marko", age:null]).select("name","age")
       """
     When iterated to list
     Then the result should be unordered

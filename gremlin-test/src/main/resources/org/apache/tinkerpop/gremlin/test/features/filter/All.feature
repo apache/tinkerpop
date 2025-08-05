@@ -71,10 +71,9 @@ Feature: Step - all()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXbcd_bcdX_allXeqXbcdXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[bcd,bcd]"
     And the traversal of
       """
-      g.inject(xx1).all(P.eq("bcd"))
+      g.inject(["bcd","bcd"]).all(P.eq("bcd"))
       """
     When iterated to list
     Then the result should be unordered
@@ -84,10 +83,9 @@ Feature: Step - all()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_abcX_allXTextP_startingWithXaXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,abc]"
     And the traversal of
       """
-      g.inject(xx1).all(TextP.startingWith("a"))
+      g.inject([null,"abc"]).all(TextP.startingWith("a"))
       """
     When iterated to list
     Then the result should be empty
@@ -95,11 +93,9 @@ Feature: Step - all()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5_8_10_10_7X_allXgteX7XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[5].i,d[8].i,d[10].i]"
-    And using the parameter xx2 defined as "l[d[10].i,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1,xx2).all(P.gte(7))
+      g.inject([5,8,10],[10,7]).all(P.gte(7))
       """
     When iterated to list
     Then the result should be unordered
@@ -129,10 +125,9 @@ Feature: Step - all()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_nullX_allXeqXnullXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,null]"
     And the traversal of
       """
-      g.inject(xx1).all(P.eq(null))
+      g.inject([null,null]).all(P.eq(null))
       """
     When iterated to list
     Then the result should be unordered
@@ -142,10 +137,9 @@ Feature: Step - all()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_allXeqX3XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).all(P.eq(3))
+      g.inject([3,"three"]).all(P.eq(3))
       """
     When iterated to list
     Then the result should be empty
