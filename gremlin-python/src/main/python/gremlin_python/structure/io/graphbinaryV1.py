@@ -37,7 +37,6 @@ from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardina
                                              Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
-from gremlin_python.process.traversal import Direction, T, Merge
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
 
@@ -1008,11 +1007,6 @@ class TraverserIO(_GraphBinaryTypeIO):
         bulk = int64_unpack(b.read(8))
         obj = r.read_object(b)
         return Traverser(obj, bulk=bulk)
-
-
-class MergeIO(_EnumIO):
-    graphbinary_type = DataType.merge
-    python_type = Merge
 
 
 class ByteIO(_GraphBinaryTypeIO):

@@ -799,9 +799,6 @@ class Bytecode(object):
         elif isinstance(arg, Binding):
             self.bindings[arg.key] = arg.value
             return Binding(arg.key, self.__convertArgument(arg.value))
-        elif isinstance(arg, GValue):
-            self.bindings[arg.get_name()] = arg.get()
-            return Binding(arg.get_name(), self.__convertArgument(arg.get()))
         else:
             return arg
 
@@ -900,21 +897,3 @@ class WithOptions(object):
 
     map = 1
 
-
-class GValue:
-    def __init__(self, name, value):
-        if name is None:
-            raise Exception("The parameter name cannot be None.")
-        if name.startswith('_'):
-            raise Exception(f'invalid GValue name {name}. Should not start with _.')
-        self.name = name
-        self.value = value
-
-    def get_name(self):
-        return self.name
-
-    def is_null(self):
-        return self.value is None
-
-    def get(self):
-        return self.value
