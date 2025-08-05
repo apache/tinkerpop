@@ -27,8 +27,10 @@ import org.apache.tinkerpop.gremlin.language.grammar.VariableResolver;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -91,6 +93,9 @@ public class TinkerGraphGremlinLangScriptEngineTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> generateTestParameters() {
+        final TinkerGraph tinkerSearchModern = TinkerFactory.createModern();
+        tinkerSearchModern.getServiceRegistry().registerService(new TinkerTextSearchFactory(tinkerSearchModern));
+
         return Arrays.asList(new Object[][]{
                 {
                     "g.V().limit(x).count()",
@@ -173,7 +178,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerGraph.open(),
                 },
-                // Range.feature parameterized scenarios
                 {
                     "g.V(vid).out().limit(xx1)",
                     Arrays.asList(
@@ -273,7 +277,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerFactory.createModern()
                 },
-                // AddEdge.feature parameterized scenarios
                 {
                     "g.addE(\"knows\").from(v1).to(v2).project(\"from\", \"to\").by(outV()).by(inV())",
                     Arrays.asList(
@@ -319,7 +322,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerFactory.createModern()
                 },
-                // Edge.feature parameterized scenarios
                 {
                     "g.E(eid)",
                     Arrays.asList(
@@ -365,15 +367,9 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                 {
                     "g.V(vid)",
                     Arrays.asList(
-                        Pair.of(createBindings("vid", 1), Arrays.asList(
-                            V_MARKO
-                        )),
-                        Pair.of(createBindings("vid", 4), Arrays.asList(
-                            V_JOSH
-                        )),
-                        Pair.of(createBindings("vid", 6), Arrays.asList(
-                            V_PETER
-                        ))
+                        Pair.of(createBindings("vid", 1), Arrays.asList(V_MARKO)),
+                        Pair.of(createBindings("vid", 4), Arrays.asList(V_JOSH)),
+                        Pair.of(createBindings("vid", 6), Arrays.asList(V_PETER))
                     ),
                     TinkerFactory.createModern()
                 },
@@ -386,7 +382,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerFactory.createModern()
                 },
-                // Vertex.feature parameterized scenarios
                 {
                     "g.V(xx1).values(\"name\")",
                     Arrays.asList(
@@ -413,21 +408,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                         )),
                         Pair.of(createBindings("xx1", Arrays.asList(V_MARKO, V_JOSH, V_PETER)), Arrays.asList(
                             "marko", "josh", "peter"
-                        ))
-                    ),
-                    TinkerFactory.createModern()
-                },
-                {
-                    "g.V(vid4).bothE(xx1)",
-                    Arrays.asList(
-                        Pair.of(createBindings("vid4", 4, "xx1", "created"), Arrays.asList(
-                            TinkerFactory.createModern().traversal().V(4).bothE("created").toList().toArray()
-                        )),
-                        Pair.of(createBindings("vid4", 1, "xx1", "knows"), Arrays.asList(
-                            TinkerFactory.createModern().traversal().V(1).bothE("knows").toList().toArray()
-                        )),
-                        Pair.of(createBindings("vid4", 6, "xx1", "created"), Arrays.asList(
-                            TinkerFactory.createModern().traversal().V(6).bothE("created").toList().toArray()
                         ))
                     ),
                     TinkerFactory.createModern()
@@ -462,7 +442,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerFactory.createModern()
                 },
-                // AddVertex.feature parameterized scenarios
                 {
                     "g.inject(1,2).addV(xx1).property(\"age\", xx2).project(\"label\", \"age\").by(label).by(\"age\")",
                     Arrays.asList(
@@ -523,7 +502,6 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     ),
                     TinkerFactory.createModern()
                 },
-                // Tail.feature parameterized scenarios
                 {
                     "g.V().values(\"name\").order().tail(xx1)",
                     Arrays.asList(
@@ -554,15 +532,138 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                 {
                     "g.V(vid1).values(\"age\").tail(Scope.local, 50)",
                     Arrays.asList(
-                        Pair.of(createBindings("vid1", 1), Arrays.asList(
-                            29
+                        Pair.of(createBindings("vid1", 1), Arrays.asList(29)),
+                        Pair.of(createBindings("vid1", 2), Arrays.asList(27)),
+                        Pair.of(createBindings("vid1", 4), Arrays.asList(32))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.mergeV(xx1).values(\"name\")",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("name", "stephen")), Arrays.asList("stephen")),
+                        Pair.of(createBindings("xx1", Map.of("name", "marko")), Arrays.asList("marko")),
+                        Pair.of(createBindings("xx1", Map.of("name", "alice")), Arrays.asList("alice"))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.mergeV(xx1).option(Merge.onCreate, xx2).valueMap()",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("name", "stephen"), "xx2", Map.of("name", "stephen", "age", 19)), Arrays.asList(
+                                Map.of("name", List.of("stephen"), "age", List.of(19))
                         )),
-                        Pair.of(createBindings("vid1", 2), Arrays.asList(
-                            27
+                        Pair.of(createBindings("xx1", Map.of("name", "alice"), "xx2", Map.of("name", "alice", "age", 25)), Arrays.asList(
+                                Map.of("name", List.of("alice"), "age", List.of(25))
                         )),
-                        Pair.of(createBindings("vid1", 4), Arrays.asList(
-                            32
+                        Pair.of(createBindings("xx1", Map.of("name", "marko"), "xx2", Map.of("name", "marko", "age", 30)), Arrays.asList(
+                                Map.of("name", List.of("marko"), "age", List.of(29))
                         ))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.mergeV(xx1).option(Merge.onMatch, xx2).valueMap()",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("name", "marko"),
+                                              "xx2", Map.of("age", 19)), Arrays.asList(
+                                Map.of("name", List.of("marko"), "age", List.of(19))
+                        )),
+                        Pair.of(createBindings("xx1", Map.of("name", "josh"),
+                                              "xx2", Map.of("age", 35)), Arrays.asList(
+                                Map.of("name", List.of("josh"), "age", List.of(35))
+                        )),
+                        Pair.of(createBindings("xx1", Map.of("name", "alice"),
+                                              "xx2", Map.of("age", 25)), Arrays.asList(
+                                Map.of("name", List.of("alice"))
+                        ))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.mergeE(xx1).option(Merge.onCreate, xx2).values(\"created\")",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.8),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.6),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.5),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList())
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.mergeE(xx1).option(Merge.onMatch, xx2).values(\"updated\")",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.5), "xx2", Map.of("updated", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.2), "xx2", Map.of("updated", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 1.0), "xx2", Map.of("updated", "Y")), Arrays.asList("Y", "Y"))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.V(1).mergeE(xx1).option(Merge.onCreate, xx2).values(\"created\")",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.8),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.6),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.5),
+                                              "xx2", Map.of(Direction.from, V_MARKO, Direction.to, V_JOSH, "created", "Y")), Arrays.asList())
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.V(1).mergeE(xx1).option(Merge.onMatch, xx2).values(\"updated\")",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.5), "xx2", Map.of("updated", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 0.2), "xx2", Map.of("updated", "Y")), Arrays.asList("Y")),
+                        Pair.of(createBindings("xx1", Map.of("weight", 1.0), "xx2", Map.of("updated", "Y")), Arrays.asList("Y", "Y"))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.call(\"tinker.search\", xx2).element()",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx2", Map.of("search", "mar")), Arrays.asList(V_MARKO)),
+                        Pair.of(createBindings("xx2", Map.of("search", "vada")), Arrays.asList(V_VADAS)),
+                        Pair.of(createBindings("xx2", Map.of("search", "josh")), Arrays.asList(V_JOSH))
+                    ),
+                    tinkerSearchModern
+                },
+                {
+                    "g.V(xx1).out()",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", 1), Arrays.asList(V_LOP, V_VADAS, V_JOSH)),
+                        Pair.of(createBindings("xx1", 4), Arrays.asList(V_RIPPLE, V_LOP)),
+                        Pair.of(createBindings("xx1", 6), Arrays.asList(V_LOP))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.V(xx1).out(xx2)",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", 1, "xx2", "knows"), Arrays.asList(V_VADAS, V_JOSH)),
+                        Pair.of(createBindings("xx1", 1, "xx2", "created"), Arrays.asList(V_LOP)),
+                        Pair.of(createBindings("xx1", 4, "xx2", "created"), Arrays.asList(V_RIPPLE, V_LOP))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.V(xx1).out(xx2, xx3)",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", 1, "xx2", "knows", "xx3", "created"), Arrays.asList(V_VADAS, V_JOSH, V_LOP)),
+                        Pair.of(createBindings("xx1", 4, "xx2", "created", "xx3", "knows"), Arrays.asList(V_RIPPLE, V_LOP)),
+                        Pair.of(createBindings("xx1", 1, "xx2", "created", "xx3", "created"), Arrays.asList(V_LOP, V_LOP))
+                    ),
+                    TinkerFactory.createModern()
+                },
+                {
+                    "g.V(xx1).bothE(xx2).count()",
+                    Arrays.asList(
+                        Pair.of(createBindings("xx1", 1, "xx2", "knows"), Arrays.asList(2L)),
+                        Pair.of(createBindings("xx1", 4, "xx2", "created"), Arrays.asList(2L)),
+                        Pair.of(createBindings("xx1", 3, "xx2", "created"), Arrays.asList(3L))
                     ),
                     TinkerFactory.createModern()
                 },
@@ -608,7 +709,7 @@ public class TinkerGraphGremlinLangScriptEngineTest {
             }
 
             // verify that there are no unmatched results remaining
-            assertThat(((Traversal) result).hasNext(), is(false));
+            assertThat("Traversal had more results than expected", ((Traversal) result).hasNext(), is(false));
         }
 
         // verify that each traversal instance is unique

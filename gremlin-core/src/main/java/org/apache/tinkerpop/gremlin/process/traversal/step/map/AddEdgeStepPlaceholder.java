@@ -33,7 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Collection;
 
 public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
-        implements AddEdgeStepInterface<S>, GValueHolder<S, Edge> {
+        implements AddEdgeStepInterface<S> {
 
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;

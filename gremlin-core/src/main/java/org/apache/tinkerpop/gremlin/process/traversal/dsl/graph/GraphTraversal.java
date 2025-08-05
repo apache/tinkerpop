@@ -1829,7 +1829,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     default <E> GraphTraversal<S, E> call(final String service, final GValue<Map<?,?>> params) {
         this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.call, service, params);
-        return this.asAdmin().addStep(new CallStep<>(this.asAdmin(), false, service, params.get())); //TODO
+        return this.asAdmin().addStep(new CallStepPlaceholder<>(this.asAdmin(), false, service, params));
     }
 
     /**
@@ -1879,11 +1879,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#call-step" target="_blank">Reference Documentation - Call Step</a>
      * @since 3.8.0
      */
-    default <E> GraphTraversal<S, E> call(final String service, final GValue<Map<?,?>> params, final Traversal<?, Map<?,?>> childTraversal) {
+    default <E> GraphTraversal<S, E> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map<?,?>> childTraversal) {
         this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
-        final CallStep<S,E> step = null == childTraversal ? new CallStep(this.asAdmin(), false, service, params.get()) :
-                new CallStep(this.asAdmin(), false, service, params.get(), childTraversal.asAdmin());
-        return this.asAdmin().addStep(step); //TODO
+        final CallStepPlaceholder<S,E> step = null == childTraversal ? new CallStepPlaceholder<>(this.asAdmin(), false, service, params) :
+                new CallStepPlaceholder<>(this.asAdmin(), false, service, params, childTraversal.asAdmin());
+        return this.asAdmin().addStep(step);
     }
 
     /**
