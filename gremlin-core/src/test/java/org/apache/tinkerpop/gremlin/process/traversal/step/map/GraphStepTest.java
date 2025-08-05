@@ -18,13 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,14 +39,26 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class GraphStepTest extends StepTest {
+public class GraphStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.V(),
                 __.V(1,4),
-                __.V(2,3)
+                __.V(2,3),
+                __.V(GValue.of("one", 1),GValue.of("four", 4)),
+                __.V(GValue.of("two", 2),3),
+                __.V(1,GValue.of("four", 4))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.V(GValue.of("one", 1),GValue.of("four", 4)), Set.of("one", "four")),
+                Pair.of(__.V(GValue.of("two", 2),3), Set.of("two")),
+                Pair.of(__.V(1,GValue.of("four", 4)), Set.of("four"))
         );
     }
 

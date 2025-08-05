@@ -18,15 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
@@ -36,7 +39,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class HasStepTest extends StepTest {
+public class HasStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
@@ -53,7 +56,29 @@ public class HasStepTest extends StepTest {
                 __.hasNot("name"),
                 __.hasNot("age"),
                 __.hasValue("marko"),
-                __.hasValue("josh")
+                __.hasValue("josh"),
+                __.has("name", GValue.of("name", "marko")),
+                __.has("name", out(GValue.of("label", "knows")).values("name")),
+                __.hasId(GValue.of("id", 1)),
+                __.hasId(GValue.of("id", 1.0)),
+                __.hasLabel(GValue.of("label", "person")),
+                __.hasLabel(GValue.of("label", "project")),
+                __.hasValue(GValue.of("name", "marko")),
+                __.hasValue(GValue.of("name", "josh"))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.has("name", GValue.of("name", "marko")), Set.of("name")),
+                Pair.of(__.has("name", out(GValue.of("label", "knows")).values("name")), Set.of("label")),
+                Pair.of(__.hasId(GValue.of("id", 1)), Set.of("id")),
+                Pair.of(__.hasId(GValue.of("id", 1.0)), Set.of("id")),
+                Pair.of(__.hasLabel(GValue.of("label", "person")), Set.of("label")),
+                Pair.of(__.hasLabel(GValue.of("label", "project")), Set.of("label")),
+                Pair.of(__.hasValue(GValue.of("name", "marko")), Set.of("name")),
+                Pair.of(__.hasValue(GValue.of("name", "josh")), Set.of("name"))
         );
     }
 

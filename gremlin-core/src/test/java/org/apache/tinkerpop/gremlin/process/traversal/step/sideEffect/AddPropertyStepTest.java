@@ -18,28 +18,40 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class AddPropertyStepTest extends StepTest {
+public class AddPropertyStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.property("x", 0),
-                __.property("x", 1)
+                __.property("x", 1),
                // __.property("y", 0)
+                __.property("x", GValue.of("value", 0))
         );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.property("x", GValue.of("value", 0)), Set.of("value"))
+            );
     }
 
     @Test
