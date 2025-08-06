@@ -3581,7 +3581,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param predicate the filter to apply
      * @return the traversal with an appended {@link NoneStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#none-step" target="_blank">Reference Documentation - None Step</a>
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public default <S2> GraphTraversal<S, E> none(final P<S2> predicate) {
         this.asAdmin().getGremlinLang().addStep(Symbols.none, predicate);

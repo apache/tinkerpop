@@ -1515,12 +1515,23 @@ link:++https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#difference-step++[`
 [[discard-step]]
 === Discard Step
 
-The `discard()`-step (*filter*) filters all objects from a traversal stream. It is especially useful for traversals
-that are executed remotely where returning results is not useful and the traversal is only meant to generate
-side-effects. Choosing not to return results saves in serialization and network costs as the objects are filtered on
-the remote end and not returned to the client side. Typically, this step does not need to be used directly and is
-quietly used by the `iterate()` terminal step which appends `discard()` to the traversal before actually cycling through
-results.
+The `discard()`-step (*filter*) filters all objects from a traversal stream. It is helpful with <<branch-step>> types
+of steps where a particular branch of code should "throw away" traversers. In the following example, traversers that
+don't match are filtered out of the traversal stream.
+
+[gremlin-groovy,modern]
+----
+g.V().choose(T.label).
+        option("person", __.out("knows").values("name")).
+        option("bleep", __.out("created").values("name")).
+        option(none, discard())
+----
+
+It is also useful for traversals that are executed remotely where returning results is not useful and the traversal is
+only meant to generate side-effects. Choosing not to return results saves in serialization and network costs as the
+objects are filtered on the remote end and not returned to the client side. Typically, this step does not need to be
+used directly and is quietly used by the `iterate()` terminal step which appends `discard()` to the traversal before
+actually cycling through results.
 
 *Additional References*
 
@@ -3242,9 +3253,8 @@ the supplied predicate and if none of the items pass then the traverser is passe
 filtered. Empty lists are passed along but null or non-iterable traversers are filtered out.
 
 
-NOTE: Prior to release 4.0.0, `none()` was a traversal discarding step primarily used by <<iterate-step,`iterate()`>>. This step has
-since been renamed to <<discard-step,`discard()`>>
-
+NOTE: Prior to release 3.8.0, `none()` was a traversal discarding step primarily used by <<iterate-step,`iterate()`>>.
+This step has since been renamed to <<discard-step,`discard()`>>
 
 [gremlin-groovy,modern]
 ----

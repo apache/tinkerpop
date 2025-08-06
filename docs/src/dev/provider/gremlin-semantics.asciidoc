@@ -1835,7 +1835,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 [[none-step]]
 === none()
 
-*Description:* Filters array data from the Traversal Stream if none of the array's items match the supplied predicate.
+*Description:* Filters array data from the traversal stream if none of the array's items match the supplied predicate.
 
 *Syntax:* `none(P predicate)`
 
@@ -1847,7 +1847,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#mergev-step[reference]
 
 *Arguments:*
 
-* `predicate` - The predicate to use to test each value in the array data.
+* `predicate` - The predicate used to test each value in the array data.
 
 *Modulation:*
 
@@ -1856,7 +1856,7 @@ None
 *Considerations:*
 
 Each value will be tested using the supplied predicate. Empty lists always pass through and null/non-list traversers
-will be filtered out of the Traversal Stream.
+will be filtered out of the traversal stream.
 
 *Exceptions*
 
