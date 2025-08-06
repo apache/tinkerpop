@@ -39,10 +39,13 @@ namespace Gremlin.Net.Process.Traversal
 
         public static Pick None => new Pick("none");
 
+        public static Pick Unproductive => new Pick("unproductive");
+
         private static readonly IDictionary<string, Pick> Properties = new Dictionary<string, Pick>
         {
             { "any", Any },
             { "none", None },
+            { "unproductive", Unproductive },
         };
 
         /// <summary>

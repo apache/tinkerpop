@@ -77,17 +77,19 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
     public void g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX() {
         final Traversal<Vertex, Object> traversal = get_g_V_chooseXout_countX_optionX2L_nameX_optionX3L_ageX();
         printTraversalForm(traversal);
-        final Map<String, Long> counts = new HashMap<>();
+        final Map<Object, Long> counts = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
-            MapHelper.incr(counts, traversal.next().toString(), 1L);
+            final Object n =  traversal.next();
+            MapHelper.incr(counts, n instanceof Vertex ? Vertex.class : n.toString(), 1L);
             counter++;
         }
         assertFalse(traversal.hasNext());
-        assertEquals(2, counter);
-        assertEquals(2, counts.size());
+        assertEquals(6, counter);
+        assertEquals(3, counts.size());
         assertEquals(Long.valueOf(1), counts.get("29"));
         assertEquals(Long.valueOf(1), counts.get("josh"));
+        assertEquals(Long.valueOf(4), counts.get(Vertex.class));
     }
 
     @Test

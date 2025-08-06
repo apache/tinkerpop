@@ -1064,6 +1064,7 @@ traversalOperator
 traversalPick
     : K_ANY | K_PICK DOT K_ANY
     | K_NONE | K_PICK DOT K_NONE
+    | K_UNPRODUCTIVE | K_PICK DOT K_UNPRODUCTIVE
     ;
 
 traversalDT
@@ -1903,6 +1904,7 @@ keyword
     | K_TX
     | K_UNFOLD
     | K_UNION
+    | K_UNPRODUCTIVE
     | K_UNTIL
     | K_UUID
     | K_V
@@ -2163,6 +2165,7 @@ K_TRYNEXT: 'tryNext';
 K_TX: 'tx';
 K_UNFOLD: 'unfold';
 K_UNION: 'union';
+K_UNPRODUCTIVE: 'unproductive';
 K_UNTIL: 'until';
 K_UUID: 'UUID';
 K_V: 'V';

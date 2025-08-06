@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.PeerPres
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPath;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -238,7 +239,12 @@ public class TraversalMethodVisitorTest {
 
     @Test
     public void shouldParseTraversalMethod_choose_Function() throws Exception {
-        compare(g.V().choose((Function) label), eval("g.V().choose(label)"));
+        compare(g.V().choose(label), eval("g.V().choose(label)"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_choose_P_Traversal() throws Exception {
+        compare(g.V().values("age").choose(P.eq(12), constant("matched")), eval("g.V().values(\"age\").choose(P.eq(12), constant(\"matched\"))"));
     }
 
     @Test
