@@ -217,11 +217,10 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
     }
 
     /**
-     * Filter all traversers in the traversal. This step has narrow use cases and is primarily intended for use as a
-     * signal to remote servers that {@link #iterate()} was called. While it may be directly used, it is often a sign
-     * that a traversal should be re-written in another form.
+     * Filter all traversers in the traversal. Formerly named {@code none()} prior to 3.8.0.
      *
-     * @return the updated traversal with respective {@link DiscardStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#discard-step" target="_blank">Reference Documentation - Discard Step</a>
+     * @since 3.8.0
      */
     public default Traversal<S, E> discard() {
         this.asAdmin().getGremlinLang().addStep(Symbols.discard);
