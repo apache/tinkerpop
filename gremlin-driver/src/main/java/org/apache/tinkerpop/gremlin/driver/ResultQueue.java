@@ -42,8 +42,6 @@ public final class ResultQueue {
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
-    private final Object aggregatedResult = null;
-
     private final AtomicReference<Throwable> error = new AtomicReference<>();
 
     private final CompletableFuture<Void> readComplete;
@@ -94,11 +92,6 @@ public final class ResultQueue {
     }
 
      public void markComplete() {
-        // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
-        // added to the ResultSet
-        if (aggregatedResult != null)
-            add(new Result(aggregatedResult));
-
         this.readComplete.complete(null);
 
         this.drainAllWaiting();
