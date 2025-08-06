@@ -43,8 +43,6 @@ final class ResultQueue {
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
-    private Object aggregatedResult = null;
-
     private final AtomicReference<Throwable> error = new AtomicReference<>();
 
     private final CompletableFuture<Void> readComplete;
@@ -66,14 +64,6 @@ final class ResultQueue {
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
         tryDrainNextWaiting(false);
-    }
-
-    private <V> V validate(final String aggregateTo, final Class<?> expected) {
-        if (!(expected.isAssignableFrom(aggregatedResult.getClass())))
-            throw new IllegalStateException(String.format("Side-effect \"%s\" contains the type %s that is not acceptable for %s",
-                    aggregatedResult.getClass().getSimpleName(), aggregateTo));
-
-        return (V) aggregatedResult;
     }
 
     public CompletableFuture<List<Result>> await(final int items) {
@@ -105,11 +95,6 @@ final class ResultQueue {
     }
 
     void markComplete(final Map<String,Object> statusAttributes) {
-        // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
-        // added to the ResultSet
-        if (aggregatedResult != null)
-            add(new Result(aggregatedResult));
-
         this.statusAttributes = null == statusAttributes ? Collections.emptyMap() : statusAttributes;
 
         this.readComplete.complete(null);
