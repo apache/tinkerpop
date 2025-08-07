@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S> {
@@ -43,8 +44,8 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         super(traversal);
         this.low = low;
         this.high = high;
-        traversal.getGValueManager().track(low);
-        traversal.getGValueManager().track(high);
+        traversal.getGValueManager().register(low);
+        traversal.getGValueManager().register(high);
     }
 
     @Override
@@ -77,6 +78,20 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
     public Long getHighRange() {
         this.traversal.getGValueManager().pinVariable(high.getName());
         return high.get();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RangeStepPlaceholder<?> that = (RangeStepPlaceholder<?>) o;
+        return Objects.equals(low, that.low) && Objects.equals(high, that.high); //TODO:: Should this only account for GValue name?
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), low, high);
     }
 
     /**

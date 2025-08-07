@@ -18,24 +18,40 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class RangeGlobalStepTest extends StepTest {
+public class RangeGlobalStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.limit(10L),
                 __.skip(10L),
-                __.range(1L, 10L)
+                __.range(1L, 10L),
+                __.limit(GValue.of("limit", 10L)),
+                __.skip(GValue.of("skip", 10L)),
+                __.range(GValue.of("low", 1L), GValue.of("high", 10L))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+            Pair.of(__.limit(GValue.of("limit", 10L)), Set.of("limit")),
+            Pair.of(__.skip(GValue.of("skip", 10L)), Set.of("skip")),
+            Pair.of(__.range(GValue.of("low", 1L), GValue.of("high", 10L)), Set.of("low", "high"))
         );
     }
 }

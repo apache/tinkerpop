@@ -18,23 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class TailGlobalStepTest extends StepTest {
+public class TailGlobalStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.tail(5L),
-                __.tail(10L)
+                __.tail(10L),
+                __.tail(GValue.of("limit", 10L))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.tail(GValue.of("limit", 10L)), Set.of("limit"))
         );
     }
 }

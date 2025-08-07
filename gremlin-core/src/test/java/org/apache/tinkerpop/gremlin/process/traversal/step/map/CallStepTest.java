@@ -19,19 +19,50 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class CallStepTest {
+public class CallStepTest extends GValueStepTest {
+
+    @Override
+    protected List<Traversal> getTraversals() {
+        return Arrays.asList(
+                __.call("service"),
+                __.call("--list").with("service", "tinker.search"),
+                __.call("--list", Map.of("service", "tinker.search")),
+                __.call("xyz-service", Map.of("foo", "bar")),
+                __.call("xyz-service").with("foo", "bar"),
+                __.call("xyz-service", __.inject(Map.of("foo", "bar"))),
+                __.call("xyz-service").with("a", __.inject("b")),
+                __.call("xyz-service", Map.of("foo", "bar"), __.inject(Map.of("a", "b"))),
+                __.call("xyz-service", GValue.of("params", Map.of("foo", "bar"))),
+                __.call("xyz-service", GValue.of("params", Map.of("foo", "bar")), __.inject(Map.of("a", "b")))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.call("xyz-service", GValue.of("params", Map.of("foo", "bar"))), Set.of("params")),
+                Pair.of(__.call("xyz-service", GValue.of("params", Map.of("foo", "bar")), __.inject(Map.of("a", "b"))), Set.of("params"))
+        );
+    }
 
     @Test
     public void testSerializationRoundTrip() {

@@ -178,7 +178,7 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
                         throw new IllegalArgumentException(variable + " binding is not found");
                     }
 
-                    manager.track(GValue.of(variable, m.get(variable)));
+                    manager.register(GValue.of(variable, m.get(variable)));
                 }
 
                 return clonedTraversal;

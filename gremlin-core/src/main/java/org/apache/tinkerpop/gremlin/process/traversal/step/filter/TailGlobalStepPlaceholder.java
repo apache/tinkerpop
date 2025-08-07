@@ -42,7 +42,7 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
         super(traversal);
         this.limit = limit;
         if (this.limit.isVariable()) {
-            traversal.getGValueManager().track(limit);
+            traversal.getGValueManager().register(limit);
         }
     }
 

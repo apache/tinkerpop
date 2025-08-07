@@ -18,24 +18,41 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class RangeLocalStepTest extends StepTest {
+public class RangeLocalStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.limit(Scope.local, 10L),
-                __.range(Scope.local, 1L, 10L)
+                __.skip(Scope.local, 9L), // TODO:: best to edit this to __.skip(Scope.local, 10L) following resolution of TINKERPOP-3170
+                __.range(Scope.local, 1L, 10L),
+                __.limit(Scope.local, GValue.of("limit", 10L)),
+                __.skip(Scope.local, GValue.of("skip", 9L)),
+                __.range(Scope.local, GValue.of("low", 1L), GValue.of("high", 10L))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.limit(Scope.local, GValue.of("limit", 10L)), Set.of("limit")),
+                Pair.of(__.skip(Scope.local, GValue.of("skip", 10L)), Set.of("skip")),
+                Pair.of(__.range(Scope.local, GValue.of("low", 1L), GValue.of("high", 10L)), Set.of("low", "high"))
         );
     }
 }

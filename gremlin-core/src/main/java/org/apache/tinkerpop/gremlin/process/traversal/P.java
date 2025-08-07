@@ -94,6 +94,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         int result = this.biPredicate.hashCode();
         if (null != this.value)
             result ^= this.value.hashCode();
+        if (null != this.gValue)
+            result ^= this.gValue.hashCode();
+        if (null != this.gValues)
+            result ^= Arrays.hashCode(this.gValues);
         return result;
     }
 
@@ -102,7 +106,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value));
+                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value)) &&
+                ((((P) other).gValue == null && this.gValue == null) || ((P) other).gValue.equals(this.gValue)) &&
+                ((((P) other).gValues == null && this.gValues == null) || ((P) other).gValues.equals(this.gValues));
     }
 
     @Override
@@ -154,6 +160,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> neq(final V value) {
+        return new P(Compare.neq, value);
+    }
+
+    /**
+     * Determines if values are not equal.
+     *
+     * @since 3.8.0
+     */ //TODO:: add equivalent overrides for all P.
+    public static <V> P<V> neq(final GValue<V> value) {
         return new P(Compare.neq, value);
     }
 

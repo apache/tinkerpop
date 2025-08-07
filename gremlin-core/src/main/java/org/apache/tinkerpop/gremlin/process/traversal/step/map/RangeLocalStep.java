@@ -153,7 +153,7 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements Rang
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.high) ^ Long.hashCode(this.low);
+        return super.hashCode() ^ Long.hashCode(this.low) ^ Long.hashCode(this.high);
     }
 
     @Override

@@ -18,25 +18,39 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class IsStepTest extends StepTest {
+public class IsStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.count().is(0),
                 __.count().is(P.gt(0)),
-                __.count().is(1)
+                __.count().is(1),
+                __.count().is(GValue.of("x", 0)),
+                __.count().is(P.gt(GValue.of("x", 0)))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.count().is(GValue.of("x", 0)), Set.of("x")),
+                Pair.of(__.count().is(P.gt(GValue.of("x", 0))), Set.of("x"))
         );
     }
 }
