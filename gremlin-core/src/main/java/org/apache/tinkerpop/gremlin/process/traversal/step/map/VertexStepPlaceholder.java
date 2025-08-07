@@ -62,7 +62,7 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
         this.returnClass = returnClass;
         for (GValue<String> label : edgeLabels) {
             if (label.isVariable()) {
-                traversal.getGValueManager().track(label);
+                traversal.getGValueManager().register(label);
             }
         }
     }

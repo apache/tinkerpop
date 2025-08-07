@@ -1605,7 +1605,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(new GValueConstantTraversal<S, Vertex>(fromVertex));
-        this.asAdmin().getGValueManager().track(fromVertex); //TODO should this be tracked from somewhere else?
+        this.asAdmin().getGValueManager().register(fromVertex); //TODO should this be tracked from somewhere else?
         return this;
     }
 
@@ -1665,7 +1665,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(new GValueConstantTraversal<S, Vertex>(toVertex));
-        this.asAdmin().getGValueManager().track(toVertex); //TODO should this be tracked from somewhere else?
+        this.asAdmin().getGValueManager().register(toVertex); //TODO should this be tracked from somewhere else?
         return this;
     }
 

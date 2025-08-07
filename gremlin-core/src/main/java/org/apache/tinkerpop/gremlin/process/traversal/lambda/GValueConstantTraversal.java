@@ -50,12 +50,14 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
 
     @Override
     public int hashCode() {
-        return constantTraversal.hashCode();
+        return this.getClass().hashCode() ^ end.hashCode();
     }
 
     @Override
     public boolean equals(final Object other) {
-        //TODO what if other is GValueConstantTraversal?
+        if (other instanceof GValueConstantTraversal) {
+            return this.end.equals(((GValueConstantTraversal<?, ?>) other).end);
+        }
         return constantTraversal.equals(other);
     }
 
@@ -73,7 +75,6 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
 
     public void updateVariable(String name, Object value) {
         if (name.equals(end.getName())) {
-            //TODO type check?
             end = (GValue<E>) GValue.of(name, value);
             this.constantTraversal = new ConstantTraversal<>(end.get());
         }

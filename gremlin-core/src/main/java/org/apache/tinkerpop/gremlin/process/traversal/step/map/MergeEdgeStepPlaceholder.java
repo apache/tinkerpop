@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +45,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -84,7 +84,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
         this.isStart = isStart;
         this.mergeTraversal = mergeTraversal;
         if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).isParameterized()) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue());
         }
     }
 
@@ -160,7 +160,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchMap) {
         this.onMatchTraversal = onMatchMap;
         if (onMatchMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).isParameterized()) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).getGValue());
         }
     }
 
@@ -168,7 +168,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateMap) {
         this.onCreateTraversal = onCreateMap;
         if (onCreateMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).isParameterized()) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).getGValue());
         }
     }
 
@@ -176,8 +176,22 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     public void setMerge(Traversal.Admin<?,Map<Object, Object>> mergeMap) {
         this.mergeTraversal = mergeMap;
         if (mergeMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).isParameterized()) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).getGValue());
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        MergeEdgeStepPlaceholder<?> that = (MergeEdgeStepPlaceholder<?>) o;
+        return isStart == that.isStart && Objects.equals(properties, that.properties) && Objects.equals(mergeTraversal, that.mergeTraversal) && Objects.equals(onCreateTraversal, that.onCreateTraversal) && Objects.equals(onMatchTraversal, that.onMatchTraversal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), properties, mergeTraversal, onCreateTraversal, onMatchTraversal, isStart);
     }
 
     @Override
@@ -246,7 +260,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
         if (value instanceof GValue) { //TODO could value come in as a traversal?
-            traversal.getGValueManager().track((GValue<?>) value);
+            traversal.getGValueManager().register((GValue<?>) value);
         }
         if (properties.containsKey(key)) {
             throw new IllegalArgumentException("MergeElement.addProperty only support properties with single cardinality");

@@ -28,8 +28,8 @@ public interface GValueHolder<S, E> extends Step<S, E> {
 
     public default void reduce() {
         // todo: maybe check to see if GValueManager was updated after traversal construction to spare this updateVariable
-        final GValueManager manger = this.getTraversal().getGValueManager();
-        manger.getGValues().forEach(gValue -> {
+        final GValueManager manager = this.getTraversal().getGValueManager();
+        manager.getGValues().forEach(gValue -> {
             updateVariable(gValue.getName(), gValue.get());
         });
         Step<S, E> concreteStep = this.asConcreteStep();

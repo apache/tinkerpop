@@ -84,7 +84,7 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
         this.parameters = new Parameters();
 
         if (this.staticParams.isVariable()) {
-            traversal.getGValueManager().track(this.staticParams);
+            traversal.getGValueManager().register(this.staticParams);
         }
     }
 

@@ -58,7 +58,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
         this.value = GValue.of(valueObject);
         this.cardinality = cardinality;
         if (valueObject instanceof GValue) {
-            traversal.getGValueManager().track((GValue<?>) valueObject);
+            traversal.getGValueManager().register((GValue<?>) valueObject);
         }
     }
 
@@ -165,7 +165,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
         if (value instanceof GValue) { //TODO could value come in as a traversal?
-            traversal.getGValueManager().track((GValue<?>) value);
+            traversal.getGValueManager().register((GValue<?>) value);
         }
         if (properties.containsKey(key)) {
             throw new IllegalArgumentException("Only single value meta-properties are supported");

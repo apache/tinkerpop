@@ -18,12 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -33,15 +37,46 @@ import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MergeEdgeStepTest {
+public class MergeEdgeStepTest extends GValueStepTest {
+
+    @Override
+    protected List<Traversal> getTraversals() {
+        return Arrays.asList(
+                __.mergeE(Map.of()),
+                __.mergeE(Map.of("name", "marko")),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onMatch, Map.of()),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onMatch, Map.of("age", 29)),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onCreate, Map.of()),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onCreate, Map.of("age", 29)),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onMatch, Map.of()).option(Merge.onCreate, Map.of()),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onMatch, Map.of("age", 29)).option(Merge.onCreate, Map.of("age", 30)),
+                __.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))),
+                __.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))).option(Merge.onMatch, GValue.of("matchMap", Map.of("age", 29))),
+                __.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 29))),
+                __.mergeE(Map.of("name", "marko")).option(Merge.onMatch, GValue.of("matchMap", Map.of("age", 29))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 30)))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))), Set.of("mergeMap")),
+                Pair.of(__.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))).option(Merge.onMatch, GValue.of("matchMap", Map.of("age", 29))), Set.of("mergeMap", "matchMap")),
+                Pair.of(__.mergeE(GValue.of("mergeMap", Map.of("name", "marko"))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 29))), Set.of("mergeMap", "createMap")),
+                Pair.of(__.mergeE(Map.of("name", "marko")).option(Merge.onMatch, GValue.of("matchMap", Map.of("age", 29))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 30))), Set.of("matchMap", "createMap"))
+        );
+    }
 
     @Test
     public void shouldValidateWithTokens() {

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -75,7 +74,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
         this.label = labelTraversal;
         if (labelTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<S, String>) labelTraversal).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<S, String>) labelTraversal).getGValue());
         }
         addTraversal(labelTraversal);
     }
@@ -164,7 +163,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
         if (value instanceof GValue) { //TODO could value come in as a traversal?
-            traversal.getGValueManager().track((GValue<?>) value);
+            traversal.getGValueManager().register((GValue<?>) value);
         }
         if (key == T.label) { //todo copy to similar steps
             setLabel(value);
@@ -227,7 +226,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     @Override
     public void setElementId(Object elementId) {
         this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
-        this.traversal.getGValueManager().track(this.elementId);
+        this.traversal.getGValueManager().register(this.elementId);
     }
 
     @Override

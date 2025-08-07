@@ -57,7 +57,7 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param other the target {@code GValueManager} into which the current instance's registries will be merged
      */
     public void mergeInto(final GValueManager other) {
-        //TODO deal with conflicts
+        //TODO deal with conflicts, needs test
         other.gValueRegistry.putAll(gValueRegistry);
         other.pinnedGValues.putAll(pinnedGValues);
     }
@@ -118,7 +118,9 @@ public final class GValueManager implements Serializable, Cloneable {
      * Delete all data.
      */
     public void reset() {
+        // TODO:: is this still needed? When would we want to reset the manager.
         gValueRegistry.clear();
+//        pinnedGValues.clear();
     }
 
     /**
@@ -132,8 +134,9 @@ public final class GValueManager implements Serializable, Cloneable {
      */
     public boolean pinVariable(final String name) {
         if (name == null || !gValueRegistry.containsKey(name)) {
-            return false;
+            return false; //TODO:: should be exception
         }
+        //TODO:: return true/false based on if it was already pinned.
         pinnedGValues.put(name, gValueRegistry.get(name));
         return true;
     }
@@ -150,20 +153,23 @@ public final class GValueManager implements Serializable, Cloneable {
     public void pinGValues(final Collection<GValue<?>> gValues) {
         for (GValue<?> gValue : gValues) {
             if (gValue.isVariable()) {
+                // TODO:: should utilize pinVariable(final String name), think about return value.
                 pinnedGValues.put(gValue.getName(), gValue);
             }
         }
     }
-
-    public void track(GValue<?> gValue) {
+    public void register(GValue<?> gValue) {
         if (gValue.isVariable()) {
+            if (gValueRegistry.containsKey(gValue.getName()) && !gValueRegistry.get(gValue.getName()).equals(gValue)) {
+                throw new IllegalArgumentException(String.format("Unable to register both %s and %s in a single traversal", gValueRegistry.get(gValue.getName()), gValue));
+            }
             gValueRegistry.put(gValue.getName(), gValue);
         }
     }
 
-    public void track(Collection<GValue<?>> gValues) {
+    public void register(Collection<GValue<?>> gValues) {
         for (GValue<?> gValue : gValues) {
-            track(gValue);
+            register(gValue);
         }
     }
 }

@@ -18,12 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -34,7 +40,29 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AddVertexStepTest {
+public class AddVertexStepTest extends GValueStepTest {
+
+    @Override
+    protected List<Traversal> getTraversals() {
+        return Arrays.asList(
+                __.addV("knows").property("a", "b"),
+                __.addV("created").property("a", "b"),
+                __.addV("knows").property("a", "b").property("c", "e"),
+                __.addV("knows").property("c", "e"),
+                __.addV(GValue.of("label", "knows")).property("a", "b"),
+                __.addV(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
+                __.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e"))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.addV(GValue.of("label", "knows")).property("a", "b"), Set.of("label")),
+                Pair.of(__.addV(GValue.of("label", "created")).property("a", GValue.of("prop", "b")), Set.of("label", "prop")),
+                Pair.of(__.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2"))
+        );
+    }
 
     @Test
     public void shouldDefaultTheLabelIfNullString() {
