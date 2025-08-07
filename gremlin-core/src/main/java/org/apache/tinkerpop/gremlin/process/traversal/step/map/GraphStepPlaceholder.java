@@ -51,7 +51,7 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         this.isStart = isStart;
 
         for (GValue id : ids) {
-            traversal.getGValueManager().track(id);
+            traversal.getGValueManager().register(id);
         }
     }
 

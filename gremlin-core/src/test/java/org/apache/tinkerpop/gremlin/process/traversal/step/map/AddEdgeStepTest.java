@@ -49,7 +49,23 @@ public class AddEdgeStepTest extends GValueStepTest {
                 __.addE("knows").property("a", "b"),
                 __.addE("created").property("a", "b"),
                 __.addE("knows").property("a", "b").property("c", "e"),
-                __.addE("knows").property("c", "e")
+                __.addE("knows").property("c", "e"),
+                __.addE("knows").from(1).to(2).property("a", "b"),
+                __.addE(GValue.of("label", "knows")).property("a", "b"),
+                __.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
+                __.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")),
+                __.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a",  GValue.of("prop", "b"))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.addE(GValue.of("label", "knows")).property("a", "b"), Set.of("label")),
+                Pair.of(__.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")), Set.of("label", "prop")),
+                Pair.of(__.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2")),
+                Pair.of(__.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a",  GValue.of("prop", "b")), Set.of("label", "from", "to", "prop")),
+                Pair.of(__.addE("knows").from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a",  GValue.of("prop", "b")), Set.of("from", "to", "prop"))
         );
     }
 

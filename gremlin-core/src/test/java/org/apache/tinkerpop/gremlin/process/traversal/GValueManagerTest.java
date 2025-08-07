@@ -37,8 +37,8 @@ public class GValueManagerTest {
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");
 
-        sourceManager.track(unpinned);
-        sourceManager.track(pinned);
+        sourceManager.register(unpinned);
+        sourceManager.register(pinned);
         sourceManager.pinVariable(pinned.getName());
 
         sourceManager.mergeInto(targetManager);
@@ -74,8 +74,8 @@ public class GValueManagerTest {
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");
 
-        manager.track(unpinned);
-        manager.track(pinned);
+        manager.register(unpinned);
+        manager.register(pinned);
         manager.pinVariable(pinned.getName());
 
         final Set<String> variableNames = manager.getVariableNames();
@@ -94,8 +94,8 @@ public class GValueManagerTest {
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");
 
-        manager.track(unpinned);
-        manager.track(pinned);
+        manager.register(unpinned);
+        manager.register(pinned);
         manager.pinVariable(pinned.getName());
 
         final Set<GValue<?>> gValues = manager.getGValues();
@@ -114,7 +114,7 @@ public class GValueManagerTest {
 
         final GValue<String> gValue = GValue.of("x", "foo");
 
-        manager.track(gValue);
+        manager.register(gValue);
 
         assertThat(manager.hasVariables(), is(true));
         assertThat(manager.hasUnpinnedVariables(), is(true));
@@ -131,8 +131,8 @@ public class GValueManagerTest {
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");
 
-        manager.track(unpinned);
-        manager.track(pinned);
+        manager.register(unpinned);
+        manager.register(pinned);
         manager.pinVariable(pinned.getName());
 
         manager.reset();
@@ -146,8 +146,8 @@ public class GValueManagerTest {
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");
 
-        manager.track(unpinned);
-        manager.track(pinned);
+        manager.register(unpinned);
+        manager.register(pinned);
         manager.pinVariable(pinned.getName());
 
         final GValueManager clonedManager = manager.clone();

@@ -89,7 +89,7 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
     public void addTo(final Traversal.Admin<?, ?> toObject) {
         addTraversal(toObject);
         if (toObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) toObject).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) toObject).getGValue());
         }
         this.to = toObject;
     }
@@ -98,7 +98,7 @@ public class AddEdgeStartStepPlaceholder<S> extends AbstractStep<S, Edge>
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
         addTraversal(fromObject);
         if (fromObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().track(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
         }
         this.from = fromObject;
     }

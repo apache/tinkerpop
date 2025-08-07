@@ -40,6 +40,9 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     public TailGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
+        if (this.limit.isVariable()) {
+            traversal.getGValueManager().register(limit);
+        }
     }
 
     @Override

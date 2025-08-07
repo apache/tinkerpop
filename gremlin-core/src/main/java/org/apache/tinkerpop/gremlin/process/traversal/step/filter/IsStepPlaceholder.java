@@ -45,7 +45,7 @@ public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GVa
     public IsStepPlaceholder(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
         this.predicate = predicate;
-        traversal.getGValueManager().track(predicate.getGValues());
+        traversal.getGValueManager().register(predicate.getGValues());
     }
 
     @Override
