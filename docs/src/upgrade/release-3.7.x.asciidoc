@@ -21,9 +21,26 @@ image::gremlin-zamfir.png[width=185]
 
 *Gremfir Master of the Pan Flute*
 
-== TinkerPop 3.7.4
+== TinkerPop 3.7.5
 
 *Release Date: NOT OFFICIALLY RELEASED YET*
+
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.5/CHANGELOG.asciidoc#release-3-7-5[changelog] for a
+complete list of all the modifications that are part of this release.
+
+=== Upgrading for Users
+
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+==== Graph Driver Providers
+
+
+== TinkerPop 3.7.4
+
+*Release Date: August 1, 2025*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.4/CHANGELOG.asciidoc#release-3-7-4[changelog] for a
 complete list of all the modifications that are part of this release.
@@ -57,14 +74,6 @@ See: link:https://tinkerpop.apache.org/docs/3.7.4/reference/#metrics[Reference D
 
 Gremlin Go has been upgraded to Go version 1.24.
 Gremlin Javascript has been upgraded to Node 20.
-
-=== Upgrading for Providers
-
-==== Graph System Providers
-
-
-==== Graph Driver Providers
-
 
 == TinkerPop 3.7.3
 

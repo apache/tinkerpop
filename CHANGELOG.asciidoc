@@ -93,8 +93,11 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
+[[release-3-7-5]]
+=== TinkerPop 3.7.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+
 [[release-3-7-4]]
-=== TinkerPop 3.7.4 (NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.4 (Release Date: August 1, 2025)
 
 * Fixed bug in server `Settings` where it was referencing a property that was back in 3.3.0 and generating a warning log.
 * Improved performance of `Traversal.lock()` which was being called excessively.
@@ -137,8 +140,46 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Upgraded Go to version 1.24
 * Fixed broken image links in published documentation
 
+==== Bugs
+
+* TINKERPOP-3146 Support SSL Certificates Reloading
+* TINKERPOP-2966 Change PythonTranslator to generate underscore based step naming
+* TINKERPOP-3015 Use wildcard instead of Object for hasId predicates
+* TINKERPOP-3070 Cannot run console if working directory contains spaces
+* TINKERPOP-3111 Update documentation in gremlin-python driver section
+* TINKERPOP-3130 Better consistency for none()/discard() usage
+* TINKERPOP-3133 Customize the file count by repartition the OutputRDD in Spark to reduce HDFS small files
+* TINKERPOP-3137 Allow null to be used as Map value to mergeV and mergeE
+* TINKERPOP-3177 Sessioned Client in Go
+
+==== Improvements
+
+* TINKERPOP-2489 Server doesn't start if folder has spaces
+* TINKERPOP-2647 :uninstall without first disabling a plugin will lead to error on startup
+* TINKERPOP-2886 Inconsistent results when executing equivalent queries
+* TINKERPOP-3038 Console plugins file can't accept empty lines
+* TINKERPOP-3040 Remote Console won't send queries that cause exceptions locally
+* TINKERPOP-3067 gremlin-shaded incomplete shading due to Jackson multi-release classes
+* TINKERPOP-3100 Traversal.Admin.lock() has excessive recursion
+* TINKERPOP-3120 Closing a session with an Authorizer enabled throws an Exception
+* TINKERPOP-3123 TinkerGraphParameterizedWorld # useParametersLteraly() removes overried identifier
+* TINKERPOP-3124 MessageSizeEstimator is not sizing Frame instances properly
+* TINKERPOP-3135 Gremlin Console complains about missing plugins field
+* TINKERPOP-3138 JS gremlin library "enableCompression" option cause Connection the be closed
+* TINKERPOP-3139 IndexStep serialization
+* TINKERPOP-3140 emit() without repeat() throws an NPE
+* TINKERPOP-3141 TinkerTransactionGraph doesn't allow deleting and adding element back in same transaction
+* TINKERPOP-3142 TinkerTransactionGraph doesn't remove deleted elements in threaded scenario
+* TINKERPOP-3144 Traversal not closed after interruption
+* TINKERPOP-3155 Operator.addAll checks for instanceof on the wrong parameter
+* TINKERPOP-3160 Node.js 22+: Gremlin Fails with network error and HTTP 101 Status Due to WebSocket Limitation in undici
+* TINKERPOP-3162 Gryo writes illegal reflective access operations for AtomicLong in JDK17
+* TINKERPOP-3163 CallStep serialization
+* TINKERPOP-3167 Possible NullPointerException when borrowing a connection
+* TINKERPOP-3174 Site images linked to github are broken
+
 [[release-3-7-3]]
-=== TinkerPop 3.7.3 (October 23, 2024)
+=== TinkerPop 3.7.3 (Release Date: October 23, 2024)
 
 This release also includes changes from <<release-3-6-8, 3.6.8>>.
 
@@ -193,7 +234,7 @@ This release also includes changes from <<release-3-6-8, 3.6.8>>.
 * TINKERPOP-3102 Cardinality input with mergeE step shouldn't be allowed.
 
 [[release-3-7-2]]
-=== TinkerPop 3.7.2 (April 8, 2024)
+=== TinkerPop 3.7.2 (Release Date: April 8, 2024)
 
 This release also includes changes from <<release-3-6-7, 3.6.7>>.
 
@@ -230,7 +271,7 @@ This release also includes changes from <<release-3-6-7, 3.6.7>>.
 * TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-7-1]]
-=== TinkerPop 3.7.1 (November 20, 2023)
+=== TinkerPop 3.7.1 (Release Date: November 20, 2023)
 
 This release also includes changes from <<release-3-6-6, 3.6.6>> and <<release-3-5-8, 3.5.8>>.
 
@@ -482,7 +523,7 @@ This release also includes changes from <<release-3-6-5, 3.6.5>> and <<release-3
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-victorian.png[width=185]
 
 [[release-3-6-8]]
-=== TinkerPop 3.6.8 (October 23, 2024)
+=== TinkerPop 3.6.8 (Release Date: October 23, 2024)
 
 * Fixed a bug in GremlinServer not properly propagating arguments when authentication is enabled.
 * Fixed bug in Java driver where connection pool was not removing dead connections under certain error conditions.
@@ -520,7 +561,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * TINKERPOP-3098 Gremlin Console bat file is missing log level configuration option
 
 [[release-3-6-7]]
-=== TinkerPop 3.6.7 (April 8, 2024)
+=== TinkerPop 3.6.7 (Release Date: April 8, 2024)
 
 * Fixed a bug in Gremlin.Net for .NET 8 that led to exceptions: `InvalidOperationException: Enumeration has not started. Call MoveNext.`
 * Fixed message requestId serialization in `gremlin-python`.
@@ -562,7 +603,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * TINKERPOP-3068 Make serviceName and mergedParams public for provider usage in CallStep
 
 [[release-3-6-6]]
-=== TinkerPop 3.6.6 (November 20, 2023)
+=== TinkerPop 3.6.6 (Release Date: November 20, 2023)
 
 This release also includes changes from <<release-3-5-8, 3.5.8>>.
 
