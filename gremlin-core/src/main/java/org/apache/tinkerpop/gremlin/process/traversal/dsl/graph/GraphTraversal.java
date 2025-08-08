@@ -52,7 +52,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlace
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder.RangeLocalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailLocalStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
@@ -1605,7 +1613,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         this.asAdmin().getBytecode().addStep(Symbols.from, fromVertex);
         ((FromToModulating) prev).addFrom(new GValueConstantTraversal<S, Vertex>(fromVertex));
-        this.asAdmin().getGValueManager().register(fromVertex); //TODO should this be tracked from somewhere else?
         return this;
     }
 
@@ -1665,7 +1672,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         this.asAdmin().getBytecode().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(new GValueConstantTraversal<S, Vertex>(toVertex));
-        this.asAdmin().getGValueManager().register(toVertex); //TODO should this be tracked from somewhere else?
         return this;
     }
 
@@ -2942,7 +2948,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
             //using ArrayList given P.within() turns all arguments into lists
             final List<Object> ids = new ArrayList<>();
-            //TODO:: Is it ok to not unroll GValue<Collection>? How would we even substitute a variable later if we've unrolled the GValue?
             if (id instanceof Object[]) {
                 Collections.addAll(ids, (Object[]) id);
             } else if (id instanceof Collection) {
@@ -3513,7 +3518,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <S2> GraphTraversal<S, E> all(final P<S2> predicate) {
         if (predicate != null && predicate.isParameterized()) {
-            throw new IllegalArgumentException("Parameterized predicates are not supported by all()"); //TODO:: should this be supported?
+            throw new IllegalArgumentException("Parameterized predicates are not supported by all()");
         }
         this.asAdmin().getBytecode().addStep(Symbols.all, predicate);
         return this.asAdmin().addStep(new AllStep<>(this.asAdmin(), predicate));
@@ -3529,7 +3534,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <S2> GraphTraversal<S, E> any(final P<S2> predicate) {
         if (predicate != null && predicate.isParameterized()) {
-            throw new IllegalArgumentException("Parameterized predicates are not supported by any()"); //TODO:: should this be supported?
+            throw new IllegalArgumentException("Parameterized predicates are not supported by any()");
         }
         this.asAdmin().getBytecode().addStep(Symbols.any, predicate);
         return this.asAdmin().addStep(new AnyStep<>(this.asAdmin(), predicate));
@@ -4673,30 +4678,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2> GraphTraversal<S, E> option(final Traversal<?, E2> traversalOption) {
         this.asAdmin().getBytecode().addStep(Symbols.option, traversalOption);
         ((TraversalOptionParent<Object, E, E2>) this.asAdmin().getEndStep()).addChildOption(Pick.any, (Traversal.Admin<E, E2>) traversalOption.asAdmin());
-        return this;
-    }
-
-    /**
-     * This is a step modulator to a {@link TraversalOptionParent} like {@code choose()} or {@code mergeV()} where the
-     * provided argument associated to the {@code token} is applied according to the semantics of the step. Please see
-     * the documentation of such steps to understand the usage context.
-     *
-     * @param token       the token that would trigger this option which may be a {@link Pick}, {@link Merge},
-     *                    a {@link Traversal}, {@link Predicate}, or object depending on the step being modulated.
-     * @param traversalOption the option as a traversal
-     * @return the traversal with the modulated step
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#choose-step" target="_blank">Reference Documentation - Choose Step</a>
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergev-step" target="_blank">Reference Documentation - MergeV Step</a>
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#mergee-step" target="_blank">Reference Documentation - MergeE Step</a>
-     * @since 3.8.0
-     */
-    public default <M, E2> GraphTraversal<S, E> option(final GValue<M> token, final Traversal<?, E2> traversalOption) {
-        this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.option, token, traversalOption);
-
-        // handle null similar to how option() with Map handles it, otherwise we get a NPE if this one gets used
-        final Traversal.Admin<E,E2> t = null == traversalOption ?
-                new ConstantTraversal<>(null) : (Traversal.Admin<E, E2>) traversalOption.asAdmin();
-        ((TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep()).addChildOption(token.get(), t);
         return this;
     }
 

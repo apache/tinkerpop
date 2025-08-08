@@ -355,7 +355,7 @@ public class GraphTraversalSource implements TraversalSource {
      * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
      * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      *
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
@@ -392,7 +392,7 @@ public class GraphTraversalSource implements TraversalSource {
     /**
      * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
      *
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Edge, Edge> addE(final GValue<String> label) {
         final GraphTraversalSource clone = this.clone();
@@ -445,7 +445,7 @@ public class GraphTraversalSource implements TraversalSource {
      * made it will use that search criteria to create the new {@link Vertex}.
      *
      * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<?, ?>> searchCreate) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
@@ -494,7 +494,7 @@ public class GraphTraversalSource implements TraversalSource {
      * {@code Map} as an argument.
      *
      * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
@@ -643,7 +643,7 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
@@ -658,7 +658,7 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map<?,?>> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
