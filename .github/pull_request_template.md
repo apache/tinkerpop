@@ -1,7 +1,7 @@
 <!--
 Thanks for contributing! Reminders:
 + TARGET the earliest branch where you want the change
-    3.7-dev -> 3.7.4 (non-breaking only)
+    3.7-dev -> 3.7.5 (non-breaking only)
     3.8-dev -> 3.8.0
     master  -> 4.0.0
 + Committers will MERGE the PR forward to newer versions
