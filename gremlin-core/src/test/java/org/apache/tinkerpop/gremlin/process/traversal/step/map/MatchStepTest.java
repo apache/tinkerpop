@@ -193,7 +193,7 @@ public class MatchStepTest extends StepTest {
             assertEquals(WherePredicateStep.class, pattern.getStartStep().getNextStep().getClass());
             assertEquals(MatchStep.MatchEndStep.class, pattern.getStartStep().getNextStep().getNextStep().getClass());
             assertFalse(((WherePredicateStep<?>) pattern.getStartStep().getNextStep()).getStartKey().isPresent());
-            assertEquals("d", ((WherePredicateStep<?>) pattern.getStartStep().getNextStep()).getPredicate().get().getOriginalValue());
+            assertEquals("d", ((WherePredicateStep<?>) pattern.getStartStep().getNextStep()).getPredicate().get().getValue());
         });
     }
 
