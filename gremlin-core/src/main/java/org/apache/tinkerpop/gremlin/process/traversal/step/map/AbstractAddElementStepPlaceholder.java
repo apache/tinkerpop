@@ -212,7 +212,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (elementId == null) {
             return null;
         }
-        this.traversal.getGValueManager().pinVariable(elementId.getName());
+        if (elementId.isVariable()) {
+            this.traversal.getGValueManager().pinVariable(elementId.getName());
+        }
         return elementId.get();
     }
 

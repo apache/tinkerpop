@@ -271,7 +271,7 @@ public class CountStrategyTest {
                     {__.filter(__.out().count().is(lt(GValue.ofInteger("x", -5)).and(lt(GValue.ofInteger("y", -1)))))},
                     {__.filter(__.out().count().is(lt(GValue.ofInteger("x", -5)).or(lt(GValue.ofInteger("y", -1)))))},
                     {__.where(__.in("knows").count().is(inside(GValue.ofInteger("x", -1), GValue.ofInteger("y", 1)).and(lt(GValue.ofInteger("x", -1)))))},
-                    {__.where(__.inV().count().is(outside(GValue.ofInteger("x", -1), GValue.ofInteger("x", -2))))},
+                    {__.where(__.inV().count().is(outside(GValue.ofInteger("x", -1), GValue.ofInteger("y", -2))))},
                     {__.filter(__.bothE().count().is(gt(GValue.ofInteger("x", 0))))},
                     {__.filter(__.bothE().count().is(gte(GValue.ofInteger("x", 1))))},
                     {__.filter(__.bothE().count().is(gt(GValue.ofInteger("x", 1))))},
