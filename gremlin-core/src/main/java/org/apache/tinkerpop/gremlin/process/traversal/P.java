@@ -46,26 +46,31 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected V originalValue;
     protected GValue<V> gValue;
     protected GValue<V>[] gValues;
+    private boolean parameterized;
 
     public P(final PBiPredicate<V, V> biPredicate, V value) {
         if (value instanceof GValue) {
             this.gValue = (GValue<V>) value;
             this.value = ((GValue<V>) value).get();
-        } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
-            this.gValues = GValue.ensureGValues(((List) value).toArray());
+        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
             this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
         } else {
             this.value = value;
         }
         this.originalValue = this.value;
         this.biPredicate = biPredicate;
+
+        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
         this.gValue = value;
-        this.value = value.get();
-        this.originalValue = value.get();
+        this.value = value != null ? value.get() : null;
+        this.originalValue = value != null ? value.get() : null;
         this.biPredicate = biPredicate;
+
+        this.parameterized = (gValue != null && gValue.isVariable());
     }
 
     public P(final PBiPredicate<V, V> biPredicate, final GValue<V> value) {
@@ -123,38 +128,16 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public void setValue(final V value) {
-        variables.clear();
-        literals = Collections.EMPTY_LIST;
-
-        if (value == null) {
-            isCollection = false;
-            this.literals = Collections.singleton(null);
-        } else if (value instanceof GValue) {
-            variables.put(((GValue<V>) value).getName(), ((GValue<V>) value).get());
-            isCollection = false;
-        } else if (value instanceof Collection) {
-            isCollection = true;
-            if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
-                this.literals = new ArrayList<>(); // TODO:: is it possible to retain original collection type?
-                for (Object v : ((Collection<?>) value)) {
-                    // Separate variables and literals
-                    if (v instanceof GValue) {
-                        if (((GValue<V>) v).isVariable()) {
-                            variables.put(((GValue<V>) v).getName(), ((GValue<V>) v).get());
-                        } else {
-                            literals.add(((GValue<V>) v).get());
-                        }
-                    } else {
-                        literals.add((V) v);
-                    }
-                }
-            } else {
-                literals = (Collection<V>) value; // Retain original collection when possible
-            }
+        if (value instanceof GValue) {
+            this.gValue = (GValue<V>) value;
+            this.value = ((GValue<V>) value).get();
+        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
+            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
         } else {
-            isCollection = false;
-            this.literals = Collections.singleton(value);
+            this.value = value;
         }
+        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     @Override
@@ -180,8 +163,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue)) &&
-                ((((P) other).gValue == null && this.gValue == null) || ((P) other).gValue.equals(this.gValue)) &&
-                ((((P) other).gValues == null && this.gValues == null) || ((P) other).gValues.equals(this.gValues));
+                ((((P) other).gValue == null && this.gValue == null) || (((P) other).gValue != null && ((P) other).gValue.equals(this.gValue))) &&
+                ((((P) other).gValues == null && this.gValues == null) || (((P) other).gValues != null && ((P) other).gValues.equals(this.gValues)));
     }
 
     @Override
@@ -267,7 +250,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * Determines if values are not equal.
      *
      * @since 3.8.0
-     */ //TODO:: add equivalent overrides for all P.
+     */
     public static <V> P<V> neq(final GValue<V> value) {
         return new P(Compare.neq, value);
     }
@@ -410,6 +393,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> within(final GValue<V>... values) {
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
+        return P.within(Arrays.asList(v));
+    }
+
+    /**
      * Determines if a value is within the specified list of values. Calling this with {@code null} is the same as
      * calling {@link #within(Object[])} using {@code null}.
      *
@@ -472,17 +466,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public boolean isParameterized() {
-        if (gValue != null && gValue.isVariable()) {
-            return true;
-        }
-        if (gValues != null) {
-            for (final GValue<V> gValue : gValues) {
-                if (gValue != null && gValue.isVariable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return this.parameterized;
     }
 
     public void updateVariable(final String name, final Object value) {

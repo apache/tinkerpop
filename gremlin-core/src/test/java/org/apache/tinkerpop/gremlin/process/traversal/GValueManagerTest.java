@@ -126,21 +126,6 @@ public class GValueManagerTest {
     }
 
     @Test
-    public void shouldResetManager() {
-        final GValueManager manager = new GValueManager();
-        final GValue<String> unpinned = GValue.of("unpinned", "foo");
-        final GValue<String> pinned = GValue.of("pinned", "bar");
-
-        manager.register(unpinned);
-        manager.register(pinned);
-        manager.pinVariable(pinned.getName());
-
-        manager.reset();
-
-        assertThat(manager.getGValues().size(), is(0));
-    }
-
-    @Test
     public void shouldCloneManager() {
         final GValueManager manager = new GValueManager();
         final GValue<String> unpinned = GValue.of("unpinned", "foo");

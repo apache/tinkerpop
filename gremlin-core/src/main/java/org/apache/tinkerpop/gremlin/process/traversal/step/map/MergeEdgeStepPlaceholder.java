@@ -63,6 +63,8 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     private Traversal.Admin<?,Map<Object,Object>> mergeTraversal;
     private Traversal.Admin<?,Map<Object,Object>> onCreateTraversal;
     private Traversal.Admin<?,Map<Object,Object>> onMatchTraversal;
+    private Traversal.Admin<S,Map<Object,Object>> outVTraversal = null;
+    private Traversal.Admin<S,Map<Object,Object>> inVTraversal = null;
     private final boolean isStart;
 
     public MergeEdgeStepPlaceholder(final Traversal.Admin traversal, final boolean isStart) {
@@ -146,7 +148,11 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
             setOnCreate(traversalOption);
         } else if (token == Merge.onMatch) {
             setOnMatch(traversalOption);
-        } else {
+        } else if (token == Merge.outV) {
+            this.outVTraversal = traversalOption;
+        } else if (token == Merge.inV) {
+            this.inVTraversal = traversalOption;
+        }else {
             throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
         }
     }
@@ -186,12 +192,12 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         MergeEdgeStepPlaceholder<?> that = (MergeEdgeStepPlaceholder<?>) o;
-        return isStart == that.isStart && Objects.equals(properties, that.properties) && Objects.equals(mergeTraversal, that.mergeTraversal) && Objects.equals(onCreateTraversal, that.onCreateTraversal) && Objects.equals(onMatchTraversal, that.onMatchTraversal);
+        return isStart == that.isStart && Objects.equals(properties, that.properties) && Objects.equals(mergeTraversal, that.mergeTraversal) && Objects.equals(onCreateTraversal, that.onCreateTraversal) && Objects.equals(onMatchTraversal, that.onMatchTraversal) && Objects.equals(outVTraversal, that.outVTraversal) && Objects.equals(inVTraversal, that.inVTraversal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), properties, mergeTraversal, onCreateTraversal, onMatchTraversal, isStart);
+        return Objects.hash(super.hashCode(), properties, mergeTraversal, onCreateTraversal, onMatchTraversal, outVTraversal, inVTraversal, isStart);
     }
 
     @Override
@@ -208,6 +214,13 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
             for (final Object value : entry.getValue()) {
                 step.addProperty(entry.getKey(), value);
             }
+        }
+
+        if (inVTraversal != null) {
+            step.addChildOption(Merge.inV, inVTraversal);
+        }
+        if (outVTraversal != null) {
+            step.addChildOption(Merge.outV, outVTraversal);
         }
 
         TraversalHelper.copyLabels(this, step, false);

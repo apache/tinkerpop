@@ -57,9 +57,9 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param other the target {@code GValueManager} into which the current instance's registries will be merged
      */
     public void mergeInto(final GValueManager other) {
-        //TODO deal with conflicts, needs test
-        other.gValueRegistry.putAll(gValueRegistry);
-        other.pinnedGValues.putAll(pinnedGValues);
+        //TODO needs test
+        other.register(gValueRegistry.values());
+        other.pinGValues(pinnedGValues.values());
     }
 
     /**
@@ -115,30 +115,19 @@ public final class GValueManager implements Serializable, Cloneable {
     }
 
     /**
-     * Delete all data.
-     */
-    public void reset() {
-        // TODO:: is this still needed? When would we want to reset the manager.
-        gValueRegistry.clear();
-//        pinnedGValues.clear();
-    }
-
-    /**
      * Pins any GValue with the provided name. This should be called anytime an optimization
      * alters the Traversal based on the current value of a GValue. This indicates that the resulting traversal is only
      * valid for this specific value of a GValue, and is not generalizable to any parameter value.
      *
      * @param name the name of the GValue to be pinned
-     * @return true if name matches a registered GValue which was successfully pinned, false otherwise.
+     * @return true if name was previously unpinned, false otherwise.
      * @throws IllegalStateException if the manager is locked
      */
     public boolean pinVariable(final String name) {
         if (name == null || !gValueRegistry.containsKey(name)) {
-            return false; //TODO:: should be exception
+            throw new IllegalArgumentException(String.format("Variable '%s' does not exist", name));
         }
-        //TODO:: return true/false based on if it was already pinned.
-        pinnedGValues.put(name, gValueRegistry.get(name));
-        return true;
+        return pinnedGValues.put(name, gValueRegistry.get(name)) == null;
     }
 
     @Override
@@ -150,14 +139,10 @@ public final class GValueManager implements Serializable, Cloneable {
      * Pin a collection of {@link GValue} instances from the internal registry. Iteratively processes each
      * {@link GValue} to pin it to its current value.
      */
-    public void pinGValues(final Collection<GValue<?>> gValues) {
-        for (GValue<?> gValue : gValues) {
-            if (gValue.isVariable()) {
-                // TODO:: should utilize pinVariable(final String name), think about return value.
-                pinnedGValues.put(gValue.getName(), gValue);
-            }
-        }
+    public void pinGValues(final Collection<GValue<?>> gValues) { //TODO:: should there be a return value?
+        gValues.stream().filter(v -> v != null && v.isVariable()).forEach(v -> pinVariable(v.getName()));
     }
+
     public void register(GValue<?> gValue) {
         if (gValue.isVariable()) {
             if (gValueRegistry.containsKey(gValue.getName()) && !gValueRegistry.get(gValue.getName()).equals(gValue)) {
@@ -171,5 +156,14 @@ public final class GValueManager implements Serializable, Cloneable {
         for (GValue<?> gValue : gValues) {
             register(gValue);
         }
+    }
+
+    public void updateVariable(String name, Object value) {
+        if (!getVariableNames().contains(name)) {
+            throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it has not been registered in this traversal", name));
+        } else if (pinnedGValues.containsKey(name)) {
+            throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it is already pinned", name));
+        }
+        gValueRegistry.put(name, GValue.of(name, value));
     }
 }
