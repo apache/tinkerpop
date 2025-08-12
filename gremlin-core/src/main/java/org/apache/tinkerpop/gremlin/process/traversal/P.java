@@ -18,15 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -41,47 +46,38 @@ import java.util.stream.Collectors;
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected PBiPredicate<V, V> biPredicate;
-    protected V value;
-    protected V originalValue;
-    protected GValue<V> gValue;
-    protected GValue<V>[] gValues;
-    private boolean parameterized;
+    protected Map<String, V> variables = new HashMap<>();
+    protected Collection<V> literals = Collections.EMPTY_LIST;
+    private boolean isCollection = false;
 
     public P(final PBiPredicate<V, V> biPredicate, V value) {
-        if (value instanceof GValue) {
-            this.gValue = (GValue<V>) value;
-            this.value = ((GValue<V>) value).get();
-        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
-            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
-            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
-        } else {
-            this.value = value;
-        }
-        this.originalValue = this.value;
+        setValue(value);
         this.biPredicate = biPredicate;
-
-        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
-        this.gValue = value;
-        this.value = value != null ? value.get() : null;
-        this.originalValue = value != null ? value.get() : null;
+        if (value != null) {
+            if (value.isVariable()) {
+                variables.put(value.getName(), value.get());
+            } else {
+                literals = Collections.singleton(value.get());
+            }
+        } else {
+            this.literals = Collections.singleton(null);
+        }
+        this.isCollection = false;
         this.biPredicate = biPredicate;
+    }
 
-        this.parameterized = (gValue != null && gValue.isVariable());
+    protected P(final PBiPredicate<V, V> biPredicate, final Collection<V> literals, final Map<String, V> variables, final boolean isCollection) {
+        this.biPredicate = biPredicate;
+        this.variables.putAll(variables);
+        this.literals = new ArrayList<>(literals); //TODO:: retain original collection type
+        this.isCollection = isCollection;
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
         return this.biPredicate;
-    }
-
-    /**
-     * Gets the original value used at time of construction of the {@code P}. This value can change its type
-     * in some cases.
-     */
-    public V getOriginalValue() {
-        return originalValue;
     }
 
     /**
@@ -93,36 +89,65 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * Gets the current value to be passed to the predicate for testing.
      */
     public V getValue() {
-        return this.value;
+        if (isCollection) {
+            Collection<V> values = this.literals.stream().collect(Collectors.toList());
+            values.addAll(this.variables.values());
+            return (V) values;
+        } else if (!this.literals.isEmpty()) {
+            return this.literals.iterator().next();
+        } else if (!this.variables.isEmpty()) {
+            return this.variables.values().iterator().next();
+        }
+        return null;
     }
 
     public void setValue(final V value) {
-        if (value instanceof GValue) {
-            this.gValue = (GValue<V>) value;
-            this.value = ((GValue<V>) value).get();
-        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
-            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
-            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
+        variables.clear();
+        literals = Collections.EMPTY_LIST;
+
+        if (value == null) {
+            isCollection = false;
+            this.literals = Collections.singleton(null);
+        } else if (value instanceof GValue) {
+            variables.put(((GValue<V>) value).getName(), ((GValue<V>) value).get());
+            isCollection = false;
+        } else if (value instanceof Collection) {
+            isCollection = true;
+            if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+                this.literals = new ArrayList<>(); // TODO:: is it possible to retain original collection type?
+                for (Object v : ((Collection<?>) value)) {
+                    // Separate variables and literals
+                    if (v instanceof GValue) {
+                        if (((GValue<V>) v).isVariable()) {
+                            variables.put(((GValue<V>) v).getName(), ((GValue<V>) v).get());
+                        } else {
+                            literals.add(((GValue<V>) v).get());
+                        }
+                    } else {
+                        literals.add((V) v);
+                    }
+                }
+            } else {
+                literals = (Collection<V>) value; // Retain original collection when possible
+            }
         } else {
-            this.value = value;
+            isCollection = false;
+            this.literals = Collections.singleton(value);
         }
-        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     @Override
     public boolean test(final V testValue) {
-        return this.biPredicate.test(testValue, this.value);
+        return this.biPredicate.test(testValue, this.getValue());
     }
 
     @Override
     public int hashCode() {
         int result = this.biPredicate.hashCode();
-        if (null != this.originalValue)
-            result ^= this.originalValue.hashCode();
-        if (null != this.gValue)
-            result ^= this.gValue.hashCode();
-        if (null != this.gValues)
-            result ^= Arrays.hashCode(this.gValues);
+        if (null != this.variables)
+            result ^= this.variables.hashCode();
+        if (null != this.literals)
+            result ^= this.literals.hashCode();
         return result;
     }
 
@@ -131,19 +156,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue)) &&
-                ((((P) other).gValue == null && this.gValue == null) || (((P) other).gValue != null && ((P) other).gValue.equals(this.gValue))) &&
-                ((((P) other).gValues == null && this.gValues == null) || (((P) other).gValues != null && ((P) other).gValues.equals(this.gValues)));
+                ((((P) other).variables == null && this.variables == null) || (((P) other).variables != null && ((P) other).variables.equals(this.variables))) &&
+                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals)));
     }
 
     @Override
     public String toString() {
-        return null == this.originalValue ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.originalValue + ")";
+        return literals.isEmpty() && variables.isEmpty() ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + getValue() + ")";
     }
 
     @Override
     public P<V> negate() {
-        return new P<>(this.biPredicate.negate(), this.originalValue);
+        return new P<>(this.biPredicate.negate(), this.literals, this.variables, this.isCollection);
     }
 
     @Override
@@ -166,6 +190,24 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    public boolean isParameterized() {
+        return !variables.isEmpty();
+    }
+
+    public void updateVariable(final String name, final Object value) {
+        if (variables.containsKey(name)) {
+            variables.put(name, (V) value);
+        }
+    }
+
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> results = new HashSet<>();
+        for (Map.Entry<String, V> entry : variables.entrySet()) {
+            results.add(GValue.of(entry.getKey(), entry.getValue()));
+        }
+        return results;
     }
 
     //////////////// statics
@@ -414,36 +456,5 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
-    }
-
-    public boolean isParameterized() {
-        return this.parameterized;
-    }
-
-    public void updateVariable(final String name, final Object value) {
-        if (this.gValue != null && name.equals(this.gValue.getName())) {
-            this.gValue = GValue.of(name, (V) value);
-            this.value = (V) value;
-            this.originalValue = (V) value; //TODO is this right?
-        }
-        if (this.gValues != null) {
-            for (int i = 0; i < this.gValues.length; i++) {
-                if (name.equals(this.gValues[i].getName())) {
-                    this.gValues[i] = GValue.of(name, (V) value);
-                    ((List<V>) this.value).set(i, (V) value);
-                }
-            }
-        }
-    }
-
-    public Set<GValue<?>> getGValues() {
-        Set<GValue<?>> results = new HashSet<>();
-        if (gValue != null && gValue.isVariable()) {
-            results.add(gValue);
-        }
-        if (gValues!= null) {
-            results.addAll(Arrays.stream(gValues).filter(GValue::isVariable).collect(Collectors.toList()));
-        }
-        return results;
     }
 }
