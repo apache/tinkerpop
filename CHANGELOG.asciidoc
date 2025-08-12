@@ -95,6 +95,9 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Made `Mutating` interface independent from `Configuring`
 * Removed undocumented `with()` modulation from `addV()`, `addE()`, `mergeV()` and `mergeE()`
 * Updated which steps are able to accept arguments in grammar
+* Introduced `GValue` to represent parameterized values in a `GraphTraversal`
+* Added optional traversal cache to `GremlinLangScriptEngine`
+* Introduced step interfaces for all parameterizable steps
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

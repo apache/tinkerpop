@@ -20,6 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * Predefined {@code Predicate} values that can be used as {@code String} filters.
  *
@@ -35,19 +38,18 @@ public class TextP extends P<String> {
         super(biPredicate, value);
     }
 
+    protected TextP(final PBiPredicate<String, String> biPredicate, final Collection<String> literals, final Map<String, String> variables) {
+        super(biPredicate, literals, variables, false);
+    }
+
     @Override
     public boolean equals(final Object other) {
         return other instanceof TextP && super.equals(other);
     }
 
     @Override
-    public String toString() {
-        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
-    }
-
-    @Override
     public TextP negate() {
-        return new TextP(this.biPredicate.negate(), this.value);
+        return new TextP(this.biPredicate.negate(), this.literals, this.variables);
     }
 
     public TextP clone() {
