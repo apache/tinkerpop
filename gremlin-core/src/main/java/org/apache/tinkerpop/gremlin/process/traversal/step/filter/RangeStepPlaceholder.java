@@ -71,12 +71,22 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
     }
 
     public Long getLowRange() {
-        this.traversal.getGValueManager().pinVariable(low.getName());
+        if (low == null) {
+            return null;
+        }
+        if (low.isVariable()) {
+            this.traversal.getGValueManager().pinVariable(low.getName());
+        }
         return low.get();
     }
 
     public Long getHighRange() {
-        this.traversal.getGValueManager().pinVariable(high.getName());
+        if (high == null) {
+            return null;
+        }
+        if (high.isVariable()) {
+            this.traversal.getGValueManager().pinVariable(high.getName());
+        }
         return high.get();
     }
 

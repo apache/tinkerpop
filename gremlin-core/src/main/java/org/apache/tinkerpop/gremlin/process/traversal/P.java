@@ -45,26 +45,31 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected V originalValue;
     protected GValue<V> gValue;
     protected GValue<V>[] gValues;
+    private boolean parameterized;
 
     public P(final PBiPredicate<V, V> biPredicate, V value) {
         if (value instanceof GValue) {
             this.gValue = (GValue<V>) value;
             this.value = ((GValue<V>) value).get();
-        } else if (value instanceof List && ((List) value).stream().anyMatch(v -> v instanceof GValue)) {
-            this.gValues = GValue.ensureGValues(((List) value).toArray());
+        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
             this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
         } else {
             this.value = value;
         }
         this.originalValue = this.value;
         this.biPredicate = biPredicate;
+
+        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
         this.gValue = value;
-        this.value = value.get();
-        this.originalValue = value.get();
+        this.value = value != null ? value.get() : null;
+        this.originalValue = value != null ? value.get() : null;
         this.biPredicate = biPredicate;
+
+        this.parameterized = (gValue != null && gValue.isVariable());
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
@@ -92,7 +97,16 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public void setValue(final V value) {
-        this.value = value;
+        if (value instanceof GValue) {
+            this.gValue = (GValue<V>) value;
+            this.value = ((GValue<V>) value).get();
+        } else if (value instanceof Collection && ((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            this.gValues = GValue.ensureGValues(((Collection<?>) value).toArray());
+            this.value = (V) Arrays.asList(GValue.resolveToValues(GValue.ensureGValues(((List) value).toArray())));
+        } else {
+            this.value = value;
+        }
+        this.parameterized = (gValue != null && gValue.isVariable()) || (gValues != null && Arrays.stream(gValues).anyMatch(v -> v != null && v.isVariable()));
     }
 
     @Override
@@ -118,8 +132,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue)) &&
-                ((((P) other).gValue == null && this.gValue == null) || ((P) other).gValue.equals(this.gValue)) &&
-                ((((P) other).gValues == null && this.gValues == null) || ((P) other).gValues.equals(this.gValues));
+                ((((P) other).gValue == null && this.gValue == null) || (((P) other).gValue != null && ((P) other).gValue.equals(this.gValue))) &&
+                ((((P) other).gValues == null && this.gValues == null) || (((P) other).gValues != null && ((P) other).gValues.equals(this.gValues)));
     }
 
     @Override
@@ -166,6 +180,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if values are equal.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> eq(final GValue<V> value) {
+        return new P(Compare.eq, value);
+    }
+
+    /**
      * Determines if values are not equal.
      *
      * @since 3.0.0-incubating
@@ -178,7 +201,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * Determines if values are not equal.
      *
      * @since 3.8.0
-     */ //TODO:: add equivalent overrides for all P.
+     */
     public static <V> P<V> neq(final GValue<V> value) {
         return new P(Compare.neq, value);
     }
@@ -193,11 +216,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is less than another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> lt(final GValue<V> value) {
+        return new P(Compare.lt, value);
+    }
+
+    /**
      * Determines if a value is less than or equal to another.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> lte(final V value) {
+        return new P(Compare.lte, value);
+    }
+
+    /**
+     * Determines if a value is less than or equal to another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> lte(final GValue<V> value) {
         return new P(Compare.lte, value);
     }
 
@@ -211,11 +252,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is greater than another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> gt(final GValue<V> value) {
+        return new P(Compare.gt, value);
+    }
+
+    /**
      * Determines if a value is greater than or equal to another.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> gte(final V value) {
+        return new P(Compare.gte, value);
+    }
+
+    /**
+     * Determines if a value is greater than or equal to another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> gte(final GValue<V> value) {
         return new P(Compare.gte, value);
     }
 
@@ -229,11 +288,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within (exclusive) the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> inside(final GValue<V> first, final GValue<V> second) {
+        return new AndP<V>(Arrays.asList(new P(Compare.gt, first), new P(Compare.lt, second)));
+    }
+
+    /**
      * Determines if a value is not within (exclusive) of the range of the two specified values.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> outside(final V first, final V second) {
+        return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
+    }
+
+    /**
+     * Determines if a value is not within (exclusive) of the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> outside(final GValue<V> first, final GValue<V> second) {
         return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
     }
 
@@ -247,12 +324,32 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within (inclusive) of the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> between(final GValue<V> first, final GValue<V> second) {
+        return new AndP<V>(Arrays.asList(new P(Compare.gte, first), new P(Compare.lt, second)));
+    }
+
+    /**
      * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
      * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
+        return P.within(Arrays.asList(v));
+    }
+
+    /**
+     * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> within(final GValue<V>... values) {
         final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
@@ -276,6 +373,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> without(final V... values) {
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        return P.without(Arrays.asList(v));
+    }
+
+    /**
+     * Determines if a value is not within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> without(final GValue<V>... values) {
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.without(Arrays.asList(v));
     }
 
@@ -309,17 +417,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public boolean isParameterized() {
-        if (gValue != null && gValue.isVariable()) {
-            return true;
-        }
-        if (gValues != null) {
-            for (final GValue<V> gValue : gValues) {
-                if (gValue != null && gValue.isVariable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return this.parameterized;
     }
 
     public void updateVariable(final String name, final Object value) {
