@@ -71,7 +71,7 @@ public final class GValueManager implements Serializable, Cloneable {
      * Gets the set of variable names used in this traversal.
      */
     public Set<String> getVariableNames() {
-        return Collections.unmodifiableSet(gValueRegistry.keySet());
+        return Set.copyOf(gValueRegistry.keySet());
     }
 
     /**
