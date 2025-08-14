@@ -78,7 +78,7 @@ public final class GValueManager implements Serializable, Cloneable {
      * Gets the set of variable names used in this traversal which have not been pinned to specific values.
      */
     public Set<String> getUnpinnedVariableNames() {
-        Set<String> variableNames = new HashSet<>(gValueRegistry.keySet());
+        final Set<String> variableNames = new HashSet<>(gValueRegistry.keySet());
         variableNames.removeAll(pinnedGValues);
         return Set.copyOf(variableNames);
     }
@@ -142,8 +142,8 @@ public final class GValueManager implements Serializable, Cloneable {
      */
     @Override
     public GValueManager clone() throws CloneNotSupportedException {
-        Map<String, GValue<?>> clonedRegistry = new HashMap<>();
-        for (Map.Entry<String, GValue<?>> entry : gValueRegistry.entrySet()) {
+        final Map<String, GValue<?>> clonedRegistry = new HashMap<>();
+        for (final Map.Entry<String, GValue<?>> entry : gValueRegistry.entrySet()) {
             // clone each gValue
             clonedRegistry.put(entry.getKey(), entry.getValue().clone());
         }
@@ -172,7 +172,7 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param gValue the GValue to register
      * @throws IllegalArgumentException if a different GValue with the same name is already registered
      */
-    public void register(GValue<?> gValue) {
+    public void register(final GValue<?> gValue) {
         if (gValue.isVariable()) {
             if (gValueRegistry.containsKey(gValue.getName()) && !gValueRegistry.get(gValue.getName()).equals(gValue)) {
                 throw new IllegalArgumentException(String.format("Unable to register both %s and %s in a single traversal", gValueRegistry.get(gValue.getName()), gValue));
@@ -186,7 +186,7 @@ public final class GValueManager implements Serializable, Cloneable {
      *
      * @param gValues the collection of GValues to register
      */
-    public void register(Collection<GValue<?>> gValues) {
+    public void register(final Collection<GValue<?>> gValues) {
         gValues.forEach(this::register);
     }
 
@@ -197,7 +197,7 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param value the new value for the variable
      * @throws IllegalArgumentException if the variable is not registered or is already pinned
      */
-    public void updateVariable(String name, Object value) {
+    public void updateVariable(final String name, final Object value) {
         if (!gValueRegistry.containsKey(name)) {
             throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it has not been registered in this traversal", name));
         } else if (pinnedGValues.contains(name)) {
