@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -25,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,7 +94,7 @@ public class GValue<V> implements Serializable {
     }
 
     @Override
-    public boolean equals(final Object o) { //TODO revisit equality and hash.
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         final GValue<?> gValue = (GValue<?>) o;
@@ -106,7 +107,22 @@ public class GValue<V> implements Serializable {
     }
 
     @Override
-    public GValue<?> clone() throws CloneNotSupportedException {
+    public GValue<V> clone() throws CloneNotSupportedException {
+        if (this.value == null) {
+            return new GValue<>(this.name, null);
+        }
+
+        if (this.value instanceof Serializable) {
+            try {
+                // attempt deep cloning
+                return new GValue<>(this.name, (V) SerializationUtils.clone((Serializable) this.value));
+            } catch (final SerializationException e) {
+                // Fall back to shallow clone if serialization fails
+                return new GValue<>(this.name, this.value);
+            }
+        }
+
+        // not serializable, fallback to shallow clone
         return new GValue<>(this.name, this.value);
     }
 
@@ -299,7 +315,7 @@ public class GValue<V> implements Serializable {
      * Tests if the object is a {@link GValue} and if so, checks the type of the value against the provided
      * {@link Class}.
      */
-    public static boolean valueInstanceOf(final Object o, final Class type) {
+    public static boolean valueInstanceOf(final Object o, final Class<?> type) {
         return o instanceof GValue && type.isAssignableFrom(((GValue<?>) o).get().getClass());
     }
 
@@ -345,7 +361,7 @@ public class GValue<V> implements Serializable {
      * Tests if any of the objects are GValues.
      */
     public static boolean containsGValues(final Object... args) {
-        for (Object arg : args) {
+        for (final Object arg : args) {
             if (arg instanceof GValue) {
                 return true;
             }
@@ -357,7 +373,7 @@ public class GValue<V> implements Serializable {
      * Tests if any of the objects are GValues or GValueConstantTraversal, and if so, if they are variables.
      */
     public static boolean containsVariables(final Object... args) {
-        for (Object arg : args) {
+        for (final Object arg : args) {
             if (arg instanceof GValue && ((GValue<?>) arg).isVariable()) {
                 return true;
             } else if (arg instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) arg).isParameterized()) {
