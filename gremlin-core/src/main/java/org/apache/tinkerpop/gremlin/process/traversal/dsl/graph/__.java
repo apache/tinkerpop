@@ -1171,7 +1171,7 @@ public class __ {
     /**
      * @see GraphTraversal#hasLabel(GValue, GValue...)
      */
-    public static <A> GraphTraversal<A, A> hasLabel(final GValue<String> label, GValue<String>... otherLabels) {
+    public static <A> GraphTraversal<A, A> hasLabel(final GValue<String> label, final GValue<String>... otherLabels) {
         return __.<A>start().hasLabel(label, otherLabels);
     }
 
