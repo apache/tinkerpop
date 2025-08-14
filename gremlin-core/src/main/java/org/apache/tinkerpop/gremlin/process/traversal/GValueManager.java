@@ -34,8 +34,6 @@ import java.util.Set;
  * The {@code GValueManager} class is responsible for managing the state of {@link GValue} instances and their
  * associations with `Step` objects in a traversal. This class ensures that `GValue` instances are properly extracted
  * and stored in a registry, allowing for dynamic query optimizations and state management during traversal execution.
- * Note that the manager can be locked, at which point it becomes immutable, and any attempt to modify it will result
- * in an exception.
  */
 public final class GValueManager implements Serializable, Cloneable {
 
@@ -127,11 +125,11 @@ public final class GValueManager implements Serializable, Cloneable {
      *
      * @param name the name of the GValue to be pinned
      * @return true if name was previously unpinned, false otherwise.
-     * @throws IllegalStateException if the manager is locked
+     * @throws IllegalArgumentException if no GValue of the given name is registered
      */
     public boolean pinVariable(final String name) {
         if (name == null || !gValueRegistry.containsKey(name)) {
-            throw new IllegalArgumentException(String.format("GValue '%s' does not exist", name));
+            throw new IllegalArgumentException(String.format("Unable to pin variable '%s' because it is not registered", name));
         }
         return pinnedGValues.add(name);
     }
