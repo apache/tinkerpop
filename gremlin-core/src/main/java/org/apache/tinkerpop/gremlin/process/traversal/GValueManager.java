@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.io.Serializable;
@@ -38,15 +40,21 @@ import java.util.Set;
 public final class GValueManager implements Serializable, Cloneable {
 
     private final Map<String, GValue<?>> gValueRegistry = new HashMap<>();
-    private final Map<String, GValue<?>> pinnedGValues = new HashMap<>();
+    /**
+     * Tracks pinned values for faster lookup.
+     */
+    private final Set<String> pinnedGValues = new HashSet<>();
 
+    /**
+     * Creates a new empty GValueManager.
+     */
     public GValueManager() {
-        this(Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+        this(Collections.emptyMap(), Collections.emptySet());
     }
 
-    private GValueManager(final Map<String, GValue<?>> gValueRegistry, final Map<String, GValue<?>> pinnedGValues) {
+    private GValueManager(final Map<String, GValue<?>> gValueRegistry, final Set<String> pinnedGValues) {
         this.gValueRegistry.putAll(gValueRegistry);
-        this.pinnedGValues.putAll(pinnedGValues);
+        this.pinnedGValues.addAll(pinnedGValues);
     }
 
     /**
@@ -57,54 +65,52 @@ public final class GValueManager implements Serializable, Cloneable {
      * @param other the target {@code GValueManager} into which the current instance's registries will be merged
      */
     public void mergeInto(final GValueManager other) {
-        //TODO needs test
         other.register(gValueRegistry.values());
-        other.pinGValues(pinnedGValues.values());
+        other.pinGValues(pinnedGValues);
     }
 
     /**
      * Gets the set of variable names used in this traversal.
      */
     public Set<String> getVariableNames() {
-        return Collections.unmodifiableSet(gValueRegistry.keySet());
+        return Set.copyOf(gValueRegistry.keySet());
     }
 
     /**
      * Gets the set of variable names used in this traversal which have not been pinned to specific values.
      */
     public Set<String> getUnpinnedVariableNames() {
-        Set<String> variableNames = new HashSet<>();
-        variableNames.addAll(gValueRegistry.keySet());
-        variableNames.removeAll(pinnedGValues.keySet());
-        return Collections.unmodifiableSet(variableNames);
+        Set<String> variableNames = new HashSet<>(gValueRegistry.keySet());
+        variableNames.removeAll(pinnedGValues);
+        return Set.copyOf(variableNames);
     }
 
     /**
      * Gets the set of variable names used in this traversal which have not been pinned to specific values.
      */
     public Set<String> getPinnedVariableNames() {
-        return Collections.unmodifiableSet(pinnedGValues.keySet());
+        return Set.copyOf(pinnedGValues);
     }
 
     /**
      * Gets the set of {@link GValue} objects used in this traversal.
      */
     public Set<GValue<?>> getGValues() {
-        return Collections.unmodifiableSet(new HashSet(gValueRegistry.values()));
+        return Set.copyOf(gValueRegistry.values());
     }
 
     /**
      * Gets the set of pinned GValues used in this traversal.
      */
     public Set<GValue<?>> getPinnedGValues() {
-        return Collections.unmodifiableSet(new HashSet(pinnedGValues.values()));
+        return pinnedGValues.stream().map(gValueRegistry::get).collect(Collectors.toUnmodifiableSet());
     }
 
     /**
      * Determines whether the manager has step registrations.
      */
     public boolean hasVariables() {
-        return !getVariableNames().isEmpty();
+        return !gValueRegistry.isEmpty();
     }
 
     /**
@@ -125,24 +131,49 @@ public final class GValueManager implements Serializable, Cloneable {
      */
     public boolean pinVariable(final String name) {
         if (name == null || !gValueRegistry.containsKey(name)) {
-            throw new IllegalArgumentException(String.format("Variable '%s' does not exist", name));
+            throw new IllegalArgumentException(String.format("GValue '%s' does not exist", name));
         }
-        return pinnedGValues.put(name, gValueRegistry.get(name)) == null;
+        return pinnedGValues.add(name);
     }
 
+    /**
+     * Creates a deep copy of this GValueManager with cloned GValue instances.
+     *
+     * @return a new GValueManager instance with cloned state
+     * @throws CloneNotSupportedException if cloning fails
+     */
     @Override
-    public GValueManager clone() {
-        return new GValueManager(gValueRegistry, pinnedGValues);
+    public GValueManager clone() throws CloneNotSupportedException {
+        Map<String, GValue<?>> clonedRegistry = new HashMap<>();
+        for (Map.Entry<String, GValue<?>> entry : gValueRegistry.entrySet()) {
+            // clone each gValue
+            clonedRegistry.put(entry.getKey(), entry.getValue().clone());
+        }
+        return new GValueManager(clonedRegistry, new HashSet<>(pinnedGValues));
+    }
+
+    /**
+     * Pin a collection of {@link GValue} by name from the internal registry. Iteratively processes each
+     * {@link GValue} name to pin it to its current value.
+     */
+    public void pinGValues(final Set<String> names) {
+        names.stream().filter(Objects::nonNull).forEach(this::pinVariable);
     }
 
     /**
      * Pin a collection of {@link GValue} instances from the internal registry. Iteratively processes each
      * {@link GValue} to pin it to its current value.
      */
-    public void pinGValues(final Collection<GValue<?>> gValues) { //TODO:: should there be a return value?
-        gValues.stream().filter(v -> v != null && v.isVariable()).forEach(v -> pinVariable(v.getName()));
+    public void pinGValues(final Collection<GValue<?>> gValues) {
+        pinGValues(gValues.stream().filter(v -> v != null && v.isVariable()).map(GValue::getName).collect(Collectors.toSet()));
     }
 
+    /**
+     * Registers a GValue in the internal registry if it represents a variable. Non-variables are not registered.
+     *
+     * @param gValue the GValue to register
+     * @throws IllegalArgumentException if a different GValue with the same name is already registered
+     */
     public void register(GValue<?> gValue) {
         if (gValue.isVariable()) {
             if (gValueRegistry.containsKey(gValue.getName()) && !gValueRegistry.get(gValue.getName()).equals(gValue)) {
@@ -152,16 +183,26 @@ public final class GValueManager implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * Registers a collection of GValues in the internal registry. Non-variables are not registered.
+     *
+     * @param gValues the collection of GValues to register
+     */
     public void register(Collection<GValue<?>> gValues) {
-        for (GValue<?> gValue : gValues) {
-            register(gValue);
-        }
+        gValues.forEach(this::register);
     }
 
+    /**
+     * Updates the value of a registered variable.
+     *
+     * @param name the name of the variable to update
+     * @param value the new value for the variable
+     * @throws IllegalArgumentException if the variable is not registered or is already pinned
+     */
     public void updateVariable(String name, Object value) {
-        if (!getVariableNames().contains(name)) {
+        if (!gValueRegistry.containsKey(name)) {
             throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it has not been registered in this traversal", name));
-        } else if (pinnedGValues.containsKey(name)) {
+        } else if (pinnedGValues.contains(name)) {
             throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it is already pinned", name));
         }
         gValueRegistry.put(name, GValue.of(name, value));

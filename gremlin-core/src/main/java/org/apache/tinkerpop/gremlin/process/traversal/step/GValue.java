@@ -106,7 +106,7 @@ public class GValue<V> implements Serializable {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
+    public GValue<?> clone() throws CloneNotSupportedException {
         return new GValue<>(this.name, this.value);
     }
 
