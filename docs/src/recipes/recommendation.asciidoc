@@ -183,7 +183,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).
       select(values).
       order(local).
-        by(desc).limit(local, 1)
+        by(desc).limit(local, 1).unfold()
 ----
 
 With the maximum value available, it can be used to chose those "person" vertices that have the three products in
