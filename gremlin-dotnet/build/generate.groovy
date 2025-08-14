@@ -133,12 +133,17 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine('            };\n')
 
     writer.writeLine(
-            '        public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters)\n' +
+            '        public static ITraversal UseTraversal(string scenarioName, GraphTraversalSource g, IDictionary<string, object> parameters, IDictionary<string, object> sideEffects)\n' +
             '        {\n' +
             '            List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> list = _translationsForTestRun[scenarioName];\n' +
             '            Func<GraphTraversalSource, IDictionary<string, object>, ITraversal> f = list[0];\n' +
             '            list.RemoveAt(0);\n' +
-            '            return f.Invoke(g, parameters);\n' +
+            '            ITraversal traversal = f.Invoke(g, parameters);\n' +
+            '            foreach (var sideEffect in sideEffects)\n' +
+            '            {\n' +
+            '                traversal.Bytecode.AddSource("withSideEffect", sideEffect.Key, sideEffect.Value);\n' +
+            '            }\n' +
+            '            return traversal;\n' +
             '        }\n' +
             '    }\n' +
             '}\n')

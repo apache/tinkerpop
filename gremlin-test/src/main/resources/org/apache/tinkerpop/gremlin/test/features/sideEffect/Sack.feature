@@ -355,10 +355,9 @@ Feature: Step - sack()
 
   Scenario: g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack
     Given the modern graph
-    And using the parameter xx1 defined as "d[4.0].d"
     And the traversal of
       """
-      g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()
+      g.withSack(2).V().sack(Operator.div).by(__.constant(4.0d)).sack()
       """
     When iterated to list
     Then the result should be unordered

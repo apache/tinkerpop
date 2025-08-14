@@ -21,11 +21,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXbyteX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].b"
+    And using the parameter xx1 defined as "d[1].b"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -42,11 +41,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXshortX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].s"
+    And using the parameter xx1 defined as "d[1].s"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -63,11 +61,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXintX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].i"
+    And using the parameter xx1 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -84,11 +81,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXlongX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].l"
+    And using the parameter xx1 defined as "d[1].l"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -105,11 +101,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXbigintX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].n"
+    And using the parameter xx1 defined as "d[1].n"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -126,11 +121,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXfloatX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].f"
+    And using the parameter xx1 defined as "d[1].f"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -147,11 +141,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXdoubleX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].d"
+    And using the parameter xx1 defined as "d[1].d"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered
@@ -168,11 +161,10 @@ Feature: Equality
   @GraphComputerVerificationInjectionNotSupported
   Scenario: Primitives_Number_eqXbigdecimalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].b,d[1].s,d[1].i,d[1].l,d[1].f,d[1].d,d[1000].i,d[1].m,d[1].n]"
-    And using the parameter xx2 defined as "d[1].m"
+    And using the parameter xx1 defined as "d[1].m"
     And the traversal of
       """
-      g.inject(xx1).unfold().where(__.is(xx2))
+      g.inject([1b,1s,1i,1l,1f,1d,1000i,1m,1n]).unfold().where(__.is(xx1))
       """
     When iterated to list
     Then the result should be unordered

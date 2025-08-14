@@ -436,6 +436,18 @@ would be "1" and refer to the `Vertex` with that `id`.
 * `Predicate` variables should use `pred1`.
 * `Comparator` variables should use `c1` and `c2`.    
 
+Additionally, traversal side effects can be configured in a similar fashion as parameters. The structure for side effect
+definition looks like this:
+
+[source,gherkin]
+----
+Given the modern graph
+And using the side effect x defined as "v[marko].id"
+----
+
+The above example is equivalent to configuring a traversal with `g.withSideEffect(x, <marko vertex id>)` and may be
+used to add side effect values which could otherwise not be inlined into the traversal script.
+
 Finally, specify the traversal under test with the "Given" option "and the traversal":
 
 [source,gherkin]

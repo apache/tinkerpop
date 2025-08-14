@@ -95,10 +95,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_eqXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.eq(NaN))
+      g.inject(NaN).is(P.eq(NaN))
       """
     When iterated to list
     Then the result should be empty
@@ -106,10 +105,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_neqXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.neq(NaN))
+      g.inject(NaN).is(P.neq(NaN))
       """
     When iterated to list
     Then the result should be unordered
@@ -119,10 +117,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_ltXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.lt(NaN))
+      g.inject(NaN).is(P.lt(NaN))
       """
     When iterated to list
     Then the result should be empty
@@ -130,10 +127,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_lteXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.lte(NaN))
+      g.inject(NaN).is(P.lte(NaN))
       """
     When iterated to list
     Then the result should be empty
@@ -141,10 +137,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_gtXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.gt(NaN))
+      g.inject(NaN).is(P.gt(NaN))
       """
     When iterated to list
     Then the result should be empty
@@ -152,10 +147,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNaNX_gteXNaNX
     Given the empty graph
-    And using the parameter xx1 defined as "d[NaN]"
     And the traversal of
       """
-      g.inject(xx1).is(P.gte(NaN))
+      g.inject(NaN).is(P.gte(NaN))
       """
     When iterated to list
     Then the result should be empty
@@ -880,10 +874,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXInfArgX_eqXInfX
     Given the empty graph
-    And using the parameter xx1 defined as "d[Infinity]"
     And the traversal of
       """
-      g.inject(xx1).is(P.eq(+Infinity))
+      g.inject(Infinity).is(P.eq(+Infinity))
       """
     When iterated to list
     Then the result should be unordered
@@ -903,10 +896,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXInfArgX_neqXInfX
     Given the empty graph
-    And using the parameter xx1 defined as "d[Infinity]"
     And the traversal of
       """
-      g.inject(xx1).is(P.neq(+Infinity))
+      g.inject(Infinity).is(P.neq(+Infinity))
       """
     When iterated to list
     Then the result should be empty
@@ -926,10 +918,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNegInfArgX_eqXNegInfX
     Given the empty graph
-    And using the parameter xx1 defined as "d[-Infinity]"
     And the traversal of
       """
-      g.inject(xx1).is(P.eq(-Infinity))
+      g.inject(-Infinity).is(P.eq(-Infinity))
       """
     When iterated to list
     Then the result should be unordered
@@ -949,10 +940,9 @@ Feature: Comparability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNegInfArgX_neqXNegInfX
     Given the empty graph
-    And using the parameter xx1 defined as "d[-Infinity]"
     And the traversal of
       """
-      g.inject(xx1).is(P.neq(-Infinity))
+      g.inject(-Infinity).is(P.neq(-Infinity))
       """
     When iterated to list
     Then the result should be empty

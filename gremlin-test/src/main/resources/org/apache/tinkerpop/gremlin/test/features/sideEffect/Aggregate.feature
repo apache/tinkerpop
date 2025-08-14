@@ -174,10 +174,10 @@ Feature: Step - aggregate()
 
   Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "s[]"
+    And using the side effect a defined as "s[]"
     And the traversal of
       """
-      g.withSideEffect("a", xx1).V().both().values("name").aggregate(Scope.local,"a").cap("a")
+      g.V().both().values("name").aggregate(Scope.local,"a").cap("a")
       """
     When iterated to list
     Then the result should be unordered
@@ -517,12 +517,11 @@ Feature: Step - aggregate()
       | result |
       | true |
 
-  Scenario: g_withSideEffectXa_xx1_addAllX_V_aggregateXaX_byXageX_capXaX
+  Scenario: g_withSideEffectXa_1_2_3_addAllX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i,d[3].i]"
     And the traversal of
     """
-    g.withSideEffect("a", xx1, Operator.addAll).V().aggregate("a").by("age").cap("a")
+    g.withSideEffect("a", [1i,2i,3i], Operator.addAll).V().aggregate("a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -535,12 +534,11 @@ Feature: Step - aggregate()
     | d[32].i |
     | d[35].i |
 
-  Scenario: g_withSideEffectXa_xx1_addAllX_V_aggregateXlocal_aX_byXageX_capXaX
+  Scenario: g_withSideEffectXa_1_2_3_addAllX_V_aggregateXlocal_aX_byXageX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i,d[3].i]"
     And the traversal of
     """
-    g.withSideEffect("a", xx1, Operator.addAll).V().aggregate(Scope.local, "a").by("age").cap("a")
+    g.withSideEffect("a", [1i,2i,3i], Operator.addAll).V().aggregate(Scope.local, "a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -554,12 +552,11 @@ Feature: Step - aggregate()
       | d[35].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSideEffectXa_xx1_assignX_V_aggregateXaX_byXageX_capXaX
+  Scenario: g_withSideEffectXa_1_2_3_assignX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i,d[3].i]"
     And the traversal of
     """
-    g.withSideEffect("a", xx1, Operator.assign).V().aggregate("a").by("age").cap("a")
+    g.withSideEffect("a", [1i,2i,3i], Operator.assign).V().aggregate("a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered
@@ -570,13 +567,12 @@ Feature: Step - aggregate()
     | d[35].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_withSideEffectXa_xx1_assignX_V_order_byXageX_aggregateXlocal_aX_byXageX_capXaX
+  Scenario: g_withSideEffectXa_1_2_3_assignX_V_order_byXageX_aggregateXlocal_aX_byXageX_capXaX
     Given the modern graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i,d[3].i]"
     And the traversal of
     # add order().by("age") to deterministically assign a vertex with the largest age value at the end
     """
-    g.withSideEffect("a", xx1, Operator.assign).V().order().by("age").aggregate(Scope.local, "a").by("age").cap("a")
+    g.withSideEffect("a", [1i,2i,3i], Operator.assign).V().order().by("age").aggregate(Scope.local, "a").by("age").cap("a")
     """
     When iterated next
     Then the result should be unordered

@@ -239,11 +239,9 @@ Feature: Step - sum()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_10_5_nullX_sum
     Given the modern graph
-    And using the parameter xx1 defined as "d[10].i"
-    And using the parameter xx2 defined as "d[5].i"
     And the traversal of
       """
-      g.inject(null, xx1, xx2, null).sum()
+      g.inject(null, 10, 5, null).sum()
       """
     When iterated to list
     Then the result should be unordered
@@ -253,10 +251,9 @@ Feature: Step - sum()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXlistXnull_10_5_nullXX_sumXlocalX
     Given the modern graph
-    And using the parameter xx1 defined as "l[null,d[10].i,d[5].i,null]"
     And the traversal of
       """
-      g.inject(xx1).sum(local)
+      g.inject([null,10,5,null]).sum(local)
       """
     When iterated to list
     Then the result should be unordered

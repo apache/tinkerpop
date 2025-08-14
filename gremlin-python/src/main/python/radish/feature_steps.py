@@ -104,6 +104,17 @@ def add_parameter(step, param_name, param):
     step.context.traversal_params[param_name] = _convert(param.replace('\\"', '"'), step.context)
 
 
+@given("using the side effect {key:w} defined as {value:QuotedString}")
+def add_side_effect(step, key, value):
+    if (step.context.ignore):
+        return
+
+    if not hasattr(step.context, "traversal_side_effects"):
+        step.context.traversal_side_effects = {}
+
+    step.context.traversal_side_effects[key] = _convert(value.replace('\\"', '"'), step.context)
+
+
 @given("the traversal of")
 def translate_traversal(step):
     if step.context.ignore == False:
@@ -127,6 +138,10 @@ def translate_traversal(step):
         localg = step.context.g.withComputer()
     p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
+
+    if hasattr(step.context, "traversal_side_effects"):
+        for key in step.context.traversal_side_effects:
+            step.context.traversal.bytecode.add_source("withSideEffect", key, step.context.traversal_side_effects[key])
 
 
 @when("iterated to list")

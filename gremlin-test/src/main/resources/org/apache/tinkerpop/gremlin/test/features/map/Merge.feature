@@ -80,10 +80,9 @@ Feature: Step - merge()
 
   Scenario: g_V_fold_mergeXk_vX
     Given the modern graph
-    And using the parameter xx1 defined as "m[{\"k\":\"v\"}]"
     And the traversal of
       """
-      g.V().fold().merge(xx1)
+      g.V().fold().merge([k:"v"])
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "step type mismatch: expected argument to be Iterable but got Map"

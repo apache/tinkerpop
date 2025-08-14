@@ -135,6 +135,9 @@ Given('the traversal of', function (traversalText) {
   const p = Object.assign({}, this.parameters);
   p.g = this.g;
   this.traversal = gremlin[this.scenario].shift()(p);
+  for (const key in this.sideEffects) {
+    this.traversal.getBytecode().addSource('withSideEffect', [key, this.sideEffects[key]]);
+  }
 });
 
 Given(/^using the parameter (.+) of P\.(.+)\("(.+)"\)$/, function (paramName, pval, stringValue) {
@@ -150,6 +153,23 @@ Given(/^using the parameter (.+) defined as "(.+)"$/, function (paramName, strin
   }
   return p.then(() => {
     this.parameters[paramName] = parseValue.call(this, stringValue);
+  }).catch(err => {
+    if (err instanceof IgnoreError) {
+      return 'skipped';
+    }
+    throw err;
+  });
+});
+
+Given(/^using the side effect (.+) defined as "(.+)"$/, function (sideEffectKey, stringValue) {
+  // Remove escaped chars
+  stringValue = stringValue.replace(/\\"/g, '"');
+  let p = Promise.resolve();
+  if (this.graphName === 'empty') {
+    p = this.loadEmptyGraphData();
+  }
+  return p.then(() => {
+    this.sideEffects[sideEffectKey] = parseValue.call(this, stringValue);
   }).catch(err => {
     if (err instanceof IgnoreError) {
       return 'skipped';
