@@ -50,12 +50,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected Collection<V> literals = Collections.EMPTY_LIST;
     private boolean isCollection = false;
 
-    public P(final PBiPredicate<V, V> biPredicate, V value) {
+    public P(final PBiPredicate<V, V> biPredicate, final V value) {
         setValue(value);
         this.biPredicate = biPredicate;
     }
 
-    public P(final PBiPredicate<V, V> biPredicate, GValue<V> value) {
+    public P(final PBiPredicate<V, V> biPredicate, final GValue<V> value) {
         if (value != null) {
             if (value.isVariable()) {
                 variables.put(value.getName(), value.get());

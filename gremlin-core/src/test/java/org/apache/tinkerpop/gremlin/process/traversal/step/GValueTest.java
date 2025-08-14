@@ -37,6 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class GValueTest {
@@ -53,6 +54,24 @@ public class GValueTest {
     public void shouldReturnAnExistInTypedGValue() {
         final Object gValue = GValue.of("x", 123);
         GValue.of("x", gValue);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectVariableNamesStartingWithUnderscore() {
+        GValue.of("_invalid", "value");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectNestedGValues() {
+        GValue inner = GValue.of("inner", "value");
+        GValue.of("outer", inner);
+    }
+
+    @Test
+    public void shouldMaintainTypeInformation() {
+        GValue<List<String>> listValue = GValue.of("list", Arrays.asList("a", "b"));
+        assertEquals(listValue.get(), Arrays.asList("a", "b"));
+        assertTrue(listValue.get() instanceof List);
     }
 
     @Test

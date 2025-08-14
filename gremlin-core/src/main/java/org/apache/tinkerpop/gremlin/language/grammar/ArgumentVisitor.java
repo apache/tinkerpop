@@ -37,7 +37,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericMapNullableArgumentContext ctx) {
-        Object literalOrVar = visitGenericMapNullableArgument(ctx);
+        final Object literalOrVar = visitGenericMapNullableArgument(ctx);
         if (GValue.valueInstanceOf(literalOrVar, Map.class)) {
             return ((GValue<Map>) literalOrVar).get();
         } else {
@@ -77,7 +77,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
      * Wrapper to visit function for string types.
      */
     public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
-        Object literalOrVar = visitStringNullableArgument((ctx));
+        final Object literalOrVar = visitStringNullableArgument((ctx));
         if (GValue.valueInstanceOf(literalOrVar, String.class)) {
             return (GValue<String>) literalOrVar;
         } else {
@@ -94,7 +94,7 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (ctx.integerLiteral() != null) {
             return antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).longValue();
         } else {
-            Object var = visitVariable(ctx.variable());
+            final Object var = visitVariable(ctx.variable());
             if (var instanceof Number) {
                 return ((Number) var).longValue();
             }
