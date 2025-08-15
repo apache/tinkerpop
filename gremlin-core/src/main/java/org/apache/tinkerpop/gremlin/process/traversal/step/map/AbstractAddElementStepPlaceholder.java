@@ -47,10 +47,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
 public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X extends Event> extends AbstractStep<S, E>
         implements AddElementStepInterface<S, E>, GValueHolder<S, E>, Writing<X> {
 

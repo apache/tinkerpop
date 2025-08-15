@@ -46,8 +46,6 @@ import java.util.stream.Collectors;
 /**
  * Handles the logic of traversing to adjacent vertices or edges given a direction and edge labels for steps like,
  * {@code out}, {@code in}, {@code both}, {@code outE}, {@code inE}, and {@code bothE}.
- *
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepInterface<E> {
 

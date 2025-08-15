@@ -21,12 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
-import java.util.Objects;
-
 /**
  * A {@link Traversal} that always returns a constant value.
- *
- * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
