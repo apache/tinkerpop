@@ -30,13 +30,23 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.HashSet;
 
 public interface AddPropertyStepInterface<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
-    public VertexProperty.Cardinality getCardinality();
+    VertexProperty.Cardinality getCardinality();
 
     @Override
-    public default HashSet<PopInstruction> getPopInstructions() {
+    default HashSet<PopInstruction> getPopInstructions() {
         final HashSet<PopInstruction> popInstructions = new HashSet<>();
         popInstructions.addAll(Scoping.super.getPopInstructions());
         popInstructions.addAll(TraversalParent.super.getPopInstructions());
         return popInstructions;
     }
+
+    /**
+     * Get the property key
+     */
+    Object getKey();
+
+    /**
+     * Get the property value
+     */
+    Object getValue();
 }
