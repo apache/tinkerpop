@@ -84,12 +84,33 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("GValueHolder is not executable");
+        throw new IllegalStateException("AddPropertyStepPlaceholder is not executable");
     }
 
     @Override
     public VertexProperty.Cardinality getCardinality() {
         return cardinality;
+    }
+
+    @Override
+    public Object getKey() {
+        return key;
+    }
+
+    @Override
+    public Object getValue() {
+        if (value != null) {
+            traversal.getGValueManager().pinVariable(value.getName());
+            return value.get();
+        }
+        return null;
+    }
+
+    /**
+     * Get the value without pinning the variable.
+     */
+    public Object getValueGValueSafe() {
+        return value == null ? null : value.get();
     }
 
     @Override
