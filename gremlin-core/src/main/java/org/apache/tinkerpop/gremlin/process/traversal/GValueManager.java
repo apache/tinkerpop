@@ -35,13 +35,13 @@ import java.util.Set;
  * associations with `Step` objects in a traversal. This class ensures that `GValue` instances are properly extracted
  * and stored in a registry, allowing for dynamic query optimizations and state management during traversal execution.
  */
-public class GValueManager implements Serializable, Cloneable {
+public final class GValueManager implements Serializable, Cloneable {
 
     private final Map<String, GValue<?>> gValueRegistry = new HashMap<>();
     /**
      * Tracks pinned values for faster lookup.
      */
-    private final Set<String> pinnedGValues = new HashSet<>();
+    private final Set<String> pinnedVariables = new HashSet<>();
 
     /**
      * Creates a new empty GValueManager.
@@ -50,9 +50,9 @@ public class GValueManager implements Serializable, Cloneable {
         this(Collections.emptyMap(), Collections.emptySet());
     }
 
-    private GValueManager(final Map<String, GValue<?>> gValueRegistry, final Set<String> pinnedGValues) {
+    private GValueManager(final Map<String, GValue<?>> gValueRegistry, final Set<String> pinnedVariables) {
         this.gValueRegistry.putAll(gValueRegistry);
-        this.pinnedGValues.addAll(pinnedGValues);
+        this.pinnedVariables.addAll(pinnedVariables);
     }
 
     /**
@@ -64,7 +64,7 @@ public class GValueManager implements Serializable, Cloneable {
      */
     public void mergeInto(final GValueManager other) {
         other.register(gValueRegistry.values());
-        other.pinGValues(pinnedGValues);
+        other.pinGValues(pinnedVariables);
     }
 
     /**
@@ -79,7 +79,7 @@ public class GValueManager implements Serializable, Cloneable {
      */
     public Set<String> getUnpinnedVariableNames() {
         final Set<String> variableNames = new HashSet<>(gValueRegistry.keySet());
-        variableNames.removeAll(pinnedGValues);
+        variableNames.removeAll(pinnedVariables);
         return Collections.unmodifiableSet(variableNames);
     }
 
@@ -87,7 +87,7 @@ public class GValueManager implements Serializable, Cloneable {
      * Gets the set of variable names used in this traversal which have not been pinned to specific values.
      */
     public Set<String> getPinnedVariableNames() {
-        return Collections.unmodifiableSet(pinnedGValues);
+        return Collections.unmodifiableSet(pinnedVariables);
     }
 
     /**
@@ -101,7 +101,7 @@ public class GValueManager implements Serializable, Cloneable {
      * Gets the set of pinned GValues used in this traversal.
      */
     public Set<GValue<?>> getPinnedGValues() {
-        return pinnedGValues.stream().map(gValueRegistry::get).collect(Collectors.toUnmodifiableSet());
+        return pinnedVariables.stream().map(gValueRegistry::get).collect(Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -131,7 +131,7 @@ public class GValueManager implements Serializable, Cloneable {
         if (name == null || !gValueRegistry.containsKey(name)) {
             throw new IllegalArgumentException(String.format("Unable to pin variable '%s' because it is not registered", name));
         }
-        return pinnedGValues.add(name);
+        return pinnedVariables.add(name);
     }
 
     /**
@@ -147,7 +147,7 @@ public class GValueManager implements Serializable, Cloneable {
             // clone each gValue
             clonedRegistry.put(entry.getKey(), entry.getValue().clone());
         }
-        return new GValueManager(clonedRegistry, new HashSet<>(pinnedGValues));
+        return new GValueManager(clonedRegistry, new HashSet<>(pinnedVariables));
     }
 
     /**
@@ -200,7 +200,7 @@ public class GValueManager implements Serializable, Cloneable {
     public void updateVariable(final String name, final Object value) {
         if (!gValueRegistry.containsKey(name)) {
             throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it has not been registered in this traversal", name));
-        } else if (pinnedGValues.contains(name)) {
+        } else if (pinnedVariables.contains(name)) {
             throw new IllegalArgumentException(String.format("Unable to update variable '%s' as it is already pinned", name));
         }
         gValueRegistry.put(name, GValue.of(name, value));
