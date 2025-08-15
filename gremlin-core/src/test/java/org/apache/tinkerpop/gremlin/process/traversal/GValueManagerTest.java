@@ -246,7 +246,7 @@ public class GValueManagerTest {
     }
 
     @Test
-    public void shouldCloneManager() {
+    public void shouldCloneManager() throws CloneNotSupportedException {
         final GValueManager manager = new GValueManager();
         final GValue<String> unpinned = GValue.of("unpinned", "foo");
         final GValue<String> pinned = GValue.of("pinned", "bar");

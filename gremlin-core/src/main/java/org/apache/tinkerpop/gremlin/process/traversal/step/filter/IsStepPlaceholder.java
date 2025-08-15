@@ -34,10 +34,6 @@ import java.util.EnumSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-/**
- * @author Daniel Kuppitz (http://gremlin.guru)
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
 public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S>, IsStepInterface<S> {
 
     private P<S> predicate;

@@ -18,23 +18,26 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -63,13 +66,13 @@ public class GValueTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectNestedGValues() {
-        GValue inner = GValue.of("inner", "value");
+        final GValue inner = GValue.of("inner", "value");
         GValue.of("outer", inner);
     }
 
     @Test
     public void shouldMaintainTypeInformation() {
-        GValue<List<String>> listValue = GValue.of("list", Arrays.asList("a", "b"));
+        final GValue<List<String>> listValue = GValue.of("list", Arrays.asList("a", "b"));
         assertEquals(listValue.get(), Arrays.asList("a", "b"));
         assertTrue(listValue.get() instanceof List);
     }
@@ -280,7 +283,7 @@ public class GValueTest {
 
     @Test
     public void valueInstanceOfShouldReturnFalseForNonGValueObject() {
-        String nonGValue = "test";
+        final String nonGValue = "test";
         assertThat(GValue.valueInstanceOf(nonGValue, String.class), is(false));
     }
 
@@ -433,5 +436,197 @@ public class GValueTest {
     public void valueOfShouldReturnNullForNullInput() {
         assertNull(GValue.valueOf(null));
         assertNull(null);
+    }
+    
+    @Test
+    public void cloneShouldHandleNullValue() throws CloneNotSupportedException {
+        final GValue<String> original = GValue.of("varName", null);
+        final GValue<String> cloned = original.clone();
+        
+        assertBasicCloneProperties(original, cloned);
+        assertNull(cloned.get());
+    }
+
+    @Test
+    public void cloneShouldHandleNullValueWithoutName() throws CloneNotSupportedException {
+        final GValue<String> original = GValue.of(null);
+        final GValue<String> cloned = original.clone();
+        
+        assertBasicCloneProperties(original, cloned);
+        assertNull(cloned.getName());
+        assertNull(cloned.get());
+    }
+
+    @Test
+    public void cloneShouldDeepCloneSerializableList() throws CloneNotSupportedException {
+        final List<String> originalList = new ArrayList<>(Arrays.asList("item1", "item2"));
+        final GValue<List<String>> original = GValue.of("listVar", originalList);
+        final GValue<List<String>> cloned = original.clone();
+        
+        assertDeepClone(original, cloned);
+        
+        // Modify original list to verify deep clone
+        originalList.add("item3");
+        assertEquals(2, cloned.get().size()); // Cloned list should not be affected
+        assertEquals(3, original.get().size()); // Original list should be affected
+    }
+
+    @Test
+    public void cloneShouldDeepCloneSerializableMap() throws CloneNotSupportedException {
+        final Map<String, String> originalMap = new HashMap<>();
+        originalMap.put("key1", "value1");
+        originalMap.put("key2", "value2");
+        
+        final GValue<Map<String, String>> original = GValue.of("mapVar", originalMap);
+        final GValue<Map<String, String>> cloned = original.clone();
+        
+        assertDeepClone(original, cloned);
+        
+        // Modify original map to verify deep clone
+        originalMap.put("key3", "value3");
+        assertEquals(2, cloned.get().size()); // Cloned map should not be affected
+        assertEquals(3, original.get().size()); // Original map should be affected
+    }
+
+    @Test
+    public void cloneShouldDeepCloneSerializableSet() throws CloneNotSupportedException {
+        final Set<String> originalSet = new HashSet<>(Arrays.asList("item1", "item2"));
+        final GValue<Set<String>> original = GValue.of("setVar", originalSet);
+        final GValue<Set<String>> cloned = original.clone();
+        
+        assertDeepClone(original, cloned);
+        
+        // Modify original set to verify deep clone
+        originalSet.add("item3");
+        assertEquals(2, cloned.get().size()); // Cloned set should not be affected
+        assertEquals(3, original.get().size()); // Original set should be affected
+    }
+
+    @Test
+    public void cloneShouldDeepClonePrimitiveInt() throws CloneNotSupportedException {
+        final GValue<Integer> original = GValue.of("intVar", 42);
+        assertImmutableClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldDeepCloneString() throws CloneNotSupportedException {
+        final GValue<String> original = GValue.of("stringVar", "test value");
+        assertImmutableClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldDeepCloneBigInteger() throws CloneNotSupportedException {
+        final GValue<BigInteger> original = GValue.of("bigIntVar", new BigInteger("12345678901234567890"));
+        assertImmutableClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldDeepCloneBigDecimal() throws CloneNotSupportedException {
+        final GValue<BigDecimal> original = GValue.of("bigDecVar", new BigDecimal("123.456789"));
+        assertImmutableClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldShallowCloneNonSerializableValue() throws CloneNotSupportedException {
+        final GValue<NonSerializableClass> original = GValue.of("nonSerVar", new NonSerializableClass("test"));
+        assertShallowClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldFallbackToShallowCloneOnSerializationFailure() throws CloneNotSupportedException {
+        final GValue<FailingSerializableClass> original = GValue.of("failVar", new FailingSerializableClass("test"));
+        assertShallowClone(original, original.clone());
+    }
+
+    @Test
+    public void cloneShouldHandleComplexNestedSerializableStructures() throws CloneNotSupportedException {
+        final Map<String, List<String>> complexMap = new HashMap<>();
+        complexMap.put("list1", new ArrayList<>(Arrays.asList("a", "b")));
+        complexMap.put("list2", new ArrayList<>(Arrays.asList("c", "d")));
+        
+        final GValue<Map<String, List<String>>> original = GValue.of("complexVar", complexMap);
+        final GValue<Map<String, List<String>>> cloned = original.clone();
+        
+        assertNotSame(original, cloned);
+        assertEquals(original.getName(), cloned.getName());
+        assertDeepClone(original, cloned);
+        
+        // Verify deep cloning of nested structures
+        original.get().get("list1").add("e");
+        assertEquals(2, cloned.get().get("list1").size()); // Cloned nested list should not be affected
+        assertEquals(3, original.get().get("list1").size()); // Original nested list should be affected
+    }
+    
+    private <T> void assertBasicCloneProperties(final GValue<T> original, final GValue<T> cloned) {
+        assertNotSame(original, cloned);
+        assertEquals(original.getName(), cloned.getName());
+        assertEquals(original, cloned);
+        assertEquals(original.isVariable(), cloned.isVariable());
+    }
+
+    private <T> void assertDeepClone(final GValue<T> original, final GValue<T> cloned) {
+        assertBasicCloneProperties(original, cloned);
+        assertEquals(original.get(), cloned.get());
+        assertNotSame(original.get(), cloned.get());
+    }
+
+    private <T> void assertShallowClone(final GValue<T> original, final GValue<T> cloned) {
+        assertBasicCloneProperties(original, cloned);
+        assertSame(original.get(), cloned.get());
+    }
+
+    private <T> void assertImmutableClone(final GValue<T> original, final GValue<T> cloned) {
+        assertBasicCloneProperties(original, cloned);
+        assertEquals(original.get(), cloned.get());
+    }
+    
+    private static class NonSerializableClass {
+        private final String value;
+        
+        public NonSerializableClass(final String value) {
+            this.value = value;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+        
+        @Override
+        public boolean equals(final Object o) {
+            return EqualsBuilder.reflectionEquals(this, o);
+        }
+        
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+    }
+    
+    private static class FailingSerializableClass implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final String value;
+        
+        public FailingSerializableClass(final String value) {
+            this.value = value;
+        }
+        
+        public String getValue() {
+            return this.value;
+        }
+        
+        // This will cause serialization to fail
+        private void writeObject(final java.io.ObjectOutputStream out) throws java.io.IOException {
+            throw new java.io.IOException("Intentional serialization failure for testing");
+        }
+        
+        @Override
+        public boolean equals(final Object o) {
+            return EqualsBuilder.reflectionEquals(this, o);
+        }
+        
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
     }
 }
