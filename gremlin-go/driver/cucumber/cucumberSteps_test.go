@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/big"
 	"reflect"
 	"regexp"
 	"sort"
@@ -158,12 +157,7 @@ func toNumeric(stringVal, graphName string) interface{} {
 
 // Parse bigInt.
 func toBigInt(stringVal, graphName string) interface{} {
-	val := new(big.Int)
-	val, ok := val.SetString(stringVal, 10)
-	if !ok {
-		return nil
-	}
-	return val
+	return gremlingo.ParseBigInt(stringVal)
 }
 
 // Parse bigDecimal.

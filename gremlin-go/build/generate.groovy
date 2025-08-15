@@ -61,7 +61,6 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         '\t \"github.com/apache/tinkerpop/gremlin-go/v3/driver\"\n' +
         '\t \"github.com/google/uuid\"\n' +
         '\t \"math\"\n' +
-        '\t \"math/big\"\n' +
         '\t \"time\"\n' +
         ')\n'
     )

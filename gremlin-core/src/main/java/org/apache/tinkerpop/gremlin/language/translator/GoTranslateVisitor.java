@@ -104,12 +104,13 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
                     sb.append("int64(");
                     break;
                 case 'n':
-                    sb.append("big.NewInt(");
+                    sb.append("gremlingo.ParseBigInt(\"");
                     break;
                 default:
                     throw new IllegalArgumentException("Unrecognized integer suffix: " + integerLiteral);
             }
             sb.append(integerLiteral, 0, lastCharIndex);
+            if (lastChar == 'n') sb.append("\"");
             sb.append(")");
         }
         else {
