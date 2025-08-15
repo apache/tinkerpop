@@ -35,7 +35,7 @@ import java.util.Set;
  * associations with `Step` objects in a traversal. This class ensures that `GValue` instances are properly extracted
  * and stored in a registry, allowing for dynamic query optimizations and state management during traversal execution.
  */
-public class GValueManager implements Serializable, Cloneable {
+public final class GValueManager implements Serializable, Cloneable {
 
     private final Map<String, GValue<?>> gValueRegistry = new HashMap<>();
     /**
