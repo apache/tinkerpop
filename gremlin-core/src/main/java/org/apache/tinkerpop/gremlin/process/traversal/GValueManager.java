@@ -71,7 +71,7 @@ public class GValueManager implements Serializable, Cloneable {
      * Gets the set of variable names used in this traversal.
      */
     public Set<String> getVariableNames() {
-        return Set.copyOf(gValueRegistry.keySet());
+        return Collections.unmodifiableSet(gValueRegistry.keySet());
     }
 
     /**
@@ -80,14 +80,14 @@ public class GValueManager implements Serializable, Cloneable {
     public Set<String> getUnpinnedVariableNames() {
         final Set<String> variableNames = new HashSet<>(gValueRegistry.keySet());
         variableNames.removeAll(pinnedGValues);
-        return Set.copyOf(variableNames);
+        return Collections.unmodifiableSet(variableNames);
     }
 
     /**
      * Gets the set of variable names used in this traversal which have not been pinned to specific values.
      */
     public Set<String> getPinnedVariableNames() {
-        return Set.copyOf(pinnedGValues);
+        return Collections.unmodifiableSet(pinnedGValues);
     }
 
     /**
