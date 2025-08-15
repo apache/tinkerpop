@@ -108,6 +108,7 @@ public final class StepDefinition {
     private World world;
     private GraphTraversalSource g;
     private final Map<String, Object> stringParameters = new HashMap<>();
+    private final Map<String, String> sideEffects = new HashMap<>();
     private Traversal traversal;
     private Object result;
     private Throwable error;
@@ -340,6 +341,11 @@ public final class StepDefinition {
             stringParameters.put(key, convertToObject(value));
     }
 
+    @Given("using the side effect {word} defined as {string}")
+    public void usingTheSideEffectXDefinedAsX(final String key, final String value) {
+        sideEffects.put(key, convertToString(value));
+    }
+
     @Given("the traversal of")
     public void theTraversalOf(final String docString) {
         try {
@@ -350,7 +356,7 @@ public final class StepDefinition {
             // applied to the script as variables.
             final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
 
-            traversal = parseGremlin(gremlin);
+            traversal = parseGremlin(applySideEffects(gremlin));
         } catch (Exception ex) {
             ex.printStackTrace();
             error = ex;
@@ -525,7 +531,7 @@ public final class StepDefinition {
         assertThatNoErrorWasThrown();
 
         final String gremlin = world.useParametersLiterally() ? applyParameters(rawGremlin) : rawGremlin;
-        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(gremlin)).count().next());
+        assertEquals(count.longValue(), ((GraphTraversal) parseGremlin(applySideEffects(gremlin))).count().next());
     }
 
     @Then("the result should be empty")
@@ -731,6 +737,17 @@ public final class StepDefinition {
             replaced = replaced.replace(k, stringParameters.get(k).toString());
         }
         return replaced;
+    }
+
+    private String applySideEffects(final String docString) {
+        StringBuilder traversal = new StringBuilder();
+        int gtsIndex = docString.indexOf('.');
+        traversal.append(docString.substring(0, gtsIndex));
+        for (Map.Entry<String, String> sideEffect : sideEffects.entrySet()) {
+            traversal.append(String.format(".withSideEffect(\"%s\",%s)", sideEffect.getKey(), sideEffect.getValue()));
+        }
+        traversal.append(docString.substring(gtsIndex));
+        return traversal.toString();
     }
 
     private String tryUpdateDataFilePath(final String docString) {

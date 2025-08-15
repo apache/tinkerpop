@@ -36,6 +36,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -293,6 +294,91 @@ public class PTest {
             assertEquals(P.eq(1).or(P.eq(2).and(P.eq(3).or(P.eq(4)))), new OrP<>(Arrays.asList(P.eq(1), new AndP<>(Arrays.asList(P.eq(2), new OrP<>(Arrays.asList(P.eq(3), P.eq(4))))))));
             assertEquals(P.eq(1).and(P.eq(2).or(P.eq(3).and(P.eq(4)))), new AndP<>(Arrays.asList(P.eq(1), new OrP<>(Arrays.asList(P.eq(2), new AndP<>(Arrays.asList(P.eq(3), P.eq(4))))))));
             assertEquals(P.eq(1).and(P.eq(2).and(P.eq(3).or(P.eq(4)))), new AndP<>(Arrays.asList(P.eq(1), P.eq(2), new OrP<>(Arrays.asList(P.eq(3), P.eq(4))))));
+        }
+    }
+    
+    public static class SetValueTest {
+
+        private static final int INITIAL_VALUE = 5;
+        private static final int UPDATED_VALUE = 10;
+        private static final String EQ_FORMAT = "eq(%d)";
+        private static final String NEQ_FORMAT = "neq(%d)";
+        public static final String GT_FORMAT = "gt(%d)";
+        public static final String LT_FORMAT = "lt(%d)";
+
+        @Test
+        public void shouldUseUpdatedValueAfterSetValue() {
+            P<Integer> predicate = P.eq(INITIAL_VALUE);
+            assertTrue(predicate.test(INITIAL_VALUE));
+            assertEquals(String.format(EQ_FORMAT, INITIAL_VALUE), predicate.toString());
+            assertEquals(predicate, P.eq(INITIAL_VALUE));
+            assertEquals(Integer.valueOf(INITIAL_VALUE), predicate.getValue());
+            
+            predicate.setValue(UPDATED_VALUE);
+            assertTrue(predicate.test(UPDATED_VALUE));
+            assertFalse(predicate.test(INITIAL_VALUE));
+            assertEquals(String.format(EQ_FORMAT, UPDATED_VALUE), predicate.toString());
+            assertEquals(predicate, P.eq(UPDATED_VALUE));
+            assertNotEquals(predicate, P.eq(INITIAL_VALUE));
+            assertEquals(Integer.valueOf(UPDATED_VALUE), predicate.getValue());
+        }
+
+        @Test
+        public void shouldUseUpdatedValueAfterSetValueForNegation() {
+            P<Integer> predicate = P.eq(INITIAL_VALUE);
+            P<Integer> negated = predicate.negate();
+            assertFalse(negated.test(INITIAL_VALUE));
+            assertEquals(String.format(NEQ_FORMAT, INITIAL_VALUE), negated.toString());
+            
+            predicate.setValue(UPDATED_VALUE);
+            P<Integer> updatedNegated = predicate.negate();
+            assertTrue(updatedNegated.test(INITIAL_VALUE));
+            assertFalse(updatedNegated.test(UPDATED_VALUE));
+            assertEquals(String.format(NEQ_FORMAT, UPDATED_VALUE), updatedNegated.toString());
+        }
+
+        @Test
+        public void shouldHandleNullValuesForSetValue() {
+            P<Integer> predicate = P.eq(INITIAL_VALUE);
+            predicate.setValue(null);
+            
+            assertTrue(predicate.test(null));
+            assertFalse(predicate.test(INITIAL_VALUE));
+            assertEquals("eq", predicate.toString());
+            assertEquals(predicate, P.eq(null));
+            assertNotEquals(predicate, P.eq(INITIAL_VALUE));
+        }
+
+        @Test
+        public void shouldUseUpdatedValueAfterSetValueForGreaterThan() {
+            P<Integer> gtPredicate = P.gt(INITIAL_VALUE);
+            gtPredicate.setValue(UPDATED_VALUE);
+            assertTrue(gtPredicate.test(UPDATED_VALUE + 1));
+            assertFalse(gtPredicate.test(UPDATED_VALUE));
+            assertEquals(String.format(GT_FORMAT, UPDATED_VALUE), gtPredicate.toString());
+        }
+
+        @Test
+        public void shouldUseUpdatedValueAfterSetValueForLessThan() {
+            P<Integer> ltPredicate = P.lt(INITIAL_VALUE);
+            ltPredicate.setValue(UPDATED_VALUE);
+            assertTrue(ltPredicate.test(UPDATED_VALUE - 1));
+            assertFalse(ltPredicate.test(UPDATED_VALUE));
+            assertEquals(String.format(LT_FORMAT, UPDATED_VALUE), ltPredicate.toString());
+        }
+
+        @Test
+        public void shouldUseUpdatedValueAfterSetValueContaining() {
+            String initial = "old";
+            String updated = "new";
+            TextP textPredicate = TextP.containing(initial);
+            textPredicate.setValue(updated);
+            
+            assertTrue(textPredicate.test(updated + "text"));
+            assertFalse(textPredicate.test(initial + "text"));
+            assertEquals(String.format("containing(%s)", updated), textPredicate.toString());
+            assertEquals(textPredicate, TextP.containing(updated));
+            assertNotEquals(textPredicate, TextP.containing(initial));
         }
     }
 }

@@ -124,10 +124,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_intersectXMARKOX
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).intersect(xx1)
+      g.V().out().path().by(values("name").toUpper()).intersect(["MARKO"])
       """
     When iterated to list
     Then the result should be unordered

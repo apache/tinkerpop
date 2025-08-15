@@ -227,10 +227,10 @@ Feature: Step - mergeE()
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect a defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.withSideEffect("a",xx1).mergeE(__.select("a"))
+      g.mergeE(__.select("a"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -471,12 +471,11 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
-    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And using the side effect c defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+    And using the side effect m defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
-      g.withSideEffect("c",xx2).withSideEffect("m",xx3).
-        mergeE(xx1).option(Merge.onCreate,__.select("c")).option(Merge.onMatch,__.select("m"))
+      g.mergeE(xx1).option(Merge.onCreate,__.select("c")).option(Merge.onMatch,__.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -492,12 +491,11 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
-    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And using the side effect c defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+    And using the side effect m defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
-      g.withSideEffect("c",xx2).withSideEffect("m",xx3).
-        mergeE(xx1).option(Merge.onCreate, __.select("c")).option(Merge.onMatch, __.select("m"))
+      g.mergeE(xx1).option(Merge.onCreate, __.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -514,12 +512,11 @@ Feature: Step - mergeE()
         addV("person").property("name", "vadas").as("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
-    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And using the side effect c defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+    And using the side effect m defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
-      g.withSideEffect("c",xx2).withSideEffect("m",xx3).
-        mergeE(xx1).option(Merge.onCreate, __.select("c")).option(Merge.onMatch, __.select("m"))
+      g.mergeE(xx1).option(Merge.onCreate, __.select("c")).option(Merge.onMatch, __.select("m"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -573,12 +570,11 @@ Feature: Step - mergeE()
         addE("knows").property("weight", 1.0d).from("a").to("b")
       """
     And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
-    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And using the side effect c defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+    And using the side effect m defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
-      g.withSideEffect("c",xx2).withSideEffect("m",xx3).
-        mergeE(xx1).
+      g.mergeE(xx1).
           option(Merge.onCreate, __.select("c")).
           option(Merge.onMatch, __.sideEffect(__.properties("weight").drop()).select("m"))
       """

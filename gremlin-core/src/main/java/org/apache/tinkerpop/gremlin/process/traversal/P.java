@@ -39,24 +39,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected PBiPredicate<V, V> biPredicate;
     protected V value;
-    protected V originalValue;
 
     public P(final PBiPredicate<V, V> biPredicate, final V value) {
         this.value = value;
-        this.originalValue = value;
         this.biPredicate = biPredicate;
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
         return this.biPredicate;
-    }
-
-    /**
-     * Gets the original value used at time of construction of the {@code P}. This value can change its type
-     * in some cases.
-     */
-    public V getOriginalValue() {
-        return originalValue;
     }
 
     /*
@@ -88,8 +78,8 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     @Override
     public int hashCode() {
         int result = this.biPredicate.hashCode();
-        if (null != this.originalValue)
-            result ^= this.originalValue.hashCode();
+        if (null != this.value)
+            result ^= this.value.hashCode();
         return result;
     }
 
@@ -98,17 +88,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue));
+                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value));
     }
 
     @Override
     public String toString() {
-        return null == this.originalValue ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.originalValue + ")";
+        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
     }
 
     @Override
     public P<V> negate() {
-        return new P<>(this.biPredicate.negate(), this.originalValue);
+        return new P<>(this.biPredicate.negate(), this.value);
     }
 
     @Override

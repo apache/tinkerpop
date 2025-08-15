@@ -36,12 +36,12 @@ public class TextP extends P<String> {
 
     @Override
     public String toString() {
-        return null == this.originalValue ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.originalValue + ")";
+        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
     }
 
     @Override
     public TextP negate() {
-        return new TextP(this.biPredicate.negate(), this.originalValue);
+        return new TextP(this.biPredicate.negate(), this.value);
     }
 
     public TextP clone() {

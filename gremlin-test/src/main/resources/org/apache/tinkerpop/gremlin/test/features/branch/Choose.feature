@@ -214,11 +214,10 @@ Feature: Step - choose()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
-    And using the parameter xx1 defined as "d[10].i"
-    And using the parameter xx2 defined as "d[1].i"
+    And using the parameter xx1 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(xx2).choose(__.is(xx2), __.constant(xx1).fold(), __.fold())
+      g.inject(1i).choose(__.is(xx1), __.constant(10i).fold(), __.fold())
       """
     When iterated to list
     Then the result should be unordered
@@ -228,12 +227,10 @@ Feature: Step - choose()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX2X_chooseXisX1X__constantX10Xfold__foldX
     Given the empty graph
-    And using the parameter xx1 defined as "d[10].i"
-    And using the parameter xx2 defined as "d[1].i"
-    And using the parameter xx3 defined as "d[2].i"
+    And using the parameter xx1 defined as "d[1].i"
     And the traversal of
       """
-      g.inject(xx3).choose(__.is(xx2), __.constant(xx1).fold(), __.fold())
+      g.inject(2i).choose(__.is(xx1), __.constant(10i).fold(), __.fold())
       """
     When iterated to list
     Then the result should be unordered

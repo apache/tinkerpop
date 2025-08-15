@@ -129,10 +129,9 @@ Feature: Step - product()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_productXMARKOX_unfold
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).product(xx1).unfold()
+      g.V().out().path().by(values("name").toUpper()).product(["MARKO"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -153,10 +152,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXmarkoX_productXV_valuesXnameX_order_foldX_unfold
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).product(__.V().values("name").order().fold()).unfold()
+      g.inject(["marko"]).product(__.V().values("name").order().fold()).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -171,10 +169,9 @@ Feature: Step - product()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_productXdulles_seattle_vancouverX_unfold
     Given the crew graph
-    And using the parameter xx1 defined as "l[dulles,seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().product(xx1).unfold()
+      g.V().valueMap("location").select(values).unfold().product(["dulles","seattle","vancouver"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -239,10 +236,9 @@ Feature: Step - product()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_productXdave_kelvinX_unfold
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").product(xx1).unfold()
+      g.V().out().out().path().by("name").product(["dave","kelvin"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -263,11 +259,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_productXa_cX_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,c]"
     And the traversal of
       """
-      g.inject(xx1).product(xx2).unfold()
+      g.inject(["a",null,"b"]).product(["a","c"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -282,11 +276,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_productXa_null_cX_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,null,c]"
     And the traversal of
       """
-      g.inject(xx1).product(xx2).unfold()
+      g.inject(["a",null,"b"]).product(["a",null,"c"]).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -304,11 +296,9 @@ Feature: Step - product()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_productXfive_three_7X_unfold
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1).product(xx2).unfold()
+      g.inject([3i,"three"]).product(["five","three",7i]).unfold()
       """
     When iterated to list
     Then the result should be unordered

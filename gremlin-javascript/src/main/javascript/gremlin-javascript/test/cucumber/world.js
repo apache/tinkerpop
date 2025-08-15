@@ -37,6 +37,7 @@ function TinkerPopWorld(){
   this.cache = null;
   this.graphName = null;
   this.parameters = {};
+  this.sideEffects = {};
   this.isGraphComputer = false;
 }
 

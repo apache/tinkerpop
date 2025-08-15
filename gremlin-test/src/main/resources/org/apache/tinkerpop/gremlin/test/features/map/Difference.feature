@@ -124,10 +124,9 @@ Feature: Step - difference()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_differenceXMARKOX
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).difference(xx1)
+      g.V().out().path().by(values("name").toUpper()).difference(["MARKO"])
       """
     When iterated to list
     Then the result should be unordered
@@ -142,10 +141,9 @@ Feature: Step - difference()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXmarkoX_differenceXV_valuesXnameX_foldX
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).difference(__.V().values("name").fold())
+      g.inject(["marko"]).difference(__.V().values("name").fold())
       """
     When iterated to list
     Then the result should be unordered
@@ -155,10 +153,9 @@ Feature: Step - difference()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_differenceXseattle_vancouverX
     Given the crew graph
-    And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().difference(xx1)
+      g.V().valueMap("location").select(values).unfold().difference(["seattle","vancouver"])
       """
     When iterated to list
     Then the result should be unordered
@@ -171,10 +168,9 @@ Feature: Step - difference()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_differenceXrippleX
     Given the modern graph
-    And using the parameter xx1 defined as "l[ripple]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").difference(xx1)
+      g.V().out().out().path().by("name").difference(["ripple"])
       """
     When iterated to list
     Then the result should be unordered
@@ -185,10 +181,9 @@ Feature: Step - difference()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_differenceXempty_listX
     Given the modern graph
-    And using the parameter xx1 defined as "l[]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").difference(xx1)
+      g.V().out().out().path().by("name").difference([])
       """
     When iterated to list
     Then the result should be unordered
@@ -210,10 +205,9 @@ Feature: Step - difference()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_differenceXdave_kelvinX
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").difference(xx1)
+      g.V().out().out().path().by("name").difference(["dave","kelvin"])
       """
     When iterated to list
     Then the result should be unordered
