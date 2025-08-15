@@ -633,8 +633,10 @@ the following:
 ** `@WithSeedStrategy`
 ** `@WithSubgraphStrategy`
 
-Tag filters can be applied to Intellij at execution time by adding a system properties of
-`-Dcucumber.filter.tags=<step-filter>`.
+Tag filters can be applied to Intellij at execution time by adding a system property of
+`-Dcucumber.filter.tags=<tag-expression>`. In addition, the scenarios that pass the `<tag-expression>` can be further
+filtered by name with `-Dcucumber.filter.name=<scenario-regex>`. Note that these settings will override those
+configured by `CucumberOptions` on "*FeatureTest" setups.
 
 [[gremlin-socket-server-tests]]
 === Gremlin Socket Server Tests
