@@ -18,17 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -52,5 +58,25 @@ public class IsStepTest extends GValueStepTest {
                 Pair.of(__.count().is(GValue.of("x", 0)), Set.of("x")),
                 Pair.of(__.count().is(P.gt(GValue.of("x", 0))), Set.of("x"))
         );
+    }
+
+    @Test
+    public void getPredicateGValueSafeShouldNotPinVariable() {
+        final GraphTraversal.Admin<Object, Long> traversal = __.count().is(GValue.of("x", 0)).asAdmin();
+        assertNotNull(((IsStepPlaceholder) traversal.getSteps().get(1)).getPredicateGValueSafe());
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertTrue(gValueManager.hasUnpinnedVariables());
+        assertEquals(1, gValueManager.getUnpinnedVariableNames().size());
+        assertEquals("x", gValueManager.getUnpinnedVariableNames().iterator().next());
+    }
+
+    @Test
+    public void getPredicateShouldPinVariable() {
+        final GraphTraversal.Admin<Object, Long> traversal = __.count().is(P.gt(GValue.of("x", 0))).asAdmin();
+        assertNotNull(((IsStepPlaceholder) traversal.getSteps().get(1)).getPredicate());
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertFalse(gValueManager.hasUnpinnedVariables());
+        assertEquals(1, gValueManager.getPinnedVariableNames().size());
+        assertEquals("x", gValueManager.getPinnedVariableNames().iterator().next());
     }
 }
