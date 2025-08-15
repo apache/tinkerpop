@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.driver.RequestOptions.getRequestOptions;
@@ -433,6 +434,7 @@ public abstract class Client {
      */
     public final static class ClusteredClient extends Client {
 
+        Supplier<ConnectionFactory> connectionFactorySupplier = ConnectionFactory.DefaultConnectionFactory::new;
         final ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
         private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
         private Throwable initializationFailure = null;
@@ -597,7 +599,8 @@ public abstract class Client {
         private Consumer<Host> initializeConnectionSetupForHost = host -> {
             try {
                 // hosts that don't initialize connection pools will come up as a dead host.
-                hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this));
+                hostConnectionPools.put(host, new ConnectionPool(host, ClusteredClient.this,
+                        Optional.empty(), Optional.empty(), connectionFactorySupplier.get()));
 
                 // hosts are not marked as available at cluster initialization and are made available here instead.
                 host.makeAvailable();
