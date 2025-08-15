@@ -567,6 +567,18 @@ link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gherkin-tests-suite[P
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3136[TINKERPOP-3136]
 
+===== New Gherkin Syntax for Side Effects
+
+Added new syntax to the gherkin feature tests to directly add side effects to traversals.
+
+[source,gherkin]
+----
+Given the modern graph
+And using the side effect x defined as "v[marko].id"
+----
+
+Our complete Gherkin syntax for feature tests can be found in the link:https://tinkerpop.apache.org/docs/3.8.0/dev/developer/#_given[Developer Documentation].
+
 ===== Auto-promotion of Numbers
 
 Previously, operations like `sum` or `sack` that involved mathematical calculations did not automatically promote the
