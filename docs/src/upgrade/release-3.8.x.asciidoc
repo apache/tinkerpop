@@ -196,6 +196,12 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
+==== Removal of P.getOriginalValue()
+
+`P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.
+Usage of `P.getOriginalValue()` often leads to unexpected results if called on a predicate which has had its value reset
+after construction. All usages of `P.getOriginalValue()` should be replaced with `P.getValue()`.
+
 ==== Gremlin Grammar Changes
 
 A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
@@ -546,7 +552,7 @@ The `DiscardStep` is now renamed to `DiscardStep`. Providers who developed strat
 `DiscardStep` should switch to `DiscardStep`. Note that `DiscardStep` has been repurposed as `none(P)` for filtering
 collections as a complement to `any(P)` and `all(P)`.
 
-==== Set minimum Java version to 11
+===== Set minimum Java version to 11
 
 TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
 
@@ -654,6 +660,12 @@ All the following types in the grammar have been renamed to follow consistent ru
 
 Additionally, `genericLiteralListArgument` and `stringLiteralList` have been removed in favor of `genericArgumentVarags`
 and `stringNullableLiteralVarargs` respectively.
+
+===== Removal of P.getOriginalValue()
+
+`P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.
+Usage of `P.getOriginalValue()` often leads to unexpected results if called on a predicate which has had its value reset
+after construction. All usages of `P.getOriginalValue()` should be replaced with `P.getValue()`.
 
 ==== Graph Driver Providers
 
