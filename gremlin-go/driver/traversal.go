@@ -740,6 +740,16 @@ func ParseBigDecimal(strValue string) *BigDecimal {
 	return val
 }
 
+// ParseBigInt creates a big.Int from a string value.
+func ParseBigInt(strValue string) *big.Int {
+	val := new(big.Int)
+	val, ok := val.SetString(strValue, 10)
+	if !ok {
+		return nil
+	}
+	return val
+}
+
 // ByteBuffer represents the GraphBinary type ByteBuffer which can be used to serialize a binary data.
 type ByteBuffer struct {
 	Data []byte

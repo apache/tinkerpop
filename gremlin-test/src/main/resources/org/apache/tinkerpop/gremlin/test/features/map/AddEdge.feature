@@ -267,9 +267,10 @@ Feature: Step - addE()
       """
     And using the parameter vid1 defined as "v[marko].id"
     And using the parameter vid6 defined as "v[peter].id"
+    And using the side effect b defined as "v[peter].id"
     And the traversal of
       """
-      g.withSideEffect("b", vid6).V(vid1).addE("knows").to("b").property("weight", 0.5D)
+      g.V(vid1).addE("knows").to("b").property("weight", 0.5D)
       """
     When iterated to list
     Then the result should have a count of 1

@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"math/big"
 	"reflect"
 	"regexp"
 	"sort"
@@ -134,11 +133,20 @@ func toUuid(stringVal, graphName string) interface{} {
 // Parse numeric.
 func toNumeric(stringVal, graphName string) interface{} {
 	if strings.Contains(stringVal, ".") {
-		val, err := strconv.ParseFloat(stringVal, 64)
-		if err != nil {
-			return nil
+
+		if strings.Contains(stringVal, "f") || strings.Contains(stringVal, "F") {
+			val, err := strconv.ParseFloat(stringVal, 32)
+			if err != nil {
+				return nil
+			}
+			return float32(val)
+		} else {
+			val, err := strconv.ParseFloat(stringVal, 64)
+			if err != nil {
+				return nil
+			}
+			return val
 		}
-		return val
 	}
 	val, err := strconv.ParseInt(stringVal, 10, 64)
 	if err != nil {
@@ -149,12 +157,7 @@ func toNumeric(stringVal, graphName string) interface{} {
 
 // Parse bigInt.
 func toBigInt(stringVal, graphName string) interface{} {
-	val := new(big.Int)
-	val, ok := val.SetString(stringVal, 10)
-	if !ok {
-		return nil
-	}
-	return val
+	return gremlingo.ParseBigInt(stringVal)
 }
 
 // Parse bigDecimal.
@@ -448,7 +451,7 @@ func (tg *tinkerPopGraph) chooseGraph(graphName string) error {
 }
 
 func (tg *tinkerPopGraph) theGraphInitializerOf(arg1 *godog.DocString) error {
-	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters)
+	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters, tg.sideEffects)
 	if err != nil {
 		return err
 	}
@@ -479,7 +482,7 @@ func (tg *tinkerPopGraph) theResultShouldHaveACountOf(expectedCount int) error {
 }
 
 func (tg *tinkerPopGraph) theGraphShouldReturnForCountOf(expectedCount int, traversalText string) error {
-	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters)
+	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters, tg.sideEffects)
 	if err != nil {
 		return err
 	}
@@ -831,7 +834,7 @@ func makeSortedStringArrayFromSet(set *gremlingo.SimpleSet) []string {
 }
 
 func (tg *tinkerPopGraph) theTraversalOf(arg1 *godog.DocString) error {
-	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters)
+	traversal, err := GetTraversal(tg.scenario.Name, tg.g, tg.parameters, tg.sideEffects)
 	if err != nil {
 		return err
 	}
@@ -856,6 +859,14 @@ func (tg *tinkerPopGraph) usingTheParameterOfP(paramName, pVal, stringVal string
 	default:
 		tg.parameters[paramName] = predicate(values)
 	}
+	return nil
+}
+
+func (tg *tinkerPopGraph) usingTheSideEffectDefined(key string, value string) error {
+	if tg.graphName == "empty" {
+		tg.reloadEmptyData()
+	}
+	tg.sideEffects[key] = parseValue(strings.Replace(value, "\\\"", "\"", -1), tg.graphName)
 	return nil
 }
 
@@ -939,6 +950,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the traversal of$`, tg.theTraversalOf)
 	ctx.Step(`^using the parameter (.+) defined as "(.+)"$`, tg.usingTheParameterDefined)
 	ctx.Step(`^using the parameter (.+) of P\.(.+)\("(.+)"\)$`, tg.usingTheParameterOfP)
+	ctx.Step(`^using the side effect (.+) defined as"(.+)"$`, tg.usingTheSideEffectDefined)
 	ctx.Step(`^the traversal will raise an error$`, tg.theTraversalWillRaiseAnError)
 	ctx.Step(`^the traversal will raise an error with message (\w+) text of "(.+)"$`, tg.theTraversalWillRaiseAnErrorWithMessageContainingTextOf)
 }

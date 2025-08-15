@@ -39,8 +39,7 @@ tail = __.tail
 ignores = [
     "g.V().choose(has(T.label, \"person\"),values(\"age\").groupCount(\"a\"), values(\"name\").groupCount(\"b\")).cap(\"a\", \"b\").unfold()", # uses embedded Map in assertion
     "g.withSideEffect(\"x\",{}).V().both().both().sideEffect(__.store(\"x\").by(\"name\")).cap(\"x\").unfold()", # Objects must be both of Map or Collection: a=LinkedHashMap b=BulkSet???
-    "g.withSack(xx1, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()", # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
-    "g.withSack(2).V().sack(Operator.div).by(__.constant(xx1)).sack()" # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
+    "g.withSack(10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000n, Operator.assign).V().local(__.out(\"knows\").barrier(Barrier.normSack)).in(\"knows\").barrier().sack()" # issues with BigInteger/BigDecimal - why do we carry BigDecimal? just use python Decimal module?
 ]
 
 
@@ -104,6 +103,17 @@ def add_parameter(step, param_name, param):
     step.context.traversal_params[param_name] = _convert(param.replace('\\"', '"'), step.context)
 
 
+@given("using the side effect {key:w} defined as {value:QuotedString}")
+def add_side_effect(step, key, value):
+    if (step.context.ignore):
+        return
+
+    if not hasattr(step.context, "traversal_side_effects"):
+        step.context.traversal_side_effects = {}
+
+    step.context.traversal_side_effects[key] = _convert(value.replace('\\"', '"'), step.context)
+
+
 @given("the traversal of")
 def translate_traversal(step):
     if step.context.ignore == False:
@@ -127,6 +137,10 @@ def translate_traversal(step):
         localg = step.context.g.withComputer()
     p['g'] = localg
     step.context.traversal = step.context.traversals.pop(0)(**p)
+
+    if hasattr(step.context, "traversal_side_effects"):
+        for key in step.context.traversal_side_effects:
+            step.context.traversal.bytecode.add_source("withSideEffect", key, step.context.traversal_side_effects[key])
 
 
 @when("iterated to list")

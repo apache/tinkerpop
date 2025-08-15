@@ -73,10 +73,9 @@ Feature: Step - concat()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXaX_concat_Xinject_List_b_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[b,c]"
     And the traversal of
       """
-      g.inject("a").concat(__.inject(xx1))
+      g.inject("a").concat(__.inject(["b","c"]))
       """
     When iterated to list
     Then the result should be unordered
@@ -86,10 +85,9 @@ Feature: Step - concat()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_concat_XdX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1,"c").concat("d")
+      g.inject(["a","b"],"c").concat("d")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "String concat() can only take string as argument"

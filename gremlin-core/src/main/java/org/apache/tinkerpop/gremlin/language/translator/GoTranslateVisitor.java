@@ -88,11 +88,34 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         int lastCharIndex = integerLiteral.length() - 1;
         char lastChar = integerLiteral.charAt(lastCharIndex);
 
-        // if the last character is not alphabetic then try to interpret the right type and append the suffix
-        if (Character.isAlphabetic(lastChar))
+        // if the last character is alphabetic, then force the exact type
+        if (Character.isAlphabetic(lastChar)) {
+            switch(lastChar) {
+                case 'b':
+                    sb.append("int8(");
+                    break;
+                case 's':
+                    sb.append("int16(");
+                    break;
+                case 'i':
+                    sb.append("int32(");
+                    break;
+                case 'l':
+                    sb.append("int64(");
+                    break;
+                case 'n':
+                    sb.append("gremlingo.ParseBigInt(\"");
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unrecognized integer suffix: " + integerLiteral);
+            }
             sb.append(integerLiteral, 0, lastCharIndex);
-        else
+            if (lastChar == 'n') sb.append("\"");
+            sb.append(")");
+        }
+        else {
             sb.append(integerLiteral);
+        }
         return null;
     }
 
@@ -107,11 +130,28 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         int lastCharIndex = floatLiteral.length() - 1;
         char lastChar = floatLiteral.charAt(lastCharIndex);
 
-        // if the last character is not alphabetic then try to interpret the right type and append the suffix
-        if (Character.isAlphabetic(lastChar))
-            sb.append(floatLiteral, 0, lastCharIndex);
-        else
+        // if the last character is alphabetic, then force the exact type
+        if (Character.isAlphabetic(lastChar)) {
+            switch(lastChar) {
+                case 'f':
+                    sb.append("float32(");
+                    sb.append(floatLiteral, 0, lastCharIndex);
+                    sb.append(")");
+                    break;
+                case 'd': // Default case, no casts necessary
+                    sb.append(floatLiteral, 0, lastCharIndex);
+                    break;
+                case 'm':
+                    sb.append("gremlingo.ParseBigDecimal(\"");
+                    sb.append(floatLiteral, 0, lastCharIndex);
+                    sb.append("\")");
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unrecognized float suffix: " + floatLiteral);
+            }
+        } else {
             sb.append(floatLiteral);
+        }
         return null;
     }
 

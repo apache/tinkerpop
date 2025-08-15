@@ -37,6 +37,7 @@ type CucumberWorld struct {
 	error        map[bool]string
 	graphDataMap map[string]*DataGraph
 	parameters   map[string]interface{}
+	sideEffects  map[string]interface{}
 }
 
 type DataGraph struct {
@@ -81,6 +82,7 @@ func NewCucumberWorld() *CucumberWorld {
 		error:        make(map[bool]string),
 		graphDataMap: make(map[string]*DataGraph),
 		parameters:   make(map[string]interface{}),
+		sideEffects:  make(map[string]interface{}),
 	}
 }
 

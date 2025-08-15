@@ -114,10 +114,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_disjunctXMARKOX
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).disjunct(xx1)
+      g.V().out().path().by(values("name").toUpper()).disjunct(["MARKO"])
       """
     When iterated to list
     Then the result should be unordered
@@ -132,10 +131,9 @@ Feature: Step - disjunct()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_disjunctXseattle_vancouverX
     Given the crew graph
-    And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().disjunct(xx1)
+      g.V().valueMap("location").select(values).unfold().disjunct(["seattle","vancouver"])
       """
     When iterated to list
     Then the result should be unordered
@@ -148,10 +146,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_disjunctXmarkoX
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").disjunct(xx1)
+      g.V().out().out().path().by("name").disjunct(["marko"])
       """
     When iterated to list
     Then the result should be unordered
@@ -162,10 +159,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_disjunctXstephen_markoX
     Given the modern graph
-    And using the parameter xx1 defined as "l[stephen,marko]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").disjunct(xx1)
+      g.V().out().out().path().by("name").disjunct(["stephen","marko"])
       """
     When iterated to list
     Then the result should be unordered
@@ -176,10 +172,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_disjunctXdave_kelvinX
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").disjunct(xx1)
+      g.V().out().out().path().by("name").disjunct(["dave","kelvin"])
       """
     When iterated to list
     Then the result should be unordered
@@ -190,11 +185,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_disjunctXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,c]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(xx2)
+      g.inject(["a",null,"b"]).disjunct(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -204,11 +197,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_disjunctXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,null,c]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(xx2)
+      g.inject(["a",null,"b"]).disjunct(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -218,11 +209,9 @@ Feature: Step - disjunct()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_disjunctXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1).disjunct(xx2)
+      g.inject([3i,"three"]).disjunct(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

@@ -45,6 +45,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private GraphTraversalSource? _g;
         private string? _graphName;
         private readonly IDictionary<string, object?> _parameters = new Dictionary<string, object?>();
+        private readonly IDictionary<string, object?> _sideEffects = new Dictionary<string, object?>();
         private ITraversal? _traversal;
         private object?[]? _result;
         private Exception? _error;
@@ -121,6 +122,13 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             var parsedValue = ParseValue(value.Replace("\\\"", "\""), _graphName!);
             _parameters.Add(name, new P(pval, parsedValue));
         }
+        
+        [Given("using the side effect (\\w+) defined as \"(.*)\"")]
+        public void UsingSideEffect(string key, string value)
+        {
+            var parsedValue = ParseValue(value.Replace("\\\"", "\""), _graphName!);
+            _sideEffects.Add(key, parsedValue);
+        }
 
         [Given("the traversal of")]
         public void TranslateTraversal(string traversalText)
@@ -136,14 +144,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
 
             _traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
         }
 
         [Given("the graph initializer of")]
         public void InitTraversal(string traversalText)
         {
             var traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
             traversal.Iterate();
             
             // We may have modified the so-called `empty` graph
