@@ -44,9 +44,21 @@ import java.util.Set;
 public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
         implements AddPropertyStepInterface<S>, GValueHolder<S, S> {
 
+    /**
+     * property key
+     */
     private Object key;
+    /**
+     * property value
+     */
     private GValue<?> value;
+    /**
+     * cardinality of the property
+     */
     private VertexProperty.Cardinality cardinality;
+    /**
+     * meta-properties of the property
+     */
     private Map<Object, List<Object>> properties = new HashMap<>();
 
     public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
