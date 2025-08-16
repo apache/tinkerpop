@@ -330,6 +330,16 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public Bytecode getBytecode();
 
         /**
+         * Get the {@link GValueManager} associated with this traversal.
+         */
+        public GValueManager getGValueManager();
+
+        /**
+         * Set the {@link GValueManager} associated with this traversal.
+         */
+        public void setGValueManager(final GValueManager gValueManager);
+
+        /**
          * Add an iterator of {@link Traverser.Admin} objects to the head/start of the traversal. Users should
          * typically not need to call this method. For dynamic inject of data, they should use {@link InjectStep}.
          *
@@ -384,7 +394,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException;
 
         /**
-         * Remove a {@link Step} from the traversal.
+         * Remove a {@link Step} from the traversal. Those overriding this method should take care to reset state for
+         * the step in the {@link GValueManager}. By default, this requirement is delegated to {@link #removeStep(int)}.
          *
          * @param step the step to remove
          * @param <S2> the new start type of the traversal (if the removed step was a start step)
@@ -397,7 +408,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable, A
         }
 
         /**
-         * Remove a {@link Step} from the traversal.
+         * Remove a {@link Step} from the traversal. Those implementing this method should take care to reset state for
+         * the step in the {@link GValueManager}.
          *
          * @param index the location in the traversal of the step to be evicted
          * @param <S2>  the new start type of the traversal (if the removed step was a start step)

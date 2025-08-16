@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
@@ -35,6 +36,10 @@ public final class PureTraversal<S, E> implements Serializable, Cloneable {
     private transient Traversal.Admin<S, E> cachedTraversal;
 
     public PureTraversal(final Traversal.Admin<S, E> pureTraversal) {
+        // TODO:: Is this right? Keep GValueHolder out of PureTraversal as it is effectively immutable as only clones can be accessed from PureTraversal.
+        if (!pureTraversal.isLocked()) {
+            GValueReductionStrategy.instance().apply(pureTraversal);
+        }
         this.pureTraversal = pureTraversal;
     }
 

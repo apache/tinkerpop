@@ -101,6 +101,56 @@ func TestClient(t *testing.T) {
 		AssertMarkoVertexWithProperties(t, result)
 	})
 
+	t.Run("Test client.Submit() with bindings", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		bindings := map[string]interface{}{"x": 2}
+
+		resultSet, err := client.Submit("x + x", bindings)
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+
+		assert.Equal(t, int64(4), result.Data)
+	})
+
+	t.Run("Test client.SubmitWithOptions() with bindings", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+				settings.AuthInfo = testNoAuthAuthInfo
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		bindings := map[string]interface{}{"x": 2}
+
+		resultSet, err := client.SubmitWithOptions("x + x", new(RequestOptionsBuilder).SetBindings(bindings).Create())
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+
+		result, ok, err := resultSet.One()
+		assert.NoError(t, err)
+		assert.True(t, ok)
+
+		assert.Equal(t, int64(4), result.Data)
+	})
+
 	t.Run("Test client.submit() with materializeProperties", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,

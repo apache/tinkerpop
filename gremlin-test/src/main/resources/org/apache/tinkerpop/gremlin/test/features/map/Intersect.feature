@@ -131,10 +131,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXmarkoX_intersectX___V_valuesXnameX_foldX
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).intersect(__.V().values("name").fold())
+      g.inject(["marko"]).intersect(__.V().values("name").fold())
       """
     When iterated to list
     Then the result should be unordered
@@ -144,10 +143,9 @@ Feature: Step - intersect()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_intersectXseattle_vancouverX
     Given the crew graph
-    And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().intersect(xx1)
+      g.V().valueMap("location").select(values).unfold().intersect(["seattle","vancouver"])
       """
     When iterated to list
     Then the result should be unordered
@@ -171,10 +169,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_intersectXdave_kelvinX
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").intersect(xx1)
+      g.V().out().out().path().by("name").intersect(["dave","kelvin"])
       """
     When iterated to list
     Then the result should be unordered
@@ -185,11 +182,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_intersectXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,c]"
     And the traversal of
       """
-      g.inject(xx1).intersect(xx2)
+      g.inject(["a",null,"b"]).intersect(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -199,11 +194,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_intersectXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,null,c]"
     And the traversal of
       """
-      g.inject(xx1).intersect(xx2)
+      g.inject(["a",null,"b"]).intersect(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -213,11 +206,9 @@ Feature: Step - intersect()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_intersectXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1).intersect(xx2)
+      g.inject([3,"three"]).intersect(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered

@@ -389,6 +389,37 @@ Feature: Step - addE()
     And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
     And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
+  Scenario: g_addEXknowsvarX_fromXaX_toXbX_propertyXweight_0_1X
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).as("marko").
+        addV("person").property("name", "vadas").property("age", 27).as("vadas").
+        addV("software").property("name", "lop").property("lang", "java").as("lop").
+        addV("person").property("name","josh").property("age", 32).as("josh").
+        addV("software").property("name", "ripple").property("lang", "java").as("ripple").
+        addV("person").property("name", "peter").property("age", 35).as('peter').
+        addE("knows").from("marko").to("vadas").property("weight", 0.5d).
+        addE("knows").from("marko").to("josh").property("weight", 1.0d).
+        addE("created").from("marko").to("lop").property("weight", 0.4d).
+        addE("created").from("josh").to("ripple").property("weight", 1.0d).
+        addE("created").from("josh").to("lop").property("weight", 0.4d).
+        addE("created").from("peter").to("lop").property("weight", 0.2d)
+      """
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid6 defined as "v[peter].id"
+    And using the parameter xx1 defined as "knows"
+    And using the parameter xx2 defined as "d[0.1].d"
+    And the traversal of
+      """
+      g.addE(xx1).from(vid1).to(vid6).property("weight", xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 7 for count of "g.E()"
+    And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
+    And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
+
   Scenario: g_VXaX_addEXknowsX_toXbX_propertyXweight_0_1X
     Given the empty graph
     And the graph initializer of
@@ -434,3 +465,36 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E().has(\"knows\",\"weight\",null)"
+
+  @AllowNullPropertyValues
+  Scenario: g_addEXknowsvarXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And using the parameter xx1 defined as "knows"
+    And the traversal of
+      """
+      g.addE(xx1).property("weight", null).from(V().has("name","marko")).to(V().has("name","vadas"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E().has(\"knows\",\"weight\",null)"
+
+  Scenario: g_unionXaddEXknowsvarXpropertyXweight_nullXfromXV_hasXname_markoXX_toXV_hasXname_vadasXXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And using the parameter xx1 defined as "knows"
+    And the traversal of
+      """
+      g.union(addE(xx1).property("weight", 1).from(V().has("name","marko")).to(V().has("name","vadas")))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E().has(\"knows\",\"weight\", 1)"

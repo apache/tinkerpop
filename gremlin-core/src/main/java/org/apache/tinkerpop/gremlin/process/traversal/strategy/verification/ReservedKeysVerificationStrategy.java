@@ -26,12 +26,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.structure.Property;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -58,13 +61,11 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
     @Override
     void verify(final Traversal.Admin<?, ?> traversal) throws VerificationException {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof AddVertexStep || step instanceof AddVertexStartStep ||
-                step instanceof AddEdgeStartStep || step instanceof AddEdgeStep ||
-                step instanceof AddPropertyStep) {
-                final Parameterizing propertySettingStep = (Parameterizing) step;
-                final Parameters params = propertySettingStep.getParameters();
+            if (step instanceof PropertyAdding) {
+                final PropertyAdding propertySettingStep = (PropertyAdding) step;
+                final Map<Object, List<Object>> properties = propertySettingStep.getProperties();
                 for (String key : reservedKeys) {
-                    if (params.contains(key)) {
+                    if (properties.containsKey(key)) {
                         final String msg = String.format(
                                 "The provided traversal contains a %s that is setting a property key to a reserved" +
                                         " word: %s", propertySettingStep.getClass().getSimpleName(), key);

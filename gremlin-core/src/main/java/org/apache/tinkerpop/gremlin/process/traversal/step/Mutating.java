@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public interface Mutating<E extends Event> extends Configuring {
+public interface Mutating<E extends Event> {
 
     /**
      * Gets the callback registry for events that the step raises.

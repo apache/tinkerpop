@@ -5368,6 +5368,55 @@ location. Please see the <<io-step,documentation>> for `io()`-step for more comp
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#write()++[`write()`]
 
+[[traversal-parameterization]]
+== Traversal Parameterization
+
+A subset of gremlin steps are able to accept parameterized arguments also known as GValues. GValues can be used to
+provide protection against gremlin-injection attacks in cases where untrusted and unsanitized inputs must be passed as
+step arguments. Additionally, use of GValues may offer performance benefits in certain environments by making use of
+some query caching capabilities. Note that the reference implementation of the gremlin language and `gremlin-server` do
+not have such a query caching mechanism, and thus will not see any performance improvements through parameterization. Users
+should consult the documentation of their specific graph system details of potential performance benefits via parameterization.
+
+NOTE: There are unique considerations regarding parameters when using `gremlin-groovy` scripts. Groovy allows for parameterization
+at arbitrary points in the query in addition to the subset of parameterizable steps documented here. Groovy is also bound by
+a comparatively slow script compilation, which makes parameterization essential for performant execution of `gremlin-groovy` scripts.
+
+[cols="1,1"]
+|===
+|Step | Parameterizable arguments
+
+|<<addedge-step,addE()>> | String edgeLabel
+|<<addvertex-step,addV()>> | String vertexLabel
+|<<vertex-steps,both()>> | String... edgeLabels
+|<<vertex-steps,bothE()>> | String... edgeLabels
+|<<call-step,call()>> | Map params
+|<<from-step,from()>> | Vertex fromVertex
+|<<has-step,has()>> | String label
+|<<has-step,hasId()>> | Object id, Object... ids
+|<<has-step,hasLabel()>> | String label, String... labels
+|<<has-step,hasValue()>> | Object value, Object... values
+|<<vertex-steps,in()>> | String... edgeLabels
+|<<vertex-steps,inE()>> | String... edgeLabels
+|<<is-step,is()>> | Object value
+|<<limit-step,limit()>> | Long limit
+|<<mergeedge-step,mergeE()>> | Map searchCreate
+|<<mergevertex-step,mergeV()>> | Map searchCreate
+|<<option-step,option()>> | Map m
+|<<vertex-steps,out()>> | String... edgeLabels
+|<<vertex-steps,outE()>> | String... edgeLabels
+|<<property-step,property()>> | Object value, Object... values
+|<<range-step,range()>> | Long low, Long high
+|<<skip-step,skip()>> | Long limit
+|<<tail-step,tail()>> | Long limit
+|<<to-step,to()>> | String... edgeLabels, Vertex toVertex
+|<<vertex-steps,toE()>> | String... edgeLabels
+|===
+
+*Additional References*
+
+<<gremlin-java-gvalue,Java>>, <<parameterized-scripts,Server>>
+
 [[a-note-on-predicates]]
 == A Note on Predicates
 

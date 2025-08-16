@@ -18,14 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,7 +39,7 @@ import static org.hamcrest.Matchers.not;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class VertexStepTest extends StepTest {
+public class VertexStepTest extends GValueStepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
@@ -44,9 +47,43 @@ public class VertexStepTest extends StepTest {
                 __.out(),
                 __.in(),
                 __.both(),
+                __.outE(),
+                __.inE(),
+                __.bothE(),
                 __.out("knows"),
                 __.out("created"),
-                __.out("knows", "created")
+                __.out("knows", "created"),
+                __.to(Direction.OUT, "uses"),
+                __.outE("knows"),
+                __.inE("knows"),
+                __.bothE("knows"),
+                __.toE(Direction.OUT, "uses"),
+                __.out(GValue.of("label", "knows")),
+                __.out(GValue.of("label", "created")),
+                __.out(GValue.of("label1", "knows"), GValue.of("label2", "created")),
+                __.in(GValue.of("label", "knows")),
+                __.both(GValue.of("label", "knows")),
+                __.to(Direction.OUT, GValue.of("label", "uses")),
+                __.outE(GValue.of("label", "knows")),
+                __.inE(GValue.of("label", "knows")),
+                __.bothE(GValue.of("label", "knows")),
+                __.toE(Direction.OUT, GValue.of("label", "uses"))
+        );
+    }
+
+    @Override
+    protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
+        return List.of(
+                Pair.of(__.out(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.out(GValue.of("label", "created")), Set.of("label")),
+                Pair.of(__.out(GValue.of("label1", "knows"), GValue.of("label2", "created")), Set.of("label1", "label2")),
+                Pair.of(__.in(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.both(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.to(Direction.OUT, GValue.of("label", "uses")), Set.of("label")),
+                Pair.of(__.outE(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.inE(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.bothE(GValue.of("label", "knows")), Set.of("label")),
+                Pair.of(__.toE(Direction.OUT, GValue.of("label", "uses")), Set.of("label"))
         );
     }
 

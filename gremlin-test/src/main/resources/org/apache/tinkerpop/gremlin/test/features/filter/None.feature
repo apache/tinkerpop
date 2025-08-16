@@ -71,10 +71,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXbcd_bcdX_noneXeqXabcXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[bcd,bcd]"
     And the traversal of
       """
-      g.inject(xx1).none(P.eq("abc"))
+      g.inject(["bcd","bcd"]).none(P.eq("abc"))
       """
     When iterated to list
     Then the result should be unordered
@@ -84,10 +83,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_bcdX_noneXP_eqXabcXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,bcd]"
     And the traversal of
       """
-      g.inject(xx1).none(P.eq("abc"))
+      g.inject([null,"bcd"]).none(P.eq("abc"))
       """
     When iterated to list
     Then the result should be unordered
@@ -97,11 +95,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5_8_10_10_7X_noneXltX7XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[5].i,d[8].i,d[10].i]"
-    And using the parameter xx2 defined as "l[d[10].i,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1,xx2).none(P.lt(7))
+      g.inject([5,8,10],[10,7]).none(P.lt(7))
       """
     When iterated to list
     Then the result should be unordered
@@ -132,11 +128,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_1_emptyX_noneXeqXnullXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,1]"
-    And using the parameter xx2 defined as "l[]"
     And the traversal of
       """
-      g.inject(xx1,xx2).none(P.eq(null))
+      g.inject([null,1],[]).none(P.eq(null))
       """
     When iterated to list
     Then the result should be unordered
@@ -146,10 +140,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_nullX_noneXnotXnullXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,null]"
     And the traversal of
       """
-      g.inject(xx1).none(P.neq(null))
+      g.inject([null,null]).none(P.neq(null))
       """
     When iterated to list
     Then the result should be unordered
@@ -159,10 +152,9 @@ Feature: Step - none()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_noneXeqX3XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).none(P.eq(3))
+      g.inject([3i,"three"]).none(P.eq(3))
       """
     When iterated to list
     Then the result should be empty

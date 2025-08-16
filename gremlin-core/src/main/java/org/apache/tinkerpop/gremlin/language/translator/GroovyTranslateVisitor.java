@@ -172,8 +172,35 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
         return handleInject(ctx);
     }
 
-    /*
-    * very special handling for inject with second `null` argument like g.inject(1, null)
+    @Override
+    public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
+        // special handling for resolving ambiguous invocations of the hasLabel() step. coerces to the string form
+        if (ctx.getChildCount() > 4 && ctx.getChild(2).getText().equals("null")) {
+            final GremlinParser.StringNullableArgumentVarargsContext varArgs = (GremlinParser.StringNullableArgumentVarargsContext) ctx.getChild(4);
+            sb.append(ctx.getChild(0).getText());
+            sb.append("((String) null, ");
+
+            for (int i = 0; i < varArgs.getChildCount(); i += 2) {
+                if (varArgs.getChild(i).getText().equals("null")) {
+                    sb.append("(String) null");
+                } else {
+                    visit(varArgs.getChild(i));
+                }
+
+                if (i < varArgs.getChildCount() - 1) {
+                    sb.append(", ");
+                }
+            }
+
+            sb.append(")");
+            return null;
+        }
+
+        return visitChildren(ctx);
+    }
+
+    /**
+    * Special handling for inject with second `null` argument like g.inject(1, null)
     * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
     */
     private Void handleInject(final ParserRuleContext ctx) {

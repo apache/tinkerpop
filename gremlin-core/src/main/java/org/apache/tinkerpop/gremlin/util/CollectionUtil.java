@@ -19,6 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,22 +32,36 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Utility class for working with collections and arrays.
+ */
 public final class CollectionUtil {
-    private CollectionUtil() {
-    }
+    private CollectionUtil() { }
 
+    /**
+     * Converts varargs to a {@code List}.
+     */
     public static <E> List<E> asList(final E... elements) {
         return new ArrayList<>(Arrays.asList(elements));
     }
 
+    /**
+     * Converts varargs to a {@code Set}.
+     */
     public static <E> LinkedHashSet<E> asSet(final E... elements) {
         return asSet(Arrays.asList(elements));
     }
 
+    /**
+     * Converts {@code Collection} to a {@code Set}.
+     */
     public static <E> LinkedHashSet<E> asSet(final Collection<E> elements) {
         return new LinkedHashSet<>(elements);
     }
 
+    /**
+     * Converts varargs to a {@code Map} where the elements are key/value pairs.
+     */
     public static <K,V> LinkedHashMap<K,V> asMap(final Object... elements) {
         final LinkedHashMap<K,V> map = new LinkedHashMap<>();
         for (int i = 0; i < elements.length; i+=2) {
@@ -55,6 +72,11 @@ public final class CollectionUtil {
         return map;
     }
 
+    /**
+     * Clones a given {@code ConcurrentHashMap} by creating a new map and copying all entries from the original map.
+     * If the value of an entry is a {@code Set} or an {@code ArrayList}, a deep copy of the value is created.
+     * Otherwise, the value is copied as is.
+     */
     public static <K,V> ConcurrentHashMap<K,V> clone(final ConcurrentHashMap<K,V> map) {
         final ConcurrentHashMap<K, V> result = new ConcurrentHashMap<>(map.size());
 
@@ -73,5 +95,19 @@ public final class CollectionUtil {
         }
 
         return result;
+    }
+
+    /**
+     * Adds the element argument to the start of the supplied array argument, but if the array is null then return the
+     * element as a new array with just that item in it.
+     */
+    public static <T> T[] addFirst(final T[] array, final T element, final Class<T> clazz) {
+        if (null == array) {
+            final T[] singleElementArray = (T[]) Array.newInstance(clazz, 1);
+            singleElementArray[0] = element;
+            return singleElementArray;
+        } else {
+            return ArrayUtils.addFirst(array, element);
+        }
     }
 }

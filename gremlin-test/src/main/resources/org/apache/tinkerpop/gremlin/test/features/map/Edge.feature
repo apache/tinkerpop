@@ -16,7 +16,7 @@
 # under the License.
 
 @StepClassMap @StepE
-Feature: Step - E()
+Feature: Step - E(), inV(), outV(), bothV(), otherV()
 
   Scenario: g_E
     Given the modern graph
@@ -213,3 +213,152 @@ Feature: Step - E()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E().hasLabel(\"tests\")"
+
+  Scenario: g_VX1X_outE_inV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE().inV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX2X_inE_outV
+    Given the modern graph
+    And using the parameter vid2 defined as "v[vadas].id"
+    And the traversal of
+      """
+      g.V(vid2).inE().outV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  Scenario: g_V_outE_hasXweight_1X_outV
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE().has("weight",1.0).outV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[josh] |
+
+  Scenario: g_VX1X_outE_otherV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE().otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX4X_bothE_otherV
+    Given the modern graph
+    And using the parameter vid4 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V(vid4).bothE().otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[ripple] |
+      | v[lop] |
+
+  Scenario: g_VX4X_bothE_hasXweight_lt_1X_otherV
+    Given the modern graph
+    And using the parameter vid4 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V(vid4).bothE().has("weight", P.lt(1.0)).otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+
+  Scenario: get_g_VX1X_outE_otherV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE().otherV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX1X_outEXknowsX_inV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").inV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+
+  Scenario: g_VX1X_outEXknows_createdX_inV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows","created").inV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_VX1X_outEXknowsX_bothV
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").bothV()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[josh] |
+      | v[vadas] |
+
+  Scenario: g_VX1X_outEXknowsX_bothV_name
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").bothV().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | marko |
+      | josh |
+      | vadas |
