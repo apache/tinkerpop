@@ -51,22 +51,25 @@ public abstract class GValueStepTest extends StepTest {
     }
     
     protected void verifyNoVariables(GraphTraversal.Admin<?, ?> traversal) {
-        GValueManager gValueManager = traversal.getGValueManager();
-        assertTrue(gValueManager.getGValues().isEmpty());
-        assertTrue(gValueManager.getVariableNames().isEmpty());
+        verifyVariables(traversal, Set.of(), Set.of());
     }
 
     protected void verifySingleUnpinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
-        GValueManager gValueManager = traversal.getGValueManager();
-        assertTrue(gValueManager.hasUnpinnedVariables());
-        assertEquals(1, gValueManager.getUnpinnedVariableNames().size());
-        assertEquals(variableName, gValueManager.getUnpinnedVariableNames().iterator().next());
+        verifyVariables(traversal, Set.of(), Set.of(variableName));
     }
 
     protected void verifySinglePinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
+        verifyVariables(traversal, Set.of(variableName), Set.of());
+    }
+
+    protected void verifyVariables(GraphTraversal.Admin<?, ?> traversal, Set<String> pinnedVariables, Set<String> unpinnedVariables) {
         GValueManager gValueManager = traversal.getGValueManager();
-        assertFalse(gValueManager.hasUnpinnedVariables());
-        assertEquals(1, gValueManager.getPinnedVariableNames().size());
-        assertEquals(variableName, gValueManager.getPinnedVariableNames().iterator().next());
+        assertEquals(pinnedVariables, gValueManager.getPinnedVariableNames());
+        assertEquals(unpinnedVariables, gValueManager.getUnpinnedVariableNames());
+        if (!unpinnedVariables.isEmpty()) {
+            assertTrue(gValueManager.hasUnpinnedVariables());
+        } else {
+            assertFalse(gValueManager.hasUnpinnedVariables());
+        }
     }
 }
