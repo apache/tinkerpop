@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -31,9 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -74,61 +71,47 @@ public class AddPropertyStepTest extends GValueStepTest {
     @Test
     public void getKeyFromConcreteStep() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, PROPERTY_VALUE).asAdmin();
-        assertEquals(PROPERTY_NAME, ((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).asConcreteStep().getKey());
+        assertEquals(PROPERTY_NAME, ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getKey());
     }
 
     @Test
     public void getValueFromConcreteStep() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, PROPERTY_VALUE).asAdmin();
-        assertEquals(PROPERTY_VALUE, ((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).asConcreteStep().getValue());
+        assertEquals(PROPERTY_VALUE, ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getValue());
     }
     
     @Test
     public void getKeyShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, GValue.of(GVALUE_NAME, PROPERTY_VALUE)).asAdmin();
-        assertEquals(PROPERTY_NAME, ((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).getKey());
+        assertEquals(PROPERTY_NAME, ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getKey());
         verifySingleUnpinnedVariable(traversal, GVALUE_NAME);
     }
 
     @Test
     public void getValueShouldPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, GValue.of(GVALUE_NAME, PROPERTY_VALUE)).asAdmin();
-        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).getValue());
+        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValue());
         verifySinglePinnedVariable(traversal, GVALUE_NAME);
     }
 
     @Test
     public void getValueGValueSafeShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, GValue.of(GVALUE_NAME, PROPERTY_VALUE)).asAdmin();
-        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).getValueGValueSafe());
+        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValueGValueSafe());
         verifySingleUnpinnedVariable(traversal, GVALUE_NAME);
     }
 
     @Test
     public void getPropertiesGValueSafeShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, PROPERTY_VALUE, META_PROPERTY_NAME, GValue.of(GVALUE_META_NAME, META_PROPERTY_VALUE)).asAdmin();
-        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).getPropertiesGValueSafe());
+        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getPropertiesGValueSafe());
         verifySingleUnpinnedVariable(traversal, GVALUE_META_NAME);
     }
 
     @Test
     public void getPropertiesShouldPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PROPERTY_NAME, PROPERTY_VALUE, META_PROPERTY_NAME, GValue.of(GVALUE_META_NAME, META_PROPERTY_VALUE)).asAdmin();
-        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(PROPERTY_VALUE)).getProperties());
+        assertNotNull(((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getProperties());
         verifySinglePinnedVariable(traversal, GVALUE_META_NAME);
-    }
-
-    private void verifySingleUnpinnedVariable(GraphTraversal.Admin<Object, Object> traversal, String value) {
-        GValueManager gValueManager = traversal.getGValueManager();
-        assertTrue(gValueManager.hasUnpinnedVariables());
-        assertEquals(META_PROPERTY_VALUE, gValueManager.getUnpinnedVariableNames().size());
-        assertEquals(value, gValueManager.getUnpinnedVariableNames().iterator().next());
-    }
-
-    private void verifySinglePinnedVariable(GraphTraversal.Admin<Object, Object> traversal, String variableName) {
-        GValueManager gValueManager = traversal.getGValueManager();
-        assertFalse(gValueManager.hasUnpinnedVariables());
-        assertEquals(META_PROPERTY_VALUE, gValueManager.getPinnedVariableNames().size());
-        assertEquals(variableName, gValueManager.getPinnedVariableNames().iterator().next());
     }
 }

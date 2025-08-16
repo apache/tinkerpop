@@ -18,15 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public abstract class GValueStepTest extends StepTest {
 
@@ -44,5 +48,25 @@ public abstract class GValueStepTest extends StepTest {
         for (Pair<Traversal, Set<String>> gValueTraversal : getGValueTraversals()) {
             assertEquals(gValueTraversal.getRight(), gValueTraversal.getLeft().asAdmin().getGValueManager().getVariableNames());
         }
+    }
+    
+    protected void verifyNoVariables(GraphTraversal.Admin<?, ?> traversal) {
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertTrue(gValueManager.getGValues().isEmpty());
+        assertTrue(gValueManager.getVariableNames().isEmpty());
+    }
+
+    protected void verifySingleUnpinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertTrue(gValueManager.hasUnpinnedVariables());
+        assertEquals(1, gValueManager.getUnpinnedVariableNames().size());
+        assertEquals(variableName, gValueManager.getUnpinnedVariableNames().iterator().next());
+    }
+
+    protected void verifySinglePinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertFalse(gValueManager.hasUnpinnedVariables());
+        assertEquals(1, gValueManager.getPinnedVariableNames().size());
+        assertEquals(variableName, gValueManager.getPinnedVariableNames().iterator().next());
     }
 }
