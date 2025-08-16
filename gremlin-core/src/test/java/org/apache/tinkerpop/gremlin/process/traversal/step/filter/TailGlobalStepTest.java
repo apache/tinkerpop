@@ -18,35 +18,63 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class TailGlobalStepTest extends GValueStepTest {
 
+    private static final String GVALUE_NAME = "limit";
+    private static final long LIMIT_10 = 10L;
+    private static final long LIMIT_5 = 5L;
+
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.tail(5L),
-                __.tail(10L),
-                __.tail(GValue.of("limit", 10L))
+                __.tail(LIMIT_5),
+                __.tail(LIMIT_10),
+                __.tail(GValue.of(GVALUE_NAME, LIMIT_10))
         );
     }
 
     @Override
     protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
         return List.of(
-                Pair.of(__.tail(GValue.of("limit", 10L)), Set.of("limit"))
+                Pair.of(__.tail(GValue.of(GVALUE_NAME, LIMIT_10)), Set.of(GVALUE_NAME))
         );
+    }
+
+    @Test
+    public void getLimitNonGValue() {
+        GraphTraversal.Admin<Object, Object> traversal = __.tail(LIMIT_5).asAdmin();
+        assertEquals((Long) LIMIT_5, ((TailGlobalStep) traversal.getSteps().get(0)).getLimit());
+        verifyNoVariables(traversal);
+    }
+
+    @Test
+    public void getLimitGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Object> traversal = __.tail(GValue.of(GVALUE_NAME, LIMIT_10)).asAdmin();
+        assertNotNull(((TailGlobalStepPlaceholder) traversal.getSteps().get(0)).getLimitGValueSafe());
+        verifySingleUnpinnedVariable(traversal, GVALUE_NAME);
+    }
+
+    @Test
+    public void getLimitShouldPinVariable() {
+        final GraphTraversal.Admin<Object, Object> traversal = __.tail(GValue.of(GVALUE_NAME, LIMIT_10)).asAdmin();
+        assertNotNull(((TailGlobalStepPlaceholder) traversal.getSteps().get(0)).getLimit());
+        verifySinglePinnedVariable(traversal, GVALUE_NAME);
     }
 }
