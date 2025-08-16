@@ -156,7 +156,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         }
 
         @Override
-        public Step<S, S> asConcreteStep() {
+        public RangeGlobalStep<S> asConcreteStep() {
             RangeGlobalStep<S> step = new RangeGlobalStep<>(traversal, low.get(), high.get());
             TraversalHelper.copyLabels(this, step, false);
             return step;
@@ -175,7 +175,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         }
 
         @Override
-        public Step<S, S> asConcreteStep() {
+        public RangeLocalStep<S> asConcreteStep() {
             RangeLocalStep<S> step = new RangeLocalStep<>(traversal, low.get(), high.get());
             TraversalHelper.copyLabels(this, step, false);
             return step;

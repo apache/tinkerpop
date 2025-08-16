@@ -93,4 +93,11 @@ public class RangeLocalStepTest extends GValueStepTest {
         assertEquals((Long) HIGH_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getHighRange());
         verifyVariables(traversal, Set.of(HIGH_NAME), Set.of(LOW_NAME));
     }
+
+    @Test
+    public void getLowHighRangeGValueFromConcreteStep() {
+        GraphTraversal.Admin<Object, Object> traversal = __.range(Scope.local, GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
+        assertEquals((Long) LOW_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getLowRange());
+        assertEquals((Long) HIGH_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getHighRange());
+    }
 }
