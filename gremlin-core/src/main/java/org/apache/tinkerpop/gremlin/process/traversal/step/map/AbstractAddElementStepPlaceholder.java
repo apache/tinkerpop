@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddElementStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -203,18 +204,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        for (List<Object> list : properties.values()) {
-            for (Object value : list) {
-                if (value instanceof GValue) {
-                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
-                }
-            }
-        }
-        return properties;
+        return GValueHelper.resolveProperties(properties,
+                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return properties;
+        return GValueHelper.resolveProperties(properties);
     }
 
     @Override
@@ -270,16 +265,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        Set<GValue<?>> gValues = new HashSet<>();
+        Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
         if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) label).getGValue());
         }
-        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
-            for (final Object propertyVal : entry.getValue()) {
-                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
-                    gValues.add((GValue<?>) propertyVal);
-                }
-            }
+        if (elementId != null && elementId.isVariable()) {
+            gValues.add(elementId);
         }
         return gValues;
     }

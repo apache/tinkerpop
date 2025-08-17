@@ -19,15 +19,18 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
@@ -186,7 +189,7 @@ public class AddVertexStepTest extends GValueStepTest {
     public void shouldDefaultTheLabelIfNullTraversal() {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
-        final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?,String>) null);
+        final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?, String>) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
         final AddVertexStep step = new AddVertexStep(t, (String) null);
         assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
@@ -211,5 +214,71 @@ public class AddVertexStepTest extends GValueStepTest {
                 __.select(Pop.first, "b").select("a").select(Pop.last, "c"));
 
         assertEquals(addVertexStartStep.getPopInstructions(), expectedOutput);
+    }
+
+    @Test
+    public void getLabelShouldPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("person", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getLabel());
+        verifyVariables(traversal, Set.of("label"), Set.of("id", "a"));
+    }
+
+    @Test
+    public void getLabelGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("person", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getLabelGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
+    }
+
+    @Test
+    public void getElementIdShouldPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("1234", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getElementId());
+        verifyVariables(traversal, Set.of("id"), Set.of("label", "a"));
+    }
+
+    @Test
+    public void getElementIdGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("1234", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getElementIdGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
+    }
+
+    @Test
+    public void getPropertiesShouldPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getProperties().get("age"));
+        verifyVariables(traversal, Set.of("a"), Set.of("label", "id"));
+    }
+
+    @Test
+    public void getPropertiesGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getPropertiesGValueSafe().get("age"));
+        verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
+    }
+
+    @Test
+    public void getGValuesShouldReturnAllGValues() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        Collection<GValue<?>> gValues = ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getGValues();
+        assertEquals(3, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList()).containsAll(List.of("label", "id", "a")));
+    }
+
+    @Test
+    public void getGValuesNonShouldReturnEmptyCollection() {
+        GraphTraversal.Admin<Object, Vertex> traversal = __.addV("person")
+                .property(T.id, "1234")
+                .property("age", 29)
+                .asAdmin();
+        assertTrue(((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    private GraphTraversal.Admin<Object, Vertex> getAddPersonGValueTraversal() {
+        return __.addV(GValue.of("label", "person"))
+                .property(T.id, GValue.of("id", "1234"))
+                .property("age", GValue.of("a", 29))
+                .asAdmin();
     }
 }
