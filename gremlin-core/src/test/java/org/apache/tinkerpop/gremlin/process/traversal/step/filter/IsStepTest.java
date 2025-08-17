@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -78,5 +79,11 @@ public class IsStepTest extends GValueStepTest {
         final GraphTraversal.Admin<Object, Long> traversal = __.count().is(P.gt(GValue.of(GVALUE_NAME, VALUE))).asAdmin();
         assertNotNull(((IsStepPlaceholder) traversal.getSteps().get(1)).getPredicate());
         verifySinglePinnedVariable(traversal, GVALUE_NAME);
+    }
+
+    @Test
+    public void getPredicateFromConcreteStep() {
+        final GraphTraversal.Admin<Object, Long> traversal = __.count().is(P.gt(GValue.of(GVALUE_NAME, VALUE))).asAdmin();
+        assertEquals(VALUE, ((IsStepPlaceholder) traversal.getSteps().get(1)).getPredicate().getValue());
     }
 }

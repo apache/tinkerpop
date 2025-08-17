@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -178,16 +181,13 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        Set<GValue<?>> gValues = new HashSet<>();
+        Set<GValue<?>> gValues = properties.values().stream()
+                .flatMap(List::stream)
+                .filter(propertyVal -> propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable())
+                .map(obj -> (GValue<?>) obj)
+                .collect(Collectors.toSet());
         if (value.isVariable()) {
             gValues.add(value);
-        }
-        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
-            for (final Object propertyVal : entry.getValue()) {
-                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
-                    gValues.add((GValue<?>) propertyVal);
-                }
-            }
         }
         return gValues;
     }
@@ -208,18 +208,11 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        for (List<Object> list : properties.values()) {
-            for (Object value : list) {
-                if (value instanceof GValue) {
-                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
-                }
-            }
-        }
-        return properties;
+        return getUnboxedProperties(gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return properties;
+        return getUnboxedProperties(null);
     }
 
     @Override
@@ -230,5 +223,25 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     @Override
     public CallbackRegistry<Event.ElementPropertyChangedEvent> getMutatingCallbackRegistry() {
         throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
+    }
+    
+    private Map<Object, List<Object>> getUnboxedProperties(Consumer<GValue<?>> gValueConsumer) {
+        Map<Object, List<Object>> unboxedProperties = new HashMap<>();
+        properties.forEach((k, values) -> {
+            List<Object> unboxedValues = new ArrayList<>();
+            values.forEach(v -> {
+                if (v instanceof GValue) {
+                    GValue<?> gValue = (GValue<?>) v;
+                    if (gValueConsumer != null ) {
+                        gValueConsumer.accept(gValue);
+                    }
+                    unboxedValues.add(gValue.get());
+                } else {
+                    unboxedValues.add(v);
+                }
+            });
+            unboxedProperties.put(k, unboxedValues);
+        });
+        return unboxedProperties;
     }
 }
