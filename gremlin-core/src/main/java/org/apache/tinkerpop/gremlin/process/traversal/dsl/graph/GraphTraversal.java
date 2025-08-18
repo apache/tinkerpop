@@ -478,7 +478,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Vertex> out() {
         return this.out(new String[0]);
@@ -520,7 +520,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Vertex> in() {
         return this.in(new String[0]);
@@ -562,7 +562,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Vertex> both() {
         return this.both(new String[0]);
@@ -604,7 +604,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @param direction  the direction to traverse from the current vertex
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Edge> toE(final Direction direction) {
         return this.toE(direction, new String[0]);
@@ -648,7 +648,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Edge> outE() {
         return this.outE(new String[0]);
@@ -689,7 +689,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Edge> inE() {
         return this.inE(new String[0]);
@@ -731,7 +731,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link VertexStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#vertex-steps" target="_blank">Reference Documentation - Vertex Step</a>
-     * @since 3.0.0-incubating
+     * @since 3.8.0
      */
     public default GraphTraversal<S, Edge> bothE() {
         return this.bothE(new String[0]);

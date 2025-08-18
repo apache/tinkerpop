@@ -434,7 +434,7 @@ public class PTest {
             
             assertTrue(predicate.test(null));
             assertFalse(predicate.test(INITIAL_VALUE));
-            assertEquals("eq(null)", predicate.toString());
+            assertEquals("eq", predicate.toString());
             assertEquals(predicate, P.eq(null));
             assertNotEquals(predicate, P.eq(INITIAL_VALUE));
         }

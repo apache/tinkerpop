@@ -23,8 +23,8 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 
@@ -47,14 +47,15 @@ import java.util.Set;
  * (typically via a "builder"), but that state cannot mutate once instantiated.
  * <p/>
  * Given that a traversal strategy can completely rewrite a traversal, it must take into account the
- * {@link GValueManager} state while doing so. While most of the registry state is kept in sync by underlying
- * {@link Traversal} mutation operations when adding and removing steps, there are cases where those changes alone
- * will not capture the necessary changes. A good example of where this is the case is
- * {@link AdjacentToIncidentStrategy} where a new step can replace another. When that replacement occurs, {@link GValue}
- * instances registered to the original step apply to the new step. The strategy therefore uses
- * {@link GValueManager#copyRegistryState} to ensure that this state gets propagated to the new step. If that step isn't
- * taken, the traversal will still execute, but the reference to the {@link GValue} will be lost and any optimizations
- * gained there will be forfeit.
+ * {@link GValueManager} state while doing so. The {@link GValueManager} maintains a record of "pinned" and "free"
+ * variables. When a new traversal is created, all variables are considered free, as any value may be substituted for
+ * a variable without restriction. Strategies may rewrite a traversal in a manner which is valid for the current value
+ * of a {@link GValue}, but would lead to incorrect behaviour if that variable were later updated arbitrarily. An
+ * example of this is {@link EarlyLimitStrategy}, which will replace a traversal such as
+ * `limit(GValue.of("x", 5)).valueMap().range(5, 10)` with simply `discard()`, as the limit and range prevent the
+ * traversal from being productive. This optimization is not generalizable to any values of `x` however, as any value of
+ * `x` greater than 5 is expected to produce results. In cases such as these, the strategy must ensure that the variable
+ * `x` is "pinned" in the {@link GValueManager}, to indicate it is no longer free to be updated arbitrarily.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)

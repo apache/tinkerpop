@@ -162,7 +162,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return literals.isEmpty() && variables.isEmpty() ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + getValue() + ")";
+        return null == this.getValue() ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.getValue() + ")";
     }
 
     @Override
