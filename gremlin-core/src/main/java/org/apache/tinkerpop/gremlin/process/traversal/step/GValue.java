@@ -316,7 +316,7 @@ public class GValue<V> implements Serializable {
      * {@link Class}.
      */
     public static boolean valueInstanceOf(final Object o, final Class<?> type) {
-        return o instanceof GValue && type.isAssignableFrom(((GValue<?>) o).get().getClass());
+        return o instanceof GValue && !((GValue<?>) o).isNull() && type.isAssignableFrom(((GValue<?>) o).get().getClass());
     }
 
     /**

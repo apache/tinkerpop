@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -36,7 +35,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -69,8 +67,6 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        final GValueManager manager = traversal.getGValueManager();
-
         final boolean lazyBarrierStrategyInstalled = TraversalHelper.getRootTraversal(traversal).
                 getStrategies().getStrategy(LazyBarrierStrategy.class).isPresent();
 
@@ -83,27 +79,13 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
                         !TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEPS, repeatStep.getRepeatTraversal())) {
 
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
-
-                    // removes the RepeatEndStep - no need to worry about GValue state as that step can't carry any
-                    repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1);
+                    repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
 
                     final int repeatLength = repeatTraversal.getSteps().size();
                     int insertIndex = i;
                     final int loops = (int) ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops();
                     for (int j = 0; j < loops; j++) {
-
-                        // todo: bad? like, is it ok that StepContracts are shared across steps??
-                        // cloned the repeat traversal so copy the StepContract to the cloned steps.
-                        final Traversal.Admin<?, ?> repeatClone = repeatTraversal.clone();
-                        final List<Step> repeatSteps = repeatTraversal.getSteps();
-                        for (int ix = 0; ix < repeatSteps.size(); ix++) {
-                            // TODO:: manager.copyRegistryState(repeatSteps.get(ix), repeatClone.getSteps().get(ix));
-
-                            // todo: PathProcessorStrategy showed some state can hang about in the manager - really need to investigate clone more
-                            // TODO:: repeatClone.getGValueManager().remove(repeatSteps.get(ix)); // don't need to pin GValues as RepeatUnroll isn't based on specific GValue Values
-                        }
-
-                        TraversalHelper.insertTraversal(insertIndex, repeatClone, traversal);
+                        TraversalHelper.insertTraversal(insertIndex, repeatTraversal.clone(), traversal);
                         insertIndex = insertIndex + repeatLength;
 
                         // the addition of barriers is determined by the existence of LazyBarrierStrategy
@@ -123,10 +105,6 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
                     // remove the RepeatStep
                     traversal.removeStep(i);
-
-                    // drop the steps that have GValue state from the manager. since we're killing the entire traversal
-                    // we must remove the child steps too
-                    // TODO:: TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, repeatTraversal).forEach(manager::remove);
                 }
             }
         }

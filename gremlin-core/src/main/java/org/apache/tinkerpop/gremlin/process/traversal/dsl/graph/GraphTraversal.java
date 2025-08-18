@@ -2955,7 +2955,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 // as ids are unrolled when it's in array, they should also be unrolled when it's a list.
                 // this also aligns with behavior of hasId() when it's pushed down to g.V() (TINKERPOP-2863)
                 ids.addAll((Collection<?>) id);
-            } else {
+            } else if (id instanceof GValue && ((GValue<?>) id).get() instanceof Object[]) {
+                // If a GValue is passed in containing an array or Collection, it is unrolled similarly to literal
+                // arguments. This comes at the expense of losing the GValue wrappings, but it necessary for consistency
+                Collections.addAll(ids, (Object[]) ((GValue<?>) id).get());
+            } else if (id instanceof GValue && ((GValue<?>) id).get() instanceof Collection) {
+                ids.addAll((Collection<?>) ((GValue<?>) id).get());
+            }else {
                 ids.add(id);
             }
 
@@ -2967,6 +2973,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                         Collections.addAll(ids, (Object[]) i);
                     } else if (i instanceof Collection) {
                         ids.addAll((Collection<?>) i);
+                    } else if (i instanceof GValue && ((GValue<?>) i).get() instanceof Object[]) {
+                        Collections.addAll(ids, (Object[]) ((GValue<?>) i).get());
+                    } else if (i instanceof GValue && ((GValue<?>) i).get() instanceof Collection) {
+                        ids.addAll((Collection<?>) ((GValue<?>) i).get());
                     } else
                         ids.add(i);
                 }

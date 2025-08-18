@@ -75,7 +75,7 @@ public class TraversalConstructionBenchmark  extends AbstractGraphBenchmark {
 
     @Benchmark
     public GraphTraversal constructMediumWithBindings() throws Exception {
-        return g.V().has("person","name", b.of("x","marko")).
+        return g.V().has("person","name",b.of("x","marko")).
                 project("user","knows","created").
                 by(project("name","age").by("name").by("age")).
                 by(out("knows").project("name","age").by("name").by("age")).

@@ -85,6 +85,19 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
+        List<Traversal.Admin<S, E>> childTraversals = new ArrayList<>();
+        for (List<Object> values : properties.values()) {
+            for (Object value : values) {
+                if (value instanceof Traversal) {
+                    childTraversals.add((Traversal.Admin<S, E>) ((Traversal) value).asAdmin());
+                }
+            }
+        }
+        return childTraversals;
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
@@ -147,9 +160,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         return label.next();
     }
 
-    private void setLabel(Object label) {// TODO this be public and added to step interface?
+    private void setLabel(Object label) {// TODO should this be public and added to step interface?
         if (getLabelGValueSafe().equals(Vertex.DEFAULT_LABEL)) {
             this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
+            if (label instanceof GValue) {
+                traversal.getGValueManager().register((GValue<?>) label);
+            }
         }
     }
 
@@ -158,10 +174,10 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
-        if (value instanceof GValue) { //TODO could value come in as a traversal?
+        if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);
         }
-        if (key == T.label) { //todo copy to similar steps
+        if (key == T.label) {
             setLabel(value);
             return;
         }

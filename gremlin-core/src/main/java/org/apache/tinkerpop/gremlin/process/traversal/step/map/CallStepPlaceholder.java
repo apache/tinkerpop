@@ -249,7 +249,13 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
 
     @Override
     public Step<S, E> asConcreteStep() {
-        return new CallStep<>(traversal, isStart, serviceName, staticParams.get(), mapTraversal);
+        CallStep<S, E> step = new CallStep<>(traversal, isStart, serviceName, staticParams.get(), mapTraversal);
+        for (Map.Entry<Object, List<Object>> entry : parameters.getRaw().entrySet()) {
+            for (Object value : entry.getValue()) {
+                step.configure(entry.getKey(), value);
+            }
+        }
+        return step;
     }
 
     @Override

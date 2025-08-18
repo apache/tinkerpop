@@ -378,19 +378,23 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void setMerge(final Traversal.Admin<?,Map<Object, Object>> mergeTraversal) {
         this.mergeTraversal = integrateChild(mergeTraversal);
-        this.reset(); //TODO:: should we reset?
     }
 
     @Override
     public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateTraversal) {
         this.onCreateTraversal = integrateChild(onCreateTraversal);
-        this.reset(); //TODO:: should we reset?
     }
 
     @Override
     public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchTraversal) {
+        // add a guard rail to ensure that the incoming object is not an Element. this will prevent
+        // a possibly inadvertent mutation of the graph if you did something like g.V().mergeE(). for
+        // 3.x we won't allow this behavior at all but in 4.x we will make it consistent like it will
+        // be in 4.x
+        if (!isStart && onMatchTraversal != null && !(onMatchTraversal instanceof ConstantTraversal)) {
+            onMatchTraversal.addStep(0, new GuardRailStep<>(onMatchTraversal, getClass().getSimpleName()));
+        }
         this.onMatchTraversal = integrateChild(onMatchTraversal);
-        this.reset(); //TODO:: should we reset?
     }
 
     @Override
