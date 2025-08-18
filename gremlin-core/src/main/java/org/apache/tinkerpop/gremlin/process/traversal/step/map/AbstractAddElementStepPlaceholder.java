@@ -188,6 +188,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (!supportsMultiProperties() && properties.containsKey(key)) {
             throw new IllegalArgumentException("Multi-properties are not supported by this step");
         }
+        if (value instanceof Traversal) {
+            this.integrateChild(((Traversal<?,?>) value).asAdmin());
+        }
         List<Object> values = properties.get(key);
         if (values == null) {
             values = new ArrayList<>();
