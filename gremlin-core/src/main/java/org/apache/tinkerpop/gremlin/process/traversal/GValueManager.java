@@ -84,7 +84,7 @@ public final class GValueManager implements Serializable, Cloneable {
     }
 
     /**
-     * Gets the set of variable names used in this traversal which have not been pinned to specific values.
+     * Gets the set of variable names used in this traversal which have been pinned to specific values.
      */
     public Set<String> getPinnedVariableNames() {
         return Collections.unmodifiableSet(pinnedVariables);
@@ -121,7 +121,7 @@ public final class GValueManager implements Serializable, Cloneable {
     /**
      * Pins any GValue with the provided name. This should be called anytime an optimization
      * alters the Traversal based on the current value of a GValue. This indicates that the resulting traversal is only
-     * valid for this specific value of a GValue, and is not generalizable to any parameter value.
+     * valid for the current value of this GValue, and is not generalizable to any parameter value.
      *
      * @param name the name of the GValue to be pinned
      * @return true if name was previously unpinned, false otherwise.
