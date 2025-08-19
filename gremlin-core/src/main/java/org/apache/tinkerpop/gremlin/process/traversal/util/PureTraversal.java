@@ -36,7 +36,6 @@ public final class PureTraversal<S, E> implements Serializable, Cloneable {
     private transient Traversal.Admin<S, E> cachedTraversal;
 
     public PureTraversal(final Traversal.Admin<S, E> pureTraversal) {
-        // TODO:: Is this right? Keep GValueHolder out of PureTraversal as it is effectively immutable as only clones can be accessed from PureTraversal.
         if (!pureTraversal.isLocked()) {
             GValueReductionStrategy.instance().apply(pureTraversal);
         }

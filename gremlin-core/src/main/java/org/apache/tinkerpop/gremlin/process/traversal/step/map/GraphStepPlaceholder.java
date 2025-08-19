@@ -87,9 +87,12 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         return GValue.resolveToValues(this.ids);
     }
 
+    public Object[] getIdsGValueSafe() {
+        return GValue.resolveToValues(this.ids);
+    }
+
     @Override
     public void clearIds() {
-        // TODO:: pin ids?
         this.ids = new GValue<?>[0];
     }
 

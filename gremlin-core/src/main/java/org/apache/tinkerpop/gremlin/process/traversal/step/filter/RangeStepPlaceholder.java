@@ -96,7 +96,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         RangeStepPlaceholder<?> that = (RangeStepPlaceholder<?>) o;
-        return Objects.equals(low, that.low) && Objects.equals(high, that.high); //TODO:: Should this only account for GValue name?
+        return Objects.equals(low, that.low) && Objects.equals(high, that.high);
     }
 
     @Override

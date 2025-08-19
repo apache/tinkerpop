@@ -67,7 +67,7 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         super(traversal);
         this.returnClass = returnClass;
         this.ids = (ids != null && ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
-        //TODO:: Better Check
+
         for (Object id : this.ids) {
             if (id instanceof GValue) {
                 throw new IllegalArgumentException("GValue Not Allowed as id in GraphStep");

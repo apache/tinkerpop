@@ -172,22 +172,6 @@ public class GValueManagerTest {
         assertFalse(pinTwice);
     }
 
-
-//TODO::    @Test
-//    public void shouldCopyRegistryState() {
-//        final GValueManager manager = new GValueManager();
-//        final Step sourceStep = mock(Step.class);
-//        final Step targetStep = mock(Step.class);
-//        final StepContract contract = mock(StepContract.class);
-//
-//        manager.register(sourceStep, contract);
-//
-//        manager.copyRegistryState(sourceStep, targetStep);
-//
-//        assertThat(manager.isParameterized(targetStep), is(true));
-//        assertEquals(contract, manager.getStepContract(targetStep));
-//    }
-
     @Test
     public void shouldGetVariableNames() {
         final GValueManager manager = new GValueManager();
@@ -321,29 +305,5 @@ public class GValueManagerTest {
             // Expected
         }
     }
-
-//    TODO::
-//    @Test
-//    public void shouldMergeHasContainerHolders() {
-//        final GValueManager manager = new GValueManager();
-//        final HasContainerHolderStep<Object, Object> sourceStep = mock(HasContainerHolderStep.class);
-//        final HasContainerHolderStep<Object, Object> targetStep = mock(HasContainerHolderStep.class);
-//
-//        final HasContainer hasContainer1 = mock(HasContainer.class);
-//        final HasContainer hasContainer2 = mock(HasContainer.class);
-//
-//        final List<HasContainer> sourceHasContainers = new ArrayList<>();
-//        sourceHasContainers.add(hasContainer1);
-//        sourceHasContainers.add(hasContainer2);
-//
-//        when(sourceStep.getHasContainers()).thenReturn(sourceHasContainers);
-//        manager.register(sourceStep, sourceStep);
-//        manager.register(targetStep, targetStep);
-//
-//        manager.copyRegistryState(sourceStep, targetStep);
-//
-//        verify(targetStep).addHasContainer(hasContainer1);
-//        verify(targetStep).addHasContainer(hasContainer2);
-//    }
 
 }

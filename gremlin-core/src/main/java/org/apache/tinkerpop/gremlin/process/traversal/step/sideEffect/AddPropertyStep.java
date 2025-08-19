@@ -232,7 +232,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return parameters.getRaw(T.key, T.value); //TODO:: are these the right exclusions?
+        return parameters.getRaw(T.key, T.value);
     }
 
     @Override

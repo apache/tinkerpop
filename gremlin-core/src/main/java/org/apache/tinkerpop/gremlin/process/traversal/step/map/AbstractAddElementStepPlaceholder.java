@@ -281,7 +281,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
-    public AbstractAddElementStepPlaceholder<S, E, X> clone() { //TODO for equivalent steps
+    public AbstractAddElementStepPlaceholder<S, E, X> clone() {
         final AbstractAddElementStepPlaceholder<S, E, X> clone = (AbstractAddElementStepPlaceholder) super.clone();
         if (label != null) {
             clone.label = label.clone();

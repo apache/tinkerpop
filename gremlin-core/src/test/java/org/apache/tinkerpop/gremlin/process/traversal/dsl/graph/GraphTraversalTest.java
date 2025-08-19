@@ -160,8 +160,7 @@ public class GraphTraversalTest {
                 else if (stepMethod.getName().equals("with"))
                     randomPossibleStep(random, traversal,
                             GraphTraversal::V, GraphTraversal::shortestPath, GraphTraversal::pageRank,
-                            GraphTraversal::connectedComponent, GraphTraversal::peerPressure, t -> t.addE("link"),
-                            GraphTraversal::addV);
+                            GraphTraversal::connectedComponent, GraphTraversal::peerPressure);
                 else if (stepMethod.getName().equals("option"))
                     traversal.branch(__.identity().out(randomString(random)));
                 else if (stepMethod.getName().equals("to") || stepMethod.getName().equals("from"))

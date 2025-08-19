@@ -72,7 +72,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected P(final PBiPredicate<V, V> biPredicate, final Collection<V> literals, final Map<String, V> variables, final boolean isCollection) {
         this.biPredicate = biPredicate;
         this.variables.putAll(variables);
-        this.literals = new ArrayList<>(literals); //TODO:: retain original collection type
+        this.literals = new ArrayList<>(literals);
         this.isCollection = isCollection;
     }
 
@@ -114,7 +114,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         } else if (value instanceof Collection) {
             isCollection = true;
             if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
-                this.literals = new ArrayList<>(); // TODO:: is it possible to retain original collection type?
+                this.literals = new ArrayList<>();
                 for (Object v : ((Collection<?>) value)) {
                     // Separate variables and literals
                     if (v instanceof GValue) {

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface HasContainerHolder<S, E> extends GValueHolder<S, E> { //TODO raw type
+public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
 
     public List<HasContainer> getHasContainers();
 
@@ -42,11 +43,15 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> { //TODO ra
     }
 
     public default Collection<P<?>> getPredicates() {
-        return getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
+        Collection<P<?>> predicates = getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
+        for (P<?> predicate : predicates) {
+            getTraversal().getGValueManager().pinGValues(predicate.getGValues());
+        }
+        return predicates;
     }
 
     public default Step<S, E> asConcreteStep() {
-        return this; // TODO do we need to alter the predicates at all?
+        return this;
     }
 
     public default boolean isParameterized() {
