@@ -31,6 +31,9 @@ public interface CallStepContract<S, E> extends Step<S, E>, Configuring, Travers
 
     String getServiceName();
 
+    /**
+     * TODO: re-evaluate if we should change this to return the static params only
+     */
     Map getMergedParams();
 
     ServiceRegistry getServiceRegistry();

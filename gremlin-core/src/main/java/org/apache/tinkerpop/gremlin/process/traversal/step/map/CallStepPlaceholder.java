@@ -18,7 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -27,22 +35,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.DummyTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Reference implementation for service calls via the {@link ServiceRegistry} and {@link Service} APIs. This step
@@ -53,7 +50,6 @@ import java.util.Set;
 public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implements CallStepContract<S, E>, GValueHolder<S, E> {
 
     private final boolean isStart;
-    private boolean first = true;
 
     private final String serviceName;
     private GValue<Map<?,?>> staticParams;
@@ -96,6 +92,11 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
         return getServiceRegistry().get(serviceName, isStart, staticParams.get());
     }
 
+    public Service<S, E> serviceGValueSafe() {
+        // throws exception for unrecognized service
+        return getServiceRegistry().get(serviceName, isStart, staticParams.get());
+    }
+
     @Override
     public String getServiceName() {
         return serviceName;
@@ -110,27 +111,36 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            if(staticParams.isVariable()) {
+            if (staticParams.isVariable()) {
                 traversal.getGValueManager().pinVariable(staticParams.getName());
             }
             return Collections.unmodifiableMap(this.staticParams.get());
         }
 
-        return getMergedParams(new DummyTraverser(this.traversal.getTraverserGenerator()));
+        return getMergedParams(new DummyTraverser<>(this.traversal.getTraverserGenerator()), 
+                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    protected Map getMergedParams(final Traverser.Admin<S> traverser) {
+    public Map getMergedParamsGValueSafe() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            if(staticParams.isVariable()) {
-                traversal.getGValueManager().pinVariable(staticParams.getName());
+            return Collections.unmodifiableMap(this.staticParams.get());
+        }
+        return getMergedParams(new DummyTraverser<>(this.traversal.getTraverserGenerator()), null);
+    }
+
+    protected Map getMergedParams(final Traverser.Admin<S> traverser, Consumer<GValue> gValueConsumer) {
+        if (mapTraversal == null && parameters.isEmpty()) {
+            // static params only
+            if (gValueConsumer != null && staticParams.isVariable()) {
+                gValueConsumer.accept(staticParams);
             }
             return Collections.unmodifiableMap(this.staticParams.get());
         }
 
         // merge dynamic with static params
-        if(staticParams.isVariable()) {
-            traversal.getGValueManager().pinVariable(staticParams.getName());
+        if(gValueConsumer != null && staticParams.isVariable()) {
+            gValueConsumer.accept(staticParams);
         }
         final Map params = new LinkedHashMap(this.staticParams.get());
         if (mapTraversal != null) params.putAll(TraversalUtil.apply(traverser, mapTraversal));
@@ -142,29 +152,6 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
         return params;
     }
 
-    protected Map getMergedParams(final TraverserSet<S> traverserSet) {
-        if (mapTraversal == null && parameters.isEmpty()) {
-            // static params only
-            if(staticParams.isVariable()) {
-                traversal.getGValueManager().pinVariable(staticParams.getName());
-            }
-            return Collections.unmodifiableMap(this.staticParams.get());
-        }
-
-        /*
-         * Dynamic params with a barrier service. We need to reduce to one set of params. For now just disallow
-         * multiple property sets. Also could be sensible to group traversers by parameter set.
-         */
-        final Set<Map> paramsSet = new HashSet<>();
-        for (final Traverser.Admin<S> traverser : traverserSet) {
-            paramsSet.add(getMergedParams(traverser));
-        }
-        if (paramsSet.size() > 1) {
-            throw new UnsupportedOperationException("Cannot use multiple dynamic parameter sets with a barrier service call.");
-        }
-        return paramsSet.iterator().next();
-    }
-
     @Override
     public ServiceRegistry getServiceRegistry() {
         final Graph graph = (Graph) this.traversal.getGraph().get();
@@ -174,7 +161,6 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     @Override
     public void reset() {
         super.reset();
-        first = true;
         if (mapTraversal != null)
             mapTraversal.reset();
         parameters.getTraversals().forEach(Traversal.Admin::reset);
@@ -247,7 +233,7 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     }
 
     @Override
-    public Step<S, E> asConcreteStep() {
+    public CallStep<S, E> asConcreteStep() {
         CallStep<S, E> step = new CallStep<>(traversal, isStart, serviceName, staticParams.get(), mapTraversal);
         for (Map.Entry<Object, List<Object>> entry : parameters.getRaw().entrySet()) {
             for (Object value : entry.getValue()) {
