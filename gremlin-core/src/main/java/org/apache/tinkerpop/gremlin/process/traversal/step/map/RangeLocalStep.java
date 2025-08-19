@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeLocalStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeLocalStepInterface<S> {
+public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeLocalStepContract<S> {
 
     private long low;
     private long high;

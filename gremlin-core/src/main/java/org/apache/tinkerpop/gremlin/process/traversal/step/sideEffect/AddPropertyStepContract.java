@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.HashSet;
 
-public interface AddPropertyStepInterface<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
+public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
     VertexProperty.Cardinality getCardinality();
 
     @Override

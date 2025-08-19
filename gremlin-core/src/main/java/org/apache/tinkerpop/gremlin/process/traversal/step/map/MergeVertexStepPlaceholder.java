@@ -50,7 +50,7 @@ import java.util.Set;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> implements MergeStepInterface<S, Vertex, Map>, GValueHolder<S, Vertex> {
+public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> implements MergeStepContract<S, Vertex, Map>, GValueHolder<S, Vertex> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
     private Map<Object, List<Object>> properties = new HashMap<>();

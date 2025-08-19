@@ -16,23 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
-import org.apache.tinkerpop.gremlin.structure.Element;
 
-public interface GraphStepInterface<S, E extends Element> extends Step<S, E>, GraphComputing {
-
-    Class<E> getReturnClass();
-
-    boolean isStartStep();
-
-    boolean returnsVertex();
-
-    boolean returnsEdge();
-
-    Object[] getIds();
-
-    void clearIds();
+public interface TailLocalStepContract<S> extends Step<S, S> {
+    Long getLimit();
 }

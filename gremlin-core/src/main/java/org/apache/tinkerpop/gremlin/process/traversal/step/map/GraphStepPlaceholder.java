@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -36,7 +35,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueHolder<S, E>, GraphStepInterface<S, E> {
+public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueHolder<S, E>, GraphStepContract<S, E> {
 
     protected final Class<E> returnClass;
     protected GValue<?>[] ids;

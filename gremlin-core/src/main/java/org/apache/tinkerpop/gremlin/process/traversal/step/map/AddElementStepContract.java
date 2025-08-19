@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
-/**
- * Defines the contract for {@code range} related steps.
- */
-public interface RangeGlobalStepInterface<S> extends Step<S, S> {
+import java.util.HashSet;
 
-    /**
-     * Retrieves the lower bound of the range.
-     *
-     * @return the value representing the lower bound of the range
-     */
-    Long getLowRange();
+public interface AddElementStepContract<S, E> extends Step<S, E>, PropertyAdding, TraversalParent, Scoping {
+    Object getLabel();
 
-    /**
-     * Retrieves the higher bound of the range.
-     *
-     * @return the higher bound of the range as an object of type V
-     */
-    Long getHighRange();
+    Object getElementId();
+
+    void setElementId(Object elementId);
+
+    boolean removeElementId();
+
+    @Override
+    default HashSet<PopInstruction> getPopInstructions() {
+        return TraversalParent.super.getPopInstructions();
+    }
 }

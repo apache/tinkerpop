@@ -18,14 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -149,7 +146,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         return gValues;
     }
 
-    public static class RangeGlobalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeGlobalStepInterface<S> {
+    public static class RangeGlobalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeGlobalStepContract<S> {
 
         public RangeGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
             super(traversal, low, high);
@@ -168,7 +165,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         }
     }
 
-    public static class RangeLocalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeLocalStepInterface<S> {
+    public static class RangeLocalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeLocalStepContract<S> {
 
         public RangeLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
             super(traversal, low, high);

@@ -35,16 +35,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -143,8 +143,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         // in order to write to it. Seems like ElementStep isn't necessary here? a Property can't be loaded that
         // isn't within the partition so element() could only ever traverse back to something within the partition.
         final List<Step> stepsToInsertHasAfter = new ArrayList<>();
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStepInterface.class, traversal));
-        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStepInterface.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(GraphStepContract.class, traversal));
+        stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(VertexStepContract.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
 
@@ -227,9 +227,9 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
 
         final List<Step> stepsToInsertPropertyMutations = traversal.getSteps().stream().filter(step ->
-                step instanceof MergeStepInterface ||
-                step instanceof AddEdgeStepInterface || step instanceof AddVertexStepInterface ||
-                        (includeMetaProperties && step instanceof AddPropertyStepInterface)
+                step instanceof MergeStepContract ||
+                step instanceof AddEdgeStepContract || step instanceof AddVertexStepContract ||
+                        (includeMetaProperties && step instanceof AddPropertyStepContract)
         ).collect(Collectors.toList());
 
         stepsToInsertPropertyMutations.forEach(step -> {
@@ -254,7 +254,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
                             final VertexProperty.Cardinality cardinality = vertexFeatures.get().getCardinality((String) k);
                             v.forEach(o -> {
-                                final AddPropertyStepInterface addPropertyStep = new AddPropertyStepPlaceholder(traversal, cardinality, k, o);
+                                final AddPropertyStepContract addPropertyStep = new AddPropertyStepPlaceholder(traversal, cardinality, k, o);
                                 addPropertyStep.addProperty(partitionKey, writePartition);
                                 addPropertyStepsToAppend.add(addPropertyStep);
 

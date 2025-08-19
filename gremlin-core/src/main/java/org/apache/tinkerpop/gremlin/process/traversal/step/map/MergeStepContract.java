@@ -21,18 +21,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface MergeStepInterface<S, E, C> extends Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, PropertyAdding {
+public interface MergeStepContract<S, E, C> extends Writing<Event>, Deleting<Event>, TraversalOptionParent<Merge, S, C>, PropertyAdding {
 
     Traversal.Admin<S, Map> getMergeTraversal();
 

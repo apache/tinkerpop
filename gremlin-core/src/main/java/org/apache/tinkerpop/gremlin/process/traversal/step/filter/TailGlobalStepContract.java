@@ -16,25 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.structure.service.Service;
-import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 
-import java.util.Map;
-
-public interface CallStepInterface<S, E> extends Step<S, E>, Configuring, TraversalParent {
-    Service<S, E> service();
-
-    String getServiceName();
-
-    Map getMergedParams();
-
-    ServiceRegistry getServiceRegistry();
-
-    @Override
-    void reset();
+public interface TailGlobalStepContract<S> extends Step<S, S> {
+    Long getLimit();
 }

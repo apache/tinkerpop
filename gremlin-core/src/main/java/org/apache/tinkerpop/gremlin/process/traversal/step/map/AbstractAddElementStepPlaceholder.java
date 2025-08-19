@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -26,13 +27,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddElementStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -49,7 +50,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X extends Event> extends AbstractStep<S, E>
-        implements AddElementStepInterface<S, E>, GValueHolder<S, E>, Writing<X> {
+        implements AddElementStepContract<S, E>, GValueHolder<S, E>, Writing<X> {
 
     protected Traversal.Admin<S, String> label;
     protected Map<Object, List<Object>> properties = new HashMap<>();
@@ -123,7 +124,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         return hash;
     }
 
-    protected void configureConcreteStep(AddElementStepInterface<S, E> step) {
+    protected void configureConcreteStep(AddElementStepContract<S, E> step) {
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
                 step.addProperty(entry.getKey(), value instanceof GValue ? ((GValue<?>) value).get() : value);
@@ -299,4 +300,5 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         clone.scopeKeys.addAll(scopeKeys);
         return clone;
     }
+
 }

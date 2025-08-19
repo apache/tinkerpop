@@ -16,14 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public interface AddVertexStepInterface<S> extends Step<S, Vertex>, AddElementStepInterface<S, Vertex>, Writing<Event.VertexAddedEvent> {
+/**
+ * Defines the contract for {@code range} related steps.
+ */
+public interface RangeLocalStepContract<S> extends Step<S, S> {
 
-    boolean hasUserProvidedLabel();
+    /**
+     * Retrieves the lower bound of the range.
+     *
+     * @return the value representing the lower bound of the range
+     */
+    Long getLowRange();
+
+    /**
+     * Retrieves the higher bound of the range.
+     *
+     * @return the higher bound of the range as an object of type V
+     */
+    Long getHighRange();
 }

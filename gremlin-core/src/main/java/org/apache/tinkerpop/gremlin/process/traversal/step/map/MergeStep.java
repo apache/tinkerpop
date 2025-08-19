@@ -56,7 +56,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * Abstract base class for the {@code mergeV/E()} implementations.
  */
 public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
-        implements MergeStepInterface<S, E, C> {
+        implements MergeStepContract<S, E, C> {
 
     protected final boolean isStart;
     protected boolean first = true;

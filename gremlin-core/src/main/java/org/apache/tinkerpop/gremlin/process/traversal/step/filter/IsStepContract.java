@@ -16,28 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Set;
 
-public interface VertexStepInterface<E extends Element> extends Step<Vertex, E> {
-    Direction getDirection();
+/**
+ * Defines the contract for steps containing a single {@link P}.
+ */
+public interface IsStepContract<S> extends Step<S, S> {
 
-    String[] getEdgeLabels();
+    /**
+     * Retrieves the step's predicate.
+     *
+     * @return the predicate associated with the step
+     */
+    public P<?> getPredicate();
 
-    Class<E> getReturnClass();
-
-    void reverseDirection();
-
-    boolean returnsVertex();
-
-    boolean returnsEdge();
-
-    Set<TraverserRequirement> getRequirements();
+    public Set<TraverserRequirement> getRequirements();
 }

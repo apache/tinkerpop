@@ -16,13 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.map; //TODO:: relocate class
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import java.util.List;
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public interface PropertyAdding {
-    void addProperty(Object key, Object value);
-    Map<Object, List<Object>> getProperties();
-    boolean removeProperty(Object k);
+public interface AddVertexStepContract<S> extends Step<S, Vertex>, AddElementStepContract<S, Vertex>, Writing<Event.VertexAddedEvent> {
+
+    boolean hasUserProvidedLabel();
 }

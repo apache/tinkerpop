@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -89,10 +89,10 @@ public class ElementIdStrategyTraverseTest {
         strategy.apply(traversal.asAdmin());
 
         final Step step = (Step) traversal.asAdmin().getSteps().get(expectedInsertedSteps);
-        if (step instanceof AddVertexStepInterface)
-            assertThat(repr, ((AddVertexStepInterface) step).getProperties().containsKey(strategy.getIdPropertyKey()));
-        else if (step instanceof AddEdgeStepInterface)
-            assertThat(repr, ((AddEdgeStepInterface) step).getProperties().containsKey(strategy.getIdPropertyKey()));
+        if (step instanceof AddVertexStepContract)
+            assertThat(repr, ((AddVertexStepContract) step).getProperties().containsKey(strategy.getIdPropertyKey()));
+        else if (step instanceof AddEdgeStepContract)
+            assertThat(repr, ((AddEdgeStepContract) step).getProperties().containsKey(strategy.getIdPropertyKey()));
         else if (step instanceof PropertiesStep)
             assertEquals(repr, strategy.getIdPropertyKey(), ((PropertiesStep) step).getPropertyKeys()[0]);
         else

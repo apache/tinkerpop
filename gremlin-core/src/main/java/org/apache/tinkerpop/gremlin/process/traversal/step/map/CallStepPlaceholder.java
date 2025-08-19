@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.CallStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -51,7 +50,7 @@ import java.util.Set;
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implements CallStepInterface<S, E>, GValueHolder<S, E> {
+public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implements CallStepContract<S, E>, GValueHolder<S, E> {
 
     private final boolean isStart;
     private boolean first = true;

@@ -39,7 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlac
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -528,7 +528,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        GraphStepInterface<Vertex, Vertex> step;
+        GraphStepContract<Vertex, Vertex> step;
         if (GValue.containsGValues(ids)) {
             step = new GraphStepPlaceholder<>(traversal, Vertex.class, true, GValue.ensureGValues(ids));
         } else {
@@ -549,7 +549,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.bytecode.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        GraphStepInterface<Edge, Edge> step;
+        GraphStepContract<Edge, Edge> step;
         if (GValue.containsGValues(ids)) {
             step = new GraphStepPlaceholder<>(traversal, Edge.class, true, GValue.ensureGValues(ids));
         } else {

@@ -26,10 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddElementStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddElementStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -84,8 +84,8 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
                             filter(container -> container.getKey().equals(T.id.getAccessor())).
                                      forEach(container -> container.setKey(this.idPropertyKey)));
 
-        if (traversal.getStartStep() instanceof GraphStepInterface) {
-            final GraphStepInterface graphStep = (GraphStepInterface) traversal.getStartStep();
+        if (traversal.getStartStep() instanceof GraphStepContract) {
+            final GraphStepContract graphStep = (GraphStepContract) traversal.getStartStep();
             // only need to apply the custom id if ids were assigned - otherwise we want the full iterator.
             // note that it is then only necessary to replace the step if the id is a non-element.  other tests
             // in the suite validate that items in getIds() is uniform so it is ok to just test the first item
@@ -105,8 +105,8 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         // in each case below, determine if the T.id is present and if so, replace T.id with the idPropertyKey or if
         // it is not present then shove it in there and generate an id
         traversal.getSteps().forEach(step -> {
-            if (step instanceof AddVertexStepInterface || step instanceof AddEdgeStepInterface) {
-                final AddElementStepInterface addElement = (AddElementStepInterface) step;
+            if (step instanceof AddVertexStepContract || step instanceof AddEdgeStepContract) {
+                final AddElementStepContract addElement = (AddElementStepContract) step;
                 if (addElement.getElementId() != null) {
                     addElement.addProperty(this.idPropertyKey, addElement.getElementId());
                     addElement.removeElementId();

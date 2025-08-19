@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
@@ -193,9 +193,9 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStepInterface> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal);
+            final Optional<RangeGlobalStepContract> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepContract.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStepInterface originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
+            final RangeGlobalStepContract originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
@@ -203,7 +203,7 @@ public class EarlyLimitStrategyTest {
                     isRangeGlobalStepPlaceholder(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
                     isRangeGlobalStepPlaceholder(
-                                TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),
+                                TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepContract.class, traversal).get(),
                                 expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
@@ -257,16 +257,16 @@ public class EarlyLimitStrategyTest {
 
         @Test
         public void shouldMaintainGValueManagerState() {
-            final Optional<RangeGlobalStepInterface> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal);
+            final Optional<RangeGlobalStepContract> maybeOriginalRangeGlobalStep = TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepContract.class, traversal);
             assertThat(maybeOriginalRangeGlobalStep.isPresent(), is(true));
-            final RangeGlobalStepInterface originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
+            final RangeGlobalStepContract originalRangeGlobalStep = maybeOriginalRangeGlobalStep.get();
 
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
                     beforeApplying().
                     isRangeGlobalStepPlaceholder(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
-                    isRangeGlobalStepPlaceholder(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalStepPlaceholder(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepContract.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                         hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }

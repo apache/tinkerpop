@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -46,7 +45,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepInterface<S>, Configuring {
+        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping, AddVertexStepContract<S>, Configuring {
 
     private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;

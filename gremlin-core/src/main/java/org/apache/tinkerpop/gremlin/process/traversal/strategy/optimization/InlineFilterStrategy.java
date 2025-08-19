@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
@@ -38,9 +37,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -125,10 +124,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             TraversalHelper.copyLabels(step, previousStep, false);
             TraversalHelper.removeStep(step, traversal);
             return true;
-        } else if (step.getPreviousStep() instanceof VertexStepInterface
-                && ((VertexStepInterface) step.getPreviousStep()).returnsEdge()
-                && 0 == ((VertexStepInterface) step.getPreviousStep()).getEdgeLabels().length) {
-            final VertexStepInterface<Edge> previousStep = (VertexStepInterface<Edge>) step.getPreviousStep();
+        } else if (step.getPreviousStep() instanceof VertexStepContract
+                && ((VertexStepContract) step.getPreviousStep()).returnsEdge()
+                && 0 == ((VertexStepContract) step.getPreviousStep()).getEdgeLabels().length) {
+            final VertexStepContract<Edge> previousStep = (VertexStepContract<Edge>) step.getPreviousStep();
             final List<GValue<?>> edgeLabelGValues = new ArrayList<>();
             for (final HasContainer hasContainer : new ArrayList<>(step.getHasContainers())) {
                 if (hasContainer.getKey().equals(T.label.getAccessor())) {
@@ -169,7 +168,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                 }
             }
             if (!edgeLabelGValues.isEmpty()) {
-                final VertexStepInterface<Edge> newVertexStep = GValue.containsVariables(edgeLabelGValues.toArray()) ?
+                final VertexStepContract<Edge> newVertexStep = GValue.containsVariables(edgeLabelGValues.toArray()) ?
                         new VertexStepPlaceholder<>(traversal, Edge.class, previousStep.getDirection(), edgeLabelGValues.toArray(new GValue[edgeLabelGValues.size()])) :
                         new VertexStep<>(traversal, Edge.class, previousStep.getDirection(), Arrays.stream(GValue.resolveToValues(edgeLabelGValues.toArray(new GValue[edgeLabelGValues.size()]))).toArray(String[]::new));
                 TraversalHelper.replaceStep(previousStep, newVertexStep, traversal);
@@ -190,7 +189,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         if (TraversalHelper.hasAllStepsOfClass(childTraversal, FilterStep.class) &&
                 !TraversalHelper.hasStepOfClass(childTraversal,
                         DropStep.class,
-                        RangeGlobalStepInterface.class,
+                        RangeGlobalStepContract.class,
                         DedupGlobalStep.class,
                         LambdaHolder.class)) {
             final Step<?, ?> finalStep = childTraversal.getEndStep();
@@ -259,7 +258,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             if (!TraversalHelper.hasAllStepsOfClass(childTraversal, FilterStep.class) ||
                     TraversalHelper.hasStepOfClass(childTraversal,
                             DropStep.class,
-                            RangeGlobalStepInterface.class,
+                            RangeGlobalStepContract.class,
                             DedupGlobalStep.class,
                             LambdaHolder.class)) {
                 process = false;

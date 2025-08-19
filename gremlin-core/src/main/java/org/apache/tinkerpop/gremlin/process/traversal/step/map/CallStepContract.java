@@ -16,26 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.structure.service.Service;
+import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 
-import java.util.HashSet;
+import java.util.Map;
 
-public interface AddElementStepInterface<S, E> extends Step<S, E>, PropertyAdding, TraversalParent, Scoping {
-    Object getLabel();
+public interface CallStepContract<S, E> extends Step<S, E>, Configuring, TraversalParent {
+    Service<S, E> service();
 
-    Object getElementId();
+    String getServiceName();
 
-    void setElementId(Object elementId);
+    Map getMergedParams();
 
-    boolean removeElementId();
+    ServiceRegistry getServiceRegistry();
 
     @Override
-    default HashSet<PopInstruction> getPopInstructions() {
-        return TraversalParent.super.getPopInstructions();
-    }
+    void reset();
 }

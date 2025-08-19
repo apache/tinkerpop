@@ -21,9 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.CallStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -55,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCall
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStep<S, E> extends AbstractStep<S, E> implements AutoCloseable, CallStepInterface<S, E> {
+public final class CallStep<S, E> extends AbstractStep<S, E> implements AutoCloseable, CallStepContract<S, E> {
 
     private final boolean isStart;
     private boolean first = true;

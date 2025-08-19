@@ -18,13 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.TailLocalStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -32,7 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
-public final class TailLocalStepPlaceholder<S> extends AbstractStep<S, S> implements TailLocalStepInterface<S>, GValueHolder<S, S> {
+public final class TailLocalStepPlaceholder<S> extends AbstractStep<S, S> implements TailLocalStepContract<S>, GValueHolder<S, S> {
 
     private GValue<Long> limit;
 

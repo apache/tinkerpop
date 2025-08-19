@@ -16,26 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-/**
- * Defines the contract for {@code range} related steps.
- */
-public interface RangeLocalStepInterface<S> extends Step<S, S> {
+import java.util.Set;
 
-    /**
-     * Retrieves the lower bound of the range.
-     *
-     * @return the value representing the lower bound of the range
-     */
-    Long getLowRange();
+public interface VertexStepContract<E extends Element> extends Step<Vertex, E> {
+    Direction getDirection();
 
-    /**
-     * Retrieves the higher bound of the range.
-     *
-     * @return the higher bound of the range as an object of type V
-     */
-    Long getHighRange();
+    String[] getEdgeLabels();
+
+    Class<E> getReturnClass();
+
+    void reverseDirection();
+
+    boolean returnsVertex();
+
+    boolean returnsEdge();
+
+    Set<TraverserRequirement> getRequirements();
 }

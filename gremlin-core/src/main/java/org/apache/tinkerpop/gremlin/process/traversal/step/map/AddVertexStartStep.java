@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -48,7 +47,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements TraversalParent, Scoping, AddVertexStepInterface<Vertex>, Configuring {
+        implements TraversalParent, Scoping, AddVertexStepContract<Vertex>, Configuring {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;

@@ -58,13 +58,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepPlac
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ReadWriting;
@@ -86,7 +86,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
@@ -205,8 +204,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateL
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.GraphStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
@@ -396,7 +395,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Object[] ids = null == vertexIdsOrElements ? new Object[] { null } : vertexIdsOrElements;
         this.asAdmin().getBytecode().addStep(Symbols.V, ids);
 
-        GraphStepInterface<E, Vertex> step;
+        GraphStepContract<E, Vertex> step;
         if (GValue.containsGValues(ids)) {
             step = new GraphStepPlaceholder<>(this.asAdmin(), Vertex.class, false, GValue.ensureGValues(ids));
         } else {
@@ -419,7 +418,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         final Object[] ids = null == edgeIdsOrElements ? new Object[] { null } : edgeIdsOrElements;
         this.asAdmin().getBytecode().addStep(Symbols.E, ids);
 
-        GraphStepInterface<E, Edge> step;
+        GraphStepContract<E, Edge> step;
         if (GValue.containsGValues(ids)) {
             step = new GraphStepPlaceholder<>(this.asAdmin(), Edge.class, false, GValue.ensureGValues(ids));
         } else {
@@ -3816,14 +3815,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // and as it so happens with T the value must be set by way of that approach otherwise you get an error.
         // it should be safe to execute this loop this way as we'll either hit an "AddElementStep" or an "EmptyStep".
         // if empty, it will just use the regular AddPropertyStep being tacked on to the end of the traversal as usual
-        while (endStep instanceof AddPropertyStepInterface) {
+        while (endStep instanceof AddPropertyStepContract) {
             endStep = endStep.getPreviousStep();
         }
 
         // edge properties can always be folded as there are no cardinality/metaproperties. of course, if the
         // cardinality is specified as something other than single or null it would be confusing to simply allow it to
         // execute and not throw an error.
-        if ((endStep instanceof AddEdgeStepInterface) && (null != cardinality && cardinality != single))
+        if ((endStep instanceof AddEdgeStepContract) && (null != cardinality && cardinality != single))
             throw new IllegalStateException(String.format(
                     "Multi-property cardinality of [%s] can only be set for a Vertex but is being used for addE() with key: %s",
                     cardinality.name(), key));
@@ -3846,12 +3845,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // construction but during iteration. not folding to AddVertexStep creates different (breaking) traversal
         // semantics than we've had in previous versions so right/wrong could be argued, but since it's a breaking
         // change we'll just arbitrarily account for it to maintain the former behavior.
-        if ((endStep instanceof AddEdgeStepInterface) ||
-                ((endStep instanceof AddVertexStepInterface) && keyValues.length == 0 &&
+        if ((endStep instanceof AddEdgeStepContract) ||
+                ((endStep instanceof AddVertexStepContract) && keyValues.length == 0 &&
                   (key instanceof T || (key instanceof String && null == cardinality) || key instanceof Traversal))) {
             ((PropertyAdding) endStep).addProperty(key, value);
         } else {
-            final AddPropertyStepInterface<Element> addPropertyStep = new AddPropertyStepPlaceholder<>(this.asAdmin(), cardinality, key, value);
+            final AddPropertyStepContract<Element> addPropertyStep = new AddPropertyStepPlaceholder<>(this.asAdmin(), cardinality, key, value);
             this.asAdmin().addStep(addPropertyStep);
             for (int i = 0; i < keyValues.length; i += 2) {
                 addPropertyStep.addProperty(keyValues[i], keyValues[i + 1]);
@@ -4777,13 +4776,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getBytecode().addStep(GraphTraversal.Symbols.option, token, m);
         TraversalOptionParent<M, E, E2> endStep = (TraversalOptionParent<M, E, E2>) this.asAdmin().getEndStep();
         endStep.addChildOption(token, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m.get()).asAdmin());
-        if (endStep instanceof MergeStepInterface) {
+        if (endStep instanceof MergeStepContract) {
             switch ((Merge) token) {
                 case onMatch:
-                    ((MergeStepInterface) endStep).setOnMatch(new GValueConstantTraversal<>(m));
+                    ((MergeStepContract) endStep).setOnMatch(new GValueConstantTraversal<>(m));
                     break;
                 case onCreate:
-                    ((MergeStepInterface) endStep).setOnCreate(new GValueConstantTraversal<>(m));
+                    ((MergeStepContract) endStep).setOnCreate(new GValueConstantTraversal<>(m));
                     break;
             }
         }

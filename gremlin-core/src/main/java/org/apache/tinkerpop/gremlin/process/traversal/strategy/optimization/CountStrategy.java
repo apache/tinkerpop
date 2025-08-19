@@ -37,8 +37,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.RangeGlobalStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
@@ -92,7 +92,7 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
         for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
             if (i < size - 1 && doStrategy(curr)) {
-                final IsStepInterface isStep = (IsStepInterface) traversal.getSteps().get(i + 1);
+                final IsStepContract isStep = (IsStepContract) traversal.getSteps().get(i + 1);
                 final P isStepPredicate = isStep.getPredicate();
                 Long highRange = null;
                 boolean useNotStep = false, dismissCountIs = false, hasGtOrLtNegative = false;
@@ -219,8 +219,8 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
 
     private boolean doStrategy(final Step step) {
         if (!(step instanceof CountGlobalStep) ||
-                !(step.getNextStep() instanceof IsStepInterface) ||
-                step.getPreviousStep() instanceof RangeGlobalStepInterface) // if a RangeStep was provided, assume that the user knows what he's doing
+                !(step.getNextStep() instanceof IsStepContract) ||
+                step.getPreviousStep() instanceof RangeGlobalStepContract) // if a RangeStep was provided, assume that the user knows what he's doing
             return false;
 
         final Step parent = step.getTraversal().getParent().asStep();

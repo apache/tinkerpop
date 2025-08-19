@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -35,7 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
-public interface AddEdgeStepInterface<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepInterface<S, Edge>, Writing<Event.EdgeAddedEvent> {
+public interface AddEdgeStepContract<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepContract<S, Edge>, Writing<Event.EdgeAddedEvent> {
     Object getFrom();
     Object getTo();
 

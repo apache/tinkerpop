@@ -18,18 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class AddVertexStartStepPlaceholder extends AbstractAddElementStepPlaceholder<Vertex, Vertex, Event.VertexAddedEvent>
-        implements AddVertexStepInterface<Vertex>, GValueHolder<Vertex, Vertex> {
+        implements AddVertexStepContract<Vertex>, GValueHolder<Vertex, Vertex> {
 
     private boolean userProvidedLabel;
 

@@ -23,12 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
-        implements AddEdgeStepInterface<S> {
+        implements AddEdgeStepContract<S> {
 
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;

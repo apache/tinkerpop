@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -42,7 +41,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
-        implements AddPropertyStepInterface<S>, GValueHolder<S, S> {
+        implements AddPropertyStepContract<S>, GValueHolder<S, S> {
 
     /**
      * property key

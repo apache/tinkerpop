@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;

@@ -18,21 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
 
 public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlaceholder<Edge, Edge, Event.EdgeAddedEvent>
-        implements AddEdgeStepInterface<Edge>, GValueHolder<Edge, Edge>, PropertyAdding {
+        implements AddEdgeStepContract<Edge>, GValueHolder<Edge, Edge>, PropertyAdding {
 
     private Traversal.Admin<?,?> from;
     private Traversal.Admin<?,?> to;

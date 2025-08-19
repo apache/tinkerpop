@@ -18,12 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -47,7 +45,7 @@ import java.util.stream.Collectors;
  * Handles the logic of traversing to adjacent vertices or edges given a direction and edge labels for steps like,
  * {@code out}, {@code in}, {@code both}, {@code outE}, {@code inE}, and {@code bothE}.
  */
-public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepInterface<E> {
+public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepContract<E> {
 
     private final GValue<String>[] edgeLabels;
     private Direction direction;

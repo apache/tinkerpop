@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
-import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddVertexStepInterface;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
@@ -116,17 +116,17 @@ public class PartitionStrategyTest {
                     .partitionKey("p").writePartition("a").readPartitions("a").create();
 
             if (hasMutatingStep) {
-                if (TraversalHelper.hasStepOfAssignableClass(AddEdgeStepInterface.class, traversal.asAdmin())) {
+                if (TraversalHelper.hasStepOfAssignableClass(AddEdgeStepContract.class, traversal.asAdmin())) {
                     strategy.apply(traversal.asAdmin());
-                    final List<AddEdgeStepInterface> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeStepInterface.class, traversal.asAdmin());
+                    final List<AddEdgeStepContract> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeStepContract.class, traversal.asAdmin());
                     assertEquals(1, addEdgeSteps.size());
                     addEdgeSteps.forEach(s -> {
                         assertEquals(repr, "test", s.getLabel());
                         assertEquals(repr, "a", s.getProperties().get("p").get(0));
                     });
-                } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStepInterface.class, traversal.asAdmin())) {
+                } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStepContract.class, traversal.asAdmin())) {
                     strategy.apply(traversal.asAdmin());
-                    final List<AddVertexStepInterface> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStepInterface.class, traversal.asAdmin());
+                    final List<AddVertexStepContract> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStepContract.class, traversal.asAdmin());
                     assertEquals(repr, 1, addVertexSteps.size());
                     addVertexSteps.forEach(s -> assertEquals(repr, "a", s.getProperties().get("p").get(0)));
                 } else
