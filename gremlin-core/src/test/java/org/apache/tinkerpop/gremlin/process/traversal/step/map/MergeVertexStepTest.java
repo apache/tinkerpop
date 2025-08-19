@@ -24,13 +24,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -43,6 +46,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,6 +79,38 @@ public class MergeVertexStepTest extends GValueStepTest {
                 Pair.of(__.mergeV(GValue.of("mergeMap", Map.of("name", "marko"))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 29))), Set.of("mergeMap", "createMap")),
                 Pair.of(__.mergeV(Map.of("name", "marko")).option(Merge.onMatch, GValue.of("matchMap", Map.of("age", 29))).option(Merge.onCreate, GValue.of("createMap", Map.of("age", 30))), Set.of("matchMap", "createMap"))
         );
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromMergeStep() {
+        final MergeVertexStep<Object> step = new MergeVertexStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(),
+                true);
+        step.addProperty("name", "marko");
+        step.addProperty("age", 29);
+        assertTrue(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
+
+        assertTrue(step.removeProperty("name"));
+        assertFalse(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
+        assertFalse(step.removeProperty("name"));
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromMergeVertexStepPlaceholder() {
+        final MergeVertexStepPlaceholder<Object> step = new MergeVertexStepPlaceholder<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(),
+                true);
+        step.addProperty("name", GValue.of("vadas"));
+        step.addProperty("age", GValue.of(27));
+        assertTrue(step.getPropertiesGValueSafe().containsKey("name"));
+        assertTrue(step.getPropertiesGValueSafe().containsKey("age"));
+
+        assertTrue(step.removeProperty("name"));
+        assertFalse(step.getPropertiesGValueSafe().containsKey("name"));
+        assertTrue(step.getPropertiesGValueSafe().containsKey("age"));
+        assertFalse(step.removeProperty("name"));
     }
 
     @Test

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -36,6 +37,8 @@ import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class AddVertexStartStepTest extends GValueStepTest {
@@ -62,6 +65,30 @@ public class AddVertexStartStepTest extends GValueStepTest {
                 Pair.of(g.addV(GValue.of("label", "created")).property("a", GValue.of("prop", "b")), Set.of("label", "prop")),
                 Pair.of(g.addV(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2"))
         );
+    }
+
+    @Test
+    public void shouldRemoveElementIdFromAddVertexStartStep() {
+        final AddVertexStartStep step = new AddVertexStartStep(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.setElementId("startVertex123");
+        assertEquals("startVertex123", step.getElementId());
+
+        assertTrue(step.removeElementId());
+        assertNull(step.getElementId());
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromAddVertexStartStep() {
+        final AddVertexStartStep step = new AddVertexStartStep(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.addProperty("name", "josh");
+        step.addProperty("age", 32);
+
+        assertTrue(step.removeProperty("age"));
+        assertFalse(step.getProperties().containsKey("age"));
+        assertTrue(step.getProperties().containsKey("name"));
+        assertFalse(step.removeProperty("age"));
     }
 
     @Test

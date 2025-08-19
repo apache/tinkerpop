@@ -213,8 +213,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
-    public void removeProperty(Object k) {
-        properties.remove(k);
+    public boolean removeProperty(Object k) {
+        if (properties.containsKey(k)) {
+            properties.remove(k);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -236,8 +240,12 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
-    public void removeElementId() {
+    public boolean removeElementId() {
+        if (elementId == null) {
+            return false;
+        }
         elementId = null;
+        return true;
     }
 
     @Override

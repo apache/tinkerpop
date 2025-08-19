@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -77,7 +78,6 @@ public class AddEdgeStepTest extends GValueStepTest {
         );
     }
 
-
     @Test
     public void shouldRemoveElementIdFromAddEdgeStep() {
         final AddEdgeStep<Object> step = new AddEdgeStep<>(
@@ -85,7 +85,7 @@ public class AddEdgeStepTest extends GValueStepTest {
         step.setElementId("edge123");
         assertEquals("edge123", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -95,18 +95,7 @@ public class AddEdgeStepTest extends GValueStepTest {
                 new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
         assertNull(step.getElementId());
 
-        step.removeElementId();
-        assertNull(step.getElementId());
-    }
-
-    @Test
-    public void shouldRemoveElementIdFromAddEdgeStartStep() {
-        final AddEdgeStartStep step = new AddEdgeStartStep(
-                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
-        step.setElementId("startEdge123");
-        assertEquals("startEdge123", step.getElementId());
-
-        step.removeElementId();
+        assertFalse(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -117,9 +106,49 @@ public class AddEdgeStepTest extends GValueStepTest {
         step.setElementId("placeholderEdge123");
         assertEquals("placeholderEdge123", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
     }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromAddEdgeStep() {
+        final AddEdgeStep<Object> step = new AddEdgeStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.addProperty("weight", 0.8);
+        step.addProperty("since", 2010);
+
+        assertTrue(step.getProperties().containsKey("weight"));
+        assertTrue(step.getProperties().containsKey("since"));
+
+        assertTrue(step.removeProperty("weight"));
+        assertFalse(step.getProperties().containsKey("weight"));
+        assertTrue(step.getProperties().containsKey("since"));
+        assertFalse(step.removeProperty("weight"));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenRemovingNonExistentPropertyFromAddEdgeStep() {
+        final AddEdgeStep<Object> step = new AddEdgeStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.addProperty("weight", 0.8);
+
+        assertFalse(step.removeProperty("nonExistent"));
+        assertTrue(step.getProperties().containsKey("weight"));
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromAddEdgeStepPlaceholder() {
+        final AddEdgeStepPlaceholder<Object> step = new AddEdgeStepPlaceholder<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.addProperty("weight", GValue.of(0.5));
+        step.addProperty("type", GValue.of("friendship"));
+
+        assertTrue(step.removeProperty("type"));
+        assertFalse(step.getPropertiesGValueSafe().containsKey("type"));
+        assertTrue(step.getPropertiesGValueSafe().containsKey("weight"));
+        assertFalse(step.removeProperty("type"));
+    }
+
 
     @Test
     public void shouldObtainPopInstructions() {
@@ -180,7 +209,7 @@ public class AddEdgeStepTest extends GValueStepTest {
         GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
         assertEquals("1234", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).asConcreteStep().getElementId());
     }
-    
+
     @Test
     public void getFromShouldPinVariable() {
         GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
@@ -283,7 +312,7 @@ public class AddEdgeStepTest extends GValueStepTest {
                 .asAdmin();
         assertTrue(((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getGValues().isEmpty());
     }
-    
+
     private GraphTraversal.Admin<Object, Edge> getAddEdgeGValueTraversal() {
         return __.addE(GValue.of("label", "likes"))
                 .from(GValue.of("from", 1))

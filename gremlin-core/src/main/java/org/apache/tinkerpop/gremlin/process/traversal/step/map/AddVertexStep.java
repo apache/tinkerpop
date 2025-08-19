@@ -172,15 +172,21 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     }
 
     @Override
-    public void removeProperty(Object k) {
-        parameters.remove(k);
+    public boolean removeProperty(Object k) {
+        if (parameters.contains(k)) {
+            parameters.remove(k);
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public void removeElementId() {
+    public boolean removeElementId() {
         if (this.parameters.contains(T.id)) {
             this.parameters.remove(T.id);
+            return true;
         }
+        return false;
     }
 
     @Override

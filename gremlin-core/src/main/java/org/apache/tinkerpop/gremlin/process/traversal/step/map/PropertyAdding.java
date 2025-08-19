@@ -24,5 +24,5 @@ import java.util.Map;
 public interface PropertyAdding {
     void addProperty(Object key, Object value);
     Map<Object, List<Object>> getProperties();
-    void removeProperty(Object k);
+    boolean removeProperty(Object k);
 }

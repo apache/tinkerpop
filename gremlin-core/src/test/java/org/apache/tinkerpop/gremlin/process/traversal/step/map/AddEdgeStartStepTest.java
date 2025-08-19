@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -37,6 +38,8 @@ import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -68,6 +71,30 @@ public class AddEdgeStartStepTest extends GValueStepTest {
                 Pair.of(g.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a", GValue.of("prop", "b")), Set.of("label", "from", "to", "prop")),
                 Pair.of(g.addE("knows").from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a", GValue.of("prop", "b")), Set.of("from", "to", "prop"))
         );
+    }
+
+    @Test
+    public void shouldRemoveElementIdFromAddEdgeStartStep() {
+        final AddEdgeStartStep step = new AddEdgeStartStep(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.setElementId("startEdge123");
+        assertEquals("startEdge123", step.getElementId());
+
+        assertTrue(step.removeElementId());
+        assertNull(step.getElementId());
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromAddEdgeStartStep() {
+        final AddEdgeStartStep step = new AddEdgeStartStep(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "created");
+        step.addProperty("weight", 1.0);
+        step.addProperty("year", 2009);
+
+        assertTrue(step.removeProperty("year"));
+        assertFalse(step.getProperties().containsKey("year"));
+        assertTrue(step.getProperties().containsKey("weight"));
+        assertFalse(step.removeProperty("year"));
     }
 
     @Test

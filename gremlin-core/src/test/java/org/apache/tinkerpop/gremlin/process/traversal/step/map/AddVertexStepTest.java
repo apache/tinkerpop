@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.util.function.TraverserSetSupplier;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -79,7 +80,7 @@ public class AddVertexStepTest extends GValueStepTest {
         step.setElementId("vertex123");
         assertEquals("vertex123", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -89,18 +90,7 @@ public class AddVertexStepTest extends GValueStepTest {
                 new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
         assertNull(step.getElementId());
 
-        step.removeElementId();
-        assertNull(step.getElementId());
-    }
-
-    @Test
-    public void shouldRemoveElementIdFromAddVertexStartStep() {
-        final AddVertexStartStep step = new AddVertexStartStep(
-                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
-        step.setElementId("startVertex123");
-        assertEquals("startVertex123", step.getElementId());
-
-        step.removeElementId();
+        assertFalse(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -111,7 +101,7 @@ public class AddVertexStepTest extends GValueStepTest {
         step.setElementId("placeholderVertex123");
         assertEquals("placeholderVertex123", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -122,7 +112,7 @@ public class AddVertexStepTest extends GValueStepTest {
         step.setElementId(GValue.of("vertexId", "gvalueVertex123"));
         assertEquals("gvalueVertex123", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
     }
 
@@ -138,7 +128,7 @@ public class AddVertexStepTest extends GValueStepTest {
         assertTrue(step.getProperties().containsKey("name"));
         assertTrue(step.getProperties().containsKey("age"));
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
         assertTrue(step.getProperties().containsKey("name"));
         assertTrue(step.getProperties().containsKey("age"));
@@ -153,9 +143,9 @@ public class AddVertexStepTest extends GValueStepTest {
         step.setElementId("vertex123");
         assertEquals("vertex123", step.getElementId());
 
-        step.removeElementId();
-        step.removeElementId();
-        step.removeElementId();
+        assertTrue(step.removeElementId());
+        assertFalse(step.removeElementId());
+        assertFalse(step.removeElementId());
 
         // no exception thrown
         assertNull(step.getElementId());
@@ -168,14 +158,79 @@ public class AddVertexStepTest extends GValueStepTest {
         step.setElementId("originalId");
         assertEquals("originalId", step.getElementId());
 
-        step.removeElementId();
+        assertTrue(step.removeElementId());
         assertNull(step.getElementId());
 
         step.setElementId("newId");
         assertEquals("newId", step.getElementId());
     }
 
-@Test
+    @Test
+    public void shouldRemoveExistingPropertyFromAddVertexStep() {
+        // Given: AddVertexStep with properties
+        final AddVertexStep<Object> step = new AddVertexStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.addProperty("name", "marko");
+        step.addProperty("age", 29);
+
+        assertTrue(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
+
+        assertTrue(step.removeProperty("name"));
+        assertFalse(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
+        assertFalse(step.removeProperty("name"));
+    }
+
+    @Test
+    public void shouldReturnFalseWhenRemovingNonExistentPropertyFromAddVertexStep() {
+        final AddVertexStep<Object> step = new AddVertexStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+
+        step.addProperty("name", "marko");
+        assertFalse(step.removeProperty("nonExistent"));
+        assertTrue(step.getProperties().containsKey("name"));
+    }
+
+    @Test
+    public void shouldRemoveExistingPropertyFromAddVertexStepPlaceholder() {
+        final AddVertexStepPlaceholder<Object> step = new AddVertexStepPlaceholder<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.addProperty("name", GValue.of("vadas"));
+        step.addProperty("age", GValue.of(27));
+
+        assertTrue(step.removeProperty("name"));
+        assertFalse(step.getPropertiesGValueSafe().containsKey("name"));
+        assertTrue(step.getPropertiesGValueSafe().containsKey("age"));
+        assertFalse(step.removeProperty("name"));
+    }
+
+    @Test
+    public void shouldRemovePropertyAndAllowReAdding() {
+        final AddVertexStep<Object> step = new AddVertexStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.addProperty("name", "originalValue");
+        assertTrue(step.removeProperty("name"));
+
+        step.addProperty("name", "newValue");
+        assertTrue(step.getProperties().containsKey("name"));
+        assertEquals("newValue", step.getProperties().get("name").get(0));
+    }
+
+    @Test
+    public void shouldRemovePropertyWithMultipleValues() {
+        final AddVertexStep<Object> step = new AddVertexStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "person");
+        step.addProperty("skill", "java");
+        step.addProperty("skill", "python");
+        step.addProperty("skill", "gremlin");
+
+        assertEquals(3, step.getProperties().get("skill").size());
+        assertTrue(step.removeProperty("skill"));
+        assertFalse(step.getProperties().containsKey("skill"));
+    }
+
+    @Test
     public void shouldDefaultTheLabelIfNullString() {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());

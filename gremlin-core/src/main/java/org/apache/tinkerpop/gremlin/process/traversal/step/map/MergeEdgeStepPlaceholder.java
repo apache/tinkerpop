@@ -298,7 +298,11 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     }
 
     @Override
-    public void removeProperty(Object k) {
-        properties.remove(k);
+    public boolean removeProperty(Object k) {
+        if (properties.containsKey(k)) {
+            properties.remove(k);
+            return true;
+        }
+        return false;
     }
 }
