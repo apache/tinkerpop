@@ -84,6 +84,6 @@ public class IsStepTest extends GValueStepTest {
     @Test
     public void getPredicateFromConcreteStep() {
         final GraphTraversal.Admin<Object, Long> traversal = __.count().is(P.gt(GValue.of(GVALUE_NAME, VALUE))).asAdmin();
-        assertEquals(VALUE, ((IsStepPlaceholder) traversal.getSteps().get(1)).getPredicate().getValue());
+        assertEquals(VALUE, ((IsStepPlaceholder) traversal.getSteps().get(1)).asConcreteStep().getPredicate().getValue());
     }
 }

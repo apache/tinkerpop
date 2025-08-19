@@ -18,8 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -36,10 +41,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -109,40 +110,8 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     protected Edge map(final Traverser.Admin<S> traverser) {
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
-        Object theTo;
-        try {
-            theTo = this.parameters.get(traverser, TO, traverser::get).get(0);
-            if (theTo != null && !(theTo instanceof Vertex)) {
-                theTo = new ReferenceVertex(theTo);
-            }
-        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
-            throw new IllegalStateException(String.format(
-                    "addE(%s) failed because the to() traversal (which should give a Vertex) failed with: %s",
-                    edgeLabel, e.getMessage()));
-        }
-
-        if (theTo == null)
-            throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
-
-        Object theFrom;
-        try {
-            theFrom  = this.parameters.get(traverser, FROM, traverser::get).get(0);
-            if (theFrom != null && !(theFrom instanceof Vertex)) {
-                theFrom = new ReferenceVertex(theFrom);
-            }
-        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
-            throw new IllegalStateException(String.format(
-                    "addE(%s) failed because the from() traversal (which should give a Vertex) failed with: %s",
-                    edgeLabel, e.getMessage()), e);
-        }
-
-        if (theFrom == null)
-            throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
-
-        Vertex toVertex = (Vertex) theTo;
-        Vertex fromVertex = (Vertex) theFrom;
+        Vertex toVertex = getAdjacentVertex(TO, traverser, edgeLabel);
+        Vertex fromVertex = getAdjacentVertex(FROM, traverser, edgeLabel);
 
         try {
             if (toVertex instanceof Attachable)
@@ -205,8 +174,12 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     }
 
     @Override
-    public String getLabel() {
-        return parameters.get(T.label, ()->"Edge").get(0);
+    public Object getLabel() {
+        Object label = parameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        if (label instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) label).next();
+        }
+        return label;
     }
 
     @Override
@@ -216,7 +189,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return parameters.getRaw(T.label, TO, FROM); //TODO:: any more exclusions needed?
+        return Collections.unmodifiableMap(parameters.getRaw(T.label, TO, FROM));
     }
 
     @Override
@@ -232,12 +205,45 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     }
 
     @Override
-    public Vertex getFrom() {
-        return (Vertex) parameters.get(FROM, ()->null).get(0);
+    public Object getFrom() {
+        return getAdjacentVertex(FROM);
     }
 
     @Override
-    public Vertex getTo() {
-        return (Vertex) parameters.get(TO, ()->null).get(0);
+    public Object getTo() {
+        return getAdjacentVertex(TO);
+    }
+
+    private Object getAdjacentVertex(String key) {
+        Object vertex;
+        List<Object> values = this.parameters.get(key, () -> null);
+        vertex = values.isEmpty() ? null : values.get(0);
+        if (vertex instanceof ConstantTraversal) {
+            vertex = ((ConstantTraversal<?, ?>) vertex).next();
+        }
+        if (vertex != null && !(vertex instanceof Traversal) && !(vertex instanceof Vertex)) {
+            vertex = new ReferenceVertex(vertex);
+        }
+        return vertex;
+    }
+
+    private Vertex getAdjacentVertex(String key, Traverser.Admin<S> traverser, String edgeLabel) {
+        Object vertex;
+        try {
+            List<Object> values = this.parameters.get(traverser, key, traverser::get);
+            vertex = values.isEmpty() ? null : values.get(0);
+            if (vertex != null && !(vertex instanceof Vertex)) {
+                vertex = new ReferenceVertex(vertex);
+            }
+        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
+            throw new IllegalStateException(String.format(
+                    "addE(%s) failed because the %s() traversal (which should give a Vertex) failed with: %s",
+                    edgeLabel, key, e.getMessage()));
+        }
+
+        if (vertex == null)
+            throw new IllegalStateException(String.format(
+                    "The value given to addE(%s).%s() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel, key));
+        return (Vertex) vertex;
     }
 }

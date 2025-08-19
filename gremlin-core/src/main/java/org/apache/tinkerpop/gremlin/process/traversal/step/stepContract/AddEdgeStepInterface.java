@@ -18,22 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.stepContract;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashSet;
-
-/**
- * Defines the contract for {@code range} related steps.
- */
 public interface AddEdgeStepInterface<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepInterface<S, Edge>, Writing<Event.EdgeAddedEvent> {
-    public Vertex getFrom();
-    public Vertex getTo();
+    Object getFrom();
+    Object getTo();
 }

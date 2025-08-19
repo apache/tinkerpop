@@ -18,27 +18,31 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-
-import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -134,5 +138,137 @@ public class AddEdgeStepTest extends GValueStepTest {
                 __.select(Pop.first, "b").select("a"));
 
         assertEquals(addEdgeStartStep.getPopInstructions(), expectedOutput);
+    }
+
+    @Test
+    public void getLabelShouldPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("likes", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getLabel());
+        verifyVariables(traversal, Set.of("label"), Set.of("from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getLabelGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("likes", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getLabelGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getLabelFromConcreteStep() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("likes", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).asConcreteStep().getLabel());
+    }
+
+    @Test
+    public void getElementIdShouldPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("1234", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getElementId());
+        verifyVariables(traversal, Set.of("id"), Set.of("label", "from", "to", "r"));
+    }
+
+    @Test
+    public void getElementIdGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("1234", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getElementIdGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getElementIdFromConcreteStep() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals("1234", ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).asConcreteStep().getElementId());
+    }
+    
+    @Test
+    public void getFromShouldPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(1, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getFrom())).id());
+        verifyVariables(traversal, Set.of("from"), Set.of("label", "to", "id", "r"));
+    }
+
+    @Test
+    public void getFromGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(1, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getFromGValueSafe())).id());
+        verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getFromFromConcreteStep() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(1, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).asConcreteStep().getFrom())).id());
+    }
+
+    @Test
+    public void getToShouldPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(2, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getTo())).id());
+        verifyVariables(traversal, Set.of("to"), Set.of("label", "from", "id", "r"));
+    }
+
+    @Test
+    public void getToShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(2, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getToGValueSafe())).id());
+        verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getToFromConcreteStep() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(2, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).asConcreteStep().getTo())).id());
+    }
+
+    @Test
+    public void getPropertiesShouldPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(List.of("great"), ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0))
+                .getProperties().get("rating"));
+        verifyVariables(traversal, Set.of("r"), Set.of("label", "from", "to", "id"));
+    }
+
+    @Test
+    public void getPropertiesGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(List.of("great"), ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0))
+                .getPropertiesGValueSafe().get("rating"));
+        verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getPropertiesFromConcreteStep() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        assertEquals(List.of("great"), ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0))
+                .asConcreteStep().getProperties().get("rating"));
+    }
+
+    @Test
+    public void getGValuesShouldReturnAllGValues() {
+        GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
+        Collection<GValue<?>> gValues = ((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getGValues();
+        assertEquals(5, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("label", "from", "to", "id", "r")));
+    }
+
+    @Test
+    public void getGValuesNonShouldReturnEmptyCollection() {
+        GraphTraversal.Admin<Object, Edge> traversal = __.addE("likes")
+                .from(1)
+                .to(2)
+                .property(T.id, "1234")
+                .property("rating", "great")
+                .asAdmin();
+        assertTrue(((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+    
+    private GraphTraversal.Admin<Object, Edge> getAddEdgeGValueTraversal() {
+        return __.addE(GValue.of("label", "likes"))
+                .from(GValue.of("from", 1))
+                .to(GValue.of("to", 2))
+                .property(T.id, GValue.of("id", "1234"))
+                .property("rating", GValue.of("r", "great"))
+                .asAdmin();
     }
 }

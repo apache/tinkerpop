@@ -229,6 +229,13 @@ public class AddVertexStepTest extends GValueStepTest {
         assertEquals("person", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getLabelGValueSafe());
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
+    
+    @Test
+    public void getLabelFromConcreteStep() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("person", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getLabel());
+        verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
+    }
 
     @Test
     public void getElementIdShouldPinVariable() {
@@ -245,6 +252,12 @@ public class AddVertexStepTest extends GValueStepTest {
     }
 
     @Test
+    public void getElementIdFromConcreteStep() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals("1234", ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getElementId());
+    }
+
+    @Test
     public void getPropertiesShouldPinVariable() {
         GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
         assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getProperties().get("age"));
@@ -254,8 +267,15 @@ public class AddVertexStepTest extends GValueStepTest {
     @Test
     public void getPropertiesGValueSafeShouldNotPinVariable() {
         GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getPropertiesGValueSafe().get("age"));
+        assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0))
+                .getPropertiesGValueSafe().get("age"));
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
+    }
+
+    @Test
+    public void getPropertiesFromConcreteStep() {
+        GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
+        assertEquals(List.of(29), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getProperties().get("age"));
     }
 
     @Test
@@ -263,7 +283,8 @@ public class AddVertexStepTest extends GValueStepTest {
         GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
         Collection<GValue<?>> gValues = ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getGValues();
         assertEquals(3, gValues.size());
-        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList()).containsAll(List.of("label", "id", "a")));
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("label", "id", "a")));
     }
 
     @Test
