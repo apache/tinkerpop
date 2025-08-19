@@ -288,7 +288,7 @@ public class AddVertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getGValuesNonShouldReturnEmptyCollection() {
+    public void getGValuesNoneShouldReturnEmptyCollection() {
         GraphTraversal.Admin<Object, Vertex> traversal = __.addV("person")
                 .property(T.id, "1234")
                 .property("age", 29)

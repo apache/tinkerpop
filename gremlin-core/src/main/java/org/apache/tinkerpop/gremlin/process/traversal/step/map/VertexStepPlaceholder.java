@@ -77,7 +77,6 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
     }
 
     public String[] getEdgeLabelsGValueSafe() {
-        traversal.getGValueManager().pinGValues(Arrays.asList(edgeLabels));
         return Arrays.stream(GValue.resolveToValues(edgeLabels)).toArray(String[]::new);
     }
 
@@ -155,7 +154,7 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
     }
 
     @Override
-    public Step<Vertex, E> asConcreteStep() {
+    public VertexStep<E> asConcreteStep() {
         VertexStep<E> step = new VertexStep<>(traversal, returnClass, direction, Arrays.stream(GValue.resolveToValues(edgeLabels))
                 .map(String.class::cast)
                 .toArray(String[]::new));
