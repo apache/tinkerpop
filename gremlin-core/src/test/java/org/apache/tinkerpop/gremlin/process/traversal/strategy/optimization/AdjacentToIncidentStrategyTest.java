@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -97,10 +98,10 @@ public class AdjacentToIncidentStrategyTest {
         public int expectedLabelCount;
 
         @Parameterized.Parameter(value = 2)
-        public String[] expectedNames;
+        public Set<String> expectedNames;
 
         @Parameterized.Parameter(value = 3)
-        public String[] expectedValues;
+        public Set<String> expectedValues;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
@@ -108,38 +109,38 @@ public class AdjacentToIncidentStrategyTest {
                     {
                         __.out(GValue.of("x", "link")).count().asAdmin(),
                         1,
-                        new String[]{"x"},
-                        new String[]{"link"}
+                        Set.of("x"),
+                        Set.of("link")
                     },
                     {
                         __.out(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).count().asAdmin(),
                         3,
-                        new String[]{"x", "y", "z"},
-                        new String[]{"link", "knows", "created"}
+                        Set.of("x", "y", "z"),
+                        Set.of("link", "knows", "created")
                     },
                     {
                         __.in(GValue.of("x", "link")).count().asAdmin(),
                         1,
-                        new String[]{"x"},
-                        new String[]{"link"}
+                        Set.of("x"),
+                        Set.of("link")
                     },
                     {
                         __.in(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).count().asAdmin(),
                         3,
-                        new String[]{"x", "y", "z"},
-                        new String[]{"link", "knows", "created"}
+                        Set.of("x", "y", "z"),
+                        Set.of("link", "knows", "created")
                     },
                     {
                         __.both(GValue.of("x", "link")).count().asAdmin(),
                         1,
-                        new String[]{"x"},
-                        new String[]{"link"}
+                        Set.of("x"),
+                        Set.of("link")
                     },
                     {
                         __.both(GValue.of("x", "link"), GValue.of("y", "knows"), GValue.of("z", "created")).count().asAdmin(),
                         3,
-                        new String[]{"x", "y", "z"},
-                        new String[]{"link", "knows", "created"}
+                        Set.of("x", "y", "z"),
+                        Set.of("link", "knows", "created")
                     }
             });
         }
@@ -152,11 +153,11 @@ public class AdjacentToIncidentStrategyTest {
             GValueManagerVerifier.verify(traversal, AdjacentToIncidentStrategy.instance()).
                     beforeApplying().
                         hasVariables(expectedNames).
-                        //TODO:: edgeLabelContractIsValid(step, expectedLabelCount, expectedNames, expectedValues).
+                        isVertexStepPlaceholder(step, expectedLabelCount, expectedNames, expectedValues).
                     afterApplying().
                         hasVariables(expectedNames).
-                        variablesArePreserved();
-            //TODO:: edgeLabelContractIsValid(traversal.getStartStep(), expectedLabelCount, expectedNames, expectedValues);
+                        variablesArePreserved().
+                        isVertexStepPlaceholder(traversal.getStartStep(), expectedLabelCount, expectedNames, expectedValues);
         }
     }
 }

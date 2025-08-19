@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -116,18 +117,16 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
      */
     private static void optimizeStep(final Traversal.Admin traversal, final Step step) {
         final Step newStep;
-        if (step instanceof VertexStep) {
-            final VertexStep vs = (VertexStep) step;
+        if (step instanceof VertexStepInterface) {
+            final VertexStepInterface vs = (VertexStepInterface) step;
             newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
+            // TODO:: preserve GValue and leave unpinned if vs is a GValueHolder
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());
         } else {
             return;
         }
-
-        // the newStep assumes the StepContract of original step
-        // TODO:: traversal.getGValueManager().copyRegistryState(step, newStep);
         TraversalHelper.replaceStep(step, newStep, traversal);
     }
 

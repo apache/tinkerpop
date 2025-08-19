@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder.RangeGlobalStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -295,19 +297,18 @@ public class GValueManagerVerifier {
         }
 
         /**
-         * Verifies that specific steps have been cleared from GValueManager
+         * Verifies whether steps are parameterized
          */
         public T stepsAreParameterized(final boolean isParameterized, final Step... steps) {
             assertThat("At least one step must be provided", steps.length > 0, is(true));
             for (Step step : steps) {
-                final GValueManager manager = step.getTraversal().getGValueManager();
                 assertThat("Step should not be parameterized", step instanceof GValueHolder && ((GValueHolder<?, ?>) step).isParameterized(), is(isParameterized));
             }
             return self();
         }
 
         /**
-         * Verifies that all steps of a certain class are not parameterized
+         * Verifies whether all steps of a certain class are parameterized
          */
         public <U extends Step> T stepsOfClassAreParameterized(final boolean isParameterized, final Class<U> stepClass) {
             final List<U> steps = TraversalHelper.getStepsOfAssignableClassRecursively(stepClass, traversal);
@@ -315,18 +316,34 @@ public class GValueManagerVerifier {
         }
 
         /**
-         * Verifies that a RangeContract is properly set up
-         */ //TODO rename
-        public T isRangeGlobalGValueContract(final Step step, final long expectedLow, final long expectedHigh,
-                                             final String lowName, final String highName) {
+         * Verifies that a RangeGlobalStepPlaceholder is properly set up
+         */
+        public T isRangeGlobalStepPlaceholder(final Step step, final long expectedLow, final long expectedHigh,
+                                              final String lowName, final String highName) {
             assertThat("Step should be parameterized", step instanceof RangeGlobalStepPlaceholder && ((RangeGlobalStepPlaceholder<?>) step).isParameterized(), is(true));
 
-            RangeGlobalStepPlaceholder<?> rangeGValueContract = (RangeGlobalStepPlaceholder<?>) step;
+            RangeGlobalStepPlaceholder<?> rangeGlobalStepPlaceholder = (RangeGlobalStepPlaceholder<?>) step;
 
-            assertEquals("Low range should match", expectedLow, rangeGValueContract.getLowRangeGValueSafe());
-            assertEquals("High range should match", expectedHigh, rangeGValueContract.getHighRangeGValueSafe());
-            assertEquals("Low range name should match", lowName, rangeGValueContract.getLowName());
-            assertEquals("High range name should match", highName, rangeGValueContract.getHighName());
+            assertEquals("Low range should match", expectedLow, rangeGlobalStepPlaceholder.getLowRangeGValueSafe());
+            assertEquals("High range should match", expectedHigh, rangeGlobalStepPlaceholder.getHighRangeGValueSafe());
+            assertEquals("Low range name should match", lowName, rangeGlobalStepPlaceholder.getLowName());
+            assertEquals("High range name should match", highName, rangeGlobalStepPlaceholder.getHighName());
+
+            return self();
+        }
+
+        /**
+         * Verifies that a VertexStepPlaceholder is properly set up
+         */
+        public T isVertexStepPlaceholder(final Step step, final int expectedLabelCount, final Set<String> expectedNames,
+                                              final Set<String> expectedValues) {
+            assertThat("Step should be parameterized", step instanceof VertexStepPlaceholder && ((VertexStepPlaceholder<?>) step).isParameterized(), is(true));
+
+            VertexStepPlaceholder<?> vertexStepPlaceholder = (VertexStepPlaceholder<?>) step;
+
+            assertEquals("Label count should match", expectedLabelCount, vertexStepPlaceholder.getEdgeLabelsGValueSafe().length);
+            assertTrue("Expected names should match", CollectionUtils.isEqualCollection(expectedNames, vertexStepPlaceholder.getGValues().stream().map(GValue::getName).collect(Collectors.toSet())));
+            assertTrue("Expected values should match", CollectionUtils.isEqualCollection(expectedValues, Set.of(vertexStepPlaceholder.getEdgeLabelsGValueSafe())));
 
             return self();
         }

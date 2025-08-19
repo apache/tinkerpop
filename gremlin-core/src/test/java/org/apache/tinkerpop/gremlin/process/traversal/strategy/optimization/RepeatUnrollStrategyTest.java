@@ -19,8 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -47,10 +45,7 @@ import java.util.function.Predicate;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.path;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

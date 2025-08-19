@@ -149,11 +149,10 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                         }
                     }
                 }
-
                 if (highRange != null) {
                     if (useNotStep || dismissCountIs) {
-                        TraversalHelper.removeStep(isStep, traversal); // IsStep
-                        TraversalHelper.removeStep(curr, traversal); // CountStep
+                        traversal.asAdmin().removeStep(isStep); // IsStep
+                        traversal.asAdmin().removeStep(curr); // CountStep
                         size -= 2;
                         if (!dismissCountIs) {
                             if (parent instanceof ConnectiveStep) {
@@ -176,14 +175,13 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
                                         inner.addStep(0, prev);
                                         if (pp instanceof EmptyStep || pp instanceof GraphStep ||
                                                 !(prev instanceof FilterStep || prev instanceof SideEffectStep)) break;
-                                        TraversalHelper.removeStep(prev, traversal);
+                                        traversal.removeStep(prev);
                                         prev = pp;
                                         size--;
                                     }
                                 } else {
                                     inner = __.identity().asAdmin();
                                 }
-
                                 if (prev != null)
                                     TraversalHelper.replaceStep(prev, new NotStep<>(traversal, inner), traversal);
                                 else

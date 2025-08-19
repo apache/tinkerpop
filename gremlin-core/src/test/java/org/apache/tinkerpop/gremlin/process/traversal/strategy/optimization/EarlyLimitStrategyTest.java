@@ -51,11 +51,6 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -205,12 +200,12 @@ public class EarlyLimitStrategyTest {
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
                     beforeApplying().
-                    isRangeGlobalGValueContract(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalStepPlaceholder(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
-                    isRangeGlobalGValueContract(
+                    isRangeGlobalStepPlaceholder(
                                 TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),
                                 expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
-                        hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
+                    hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }
 
@@ -269,9 +264,9 @@ public class EarlyLimitStrategyTest {
             // Use GValueManagerVerifier to verify the state before and after applying the strategy
             GValueManagerVerifier.verify(traversal, EarlyLimitStrategy.instance()).
                     beforeApplying().
-                    isRangeGlobalGValueContract(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalStepPlaceholder(originalRangeGlobalStep, expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                     afterApplying().
-                    isRangeGlobalGValueContract(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
+                    isRangeGlobalStepPlaceholder(TraversalHelper.getFirstStepOfAssignableClass(RangeGlobalStepInterface.class, traversal).get(),expectedLowRange, expectedHighRange, expectedNames[0], expectedNames[1]).
                         hasVariables(CollectionUtil.asSet(Arrays.stream(expectedNames).filter(Objects::nonNull).toArray(String[]::new)));
         }
     }

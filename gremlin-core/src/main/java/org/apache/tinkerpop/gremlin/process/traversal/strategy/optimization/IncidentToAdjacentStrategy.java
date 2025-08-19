@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.VertexStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -89,8 +90,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      * otherwise <code>false</code>
      */
     private static boolean isOptimizable(final Step step1, final Step step2) {
-        if (step1 instanceof VertexStep && ((VertexStep) step1).returnsEdge() && step1.getLabels().isEmpty()) {
-            final Direction step1Dir = ((VertexStep) step1).getDirection();
+        if (step1 instanceof VertexStepInterface && ((VertexStepInterface) step1).returnsEdge() && step1.getLabels().isEmpty()) {
+            final Direction step1Dir = ((VertexStepInterface) step1).getDirection();
             if (step1Dir.equals(Direction.BOTH)) {
                 return step2 instanceof EdgeOtherVertexStep;
             }
@@ -108,14 +109,12 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      * @param step1     the edge-emitting step to replace
      * @param step2     the vertex-emitting step to replace
      */
-    private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
+    private static void optimizeSteps(final Traversal.Admin traversal, final VertexStepInterface step1, final Step step2) {
         final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        //TODO:: preserve GValue and leave unpinned if step1 is a GValueHolder
         for (final String label : (Iterable<String>) step2.getLabels()) {
             newStep.addLabel(label);
         }
-
-        // the newStep assumes the StepContract of original step
-        // TODO:: traversal.getGValueManager().copyRegistryState(step1, newStep);
         TraversalHelper.replaceStep(step1, newStep, traversal);
         traversal.removeStep(step2);
     }
@@ -135,7 +134,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
             return;
         }
         ////////////////////////////////////////////////////////////////////////////
-        final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
+        final Collection<Pair<VertexStepInterface, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
         for (final Step curr : traversal.getSteps()) {
             if (curr instanceof TraversalParent) {
@@ -143,12 +142,12 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
                 ((TraversalParent) curr).getGlobalChildren().forEach(this::apply);
             }
             if (isOptimizable(prev, curr)) {
-                stepsToReplace.add(Pair.with((VertexStep) prev, curr));
+                stepsToReplace.add(Pair.with((VertexStepInterface) prev, curr));
             }
             prev = curr;
         }
         if (!stepsToReplace.isEmpty()) {
-            for (final Pair<VertexStep, Step> pair : stepsToReplace) {
+            for (final Pair<VertexStepInterface, Step> pair : stepsToReplace) {
                 optimizeSteps(traversal, pair.getValue0(), pair.getValue1());
             }
         }

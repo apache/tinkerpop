@@ -29,12 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;

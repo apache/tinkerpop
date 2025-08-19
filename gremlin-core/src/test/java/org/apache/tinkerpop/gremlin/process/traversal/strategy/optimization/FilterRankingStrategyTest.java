@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -37,12 +36,9 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -57,8 +53,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.properties;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
 /**

@@ -22,25 +22,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.IsStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
@@ -52,8 +45,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.outside;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 
 /**

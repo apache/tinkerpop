@@ -131,12 +131,9 @@ public final class EarlyLimitStrategy
                 rangeStep = high > low ? new RangeGlobalStep(traversal, low, high) : new DiscardStep<>(traversal);
             }
             remove = merge;
-
-            final Step stepToRemove = merge ? insertAfter : step;
-            TraversalHelper.replaceStep(stepToRemove, rangeStep, traversal);
+            TraversalHelper.replaceStep(merge ? insertAfter : step, rangeStep, traversal);
         } else if (!step.getPreviousStep().equals(insertAfter, true)) {
-            // move the RangeStep behind the earliest possible map- or sideEffect-step.
-            // todo: reconsider clone() b/c it destroys the GValue - any reason to not just move the step?
+            // move the RangeStep behind the earliest possible map- or sideEffect-step
             rangeStep = step.clone();
             TraversalHelper.insertAfterStep(rangeStep, insertAfter, traversal);
         } else {
@@ -144,9 +141,7 @@ public final class EarlyLimitStrategy
             // already the current step's previous step
             return step;
         }
-        if (remove) {
-            traversal.removeStep(step);
-        }
+        if (remove) traversal.removeStep(step);
         return rangeStep;
     }
 

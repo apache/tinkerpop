@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -76,6 +77,7 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
     }
 
     private static void processConjunctionMarker(final Class<? extends ConnectiveStep> markerClass, final Traversal.Admin<?, ?> traversal) {
+
         final List<Step> steps = traversal.getSteps();
         for (int i = 0; i < steps.size(); i++) {
             final Step step = steps.get(i);
@@ -87,7 +89,6 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                     for (int j = i - 1; j >= 0; i--, j--) {
                         final Step previousStep = steps.get(j);
                         if (legalCurrentStep(previousStep)) {
-                            // step is moving from one traversal to another. GValue state is unchanged so retain it
                             connectiveTraversal.addStep(0, previousStep);
                             traversal.removeStep(previousStep);
                         } else break;
@@ -98,13 +99,13 @@ public final class ConnectiveStrategy extends AbstractTraversalStrategy<Traversa
                     while (i < steps.size()) {
                         final Step nextStep = steps.get(i);
                         if (legalCurrentStep(nextStep)) {
-                            if (nextStep.getClass().equals(markerClass) && ((ConnectiveStep) nextStep).getLocalChildren().isEmpty()) {
+                            if (nextStep.getClass().equals(markerClass) &&
+                                    ((ConnectiveStep) nextStep).getLocalChildren().isEmpty()) {
                                 final ConnectiveStep<?> nextConnectiveStep = (ConnectiveStep<?>) nextStep;
                                 currentStep.addLocalChild(connectiveTraversal = connectiveTraversal(connectiveTraversal, nextConnectiveStep));
                             } else {
                                 connectiveTraversal.addStep(nextStep);
                             }
-                            // step is moving from one traversal to another. GValue state is unchanged so retain it
                             traversal.removeStep(nextStep);
                         } else break;
                     }

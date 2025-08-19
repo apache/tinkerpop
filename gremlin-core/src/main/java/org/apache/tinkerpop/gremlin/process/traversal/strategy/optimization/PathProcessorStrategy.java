@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -99,8 +98,6 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
             return;
         }
 
-        final GValueManager manager = traversal.getGValueManager();
-
         // process where(as("a").out()...) => select("a").where(out()...)
         final List<WhereTraversalStep> whereTraversalSteps = TraversalHelper.getStepsOfClass(WhereTraversalStep.class, traversal);
         for (final WhereTraversalStep<?> whereTraversalStep : whereTraversalSteps) {
@@ -113,7 +110,8 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                     final int index = TraversalHelper.stepIndex(whereTraversalStep, traversal);
                     if (whereTraversalStep.getPreviousStep() instanceof SelectStep) {
                         done = false;
-                        TraversalHelper.moveStep(whereTraversalStep, index - 1, traversal);
+                        traversal.removeStep(index);
+                        traversal.addStep(index - 1, whereTraversalStep);
                     }
                 }
                 final WhereTraversalStep.WhereStartStep<?> whereStartStep = (WhereTraversalStep.WhereStartStep<?>) localChild.getStartStep();
@@ -130,9 +128,9 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                 whereStartStep.removeScopeKey();
                 // process where(as("a").out()) => as('xyz').select("a").filter(out()).select('xyz')
                 if (!(localChild.getEndStep() instanceof WhereTraversalStep.WhereEndStep)) {
-                    TraversalHelper.removeStep(localChild.getStartStep(), localChild);
+                    localChild.removeStep(localChild.getStartStep());
                     traversal.addStep(index + 1, new TraversalFilterStep<>(traversal, localChild));
-                    TraversalHelper.removeStep(whereTraversalStep, traversal.asAdmin());
+                    traversal.removeStep(whereTraversalStep);
                 }
             }
         }
@@ -181,22 +179,8 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                         labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1) {
                     final int index = TraversalHelper.stepIndex(selectOneStep, traversal);
                     final Traversal.Admin<?, ?> localChild = selectOneStep.getLocalChildren().get(0);
-
-                    final Traversal.Admin<?, ?> localChildClone = localChild.clone();
-                    final List<Step> localChildSteps = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, localChild);
-                    for (int ix = 0; ix < localChildSteps.size(); ix++) {
-                        // TODO:: manager.copyRegistryState(localChildSteps.get(ix), localChildClone.getSteps().get(ix));
-
-                        // todo: look at cases where we clone() traversal more carefully. so much to think about in these cases
-                        // TODO:: manager.pinGValues(localChildSteps.get(ix));
-                        // TODO:: manager.remove(localChildSteps.get(ix));
-                        // TODO:: localChildClone.getGValueManager().pinGValues(localChildSteps.get(ix));
-                        // TODO:: localChildClone.getGValueManager().remove(localChildSteps.get(ix));
-                    }
-
                     selectOneStep.removeLocalChild(localChild);
-
-                    final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, localChildClone);
+                    final TraversalMapStep<?, ?> mapStep = new TraversalMapStep<>(traversal, localChild.clone());
                     traversal.addStep(index + 1, mapStep);
                 }
             }

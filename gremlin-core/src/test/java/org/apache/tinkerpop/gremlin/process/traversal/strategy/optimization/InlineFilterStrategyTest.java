@@ -33,8 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;

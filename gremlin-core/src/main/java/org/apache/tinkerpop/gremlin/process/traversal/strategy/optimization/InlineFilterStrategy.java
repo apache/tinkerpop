@@ -139,7 +139,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                                 hasContainer.getPredicate().getGValues().iterator().next() :
                                 GValue.ofString((String) hasContainer.getValue()));
                         step.removeHasContainer(hasContainer);
-
                     } else if (hasContainer.getBiPredicate() == Contains.within &&
                             hasContainer.getValue() instanceof Collection &&
                             ((Collection) hasContainer.getValue()).containsAll(Arrays.asList(GValue.resolveToValues(edgeLabelGValues.toArray())))) {
@@ -214,7 +213,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         String key = null;
         P predicate = null;
         final List<String> labels = new ArrayList<>();
-        final List<Step> stepsToRemoveFromManager = new ArrayList<>();
         for (final Traversal.Admin<?, ?> childTraversal : step.getLocalChildren()) {
             InlineFilterStrategy.instance().apply(childTraversal);
             for (final Step<?, ?> childStep : childTraversal.getSteps()) {
@@ -235,7 +233,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         predicate = null == predicate ? p : predicate.or(p);
                     }
                     labels.addAll(childStep.getLabels());
-                    stepsToRemoveFromManager.add(childStep);
                 } else {
                     process = false;
                     break;
@@ -247,11 +244,6 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
         if (process) {
             final HasStep hasStep = new HasStep<>(traversal, new HasContainer(key, predicate));
             TraversalHelper.replaceStep(step, hasStep, traversal);
-            stepsToRemoveFromManager.forEach(s -> {
-                if (s instanceof GValueHolder) {
-                    traversal.getGValueManager().pinGValues(((GValueHolder<?, ?>) s).getGValues()); //TODO
-                }
-            });
             TraversalHelper.copyLabels(step, hasStep, false);
             for (final String label : labels) {
                 hasStep.addLabel(label);

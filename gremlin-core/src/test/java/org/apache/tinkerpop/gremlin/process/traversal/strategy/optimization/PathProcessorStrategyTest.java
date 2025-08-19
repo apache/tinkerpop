@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
-import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
@@ -50,10 +49,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.coalesce;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)

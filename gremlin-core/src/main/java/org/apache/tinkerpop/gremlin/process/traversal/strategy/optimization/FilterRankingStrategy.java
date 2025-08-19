@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.javatuples.Pair;
 
@@ -123,7 +124,8 @@ public final class FilterRankingStrategy extends AbstractTraversalStrategy<Trave
                                     modified = true;
                                 }
                                 if (stepRanking.computeIfAbsent(step, FilterRankingStrategy::getStepRank) > nextRank) {
-                                    TraversalHelper.moveStep(nextStep, i, t);
+                                    t.removeStep(nextStep);
+                                    t.addStep(i, nextStep);
                                     modified = true;
                                 }
                             }
