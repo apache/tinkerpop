@@ -50,7 +50,11 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
         return predicates;
     }
 
-    public default Step<S, E> asConcreteStep() {
+    public default Collection<P<?>> getPredicatesGValueSafe() {
+        return getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
+    }
+
+    public default HasContainerHolder<S, E> asConcreteStep() {
         return this;
     }
 

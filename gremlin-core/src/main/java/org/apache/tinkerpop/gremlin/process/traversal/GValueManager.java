@@ -128,7 +128,10 @@ public final class GValueManager implements Serializable, Cloneable {
      * @throws IllegalArgumentException if no GValue of the given name is registered
      */
     public boolean pinVariable(final String name) {
-        if (name == null || !gValueRegistry.containsKey(name)) {
+        if (name == null) {
+            return false;
+        }
+        if (!gValueRegistry.containsKey(name)) {
             throw new IllegalArgumentException(String.format("Unable to pin variable '%s' because it is not registered", name));
         }
         return pinnedVariables.add(name);

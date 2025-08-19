@@ -19,22 +19,28 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -140,5 +146,51 @@ public class HasStepTest extends GValueStepTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void getPredicatesShouldPinVariable() {
+        GraphTraversal.Admin<?, ?> traversal = getHasGValueTraversal();
+        assertEquals(List.of("marko", 25), ((HasStep<?>) traversal.getSteps().get(0))
+                .getPredicates().stream().map(P::getValue).collect(Collectors.toList()));
+        verifyVariables(traversal, Set.of("n", "a"), Set.of());
+    }
+
+    @Test
+    public void getPredicatesGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<?, ?> traversal = getHasGValueTraversal();
+        assertEquals(List.of("marko", 25), ((HasStep<?>) traversal.getSteps().get(0))
+                .getPredicatesGValueSafe().stream().map(P::getValue).collect(Collectors.toList()));
+        verifyVariables(traversal, Set.of(), Set.of("n", "a"));
+    }
+
+    @Test
+    public void getPredicatesFromConcreteStep() {
+        GraphTraversal.Admin<?, ?> traversal = getHasGValueTraversal();
+        assertEquals(List.of("marko", 25), ((HasStep<?>) traversal.getSteps().get(0))
+                .asConcreteStep().getPredicates().stream().map(P::getValue).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void getGValuesShouldReturnAllGValues() {
+        GraphTraversal.Admin<?, ?> traversal = getHasGValueTraversal();
+        Collection<GValue<?>> gValues = ((HasStep<?>) traversal.getSteps().get(0)).getGValues();
+        assertEquals(2, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("n", "a")));
+    }
+
+    @Test
+    public void getGValuesNonShouldReturnEmptyCollection() {
+        GraphTraversal.Admin<?, ?> traversal = __.has("name", "marko")
+                .has("age", P.gt(25))
+                .asAdmin();
+        assertTrue(((HasContainerHolder<?,?>) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    private GraphTraversal.Admin<?, ?> getHasGValueTraversal() {
+        return __.has("name", GValue.of("n", "marko"))
+                .has("age", P.gt(GValue.of("a", 25)))
+                .asAdmin();
     }
 }

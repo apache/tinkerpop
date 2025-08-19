@@ -81,7 +81,9 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
     @Override
     public Object[] getIds() {
         for (final GValue<?> id : this.ids) {
-            traversal.getGValueManager().pinVariable(id.getName());
+            if (id.isVariable()) {
+                traversal.getGValueManager().pinVariable(id.getName());
+            }
         }
         return GValue.resolveToValues(this.ids);
     }

@@ -20,21 +20,27 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -80,5 +86,49 @@ public class GraphStepTest extends GValueStepTest {
         final GraphStep<?, ?> graphStep0 = (GraphStep<?, ?>) t0.asAdmin().getSteps().get(0);
         final GraphStep<?, ?> graphStep1 = (GraphStep<?, ?>) t1.asAdmin().getSteps().get(0);
         assertThat("V() and V(1,1) must not be considered equal", graphStep0, not(equalTo(graphStep1)));
+    }
+
+    @Test
+    public void getIdsShouldPinVariable() {
+        GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
+        assertEquals(new Object[]{1,2,3,4}, ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0))
+                .getIds());
+        verifyVariables(traversal, Set.of("x","y","z"), Set.of());
+    }
+
+    @Test
+    public void getIdsGValueSafeShouldNotPinVariable() {
+        GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
+        assertEquals(new Object[]{1,2,3,4}, ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0))
+                .getIdsGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("x","y","z"));
+    }
+
+    @Test
+    public void getIdsFromConcreteStep() {
+        GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
+        assertEquals(new Object[]{1,2,3,4}, ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0))
+                .asConcreteStep().getIds());
+    }
+
+    @Test
+    public void getGValuesShouldReturnAllGValues() {
+        GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
+        Collection<GValue<?>> gValues = ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0)).getGValues();
+        assertEquals(3, gValues.size());
+        assertTrue(gValues.stream().map(GValue::getName).collect(Collectors.toList())
+                .containsAll(List.of("x", "y", "z")));
+    }
+
+    @Test
+    public void getGValuesNonShouldReturnEmptyCollection() {
+        GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
+        ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0)).clearIds();
+        assertTrue(((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    private GraphTraversal.Admin<?, ?> getGraphStepGValueTraversal() {
+        return __.V(GValue.of("x", 1), GValue.of("y", 2), 3, GValue.of("z", 4))
+                .asAdmin();
     }
 }
