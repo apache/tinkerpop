@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
@@ -27,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
         implements AddEdgeStepInterface<S> {
@@ -157,20 +155,5 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
             clone.to = to.clone();
         }
         return clone;
-    }
-
-    private Object resolveVertexTraversal(Traversal.Admin<?,?> vertexTraversal) {
-        return resolveVertexTraversal(vertexTraversal, null);
-    }
-
-    private Object resolveVertexTraversal(Traversal.Admin<?,?> vertexTraversal, Consumer<GValue<?>> gValueConsumer) {
-        if (vertexTraversal instanceof GValueConstantTraversal) {
-            if (gValueConsumer != null) {
-                gValueConsumer.accept(((GValueConstantTraversal<?, ?>) vertexTraversal).getGValue());
-            }
-            return new ReferenceVertex(vertexTraversal.next());
-        }
-        // anything other than a GValueConstantTraversal is returned as-is
-        return vertexTraversal;
     }
 }

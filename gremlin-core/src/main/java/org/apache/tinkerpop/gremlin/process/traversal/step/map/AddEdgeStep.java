@@ -40,7 +40,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -110,8 +109,8 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     protected Edge map(final Traverser.Admin<S> traverser) {
         final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
-        Vertex toVertex = getAdjacentVertex(TO, traverser, edgeLabel);
-        Vertex fromVertex = getAdjacentVertex(FROM, traverser, edgeLabel);
+        Vertex toVertex = getAdjacentVertex(this.parameters, TO, traverser, edgeLabel);
+        Vertex fromVertex = getAdjacentVertex(this.parameters, FROM, traverser, edgeLabel);
 
         try {
             if (toVertex instanceof Attachable)
@@ -206,44 +205,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public Object getFrom() {
-        return getAdjacentVertex(FROM);
+        return getAdjacentVertex(this.parameters, FROM);
     }
 
     @Override
     public Object getTo() {
-        return getAdjacentVertex(TO);
-    }
-
-    private Object getAdjacentVertex(String key) {
-        Object vertex;
-        List<Object> values = this.parameters.get(key, () -> null);
-        vertex = values.isEmpty() ? null : values.get(0);
-        if (vertex instanceof ConstantTraversal) {
-            vertex = ((ConstantTraversal<?, ?>) vertex).next();
-        }
-        if (vertex != null && !(vertex instanceof Traversal) && !(vertex instanceof Vertex)) {
-            vertex = new ReferenceVertex(vertex);
-        }
-        return vertex;
-    }
-
-    private Vertex getAdjacentVertex(String key, Traverser.Admin<S> traverser, String edgeLabel) {
-        Object vertex;
-        try {
-            List<Object> values = this.parameters.get(traverser, key, traverser::get);
-            vertex = values.isEmpty() ? null : values.get(0);
-            if (vertex != null && !(vertex instanceof Vertex)) {
-                vertex = new ReferenceVertex(vertex);
-            }
-        } catch (IllegalArgumentException e) { // as thrown by TraversalUtil.apply()
-            throw new IllegalStateException(String.format(
-                    "addE(%s) failed because the %s() traversal (which should give a Vertex) failed with: %s",
-                    edgeLabel, key, e.getMessage()));
-        }
-
-        if (vertex == null)
-            throw new IllegalStateException(String.format(
-                    "The value given to addE(%s).%s() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel, key));
-        return (Vertex) vertex;
+        return getAdjacentVertex(this.parameters, TO);
     }
 }

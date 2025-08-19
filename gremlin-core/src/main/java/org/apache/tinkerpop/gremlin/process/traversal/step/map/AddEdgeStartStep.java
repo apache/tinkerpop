@@ -19,10 +19,15 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -40,11 +45,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -201,20 +201,24 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     }
 
     @Override
-    public String getLabel() {
-        return parameters.get(T.label, ()->"Edge").get(0);
+    public Object getLabel() {
+        Object label = parameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        if (label instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) label).next();
+        }
+        return label;
     }
 
     @Override
-    public Vertex getFrom() {
-        return (Vertex) parameters.get(FROM, ()->(Traversal.Admin<?, ?>) null).get(0).next();
+    public Object getFrom() {
+        return getAdjacentVertex(this.parameters, FROM);
     }
 
     @Override
-    public Vertex getTo() {
-        return (Vertex) parameters.get(TO, ()->(Traversal.Admin<?, ?>) null).get(0).next();
+    public Object getTo() {
+        return getAdjacentVertex(this.parameters, TO);
     }
-
+    
     @Override
     public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
