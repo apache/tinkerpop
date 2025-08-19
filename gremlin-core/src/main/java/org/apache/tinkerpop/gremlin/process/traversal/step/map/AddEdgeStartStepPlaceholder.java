@@ -70,7 +70,19 @@ public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlacehold
     }
 
     @Override
-    public Step asConcreteStep() {
+    public int hashCode() {
+        int hash = super.hashCode();
+        if (from != null) {
+            hash ^= from.hashCode();
+        }
+        if (to != null) {
+            hash ^= to.hashCode();
+        }
+        return hash;
+    }
+
+    @Override
+    public AddEdgeStartStep asConcreteStep() {
         AddEdgeStartStep step = new AddEdgeStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
         super.configureConcreteStep(step);
         if (from != null) {
@@ -98,27 +110,21 @@ public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlacehold
     }
 
     @Override
-    public Vertex getFrom() {
-        if (from instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) from).getGValue().getName());
-        }
-        return from == null ? null : (Vertex) from.next();
+    public Object getFrom() {
+        return resolveVertexTraversal(from, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Vertex getFromGValueSafe() {
-        return from == null ? null : (Vertex) from.next();
+    public Object getFromGValueSafe() {
+        return resolveVertexTraversal(from);
     }
 
     @Override
-    public Vertex getTo() {
-        if (to instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) to).getGValue().getName());
-        }
-        return to == null ? null : (Vertex) to.next();
+    public Object getTo() {
+        return resolveVertexTraversal(to, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Vertex getToGValueSafe() {
-        return to == null ? null : (Vertex) to.next();
+    public Object getToGValueSafe() {
+        return resolveVertexTraversal(to);
     }
 
     @Override

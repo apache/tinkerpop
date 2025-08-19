@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import java.util.Collection;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
@@ -26,9 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.Collection;
 
 public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent>
         implements AddEdgeStepInterface<S> {
@@ -80,7 +77,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
     }
 
     @Override
-    public Step asConcreteStep() {
+    public AddEdgeStep<S> asConcreteStep() {
         AddEdgeStep<S> step = new AddEdgeStep<>(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) label).getConstantTraversal() : label);
         super.configureConcreteStep(step);
         if (from != null) {
@@ -108,27 +105,21 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
     }
 
     @Override
-    public Vertex getFrom() {
-        if (from instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) from).getGValue().getName());
-        }
-        return from == null ? null : (Vertex) from.next();
+    public Object getFrom() {
+        return resolveVertexTraversal(from, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Vertex getFromGValueSafe() {
-        return from == null ? null : (Vertex) from.next();
+    public Object getFromGValueSafe() {
+        return resolveVertexTraversal(from);
     }
 
     @Override
-    public Vertex getTo() {
-        if (to instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) to).getGValue().getName());
-        }
-        return to == null ? null : (Vertex) to.next();
+    public Object getTo() {
+        return resolveVertexTraversal(to, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Vertex getToGValueSafe() {
-        return to == null ? null : (Vertex) to.next();
+    public Object getToGValueSafe() {
+        return resolveVertexTraversal(to);
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -157,8 +158,12 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex>
     }
 
     @Override
-    public String getLabel() {
-        return parameters.get(T.label, ()->"Edge").get(0);
+    public Object getLabel() {
+        Object label = parameters.get(T.label, () -> Vertex.DEFAULT_LABEL).get(0);
+        if (label instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) label).next();
+        }
+        return label;
     }
 
     @Override

@@ -23,10 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-/**
- * Defines the contract for {@code range} related steps.
- */
 public interface AddVertexStepInterface<S> extends Step<S, Vertex>, AddElementStepInterface<S, Vertex>, Writing<Event.VertexAddedEvent> {
 
-    public boolean hasUserProvidedLabel();
+    boolean hasUserProvidedLabel();
 }

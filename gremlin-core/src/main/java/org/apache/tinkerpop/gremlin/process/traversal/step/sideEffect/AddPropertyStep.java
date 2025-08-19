@@ -202,6 +202,18 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     }
 
     @Override
+    public Object getKey() {
+        List<Object> keyParams = parameters.get(T.key, null);
+        return keyParams.isEmpty() ? null : keyParams.get(0);
+    }
+
+    @Override
+    public Object getValue() {
+        List<Object> values = parameters.get(T.value, null);
+        return values.isEmpty() ? null : values.get(0);
+    }
+
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters);
     }

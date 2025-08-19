@@ -18,10 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -37,11 +42,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,6 +67,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
+    @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
     }
@@ -168,8 +169,12 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     }
 
     @Override
-    public String getLabel() {
-        return parameters.get(T.label, ()->"Edge").get(0);
+    public Object getLabel() {
+        Object label = parameters.get(T.label, () -> Vertex.DEFAULT_LABEL).get(0);
+        if (label instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) label).next();
+        }
+        return label;
     }
 
     @Override

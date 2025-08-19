@@ -79,7 +79,7 @@ public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GVa
     }
 
     @Override
-    public Step<S, S> asConcreteStep() {
+    public IsStep<S> asConcreteStep() {
         //TODO:: does the predicate need any altering?
         IsStep<S> step = new IsStep<>(traversal, predicate);
         TraversalHelper.copyLabels(this, step, false);

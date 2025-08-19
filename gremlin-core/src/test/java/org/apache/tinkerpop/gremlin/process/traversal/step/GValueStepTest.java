@@ -18,15 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public abstract class GValueStepTest extends StepTest {
 
@@ -43,6 +47,29 @@ public abstract class GValueStepTest extends StepTest {
     public void testGValuesAreTracked() {
         for (Pair<Traversal, Set<String>> gValueTraversal : getGValueTraversals()) {
             assertEquals(gValueTraversal.getRight(), gValueTraversal.getLeft().asAdmin().getGValueManager().getVariableNames());
+        }
+    }
+    
+    protected void verifyNoVariables(GraphTraversal.Admin<?, ?> traversal) {
+        verifyVariables(traversal, Set.of(), Set.of());
+    }
+
+    protected void verifySingleUnpinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
+        verifyVariables(traversal, Set.of(), Set.of(variableName));
+    }
+
+    protected void verifySinglePinnedVariable(GraphTraversal.Admin<?, ?> traversal, String variableName) {
+        verifyVariables(traversal, Set.of(variableName), Set.of());
+    }
+
+    protected void verifyVariables(GraphTraversal.Admin<?, ?> traversal, Set<String> pinnedVariables, Set<String> unpinnedVariables) {
+        GValueManager gValueManager = traversal.getGValueManager();
+        assertEquals(pinnedVariables, gValueManager.getPinnedVariableNames());
+        assertEquals(unpinnedVariables, gValueManager.getUnpinnedVariableNames());
+        if (!unpinnedVariables.isEmpty()) {
+            assertTrue(gValueManager.hasUnpinnedVariables());
+        } else {
+            assertFalse(gValueManager.hasUnpinnedVariables());
         }
     }
 }

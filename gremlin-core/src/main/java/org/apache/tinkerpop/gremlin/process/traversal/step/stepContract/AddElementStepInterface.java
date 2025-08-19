@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyAdding;
 import java.util.HashSet;
 
 public interface AddElementStepInterface<S, E> extends Step<S, E>, PropertyAdding, TraversalParent, Scoping {
-    String getLabel();
+    Object getLabel();
 
     Object getElementId();
 

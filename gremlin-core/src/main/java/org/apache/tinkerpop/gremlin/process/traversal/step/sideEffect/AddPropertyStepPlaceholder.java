@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddPropertyStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -34,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -44,9 +44,21 @@ import java.util.Set;
 public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
         implements AddPropertyStepInterface<S>, GValueHolder<S, S> {
 
+    /**
+     * property key
+     */
     private Object key;
+    /**
+     * property value
+     */
     private GValue<?> value;
+    /**
+     * cardinality of the property
+     */
     private VertexProperty.Cardinality cardinality;
+    /**
+     * meta-properties of the property
+     */
     private Map<Object, List<Object>> properties = new HashMap<>();
 
     public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
@@ -84,12 +96,33 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("GValueHolder is not executable");
+        throw new IllegalStateException("AddPropertyStepPlaceholder is not executable");
     }
 
     @Override
     public VertexProperty.Cardinality getCardinality() {
         return cardinality;
+    }
+
+    @Override
+    public Object getKey() {
+        return key;
+    }
+
+    @Override
+    public Object getValue() {
+        if (value != null) {
+            traversal.getGValueManager().pinVariable(value.getName());
+            return value.get();
+        }
+        return null;
+    }
+
+    /**
+     * Get the value without pinning the variable.
+     */
+    public Object getValueGValueSafe() {
+        return value == null ? null : value.get();
     }
 
     @Override
@@ -145,16 +178,9 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Collection<GValue<?>> getGValues() {
-        Set<GValue<?>> gValues = new HashSet<>();
+        Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
         if (value.isVariable()) {
             gValues.add(value);
-        }
-        for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
-            for (final Object propertyVal : entry.getValue()) {
-                if (propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable()) {
-                    gValues.add((GValue<?>) propertyVal);
-                }
-            }
         }
         return gValues;
     }
@@ -175,18 +201,12 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        for (List<Object> list : properties.values()) {
-            for (Object value : list) {
-                if (value instanceof GValue) {
-                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
-                }
-            }
-        }
-        return properties;
+        return GValueHelper.resolveProperties(properties,
+                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return properties;
+        return GValueHelper.resolveProperties(properties);
     }
 
     @Override

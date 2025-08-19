@@ -32,9 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
-/**
- * @author Matt Frantz (http://github.com/mhfrantz)
- */
 public final class TailLocalStepPlaceholder<S> extends AbstractStep<S, S> implements TailLocalStepInterface<S>, GValueHolder<S, S> {
 
     private GValue<Long> limit;
@@ -76,7 +73,7 @@ public final class TailLocalStepPlaceholder<S> extends AbstractStep<S, S> implem
     }
 
     @Override
-    public Step<S, S> asConcreteStep() {
+    public TailLocalStep<S> asConcreteStep() {
         TailLocalStep<S> step = new TailLocalStep<>(traversal, limit.get());
         TraversalHelper.copyLabels(this, step, false);
         return step;

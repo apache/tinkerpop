@@ -21,9 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map; //TODO:: reloca
 import java.util.List;
 import java.util.Map;
 
-//TODO:: consider new names
 public interface PropertyAdding {
     void addProperty(Object key, Object value);
-    public Map<Object, List<Object>> getProperties();
-    public void removeProperty(Object k);
+    Map<Object, List<Object>> getProperties();
+    void removeProperty(Object k);
 }

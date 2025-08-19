@@ -30,12 +30,12 @@ public interface RangeLocalStepInterface<S> extends Step<S, S> {
      *
      * @return the value representing the lower bound of the range
      */
-    public Long getLowRange();
+    Long getLowRange();
 
     /**
      * Retrieves the higher bound of the range.
      *
      * @return the higher bound of the range as an object of type V
      */
-    public Long getHighRange();
+    Long getHighRange();
 }

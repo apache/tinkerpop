@@ -67,7 +67,7 @@ public class AddVertexStartStepPlaceholder extends AbstractAddElementStepPlaceho
     }
 
     @Override
-    public Step asConcreteStep() {
+    public AddVertexStartStep asConcreteStep() {
         AddVertexStartStep step = new AddVertexStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
         super.configureConcreteStep(step);
         return step;
