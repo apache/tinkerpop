@@ -22,9 +22,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
@@ -67,6 +70,50 @@ public class AddEdgeStepTest extends GValueStepTest {
                 Pair.of(__.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a",  GValue.of("prop", "b")), Set.of("label", "from", "to", "prop")),
                 Pair.of(__.addE("knows").from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a",  GValue.of("prop", "b")), Set.of("from", "to", "prop"))
         );
+    }
+
+
+    @Test
+    public void shouldRemoveElementIdFromAddEdgeStep() {
+        final AddEdgeStep<Object> step = new AddEdgeStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.setElementId("edge123");
+        assertEquals("edge123", step.getElementId());
+
+        step.removeElementId();
+        assertNull(step.getElementId());
+    }
+
+    @Test
+    public void shouldRemoveElementIdFromAddEdgeStepWhenIdIsNull() {
+        final AddEdgeStep<Object> step = new AddEdgeStep<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        assertNull(step.getElementId());
+
+        step.removeElementId();
+        assertNull(step.getElementId());
+    }
+
+    @Test
+    public void shouldRemoveElementIdFromAddEdgeStartStep() {
+        final AddEdgeStartStep step = new AddEdgeStartStep(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.setElementId("startEdge123");
+        assertEquals("startEdge123", step.getElementId());
+
+        step.removeElementId();
+        assertNull(step.getElementId());
+    }
+
+    @Test
+    public void shouldRemoveElementIdFromAddEdgeStepPlaceholder() {
+        final AddEdgeStepPlaceholder<Object> step = new AddEdgeStepPlaceholder<>(
+                new DefaultGraphTraversal<>(EmptyGraph.instance()).asAdmin(), "knows");
+        step.setElementId("placeholderEdge123");
+        assertEquals("placeholderEdge123", step.getElementId());
+
+        step.removeElementId();
+        assertNull(step.getElementId());
     }
 
     @Test

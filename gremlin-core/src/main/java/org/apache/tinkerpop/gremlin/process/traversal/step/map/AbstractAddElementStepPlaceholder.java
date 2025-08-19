@@ -241,6 +241,11 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
+    public void removeElementId() {
+        elementId = null;
+    }
+
+    @Override
     public void setElementId(Object elementId) {
         this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
         this.traversal.getGValueManager().register(this.elementId);

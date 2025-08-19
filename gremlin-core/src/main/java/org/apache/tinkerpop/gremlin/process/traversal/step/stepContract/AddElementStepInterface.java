@@ -32,6 +32,8 @@ public interface AddElementStepInterface<S, E> extends Step<S, E>, PropertyAddin
 
     void setElementId(Object elementId);
 
+    void removeElementId();
+
     @Override
     default HashSet<PopInstruction> getPopInstructions() {
         return TraversalParent.super.getPopInstructions();

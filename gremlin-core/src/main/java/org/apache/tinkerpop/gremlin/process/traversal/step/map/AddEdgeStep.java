@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.stepContract.AddEdgeStepInterface;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -38,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,7 +96,8 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public Object getElementId() {
-        return this.parameters.get(T.id, null);
+        List<Object> ids = this.parameters.get(T.id, null);
+        return ids.isEmpty() ? null : ids.get(0);
     }
 
     @Override
@@ -223,6 +222,13 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
     @Override
     public void removeProperty(Object k) {
         parameters.remove(k);
+    }
+
+    @Override
+    public void removeElementId() {
+        if (this.parameters.contains(T.id)) {
+            this.parameters.remove(T.id);
+        }
     }
 
     @Override
