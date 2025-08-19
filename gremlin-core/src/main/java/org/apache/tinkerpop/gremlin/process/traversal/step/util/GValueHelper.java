@@ -2,6 +2,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +56,7 @@ public class GValueHelper {
     }
 
     /**
-     * Extracts a set of {@link GValue}s found from the given property map that can contain values that are {@link GValue}s.
+     * Extracts a mutable set of {@link GValue}s found from the given property map that can contain values that are {@link GValue}s.
      * It is assumed that the property keys are not {@link GValue}s.
      *
      * @param properties map of properties which may have values which are {@link GValue}s
@@ -66,6 +67,6 @@ public class GValueHelper {
                 .flatMap(List::stream)
                 .filter(propertyVal -> propertyVal instanceof GValue && ((GValue<?>) propertyVal).isVariable())
                 .map(obj -> (GValue<?>) obj)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(HashSet::new));
     }
 }

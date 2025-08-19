@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
@@ -201,6 +202,16 @@ public class AddEdgeStepTest extends GValueStepTest {
     }
 
     @Test
+    public void getFromUsingConstantTraversal() {
+        GraphTraversal.Admin<Object, Edge> traversal = __.addE(GValue.of("label", "likes"))
+                .from(new ConstantTraversal<>(1))
+                .to(GValue.of("to", 2))
+                .asAdmin();
+        assertEquals(1, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getFrom())).id());
+        verifyVariables(traversal, Set.of(), Set.of("label", "to"));
+    }
+
+    @Test
     public void getToShouldPinVariable() {
         GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
         assertEquals(2, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getTo())).id());
@@ -212,6 +223,16 @@ public class AddEdgeStepTest extends GValueStepTest {
         GraphTraversal.Admin<Object, Edge> traversal = getAddEdgeGValueTraversal();
         assertEquals(2, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getToGValueSafe())).id());
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
+    }
+
+    @Test
+    public void getToUsingConstantTraversal() {
+        GraphTraversal.Admin<Object, Edge> traversal = __.addE(GValue.of("label", "likes"))
+                .to(new ConstantTraversal<>(1))
+                .from(GValue.of("from", 2))
+                .asAdmin();
+        assertEquals(1, ((Vertex) (((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getTo())).id());
+        verifyVariables(traversal, Set.of(), Set.of("label", "from"));
     }
 
     @Test

@@ -83,7 +83,10 @@ public interface AddEdgeStepInterface<S> extends TraversalParent, Scoping, FromT
             }
             return new ReferenceVertex(vertexTraversal.next());
         }
-        // anything other than a GValueConstantTraversal is returned as-is
+        if (vertexTraversal instanceof ConstantTraversal) {
+            return new ReferenceVertex(vertexTraversal.next());
+        }
+        // anything other than a ConstantTraversal is returned as-is
         return vertexTraversal;
     }
 }
