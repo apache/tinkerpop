@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -301,6 +302,70 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     /**
+     * Added for TINKERPOP-3181 - this scenario would have previously closed the connection pool and left us with
+     * {@link NoHostAvailableException} just because a single connection failed on {@link Client} initialization while
+     * others succeeded.
+     */
+    @Test
+    public void shouldSucceedWithSingleConnectionFailureOnInit() throws Exception {
+        // set the min connection pool size to 4 so that they all get created on init as that's the area we want to
+        // test host availability behavior
+        final Cluster cluster = TestClientFactory.build().minConnectionPoolSize(4).maxConnectionPoolSize(4).
+                reconnectInterval(1000).
+                maxWaitForConnection(4000).validationRequest("g.inject()").create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        // we let 3 connections succeed but then fail on the 4th
+        final SingleFailConnectionFactory connectionFactory = new SingleFailConnectionFactory(3);
+        client.connectionFactorySupplier = () -> connectionFactory;
+
+        // prior to 3.7.5, we would have seen this pop an exception and close the pool with error like:
+        // Could not initialize 4 (minPoolSize) connections in pool. Successful connections=3. Closing the connection pool.
+        // which doesn't really make sense because 3 prior connection were good. perhaps this fourth one just had a
+        // very temporary network issue. the other 3 could technically still be serviceable. the 4th shouldn't end
+        // connectivity and assume the host is dead as ultimately closing the pool at this point in init will end in
+        // NoHostAvailableException.
+        //
+        // Starting at 3.7.5, we can allow a bit more failure here before killing the pool for just a single connection
+        // failure. we might be below min pool size at init but we log that warning and expect fast recovery from the
+        // driver in the best case and in the worst case, normal processes of reconnect kick in and stabilize.
+        client.init();
+
+        assertEquals(3, connectionFactory.getConnectionsCreated());
+
+        // load up a hella ton of requests
+        final int requests = 1000;
+        final CountDownLatch latch = new CountDownLatch(requests);
+        final AtomicBoolean hadFail = new AtomicBoolean(false);
+
+        new Thread(() -> {
+            IntStream.range(0, requests).forEach(i -> {
+                try {
+                    client.submitAsync("1 + " + i);
+                } catch (Exception ex) {
+                    // we could catch a TimeoutException here in some cases if the jitters cause a borrow of a
+                    // connection to take too long. submitAsync() will wrap in a RuntimeException. can't assert
+                    // this condition inside this thread or the test locks up
+                    hadFail.compareAndSet(false, true);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }, "worker-shouldSucceedWithSingleConnectionFailureOnInit").start();
+
+        // wait for requests to complete
+        assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
+
+        // we can send some requests because we have 3 created connections
+        assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
+
+        // not expecting any failures
+        assertThat(hadFail.get(), is(false));
+
+        cluster.close();
+    }
+
+    /**
      * Introduces random failures when creating a {@link Connection} for the {@link ConnectionPool}.
      */
     public static class JitteryConnectionFactory implements ConnectionFactory {
@@ -327,6 +392,37 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 throw new ConnectionException(pool.host.getHostUri(),
                         new SSLHandshakeException("SSL on the funk - server is big mad with the jitters"));
             }
+
+            return ConnectionFactory.super.create(pool);
+        }
+    }
+
+    /**
+     * Introduces a failure after the specified number of {@link Connection} instance are created for the
+     * {@link ConnectionPool}.
+     */
+    public static class SingleFailConnectionFactory implements ConnectionFactory {
+
+        private int connectionsCreated = 0;
+        private int failAfter;
+        private boolean failedOnce = false;
+
+        public SingleFailConnectionFactory(final int failAfter) {
+            this.failAfter = failAfter;
+        }
+
+        public int getConnectionsCreated() {
+            return connectionsCreated;
+        }
+
+        @Override
+        public Connection create(final ConnectionPool pool) {
+            if (!failedOnce && connectionsCreated == failAfter) {
+                failedOnce = true;
+                throw new ConnectionException(pool.host.getHostUri(),
+                        new SSLHandshakeException("We big mad on purpose"));
+            }
+            connectionsCreated++;
 
             return ConnectionFactory.super.create(pool);
         }

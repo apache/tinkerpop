@@ -148,21 +148,30 @@ final class ConnectionPool {
             logger.warn("Initialization of connections cancelled for {}", this.getPoolInfo(), ce);
             throw ce;
         } catch (CompletionException ce) {
-            // Some connections might have been initialized. Close the connection pool gracefully to close them.
-            this.closeAsync();
+            // Some connections might have been initialized, let's respect those as of 3.7.5
+            if (connections.isEmpty()) {
+                // Close the connection pool since we have zero connections
+                this.closeAsync();
 
-            final String errMsg = "Could not initialize " + minPoolSize + " (minPoolSize) connections in pool." +
-                    " Successful connections=" + this.connections.size() +
-                    ". Closing the connection pool.";
+                final String errMsg = "Could not initialize " + minPoolSize + " (minPoolSize) connections in pool for "
+                        + this.host + ". " +
+                        " Successful connections=" + this.connections.size() +
+                        ". Closing the connection pool.";
 
-            Throwable cause;
-            Throwable result = ce;
+                Throwable cause;
+                Throwable result = ce;
 
-            if (null != (cause = result.getCause())) {
-                result = cause;
+                if (null != (cause = result.getCause())) {
+                    result = cause;
+                }
+
+                throw new CompletionException(errMsg, result);
+            } else {
+                // warn that the error may have the driver below the min pool size. expect recovery, but no point
+                // going to NoHostAvailableException for potentially a single connection error.
+                logger.warn("ConnectionPool for " + this.host + " initialized with " + connections.size() +
+                                " expected minPoolSize was " + minPoolSize + " - will attempt to recover", ce);
             }
-
-            throw new CompletionException(errMsg, result);
         }
 
         logger.info("Opening connection pool on {} with core size of {}", host, minPoolSize);
