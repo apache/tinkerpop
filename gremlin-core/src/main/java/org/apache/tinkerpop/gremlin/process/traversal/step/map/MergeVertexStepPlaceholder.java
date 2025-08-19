@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -28,8 +27,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -111,6 +112,13 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
         return mergeTraversal;
     }
 
+    public Traversal.Admin getMergeTraversalGValueSafe() {
+        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getConstantTraversal();
+        }
+        return mergeTraversal;
+    }
+
     @Override
     public Traversal.Admin getOnCreateTraversal() {
         if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
@@ -120,13 +128,27 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
         return onCreateTraversal;
     }
 
-    @Override
-    public Traversal.Admin getOnMatchTraversal() {
+    public Traversal.Admin getOnCreateTraversalGValueSafe() {
         if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getGValue().getName());
             return ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getConstantTraversal();
         }
         return onCreateTraversal;
+    }
+
+    @Override
+    public Traversal.Admin getOnMatchTraversal() {
+        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getGValue().getName());
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getConstantTraversal();
+        }
+        return onMatchTraversal;
+    }
+
+    public Traversal.Admin getOnMatchTraversalGValueSafe() {
+        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
+            return ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getConstantTraversal();
+        }
+        return onMatchTraversal;
     }
 
     @Override
@@ -194,7 +216,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
     }
 
     @Override
-    public Step<S, Vertex> asConcreteStep() {
+    public MergeVertexStep<S> asConcreteStep() {
         MergeVertexStep<S> step = new MergeVertexStep<>(traversal, isStart,
                 mergeTraversal instanceof GValueConstantTraversal ?
                         ((GValueConstantTraversal) mergeTraversal).getConstantTraversal() : mergeTraversal);
@@ -253,12 +275,15 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
         throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
     }
 
+    /**
+     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}.
+     */
     @Override
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
-        if (value instanceof GValue) { //TODO could value come in as a traversal?
+        if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);
         }
         if (properties.containsKey(key)) {
@@ -269,18 +294,12 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        for (List<Object> list : properties.values()) {
-            for (Object value : list) {
-                if (value instanceof GValue) {
-                    traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
-                }
-            }
-        }
-        return properties;
+        return GValueHelper.resolveProperties(properties,
+                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
     public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return properties;
+        return GValueHelper.resolveProperties(properties);
     }
 
     @Override

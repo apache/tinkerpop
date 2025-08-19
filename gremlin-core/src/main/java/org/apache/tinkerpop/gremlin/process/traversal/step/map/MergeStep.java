@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
@@ -397,6 +398,9 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
         this.onMatchTraversal = integrateChild(onMatchTraversal);
     }
 
+    /**
+     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}.
+     */
     @Override
     public void addProperty(Object key, Object value) {
         if (properties.containsKey(key)) {
@@ -407,8 +411,9 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(properties);
+        return GValueHelper.resolveProperties(properties);
     }
+
 
     @Override
     public boolean removeProperty(Object k) {

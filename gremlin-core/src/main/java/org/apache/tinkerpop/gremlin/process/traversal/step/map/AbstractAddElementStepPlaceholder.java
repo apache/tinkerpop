@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -33,7 +32,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
