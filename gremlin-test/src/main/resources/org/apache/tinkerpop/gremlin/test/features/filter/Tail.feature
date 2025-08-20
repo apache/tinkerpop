@@ -103,11 +103,11 @@ Feature: Step - tail()
       | d[7].l |
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().as("a").out().as("a").select("a").by(__.unfold().values("name").fold()).tail(Scope.local, 1)
+      g.V().as("a").out().as("a").out().as("a").select("a").by(__.unfold().values("name").fold()).tail(Scope.local, 1).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -116,11 +116,11 @@ Feature: Step - tail()
       | lop |
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().as("a").out().as("a").select("a").by(__.unfold().values("name").fold()).tail(Scope.local)
+      g.V().as("a").out().as("a").out().as("a").select("a").by(__.unfold().values("name").fold()).tail(Scope.local).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -166,11 +166,11 @@ Feature: Step - tail()
       | m[{"c":"lop"}] |
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.unfold().values("name").fold()).tail(Scope.local, 1)
+      g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.unfold().values("name").fold()).tail(Scope.local, 1).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -179,11 +179,11 @@ Feature: Step - tail()
       | lop |
 
   @GraphComputerVerificationReferenceOnly
-  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX
+  Scenario: g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold
     Given the modern graph
     And the traversal of
       """
-      g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.unfold().values("name").fold()).tail(Scope.local)
+      g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.unfold().values("name").fold()).tail(Scope.local).unfold()
       """
     When iterated to list
     Then the result should be unordered
@@ -198,7 +198,7 @@ Feature: Step - tail()
       """
       g.V().as("a").out().as("a").out().as("a").select(Pop.mixed, "a").by(__.limit(Scope.local, 0)).tail(Scope.local, 1)
       """
-    When iterated to list
+    When iterated next
     Then the result should be empty
 
   @GraphComputerVerificationReferenceOnly
@@ -225,3 +225,64 @@ Feature: Step - tail()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  # Test consistent collection output for tail(local) - single element should return collection
+  Scenario: g_injectXlistX1_2_3XX_tailXlocal_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3]).tail(Scope.local, 1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[3].i] |
+
+  # Test that Map local tail 1 - should still return single entry
+  Scenario: g_injectXa1_b2_c3X_tailXlocal_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(["a": 1, "b": 2, "c": 3]).tail(Scope.local, 1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"c": 3}] |
+
+  # Test unfold() can be used to extract single elements from collections for tail
+  Scenario: g_injectX1_2_3X_tailXlocal_1X_unfold
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3]).tail(Scope.local, 1).unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].i |
+
+  # Test tail(local) with multiple collections
+  Scenario: g_injectX1_2_3_4_5_6X_tailXlocal_1X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3], [4, 5, 6]).tail(Scope.local, 1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[3].i] |
+      | l[d[6].i] |
+
+  # Test tail(local) with multiple elements from collections
+  Scenario: g_injectX1_2_3_4_5X_tailXlocal_2X
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject([1, 2, 3, 4, 5]).tail(Scope.local, 2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[d[4].i,d[5].i] |
