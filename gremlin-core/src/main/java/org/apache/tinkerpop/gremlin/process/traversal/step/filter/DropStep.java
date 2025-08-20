@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
@@ -61,18 +60,5 @@ public class DropStep<S> extends FilterStep<S> implements Deleting<Event> {
     public CallbackRegistry<Event> getMutatingCallbackRegistry() {
         if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
         return callbackRegistry;
-    }
-
-    /**
-     * This method doesn't do anything as {@code drop()} doesn't take property mutation arguments.
-     */
-    @Override
-    public void configure(final Object... keyValues) {
-        // do nothing
-    }
-
-    @Override
-    public Parameters getParameters() {
-        return Parameters.EMPTY;
     }
 }

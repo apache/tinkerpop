@@ -141,10 +141,9 @@ Feature: Step - reverse()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_reverse
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).reverse()
+      g.inject([3,"three"]).reverse()
       """
     When iterated to list
     Then the result should be unordered

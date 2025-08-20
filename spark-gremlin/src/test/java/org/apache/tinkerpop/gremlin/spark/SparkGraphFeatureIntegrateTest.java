@@ -158,6 +158,11 @@ public class SparkGraphFeatureIntegrateTest {
                 put(Constants.SPARK_KRYO_REGISTRATION_REQUIRED, true);
             }};
         }
+
+        @Override
+        public boolean useParametersLiterally() {
+            return false;
+        }
     }
 
     public static final class WorldInjectorSource implements InjectorSource {

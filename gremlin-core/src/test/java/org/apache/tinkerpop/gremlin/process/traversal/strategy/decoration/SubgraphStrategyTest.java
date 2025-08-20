@@ -24,22 +24,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -50,8 +47,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
@@ -64,7 +62,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -213,5 +210,101 @@ public class SubgraphStrategyTest {
         }
     }
 
+    /**
+     * Tests that GValueManager is being used correctly in SubgraphStrategy
+     * to ensure that GValue state is properly maintained when steps are modified.
+     */
+    @RunWith(Parameterized.class)
+    public static class GValueTest {
 
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin<?, ?> traversal;
+
+        @Parameterized.Parameter(value = 1)
+        public SubgraphStrategy strategy;
+
+        @Parameterized.Parameter(value = 2)
+        public Set<String> expectedVariables;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            // Create a default SubgraphStrategy
+            final SubgraphStrategy defaultStrategy = SubgraphStrategy.build()
+                    .vertices(__.has("vertex"))
+                    .edges(__.has("edge"))
+                    .create();
+
+            return Arrays.asList(new Object[][]{
+                    // Basic vertex steps with GValue edge labels
+                    {
+                            __.V().hasLabel("person").out(GValue.of("x", "knows")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    {
+                            __.V().hasLabel("person").both(GValue.of("x", "created")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    {
+                            __.V().hasLabel("person").in(GValue.of("x", "created")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    // Multiple GValue edge labels
+                    {
+                            __.V().hasLabel("person").out(GValue.of("x", "knows"), GValue.of("y", "created")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x", "y"))
+                    },
+                    // Edge steps with GValue
+                    {
+                            __.V().hasLabel("person").outE(GValue.of("x", "knows")).inV().asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    {
+                            __.V().hasLabel("person").inE(GValue.of("x", "created")).outV().asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    {
+                            __.V().hasLabel("person").bothE(GValue.of("x", "created")).otherV().asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    // Filter steps with GValue
+                    {
+                            __.V().hasLabel(GValue.of("x", "person")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x"))
+                    },
+                    // Complex traversals with GValue
+                    {
+                            __.V().hasLabel("person").out(GValue.of("x", "knows")).out(GValue.of("y", "created")).asAdmin(),
+                            defaultStrategy,
+                            new HashSet<>(Arrays.asList("x", "y"))
+                    },
+                    // Filter with GValue in predicate
+                    {
+                            __.V().has("age", GValue.of("x", P.gt(30))).asAdmin(),
+                            SubgraphStrategy.build()
+                                    .vertices(__.has("vertex"))
+                                    .edges(__.has("edge"))
+                                    .create(),
+                            new HashSet<>(Arrays.asList("x"))
+                    }
+            });
+        }
+
+        @Test
+        public void shouldMaintainGValueState() {
+            // Verify that expected variables exist before applying the strategy
+            GValueManagerVerifier.verify(traversal, strategy)
+                    .beforeApplying()
+                    .hasVariables(expectedVariables)
+                    .afterApplying()
+                    .variablesArePreserved();
+        }
+    }
 }

@@ -39,9 +39,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Handles the logic of traversing to adjacent vertices or edges given a direction and edge labels for steps like,
+ * {@code out}, {@code in}, {@code both}, {@code outE}, {@code inE}, and {@code bothE}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring, VertexStepContract<E> {
 
     protected Parameters parameters = new Parameters();
     private final String[] edgeLabels;
@@ -72,26 +75,38 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
                 (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
     }
 
+    @Override
     public Direction getDirection() {
         return this.direction;
     }
 
+    @Override
     public String[] getEdgeLabels() {
         return this.edgeLabels;
     }
 
+    @Override
     public Class<E> getReturnClass() {
         return this.returnClass;
     }
 
+    @Override
     public void reverseDirection() {
         this.direction = this.direction.opposite();
     }
 
+    /**
+     * Determines if the step returns vertices.
+     */
+    @Override
     public boolean returnsVertex() {
         return this.returnClass.equals(Vertex.class);
     }
 
+    /**
+     * Determines if the step returns edges.
+     */
+    @Override
     public boolean returnsEdge() {
         return this.returnClass.equals(Edge.class);
     }

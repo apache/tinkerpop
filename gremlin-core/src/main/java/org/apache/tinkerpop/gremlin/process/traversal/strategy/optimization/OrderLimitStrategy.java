@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -84,19 +85,21 @@ public final class OrderLimitStrategy extends AbstractTraversalStrategy<Traversa
 
         final List<OrderGlobalStep> orders = TraversalHelper.getStepsOfClass(OrderGlobalStep.class, traversal);
         for (final OrderGlobalStep order : orders) {
-            RangeGlobalStep range = null;
+            RangeGlobalStepContract range = null;
             Step<?, ?> currentStep = order.getNextStep();
             while (true) {
-                if (currentStep instanceof RangeGlobalStep) {
-                    range = (RangeGlobalStep) currentStep;
+                if (currentStep instanceof RangeGlobalStepContract) {
+                    range = (RangeGlobalStepContract) currentStep;
                     break;
                 } else if (!LEGAL_STEPS.contains(currentStep.getClass()))
                     break;
                 else
                     currentStep = currentStep.getNextStep();
             }
-            if (null != range)
+
+            if (null != range) {
                 order.setLimit(range.getHighRange());
+            }
         }
     }
 

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
@@ -41,9 +42,10 @@ import java.util.List;
 /**
  * A strategy that raises events when {@link Mutating} steps are encountered and successfully executed.
  * <p/>
- * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
- * an {@code IllegalStateException} will be thrown. Finally, this strategy is meant for use on the JVM only and has
- * no analogous implementation in other Gremlin Language Variants.
+ * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance and does not support steps
+ * which have been parameterized with GValues.  If these conditions are not met, an {@code IllegalStateException} will
+ * be thrown. Finally, this strategy is meant for use on the JVM only and has no analogous implementation in other
+ * Gremlin Language Variants.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -71,6 +73,12 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final EventStrategyCallback callback = new EventStrategyCallback(eventQueue);
+        TraversalHelper.getStepsOfAssignableClass(GValueHolder.class, traversal).forEach(s -> {
+            if(s.isParameterized()) {
+                throw new IllegalStateException("EventStrategy cannot be used with parameterized steps");
+            }
+            s.reduce(); // reduce GValue placeholder to concrete step
+        });
         TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.getMutatingCallbackRegistry().addCallback(callback));
     }
 

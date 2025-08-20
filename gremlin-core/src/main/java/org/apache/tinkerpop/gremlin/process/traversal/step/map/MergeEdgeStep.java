@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -52,7 +53,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 /**
  * Implementation for the {@code mergeE()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
+public class MergeEdgeStep<S> extends MergeStep<S, Edge, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
@@ -67,11 +68,11 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
         super(traversal, isStart);
     }
 
-    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         super(traversal, isStart, merge);
     }
 
-    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
+    public MergeEdgeStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map<Object, Object>> mergeTraversal) {
         super(traversal, isStart, mergeTraversal);
     }
 
@@ -92,7 +93,7 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
     }
 
     @Override
-    public void addChildOption(final Merge token, final Traversal.Admin<S, Object> traversalOption) {
+    public void addChildOption(final Merge token, final Traversal.Admin<S, Map<Object, Object>> traversalOption) {
         if (token == Merge.outV) {
             this.outVTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.inV) {
@@ -425,5 +426,4 @@ public class MergeEdgeStep<S> extends MergeStep<S, Edge, Object> {
             return v;
         }
     }
-
 }

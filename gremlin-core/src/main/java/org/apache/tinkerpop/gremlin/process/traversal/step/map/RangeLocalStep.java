@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -37,10 +38,10 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
+public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeLocalStepContract<S> {
 
-    private final long low;
-    private final long high;
+    private long low;
+    private long high;
 
     public RangeLocalStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
@@ -51,14 +52,15 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
         this.high = high;
     }
 
-    public long getLowRange() {
+    @Override
+    public Long getLowRange() {
         return this.low;
     }
- 
-    public long getHighRange() {
+
+    @Override
+    public Long getHighRange() {
         return this.high;
-    } 
- 
+    }
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
@@ -151,7 +153,7 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.high) ^ Long.hashCode(this.low);
+        return super.hashCode() ^ Long.hashCode(this.low) ^ Long.hashCode(this.high);
     }
 
     @Override

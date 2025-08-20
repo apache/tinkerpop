@@ -31,11 +31,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -51,76 +54,160 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(Parameterized.class)
+@RunWith(Enclosed.class)
 public class PathProcessorStrategyTest {
     private static final Translator.ScriptTranslator translator = GroovyTranslator.of("__");
     private static final Collection<TraversalStrategy> withProductiveByStrategy =
             Stream.concat(Stream.of(ProductiveByStrategy.instance()),
                           TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList().stream()).collect(Collectors.toList());
 
-    @Parameterized.Parameter(value = 0)
-    public Traversal.Admin original;
+    @RunWith(Parameterized.class)
+    public static class StandardTest {
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin original;
 
-    @Parameterized.Parameter(value = 1)
-    public Traversal optimized;
+        @Parameterized.Parameter(value = 1)
+        public Traversal optimized;
 
-    @Parameterized.Parameter(value = 2)
-    public Collection<TraversalStrategy> otherStrategies;
+        @Parameterized.Parameter(value = 2)
+        public Collection<TraversalStrategy> otherStrategies;
 
-    @Test
-    public void doTest() {
-        final String repr = translator.translate(original.getBytecode()).getScript();
-        final Traversal.Admin<?, ?> rootTraversal = new DefaultGraphTraversal<>();
-        final TraversalParent parent = new TraversalVertexProgramStep(rootTraversal, this.original.asAdmin());
-        rootTraversal.addStep(parent.asStep());
-        this.original.asAdmin().setParent(parent); // trick it into OLAP
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(PathProcessorStrategy.instance());
-        for (final TraversalStrategy strategy : this.otherStrategies) {
-            strategies.addStrategies(strategy);
+        @Test
+        public void doTest() {
+            final String repr = translator.translate(original.getBytecode()).getScript();
+            final Traversal.Admin<?, ?> rootTraversal = new DefaultGraphTraversal<>();
+            final TraversalParent parent = new TraversalVertexProgramStep(rootTraversal, this.original.asAdmin());
+            rootTraversal.addStep(parent.asStep());
+            this.original.asAdmin().setParent(parent); // trick it into OLAP
+            final TraversalStrategies strategies = new DefaultTraversalStrategies();
+            strategies.addStrategies(PathProcessorStrategy.instance());
+            for (final TraversalStrategy strategy : this.otherStrategies) {
+                strategies.addStrategies(strategy);
+            }
+            this.original.asAdmin().setStrategies(strategies);
+            this.original.asAdmin().applyStrategies();
+            assertEquals(repr, this.optimized, this.original);
         }
-        this.original.asAdmin().setStrategies(strategies);
-        this.original.asAdmin().applyStrategies();
-        assertEquals(repr, this.optimized, this.original);
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    // select("a")
+                    {__.select("a"), __.select("a"), Collections.emptyList()},
+                    {__.select("a").by(), __.select("a").by(), Collections.emptyList()},
+                    {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count()), Collections.emptyList()},
+                    {__.select("a").by("name"), __.select("a").map(new ValueTraversal<>("name")), Collections.emptyList()},
+                    {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
+                    {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
+                    {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
+                    {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
+                    {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by("name"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    // select("a","b")
+                    {__.select("a", "b"), __.select("a", "b"), Collections.emptyList()},
+                    {__.select("a", "b").by(), __.select("a", "b").by(), Collections.emptyList()},
+                    {__.select("a", "b", "c").by(), __.select("a", "b", "c").by(), Collections.emptyList()},
+                    {__.select("a", "b").by().by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new IdentityTraversal<>()).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select("a", "b").by("name").by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
+                    {__.select("a", "b", "c").by("name").by(__.outE().count()), __.select("c").map(new ValueTraversal<>("name")).as("c").select("b").map(__.outE().count()).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b", "c"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
+                    {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age"), Collections.emptyList()},
+                    {__.select(Pop.mixed, "a", "b").by("name").by("age"), __.select(Pop.mixed, "a", "b").by("name").by("age"), Collections.emptyList()},
+                    // where(as("a")...)
+                    {__.where(__.out("knows")), __.where(__.outE("knows")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.where(__.as("a").out("knows")), __.identity().as("xyz").select(Pop.last, "a").filter(__.out("knows")).select(Pop.last, "xyz"), Collections.emptyList()},
+                    {__.where(__.as("a").has("age", P.gt(10))), __.identity().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select("b").where(__.as("a").has("age", P.gt(10))), __.select("b").as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.where(__.as("a").out("knows").as("b")), __.identity().as("xyz").select(Pop.last, "a").where(__.out("knows").as("b")).select(Pop.last, "xyz"), Collections.emptyList()},
+                    {__.where("a", P.eq("b")), __.where("a", P.eq("b")), Collections.emptyList()},
+                    {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in(), __.as("a").out().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz").in(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), __.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
+                    {__.select("a", "b").where(__.as("c").out("knows")), __.identity().as("xyz").select(Pop.last, "c").where(__.out("knows")).select("xyz").select(Pop.last, "a", "b"), Collections.emptyList()},
+            });
+        }
     }
 
+    /**
+     * Tests that GValueManager.copyParams is being called correctly in PathProcessorStrategy
+     * such that the newly added steps have the same parameters that previous ones had.
+     */
+    @RunWith(Parameterized.class)
+    public static class GValueTest {
+        @Parameterized.Parameter(value = 0)
+        public Traversal.Admin<?, ?> traversal;
 
-    @Parameterized.Parameters(name = "{0}")
-    public static Iterable<Object[]> generateTestParameters() {
+        @Parameterized.Parameter(value = 1)
+        public String[] expectedNames;
 
-        return Arrays.asList(new Object[][]{
-                // select("a")
-                {__.select("a"), __.select("a"), Collections.emptyList()},
-                {__.select("a").by(), __.select("a").by(), Collections.emptyList()},
-                {__.select("a").by(__.outE().count()), __.select("a").map(__.outE().count()), Collections.emptyList()},
-                {__.select("a").by("name"), __.select("a").map(new ValueTraversal<>("name")), Collections.emptyList()},
-                {__.select("a").out(), __.select("a").out(), Collections.emptyList()},
-                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
-                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
-                {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").by(new ValueTraversal<>("name", coalesce(new ValueTraversal<>("name"), new ConstantTraversal(null)).asAdmin())), withProductiveByStrategy},
-                {__.select(Pop.all, "a").by(__.values("name")), __.select(Pop.all, "a").by("name"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.last, "a").by(__.values("name")), __.select(Pop.last, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.first, "a").by(__.values("name")), __.select(Pop.first, "a").map(__.values("name")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                // select("a","b")
-                {__.select("a", "b"), __.select("a", "b"), Collections.emptyList()},
-                {__.select("a", "b").by(), __.select("a", "b").by(), Collections.emptyList()},
-                {__.select("a", "b", "c").by(), __.select("a", "b", "c").by(), Collections.emptyList()},
-                {__.select("a", "b").by().by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new IdentityTraversal<>()).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select("a", "b").by("name").by("age"), __.select("b").map(new ValueTraversal<>("age")).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
-                {__.select("a", "b", "c").by("name").by(__.outE().count()), __.select("c").map(new ValueTraversal<>("name")).as("c").select("b").map(__.outE().count()).as("b").select("a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b", "c"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.first, "a", "b").by("name").by("age"), __.select(Pop.first, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.first, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), Collections.emptyList()},
-                {__.select(Pop.last, "a", "b").by("name").by("age"), __.select(Pop.last, "b").map(new ValueTraversal<>("age")).as("b").select(Pop.last, "a").map(new ValueTraversal<>("name")).as("a").select(Pop.last, "a", "b"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select(Pop.all, "a", "b").by("name").by("age"), __.select(Pop.all, "a", "b").by("name").by("age"), Collections.emptyList()},
-                {__.select(Pop.mixed, "a", "b").by("name").by("age"), __.select(Pop.mixed, "a", "b").by("name").by("age"), Collections.emptyList()},
-                // where(as("a")...)
-                {__.where(__.out("knows")), __.where(__.outE("knows")), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.where(__.as("a").out("knows")), __.identity().as("xyz").select(Pop.last, "a").filter(__.out("knows")).select(Pop.last, "xyz"), Collections.emptyList()},
-                {__.where(__.as("a").has("age", P.gt(10))), __.identity().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.select("b").where(__.as("a").has("age", P.gt(10))), __.select("b").as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz"), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.where(__.as("a").out("knows").as("b")), __.identity().as("xyz").select(Pop.last, "a").where(__.out("knows").as("b")).select(Pop.last, "xyz"), Collections.emptyList()},
-                {__.where("a", P.eq("b")), __.where("a", P.eq("b")), Collections.emptyList()},
-                {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in(), __.as("a").out().as("xyz").select(Pop.last, "a").has("age", P.gt(10)).select(Pop.last, "xyz").in(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-                {__.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), __.as("a").out().where(__.as("a").has("age", P.gt(10))).in().path(), TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
-        });
+        @Parameterized.Parameter(value = 2)
+        public Collection<TraversalStrategy> additionalStrategies;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {
+                        __.select("a").by(__.out(GValue.of("x", "knows"))).asAdmin(),
+                        new String[]{"x"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.select("a", "b").by(__.out(GValue.of("y", "knows"))).by(__.in(GValue.of("z", "created"))).asAdmin(),
+                        new String[]{"y", "z"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.select(Pop.last, "a").by(__.out(GValue.of("w", "knows"))).asAdmin(),
+                        new String[]{"w"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.where(__.outE(GValue.of("x","knows"))).asAdmin(),
+                        new String[]{"x"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.where(__.as("a").outE(GValue.of("x","knows"))).asAdmin(),
+                        new String[]{"x"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.where(__.as("a").has("age", P.gt(GValue.ofInteger("x", 10)))).asAdmin(),
+                        new String[]{"x"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.where(__.as("a").has("age", P.gt(GValue.ofInteger("x", 10)))).asAdmin(),
+                        new String[]{"x"},
+                        TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList(),
+                    },
+                    {
+                        __.select("a", "b").where(__.as("c").out(GValue.of("x", "knows"))).asAdmin(),
+                        new String[]{"x"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.select("a", "b").where(__.as("c").out(GValue.of("x", "knows"), GValue.of("y", "created"))).asAdmin(),
+                        new String[]{"x", "y"},
+                        Collections.emptyList(),
+                    },
+                    {
+                        __.select("a", "b").where(__.as("c").out(GValue.of("x", "knows"), GValue.of("y", "created"))).asAdmin(),
+                        new String[]{"x", "y"},
+                        TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList(),
+                    }
+            });
+        }
+
+        @Test
+        public void shouldPreserveGValueParameters() {
+            GValueManagerVerifier.verify(traversal, PathProcessorStrategy.instance())
+                    .beforeApplying()
+                        .hasVariables(expectedNames)
+                    .afterApplying()
+                        .hasVariables(expectedNames)
+                        .variablesArePreserved();
+        }
     }
 }

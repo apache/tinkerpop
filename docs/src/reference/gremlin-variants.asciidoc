@@ -878,6 +878,33 @@ GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cli
 IMPORTANT: Prefer GraphBinary over GraphSON when using the driver. If you do choose GraphSON, prefer GraphSON 3 and
 know that GraphSON 2 is not compatible with <<subgraph-step>.
 
+[[gremlin-java-gvalue]]
+=== GValue Parameterization
+
+A `GValue` is an encapsulation of a parameter name and value. The GValue class has a series of static methods to
+construct GValues of various types from a given parameter name and value. Some of the most common examples are listed
+below, see the
+link:++https://tinkerpop.apache.org/javadocs/x.y.z/full/org/apache/tinkerpop/gremlin/process/traversal/step/GValue.html#method.summary++[Javadocs]
+for a complete listing.
+
+[source,java]
+----
+GValue<String> stringArg = GValue.ofString("name", "value");
+GValue<Integer> intArg = GValue.ofInteger("name", 1);
+GValue<Map> mapArg = GValue.ofMap("name", Collections.emptyMap());
+GValue<?> autoTypedArg = GValue.of("name", "value"); // GValue will attempt to automatically detect correct type
+----
+
+A <<traversal-parameterization,subset of gremlin steps>> are able to accept `GValues`. When constructing a
+`GraphTraversal` with such steps in Java, a GValue may be passed in the traversal to utilize a parameter in place of a
+literal.
+
+[source,java]
+----
+g.V().has("name", GValue.ofString("name", "marko"));
+g.mergeV(GValue.ofMap("vertexPattern", Collections.singletonMap("name", "marko")));
+----
+
 [[gremlin-java-lambda]]
 === The Lambda Solution
 

@@ -70,6 +70,21 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E()"
     And the graph should return 1 for count of "g.V()"
 
+  Scenario: g_V_mergeE_inlineXemptyX_optionXonCreate_nullX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And the traversal of
+      """
+      g.V().as("v").mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV]).option(Merge.onCreate,null).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.E()"
+    And the graph should return 1 for count of "g.V()"
+
   Scenario: g_mergeEXemptyX_exists
     Given the empty graph
     And the graph initializer of
@@ -116,6 +131,22 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.E()"
     And the graph should return 2 for count of "g.V()"
 
+  Scenario: g_V_mergeE_inlineXemptyX_two_exist
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And the traversal of
+      """
+      g.V().as("v").mergeE([T.label:"self",(OUT):Merge.outV,(IN):Merge.inV]).option(Merge.outV,select("v")).option(Merge.inV,select("v"))
+      """
+    When iterated to list
+    Then the result should have a count of 2
+    And the graph should return 2 for count of "g.E()"
+    And the graph should return 2 for count of "g.V()"
+
   # null same as empty
   Scenario: g_mergeEXnullX
     Given the empty graph
@@ -126,6 +157,36 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.mergeE(null)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  @GremlinGroovyNotSupported
+  Scenario: g_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.mergeE(xx1)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "Out Vertex not specified"
+
+  @GremlinGroovyNotSupported
+  Scenario: g_V_limitX1X_mergeEXnullvarX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29)
+      """
+    And using the parameter xx1 defined as "null"
+    And the traversal of
+      """
+      g.V().limit(1).mergeE(xx1)
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Out Vertex not specified"
@@ -299,17 +360,17 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 2 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  Scenario: g_injectXlabel_knows_out_marko_in_vadasX_mergeE
+   Scenario: g_withSideEffectXlabel_knows_out_marko_in_vadasX_injectX1X_selectXmX_mergeE
     Given the empty graph
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1).mergeE()
+      g.inject(1).select("m").mergeE()
       """
     When iterated to list
     Then the result should have a count of 1
@@ -481,18 +542,18 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_self_out_vadas_in_vadasX
+  Scenario: g_withSideEffectXm1_label_knows_out_marko_in_vadas_m2_label_self_out_vadas_in_vadasX_unionXselectXm1X_selectXm2XX_mergeE
     Given the empty graph
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeE()
+      g.union(select("m1"), select("m2")).mergeE()
       """
     When iterated to list
     Then the result should have a count of 2
@@ -544,6 +605,24 @@ Feature: Step - mergeE()
     And the graph should return 2 for count of "g.V()"
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
+  Scenario: g_mergeE_inline_with_outVinV_options_map
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+        addV("person").property("name", "vadas")
+      """
+    And using the parameter xx1 defined as "m[{\"t[id]\": \"v[marko].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[id]\": \"v[vadas].id\"}]"
+    And the traversal of
+      """
+      g.mergeE([(OUT):Merge.outV,(IN):Merge.inV,T.label:"knows"]).option(outV, xx1).option(inV, xx2)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
+
   Scenario: g_mergeE_with_outVinV_options_select
     Given the empty graph
     And the graph initializer of
@@ -557,6 +636,24 @@ Feature: Step - mergeE()
     And the traversal of
       """
       g.V(vid1).as("x").V(vid2).as("y").mergeE(xx1).option(outV, select("x")).option(inV, select("y"))
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
+
+  Scenario: g_mergeE_inline_with_outVinV_options_select
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").
+       addV("person").property("name", "vadas")
+      """
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And the traversal of
+      """
+      g.V(vid1).as("x").V(vid2).as("y").mergeE([(OUT):Merge.outV,(IN):Merge.inV,T.label:"knows"]).option(outV, select("x")).option(inV, select("y"))
       """
     When iterated to list
     Then the result should have a count of 1
@@ -767,7 +864,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
     And the graph should return 0 for count of "g.V().has(\"weight\")"
 
-  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_match
+    Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_match
     Given the empty graph
     And the graph initializer of
       """
@@ -784,11 +881,10 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And using the side effect m defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.union(select("m"), select("m"), constant([created: "N"])).
         fold().
         mergeE(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).
@@ -801,7 +897,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().has(\"created\",\"N\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").has(\"created\",\"N\").inV().has(\"person\",\"name\",\"vadas\")"
 
-  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_create
+   Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2XX_optionXonMatch_tailXlocalXX_to_create
     Given the empty graph
     And the graph initializer of
       """
@@ -818,11 +914,10 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And using the side effect m defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.union(select("m"), select("m"), constant([created:"N"])).
         fold().
         mergeE(__.limit(Scope.local,1)).
           option(Merge.onCreate, __.range(Scope.local, 1, 2)).

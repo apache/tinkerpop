@@ -18,10 +18,13 @@
  */
 package ${package};
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.remote.EmbeddedRemoteConnection;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 
 import org.junit.Test;
 
@@ -44,6 +47,14 @@ public class SocialDslTest {
     public void shouldGetAgeOfYoungestFriendOfMarko() {
         assertEquals(27, social.V().has("name","marko").youngestFriendsAge().next().intValue());
         assertEquals(27, social.persons("marko").youngestFriendsAge().next().intValue());
+    }
+
+    @Test
+    public void shouldAllowToUseLocalGraphAsRemoteWithParameter() {
+        final Graph graph = EmptyGraph.instance();
+        final GraphTraversalSource g = graph.traversal();
+        final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
+        assertEquals(33, simulatedRemoteG.inject(GValue.of(null, 11), GValue.of("x", 22)).sum().next());
     }
 
     @Test

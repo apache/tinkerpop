@@ -29,17 +29,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -115,12 +115,12 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         while (!(step instanceof EmptyStep)) {
             if (step instanceof FilterStep || step instanceof SideEffectStep)
                 step = step.getPreviousStep();
-            else if (step instanceof GraphStep && ((GraphStep) step).returnsVertex())
+            else if (step instanceof GraphStepContract && ((GraphStepContract) step).returnsVertex())
                 return 'v';
             else if (step instanceof EdgeVertexStep)
                 return 'v';
-            else if (step instanceof VertexStep)
-                return ((VertexStep) step).returnsVertex() ? 'v' : 'p';
+            else if (step instanceof VertexStepContract)
+                return ((VertexStepContract) step).returnsVertex() ? 'v' : 'p';
             else if (step instanceof PropertyMapStep || step instanceof PropertiesStep)
                 return 'p';
             else
@@ -137,34 +137,33 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             return;
         }
 
-        final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
-        final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
+        final List<GraphStepContract> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStepContract.class, traversal);
+        final List<VertexStepContract> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStepContract.class, traversal);
         if (null != this.vertexCriterion) {
             final List<Step> vertexStepsToInsertFilterAfter = new ArrayList<>();
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
-            vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
-            vertexStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsVertex).collect(Collectors.toList()));
+            vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStepContract.class, traversal));
+            vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStepContract::returnsVertex).collect(Collectors.toList()));
+            vertexStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStepContract::returnsVertex).collect(Collectors.toList()));
             applyCriterion(vertexStepsToInsertFilterAfter, traversal, s -> Optional.of(this.vertexCriterion.clone()));
         }
 
         if (null != this.edgeCriterion || checkAdjacentVertices) {
             final List<Step> edgeStepsToInsertFilterAfter = new ArrayList<>();
-            edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
-            edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
-            edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
+            edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStepContract.class, traversal));
+            edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStepContract::returnsEdge).collect(Collectors.toList()));
+            edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStepContract::returnsEdge).collect(Collectors.toList()));
             applyCriterion(edgeStepsToInsertFilterAfter, traversal, s -> {
                 if (checkAdjacentVertices && this.vertexCriterion != null) {
-                    if (s instanceof VertexStep) {
+                    if (s instanceof VertexStepContract) {
                         // based on the directionality of the step choose the appropriate filter direction to apply.
                         // we scan skip AddEdgeStep, because its vertices must be in the Subgraph for it to even work.
-                        final Direction d = ((VertexStep) s).getDirection();
+                        final Direction d = ((VertexStepContract) s).getDirection();
                         final Traversal.Admin<Edge, ? extends Element> vertexPredicate;
                         vertexPredicate = getVertexPredicateGivenDirection(d);
                         return applyVertexPredicate(vertexPredicate);
-                    } else if (s instanceof GraphStep) {
+                    } else if (s instanceof GraphStepContract) {
                         // for E() we need to test both incident vertices as there is no directionality
                         final Traversal.Admin<Edge, ? extends Element> vertexPredicate = __.<Edge>and(
                                 __.inV().filter(this.vertexCriterion.clone()),
@@ -184,15 +183,17 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         }
 
         // turn g.V().out() to g.V().outE().inV() only if there is an edge predicate
-        for (final VertexStep<?> step : vertexSteps) {
+        for (final VertexStepContract<?> step : vertexSteps) {
             if (step.returnsEdge())
                 continue;
 
             if (edgeCriterion != null) {
-                final VertexStep<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
+                final VertexStepContract<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
                 final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
+
+                // TODO:: preserve GValues from out() to outE() for example
 
                 TraversalHelper.replaceStep((Step<Vertex, Edge>) step, someEStep, traversal);
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);

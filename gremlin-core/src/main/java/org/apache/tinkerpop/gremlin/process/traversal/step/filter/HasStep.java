@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, Configuring {
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder<S, S>, Configuring {
 
     private final Parameters parameters = new Parameters();
     private List<HasContainer> hasContainers;

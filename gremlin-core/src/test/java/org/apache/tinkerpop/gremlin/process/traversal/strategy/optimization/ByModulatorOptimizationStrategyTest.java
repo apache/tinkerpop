@@ -22,11 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -177,17 +176,12 @@ public class ByModulatorOptimizationStrategyTest {
         return originalAndOptimized;
     }
 
-    private void applyByModulatorOptimizationStrategy(final Traversal traversal) {
-        final TraversalStrategies strategies = new DefaultTraversalStrategies();
-        strategies.addStrategies(ByModulatorOptimizationStrategy.instance());
-        traversal.asAdmin().setStrategies(strategies);
-        traversal.asAdmin().applyStrategies();
-    }
-
     @Test
     public void doTest() {
         final String repr = translator.translate(original.getBytecode()).getScript();
-        applyByModulatorOptimizationStrategy(original);
+        GValueManagerVerifier.verify(original.asAdmin(), ByModulatorOptimizationStrategy.instance())
+                .afterApplying()
+                .managerIsEmpty();
         assertEquals(repr, optimized, original);
     }
 }

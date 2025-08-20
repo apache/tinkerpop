@@ -41,10 +41,10 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>> {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>>, RangeGlobalStepContract<S> {
 
     private long low;
-    private final long high;
+    private long high;
     private AtomicLong counter = new AtomicLong(0l);
     private boolean bypass;
 
@@ -103,12 +103,12 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     }
 
     @Override
-    public long getLowRange() {
+    public Long getLowRange() {
         return this.low;
     }
 
     @Override
-    public long getHighRange() {
+    public Long getHighRange() {
         return this.high;
     }
 

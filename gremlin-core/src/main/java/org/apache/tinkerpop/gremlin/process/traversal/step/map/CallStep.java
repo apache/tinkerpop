@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -54,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCall
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStep<S, E> extends AbstractStep<S, E> implements TraversalParent, AutoCloseable, Configuring {
+public final class CallStep<S, E> extends AbstractStep<S, E> implements AutoCloseable, CallStepContract<S, E> {
 
     private final boolean isStart;
     private boolean first = true;
@@ -92,7 +90,8 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         this.parameters = new Parameters();
     }
 
-    protected Service<S, E> service() {
+    @Override
+    public Service<S, E> service() {
         // throws exception for unrecognized service
         return service != null ? service : (service = getServiceRegistry().get(serviceName, isStart, staticParams));
     }
@@ -101,6 +100,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         return ctx != null ? ctx : (ctx = new ServiceCallContext(traversal, this));
     }
 
+    @Override
     public String getServiceName() {
         return serviceName;
     }
@@ -199,6 +199,7 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         this.iterator = EmptyCloseableIterator.instance();
     }
 
+    @Override
     public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
@@ -260,7 +261,8 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements Traversa
         return service().execute(this.ctx(), traverserSet, params);
     }
 
-    protected ServiceRegistry getServiceRegistry() {
+    @Override
+    public ServiceRegistry getServiceRegistry() {
         final Graph graph = (Graph) this.traversal.getGraph().get();
         return graph.getServiceRegistry();
     }

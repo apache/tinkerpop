@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.BytecodeHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -338,6 +339,12 @@ public class Bytecode implements Cloneable, Serializable {
                 set.add(convertArgument(item, true));
             }
             return set;
+        } else if (argument instanceof GValue) {
+            final String variable = ((GValue<?>) argument).getName();
+            final Object value = ((GValue<?>) argument).get();
+            return variable == null
+                    ? convertArgument(value, searchBindings)
+                    : new Binding<>(variable, convertArgument(value, false));
         } else
             return argument;
     }

@@ -63,10 +63,9 @@ Feature: Step - split()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXcX_splitXa_bX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
       """
-      g.inject(xx1).split("a")
+      g.inject(["a","b"]).split("a")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The split() step can only take string as argument"

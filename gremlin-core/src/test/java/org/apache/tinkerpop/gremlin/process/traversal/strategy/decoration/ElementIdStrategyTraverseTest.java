@@ -23,11 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -90,12 +89,10 @@ public class ElementIdStrategyTraverseTest {
         strategy.apply(traversal.asAdmin());
 
         final Step step = (Step) traversal.asAdmin().getSteps().get(expectedInsertedSteps);
-        if (step instanceof AddVertexStep)
-            assertThat(repr, ((AddVertexStep) step).getParameters().contains(strategy.getIdPropertyKey()));
-        else if (step instanceof AddVertexStartStep)
-            assertThat(repr, ((AddVertexStartStep) step).getParameters().contains(strategy.getIdPropertyKey()));
-        else if (step instanceof AddEdgeStep)
-            assertThat(repr, ((AddEdgeStep) step).getParameters().contains(strategy.getIdPropertyKey()));
+        if (step instanceof AddVertexStepContract)
+            assertThat(repr, ((AddVertexStepContract) step).getProperties().containsKey(strategy.getIdPropertyKey()));
+        else if (step instanceof AddEdgeStepContract)
+            assertThat(repr, ((AddEdgeStepContract) step).getProperties().containsKey(strategy.getIdPropertyKey()));
         else if (step instanceof PropertiesStep)
             assertEquals(repr, strategy.getIdPropertyKey(), ((PropertiesStep) step).getPropertyKeys()[0]);
         else
