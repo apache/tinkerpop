@@ -86,7 +86,7 @@ def test_client_simple_eval(client):
 
 
 def test_client_simple_eval_bindings(client):
-    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
+    assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
 def test_client_eval_traversal(client):
@@ -118,7 +118,7 @@ def test_client_error(client):
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
     # still can submit after failure
-    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
+    assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
 def test_bad_serialization(client):
@@ -132,7 +132,7 @@ def test_bad_serialization(client):
         assert str(ex) == f"{ex.status_code}: {ex.status_message}"
 
     # still can submit after failure
-    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
+    assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
 def test_client_connection_pool_after_error(client):
@@ -149,7 +149,7 @@ def test_client_connection_pool_after_error(client):
         assert client.available_pool_size == 1
 
     # still can submit after failure
-    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4
+    assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
 def test_client_no_hang_if_submit_on_closed(client):
@@ -184,7 +184,7 @@ def test_client_side_timeout_set_for_aiohttp(client):
         assert str(err) == ""
 
     # still can submit after failure
-    assert client.submit('g.inject(x).math("_+_")', {'x': 2}).all().result()[0] == 4.0
+    assert client.submit('g.V(x).values("age")', {'x': 1}).all().result()[0] == 29
 
 
 async def async_connect(enable):

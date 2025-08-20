@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -42,20 +41,16 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>> {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>>, RangeGlobalStepContract<S> {
 
-    private GValue<Long> low;
-    private final GValue<Long> high;
+    private long low;
+    private long high;
     private AtomicLong counter = new AtomicLong(0l);
     private boolean bypass;
 
     public RangeGlobalStep(final Traversal.Admin traversal, final long low, final long high) {
-        this(traversal, GValue.ofLong(null, low), GValue.ofLong(null, high));
-    }
-
-    public RangeGlobalStep(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
-        if (low.get() != -1 && high.get() != -1 && low.get() > high.get()) {
+        if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + ']');
         }
         this.low = low;
@@ -66,12 +61,12 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
 
-        if (this.high.get() != -1 && this.counter.get() >= this.high.get()) {
+        if (this.high != -1 && this.counter.get() >= this.high) {
             throw FastNoSuchElementException.instance();
         }
 
         long avail = traverser.bulk();
-        if (this.counter.get() + avail <= this.low.get()) {
+        if (this.counter.get() + avail <= this.low) {
             // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
             this.counter.getAndAdd(avail);
             return false;
@@ -80,13 +75,13 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         // Skip for the low and trim for the high. Both can happen at once.
 
         long toSkip = 0;
-        if (this.counter.get() < this.low.get()) {
-            toSkip = this.low.get() - this.counter.get();
+        if (this.counter.get() < this.low) {
+            toSkip = this.low - this.counter.get();
         }
 
         long toTrim = 0;
-        if (this.high.get() != -1 && this.counter.get() + avail >= this.high.get()) {
-            toTrim = this.counter.get() + avail - this.high.get();
+        if (this.high != -1 && this.counter.get() + avail >= this.high) {
+            toTrim = this.counter.get() + avail - this.high;
         }
 
         long toEmit = avail - toSkip - toTrim;
@@ -104,17 +99,17 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.low.get(), this.high.get());
+        return StringFactory.stepString(this, this.low, this.high);
     }
 
     @Override
-    public long getLowRange() {
-        return this.low.get();
+    public Long getLowRange() {
+        return this.low;
     }
 
     @Override
-    public long getHighRange() {
-        return this.high.get();
+    public Long getHighRange() {
+        return this.high;
     }
 
     @Override
@@ -126,14 +121,14 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.low.get()) ^ Long.hashCode(this.high.get());
+        return super.hashCode() ^ Long.hashCode(this.low) ^ Long.hashCode(this.high);
     }
 
     @Override
     public boolean equals(final Object other) {
         if (super.equals(other)) {
             final RangeGlobalStep typedOther = (RangeGlobalStep) other;
-            return typedOther.low.get() == this.low.get() && typedOther.high.get() == this.high.get();
+            return typedOther.low == this.low && typedOther.high == this.high;
         }
         return false;
     }
@@ -146,7 +141,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new RangeBiOperator<>(this.high.get()), false, true);
+        return MemoryComputeKey.of(this.getId(), new RangeBiOperator<>(this.high), false, true);
     }
 
     @Override

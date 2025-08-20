@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -35,15 +35,11 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
+public final class TailLocalStep<S> extends ScalarMapStep<S, S> implements TailLocalStepContract<S> {
 
-    private final GValue<Long> limit;
+    private final long limit;
 
     public TailLocalStep(final Traversal.Admin traversal, final long limit) {
-        this(traversal, GValue.ofLong(null, limit));
-    }
-
-    public TailLocalStep(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
     }
@@ -60,23 +56,27 @@ public final class TailLocalStep<S> extends ScalarMapStep<S, S> {
                                 start instanceof Path ? ((Path) start).size() :
                                         start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
                                                 IteratorUtils.count(IteratorUtils.asIterator(start));
-        final long low = high - this.limit.get();
+        final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
         return result;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.limit.get());
+        return StringFactory.stepString(this, this.limit);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.limit.get());
+        return super.hashCode() ^ Long.hashCode(this.limit);
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
+    }
+
+    public Long getLimit() {
+        return limit;
     }
 }

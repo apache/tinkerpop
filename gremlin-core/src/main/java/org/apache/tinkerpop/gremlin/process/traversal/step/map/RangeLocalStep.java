@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -38,37 +38,34 @@ import java.util.Set;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
+public final class RangeLocalStep<S> extends ScalarMapStep<S, S> implements RangeLocalStepContract<S> {
 
-    private final GValue<Long> low;
-    private final GValue<Long> high;
+    private long low;
+    private long high;
 
     public RangeLocalStep(final Traversal.Admin traversal, final long low, final long high) {
-        this(traversal, GValue.ofLong(null, low), GValue.ofLong(null, high));
-    }
-
-    public RangeLocalStep(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
-        if (low.get() != -1 && high.get() != -1 && low.get() > high.get()) {
+        if (low != -1 && high != -1 && low > high) {
             throw new IllegalArgumentException("Not a legal range: [" + low + ", " + high + ']');
         }
         this.low = low;
         this.high = high;
     }
 
-    public long getLowRange() {
-        return this.low.get();
+    @Override
+    public Long getLowRange() {
+        return this.low;
     }
- 
-    public long getHighRange() {
-        return this.high.get();
-    } 
- 
+
+    @Override
+    public Long getHighRange() {
+        return this.high;
+    }
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
-        return applyRange(start, this.low.get(), this.high.get());
+        return applyRange(start, this.low, this.high);
     }
 
     /**
@@ -135,12 +132,12 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.low.get(), this.high.get());
+        return StringFactory.stepString(this, this.low, this.high);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.high.get()) ^ Long.hashCode(this.low.get());
+        return super.hashCode() ^ Long.hashCode(this.low) ^ Long.hashCode(this.high);
     }
 
     @Override

@@ -20,27 +20,13 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
-import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -52,9 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -177,7 +160,7 @@ public class ArgumentVisitorTest {
         } else if (clazz.equals(Object.class)) {
             assertParsing(() -> {
                 final GremlinParser.GenericArgumentContext ctx = parser.genericArgument();
-                return antlrToLanguage.argumentVisitor.parseObject(ctx);
+                return antlrToLanguage.argumentVisitor.visitGenericArgument(ctx);
             });
         } else if (clazz.equals(List.class)) {
             assertParsing(() -> {

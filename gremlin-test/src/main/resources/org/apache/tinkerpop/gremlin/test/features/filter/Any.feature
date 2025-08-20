@@ -71,10 +71,9 @@ Feature: Step - any()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXabc_bcdX_anyXeqXbcdXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[abc,bcd]"
     And the traversal of
       """
-      g.inject(xx1).any(P.eq("bcd"))
+      g.inject(["abc","bcd"]).any(P.eq("bcd"))
       """
     When iterated to list
     Then the result should be unordered
@@ -84,10 +83,9 @@ Feature: Step - any()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_abcX_anyXTextP_startingWithXaXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,abc]"
     And the traversal of
       """
-      g.inject(xx1).any(TextP.startingWith("a"))
+      g.inject([null,"abc"]).any(TextP.startingWith("a"))
       """
     When iterated to list
     Then the result should be unordered
@@ -97,11 +95,9 @@ Feature: Step - any()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX5_8_10_10_7X_anyXeqX7XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[5].i,d[8].i,d[10].i]"
-    And using the parameter xx2 defined as "l[d[10].i,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1,xx2).any(P.eq(7))
+      g.inject([5,8,10],[10,7]).any(P.eq(7))
       """
     When iterated to list
     Then the result should be unordered
@@ -131,10 +127,9 @@ Feature: Step - any()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXnull_nullX_anyXeqXnullXX
     Given the empty graph
-    And using the parameter xx1 defined as "l[null,null]"
     And the traversal of
       """
-      g.inject(xx1).any(P.eq(null))
+      g.inject([null,null]).any(P.eq(null))
       """
     When iterated to list
     Then the result should be unordered
@@ -144,10 +139,9 @@ Feature: Step - any()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_anyXeqX3XX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
     And the traversal of
       """
-      g.inject(xx1).any(P.eq(3))
+      g.inject([3,"three"]).any(P.eq(3))
       """
     When iterated to list
     Then the result should be unordered

@@ -92,10 +92,6 @@ import org.apache.tinkerpop.gremlin.util.ser.Serializers;
         method = "g_withBulkXfalseX_withSackX1_sumX_VX1X_localXoutEXknowsX_barrierXnormSackX_inVX_inXknowsX_barrier_sack",
         reason = "One bulk is currently not supported on GraphComputer")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest",
-        method = "g_injectXg_VX1X_propertiesXnameX_nextX_value",
-        reason = "The inject() step is not supported by GraphComputer")
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest",
         method = "g_injectXnull_10_5_nullX_sum",
         reason = "The inject() step is not supported by GraphComputer")

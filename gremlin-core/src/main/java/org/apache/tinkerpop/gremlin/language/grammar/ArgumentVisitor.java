@@ -20,11 +20,6 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
-import java.lang.reflect.Array;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Objects;
 
@@ -40,60 +35,11 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
-     * Wrapper to visit function for boolean.
-     */
-    public boolean parseBoolean(final GremlinParser.BooleanArgumentContext ctx) {
-        return (boolean) visitBooleanArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for integer types.
-     */
-    public Number parseNumber(final GremlinParser.IntegerArgumentContext ctx) {
-        return (Number) visitIntegerArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for float types.
-     */
-    public Number parseNumber(final GremlinParser.FloatArgumentContext ctx) {
-        return (Number) visitFloatArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for string types.
-     */
-    public String parseString(final GremlinParser.StringArgumentContext ctx) {
-        return (String) visitStringArgument(ctx);
-    }
-
-    /**
-     * Wrapper to visit function for Date type.
-     */
-    public OffsetDateTime parseDate(final GremlinParser.DateArgumentContext ctx) {
-        return (OffsetDateTime) visitDateArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for object types.
-     */
-    public Object parseObject(final GremlinParser.GenericArgumentContext ctx) {
-        return visitGenericArgument(ctx);
-    }
-
-    /**
-     * Wrapper for visit function for {@code Map} types.
-     */
-    public Map parseMap(final GremlinParser.GenericMapArgumentContext ctx) {
-        return (Map) visitGenericMapArgument(ctx);
-    }
-
-    /**
      * Wrapper for visit function for {@code Map} types.
      */
     public Map parseMap(final GremlinParser.GenericMapNullableArgumentContext ctx) {
-        Object literalOrVar = visitGenericMapNullableArgument(ctx);
-        if (GValue.valueInstanceOf(literalOrVar, GType.MAP)) {
+        final Object literalOrVar = visitGenericMapNullableArgument(ctx);
+        if (GValue.valueInstanceOf(literalOrVar, Map.class)) {
             return ((GValue<Map>) literalOrVar).get();
         } else {
             return (Map) literalOrVar;
@@ -115,11 +61,25 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     /**
+     * Parse a string argument varargs, and return an string array
+     */
+    public GValue<String>[] parseStringVarargs(final GremlinParser.StringNullableArgumentVarargsContext varargsContext) {
+        if (varargsContext == null || varargsContext.stringNullableArgument() == null) {
+            return new GValue[0];
+        }
+        return varargsContext.stringNullableArgument()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(antlr.argumentVisitor::parseString)
+                .toArray(GValue[]::new);
+    }
+
+    /**
      * Wrapper to visit function for string types.
      */
     public GValue<String> parseString(final GremlinParser.StringNullableArgumentContext ctx) {
-        Object literalOrVar = visitStringNullableArgument((ctx));
-        if (GValue.valueInstanceOf(literalOrVar, GType.STRING)) {
+        final Object literalOrVar = visitStringNullableArgument((ctx));
+        if (GValue.valueInstanceOf(literalOrVar, String.class)) {
             return (GValue<String>) literalOrVar;
         } else {
             return GValue.ofString(null, (String) literalOrVar);
@@ -135,17 +95,17 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
         if (ctx.integerLiteral() != null) {
             return antlr.genericVisitor.parseIntegral(ctx.integerLiteral()).longValue();
         } else {
-            Object var = visitVariable(ctx.variable());
+            final Object var = visitVariable(ctx.variable());
             if (var instanceof Number) {
                 return ((Number) var).longValue();
             }
-            if (GValue.valueInstanceOf(var, GType.LONG)) {
+            if (GValue.valueInstanceOf(var, Long.class)) {
                 return var;
-            } else if (GValue.valueInstanceOf(var, GType.INTEGER)) {
+            } else if (GValue.valueInstanceOf(var, Integer.class)) {
                 return GValue.ofLong(((GValue<Integer>) var).getName(), ((GValue<Integer>) var).get().longValue());
-            } else if (GValue.valueInstanceOf(var, GType.SHORT)) {
+            } else if (GValue.valueInstanceOf(var, Short.class)) {
                 return GValue.ofLong(((GValue<Short>) var).getName(), ((GValue<Short>) var).get().longValue());
-            } else if (GValue.valueInstanceOf(var, GType.BYTE)) {
+            } else if (GValue.valueInstanceOf(var, Byte.class)) {
                 return GValue.ofLong(((GValue<Byte>) var).getName(), ((GValue<Byte>) var).get().longValue());
             } else {
                 throw new GremlinParserException(String.format("Expected variable [%s] to resolve to an integer type, instead found: %s", ctx.variable().Identifier().getSymbol(), var.getClass().getName()));
@@ -199,6 +159,18 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitStringNullableArgumentVarargs(final GremlinParser.StringNullableArgumentVarargsContext ctx) {
+        if (ctx == null || ctx.stringNullableArgument() == null) {
+            return new Object[0];
+        }
+        return ctx.stringNullableArgument()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(antlr.argumentVisitor::visitStringNullableArgument)
+                .toArray();
+    }
+
+    @Override
     public Object visitDateArgument(final GremlinParser.DateArgumentContext ctx) {
         if (ctx.dateLiteral() != null) {
             return antlr.genericVisitor.parseDate(ctx.dateLiteral());
@@ -232,20 +204,6 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
         } else {
             return visitVariable(ctx.variable());
         }
-    }
-
-    /**
-     * Parse a string literal varargs, and return a string array
-     */
-    public GValue<String>[] parseStringVarargs(final GremlinParser.StringNullableArgumentVarargsContext varargsArgumentContext) {
-        if (varargsArgumentContext == null || varargsArgumentContext.stringNullableArgument() == null) {
-            return new GValue[0];
-        }
-        return varargsArgumentContext.stringNullableArgument()
-                .stream()
-                .filter(Objects::nonNull)
-                .map(antlr.argumentVisitor::parseString)
-                .toArray(GValue[]::new);
     }
 
     @Override

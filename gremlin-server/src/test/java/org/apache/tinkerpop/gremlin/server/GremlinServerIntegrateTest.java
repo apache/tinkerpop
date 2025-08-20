@@ -554,10 +554,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldReturnInvalidRequestArgsWhenBindingCountExceedsAllowable() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
-            bindings.put("x", 123);
-            bindings.put("y", 123);
-            final RequestMessage request = RequestMessage.build("g.withSideEffect('x', x).inject(y).math('x+_')")
-                    .addBindings(bindings).create();
+            bindings.put("x", 1);
+            bindings.put("y", "knows");
+            final RequestMessage request = RequestMessage.build("g.V(x).out(y).values('name')")
+                    .addBindings(bindings).addG("gmodern").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -574,14 +574,14 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
-            bindings.put("x", 123);
-            final RequestMessage request = RequestMessage.build("g.inject(x).math('_+123')")
-                    .addBindings(bindings).create();
+            bindings.put("x", 1);
+            final RequestMessage request = RequestMessage.build("g.V(x).out('knows').values('name')")
+                    .addBindings(bindings).addG("gmodern").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
                 if (HttpResponseStatus.OK == result.getStatus().getCode()) {
-                    pass.set(((double) result.getResult().getData().get(0)) == 246.0);
+                    pass.set((result.getResult().getData().get(0)).equals("vadas"));
                     latch.countDown();
                 }
             });

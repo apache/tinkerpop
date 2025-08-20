@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.remote.traversal;
 
 import org.apache.tinkerpop.gremlin.process.remote.traversal.step.map.RemoteStep;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -59,6 +60,16 @@ public abstract class AbstractRemoteTraversal<S,E> implements RemoteTraversal<S,
 
     @Override
     public GremlinLang getGremlinLang() {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
+    public GValueManager getGValueManager() {
+        throw new UnsupportedOperationException("Remote traversals do not support this method");
+    }
+
+    @Override
+    public void setGValueManager(final GValueManager gValueManager) {
         throw new UnsupportedOperationException("Remote traversals do not support this method");
     }
 

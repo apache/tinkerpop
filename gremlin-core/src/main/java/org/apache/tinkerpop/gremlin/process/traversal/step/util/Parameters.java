@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -166,7 +165,7 @@ public class Parameters implements Cloneable, Serializable {
 
     /**
      * Gets the array of keys/values of the parameters while resolving parameter values that contain
-     * {@link Traversal} or {@link GValue} instances.
+     * {@link Traversal} instances.
      */
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.isEmpty()) return EMPTY_ARRAY;
@@ -174,24 +173,12 @@ public class Parameters implements Cloneable, Serializable {
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             if (!ArrayUtils.contains(exceptKeys, entry.getKey())) {
                 for (final Object value : entry.getValue()) {
-                    keyValues.add(resolve(entry.getKey(), traverser));
-                    keyValues.add(resolve(value, traverser));
+                    keyValues.add(entry.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) entry.getKey()) : entry.getKey());
+                    keyValues.add(value instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) value) : value);
                 }
             }
         }
         return keyValues.toArray(new Object[keyValues.size()]);
-    }
-
-    /**
-     * Takes an object and tests if it is a {@link GValue} or a {@link Traversal} and if so, resolves it to its value
-     * otherwise it just returns itself.
-     */
-    private static <S> Object resolve(final Object object, final Traverser.Admin<S> traverser) {
-        if (object instanceof Traversal.Admin) {
-            return TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) object);
-        } else {
-            return GValue.valueOf(object);
-        }
     }
 
     /**

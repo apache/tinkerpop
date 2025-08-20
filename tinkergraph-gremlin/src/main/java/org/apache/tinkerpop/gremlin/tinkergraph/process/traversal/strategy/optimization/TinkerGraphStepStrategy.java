@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
 
+import java.util.List;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -51,7 +53,8 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
                 if (currentStep instanceof HasStep) {
-                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                    List<HasContainer> hasContainers = ((HasContainerHolder) currentStep).getHasContainers();
+                    for (HasContainer hasContainer : hasContainers) {
                         if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
                             tinkerGraphStep.addHasContainer(hasContainer);
                     }

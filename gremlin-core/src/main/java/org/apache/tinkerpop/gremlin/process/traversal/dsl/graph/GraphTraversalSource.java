@@ -29,14 +29,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IoStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.RequirementsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -317,7 +320,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
     }
 
     /**
@@ -331,7 +334,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabelTraversal);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabelTraversal));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabelTraversal.asAdmin()));
     }
 
     /**
@@ -343,21 +346,21 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, (String) null));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, (String) null));
     }
 
     /**
      * Spawns a {@link GraphTraversal} by adding a vertex with the specified label. If the {@code label} is
      * {@code null} then it will default to {@link Vertex#DEFAULT_LABEL}.
      *
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Vertex, Vertex> addV(final GValue<String> vertexLabel) {
         if (null == vertexLabel) throw new IllegalArgumentException("vertexLabel cannot be null");
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddVertexStartStep(traversal, vertexLabel));
+        return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
     }
 
     /**
@@ -369,7 +372,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddEdgeStartStep(traversal, label));
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, label));
     }
 
     /**
@@ -381,19 +384,19 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, edgeLabelTraversal);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddEdgeStartStep(traversal, edgeLabelTraversal));
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, edgeLabelTraversal.asAdmin()));
     }
 
     /**
      * Spawns a {@link GraphTraversal} by adding an edge with the specified label.
      *
-     * @since 4.0.0
+     * @since 3.8.0
      */
     public GraphTraversal<Edge, Edge> addE(final GValue<String> label) {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addE, label);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new AddEdgeStartStep(traversal, label));
+        return traversal.addStep(new AddEdgeStartStepPlaceholder(traversal, label));
     }
 
     /**
@@ -409,7 +412,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
+        return traversal.addStep(new MergeVertexStepPlaceholder<>(traversal, true, searchCreate));
     }
 
     /**
@@ -427,8 +430,8 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<S, Vertex> traversal = new DefaultGraphTraversal<>(clone);
 
-        final MergeVertexStep<S> step = null == searchCreate ? new MergeVertexStep(traversal, true, (Map) null) :
-                new MergeVertexStep(traversal, true, searchCreate.asAdmin());
+        final MergeVertexStepPlaceholder<S> step = null == searchCreate ? new MergeVertexStepPlaceholder(traversal, true, (Map) null) :
+                new MergeVertexStepPlaceholder(traversal, true, searchCreate.asAdmin());
 
         return traversal.addStep(step);
     }
@@ -440,13 +443,16 @@ public class GraphTraversalSource implements TraversalSource {
      * made it will use that search criteria to create the new {@link Vertex}.
      *
      * @param searchCreate This {@code Map} can have a key of {@link T} or a {@code String}.
-     * @since 4.0.0
+     * @since 3.8.0
      */
-    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<Object, Object>> searchCreate) {
+    public GraphTraversal<Vertex, Vertex> mergeV(final GValue<Map<?, ?>> searchCreate) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeV, searchCreate);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new MergeVertexStep(traversal, true, searchCreate));
+        final MergeVertexStepPlaceholder<Vertex> step = null == searchCreate ? new MergeVertexStepPlaceholder(traversal, true, (Map) null) :
+                new MergeVertexStepPlaceholder(traversal, true, searchCreate);
+
+        return traversal.addStep(step);
     }
 
     /**
@@ -456,11 +462,11 @@ public class GraphTraversalSource implements TraversalSource {
      * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
      * @since 3.6.0
      */
-    public GraphTraversal<Edge, Edge> mergeE(final Map<?, Object> searchCreate) {
+    public GraphTraversal<Edge, Edge> mergeE(final Map<Object, Object> searchCreate) {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
+        return traversal.addStep(new MergeEdgeStepPlaceholder<>(traversal, true, searchCreate));
     }
 
     /**
@@ -475,8 +481,8 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
 
-        final MergeEdgeStep step = null == searchCreate ? new MergeEdgeStep(traversal, true,  (Map) null) :
-                new MergeEdgeStep(traversal, true, searchCreate.asAdmin());
+        final MergeEdgeStepPlaceholder step = null == searchCreate ? new MergeEdgeStepPlaceholder(traversal, true,  (Map) null) :
+                new MergeEdgeStepPlaceholder(traversal, true, searchCreate.asAdmin());
 
         return traversal.addStep(step);
     }
@@ -486,13 +492,16 @@ public class GraphTraversalSource implements TraversalSource {
      * {@code Map} as an argument.
      *
      * @param searchCreate This {@code Map} can have a key of {@link T} {@link Direction} or a {@code String}.
-     * @since 4.0.0
+     * @since 3.8.0
      */
-    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<?, Object>> searchCreate) {
+    public GraphTraversal<Edge, Edge> mergeE(final GValue<Map<Object, Object>> searchCreate) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.mergeE, searchCreate);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new MergeEdgeStep(traversal, true, searchCreate));
+        final MergeEdgeStepPlaceholder<Edge> step = null == searchCreate ? new MergeEdgeStepPlaceholder(traversal, true,  (Map) null) :
+                new MergeEdgeStepPlaceholder(traversal, true, searchCreate);
+
+        return traversal.addStep(step);
     }
 
     /**
@@ -519,7 +528,13 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.V, ids);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, ids));
+        GraphStepContract<Vertex, Vertex> step;
+        if (GValue.containsGValues(ids)) {
+            step = new GraphStepPlaceholder<>(traversal, Vertex.class, true, GValue.ensureGValues(ids));
+        } else {
+            step = new GraphStep<>(traversal, Vertex.class, true, ids);
+        }
+        return traversal.addStep(step);
     }
 
     /**
@@ -534,7 +549,13 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.E, ids);
         final GraphTraversal.Admin<Edge, Edge> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, ids));
+        GraphStepContract<Edge, Edge> step;
+        if (GValue.containsGValues(ids)) {
+            step = new GraphStepPlaceholder<>(traversal, Edge.class, true, GValue.ensureGValues(ids));
+        } else {
+            step = new GraphStep<>(traversal, Edge.class, true, ids);
+        }
+        return traversal.addStep(step);
     }
 
     /**
@@ -620,13 +641,13 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 4.0.0
+     * @since 3.8.0
      */
-    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params) {
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new CallStep<>(traversal, true, service, params));
+        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params));
     }
 
     /**
@@ -635,13 +656,13 @@ public class GraphTraversalSource implements TraversalSource {
      *
      * @param service the name of the service call
      * @param params static parameter map (no nested traversals)
-     * @since 4.0.0
+     * @since 3.8.0
      */
-    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map> params, final Traversal<S, Map> childTraversal) {
+    public <S> GraphTraversal<S, S> call(final String service, final GValue<Map<?,?>> params, final Traversal<S, Map<?,?>> childTraversal) {
         final GraphTraversalSource clone = GraphTraversalSource.this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new CallStep<>(traversal, true, service, params, childTraversal.asAdmin()));
+        return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params, childTraversal.asAdmin()));
     }
 
     /**

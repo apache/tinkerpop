@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 
@@ -31,21 +33,38 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * There are 5 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
- * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
- * That is, decorations are applied, then optimizations, then provider optimizations, then finalizations, and finally, verifications.
- * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
+ * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its
+ * evaluation. There are 5 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy},
+ * {@link ProviderOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * Strategies within a category are sorted amongst themselves, and then category sorts are applied in the ordered
+ * specified previously. That is, decorations are applied, then optimizations, then provider optimizations, then
+ * finalizations, and finally, verifications. If a strategy does not fit within the specified categories, then it can
+ * simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
  * <p/>
- * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to be assigned to more general classes.
- * A traversal strategy should typically be stateless with a public static <code>instance()</code> method.
- * However, at limit, a traversal strategy can have a state defining constructor (typically via a "builder"), but that state can not mutate once instantiated.
+ * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to
+ * be assigned to more general classes. A traversal strategy should typically be stateless with a public static
+ * <code>instance()</code> method. However, at limit, a traversal strategy can have a state-defining constructor
+ * (typically via a "builder"), but that state cannot mutate once instantiated.
+ * <p/>
+ * Given that a traversal strategy can completely rewrite a traversal, it must take into account the
+ * {@link GValueManager} state while doing so. The {@link GValueManager} maintains a record of "pinned" and "free"
+ * variables. When a new traversal is created, all variables are considered free, as any value may be substituted for
+ * a variable without restriction. Strategies may rewrite a traversal in a manner which is valid for the current value
+ * of a {@link GValue}, but would lead to incorrect behaviour if that variable were later updated arbitrarily. An
+ * example of this is {@link EarlyLimitStrategy}, which will replace a traversal such as
+ * `limit(GValue.of("x", 5)).valueMap().range(5, 10)` with simply `discard()`, as the limit and range prevent the
+ * traversal from being productive. This optimization is not generalizable to any values of `x` however, as any value of
+ * `x` greater than 5 is expected to produce results. In cases such as these, the strategy must ensure that the variable
+ * `x` is "pinned" in the {@link GValueManager}, to indicate it is no longer free to be updated arbitrarily.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
 
+    /**
+     * The transformation the strategy applies to the traversal.
+     */
     public void apply(final Traversal.Admin<?, ?> traversal);
 
     /**

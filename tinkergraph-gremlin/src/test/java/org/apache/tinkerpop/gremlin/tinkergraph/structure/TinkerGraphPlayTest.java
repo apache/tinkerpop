@@ -281,12 +281,12 @@ public class TinkerGraphPlayTest {
 
         final Bindings b = se.createBindings();
         b.put("g", g);
-        System.out.println(((GraphTraversal) se.eval("g.V().coin(0.5).count()", b)).toList());
+        System.out.println(((GraphTraversal) se.eval("g.V(1).count()", b)).toList());
 
         b.clear();
         b.put("g", g);
-        b.put("x", 0.5d);
-        System.out.println(((GraphTraversal) se.eval("g.V().coin(x).count()", b)).toList());
+        b.put("x", 1);
+        System.out.println(((GraphTraversal) se.eval("g.V(x).count()", b)).toList());
 
         b.clear();
         b.put("g", g);

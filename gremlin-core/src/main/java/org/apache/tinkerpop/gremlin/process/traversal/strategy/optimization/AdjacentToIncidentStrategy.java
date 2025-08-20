@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -116,9 +117,10 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
      */
     private static void optimizeStep(final Traversal.Admin traversal, final Step step) {
         final Step newStep;
-        if (step instanceof VertexStep) {
-            final VertexStep vs = (VertexStep) step;
-            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabelsGValue());
+        if (step instanceof VertexStepContract) {
+            final VertexStepContract vs = (VertexStepContract) step;
+            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
+            // TODO:: preserve GValue and leave unpinned if vs is a GValueHolder
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());

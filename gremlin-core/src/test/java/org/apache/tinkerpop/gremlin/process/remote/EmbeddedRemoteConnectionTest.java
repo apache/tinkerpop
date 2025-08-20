@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.remote;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -41,6 +42,6 @@ public class EmbeddedRemoteConnectionTest {
         final Graph graph = EmptyGraph.instance();
         final GraphTraversalSource g = graph.traversal();
         final GraphTraversalSource simulatedRemoteG = traversal().with(new EmbeddedRemoteConnection(g));
-        assertEquals(33, simulatedRemoteG.inject(GValue.of(null, 11), GValue.of("x", 22)).sum().next());
+        assertEquals(11, (long) simulatedRemoteG.inject( 11).is(P.eq(GValue.of(11))).next());
     }
 }

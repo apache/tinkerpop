@@ -20,6 +20,7 @@
 import copy
 import math
 import threading
+import uuid
 import warnings
 
 from aenum import Enum
@@ -844,6 +845,9 @@ class GremlinLang(object):
 
         if isinstance(arg, datetime):
             return f'datetime("{arg.isoformat()}")'
+
+        if isinstance(arg, uuid.UUID):
+            return f'UUID("{arg}")'
 
         if isinstance(arg, Enum):
             tmp = str(arg)

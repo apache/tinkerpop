@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -58,6 +59,14 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
+    public GValueManager getGValueManager() {
+        return new GValueManager();
+    }
+
+    @Override
+    public void setGValueManager(final GValueManager gValueManager) { }
+
+    @Override
     public Traversal.Admin<S, E> asAdmin() {
         return this;
     }
@@ -78,19 +87,13 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void applyStrategies() {
-
-    }
+    public void applyStrategies() { }
 
     @Override
-    public void addStarts(final Iterator<Traverser.Admin<S>> starts) {
-
-    }
+    public void addStarts(final Iterator<Traverser.Admin<S>> starts) { }
 
     @Override
-    public void addStart(final Traverser.Admin<S> start) {
-
-    }
+    public void addStart(final Traverser.Admin<S> start) { }
 
     @Override
     public <E2> Traversal.Admin<S, E2> addStep(final Step<?, E2> step) {
@@ -123,8 +126,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setSideEffects(final TraversalSideEffects sideEffects) {
-    }
+    public void setSideEffects(final TraversalSideEffects sideEffects) { }
 
     @Override
     public TraversalStrategies getStrategies() {
@@ -132,9 +134,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setParent(final TraversalParent step) {
-
-    }
+    public void setParent(final TraversalParent step) { }
 
     @Override
     public TraversalParent getParent() {
@@ -142,9 +142,7 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setStrategies(final TraversalStrategies traversalStrategies) {
-
-    }
+    public void setStrategies(final TraversalStrategies traversalStrategies) { }
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> addStep(final int index, final Step<?, ?> step) throws IllegalStateException {
@@ -177,7 +175,5 @@ public final class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     }
 
     @Override
-    public void setGraph(final Graph graph) {
-
-    }
+    public void setGraph(final Graph graph) { }
 }

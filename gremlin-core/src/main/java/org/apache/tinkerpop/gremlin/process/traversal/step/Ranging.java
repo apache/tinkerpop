@@ -23,8 +23,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
  */
 public interface Ranging {
 
-    public long getLowRange();
+    public Long getLowRange();
 
-    public long getHighRange();
+    public Long getHighRange();
 
 }

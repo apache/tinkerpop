@@ -52,8 +52,6 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX();
 
-    public abstract Traversal<VertexProperty<String>, String> get_g_injectXg_VX1X_propertiesXnameX_nextX_value(final Object v1Id);
-
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_propertiesXname_ageX_value() {
@@ -121,14 +119,6 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         assertEquals(4, ids.size());
     }
 
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_injectXg_VX1X_propertiesXnameX_nextX_value() {
-        final Traversal<VertexProperty<String>, String> traversal = get_g_injectXg_VX1X_propertiesXnameX_nextX_value(convertToVertexId(graph, "marko"));
-        printTraversalForm(traversal);
-        checkResults(Collections.singletonList("marko"), traversal);
-    }
-
     public static class Traversals extends PropertiesTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
@@ -148,11 +138,6 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, VertexProperty<String>> get_g_V_hasXageX_propertiesXnameX() {
             return (Traversal<Vertex, VertexProperty<String>>) g.V().has("age").<String>properties("name");
-        }
-
-        @Override
-        public Traversal<VertexProperty<String>, String> get_g_injectXg_VX1X_propertiesXnameX_nextX_value(final Object v1Id) {
-            return g.<VertexProperty<String>>inject((VertexProperty) g.V(v1Id).properties("name").next()).value();
         }
     }
 }

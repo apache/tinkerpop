@@ -591,13 +591,16 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
 
         try {
             final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
-                    addParameter("x", 100).
-                    addParameter("y", "test").
-                    addParameter("z", true).create();
-            final List<Result> l = client.submit("g.inject(x, y, z)", ro).all().get();
-            assertEquals(100, l.get(0).getInt());
-            assertEquals("test", l.get(1).getString());
-            assertTrue(l.get(2).getBoolean());
+                    addG("gmodern").
+                    addParameter("x", 1).
+                    addParameter("y", "knows").
+                    addParameter("z", "created").
+                    addParameter("low", 1).
+                    addParameter("high", 3).create();
+            final List<Result> l = client.submit("g.V(x).out(y, z).values('name').range(low, high)", ro).all().get();
+            assertEquals(2, l.size());
+            assertEquals("josh", l.get(0).getString());
+            assertEquals("lop", l.get(1).getString());
         } finally {
             cluster.close();
         }

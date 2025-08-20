@@ -161,10 +161,9 @@ Feature: Step - asBool()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_2X_asBool
     Given the empty graph
-    And using the parameter xx1 defined as "l[1,2]"
     And the traversal of
       """
-      g.inject(xx1).asBool()
+      g.inject([1,2]).asBool()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"

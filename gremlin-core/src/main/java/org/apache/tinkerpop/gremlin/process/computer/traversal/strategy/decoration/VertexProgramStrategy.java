@@ -80,7 +80,7 @@ public final class VertexProgramStrategy extends AbstractTraversalStrategy<Trave
         Step<?, ?> currentStep = traversal.getEndStep();
         final Set<String> currentLabels = new HashSet<>();
         while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {  // todo: is there a general solution?
+            if (currentStep instanceof VertexComputing && !(currentStep instanceof ProgramVertexProgramStep)) {
                 currentLabels.addAll(currentStep.getLabels());
                 currentStep.clearLabels();
             } else {
