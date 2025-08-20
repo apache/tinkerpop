@@ -509,7 +509,7 @@ The `GremlinLangScriptEngine` has been modified to treat float literals without 
 or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
 `GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
 
-==== Consistent Collection Output for range(), limit(), and tail() Local Steps
+==== Consistent Output for range(), limit(), tail()
 
 The `range(local)`, `limit(local)`, and `tail(local)` steps now consistently return collections rather than automatically 
 unfolding single-element results when operating on iterable collections (List, Set, etc.). Previously, when these steps 
@@ -518,6 +518,14 @@ instead of a collection containing that element.
 
 This change ensures predictable return types based on the input type, making the behavior more consistent and intuitive.
 Note that this change only affects iterable collections - Map objects continue to behave as before.
+
+[WARNING]
+====
+This is a breaking change that may require modifications to existing queries. If your queries relied on the previous 
+behavior of receiving single elements directly from `range(local)`, `limit(local)`, or `tail(local)` steps, you will 
+need to add `.unfold()` after these steps to maintain the same functionality. Without this update, some existing queries 
+may throw a `ClassCastException` while others may return unexpected results.
+====
 
 [source,text]
 ----

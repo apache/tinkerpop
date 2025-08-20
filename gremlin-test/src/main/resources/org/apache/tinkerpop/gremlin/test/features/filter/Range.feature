@@ -265,8 +265,10 @@ Feature: Step - range()
       """
       g.V().fold().range(Scope.local, 6, 7)
       """
-    When iterated next
-    Then the result should be empty
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | l[] |
 
   Scenario: g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2X
     Given the modern graph
