@@ -161,6 +161,12 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Fixed translation of numeric literals for Go losing type definitions
 * Added `ParseBigInt()` in `gremlin-go` for parsing string into `big.Int`
 * Expanded gherkin syntax to directly configure traversal side effects in feature tests
+* Made `Mutating` interface independent from `Configuring`
+* Removed undocumented `with()` modulation from `addV()`, `addE()`, `mergeV()` and `mergeE()`
+* Updated which steps are able to accept arguments in grammar
+* Introduced `GValue` to represent parameterized values in a `GraphTraversal`
+* Added optional traversal cache to `GremlinLangScriptEngine`
+* Introduced step interfaces for all parameterizable steps
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

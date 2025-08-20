@@ -330,6 +330,19 @@ In this next example, the `Map` keys are defined in a way that changes will be n
 g.mergeE([label:'Sibling',created:'2022-02-07',from:1,to:2])
 ----
 
+*Restriction of Step Arguments*
+
+Prior to 3.7.0, the grammar did not allow for any parameters in gremlin scripts. In 3.7, the grammar rules
+were loosened to permit variable use almost anywhere in a traversal, in a similar fashion as groovy, however
+immediately resolved upon parsing the script, and did not bring the same performance benefits as
+parameterization in groovy scripts brings. Parameters in gremlin-lang scripts are restricted to a
+link:++https://tinkerpop.apache.org/docs/x.y.z/dev/reference/#traversal-parameterization++[subset of steps]
+in 3.8.0, and scripts which use variables elsewhere will result in parsing exceptions. The implementation
+has been updated to persist query parameters through traversal construction and strategy application.
+Parameter persistence opens the door certain optimizations for repeated query patterns. Consult your
+providers documentation for specific recommendations on using query parameters with gremlin-lang scripts in
+TinkerPop 3.8.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3047[TINKERPOP-3047],
@@ -542,6 +555,15 @@ last one, which was not intuitive.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
+==== Remove Undocumented `with()` modulation
+
+There has long been a connection between the `with()` modulator, and mutating steps due to the design of
+some of the interfaces in the gremlin traversal engine. This has led to several undocumented usages of the
+`with()` modulator which have never been officially supported but have previously been functional.
+
+As of 3.8.0 `with()` modulation of the following steps will no longer work: `addV()`, `addE()`, `property()`, `drop()`,
+`mergeV()`, and `mergeE()`.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
@@ -678,6 +700,34 @@ and `stringNullableLiteralVarargs` respectively.
 `P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.
 Usage of `P.getOriginalValue()` often leads to unexpected results if called on a predicate which has had its value reset
 after construction. All usages of `P.getOriginalValue()` should be replaced with `P.getValue()`.
+
+===== Introduction of Step Interfaces
+
+New interfaces step classes have been introduced to make it easier to supply alternative step class implementations.
+Interfaces have been introduced for `AddEdgeStep`, `AddPropertyStep`, `AddVertexStep`, `CallStep`, `GraphStep`,
+`IsStep`, `RangeGlobalStep`, `RangeLocalStep`, `TailGlobalStep`, `TailLocalStep`, and `VertexStep`.
+
+===== GValue Step Parameterization
+
+This release introduces `GValue` as a new representation of query parameters. GValue is designed to enable query caching
+capabilities by persisting query parameters further in the traversal lifecycle. Parameters in a `gremlin-lang` script
+are constructed into GValues and passed into `GraphTraversal`. The traversal is then populated with special
+`GValueHolder` placeholder steps, which are temporary non-executable steps which implement a corresponding step
+interface. TraversalStrategies are able to operate on these placeholder steps and update the traversal as normal. By
+default, there is a new `FinalizationStrategy`, `GValueReductionStrategy` which cleans up the traversal by reducing all
+`GValueHolder` steps with their corresponding concrete step object. Providers may choose disable this strategy in order
+to store a fully constructed and optimized traversal with parameters into a query cache.
+
+Some OptimizingStrategies will mutate the traversal based on the current value of a parameter. A simple example is
+`CountStrategy` which will replace `outE("knows").count().is(0)` with `not(outE("knows"))`. This sort
+of optimization presents a challenge for any provider who intends to swap the value of a parameter in the optimized
+traversal. To resolve this issue, each `Traversal` is now bound to a `GValueManager`, whose purpose is to track if a
+variable is "free" or "pinned". A "free" variable is one which can be substituted for any value without restriction. A
+pinned variable is one which must remain bound to the current value. By parameterizing the above example,
+`outE(GValue.of("edgeLabel", "knows")).count().is(GValue.of(count, 0))` will be optimized to
+`not(outE(GValue.of("edgeLabel", "knows")))`. In this case, the `GValueManager` will report "edgeLabel" as a free
+variable, as it can be substituted in the optimized traversal without any loss of meaning, however the variable "count"
+will be pinned as the optimized traversal is not valid for other values of "count".
 
 ==== Graph Driver Providers
 
