@@ -931,7 +931,7 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
 
-  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2X_optionXonMatch_tailXlocalXX_to_match
+  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
     Given the empty graph
     And the graph initializer of
       """
@@ -943,16 +943,16 @@ Feature: Step - mergeV()
       """
       g.inject(xx1, xx1, xx2).
         fold().as("m").
-        mergeV(__.select("m").limit(Scope.local,1)).
-          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.select("m").tail(Scope.local))
+        mergeV(__.select("m").limit(Scope.local,1).unfold()).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2).unfold()).
+          option(Merge.onMatch, __.select("m").tail(Scope.local).unfold())
       """
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"created\",\"N\")"
     And the graph should return 1 for count of "g.V()"
 
-  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2X_optionXonMatch_tailXlocalXX_to_create
+  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_create
     Given the empty graph
     And the graph initializer of
       """
@@ -964,9 +964,9 @@ Feature: Step - mergeV()
       """
       g.inject(xx1, xx1, xx2).
         fold().as("m").
-        mergeV(__.select("m").limit(Scope.local,1)).
-          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2)).
-          option(Merge.onMatch, __.select("m").tail(Scope.local))
+        mergeV(__.select("m").limit(Scope.local,1).unfold()).
+          option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2).unfold()).
+          option(Merge.onMatch, __.select("m").tail(Scope.local).unfold())
       """
     When iterated to list
     Then the result should have a count of 1

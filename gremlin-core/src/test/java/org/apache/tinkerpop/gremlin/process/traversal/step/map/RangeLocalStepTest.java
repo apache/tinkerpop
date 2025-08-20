@@ -18,13 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 
-import java.util.Arrays;
-import java.util.List;
+import org.junit.Test;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep.applyRange;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,5 +47,96 @@ public class RangeLocalStepTest extends StepTest {
                 __.limit(Scope.local, 10L),
                 __.range(Scope.local, 1L, 10L)
         );
+    }
+
+    @Test
+    public void applyRangeShouldReturnCollectionForSingleElementFromList() {
+        // Test that range(local) returns a collection even for single element results
+        assertEquals(List.of(2), applyRange(List.of(1, 2, 3), 1, 2));
+    }
+
+    @Test
+    public void applyRangeShouldReturnCollectionForSingleElementFromSet() {
+        // Test that range(local) preserves Set type and returns a collection
+        assertEquals(Set.of(2), applyRange(new LinkedHashSet<>(List.of(1, 2, 3)), 1, 2));
+    }
+
+    @Test
+    public void applyRangeShouldReturnMultipleElementsFromList() {
+        // Test that range(local) returns multiple elements as expected
+        assertEquals(List.of(2, 3, 4), applyRange(List.of(1, 2, 3, 4, 5), 1, 4));
+    }
+
+    @Test
+    public void applyRangeShouldReturnEmptyCollectionForEmptyRange() {
+        // Test that range(local) returns empty collection when range produces no results
+        assertTrue(applyRange(List.of(1, 2, 3), 5, 10).isEmpty());
+    }
+
+    @Test
+    public void applyRangeShouldReturnSingletonMap() {
+        // Test that Map behavior is unchanged - should return Map with selected entries
+        final Map<String, Integer> input = new LinkedHashMap<>();
+        input.put("a", 1);
+        input.put("b", 2);
+        input.put("c", 3);
+
+        final Map<String, Integer> result = applyRange(input, 1, 2);
+        assertEquals(1, result.size());
+        assertEquals((Integer) 2, result.get("b"));
+    }
+
+    @Test
+    public void applyRangeShouldReturnMapWithMultipleEntries() {
+        // Test that Map behavior works correctly with multiple entries
+        final Map<String, Integer> input = new LinkedHashMap<>();
+        input.put("a", 1);
+        input.put("b", 2);
+        input.put("c", 3);
+        input.put("d", 4);
+
+        final Map<String, Integer> result = applyRange(input, 1, 3);
+        assertEquals(2, result.size());
+        assertEquals((Integer) 2, result.get("b"));
+        assertEquals((Integer) 3, result.get("c"));
+    }
+
+    @Test
+    public void applyRangeShouldHandleNonCollectionObjects() {
+        // Test that non-collection objects are returned as-is
+        final String input = "test";
+        final Object result = applyRange(input, 0, 1);
+        assertEquals(input, result);
+    }
+
+    @Test
+    public void applyRangeShouldHandleNullInput() {
+        // Test that null input is returned as-is
+        assertNull(applyRange(null, 0, 1));
+    }
+
+    @Test
+    public void applyRangeShouldHandleArrayInput() {
+        // Test that array input is converted to collection and processed
+        final Object result = applyRange(new int[]{1, 2, 3, 4, 5}, 1, 3);
+        assertEquals(List.of(2, 3), result);
+    }
+
+    @Test
+    public void applyRangeShouldHandleLimitLocalEquivalent() {
+        // Test that limit(local, n) equivalent to range(local, 0, n) returns collection
+        assertEquals(List.of(1), applyRange(List.of(1, 2, 3, 4, 5), 0, 1));
+    }
+
+    @Test
+    public void applyRangeShouldHandleTailLocalEquivalent() {
+        // Test that tail(local, n) equivalent behavior returns collection
+        assertEquals(List.of(5), applyRange(List.of(1, 2, 3, 4, 5), 4, 5));
+    }
+
+    @Test
+    public void applyRangeShouldHandleUnboundedRange() {
+        // Test that unbounded range (high = -1) works correctly
+        assertEquals(List.of(3, 4, 5), applyRange(List.of(1, 2, 3, 4, 5), 2, -1));
     }
 }

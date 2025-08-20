@@ -167,6 +167,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Introduced `GValue` to represent parameterized values in a `GraphTraversal`
 * Added optional traversal cache to `GremlinLangScriptEngine`
 * Introduced step interfaces for all parameterizable steps
+* Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

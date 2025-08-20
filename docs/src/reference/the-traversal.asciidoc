@@ -2475,10 +2475,14 @@ The examples below use the <<the-crew-toy-graph,The Crew>> toy data set.
 ----
 g.V().valueMap().select('location').limit(local,2) <1>
 g.V().valueMap().limit(local, 1) <2>
+g.V().valueMap().select('location').limit(local, 1) <3>
+g.V().valueMap().select('location').limit(local, 1).unfold() <4>
 ----
 
 <1> `List<String>` for each vertex containing the first two locations.
 <2> `Map<String, Object>` for each vertex, but containing only the first property value.
+<3> `List<String>` for each vertex containing the first location.
+<4> `String` for each vertex containing the first location (use `unfold()` to extract single elements from singleton collections).
 
 *Additional References*
 
@@ -3266,12 +3270,12 @@ contains additional information that will be applied if an existing vertex is fo
 [gremlin-groovy]
 ----
 g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
-  mergeV(select('m').limit(local,1)). <1>
+  mergeV(select('m').limit(local,1).unfold()). <1>
   option(Merge.onCreate, select('m').range(local,1,2)). <2>
   option(Merge.onMatch, select('m').tail(local)) <3>
 g.V(400).valueMap().with(WithOptions.tokens)
 g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
-  mergeV(select('m').limit(local,1)).
+  mergeV(select('m').limit(local,1).unfold()).
   option(Merge.onCreate, select('m').range(local,1,2)).
   option(Merge.onMatch, select('m').tail(local))  <4>
 g.V(400).valueMap().with(WithOptions.tokens)  <5>
@@ -3987,8 +3991,14 @@ second and third location for each vertex.
 
 [gremlin-groovy,theCrew]
 ----
-g.V().valueMap().select('location').range(local, 1, 3)
+g.V().valueMap().select('location').range(local, 1, 3) <1>
+g.V().valueMap().select('location').range(local, 1, 2) <2>
+g.V().valueMap().select('location').range(local, 1, 2).unfold() <3>
 ----
+
+<1> `List<String>` for each vertex containing the second and third locations.
+<2> `List<String>` for each vertex containing the second location.
+<3> `String` for each vertex containing the second location (use `unfold()` to extract single elements from singleton collections).
 
 *Additional References*
 
@@ -4602,7 +4612,7 @@ g.V().hasLabel('person').filter(outE('created')).as('p'). <1>
   map(out('created').values('name').fold()).
   project('person','primary','other').
     by(select('p').by('name')).
-    by(limit(local, 1)). <2>
+    by(limit(local, 1).unfold()). <2>
     by(skip(local, 1)) <3>
 ----
 
@@ -4816,14 +4826,18 @@ The `tail()`-step can also be applied with `Scope.local`, in which case it opera
 ----
 g.V().as('a').out().as('a').out().as('a').select('a').by(tail(local)).values('name') <1>
 g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local) <2>
-g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 2) <3>
-g.V().elementMap().tail(local) <4>
+g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 1) <3>
+g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 1).unfold() <4>
+g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold()).tail(local, 2) <5>
+g.V().elementMap().tail(local) <6>
 ----
 
 <1> Only the most recent name from the "a" step (`List<Vertex>` becomes `Vertex`).
-<2> Same result as statement 1 (`List<String>` becomes `String`).
-<3> `List<String>` for each path containing the last two names from the 'a' step.
-<4> `Map<String, Object>` for each vertex, but containing only the last property value.
+<2> `List<String>` for each path containing the last name from the 'a' step.
+<3> Same as statement 2 (`List<String>` for each path containing the last name).
+<4> `String` for each path containing the last name (use `unfold()` to extract single elements from singleton collections).
+<5> `List<String>` for each path containing the last two names from the 'a' step.
+<6> `Map<String, Object>` for each vertex, containing only the last property value.
 
 *Additional References*
 

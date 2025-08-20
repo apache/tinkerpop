@@ -119,34 +119,18 @@ public final class RangeLocalStep<S> extends ScalarMapStep<S, S> {
     /**
      * Extracts specified range of elements from a Collection.
      */
-    private static Object applyRangeIterable(final Iterable<Object> iterable, final long low, final long high) {
-        // See if we only want a single item.  It is also possible that we will allow more than one item, but that the
-        // incoming container is only capable of producing a single item.  In that case, we will still emit a
-        // container.  This allows the result type to be predictable based on the step arguments.  It also allows us to
-        // avoid creating the result container for the single case.
-        boolean single = high != -1 ? (high - low == 1) : false;
-
-        final Collection resultCollection =
-                single ? null : (iterable instanceof Set) ? new LinkedHashSet() : new LinkedList();
-        Object result = single ? null : resultCollection;
+    private static Collection applyRangeIterable(final Iterable<Object> iterable, final long low, final long high) {
+        final Collection resultCollection = iterable instanceof Set ? new LinkedHashSet() : new LinkedList();
         long c = 0L;
         for (final Object item : iterable) {
             if (c >= low) {
                 if (c < high || high == -1) {
-                    if (single) {
-                        result = item;
-                        break;
-                    } else {
-                        resultCollection.add(item);
-                    }
+                    resultCollection.add(item);
                 } else break;
             }
             c++;
         }
-        if (null == result)
-            // We have nothing to emit, so stop traversal.
-            throw FastNoSuchElementException.instance();
-        return result;
+        return resultCollection;
     }
 
     @Override
