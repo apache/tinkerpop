@@ -19,11 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -34,7 +38,8 @@ public abstract class ConnectiveP<V> extends P<V> {
     protected List<P<V>> predicates = new ArrayList<>();
 
     public ConnectiveP(final List<P<V>> predicates) {
-        super(null, null);
+        super(null, (V) null);
+
         if (predicates.size() < 2)
             throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.size());
     }
@@ -109,5 +114,27 @@ public abstract class ConnectiveP<V> extends P<V> {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
         return new OrP<>(Arrays.asList(this, (P<V>) predicate));
+    }
+
+    @Override
+    public boolean isParameterized() {
+        return predicates.stream().anyMatch(P::isParameterized);
+    }
+
+    @Override
+    public void updateVariable(final String name, final Object value) {
+        predicates.stream().map((p) -> {
+            p.updateVariable(name, value);
+            return p;
+        });
+    }
+
+    @Override
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> allGValues = new HashSet<>();
+        for (final P<V> p : this.predicates) {
+            allGValues.addAll(p.getGValues());
+        }
+        return allGValues;
     }
 }

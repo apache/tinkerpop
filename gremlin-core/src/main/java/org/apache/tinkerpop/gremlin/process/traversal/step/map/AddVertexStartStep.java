@@ -18,14 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -38,16 +42,12 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements Writing<Event.VertexAddedEvent>, TraversalParent, Scoping {
+        implements TraversalParent, Scoping, AddVertexStepContract<Vertex>, Configuring {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
@@ -66,14 +66,20 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         userProvidedLabel = vertexLabelTraversal != null;
     }
 
-    public AddVertexStartStep(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal);
-        this.parameters.set(this, T.label, null == label ? Vertex.DEFAULT_LABEL : label);
-        userProvidedLabel = label != null;
-    }
-
+    @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
+    }
+
+    @Override
+    public Object getElementId() {
+        List<Object> ids = this.parameters.get(T.id, null);
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    @Override
+    public void setElementId(Object elementId) {
+        configure(T.id, elementId);
     }
 
     @Override
@@ -84,13 +90,6 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
     @Override
     public Set<String> getScopeKeys() {
         return this.parameters.getReferencedLabels();
-    }
-
-    @Override
-    public HashSet<PopInstruction> getPopInstructions() {
-        final HashSet<PopInstruction> popInstructions = new HashSet<>();
-        popInstructions.addAll(TraversalParent.super.getPopInstructions());
-        return popInstructions;
     }
 
     @Override
@@ -166,5 +165,42 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
         clone.parameters = this.parameters.clone();
         clone.userProvidedLabel = this.userProvidedLabel;
         return clone;
+    }
+
+    @Override
+    public Object getLabel() {
+        Object label = parameters.get(T.label, () -> Vertex.DEFAULT_LABEL).get(0);
+        if (label instanceof ConstantTraversal) {
+            return ((ConstantTraversal<?, ?>) label).next();
+        }
+        return label;
+    }
+
+    @Override
+    public Map<Object, List<Object>> getProperties() {
+        return Collections.unmodifiableMap(parameters.getRaw());
+    }
+
+    @Override
+    public boolean removeProperty(Object k) {
+        if (parameters.contains(k)) {
+            parameters.remove(k);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removeElementId() {
+        if (this.parameters.contains(T.id)) {
+            this.parameters.remove(T.id);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void addProperty(final Object key, final Object value) {
+        configure(key, value);
     }
 }

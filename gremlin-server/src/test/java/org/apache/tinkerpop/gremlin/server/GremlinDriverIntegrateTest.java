@@ -886,13 +886,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             final RequestOptions ro = RequestOptions.build().language("gremlin-lang").
-                    addParameter("x", 100).
-                    addParameter("y", "test").
-                    addParameter("z", true).create();
-            final List<Result> l = client.submit("g.inject(x, y, z)", ro).all().get();
-            assertEquals(100, l.get(0).getInt());
-            assertEquals("test", l.get(1).getString());
-            assertEquals(true, l.get(2).getBoolean());
+                    addParameter("l", "person").
+                    addParameter("n", "marko").
+                    addParameter("a", 29).create();
+            final Vertex result = client.submit("g.addV(l).property('name', n).property('age', a)", ro).one().getVertex();
+            assertEquals("person", result.label());
+            assertEquals("marko", result.property("name").value());
+            assertEquals(29, result.property("age").value());
         } finally {
             cluster.close();
         }

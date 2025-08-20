@@ -67,10 +67,9 @@ Feature: Step - rTrim()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_rTrim
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,b]"
     And the traversal of
     """
-    g.inject(xx1).rTrim()
+    g.inject(["a","b"]).rTrim()
     """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The rTrim() step can only take string as argument"
@@ -78,10 +77,9 @@ Feature: Step - rTrim()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListX1_2XX_rTrimXlocalX
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[1].i,d[2].i]"
     And the traversal of
     """
-    g.inject(xx1).rTrim(Scope.local)
+    g.inject([1,2]).rTrim(Scope.local)
     """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The rTrim(local) step can only take string or list of strings"

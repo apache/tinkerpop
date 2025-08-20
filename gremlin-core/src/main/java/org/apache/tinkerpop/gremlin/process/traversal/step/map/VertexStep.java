@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -45,26 +44,18 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring, VertexStepContract<E> {
 
     protected Parameters parameters = new Parameters();
     private final String[] edgeLabels;
-    private final GValue<String>[] edgeLabelsGValue;
     private Direction direction;
     private final Class<E> returnClass;
 
     public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final String... edgeLabels) {
-        this(traversal, returnClass, direction, GValue.ensureGValues(edgeLabels));
-    }
-
-    public VertexStep(final Traversal.Admin traversal, final Class<E> returnClass, final Direction direction, final GValue<String>... edgeLabels) {
         super(traversal);
         this.direction = direction;
+        this.edgeLabels = edgeLabels;
         this.returnClass = returnClass;
-        this.edgeLabelsGValue = edgeLabels;
-
-        // convert the GValue<String> to a String[] for the edgeLabels field to cache the values
-        this.edgeLabels = Arrays.stream(this.edgeLabelsGValue).map(GValue::get).toArray(String[]::new);
     }
 
     @Override
@@ -79,30 +70,27 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<Vertex> traverser) {
-        // not passing GValue to graphs at this point. if a graph wants to support GValue, it should implement
-        // its own step to do so. in this way, we keep things backwards compatible and don't force folks to have
-        // deal with this until they are ready.
         return Vertex.class.isAssignableFrom(this.returnClass) ?
                 (Iterator<E>) traverser.get().vertices(this.direction, this.edgeLabels) :
                 (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
     }
 
+    @Override
     public Direction getDirection() {
         return this.direction;
     }
 
+    @Override
     public String[] getEdgeLabels() {
         return this.edgeLabels;
     }
 
-    public GValue<String>[] getEdgeLabelsGValue() {
-        return this.edgeLabelsGValue;
-    }
-
+    @Override
     public Class<E> getReturnClass() {
         return this.returnClass;
     }
 
+    @Override
     public void reverseDirection() {
         this.direction = this.direction.opposite();
     }
@@ -110,6 +98,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     /**
      * Determines if the step returns vertices.
      */
+    @Override
     public boolean returnsVertex() {
         return this.returnClass.equals(Vertex.class);
     }
@@ -117,6 +106,7 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
     /**
      * Determines if the step returns edges.
      */
+    @Override
     public boolean returnsEdge() {
         return this.returnClass.equals(Edge.class);
     }

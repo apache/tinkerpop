@@ -291,6 +291,8 @@ func parseMapValue(mapVal interface{}, graphName string) interface{} {
 		return parseValue(mapVal.(string), graphName)
 	case reflect.Float64, reflect.Int64:
 		return mapVal
+	case reflect.Bool:
+		return mapVal
 	case reflect.Array, reflect.Slice:
 		var valSlice []interface{}
 		oriSlice := reflect.ValueOf(mapVal)

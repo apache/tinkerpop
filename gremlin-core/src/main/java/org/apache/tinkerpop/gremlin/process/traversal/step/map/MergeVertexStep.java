@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -44,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map> {
+public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
@@ -52,20 +51,15 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map> {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
 
-
     public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart) {
         super(traversal, isStart);
     }
 
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map merge) {
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Map<Object, Object> merge) {
         super(traversal, isStart, merge);
     }
-
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final GValue<Map> merge) {
-        super(traversal, isStart, merge);
-    }
-
-    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map> mergeTraversal) {
+    
+    public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<S,Map<Object, Object>> mergeTraversal) {
         super(traversal, isStart, mergeTraversal);
     }
 
@@ -199,5 +193,4 @@ public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map> {
 
         return combinedMap;
     }
-
 }

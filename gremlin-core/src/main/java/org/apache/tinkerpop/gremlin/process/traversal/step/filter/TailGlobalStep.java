@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -40,23 +39,20 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>>, TailGlobalStepContract<S> {
 
-    private final GValue<Long> limit;
+    private final long limit;
     private Deque<Traverser.Admin<S>> tail;
     private long tailBulk = 0L;
     private boolean bypass = false;
 
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
-        this(traversal, GValue.ofLong(null, limit));
-    }
-
-    public TailGlobalStep(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
         this.limit = limit;
-        this.tail = new ArrayDeque<>(limit.get().intValue());
+        this.tail = new ArrayDeque<>((int) limit);
     }
 
+    @Override
     public void setBypass(final boolean bypass) {
         this.bypass = bypass;
     }
@@ -74,7 +70,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             // Pull the oldest traverser from the tail buffer.
             final Traverser.Admin<S> oldest = this.tail.pop();
             // Trim any excess from the oldest traverser.
-            final long excess = this.tailBulk - this.limit.get();
+            final long excess = this.tailBulk - this.limit;
             if (excess > 0) {
                 oldest.setBulk(oldest.bulk() - excess);
                 // Account for the loss of excess in the tail buffer
@@ -95,20 +91,20 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.limit.get());
+        return StringFactory.stepString(this, this.limit);
     }
 
     @Override
     public TailGlobalStep<S> clone() {
         final TailGlobalStep<S> clone = (TailGlobalStep<S>) super.clone();
-        clone.tail = new ArrayDeque<>(this.limit.get().intValue());
+        clone.tail = new ArrayDeque<>((int) this.limit);
         clone.tailBulk = 0L;
         return clone;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(this.limit.get());
+        return super.hashCode() ^ Long.hashCode(this.limit);
     }
 
     @Override
@@ -123,7 +119,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
         while (!this.tail.isEmpty()) {
             final Traverser.Admin<S> oldest = this.tail.getFirst();
             final long bulk = oldest.bulk();
-            if (this.tailBulk - bulk < limit.get())
+            if (this.tailBulk - bulk < limit)
                 break;
             this.tail.pop();
             this.tailBulk -= bulk;
@@ -134,7 +130,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator<>(this.limit.get()), false, true);
+        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator<>(this.limit), false, true);
     }
 
     @Override
@@ -169,5 +165,10 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });
+    }
+
+    @Override
+    public Long getLimit() {
+        return limit;
     }
 }

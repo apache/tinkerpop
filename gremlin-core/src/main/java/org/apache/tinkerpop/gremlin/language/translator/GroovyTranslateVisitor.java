@@ -180,7 +180,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // special handling for resolving ambiguous invocations of the hasLabel() step. coerces to the string form
         if (ctx.getChildCount() > 4 && ctx.getChild(2).getText().equals("null")) {
-            final GremlinParser.StringNullableArgumentVarargsContext varArgs = ctx.stringNullableArgumentVarargs();
+            final GremlinParser.StringNullableArgumentVarargsContext varArgs = (GremlinParser.StringNullableArgumentVarargsContext) ctx.getChild(4);
             sb.append(ctx.getChild(0).getText());
             sb.append("((String) null, ");
 

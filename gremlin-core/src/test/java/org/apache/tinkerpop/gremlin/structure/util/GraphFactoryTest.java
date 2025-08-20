@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.TestSupport;
 import org.junit.Test;
@@ -357,6 +358,15 @@ public class GraphFactoryTest {
         @Override
         public void close() throws Exception {
 
+        }
+
+        @Override
+        public ServiceRegistry getServiceRegistry() {
+            // allows tests to configure a mocked or stubbed service registry
+            if (conf.containsKey("service-registry")) {
+                return conf.get(ServiceRegistry.class, "service-registry");
+            }
+            return Graph.super.getServiceRegistry();
         }
     }
 

@@ -153,26 +153,11 @@ Feature: Orderability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order
     Given the empty graph
-    And using the parameter xx1 defined as "null"
-    And using the parameter xx2 defined as "false"
-    And using the parameter xx3 defined as "true"
-    And using the parameter xx4 defined as "d[1].i"
-    And using the parameter xx5 defined as "d[2.0].d"
-    And using the parameter xx6 defined as "bar"
-    And using the parameter xx7 defined as "foo"
-    And using the parameter xx8 defined as "zzz"
-    And using the parameter xx9 defined as "l[a,b,c]"
-    And using the parameter xx10 defined as "l[a,b,c,d]"
-    And using the parameter xx11 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
-    And using the parameter xx12 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
-    And using the parameter xx13 defined as "d[Infinity]"
-    And using the parameter xx14 defined as "d[NaN]"
-    And using the parameter xx15 defined as "d[-Infinity]"
 
     # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2,xx13,xx14,xx15).order()
+      g.inject("zzz","foo",["a","b","c","d"],1,["a","b","c"],[a:"a",b:"b"],null,2.0d,[a:"a",b:false,c:"c"],"bar",true,false,Infinity,NaN,-Infinity).order()
       """
     When iterated to list
     Then the result should be ordered
@@ -196,25 +181,10 @@ Feature: Orderability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order_byXdescX
     Given the empty graph
-    And using the parameter xx1 defined as "null"
-    And using the parameter xx2 defined as "false"
-    And using the parameter xx3 defined as "true"
-    And using the parameter xx4 defined as "d[1].i"
-    And using the parameter xx5 defined as "d[2.0].d"
-    And using the parameter xx6 defined as "bar"
-    And using the parameter xx7 defined as "foo"
-    And using the parameter xx8 defined as "zzz"
-    And using the parameter xx9 defined as "l[a,b,c]"
-    And using the parameter xx10 defined as "l[a,b,c,d]"
-    And using the parameter xx11 defined as "m[{\"a\":\"a\", \"b\":false, \"c\":\"c\"}]"
-    And using the parameter xx12 defined as "m[{\"a\":\"a\", \"b\":\"b\"}]"
-    And using the parameter xx13 defined as "d[Infinity]"
-    And using the parameter xx14 defined as "d[NaN]"
-    And using the parameter xx15 defined as "d[-Infinity]"
     # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject(xx8,xx7,xx10,xx4,xx9,xx12,xx1,xx5,xx11,xx6,xx3,xx2,xx13,xx14,xx15).order().by(desc)
+      g.inject("zzz","foo",["a","b","c","d"],1,["a","b","c"],[a:"a",b:"b"],null,2.0d,[a:"a",b:false,c:"c"],"bar",true,false,Infinity,NaN,-Infinity).order().by(desc)
       """
     When iterated to list
     Then the result should be ordered
