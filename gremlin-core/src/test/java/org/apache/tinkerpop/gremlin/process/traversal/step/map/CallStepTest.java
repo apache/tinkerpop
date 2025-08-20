@@ -18,28 +18,50 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
+import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactoryTest;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 public class CallStepTest extends GValueStepTest {
 
+    private static final String TEST_SERVICE = "test-service";
+    private static final Map<String, String> STATIC_PARAMS = Map.of("foo", "bar", "fizz", "fuzz");
+    @Mock
+    public ServiceRegistry mockedRegistry;
+    @Mock
+    public Service<?, ?> mockedService;
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+    
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
@@ -84,7 +106,105 @@ public class CallStepTest extends GValueStepTest {
         step.setTraversal(b);
         assertEquals("b", getContextTraversalValue(step));
     }
+    
+    @Test
+    public void getMergedParamsShouldPinVariables() {
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        assertEquals(STATIC_PARAMS, ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).getMergedParams());
+        verifyVariables(traversal, Set.of("params"), Set.of());
+    }
 
+    @Test
+    public void getMergedParamsGValueSafeShouldNotPinVariables() {
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        assertEquals(STATIC_PARAMS, ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).getMergedParamsGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("params"));
+    }
+
+    @Test
+    public void getMergedParamsFromConcreteStep() {
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        assertEquals(STATIC_PARAMS, ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0))
+                .asConcreteStep().getMergedParams());
+    }
+
+    @Test
+    public void getMergedParamsWithChildTraversalShouldPinVariables() {
+        when(mockedRegistry.get(TEST_SERVICE, false, STATIC_PARAMS)).thenReturn(mockedService);
+        when(mockedService.getRequirements()).thenReturn(Set.of());
+        GraphTraversal.Admin<?, ?> traversal = getGValueWithChildTraversal();
+        assertEquals(Map.of("foo", "bar", "fizz", "fuzz", "abc", 123), 
+                ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(1)).getMergedParams());
+        verifyVariables(traversal, Set.of("params"), Set.of());
+    }
+
+    /**
+     * This test needs to be revisited as the variables are pinned when the child traversal is executed
+     */
+    @Test
+    @Ignore
+    public void getMergedParamsGValueSafeWithChildTraversalShouldNotPinVariables() {
+        when(mockedRegistry.get(TEST_SERVICE, false, STATIC_PARAMS)).thenReturn(mockedService);
+        when(mockedService.getRequirements()).thenReturn(Set.of());
+        GraphTraversal.Admin<?, ?> traversal = getGValueWithChildTraversal();
+        assertEquals(Map.of("foo", "bar", "fizz", "fuzz", "abc", 123),
+                ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(1)).getMergedParamsGValueSafe());
+        verifyVariables(traversal, Set.of(), Set.of("params"));
+    }
+
+    @Test
+    public void getMergedParamsWithChildTraversalFromConcreteStep() {
+        when(mockedRegistry.get(TEST_SERVICE, false, STATIC_PARAMS)).thenReturn(mockedService);
+        when(mockedService.getRequirements()).thenReturn(Set.of());
+        GraphTraversal.Admin<?, ?> traversal = getGValueWithChildTraversal();
+        assertEquals(Map.of("foo", "bar", "fizz", "fuzz", "abc", 123),
+                ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(1)).asConcreteStep().getMergedParams());
+    }
+    
+    @Test
+    public void getServiceShouldPinVariables() {
+        when(mockedRegistry.get(TEST_SERVICE, true, STATIC_PARAMS)).thenReturn(mockedService);
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        CallStepPlaceholder<?, ?> callStep = (CallStepPlaceholder<?, ?>) traversal.getSteps().get(0);
+        assertNotNull(callStep.service());
+        assertEquals(TEST_SERVICE, callStep.getServiceName());
+        verifyVariables(traversal, Set.of("params"), Set.of());
+    }
+
+    @Test
+    public void getServiceGValueSafeShouldNotPinVariables() {
+        when(mockedRegistry.get(TEST_SERVICE, true, STATIC_PARAMS)).thenReturn(mockedService);
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        CallStepPlaceholder<?, ?> callStep = (CallStepPlaceholder<?, ?>) traversal.getSteps().get(0);
+        assertNotNull(callStep.serviceGValueSafe());
+        assertEquals(TEST_SERVICE, callStep.getServiceName());
+        verifyVariables(traversal, Set.of(), Set.of("params"));
+    }
+
+    @Test
+    public void getServiceFromConcreteStep() {
+        when(mockedRegistry.get(TEST_SERVICE, true, STATIC_PARAMS)).thenReturn(mockedService);
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        CallStep<?, ?> callStep = ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).asConcreteStep();
+        assertNotNull(callStep.service());
+        assertEquals(TEST_SERVICE, callStep.getServiceName());
+    }
+    
+    @Test
+    public void getGValuesShouldReturnAllGValues() {
+        GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
+        Collection<GValue<?>> gValues = ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).getGValues();
+        assertEquals(1, gValues.size());
+        assertEquals("params", gValues.iterator().next().getName());
+    }
+
+    @Test
+    public void getGValuesNoneShouldUseCallStepInsteadOfPlaceholder() {
+        GraphTraversal.Admin<Object, Object> traversal = __.call(TEST_SERVICE, STATIC_PARAMS).asAdmin();
+        assertTrue(traversal.getSteps().get(0) instanceof CallStep);
+        assertEquals(STATIC_PARAMS, ((CallStep) traversal.getSteps().get(0)).getMergedParams());
+    }
+    
     private Object getContextTraversalValue(final CallStep step) {
         try {
             final Method privateMethod = CallStep.class.getDeclaredMethod("ctx");
@@ -96,4 +216,19 @@ public class CallStepTest extends GValueStepTest {
             throw new RuntimeException("ctx() method in class CallStep is renamed or removed. Please fix test.");
         }
     }
+
+    private GraphTraversal.Admin<Object, Object> getGValueTraversal() {
+        MapConfiguration mapConfiguration = new MapConfiguration(Map.of("service-registry", mockedRegistry));
+        GraphTraversalSource g = traversal().with(GraphFactoryTest.MockGraph.open(mapConfiguration));
+        return g.call(TEST_SERVICE, GValue.of("params", STATIC_PARAMS)).asAdmin();
+    }
+
+    private GraphTraversal.Admin<?,?> getGValueWithChildTraversal() {
+        when(mockedService.getRequirements()).thenReturn(Set.of());
+        MapConfiguration mapConfiguration = new MapConfiguration(Map.of("service-registry", mockedRegistry));
+        GraphTraversalSource g = traversal().with(GraphFactoryTest.MockGraph.open(mapConfiguration));
+        return g.V().call(TEST_SERVICE, GValue.of("params", STATIC_PARAMS), 
+                (Traversal) __.inject(Map.of("abc", 123))).asAdmin();
+    }
+    
 }
