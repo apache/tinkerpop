@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
@@ -254,6 +255,7 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             // finalization
             put(MatchAlgorithmStrategy.class.getSimpleName(), MatchAlgorithmStrategy.class);
             put(ReferenceElementStrategy.class.getSimpleName(), ReferenceElementStrategy.class);
+            put(GValueReductionStrategy.class.getSimpleName(), GValueReductionStrategy.class);
 
             // optimizations
             put(ProductiveByStrategy.class.getSimpleName(), ProductiveByStrategy.class);
@@ -285,7 +287,8 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
                     PathRetractionStrategy.instance(),
                     LazyBarrierStrategy.instance(),
                     ProfileStrategy.instance(),
-                    StandardVerificationStrategy.instance());
+                    StandardVerificationStrategy.instance(),
+                    GValueReductionStrategy.instance());
             registerStrategies(Graph.class, graphStrategies);
             registerStrategies(EmptyGraph.class, new DefaultTraversalStrategies());
 

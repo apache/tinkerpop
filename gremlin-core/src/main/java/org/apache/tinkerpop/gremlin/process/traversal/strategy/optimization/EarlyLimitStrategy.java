@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.util.StepOutputArityPredictor;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -68,12 +69,12 @@ public final class EarlyLimitStrategy
         boolean merge = false;
         for (int i = 0, j = steps.size(); i < j; i++) {
             final Step step = steps.get(i);
-            if (step instanceof RangeGlobalStep) {
+            if (step instanceof RangeGlobalStepContract) {
                 if (insertAfter != null) {
                     // RangeStep was found, move it to the earliest possible step or merge it with a
                     // previous RangeStep; keep the RangeStep's labels at its preceding step
                     TraversalHelper.copyLabels(step, step.getPreviousStep(), true);
-                    insertAfter = moveRangeStep((RangeGlobalStep) step, insertAfter, traversal, merge);
+                    insertAfter = moveRangeStep((RangeGlobalStepContract) step, insertAfter, traversal, merge);
                     if (insertAfter instanceof DiscardStep) {
                         // any step besides a SideEffectCapStep after a DiscardStep would be pointless
                         final int discardStepIndex = TraversalHelper.stepIndex(insertAfter, traversal);
@@ -103,15 +104,18 @@ public final class EarlyLimitStrategy
     }
 
     @SuppressWarnings("unchecked")
-    private Step moveRangeStep(final RangeGlobalStep step, final Step insertAfter, final Traversal.Admin<?, ?> traversal,
+    private Step moveRangeStep(final RangeGlobalStepContract step, final Step insertAfter, final Traversal.Admin<?, ?> traversal,
                                final boolean merge) {
         final Step rangeStep;
         boolean remove = true;
-        if (insertAfter instanceof RangeGlobalStep) {
+        if (insertAfter instanceof RangeGlobalStepContract) {
             // there's a previous RangeStep which might affect the effective range of the current RangeStep
             // recompute this step's low and high; if the result is still a valid range, create a new RangeStep,
             // otherwise a DiscardStep
-            final RangeGlobalStep other = (RangeGlobalStep) insertAfter;
+            //
+            // GValue instances that merge here are discarded when the original steps are removed in favor of the
+            // merged one. no reasonable way to resolve that.
+            final RangeGlobalStepContract other = (RangeGlobalStepContract) insertAfter;
             final long low = other.getLowRange() + step.getLowRange();
             if (other.getHighRange() == -1L) {
                 rangeStep = new RangeGlobalStep(traversal, low, other.getLowRange() + step.getHighRange());

@@ -359,12 +359,12 @@ public class ParametersTest {
     }
 
     @Test
-    public void shouldGetKeyValuesAndResolveGValues() {
+    public void shouldGetKeyValuesWithUnresolvedGValues() {
         final Parameters parameters = new Parameters();
         parameters.set(null, "a", "axe", "b", GValue.of("B", "bat"), "c", GValue.of("C", "cat"));
 
         final Object[] params = parameters.getKeyValues(mock(Traverser.Admin.class));
         assertEquals(6, params.length);
-        assertThat(Arrays.equals(new Object[] {"a", "axe", "b", "bat", "c", "cat"}, params), is(true));
+        assertThat(Arrays.equals(new Object[] {"a", "axe", "b", GValue.of("B", "bat"), "c", GValue.of("C", "cat")}, params), is(true));
     }
 }

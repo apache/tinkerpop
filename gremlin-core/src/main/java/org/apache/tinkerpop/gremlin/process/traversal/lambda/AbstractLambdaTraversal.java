@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -44,7 +45,7 @@ import java.util.Set;
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
-
+    protected GValueManager gValueManager = new GValueManager();
     protected Traversal.Admin<S, E> bypassTraversal = null;
 
     public void setBypassTraversal(final Traversal.Admin<S, E> bypassTraversal) {
@@ -65,6 +66,18 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
         return null == this.bypassTraversal ? new GremlinLang() : this.bypassTraversal.getGremlinLang();
     }
 
+    @Override
+    public GValueManager getGValueManager() {
+        return null == this.bypassTraversal ? gValueManager : this.bypassTraversal.getGValueManager();
+    }
+
+    @Override
+    public void setGValueManager(final GValueManager gValueManager) {
+        if (bypassTraversal == null)
+            this.gValueManager = gValueManager;
+        else
+            bypassTraversal.setGValueManager(gValueManager);
+    }
 
     @Override
     public void reset() {

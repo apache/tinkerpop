@@ -144,10 +144,9 @@ Feature: Step - merge()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_path_byXvaluesXnameX_toUpperX_mergeXMARKOX
     Given the modern graph
-    And using the parameter xx1 defined as "l[MARKO]"
     And the traversal of
       """
-      g.V().out().path().by(values("name").toUpper()).merge(xx1)
+      g.V().out().path().by(values("name").toUpper()).merge(["MARKO"])
       """
     When iterated to list
     Then the result should be unordered
@@ -162,10 +161,9 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXmarkoX_mergeXV_valuesXnameX_foldX
     Given the modern graph
-    And using the parameter xx1 defined as "l[marko]"
     And the traversal of
       """
-      g.inject(xx1).merge(__.V().values("name").fold())
+      g.inject(["marko"]).merge(__.V().values("name").fold())
       """
     When iterated to list
     Then the result should be unordered
@@ -175,10 +173,9 @@ Feature: Step - merge()
   @MultiProperties @MetaProperties
   Scenario: g_V_valueMapXlocationX_selectXvaluesX_unfold_mergeXseattle_vancouverX
     Given the crew graph
-    And using the parameter xx1 defined as "l[seattle,vancouver]"
     And the traversal of
       """
-      g.V().valueMap("location").select(values).unfold().merge(xx1)
+      g.V().valueMap("location").select(values).unfold().merge(["seattle","vancouver"])
       """
     When iterated to list
     Then the result should be unordered
@@ -191,10 +188,9 @@ Feature: Step - merge()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_mergeXempty_listX
     Given the modern graph
-    And using the parameter xx1 defined as "l[]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").merge(xx1)
+      g.V().out().out().path().by("name").merge([])
       """
     When iterated to list
     Then the result should be unordered
@@ -216,10 +212,9 @@ Feature: Step - merge()
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_out_out_path_byXnameX_mergeXdave_kelvinX
     Given the modern graph
-    And using the parameter xx1 defined as "l[dave,kelvin]"
     And the traversal of
       """
-      g.V().out().out().path().by("name").merge(xx1)
+      g.V().out().out().path().by("name").merge(["dave","kelvin"])
       """
     When iterated to list
     Then the result should be unordered
@@ -230,11 +225,9 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_mergeXa_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,c]"
     And the traversal of
       """
-      g.inject(xx1).merge(xx2)
+      g.inject(["a",null,"b"]).merge(["a","c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -244,11 +237,9 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXa_null_bX_mergeXa_null_cX
     Given the empty graph
-    And using the parameter xx1 defined as "l[a,null,b]"
-    And using the parameter xx2 defined as "l[a,null,c]"
     And the traversal of
       """
-      g.inject(xx1).merge(xx2)
+      g.inject(["a",null,"b"]).merge(["a",null,"c"])
       """
     When iterated to list
     Then the result should be unordered
@@ -258,11 +249,9 @@ Feature: Step - merge()
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX3_threeX_mergeXfive_three_7X
     Given the empty graph
-    And using the parameter xx1 defined as "l[d[3].i,three]"
-    And using the parameter xx2 defined as "l[five,three,d[7].i]"
     And the traversal of
       """
-      g.inject(xx1).merge(xx2)
+      g.inject([3,"three"]).merge(["five","three",7i])
       """
     When iterated to list
     Then the result should be unordered
@@ -271,10 +260,9 @@ Feature: Step - merge()
 
   Scenario: g_V_asXnameX_projectXnameX_byXnameX_mergeXother_blueprintX
     Given the modern graph
-    And using the parameter xx1 defined as "m[{\"other\":\"blueprint\"}]"
     And the traversal of
       """
-      g.V().as("name").project("name").by("name").merge(xx1)
+      g.V().as("name").project("name").by("name").merge(["other":"blueprint"])
       """
     When iterated to list
     Then the result should be unordered

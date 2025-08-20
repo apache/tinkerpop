@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.List;
+
 /**
  * @author Pieter Martin
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,7 +53,8 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
             while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
                 if (currentStep instanceof HasStep) {
-                    for (final HasContainer hasContainer : ((HasContainerHolder) currentStep).getHasContainers()) {
+                    List<HasContainer> hasContainers = ((HasStep) currentStep).getHasContainers();
+                    for (final HasContainer hasContainer : hasContainers) {
                         if (!GraphStep.processHasContainerIds(neo4jGraphStep, hasContainer))
                             neo4jGraphStep.addHasContainer(hasContainer);
                     }

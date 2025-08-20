@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
 import java.util.function.Consumer;
@@ -43,10 +42,10 @@ public final class SackFunctions {
             public void accept(final TraverserSet<Object> traverserSet) {
                 Number total = 0.0;
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    total = add(total, mul(GValue.numberOf(traverser.sack()), traverser.bulk()));
+                    total = add(total, mul(traverser.sack(), traverser.bulk()));
                 }
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    traverser.sack(div(mul(GValue.numberOf(traverser.sack()), traverser.bulk()), total));
+                    traverser.sack(div(mul(traverser.sack(), traverser.bulk()), total));
                 }
             }
         }

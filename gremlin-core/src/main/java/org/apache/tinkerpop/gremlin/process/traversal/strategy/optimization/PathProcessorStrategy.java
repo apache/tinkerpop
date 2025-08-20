@@ -174,7 +174,7 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
         if (!traversal.getStrategies().getStrategy(ProductiveByStrategy.class).isPresent()) {
             final List<SelectOneStep> selectOneSteps = TraversalHelper.getStepsOfClass(SelectOneStep.class, traversal);
             for (final SelectOneStep<?, ?> selectOneStep : selectOneSteps) {
-                if (selectOneStep.getPop() != Pop.all && selectOneStep.getPop() != Pop.mixed && // TODO: necessary?
+                if (selectOneStep.getPop() != Pop.all && selectOneStep.getPop() != Pop.mixed &&
                         selectOneStep.getMaxRequirement().compareTo(PathProcessor.ElementRequirement.ID) > 0 &&
                         labelCount(selectOneStep.getScopeKeys().iterator().next(), TraversalHelper.getRootTraversal(traversal)) <= 1) {
                     final int index = TraversalHelper.stepIndex(selectOneStep, traversal);

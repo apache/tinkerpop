@@ -183,43 +183,11 @@ Feature: Step - inject()
       | d[3].i |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1var_3varX_injectX100var_300varX
-    Given the modern graph
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[3].i"
-    And using the parameter xx3 defined as "d[100].i"
-    And using the parameter xx4 defined as "d[300].i"
-    And the traversal of
-      """
-      g.inject(xx1, xx2).inject(xx3, xx4)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[100].i |
-      | d[300].i |
-      | d[1].i |
-      | d[3].i |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_3_100_300X_list
     Given the modern graph
     And the traversal of
       """
       g.inject([1, 3, 100, 300])
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | l[d[1].i,d[3].i,d[100].i,d[300].i] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_3_100_300X_listvar
-    Given the modern graph
-    And using the parameter xx1 defined as "l[d[1].i,d[3].i,d[100].i,d[300].i]"
-    And the traversal of
-      """
-      g.inject(xx1)
       """
     When iterated to list
     Then the result should be unordered
@@ -239,19 +207,6 @@ Feature: Step - inject()
       | s[d[100].i,d[300].i,d[1].i,d[3].i] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_3_100_300X_setvar
-    Given the modern graph
-    And using the parameter xx1 defined as "s[d[100].i,d[300].i,d[1].i,d[3].i]"
-    And the traversal of
-      """
-      g.inject(xx1)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | s[d[100].i,d[300].i,d[1].i,d[3].i] |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_1X_set
     Given the modern graph
     And the traversal of
@@ -262,29 +217,3 @@ Feature: Step - inject()
     Then the result should be unordered
       | result |
       | s[d[1].i] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX1_1X_setvar
-    Given the modern graph
-    And using the parameter xx1 defined as "s[d[1].i,d[1].i]"
-    And the traversal of
-      """
-      g.inject(xx1)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | s[d[1].i] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectX_set
-    Given the modern graph
-    And using the parameter xx1 defined as "s[]"
-    And the traversal of
-      """
-      g.inject(xx1)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | s[] |

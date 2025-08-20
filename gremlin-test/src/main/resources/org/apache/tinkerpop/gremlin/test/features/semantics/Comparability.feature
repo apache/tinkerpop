@@ -872,29 +872,7 @@ Feature: Comparability
       | d[Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: InjectXInfArgX_eqXInfX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Infinity).is(P.eq(+Infinity))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[Infinity] |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXInfX_neqXInfX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(Infinity).is(P.neq(+Infinity))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: InjectXInfArgX_neqXInfX
     Given the empty graph
     And the traversal of
       """
@@ -916,29 +894,7 @@ Feature: Comparability
       | d[-Infinity] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: InjectXNegInfArgX_eqXNegInfX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(-Infinity).is(P.eq(-Infinity))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[-Infinity] |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: InjectXNegInfX_neqXNegInfX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(-Infinity).is(P.neq(-Infinity))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: InjectXNegInfArgX_neqXNegInfX
     Given the empty graph
     And the traversal of
       """

@@ -53,7 +53,7 @@ import java.util.function.BiPredicate;
  * @deprecated See: https://tinkerpop.apache.org/docs/3.5.7/reference/#neo4j-gremlin
  */
 @Deprecated
-public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder {
+public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder<S, E> {
 
     private final List<HasContainer> hasContainers = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
     private Iterator<? extends Edge> edges() {
         if (null == this.ids)
             return Collections.emptyIterator();
-        return IteratorUtils.filter(this.getTraversal().getGraph().get().edges(this.getIdsAsValues()), edge -> HasContainer.testAll(edge, this.hasContainers));
+        return IteratorUtils.filter(this.getTraversal().getGraph().get().edges(this.ids), edge -> HasContainer.testAll(edge, this.hasContainers));
     }
 
     private Iterator<? extends Vertex> vertices() {
@@ -76,7 +76,7 @@ public final class Neo4jGraphStep<S, E extends Element> extends GraphStep<S, E> 
 
         // ids are present, filter on them first
         if (ids.length > 0)
-            return IteratorUtils.filter(graph.vertices(this.getIdsAsValues()), vertex -> HasContainer.testAll(vertex, hasContainers));
+            return IteratorUtils.filter(graph.vertices(ids), vertex -> HasContainer.testAll(vertex, hasContainers));
         ////// do index lookups //////
         graph.tx().readWrite();
         // get a label being search on

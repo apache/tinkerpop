@@ -18,14 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -38,18 +44,41 @@ import java.util.stream.Collectors;
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected PBiPredicate<V, V> biPredicate;
-    protected V value;
+    protected Map<String, V> variables = new HashMap<>();
+    protected Collection<V> literals = Collections.EMPTY_LIST;
+    private boolean isCollection = false;
 
     public P(final PBiPredicate<V, V> biPredicate, final V value) {
-        this.value = value;
+        setValue(value);
         this.biPredicate = biPredicate;
+    }
+
+    public P(final PBiPredicate<V, V> biPredicate, final GValue<V> value) {
+        if (value != null) {
+            if (value.isVariable()) {
+                variables.put(value.getName(), value.get());
+            } else {
+                literals = Collections.singleton(value.get());
+            }
+        } else {
+            this.literals = Collections.singleton(null);
+        }
+        this.isCollection = false;
+        this.biPredicate = biPredicate;
+    }
+
+    protected P(final PBiPredicate<V, V> biPredicate, final Collection<V> literals, final Map<String, V> variables, final boolean isCollection) {
+        this.biPredicate = biPredicate;
+        this.variables.putAll(variables);
+        this.literals = new ArrayList<>(literals);
+        this.isCollection = isCollection;
     }
 
     public PBiPredicate<V, V> getBiPredicate() {
         return this.biPredicate;
     }
 
-    /*
+    /**
      * Get the name of the predicate
      */
     public String getPredicateName() { return biPredicate.getPredicateName(); }
@@ -58,28 +87,65 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * Gets the current value to be passed to the predicate for testing.
      */
     public V getValue() {
-        return this.value;
+        if (isCollection) {
+            Collection<V> values = this.literals.stream().collect(Collectors.toList());
+            values.addAll(this.variables.values());
+            return (V) values;
+        } else if (!this.literals.isEmpty()) {
+            return this.literals.iterator().next();
+        } else if (!this.variables.isEmpty()) {
+            return this.variables.values().iterator().next();
+        }
+        return null;
     }
 
     public void setValue(final V value) {
-        this.value = value;
+        variables.clear();
+        literals = Collections.EMPTY_LIST;
+
+        if (value == null) {
+            isCollection = false;
+            this.literals = Collections.singleton(null);
+        } else if (value instanceof GValue) {
+            variables.put(((GValue<V>) value).getName(), ((GValue<V>) value).get());
+            isCollection = false;
+        } else if (value instanceof Collection) {
+            isCollection = true;
+            if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+                this.literals = new ArrayList<>();
+                for (Object v : ((Collection<?>) value)) {
+                    // Separate variables and literals
+                    if (v instanceof GValue) {
+                        if (((GValue<V>) v).isVariable()) {
+                            variables.put(((GValue<V>) v).getName(), ((GValue<V>) v).get());
+                        } else {
+                            literals.add(((GValue<V>) v).get());
+                        }
+                    } else {
+                        literals.add((V) v);
+                    }
+                }
+            } else {
+                literals = (Collection<V>) value; // Retain original collection when possible
+            }
+        } else {
+            isCollection = false;
+            this.literals = Collections.singleton(value);
+        }
     }
 
     @Override
     public boolean test(final V testValue) {
-        // this might be a bunch of GValue that need to be resolved. zomg
-        if (this.value instanceof List) {
-            return this.biPredicate.test(testValue, (V) ((List) this.value).stream().map(GValue::valueOf).collect(Collectors.toList()));
-        } else {
-            return this.biPredicate.test(testValue, (V) GValue.valueOf(this.value));
-        }
+        return this.biPredicate.test(testValue, this.getValue());
     }
 
     @Override
     public int hashCode() {
         int result = this.biPredicate.hashCode();
-        if (null != this.value)
-            result ^= this.value.hashCode();
+        if (null != this.variables)
+            result ^= this.variables.hashCode();
+        if (null != this.literals)
+            result ^= this.literals.hashCode();
         return result;
     }
 
@@ -88,17 +154,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value));
+                ((((P) other).variables == null && this.variables == null) || (((P) other).variables != null && ((P) other).variables.equals(this.variables))) &&
+                ((((P) other).literals == null && this.literals == null) || (((P) other).literals != null && CollectionUtils.isEqualCollection(((P) other).literals, this.literals)));
     }
 
     @Override
     public String toString() {
-        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
+        return null == this.getValue() ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.getValue() + ")";
     }
 
     @Override
     public P<V> negate() {
-        return new P<>(this.biPredicate.negate(), this.value);
+        return new P<>(this.biPredicate.negate(), this.literals, this.variables, this.isCollection);
     }
 
     @Override
@@ -123,6 +190,24 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         }
     }
 
+    public boolean isParameterized() {
+        return !variables.isEmpty();
+    }
+
+    public void updateVariable(final String name, final Object value) {
+        if (variables.containsKey(name)) {
+            variables.put(name, (V) value);
+        }
+    }
+
+    public Set<GValue<?>> getGValues() {
+        Set<GValue<?>> results = new HashSet<>();
+        for (Map.Entry<String, V> entry : variables.entrySet()) {
+            results.add(GValue.of(entry.getKey(), entry.getValue()));
+        }
+        return results;
+    }
+
     //////////////// statics
 
     /**
@@ -133,6 +218,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> eq(final V value) {
         return new P(Compare.eq, value);
     }
+// TODO:: Subgraph.feature tests lead to cast exception when this overload is present.
+//    /**
+//     * Determines if values are equal.
+//     *
+//     * @since 3.8.0
+//     */
+//    public static <V> P<V> eq(final GValue<V> value) {
+//        return new P(Compare.eq, value);
+//    }
 
     /**
      * Determines if values are not equal.
@@ -140,6 +234,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.0.0-incubating
      */
     public static <V> P<V> neq(final V value) {
+        return new P(Compare.neq, value);
+    }
+
+    /**
+     * Determines if values are not equal.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> neq(final GValue<V> value) {
         return new P(Compare.neq, value);
     }
 
@@ -153,11 +256,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is less than another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> lt(final GValue<V> value) {
+        return new P(Compare.lt, value);
+    }
+
+    /**
      * Determines if a value is less than or equal to another.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> lte(final V value) {
+        return new P(Compare.lte, value);
+    }
+
+    /**
+     * Determines if a value is less than or equal to another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> lte(final GValue<V> value) {
         return new P(Compare.lte, value);
     }
 
@@ -171,11 +292,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is greater than another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> gt(final GValue<V> value) {
+        return new P(Compare.gt, value);
+    }
+
+    /**
      * Determines if a value is greater than or equal to another.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> gte(final V value) {
+        return new P(Compare.gte, value);
+    }
+
+    /**
+     * Determines if a value is greater than or equal to another.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> gte(final GValue<V> value) {
         return new P(Compare.gte, value);
     }
 
@@ -189,11 +328,29 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within (exclusive) the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> inside(final GValue<V> first, final GValue<V> second) {
+        return new AndP<V>(Arrays.asList(new P(Compare.gt, first), new P(Compare.lt, second)));
+    }
+
+    /**
      * Determines if a value is not within (exclusive) of the range of the two specified values.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> outside(final V first, final V second) {
+        return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
+    }
+
+    /**
+     * Determines if a value is not within (exclusive) of the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> outside(final GValue<V> first, final GValue<V> second) {
         return new OrP<V>(Arrays.asList(new P(Compare.lt, first), new P(Compare.gt, second)));
     }
 
@@ -207,13 +364,33 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is within (inclusive) of the range of the two specified values.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> between(final GValue<V> first, final GValue<V> second) {
+        return new AndP<V>(Arrays.asList(new P(Compare.gte, first), new P(Compare.lt, second)));
+    }
+
+    /**
      * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
      * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
      *
      * @since 3.0.0-incubating
      */
     public static <V> P<V> within(final V... values) {
-        final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
+        return P.within(Arrays.asList(v));
+    }
+
+    /**
+     * Determines if a value is within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> within(final GValue<V>... values) {
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
 
@@ -236,6 +413,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public static <V> P<V> without(final V... values) {
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
+        return P.without(Arrays.asList(v));
+    }
+
+    /**
+     * Determines if a value is not within the specified list of values. If the array of arguments itself is {@code null}
+     * then the argument is treated as {@code Object[1]} where that single value is {@code null}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> without(final GValue<V>... values) {
+        final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.without(Arrays.asList(v));
     }
 

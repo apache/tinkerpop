@@ -201,7 +201,7 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     public Void visitTraversalMethod_hasLabel_String_String(final GremlinParser.TraversalMethod_hasLabel_String_StringContext ctx) {
         // special handling for resolving ambiguous invocations of the hasLabel() step. coerces to the string form
         if (ctx.getChildCount() > 4 && ctx.getChild(2).getText().equals("null")) {
-            final GremlinParser.StringNullableArgumentVarargsContext varArgs = ctx.stringNullableArgumentVarargs();
+            final GremlinParser.StringNullableArgumentVarargsContext varArgs = (GremlinParser.StringNullableArgumentVarargsContext) ctx.getChild(4);
             sb.append(ctx.getChild(0).getText());
             sb.append("((String) null, ");
 
@@ -229,25 +229,28 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     * inject() ends up being ambiguous with groovy's jdk extension of inject(Object initialValue, Closure closure)
     */
     private Void handleInject(final ParserRuleContext ctx) {
-        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GremlinParser.GenericArgumentVarargsContext) {
-            final GremlinParser.GenericArgumentVarargsContext varArgs = (GremlinParser.GenericArgumentVarargsContext) ctx.getChild(2);
-            if (varArgs.getChildCount() > 2 && "null".equals(varArgs.getChild(2).getText())) {
-                sb.append(ctx.getChild(0).getText());
-                sb.append("(");
-                for (int i = 0; i < varArgs.getChildCount(); i += 2) {
-                    if (i == 2) {
-                        sb.append("(Object) null");
-                    } else {
-                        visit(varArgs.getChild(i));
+        if (ctx.getChildCount() > 3 && ctx.getChild(2) instanceof GremlinParser.GenericLiteralVarargsContext) {
+            final GremlinParser.GenericLiteralVarargsContext varArgs = (GremlinParser.GenericLiteralVarargsContext) ctx.getChild(2);
+            if (varArgs.getChildCount() == 1 && varArgs.getChild(0) instanceof GremlinParser.GenericLiteralExprContext) {
+                GremlinParser.GenericLiteralExprContext injectArgs = (GremlinParser.GenericLiteralExprContext) varArgs.getChild(0);
+                if (injectArgs.getChildCount() > 2 && "null".equals(injectArgs.getChild(2).getText())) {
+                    sb.append(ctx.getChild(0).getText());
+                    sb.append("(");
+                    for (int i = 0; i < injectArgs.getChildCount(); i += 2) {
+                        if (i == 2) {
+                            sb.append("(Object) null");
+                        } else {
+                            visit(injectArgs.getChild(i));
+                        }
+
+                        if (i < injectArgs.getChildCount() - 1) {
+                            sb.append(", ");
+                        }
                     }
 
-                    if (i < varArgs.getChildCount() - 1) {
-                        sb.append(", ");
-                    }
+                    sb.append(")");
+                    return null;
                 }
-
-                sb.append(")");
-                return null;
             }
         }
 

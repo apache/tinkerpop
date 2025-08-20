@@ -359,17 +359,17 @@ Feature: Step - mergeE()
     And the graph should return 0 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 2 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\")"
 
-  Scenario: g_injectXlabel_knows_out_marko_in_vadasX_mergeE
+   Scenario: g_withSideEffectXlabel_knows_out_marko_in_vadasX_injectX1X_selectXmX_mergeE
     Given the empty graph
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1).mergeE()
+      g.inject(1).select("m").mergeE()
       """
     When iterated to list
     Then the result should have a count of 1
@@ -541,18 +541,18 @@ Feature: Step - mergeE()
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").out(\"knows\").has(\"person\",\"name\",\"vadas\")"
 
-  Scenario: g_injectXlabel_knows_out_marko_in_vadas_label_self_out_vadas_in_vadasX
+  Scenario: g_withSideEffectXm1_label_knows_out_marko_in_vadas_m2_label_self_out_vadas_in_vadasX_unionXselectXm1X_selectXm2XX_mergeE
     Given the empty graph
     And the graph initializer of
       """
       g.addV("person").property("name", "marko").
         addV("person").property("name", "vadas")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
+    And using the side effect m2 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx2).mergeE()
+      g.union(select("m1"), select("m2")).mergeE()
       """
     When iterated to list
     Then the result should have a count of 2

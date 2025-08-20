@@ -19,6 +19,8 @@
 """
 Unit tests for the GremlinLang Class. Modified from deprecated Groovy Translator Tests.
 """
+import uuid
+
 from gremlin_python.process.strategies import ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy, PartitionStrategy
 from gremlin_python.process.traversal import within, eq, T, Order, Scope, Column, Operator, P, Pop, Cardinality, \
     between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, GValue
@@ -468,6 +470,8 @@ class TestGremlinLang(object):
                       "g.inject(true,1B,2S,3,4L,5.0D,6.0D,7N,8M)"])
 
         #118
+        tests.append([g.inject(uuid.UUID('9b8d8a9c-61c2-43e5-9cc8-c27b9261290e')),
+                      'g.inject(UUID("9b8d8a9c-61c2-43e5-9cc8-c27b9261290e"))'])
 
         for t in range(len(tests)):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
