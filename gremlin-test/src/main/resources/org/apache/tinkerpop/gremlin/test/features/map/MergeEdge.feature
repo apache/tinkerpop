@@ -864,7 +864,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
     And the graph should return 0 for count of "g.V().has(\"weight\")"
 
-    Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1XX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
+    Scenario: g_unionXselectXmX_selectXmX_constantXcreated_NXX_fold_mergeEXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
     Given the empty graph
     And the graph initializer of
       """

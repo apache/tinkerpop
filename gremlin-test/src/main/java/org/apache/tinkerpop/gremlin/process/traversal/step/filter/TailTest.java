@@ -66,11 +66,11 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_2X();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X();
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X_unfold();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X();
 
@@ -170,8 +170,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold();
         printTraversalForm(traversal);
         final Set<String> expected = new HashSet(Arrays.asList("ripple", "lop"));
         final Set<String> actual = new HashSet(traversal.toList());
@@ -183,8 +183,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold();
         printTraversalForm(traversal);
         final Set<String> expected = new HashSet(Arrays.asList("ripple", "lop"));
         final Set<String> actual = new HashSet(traversal.toList());
@@ -196,8 +196,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
      */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X();
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X_unfold() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X_unfold();
         printTraversalForm(traversal);
         final Set<String> expected = new HashSet();
         final Set<String> actual = new HashSet(traversal.toList());
@@ -283,17 +283,17 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_1X_unfold() {
             return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local, 1).unfold();
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocalX_unfold() {
             return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(unfold().values("name").fold()).tail(local).unfold();
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXlimitXlocal_0XX_tailXlocal_1X_unfold() {
             return g.V().as("a").out().as("a").out().as("a").<String>select(Pop.mixed, "a").by(limit(local, 0)).tail(local, 1).unfold();
         }
 
