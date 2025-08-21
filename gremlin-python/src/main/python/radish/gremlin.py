@@ -421,7 +421,7 @@ world.gremlins = {
     'g_V_asXaX_out_asXaX_out_asXaX_selectXmixed_aX_byXunfold_valuesXnameX_foldX_tailXlocal_2X': [(lambda g:g.V().as_('a').out().as_('a').out().as_('a').select(Pop.mixed, 'a').by(__.unfold().values('name').fold()).tail(Scope.local, 2))], 
     'g_VX1X_valuesXageX_tailXlocal_5X': [(lambda g, vid1=None:g.V(vid1).values('age').tail(Scope.local, 50))], 
     'g_injectXlistX1_2_3XX_tailXlocal_1X': [(lambda g:g.inject([1, 2, 3]).tail(Scope.local, 1))], 
-    'g_injectXa1_b2_c3X_tailXlocal_1X': [(lambda g:g.inject({ 'a': 1, 'b': 2, 'c': 3 }).tail(Scope.local, 1))], 
+    'g_VX1X_valueMapXnameX_tailXlocal_1X': [(lambda g, vid1=None:g.V(vid1).value_map('name').tail(Scope.local, 1))], 
     'g_injectX1_2_3X_tailXlocal_1X_unfold': [(lambda g:g.inject([1, 2, 3]).tail(Scope.local, 1).unfold())], 
     'g_injectX1_2_3_4_5_6X_tailXlocal_1X': [(lambda g:g.inject([1, 2, 3], [4, 5, 6]).tail(Scope.local, 1))], 
     'g_injectX1_2_3_4_5X_tailXlocal_2X': [(lambda g:g.inject([1, 2, 3, 4, 5]).tail(Scope.local, 2))], 
