@@ -519,6 +519,9 @@ type implementation. To input a set into Gremlin-Go, a custom struct which imple
 will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go
 that can be used to fulfill the `gremlingo.Set` interface if desired.
 
+* Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal 
+results which contain maps may not preserve original ordering when deserialized into Go's native map types.
+
 [[gremlin-go-examples]]
 === Application Examples
 

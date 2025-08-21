@@ -239,16 +239,17 @@ Feature: Step - tail()
       | l[d[3].i] |
 
   # Test that Map local tail 1 - should still return single entry
-  Scenario: g_injectXa1_b2_c3X_tailXlocal_1X
-    Given the empty graph
+  Scenario: g_VX1X_valueMapXnameX_tailXlocal_1X
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.inject(["a": 1, "b": 2, "c": 3]).tail(Scope.local, 1)
+      g.V(vid1).valueMap("name").tail(Scope.local, 1)
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"c": 3}] |
+      | m[{"name":["marko"]}] |
 
   # Test unfold() can be used to extract single elements from collections for tail
   Scenario: g_injectX1_2_3X_tailXlocal_1X_unfold
