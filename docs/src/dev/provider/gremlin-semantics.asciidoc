@@ -1998,6 +1998,79 @@ from the resulting `Map`.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ProjectStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 
+[[repeat-step]]
+=== repeat()
+
+*Description:* Iteratively applies a traversal (the "loop body") to each incoming traverser until a stopping
+condition is met. Optionally, it can emit traversers on each iteration according to an emit predicate. The
+repeat step supports loop naming and a loop counter via `loops()`.
+
+*Syntax:* `repeat(Traversal repeatTraversal)` | `repeat(String loopName, Traversal repeatTraversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`emit()`, `until()`, `times()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `repeatTraversal` - The traversal that represents the loop body to apply on each iteration.
+* `loopName` - Optional name used to identify the loop for nested loops and to access a specific counter via
+`loops(loopName)`.
+
+*Modulation:*
+
+* `emit()` | `emit(Traversal<?, ?> emitTraversal)` | `emit(Predicate<Traverser<?>> emitPredicate)` - Controls if/when a
+  traverser is emitted to the downstream of repeat() in addition to being looped again. If supplied before `repeat(...)`
+  the predicate is evaluated prior to the first iteration (pre-emit). If supplied after `repeat(...)`, the predicate is
+  evaluated after each completed iteration (post-emit). Calling `emit()` without arguments is equivalent to a predicate
+  that always evaluates to true at the given check position.
+* `until(Traversal<?, ?> untilTraversal)` | `until(Predicate<Traverser<?>> untilPredicate)` - Controls when repetition
+  stops. If supplied before `repeat(...)` the predicate is evaluated prior to the first iteration (pre-check). If the
+  predicate is true, the traverser will pass downstream without any loop iteration. If supplied after `repeat(...)`, the
+  predicate is evaluated after each completed iteration (post-check). When the predicate is true, the traverser stops
+  repeating and passes downstream.
+* `times(int n)` - Convenience for a loop bound. Equivalent to `until(loops().is(n))` when placed after `repeat(...)`
+  (post-check), and equivalent to `until(loops().is(n))` placed before `repeat(...)` (pre-check) when specified before.
+  See Considerations for details and examples.
+
+*Considerations:*
+
+- Evaluation order matters. The placement of `emit()` and `until()` relative to `repeat()` controls whether their
+predicates are evaluated before the first iteration (pre) or after each iteration (post) allowing for `while/do` or
+`do/while` semantics respectively:
+  - Pre-check / pre-emit: when the modulator appears before `repeat(...)`.
+  - Post-check / post-emit: when the modulator appears after `repeat(...)`.
+- Loop counter semantics:
+  - The loop counter for a given named or unnamed repeat is incremented once per completion of the loop body (i.e.,
+after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.
+  - `loops()` without arguments returns the counter for the closest (innermost) `repeat()`. `loops("name")` returns the
+counter for the named loop.
+- Re-queuing for the next iteration:
+  - After each iteration, if `until` is not satisfied at the post-check, the traverser is sent back into the loop body
+for another iteration. If it is satisfied, the traverser exits the loop and proceeds downstream.
+- Interaction of `times(n)`:
+  - `g.V().repeat(x).times(2)` applies `x` exactly twice; no values are emitted unless `emit()` is specified.
+  - `g.V().emit().repeat(x).times(2)` emits the original input (pre-emit) and then the results of each iteration.
+  - Placing `times(0)` before `repeat(...)` yields no iterations and passes the input downstream unchanged.
+  - Placing `times(0)` after `repeat(...)` yields the same as `times(1)` because of `do/while` semantics.
+- Errors when `repeatTraversal` is missing:
+  - Using `emit()`, `until()`, or `times()` without an associated `repeat()` will raise an error at iteration time with a
+message containing: `The repeat()-traversal was not defined`.
+- Nested repeats and loop names:
+  - Nested `repeat()` steps maintain separate loop counters. Use `repeat("a", ...)` and `loops("a")` to reference a
+    specific counter inside nested loops.
+
+*Exceptions*
+
+* Using `emit()`, `until()`, or `times()` without a matching `repeat()` will raise an `IllegalStateException` at runtime
+  when the step is initialized during iteration with the message containing: `The repeat()-traversal was not defined`.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/branch/RepeatStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#repeat-step[reference],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features/branch/Repeat.feature[tests]
+
 [[replace-step]]
 === replace()
 
