@@ -155,10 +155,8 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
     @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ADD_PROPERTY)
     public void g_E_properties_order_value() {
-        { // add some more edge properties
-            final AtomicInteger a = new AtomicInteger();
-            g.E().forEachRemaining(e -> e.property("a", a.getAndIncrement()));
-        }
+        final AtomicInteger a = new AtomicInteger();
+        g.E().forEachRemaining(e -> g.E(e.id()).property("a", a.getAndIncrement()).iterate());
 
         final Traversal asc = get_g_E_properties_order_value();
         printTraversalForm(asc);
