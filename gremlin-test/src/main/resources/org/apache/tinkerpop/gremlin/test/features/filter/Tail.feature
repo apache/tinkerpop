@@ -241,9 +241,10 @@ Feature: Step - tail()
   # Test that Map local tail 1 - should still return single entry
   Scenario: g_VX1X_valueMapXnameX_tailXlocal_1X
     Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
-      g.V(1).valueMap('name').tail(Scope.local, 1)
+      g.V(vid1).valueMap("name").tail(Scope.local, 1)
       """
     When iterated to list
     Then the result should be unordered
