@@ -87,7 +87,17 @@ Feature: Orderability
       | d[11].l |
 
   Scenario: g_E_properties_order_value
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").as("a").
+        addE("self").from("a").to("a").property("weight", 0.5d).property("a", 10i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 11i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 12i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 13i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 14i).
+        addE("self").from("a").to("a").property("weight", 0.2d).property("a", 15i)
+      """
     And the traversal of
       """
       g.E().properties().order().value()
@@ -95,6 +105,12 @@ Feature: Orderability
     When iterated to list
     Then the result should be ordered
       | result |
+      | d[10].i |
+      | d[11].i |
+      | d[12].i |
+      | d[13].i |
+      | d[14].i |
+      | d[15].i |
       | d[0.2].d |
       | d[0.4].d |
       | d[0.4].d |
@@ -103,7 +119,17 @@ Feature: Orderability
       | d[1.0].d |
 
   Scenario: g_E_properties_order_byXdescX_value
-    Given the modern graph
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").as("a").
+        addE("self").from("a").to("a").property("weight", 0.5d).property("a", 10i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 11i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 12i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 13i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 14i).
+        addE("self").from("a").to("a").property("weight", 0.2d).property("a", 15i)
+      """
     And the traversal of
       """
       g.E().properties().order().by(desc).value()
@@ -117,6 +143,12 @@ Feature: Orderability
       | d[0.4].d |
       | d[0.4].d |
       | d[0.2].d |
+      | d[15].i |
+      | d[14].i |
+      | d[13].i |
+      | d[12].i |
+      | d[11].i |
+      | d[10].i |
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order
