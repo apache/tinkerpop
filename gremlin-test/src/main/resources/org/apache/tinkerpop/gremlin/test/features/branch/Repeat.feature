@@ -398,3 +398,47 @@ Feature: Step - repeat()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
+
+  Scenario: g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").repeat(__.out("created")).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+
+  Scenario: g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").repeat(out("created")).times(0).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+
+  Scenario: g_V_haxXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").times(1).repeat(out("created")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+
+  Scenario: g_V_haxXperson_name_markoX_timesX0X_repeatXoutXcreatedXX_name
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("person","name","marko").times(0).repeat(out("created")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
