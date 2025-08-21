@@ -239,11 +239,12 @@ Feature: Step - tail()
       | l[d[3].i] |
 
   # Test that Map local tail 1 - should still return single entry
+  # note that this test injects a map with a single entry as to not enforce an expected ordering
   Scenario: g_injectXa1_b2_c3X_tailXlocal_1X
     Given the empty graph
     And the traversal of
       """
-      g.inject(["a": 1, "b": 2, "c": 3]).tail(Scope.local, 1)
+      g.inject(["c": 3]).tail(Scope.local, 1)
       """
     When iterated to list
     Then the result should be unordered
