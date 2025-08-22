@@ -26,11 +26,10 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -50,16 +49,16 @@ public class ContainsBulkSetTest {
         // If bulkset contains only one type of element, we should use contains
         assertEquals(true, Contains.within.test(new ReferenceVertex("3"), bulkSet));
         assertEquals(false, Contains.within.test(new ReferenceVertex("4"), bulkSet));
-        verify(bulkSet, times(2)).contains(anyObject());
+        verify(bulkSet, times(2)).contains(any());
         // we should also not use contains if we test for different type
         assertEquals(false, Contains.within.test(new ReferenceVertexProperty<>("2", "label", "value"), bulkSet));
-        verify(bulkSet, times(2)).contains(anyObject());
+        verify(bulkSet, times(2)).contains(any());
 
         // If bulkset contains different types of elements, we can no longer use contains
         bulkSet.add("test string", 1);
         assertEquals(true, Contains.within.test(new ReferenceVertex("3"), bulkSet));
         assertEquals(false, Contains.within.test(new ReferenceVertex("4"), bulkSet));
         assertEquals(false, Contains.within.test(new ReferenceVertexProperty<>("2", "label", "value"), bulkSet));
-        verify(bulkSet, times(2)).contains(anyObject());
+        verify(bulkSet, times(2)).contains(any());
     }
 }
