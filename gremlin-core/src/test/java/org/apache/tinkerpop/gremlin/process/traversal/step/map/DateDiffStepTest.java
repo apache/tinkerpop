@@ -96,4 +96,9 @@ public class DateDiffStepTest extends StepTest {
     public void shouldThrowWhenInputIsNotDate() {
         __.__("2023-08-23T00:00:00Z").dateDiff(new Date()).next();
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWhenInputIsNull() {
+        __.__((Object) null).dateDiff(new Date()).next();
+    }
 }

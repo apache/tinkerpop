@@ -55,7 +55,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
 
         if (!(object instanceof Date))
             throw new IllegalArgumentException(
-                    String.format("DateDiff can only take Date as argument, encountered %s", object.getClass()));
+                    String.format("DateDiff can only take Date as argument, encountered %s", object == null ? null : object.getClass()));
 
         final Date otherDate = value != null ? value :
                 dateTraversal != null ? TraversalUtil.apply(traverser, dateTraversal) : null;
