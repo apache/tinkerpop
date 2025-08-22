@@ -70,7 +70,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
             } else {
                 // note: null handling consistency to be resolved https://issues.apache.org/jira/browse/TINKERPOP-3152
                 throw new IllegalArgumentException(
-                        String.format("DateDiff can only take OffsetDateTime or Date (deprecated) as argument, encountered %s", object.getClass()));
+                        String.format("DateDiff can only take OffsetDateTime or Date (deprecated) as argument, encountered %s", object == null ? null : object.getClass()));
             }
         } else {
             date = (OffsetDateTime) object;

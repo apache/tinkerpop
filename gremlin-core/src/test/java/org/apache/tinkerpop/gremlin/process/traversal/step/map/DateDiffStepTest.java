@@ -136,4 +136,9 @@ public class DateDiffStepTest extends StepTest {
 
         assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowWhenInputIsNull() {
+        __.__((Object) null).dateDiff(new Date()).next();
+    }
 }
