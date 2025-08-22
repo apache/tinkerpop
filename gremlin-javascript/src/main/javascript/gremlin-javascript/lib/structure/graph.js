@@ -79,10 +79,12 @@ class Edge extends Element {
     this.inV = inV;
     this.properties = {};
     if (properties) {
-      const keys = Object.keys(properties);
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i];
-        this.properties[k] = properties[k].value;
+      if (Array.isArray(properties)) {
+        // Handle array of Property objects
+        properties.forEach((prop) => (this.properties[prop.key] = prop.value));
+      } else {
+        // Handle object format as before
+        Object.keys(properties).forEach((k) => (this.properties[k] = properties[k].value));
       }
     }
   }

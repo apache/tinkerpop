@@ -52,7 +52,9 @@ public class PathSerializer extends SimpleTypeSerializer<Path> {
             path.extend(objects.get(ix), labels.get(ix));
         }
 
-        return ReferenceFactory.detach(path);
+        // before 3.7.5, we forced detachment to reference here. better to just allow materializeProperties to control
+        // detachment or not.
+        return path;
     }
 
     @Override

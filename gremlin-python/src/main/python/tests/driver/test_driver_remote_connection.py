@@ -127,6 +127,21 @@ class TestDriverRemoteConnection(object):
         results = g.with_("materializeProperties", "tokens").V().properties().to_list()
         for vp in results:
             assert vp.properties is None or len(vp.properties) == 0
+        # #
+        # test materializeProperties in Path - GraphSON will deserialize into None and GraphBinary to []
+        p = g.with_("materializeProperties", "tokens").V().has('name', 'marko').outE().inV().has_label('software').path().next()
+        assert 3 == len(p.objects)
+        assert p.objects[0].properties is None or len(p.objects[0].properties) == 0
+        assert p.objects[1].properties is None or len(p.objects[1].properties) == 0
+        assert p.objects[2].properties is None or len(p.objects[2].properties) == 0
+        # #
+        # test materializeProperties in Path - 'all' should materialize properties on each element
+        p = g.with_("materializeProperties", "all").V().has('name', 'marko').outE().inV().has_label('software').path().next()
+        assert 3 == len(p.objects)
+        assert p.objects[0].properties is not None and len(p.objects[0].properties) > 0
+        # edges have dict-like properties; ensure not empty
+        assert p.objects[1].properties is not None and len(p.objects[1].properties) > 0
+        assert p.objects[2].properties is not None and len(p.objects[2].properties) > 0
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())

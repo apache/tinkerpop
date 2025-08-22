@@ -1266,5 +1266,59 @@ func TestConnection(t *testing.T) {
 			assert.True(t, ok)
 			assert.Equal(t, 0, len(properties))
 		}
+
+		// Path elements should also have no materialized properties when tokens is set
+		r, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().Has("person", "name", "marko").OutE().InV().HasLabel("software").Path().Next()
+		assert.Nil(t, err)
+		p, err := r.GetPath()
+		assert.Nil(t, err)
+		assert.NotNil(t, p)
+		assert.Equal(t, 3, len(p.Objects))
+
+		// first element should be a Vertex
+		if a, ok := p.Objects[0].(*Vertex); assert.True(t, ok) {
+			props, ok := a.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(props))
+		}
+		// second element should be an Edge
+		if b, ok := p.Objects[1].(*Edge); assert.True(t, ok) {
+			props, ok := b.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(props))
+		}
+		// third element should be a Vertex
+		if c, ok := p.Objects[2].(*Vertex); assert.True(t, ok) {
+			props, ok := c.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Equal(t, 0, len(props))
+		}
+
+		// Path elements should have materialized properties when all is set
+		r, err = g.With("materializeProperties", MaterializeProperties.All).V().Has("person", "name", "marko").OutE().InV().HasLabel("software").Path().Next()
+		assert.Nil(t, err)
+		p, err = r.GetPath()
+		assert.Nil(t, err)
+		assert.NotNil(t, p)
+		assert.Equal(t, 3, len(p.Objects))
+
+		// first element should be a Vertex with properties present
+		if a, ok := p.Objects[0].(*Vertex); assert.True(t, ok) {
+			props, ok := a.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Greater(t, len(props), 0)
+		}
+		// second element should be an Edge with properties present
+		if b, ok := p.Objects[1].(*Edge); assert.True(t, ok) {
+			props, ok := b.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Greater(t, len(props), 0)
+		}
+		// third element should be a Vertex with properties present
+		if c, ok := p.Objects[2].(*Vertex); assert.True(t, ok) {
+			props, ok := c.Properties.([]interface{})
+			assert.True(t, ok)
+			assert.Greater(t, len(props), 0)
+		}
 	})
 }

@@ -128,12 +128,28 @@ describe('GraphSONReader', function () {
     assert.ok(result.objects);
     assert.ok(result.labels);
     assert.strictEqual(result.objects[2], 'lop');
-    assert.ok(result.objects[0] instanceof graph.Vertex);
-    assert.ok(result.objects[1] instanceof graph.Vertex);
-    assert.strictEqual(result.objects[0].label, 'person');
-    assert.strictEqual(result.objects[1].label, 'software');
+    const a = result.objects[0];
+    const bc = result.objects[1];
+    assert.ok(a instanceof graph.Vertex);
+    assert.ok(bc instanceof graph.Vertex);
+    assert.strictEqual(a.label, 'person');
+    assert.strictEqual(bc.label, 'software');
+    assert.ok(a.properties);
+    assert.ok(a.properties['name']);
+    assert.strictEqual(a.properties['name'].length, 1);
+    assert.strictEqual(a.properties['name'][0].value, 'marko');
+    assert.ok(a.properties['age']);
+    assert.strictEqual(a.properties['age'].length, 1);
+    assert.strictEqual(a.properties['age'][0].value, 29);
+    assert.ok(bc.properties);
+    assert.ok(bc.properties['name']);
+    assert.strictEqual(bc.properties['name'].length, 1);
+    assert.strictEqual(bc.properties['name'][0].value, 'lop');
+    assert.ok(bc.properties['lang']);
+    assert.strictEqual(bc.properties['lang'].length, 1);
+    assert.strictEqual(bc.properties['lang'][0].value, 'java');
   });
-  it('should parse paths from GraphSON3', function () {
+  it('should parse paths from GraphSON3 without properties', function () {
     const obj = {
       "@type" : "g:Path",
       "@value" : {
@@ -180,10 +196,14 @@ describe('GraphSONReader', function () {
     assert.ok(result.objects);
     assert.ok(result.labels);
     assert.strictEqual(result.objects[2], 'lop');
-    assert.ok(result.objects[0] instanceof graph.Vertex);
-    assert.ok(result.objects[1] instanceof graph.Vertex);
-    assert.strictEqual(result.objects[0].label, 'person');
-    assert.strictEqual(result.objects[1].label, 'software');
+    const a = result.objects[0];
+    const bc = result.objects[1];
+    assert.ok(a instanceof graph.Vertex);
+    assert.ok(bc instanceof graph.Vertex);
+    assert.strictEqual(a.label, 'person');
+    assert.strictEqual(bc.label, 'software');
+    assert.ok(a.properties === undefined);
+    assert.ok(bc.properties === undefined);
   });
 });
 describe('GraphSONWriter', function () {

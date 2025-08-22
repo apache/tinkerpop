@@ -158,6 +158,79 @@ describe('Traversal', function () {
         list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties.length === 0));
       });
     });
+    it('should skip path element properties when tokens is set', function () {
+      var g = traversal().withRemote(connection);
+      return g.with_("materializeProperties", "tokens").V().has('name','marko').outE().inV().hasLabel('software').path().next().then(function (item) {
+        const p = item.value;
+        assert.ok(p);
+        assert.strictEqual(p.objects.length, 3);
+        const a = p.objects[0];
+        const b = p.objects[1];
+        const c = p.objects[2];
+        assert.ok(a instanceof Vertex);
+        assert.ok(b instanceof Edge);
+        assert.ok(c instanceof Vertex);
+        assert.ok(a.properties === undefined || a.properties.length === 0);
+        assert.strictEqual(Object.keys(b.properties).length, 0);
+        assert.ok(c.properties === undefined || c.properties.length === 0);
+      });
+    });
+    it('should materialize path element properties when all is set', function () {
+      var g = traversal().withRemote(connection);
+      return g.with_("materializeProperties", "all").V().has('name','marko').outE().inV().hasLabel('software').path().next().then(function (item) {
+        const p = item.value;
+        assert.ok(p);
+        assert.strictEqual(p.objects.length, 3);
+        const a = p.objects[0];
+        const b = p.objects[1];
+        const c = p.objects[2];
+        assert.ok(a instanceof Vertex);
+        assert.ok(b instanceof Edge);
+        assert.ok(c instanceof Vertex);
+        assert.ok(a.properties);
+        // these assertions are if/then because of how mixed up javascript is right now on serialization
+        // standards as discussed on TINKERPOP-3186 - can fix that on a breaking change...until then we
+        // just retain existing weirdness.
+        let aNameProps, aAgeProps;
+        if (a.properties instanceof Array) {
+          aNameProps = a.properties.filter(p => p.key === 'name');
+          aAgeProps = a.properties.filter(p => p.key === 'age');
+        } else {
+          aNameProps = a.properties['name'];
+          aAgeProps = a.properties['age'];
+        }
+        assert.ok(aNameProps);
+        assert.strictEqual(aNameProps.length, 1);
+        assert.strictEqual(aNameProps[0].value, 'marko');
+        assert.ok(aAgeProps);
+        assert.strictEqual(aAgeProps.length, 1);
+        assert.strictEqual(aAgeProps[0].value, 29);
+        assert.ok(b.properties);
+        let bWeight;
+        if (b.properties instanceof Array) {
+          bWeight = b.properties.filter(p => p.key === 'weight');
+        } else {
+          bWeight = b.properties['weight'];
+        }
+        assert.ok(bWeight !== undefined);
+        assert.strictEqual(bWeight, 0.4);
+        assert.ok(c.properties);
+        let cNameProps, cLangProps;
+        if (c.properties instanceof Array) {
+          cNameProps = c.properties.filter(p => p.key === 'name');
+          cLangProps = c.properties.filter(p => p.key === 'lang');
+        } else {
+          cNameProps = c.properties['name'];
+          cLangProps = c.properties['lang'];
+        }
+        assert.ok(cNameProps);
+        assert.strictEqual(cNameProps.length, 1);
+        assert.strictEqual(cNameProps[0].value, 'lop');
+        assert.ok(cLangProps);
+        assert.strictEqual(cLangProps.length, 1);
+        assert.strictEqual(cLangProps[0].value, 'java');
+      });
+    });
   });
   describe('lambdas', function() {
     it('should handle 1-arg lambdas', function() {

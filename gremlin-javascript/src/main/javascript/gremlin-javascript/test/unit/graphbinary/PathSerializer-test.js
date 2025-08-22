@@ -149,4 +149,96 @@ describe('GraphBinary.PathSerializer', () => {
     ))
   );
 
+  // Additional complex path tests with Vertex and Edge objects
+  describe('complex V-E-V path round-trip', () => {
+    function buildVertex(id, label, propsObj) {
+      if (!propsObj) return new g.Vertex(id, label, undefined);
+      // build array of VertexProperty entries as expected by Vertex
+      const vps = Object.keys(propsObj).map((k, idx) => new g.VertexProperty(idx + 1, k, propsObj[k], undefined));
+      return new g.Vertex(id, label, vps);
+    }
+
+    function buildEdge(id, outV, label, inV, propsObj) {
+      // Edge expects properties as a map of key -> g.Property (the constructor extracts .value)
+      let props = undefined;
+      if (propsObj) {
+        props = {};
+        for (const k of Object.keys(propsObj)) props[k] = new g.Property(k, propsObj[k]);
+      }
+      return new g.Edge(id, outV, label, inV, props);
+    }
+
+    it('should serialize/deserialize Path with V-E-V that includes properties', () => {
+      const vOut = buildVertex(1, 'person', { name: 'marko', age: 29 });
+      const vIn = buildVertex(3, 'software', { name: 'lop', lang: 'java' });
+      const e = buildEdge(9, vOut, 'created', vIn, { weight: 0.4 });
+
+      const p = new g.Path([[ 'a' ], [ 'b' ], [ 'c' ]], [ vOut, e, vIn ]);
+
+      // round-trip with non-fully-qualified format
+      const buf = pathSerializer.serialize(p, false);
+      const { v: deser, len } = pathSerializer.deserialize(buf, false);
+
+      // sanity on buffer consumed
+      assert.strictEqual(len, buf.length);
+
+      // assert labels
+      assert.strictEqual(deser.labels.length, 3);
+      assert.strictEqual(deser.labels[0].length, 1);
+      assert.strictEqual(deser.labels[1].length, 1);
+      assert.strictEqual(deser.labels[2].length, 1);
+
+      // assert objects and their types
+      assert.strictEqual(deser.objects.length, 3);
+      const a = deser.objects[0];
+      const b = deser.objects[1];
+      const c = deser.objects[2];
+      assert.ok(a instanceof g.Vertex);
+      assert.ok(b instanceof g.Edge);
+      assert.ok(c instanceof g.Vertex);
+
+      // Vertex properties should be present (VertexSerializer preserves them)
+      assert.ok(Array.isArray(a.properties));
+      assert.ok(a.properties.length > 0);
+      assert.ok(Array.isArray(c.properties));
+      assert.ok(c.properties.length > 0);
+
+      // Edge properties are not serialized in GraphBinary (EdgeSerializer writes null), expect empty object
+      assert.ok(b.properties);
+      assert.strictEqual(Object.keys(b.properties).length, 0);
+    });
+
+    it('should serialize/deserialize Path with V-E-V without properties', () => {
+      const vOut = buildVertex(1, 'person', undefined);
+      const vIn = buildVertex(3, 'software', undefined);
+      const e = buildEdge(9, vOut, 'created', vIn, undefined);
+
+      const p = new g.Path([[ 'a' ], [ 'b' ], [ 'c' ]], [ vOut, e, vIn ]);
+
+      // round-trip with fully-qualified format
+      const fqBuf = pathSerializer.serialize(p, true);
+      const { v: deser, len } = pathSerializer.deserialize(fqBuf, true);
+
+      assert.strictEqual(len, fqBuf.length);
+
+      // types
+      const a = deser.objects[0];
+      const b = deser.objects[1];
+      const c = deser.objects[2];
+      assert.ok(a instanceof g.Vertex);
+      assert.ok(b instanceof g.Edge);
+      assert.ok(c instanceof g.Vertex);
+
+      // Vertex properties default to [] when null/undefined
+      assert.ok(Array.isArray(a.properties));
+      assert.strictEqual(a.properties.length, 0);
+      assert.ok(Array.isArray(c.properties));
+      assert.strictEqual(c.properties.length, 0);
+
+      // Edge properties default to {} when null/undefined
+      assert.ok(b.properties);
+      assert.strictEqual(Object.keys(b.properties).length, 0);
+    });
+  });
+
 });

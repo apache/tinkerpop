@@ -22,11 +22,13 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
@@ -42,7 +44,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServerIntegrationTest {
@@ -56,7 +62,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
         this.serializer = serializer;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "{0}")
     public static Collection serializers() {
         return Arrays.asList(new Object[][]{
                 {new GraphBinaryMessageSerializerV1()},
@@ -105,7 +111,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldSkipVertexPropertiesForBytecode() {
-        final Vertex vertex = g.with("materializeProperties", "tokens").V(1).next();
+        final Vertex vertex = g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, Tokens.MATERIALIZE_PROPERTIES_TOKENS).V(1).next();
 
         assertVertexWithoutProperties(vertex);
     }
@@ -133,7 +139,7 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldSkipEdgePropertiesForBytecode() {
-        final Edge edge = g.with("materializeProperties", "tokens").E(7).next();
+        final Edge edge = g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, Tokens.MATERIALIZE_PROPERTIES_TOKENS).E(7).next();
 
         assertEdgeWithoutProperties(edge);
     }
@@ -161,9 +167,34 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldSkipVertexPropertyPropertiesForBytecode() {
-        final Vertex vertex = g.with("materializeProperties", "tokens").V(7).next();
+        final Vertex vertex = g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, Tokens.MATERIALIZE_PROPERTIES_TOKENS).V(7).next();
 
         assertVertexWithoutVertexProperties(vertex);
+    }
+
+    @Test
+    public void shouldDeserializePathPropertiesForScripts() {
+        final Path p = client.submit("gmodern.V().has('name','marko').outE().inV().hasLabel('software').path()").one().getPath();
+        assertPathElementsWithProperties(p);
+    }
+
+    @Test
+    public void shouldDeserializePathPropertiesForScriptsWithTokens() {
+        final Path p = client.submit("gmodern.with('materializeProperties','tokens').V().has('name','marko').outE().inV().hasLabel('software').path()").one().getPath();
+        assertPathElementsWithoutProperties(p);
+    }
+
+    @Test
+    public void shouldDeserializePathPropertiesForScriptsForBytecode() {
+        final Path p = g.V().has("name", "marko").outE().inV().hasLabel("software").path().next();
+        assertPathElementsWithProperties(p);
+    }
+
+    @Test
+    public void shouldDeserializePathPropertiesForScriptsWithTokensForBytecode() {
+        final Path p = g.with(Tokens.ARGS_MATERIALIZE_PROPERTIES, Tokens.MATERIALIZE_PROPERTIES_TOKENS).
+                V().has("name", "marko").outE().inV().hasLabel("software").path().next();
+        assertPathElementsWithoutProperties(p);
     }
 
     // asserted vertex 7 from crew graph
@@ -223,5 +254,61 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
         assertEquals(1, IteratorUtils.count(edge.properties()));
         assertEquals(0.5, edge.property("weight").value());
+    }
+
+    private void assertPathElementsWithProperties(final Path p) {
+        // expect a V-E-V path
+        assertEquals(3, p.size());
+
+        final Object a = p.get(0);
+        final Object b = p.get(1);
+        final Object c = p.get(2);
+
+        // basic type assertions (prefer Hamcrest)
+        assertThat(a, instanceOf(Vertex.class));
+        assertThat(b, instanceOf(Edge.class));
+        assertThat(c, instanceOf(Vertex.class));
+
+        // properties should be present on each element in the path with expected key/values
+        final Vertex vOut = (Vertex) a;
+        final Edge e = (Edge) b;
+        final Vertex vIn = (Vertex) c;
+
+        // vertex 'a' should be marko with age 29
+        assertThat(IteratorUtils.count(vOut.properties()) > 0, is(true));
+        assertEquals("marko", vOut.value("name"));
+        assertEquals(Integer.valueOf(29), vOut.value("age"));
+
+        // edge 'b' should have weight 0.4
+        assertThat(IteratorUtils.count(e.properties()) > 0, is(true));
+        assertEquals(0.4, (Double) e.value("weight"), 0.0000001d);
+
+        // vertex 'c' should be lop with lang java
+        assertThat(IteratorUtils.count(vIn.properties()) > 0, is(true));
+        assertEquals("lop", vIn.value("name"));
+        assertEquals("java", vIn.value("lang"));
+    }
+
+    private void assertPathElementsWithoutProperties(final Path p) {
+        // expect a V-E-V path
+        assertEquals(3, p.size());
+
+        final Object a = p.get(0);
+        final Object b = p.get(1);
+        final Object c = p.get(2);
+
+        // basic type assertions (prefer Hamcrest)
+        assertThat(a, instanceOf(Vertex.class));
+        assertThat(b, instanceOf(Edge.class));
+        assertThat(c, instanceOf(Vertex.class));
+
+        // properties should NOT be present on each element in the path when materializeProperties is 'tokens'
+        final Vertex vOut = (Vertex) a;
+        final Edge e = (Edge) b;
+        final Vertex vIn = (Vertex) c;
+
+        assertEquals(0, IteratorUtils.count(vOut.properties()));
+        assertEquals(0, IteratorUtils.count(e.properties()));
+        assertEquals(0, IteratorUtils.count(vIn.properties()));
     }
 }
