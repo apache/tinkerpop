@@ -822,6 +822,7 @@ None
 Incoming date remains unchanged.
 
 *Exceptions*
+
 * If the incoming traverser is a non-String/Number/Date value then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsDateStep.java[source],
@@ -851,6 +852,7 @@ list of string instead.
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
@@ -1611,6 +1613,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -1709,6 +1712,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2096,6 +2100,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2152,6 +2157,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2182,6 +2188,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2214,6 +2221,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2243,6 +2251,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2272,6 +2281,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
@@ -2300,6 +2310,7 @@ The `global` scope will operate on individual string traverser. The `local` scop
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
+
 * For `Scope.global` or parameterless function calls, if the incoming traverser is a non-String value then an `IllegalArgumentException` will be thrown.
 * For `Scope.local`, if the incoming traverser is not a string or a list of strings then an `IllegalArgumentException` will be thrown.
 
