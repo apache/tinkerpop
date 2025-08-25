@@ -2524,6 +2524,9 @@ g.V().valueMap().select('location').limit(local, 1).unfold() <4>
 <3> `List<String>` for each vertex containing the first location.
 <4> `String` for each vertex containing the first location (use `unfold()` to extract single elements from singleton collections).
 
+NOTE: When using `limit()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
+See the <<repeat-step,repeat step documentation>> for examples and details.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#limit(long)++[`limit(long)`],
@@ -4040,6 +4043,9 @@ g.V().valueMap().select('location').range(local, 1, 2).unfold() <3>
 <2> `List<String>` for each vertex containing the second location.
 <3> `String` for each vertex containing the second location (use `unfold()` to extract single elements from singleton collections).
 
+NOTE: When using `range()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
+See the <<repeat-step,repeat step documentation>> for examples and details.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#range(long,long)++[`range(long,long)`],
@@ -4150,6 +4156,23 @@ WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) proc
 In OLAP, where the atomic unit of computing is the vertex and its local "star graph," it is important that the
 anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to
 an adjacent vertex's properties or edges.
+
+==== Using limit() and range() inside repeat()
+
+When using `limit()` or `range()` steps inside `repeat()`, each iteration of the repeat gets its own counter, ensuring 
+consistent behavior across iterations:
+
+[gremlin-groovy,grateful-dead]
+----
+g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(3) <1>
+g.V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2) <2>
+----
+
+<1> Starting from the song 'JAM' get 2 songs that have followed, repeating 3 times.
+<2> Starting from the song 'DRUMS' get the 2nd and 3rd songs that have preceded, repeating twice.
+
+Each repeat iteration maintains separate counters for `limit()` and `range()` steps, ensuring predictable behavior 
+equivalent to manually unrolling the repeat.
 
 *Additional References*
 

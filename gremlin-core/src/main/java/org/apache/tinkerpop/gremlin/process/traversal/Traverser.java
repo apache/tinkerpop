@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -90,7 +88,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      *
      * @return The number of times the traverser has gone through a loop
      */
-    public int loops();
+    default int loops() {
+        throw new UnsupportedOperationException("This traverser does not support loops: " + this.getClass().getCanonicalName());
+    }
 
     /**
      * Return the number of times the traverser has gone through the named looping section of a traversal.
@@ -99,7 +99,9 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      * @return The number of times the traverser has gone through a loop
      * @throws IllegalArgumentException if the loopName is not defined
      */
-    public int loops(final String loopName);
+    default int loops(final String loopName) {
+        throw new UnsupportedOperationException("This traverser does not support loops: " + this.getClass().getCanonicalName());
+    }
 
     /**
      * A traverser may represent a grouping of traversers to allow for more efficient data propagation.
@@ -239,19 +241,22 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @param stepLabel the label of the step that is being set-up.
          * @param loopName the user defined name for referencing the loop counter or null if not set
          */
-        public void initialiseLoops(final String stepLabel, final String loopName);
+        default void initialiseLoops(final String stepLabel, final String loopName) {
+        }
 
         /**
          * Increment the number of times the traverser has gone through a looping section of traversal.
          */
-        public void incrLoops();
+        default void incrLoops() {
+        }
 
         /**
          * Set the number of times the traverser has gone through a loop back to 0.
          * When a traverser exits a looping construct, this method should be called.
          * In a nested loop context, the highest stack loop counter should be removed.
          */
-        public void resetLoops();
+        default void resetLoops() {
+        }
 
         /**
          * Get the step id of where the traverser is located.

@@ -901,15 +901,28 @@ impact.
 
 ===== Examples of Affected Traversals =====
 
-Usage of `limit()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
-returned from the `modern` graph demonstrate the change of semantics if the `limit()` in `repeat()` were to be unrolled:
+Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
+returned from the `modern` graph demonstrate the change of semantics if the `inject()` in `repeat()` were to be unrolled:
 
 [source,text]
 ----
-gremlin> g.V().both().limit(1).both().limit(1)
-==>v[1]
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().repeat(both().limit()).times(2)
-gremlin>
+gremlin> g.V().values('name').inject('foo').inject('foo')
+==>foo
+==>foo
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().values('name').repeat(inject('foo')).times(2)
+==>foo
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
 ----
 
 Another example is the usage of `aggregate()` inside `repeat()`. The following results returned from the `modern` graph 
@@ -972,6 +985,38 @@ g.V().repeat(both()).times(2).dedup()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
+
+==== Modified limit() and range() Semantics in repeat()
+
+The semantics of `limit()` and `range()` steps inside `repeat()` has been modified to ensure consistent semantics across 
+repeat iterations. Previously, these steps would track global counters, leading to unexpected behavior where subsequent 
+iterations would be filtered out entirely as previous iterations reached the global limits. As of 3.8.0 the counters are
+tracked per iteration.
+
+[source,groovy]
+----
+// 3.7.4 - no results due to global limit counter
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
+gremlin>
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
+gremlin>
+
+// 3.8.0 - produces results as limit counters tracked per iteration
+gremlin> g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
+==>[name:[vp[name->HURTS ME TOO]]]
+==>[name:[vp[name->BLACK THROATED WIND]]]
+gremlin> g.V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
+==>DEAL
+==>WOMEN ARE SMARTER
+----
+
+This fix ensures that `limit()` and `range()` steps inside `repeat()` now use per-iteration counters, making the 
+behavior consistent with manually unrolled traversals. The change affects both global and local variants of these steps 
+when used within repeat contexts.
+
+The implementation introduces per-iteration counter tracking in `RangeGlobalStep` that isolates counters based on the 
+repeat step context and iteration number. This ensures that each repeat iteration starts with fresh counters, providing 
+predictable and consistent behavior.
 
 === Upgrading for Providers
 
