@@ -411,3 +411,181 @@ Feature: Step - range()
       | result |
       | l[d[2].i] |
       | l[d[5].i] |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXlimitX1X_inX_timesX2X_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(limit(1).in()).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXlimitX1X_inX_untilXloopsXisX2XXX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(limit(1).in()).until(loops().is(2)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_limitX1X_in_limitX1X_in_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).limit(1).in().limit(1).in().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXlimitX1X_inX_timesX1X_repeatXlimitX1X_inX_timesX1X_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(limit(1).in()).times(1).repeat(limit(1).in()).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXlimitX1X_in_aggregateXxXX_timesX2X_capXxX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(limit(1).in().aggregate('x')).times(2).cap('x')
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[marko] |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXrangeX0_1X_inX_timesX2X_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(range(0, 1).in()).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXrangeX0_1X_inX_untilXloopsXisX2XXX_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(range(0, 1).in()).until(loops().is(2)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_rangeX0_1X_in_rangeX0_1X_in_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).range(0, 1).in().range(0, 1).in().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXrangeX0_1X_in_repeatXrangeX0_1X_inX_timesX1XX_timesX1X_valuesXnameX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(range(0, 1).in().repeat(range(0, 1).in()).times(1)).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VX5X_repeatXrangeX0_1X_in_aggregateXxXX_timesX2X_capXxX
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(range(0, 1).in().aggregate('x')).times(2).cap('x')
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[marko] |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VXnameXJAMXX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has('name','JAM').out('followedBy').limit(2).out('followedBy').limit(2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VXnameXDRUMSXX_repeatXinXfollowedByX_rangeX1_4XX_timesX2X
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has('name','DRUMS').repeat(in('followedBy').range(1,4)).times(2)
+      """
+    When iterated to list
+    Then the result should have a count of 3
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_VXnameXDRUMSXX_inXfollowedByX_rangeX1_4X_inXfollowedByX_rangeX1_4X
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has('name','DRUMS').in('followedBy').range(1,4).in('followedBy').range(1,4)
+      """
+    When iterated to list
+    Then the result should have a count of 3
+
+  # global limits in choose
+  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_outX_limitX1X_outX_limitX2XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(values('age').is(lte(30)),out().limit(1),out().limit(2))
+      """
+    When iterated to list
+    Then the result should have a count of 3
+
+  # local limits in choose   
+  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_localXoutX_limitX1XX_localXoutX_limitX2XXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().choose(values('age').is(lte(30)),local(out().limit(1)),local(out().limit(2)))
+      """
+    When iterated to list
+    Then the result should have a count of 4
