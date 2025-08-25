@@ -32,6 +32,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,6 +49,10 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     private long high;
     private AtomicLong counter = new AtomicLong(0l);
     private boolean bypass;
+    
+    // Per-iteration counter tracking for repeat steps
+    private Map<String, AtomicLong> perIterationCounters = new HashMap<>();
+    private boolean usePerIterationCounters = false;
 
     public RangeGlobalStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
@@ -61,31 +67,38 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
 
-        if (this.high != -1 && this.counter.get() >= this.high) {
+        // Determine which counter to use
+        AtomicLong currentCounter = this.counter;
+        if (usePerIterationCounters && traverser.loops() > 0) {
+            String iterationKey = traverser.getStepId() + ":" + traverser.loops();
+            currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
+        }
+
+        if (this.high != -1 && currentCounter.get() >= this.high) {
             throw FastNoSuchElementException.instance();
         }
 
         long avail = traverser.bulk();
-        if (this.counter.get() + avail <= this.low) {
+        if (currentCounter.get() + avail <= this.low) {
             // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
-            this.counter.getAndAdd(avail);
+            currentCounter.getAndAdd(avail);
             return false;
         }
 
         // Skip for the low and trim for the high. Both can happen at once.
 
         long toSkip = 0;
-        if (this.counter.get() < this.low) {
-            toSkip = this.low - this.counter.get();
+        if (currentCounter.get() < this.low) {
+            toSkip = this.low - currentCounter.get();
         }
 
         long toTrim = 0;
-        if (this.high != -1 && this.counter.get() + avail >= this.high) {
-            toTrim = this.counter.get() + avail - this.high;
+        if (this.high != -1 && currentCounter.get() + avail >= this.high) {
+            toTrim = currentCounter.get() + avail - this.high;
         }
 
         long toEmit = avail - toSkip - toTrim;
-        this.counter.getAndAdd(toSkip + toEmit);
+        currentCounter.getAndAdd(toSkip + toEmit);
         traverser.setBulk(toEmit);
 
         return true;
@@ -95,6 +108,15 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     public void reset() {
         super.reset();
         this.counter.set(0l);
+        this.perIterationCounters.clear();
+    }
+
+    /**
+     * Enables per-iteration counter tracking for use within repeat steps.
+     * When enabled, separate counters are maintained for each repeat iteration.
+     */
+    public void enablePerIterationCounters() {
+        this.usePerIterationCounters = true;
     }
 
     @Override
@@ -116,6 +138,8 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     public RangeGlobalStep<S> clone() {
         final RangeGlobalStep<S> clone = (RangeGlobalStep<S>) super.clone();
         clone.counter = new AtomicLong(0l);
+        clone.perIterationCounters = new HashMap<>();
+        clone.usePerIterationCounters = this.usePerIterationCounters;
         return clone;
     }
 

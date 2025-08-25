@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -67,6 +68,9 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         this.repeatTraversal = repeatTraversal; // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
         this.integrateChild(this.repeatTraversal);
+        
+        // Enable per-iteration counters on any RangeGlobalStep instances within the repeat traversal
+        this.enablePerIterationCountersOnRangeSteps(this.repeatTraversal);
     }
 
 
@@ -125,6 +129,26 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return emitFirst == this.emitFirst && null != this.emitTraversal && TraversalUtil.test(traverser, this.emitTraversal);
     }
 
+    /**
+     * Recursively enables per-iteration counters on all RangeGlobalStep instances within a traversal.
+     */
+    private void enablePerIterationCountersOnRangeSteps(final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof RangeGlobalStep) {
+                ((RangeGlobalStep<?>) step).enablePerIterationCounters();
+            }
+            if (step instanceof TraversalParent) {
+                final TraversalParent parent = (TraversalParent) step;
+                for (final Traversal.Admin<?, ?> childTraversal : parent.getGlobalChildren()) {
+                    this.enablePerIterationCountersOnRangeSteps(childTraversal);
+                }
+                for (final Traversal.Admin<?, ?> childTraversal : parent.getLocalChildren()) {
+                    this.enablePerIterationCountersOnRangeSteps(childTraversal);
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         if (this.untilFirst && this.emitFirst)
@@ -169,6 +193,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             clone.untilTraversal = this.untilTraversal.clone();
         if (null != this.emitTraversal)
             clone.emitTraversal = this.emitTraversal.clone();
+        
+        // Enable per-iteration counters on the cloned repeat traversal
+        clone.enablePerIterationCountersOnRangeSteps(clone.repeatTraversal);
+        
         return clone;
     }
 
