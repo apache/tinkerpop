@@ -411,3 +411,124 @@ Feature: Step - range()
       | result |
       | l[d[2].i] |
       | l[d[5].i] |
+
+  Scenario: 111.1
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid1).repeat(__.limit(1)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 111.2
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid1).repeat(__.limit(1)).until(__.loops().is(2)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 111.3
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid1).limit(1).limit(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 222.1
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(__.limit(1).in()).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 222.2
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(__.limit(1).in()).until(loops().is(2)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 222.3
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).limit(1).in().limit(1).in().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 333.1
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(__.limit(1).in()).times(1).repeat(__.limit(1).in()).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 333.2
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(__.limit(1).in()).until(loops().is(1)).repeat(__.limit(1).in()).until(loops().is(1)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 444.1
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(__.limit(1).in().repeat(__.limit(1).in()).times(1)).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  Scenario: 444.2
+    Given the modern graph
+    And using the parameter vid5 defined as "v[ripple].id"
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V(vid5).repeat(limit(1).in().aggregate('x')).times(2).cap('x')
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[marko] |

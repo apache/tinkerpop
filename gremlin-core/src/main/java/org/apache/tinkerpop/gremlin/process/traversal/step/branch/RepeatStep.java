@@ -18,11 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -30,13 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -71,6 +71,9 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         this.repeatTraversal = repeatTraversal; // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
         this.integrateChild(this.repeatTraversal);
+        
+        // Enable per-iteration counters on any RangeGlobalStep instances within the repeat traversal
+        this.enablePerIterationCountersOnRangeSteps(this.repeatTraversal);
     }
 
 
@@ -129,6 +132,26 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         return emitFirst == this.emitFirst && null != this.emitTraversal && TraversalUtil.test(traverser, this.emitTraversal);
     }
 
+    /**
+     * Recursively enables per-iteration counters on all RangeGlobalStep instances within a traversal.
+     */
+    private void enablePerIterationCountersOnRangeSteps(final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof RangeGlobalStep) {
+                ((RangeGlobalStep<?>) step).enablePerIterationCounters();
+            }
+            if (step instanceof TraversalParent) {
+                final TraversalParent parent = (TraversalParent) step;
+                for (final Traversal.Admin<?, ?> childTraversal : parent.getGlobalChildren()) {
+                    this.enablePerIterationCountersOnRangeSteps(childTraversal);
+                }
+                for (final Traversal.Admin<?, ?> childTraversal : parent.getLocalChildren()) {
+                    this.enablePerIterationCountersOnRangeSteps(childTraversal);
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         if (this.untilFirst && this.emitFirst)
@@ -173,6 +196,10 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             clone.untilTraversal = this.untilTraversal.clone();
         if (null != this.emitTraversal)
             clone.emitTraversal = this.emitTraversal.clone();
+        
+        // Enable per-iteration counters on the cloned repeat traversal
+        clone.enablePerIterationCountersOnRangeSteps(clone.repeatTraversal);
+        
         return clone;
     }
 
@@ -229,7 +256,13 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     }
 
     private Iterator<Traverser.Admin<S>> initStart(final Traverser.Admin<S> start) {
-        start.initialiseLoops(this.getId(), this.loopName);
+	    String ln;
+        if (this.loopName != null) {
+            ln = this.loopName;
+        } else {
+            ln = this.getId();
+        }
+        start.initialiseLoops(this.getId(), ln);
         if (doUntil(start, true)) {
             start.resetLoops();
             return IteratorUtils.of(start);
@@ -249,13 +282,22 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
 
         final Traverser.Admin<S> start = this.starts.next();
+        System.out.printf("RepeatStep.computerAlgorithm: received traverser%n");
         if (doUntil(start, true)) {
+            System.out.printf("RepeatStep.computerAlgorithm: doUntil=true, exiting%n");
             start.setStepId(this.getNextStep().getId());
             start.addLabels(this.labels);
             return IteratorUtils.of(start);
         } else {
+            System.out.printf("RepeatStep.computerAlgorithm: entering repeat body%n");
             start.setStepId(this.repeatTraversal.getStartStep().getId());
-            start.initialiseLoops(start.getStepId(), this.loopName);
+            String ln;
+            if (this.loopName != null) {
+                ln = this.loopName;
+            } else {
+                ln = this.getId();
+            }
+            start.initialiseLoops(this.getId(), ln);
             if (doEmit(start, true)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
@@ -347,8 +389,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
+//            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d before incrLoops%n", start.path(), start.loops());
             start.incrLoops();
+//            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d after incrLoops%n", start.path(), start.loops());
             if (repeatStep.doUntil(start, false)) {
+//                System.out.printf("RepeatEndStep.computerAlgorithm: doUntil=true, calling resetLoops for %s%n", start.path());
                 start.resetLoops();
                 start.setStepId(repeatStep.getNextStep().getId());
                 start.addLabels(repeatStep.labels);
@@ -357,6 +402,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 start.setStepId(repeatStep.getId());
                 if (repeatStep.doEmit(start, false)) {
                     final Traverser.Admin<S> emitSplit = start.split();
+//                    System.out.printf("RepeatEndStep.computerAlgorithm: doEmit=true, calling resetLoops for emitSplit %s%n", emitSplit.path());
                     emitSplit.resetLoops();
                     emitSplit.setStepId(repeatStep.getNextStep().getId());
                     emitSplit.addLabels(repeatStep.labels);
