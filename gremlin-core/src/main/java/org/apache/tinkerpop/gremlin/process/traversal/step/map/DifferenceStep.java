@@ -47,6 +47,10 @@ public final class DifferenceStep<S, E> extends ScalarMapStep<S, Set<?>> impleme
         }
     }
 
+    public Object getParameterItems() {
+        return parameterItems;
+    }
+
     @Override
     public String getStepName() { return "difference"; }
 
