@@ -24,6 +24,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.7.5 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Improved Java driver host availability on connection pool initialization.
+* Added getter for `parameterItems` on `DifferenceStep`.
 
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (Release Date: August 1, 2025)
