@@ -24,11 +24,7 @@ import org.apache.tinkerpop.gremlin.server.op.standard.StandardOpProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 
 /**
  * Uses {@link ServiceLoader} to load {@link OpProcessor} instances into a cache.
@@ -41,14 +37,65 @@ public final class OpLoader {
     private static final Map<String, OpProcessor> processors = new HashMap<>();
 
     static {
+        Map<String, OpProcessor> replacements = new HashMap<>();
+
         ServiceLoader.load(OpProcessor.class).forEach(op -> {
             final String name = op.getName();
-            logger.info("Adding the {} OpProcessor.", name.equals(StandardOpProcessor.OP_PROCESSOR_NAME) ? "standard" : name);
-            if (processors.containsKey(name))
-                throw new RuntimeException(String.format("There is a naming conflict with the %s OpProcessor implementations.", name));
+            final String loggingName = calculateLoggingName(name);
+            final Optional<String> replacedOpProcessor = op.replacedOpProcessorName();
 
-            processors.put(name, op);
+            replacedOpProcessor.ifPresent(replacedOpProcessorName -> {
+                String replacedLoggingName = calculateLoggingName(replacedOpProcessorName);
+                if (replacements.containsKey(replacedOpProcessorName)) {
+                    throw new RuntimeException(String.format(
+                            "There is a naming conflict. OpProcessor %s with name %s is designed to replace " +
+                                    "OpProcessor with name %s, but replacement " +
+                                    "of this OpProcessor already registered.", op.getClass().getCanonicalName(), loggingName,
+                            replacedLoggingName));
+                }
+                replacements.put(replacedOpProcessorName, op);
+            });
+
+            if (!replacedOpProcessor.isPresent()) {
+                logger.info("Adding the {} OpProcessor.", loggingName);
+                if (processors.containsKey(name)) {
+                    throw new RuntimeException(String.format("There is a naming conflict with the %s OpProcessor implementations.", loggingName));
+                }
+
+                processors.put(name, op);
+            }
         });
+
+        replacements.forEach((replacedOpProcessorName, opProcessor) -> {
+            final String replacedLoggingName = calculateLoggingName(replacedOpProcessorName);
+            if (processors.containsKey(replacedOpProcessorName)) {
+                final String name = opProcessor.getName();
+                final String loggingName = calculateLoggingName(name);
+                OpProcessor oldProcessor = processors.remove(replacedOpProcessorName);
+                try {
+                    oldProcessor.close();
+                } catch (Exception ex) {
+                    logger.warn("Exception thrown while closing the {} OpProcessor with name {}.",
+                            oldProcessor.getClass().getName(), replacedLoggingName, ex);
+                }
+
+                if (processors.containsKey(name)) {
+                    throw new RuntimeException(String.format("There is a naming conflict with the %s OpProcessor implementations.", loggingName));
+                }
+
+                logger.info("Replacing the {} OpProcessor with name {} with the {} OpProcessor with name {}.",
+                        oldProcessor.getClass().getName(), replacedLoggingName, opProcessor.getClass().getName(), loggingName);
+                processors.put(name, opProcessor);
+            } else {
+                logger.warn("Attempted to replace the OpProcessor with name {} with the {} OpProcessor with name {}, " +
+                                "but replacing OpProcessor is not registered.",
+                        replacedLoggingName, opProcessor.getClass().getName(), opProcessor.getName());
+            }
+        });
+    }
+
+    private static String calculateLoggingName(String name) {
+        return name.equals(StandardOpProcessor.OP_PROCESSOR_NAME) ? "standard" : name;
     }
 
     private static volatile boolean initialized = false;

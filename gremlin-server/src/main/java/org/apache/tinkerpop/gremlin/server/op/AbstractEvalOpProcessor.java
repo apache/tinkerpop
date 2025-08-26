@@ -240,11 +240,9 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                     graphManager.onQueryError(msg, t);
                     if (managedTransactionsForRequest)
                         attemptRollback(msg, ctx.getGraphManager(), settings.strictTransactionManagement);
-                    graphManager.afterQueryEnd(msg);
                 })
                 .afterTimeout((b, t) -> {
                     graphManager.onQueryError(msg, t);
-                    graphManager.afterQueryEnd(msg);
                 })
                 .beforeEval(b -> {
                     AuthenticatedUser user = ctx.getChannelHandlerContext().channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -287,8 +285,6 @@ public abstract class AbstractEvalOpProcessor extends AbstractOpProcessor {
                         // wrap up the exception and rethrow. the error will be written to the client by the evalFuture
                         // as it will completeExceptionally in the GremlinExecutor
                         throw new RuntimeException(ex);
-                    } finally {
-                        graphManager.afterQueryEnd(msg);
                     }
                 }).create();
 

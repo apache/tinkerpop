@@ -39,8 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-final class ResultQueue {
-
+public final class ResultQueue {
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
     private Object aggregatedResult = null;
@@ -104,7 +103,7 @@ final class ResultQueue {
         resultLinkedBlockingQueue.drainTo(collection);
     }
 
-    void markComplete(final Map<String,Object> statusAttributes) {
+    public void markComplete(final Map<String,Object> statusAttributes) {
         // if there was some aggregation performed in the queue then the full object is hanging out waiting to be
         // added to the ResultSet
         if (aggregatedResult != null)
@@ -117,7 +116,7 @@ final class ResultQueue {
         this.drainAllWaiting();
     }
 
-    void markError(final Throwable throwable) {
+    public void markError(final Throwable throwable) {
         error.set(throwable);
         this.readComplete.completeExceptionally(throwable);
         this.drainAllWaiting();

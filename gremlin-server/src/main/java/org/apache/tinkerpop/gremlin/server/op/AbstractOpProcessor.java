@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
@@ -96,7 +97,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
      * Provides a generic way of iterating a result set back to the client.
      *
      * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.
-     * @param itty The result to iterator
+     * @param itty    The result to iterator
      */
     protected void handleIterator(final Context context, final Iterator itty) throws InterruptedException {
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
@@ -119,7 +120,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             final Map<String, Object> attributes = generateStatusAttributes(nettyContext, msg, ResponseStatusCode.NO_CONTENT, itty, settings);
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
-            if (managedTransactionsForRequest) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+            if (managedTransactionsForRequest)
+                attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
             context.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .statusAttributes(attributes)
@@ -157,7 +159,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
             // this could be placed inside the isWriteable() portion of the if-then below but it seems better to
             // allow iteration to continue into a batch if that is possible rather than just doing nothing at all
             // while waiting for the client to catch up
-            if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush) aggregate.add(itty.next());
+            if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush)
+                aggregate.add(itty.next());
 
             // Don't keep executor busy if client has already given up; there is no way to catch up if the channel is
             // not active, and hence we should break the loop.
@@ -183,19 +186,17 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
-                    Frame frame = null;
+                    beforeResponseGeneration(context, msg, itty, null);
+                    Frame frame;
                     try {
                         frame = makeFrame(context, msg, serializer, useBinary, aggregate, code,
-                                generateResultMetaData(nettyContext, msg, code, itty, settings),
+                                generateResultMetaData(context, msg, code, itty, settings),
                                 generateStatusAttributes(nettyContext, msg, code, itty, settings));
                     } catch (Exception ex) {
-                        // a frame may use a Bytebuf which is a countable release - if it does not get written
-                        // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
-
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
-                        if (managedTransactionsForRequest) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (managedTransactionsForRequest)
+                            attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
                         break;
                     }
 
@@ -203,7 +204,6 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     // the transaction could be closed - in that case a call to hasNext() could open a new transaction
                     // unintentionally
                     hasMore = itty.hasNext();
-
                     try {
                         // only need to reset the aggregation list if there's more stuff to write
                         if (hasMore)
@@ -220,7 +220,7 @@ public abstract class AbstractOpProcessor implements OpProcessor {
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
+                        frame.tryRelease();
                         throw ex;
                     }
 
@@ -260,6 +260,14 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     }
 
     /**
+     * Called before sending response of evalution of the client.
+     * @param graph currently open graph, can be null if can not be identified by {@link OpProcessor}
+     */
+    protected void beforeResponseGeneration(Context context, RequestMessage requestMessage, Iterator itty, Graph graph) {
+        // do nothing by default
+    }
+
+    /**
      * Called when iteration within {@link #handleIterator(Context, Iterator)} is on its final pass and the final
      * frame is about to be sent back to the client. This method only gets called on successful iteration of the
      * entire result.
@@ -292,6 +300,22 @@ public abstract class AbstractOpProcessor implements OpProcessor {
     }
 
     /**
+     * Generates response result meta-data to put on a {@link ResponseMessage}.
+     * <p>
+     * Delegates to
+     * {@link #generateResultMetaData(ChannelHandlerContext, RequestMessage, ResponseStatusCode, Iterator, Settings)} by default.
+     *
+     * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
+     *             this method
+     *
+     */
+    protected Map<String, Object> generateResultMetaData(final Context ctx, final RequestMessage msg,
+                                                         final ResponseStatusCode code, final Iterator itty,
+                                                         final Settings settings) {
+        return generateResultMetaData(ctx.getChannelHandlerContext(), msg, code, itty, settings);
+    }
+
+    /**
      * Generates response status meta-data to put on a {@link ResponseMessage}.
      *
      * @param itty a reference to the current {@link Iterator} of results - it is not meant to be forwarded in
@@ -311,8 +335,8 @@ public abstract class AbstractOpProcessor implements OpProcessor {
 
     protected static Frame makeFrame(final Context ctx, final RequestMessage msg,
                                      final MessageSerializer<?> serializer, final boolean useBinary, final List<Object> aggregate,
-                                     final ResponseStatusCode code, final Map<String,Object> responseMetaData,
-                                     final Map<String,Object> statusAttributes) throws Exception {
+                                     final ResponseStatusCode code, final Map<String, Object> responseMetaData,
+                                     final Map<String, Object> statusAttributes) throws Exception {
         try {
             final ChannelHandlerContext nettyContext = ctx.getChannelHandlerContext();
 

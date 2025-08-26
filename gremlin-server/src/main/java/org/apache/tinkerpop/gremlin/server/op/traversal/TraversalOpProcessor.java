@@ -248,7 +248,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                         context.writeAndFlush(specialResponseMsg.create());
                     } else if (t instanceof InterruptedException || t instanceof TraversalInterruptedException) {
                         graphManager.onQueryError(msg, t);
-                        graphManager.afterQueryEnd(msg);
                         final String errorMessage = String.format("A timeout occurred during traversal evaluation of [%s] - consider increasing the limit given to evaluationTimeout", msg);
                         logger.warn(errorMessage);
                         context.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT)
@@ -340,7 +339,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final RequestMessage msg = ctx.getRequestMessage();
         graphManager.onQueryError(msg, error);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
-        graphManager.afterQueryEnd(msg);
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
@@ -348,7 +346,6 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
         final RequestMessage msg = ctx.getRequestMessage();
         graphManager.onQuerySuccess(msg);
         if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
-        graphManager.afterQueryEnd(msg);
     }
 
     protected void handleIterator(final Context context, final Iterator itty, final Graph graph) throws InterruptedException {
@@ -429,20 +426,18 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                 if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
 
+
                     // serialize here because in sessionless requests the serialization must occur in the same
                     // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
                     // thread that processed the eval of the script so, we have to push serialization down into that
-                    final Map<String, Object> metadata = generateResultMetaData(nettyContext, msg, code, itty, settings);
+                    beforeResponseGeneration(context, msg, itty, graph);
+                    final Map<String, Object> metadata = generateResultMetaData(context, msg, code, itty, settings);
                     final Map<String, Object> statusAttrb = generateStatusAttributes(nettyContext, msg, code, itty, settings);
-                    Frame frame = null;
+                    Frame frame;
                     try {
                         frame = makeFrame(context, msg, serializer, useBinary, aggregate, code,
                                 metadata, statusAttrb);
                     } catch (Exception ex) {
-                        // a frame may use a Bytebuf which is a countable release - if it does not get written
-                        // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
-
                         // exception is handled in makeFrame() - serialization error gets written back to driver
                         // at that point
                         onError(graph, context, ex);
@@ -469,7 +464,7 @@ public class TraversalOpProcessor extends AbstractOpProcessor {
                     } catch (Exception ex) {
                         // a frame may use a Bytebuf which is a countable release - if it does not get written
                         // downstream it needs to be released here
-                        if (frame != null) frame.tryRelease();
+                        frame.tryRelease();
                         throw ex;
                     }
 

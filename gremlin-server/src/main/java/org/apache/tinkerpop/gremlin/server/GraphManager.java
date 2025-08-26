@@ -151,16 +151,6 @@ public interface GraphManager {
     }
 
     /**
-     * This method is called after the commit / rollback of transaction is called at the end
-     * of query processing. While {@link #onQuerySuccess(RequestMessage)} and {@link #onQueryError(RequestMessage, Throwable)}
-     * methods are called <b>before</b> transaction will be completed.
-     *
-     * @param msg the {@link RequestMessage} received by the gremlin-server.
-     */
-    default void afterQueryEnd(final RequestMessage msg) {
-    }
-
-    /**
      * This method will be called if a script or query is processed by the
      * gremlin-server throws an error.
      *

@@ -92,7 +92,7 @@ public interface Channelizer extends ChannelHandler {
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
-        private ConcurrentMap<UUID, ResultQueue> pending;
+        protected ConcurrentMap<UUID, ResultQueue> pending;
 
         protected static final String PIPELINE_GREMLIN_SASL_HANDLER = "gremlin-sasl-handler";
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
@@ -152,7 +152,7 @@ public interface Channelizer extends ChannelHandler {
     /**
      * WebSocket {@link Channelizer} implementation.
      */
-    public final class WebSocketChannelizer extends AbstractChannelizer {
+    class WebSocketChannelizer extends AbstractChannelizer {
         private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
         private WebSocketClientHandler handler;
 
@@ -255,7 +255,7 @@ public interface Channelizer extends ChannelHandler {
      * channelizer. Only sessionless requests are possible. Some driver configuration options may not be relevant when
      * using HTTP, such as {@link Tokens#ARGS_BATCH_SIZE} since HTTP does not stream results back in that fashion.
      */
-    public final class HttpChannelizer extends AbstractChannelizer {
+    class HttpChannelizer extends AbstractChannelizer {
 
         private HttpClientCodec handler;
 

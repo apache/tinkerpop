@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class Connection {
+public final class Connection {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     private final Channel channel;
