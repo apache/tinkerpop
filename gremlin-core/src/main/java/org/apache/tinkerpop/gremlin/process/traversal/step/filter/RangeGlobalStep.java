@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -70,7 +71,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         // Determine which counter to use
         AtomicLong currentCounter = this.counter;
         if (usePerIterationCounters && traverser.loops() > 0) {
-            String iterationKey = traverser.getStepId() + ":" + traverser.loops();
+            String iterationKey = this.getId() + ":" + traverser.loops();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
         }
 
@@ -159,6 +160,12 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
+        if (usePerIterationCounters) {
+            final Set<TraverserRequirement> requirements = new HashSet<>();
+            requirements.add(TraverserRequirement.BULK);
+            requirements.add(TraverserRequirement.SINGLE_LOOP);
+            return requirements;
+        }
         return Collections.singleton(TraverserRequirement.BULK);
     }
 
