@@ -43,12 +43,12 @@ import static java.util.stream.Collectors.toList;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeVertexStep<S> extends MergeStep<S, Vertex, Map<Object, Object>> {
+public class MergeVertexStep<S> extends MergeElementStep<S, Vertex, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
 
     public MergeVertexStep(final Traversal.Admin traversal, final boolean isStart) {

@@ -99,6 +99,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added optional traversal cache to `GremlinLangScriptEngine`
 * Introduced step interfaces for all parameterizable steps
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
+* Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
+* Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
@@ -594,7 +596,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Updated aliased client to pass along options via `with()` when submitting traversals.
 * Upgraded `gremlin-go` to Go 1.21.
 * Upgraded `gremlin-javascript` and `gremlint` to Node 18.17.0.
-* Allowed public access for `serviceName` and `mergedParams` in `CallStep`, and checks on `PartitionStrategy` usage in `MergeStep`.
+* Allowed public access for `serviceName` and `mergedParams` in `CallStep`, and checks on `PartitionStrategy` usage in `MergeElementStep`.
 
 ==== Bugs
 

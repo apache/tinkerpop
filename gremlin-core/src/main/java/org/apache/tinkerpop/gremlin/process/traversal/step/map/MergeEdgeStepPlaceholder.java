@@ -58,7 +58,7 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     private Map<Object, List<Object>> properties = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
     private Traversal.Admin<?,Map<Object,Object>> mergeTraversal;

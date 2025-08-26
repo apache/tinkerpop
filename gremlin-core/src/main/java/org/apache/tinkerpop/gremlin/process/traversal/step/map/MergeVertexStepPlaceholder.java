@@ -57,7 +57,7 @@ public class MergeVertexStepPlaceholder<S> extends AbstractStep<S, Vertex> imple
     private Map<Object, List<Object>> properties = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
 
     private Traversal.Admin<?,Map<Object,Object>> mergeTraversal;

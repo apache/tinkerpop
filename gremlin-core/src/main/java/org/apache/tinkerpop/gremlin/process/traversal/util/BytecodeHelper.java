@@ -143,7 +143,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperGlobalStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ToUpperLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMergeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalSelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimGlobalStep;
@@ -256,7 +256,7 @@ public final class BytecodeHelper {
             put(GraphTraversal.Symbols.combine, Collections.singletonList(CombineStep.class));
             put(GraphTraversal.Symbols.difference, Collections.singletonList(DifferenceStep.class));
             put(GraphTraversal.Symbols.disjunct, Collections.singletonList(DisjunctStep.class));
-            put(GraphTraversal.Symbols.merge, Collections.singletonList(TraversalMergeStep.class));
+            put(GraphTraversal.Symbols.merge, Collections.singletonList(MergeStep.class));
             put(GraphTraversal.Symbols.conjoin, Collections.singletonList(ConjoinStep.class));
             put(GraphTraversal.Symbols.product, Collections.singletonList(ProductStep.class));
             put(GraphTraversal.Symbols.intersect, Collections.singletonList(IntersectStep.class));

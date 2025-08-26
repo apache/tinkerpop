@@ -31,7 +31,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class TraversalMergeStepTest extends StepTest {
+public class MergeStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(

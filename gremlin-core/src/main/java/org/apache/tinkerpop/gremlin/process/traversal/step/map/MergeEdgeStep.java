@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -53,12 +52,12 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outV;
 /**
  * Implementation for the {@code mergeE()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStep<S> extends MergeStep<S, Edge, Map<Object, Object>> {
+public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Object>> {
 
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
-        MergeStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
+        MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
     private Traversal.Admin<S, Object> outVTraversal = null;
