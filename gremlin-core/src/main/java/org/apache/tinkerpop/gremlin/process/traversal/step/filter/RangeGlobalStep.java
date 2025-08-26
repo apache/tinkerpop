@@ -163,7 +163,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (usePerIterationCounters) {
             final Set<TraverserRequirement> requirements = new HashSet<>();
             requirements.add(TraverserRequirement.BULK);
-            requirements.add(TraverserRequirement.SINGLE_LOOP);
+            requirements.add(TraverserRequirement.NESTED_LOOP);
             return requirements;
         }
         return Collections.singleton(TraverserRequirement.BULK);
