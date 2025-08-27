@@ -46,8 +46,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added support for `Set` in GraphSON and GraphBinary serialization for `gremlin-javascript`, where it previously just converted to array.
 * Added `Set` syntax in `gremlin-language`.
 * Modified RequestInterceptor to be a `UnaryOperator<HttpRequest>` to abstract the underlying implementation.
-* Renamed `MergeStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
-* Renamed `TraversalMergeStep` of `merge()` to `MergeStep` for consistency.
 * Removed the `gremlin-archetype` module in favor of newer sample applications in each GLV's `examples` folder.
 * Bumped to `commons-collection4`.
 * Made `mergeE()` and `mergeV()` consistent in their use as a start step and as mid-traversal by always promoting the currently created or matched `Element` to the `onCreate` or `onMatch` child traversal.
@@ -168,6 +166,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added optional traversal cache to `GremlinLangScriptEngine`
 * Introduced step interfaces for all parameterizable steps
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
+* Renamed `MergeStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
+* Renamed `TraversalMergeStep` of `merge()` to `MergeStep` for consistency.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
