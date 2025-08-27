@@ -49,12 +49,12 @@ public final class DifferenceStep<S, E> extends ScalarMapStep<S, Set<?>> impleme
         }
     }
 
-    public Traversal.Admin<S,E> getValueTraversal() {
-        return this.valueTraversal;
-    }
-
     public Object getParameterItems() {
         return parameterItems;
+    }
+
+    public Traversal.Admin<S,E> getValueTraversal() {
+        return this.valueTraversal;
     }
 
     public GValue<Object> getParameterItemsGValue() {
