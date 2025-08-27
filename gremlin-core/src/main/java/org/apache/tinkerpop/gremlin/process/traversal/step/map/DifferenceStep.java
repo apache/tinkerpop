@@ -51,6 +51,10 @@ public final class DifferenceStep<S, E> extends ScalarMapStep<S, Set<?>> impleme
         return parameterItems;
     }
 
+    public Traversal.Admin<S, E> getValueTraversal() {
+        return valueTraversal;
+    }
+
     @Override
     public String getStepName() { return "difference"; }
 
