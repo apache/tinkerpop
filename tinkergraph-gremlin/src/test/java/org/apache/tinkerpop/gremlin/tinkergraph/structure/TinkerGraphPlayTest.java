@@ -18,16 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -39,14 +44,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-
 import static org.apache.tinkerpop.gremlin.process.traversal.Operator.sum;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal.Symbols.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
@@ -58,14 +57,377 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
-import static org.apache.tinkerpop.gremlin.structure.Column.keys;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com);
  */
 public class TinkerGraphPlayTest {
     private static final Logger logger = LoggerFactory.getLogger(TinkerGraphPlayTest.class);
 
+    @Test
+    @Ignore
+    public void testIterationScopedRangeGlobalInRepeat() {
+        GraphTraversalSource g = TinkerGraph.open().traversal().withoutStrategies(RepeatUnrollStrategy.class);
+        load(g);
+        GraphTraversal<Vertex, Path> basic = g.V().has("id", "l1-0").repeat(__.limit(1).out("knows")).times(2).path().by("id");
+        toListAndPrint("basic", basic);
+        GraphTraversal<Vertex, Path> chained = g.V().has("id", "l2-0").repeat(__.limit(1).out("knows")).times(2).repeat(__.limit(1).in("knows")).times(2).path().by("id");
+        toListAndPrint("chained", chained);
+        GraphTraversal<Vertex, Path> nested = g.V().has("id", "l3-0").repeat(__.limit(1).out("knows").repeat(__.limit(1).in("knows")).times(2)).times(2).path().by("id");
+        toListAndPrint("nested", nested);
+        GraphTraversal<Vertex, Path> nestedUnfolded = g.V().has("id", "l3-0")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .path().by("id");
+        toListAndPrint("nestedUnfolded", nestedUnfolded);
+
+        GraphTraversal<Vertex, Path> tripleNested = g.V().has("id", "l1-0")
+                .repeat(__.limit(1).out("knows")
+                        .repeat(__.limit(1).in("knows")
+                                .repeat(__.limit(1).out("knows"))
+                                .times(2))
+                        .times(2))
+                .times(2)
+                .path().by("id");
+        toListAndPrint("tripleNested", tripleNested);
+        
+        GraphTraversal<Vertex, Path> tripleNestedUnfolded = g.V().has("id", "l1-0")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).out("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).out("knows")
+                .path().by("id");
+        toListAndPrint("tripleNestedUnfolded", tripleNestedUnfolded);
+
+        GraphTraversal<Vertex, Path> nested2 = g.V().has("id", "l3-0").out("knows").
+                repeat(__.limit(1).out("knows").repeat(__.limit(1).in("knows")).times(2)).
+                times(2).path().by("id");
+        toListAndPrint("nested2", nested2);
+//        GraphTraversal<Vertex, Object> aggregate = g.V().has("id", "l1-0").repeat(__.limit(1).out("knows").aggregate("x")).times(2).cap("x");
+//        toListAndPrint("aggregate", aggregate);
+    }
+    
+    private void toListAndPrint(String header, GraphTraversal t) {
+        System.out.println("=====" + header + "===================================");
+        System.out.println(t);
+        List<?> list = t.toList();
+        for (Object o : list) {
+            System.out.println(o);
+        }
+    }
+    
+    private void load(GraphTraversalSource g) {
+        g.V().drop();
+
+        g.addV("node").property("id","l1-0").iterate();
+
+        g.addV("node").property("id","l2-0").iterate();
+        g.addV("node").property("id","l2-1").iterate();
+
+        g.addV("node").property("id","l3-0").iterate();
+        g.addV("node").property("id","l3-1").iterate();
+        g.addV("node").property("id","l3-2").iterate();
+
+        g.addV("node").property("id","l4-0").iterate();
+        g.addV("node").property("id","l4-1").iterate();
+        g.addV("node").property("id","l4-2").iterate();
+        g.addV("node").property("id","l4-3").iterate();
+
+        g.addV("node").property("id","l5-0").iterate();
+        g.addV("node").property("id","l5-1").iterate();
+        g.addV("node").property("id","l5-2").iterate();
+        g.addV("node").property("id","l5-3").iterate();
+        g.addV("node").property("id","l5-4").iterate();
+
+        g.V().has("id","l1-0").as("n1").V().has("id","l2-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l1-0").as("n1").V().has("id","l2-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l1-0").as("n1").V().has("id","l2-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l1-0").as("n1").V().has("id","l2-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l2-0").as("n1").V().has("id","l3-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l2-1").as("n1").V().has("id","l3-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-0").as("n1").V().has("id","l4-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-1").as("n1").V().has("id","l4-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l3-2").as("n1").V().has("id","l4-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-0").as("n1").V().has("id","l5-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-1").as("n1").V().has("id","l5-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-2").as("n1").V().has("id","l5-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l4-3").as("n1").V().has("id","l5-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        // Add layer 6 nodes
+        g.addV("node").property("id","l6-0").iterate();
+        g.addV("node").property("id","l6-1").iterate();
+        g.addV("node").property("id","l6-2").iterate();
+        g.addV("node").property("id","l6-3").iterate();
+        g.addV("node").property("id","l6-4").iterate();
+        g.addV("node").property("id","l6-5").iterate();
+        
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        // Connect layer 5 to layer 6 with "friend" edges (same pattern)
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-0").as("n1").V().has("id","l6-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-1").as("n1").V().has("id","l6-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-2").as("n1").V().has("id","l6-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-3").as("n1").V().has("id","l6-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l5-4").as("n1").V().has("id","l6-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        // Add layer 7 nodes
+        g.addV("node").property("id","l7-0").iterate();
+        g.addV("node").property("id","l7-1").iterate();
+        g.addV("node").property("id","l7-2").iterate();
+        g.addV("node").property("id","l7-3").iterate();
+        g.addV("node").property("id","l7-4").iterate();
+        g.addV("node").property("id","l7-5").iterate();
+        g.addV("node").property("id","l7-6").iterate();
+
+        // Connect layer 6 to layer 7 with "knows" edges
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-0").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-1").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-2").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-3").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-4").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-5").as("n2").addE("knows").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-6").as("n2").addE("knows").from("n1").to("n2").iterate();
+
+        // Connect layer 6 to layer 7 with "friend" edges
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-0").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-1").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-2").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-3").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-4").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-0").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-1").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-2").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-3").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-4").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-5").as("n2").addE("friend").from("n1").to("n2").iterate();
+        g.V().has("id","l6-5").as("n1").V().has("id","l7-6").as("n2").addE("friend").from("n1").to("n2").iterate();
+    }
+    
     @Test
     @Ignore
     public void testPlay8() throws Exception {
