@@ -79,6 +79,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
             Traversal.Admin t = this.traversal;
             while (!t.isRoot()) {
                 TraversalParent pt = t.getParent();
+                // TODO: account scenario where parent is not repeat step?
                 Step<?, ?> ps = pt.asStep();
                 String pid = ps.getId();
                 sb.append(pid).append(":");
