@@ -28,11 +28,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -71,16 +73,29 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         // Determine which counter to use
         AtomicLong currentCounter = this.counter;
         if (usePerIterationCounters) {
+
+
+            StringBuilder sb = new StringBuilder();
+            Traversal.Admin t = this.traversal;
+            while (!t.isRoot()) {
+                TraversalParent pt = t.getParent();
+                Step<?, ?> ps = pt.asStep();
+                String pid = ps.getId();
+                sb.append(pid).append(":");
+                sb.append(traverser.loops(pid)).append(":");
+                t = ps.getTraversal();
+            }
+            sb.append(this.getId()).append(":").append(traverser.loops());
+
             // Create counter key that isolates between different repeat step contexts
-            String pathStructure = String.valueOf(traverser.path().size());
-            // consider removing the stepId from the key
-            String iterationKey = this.getId() + ":" + traverser.loops() + ":" + pathStructure;
+            String iterationKey = sb.toString();
             Object vId = ((Vertex) traverser.get()).property("id").value();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
             System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
         }
 
         if (this.high != -1 && currentCounter.get() >= this.high) {
+            System.out.printf("FastNoSuchElementException for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
             throw FastNoSuchElementException.instance();
         }
 
@@ -88,6 +103,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (currentCounter.get() + avail <= this.low) {
             // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
             currentCounter.getAndAdd(avail);
+            System.out.printf("False for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
             return false;
         }
 

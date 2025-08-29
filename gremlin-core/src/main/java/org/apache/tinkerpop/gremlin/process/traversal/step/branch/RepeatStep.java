@@ -238,7 +238,14 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 return this.repeatTraversal.getEndStep();
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
-                start.initialiseLoops(this.getId(), this.loopName);
+                String ln;
+                if (this.loopName != null) {
+                    ln = this.getId();
+                } else {
+                    ln = this.loopName;
+                }
+                    
+                start.initialiseLoops(this.getId(), ln);
                 if (doUntil(start, true)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
