@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -57,48 +58,56 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sack;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com);
  */
 public class TinkerGraphPlayTest {
     private static final Logger logger = LoggerFactory.getLogger(TinkerGraphPlayTest.class);
-
-    @Test
-    @Ignore
-    public void testIterationScopedRangeGlobalInRepeat() {
-        GraphTraversalSource g = TinkerGraph.open().traversal().withoutStrategies(RepeatUnrollStrategy.class);
+    private static GraphTraversalSource g;
+    
+    @BeforeClass
+    public static void setup() {
+        g = TinkerGraph.open().traversal().withoutStrategies(RepeatUnrollStrategy.class);
         load(g);
+    }
+    
+    @Test
+    public void testBasicRepeatLimit() {
         GraphTraversal<Vertex, Path> basic = g.V().has("id", "l1-0")
                 .repeat(__.limit(1).out("knows"))
                 .times(2).path().by("id");
-        toListAndPrint("basic", basic);
         GraphTraversal<Vertex, Path> basicUnfolded = g.V().has("id", "l1-0")
                 .limit(1).out("knows")
                 .limit(1).out("knows")
                 .path().by("id");
-        toListAndPrint("basicUnfolded", basicUnfolded);
+        assertEquals(toListAndPrint("basic", basic), toListAndPrint("basicUnfolded", basicUnfolded));
+    }
 
+    @Test
+    public void testChainedRepeatLimit() {
         GraphTraversal<Vertex, Path> chained = g.V().has("id", "l2-0")
                 .repeat(__.limit(1).out("knows")).times(2)
                 .repeat(__.limit(1).in("knows")).times(2)
                 .path().by("id");
-        toListAndPrint("chained", chained);
         GraphTraversal<Vertex, Path> chainedUnfolded = g.V().has("id", "l2-0")
                 .limit(1).out("knows")
                 .limit(1).out("knows")
                 .limit(1).in("knows")
                 .limit(1).in("knows")
                 .path().by("id");
-        toListAndPrint("chainedUnfolded", chainedUnfolded);
+        assertEquals(toListAndPrint("chained", chained),  toListAndPrint("chainedUnfolded", chainedUnfolded));
+    }
 
+    @Test
+    public void testNestedRepeatLimit() {
         GraphTraversal<Vertex, Path> nested = g.V().has("id", "l3-0")
                 .repeat(__.limit(1).out("knows")
                         .repeat(__.limit(1).in("knows"))
                         .times(2))
                 .times(2)
                 .path().by("id");
-        toListAndPrint("nested", nested);
         GraphTraversal<Vertex, Path> nestedUnfolded = g.V().has("id", "l3-0")
                 .limit(1).out("knows")
                 .limit(1).in("knows")
@@ -107,8 +116,27 @@ public class TinkerGraphPlayTest {
                 .limit(1).in("knows")
                 .limit(1).in("knows")
                 .path().by("id");
-        toListAndPrint("nestedUnfolded", nestedUnfolded);
+        assertEquals(toListAndPrint("nested", nested), toListAndPrint("nestedUnfolded", nestedUnfolded));
 
+        GraphTraversal<Vertex, Path> nested2 = g.V().has("id", "l3-0").out("knows").
+                repeat(__.limit(1).out("knows")
+                        .repeat(__.limit(1).in("knows"))
+                        .times(2)).
+                times(2)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> nested2Unfolded = g.V().has("id", "l3-0").out("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("nested2", nested2), toListAndPrint("nested2Unfolded", nested2Unfolded));
+    }
+
+    @Test
+    public void testTripleNestedRepeatLimit() {
         GraphTraversal<Vertex, Path> tripleNested = g.V().has("id", "l1-0")
                 .repeat(__.limit(1).out("knows")
                         .repeat(__.limit(1).in("knows")
@@ -117,7 +145,6 @@ public class TinkerGraphPlayTest {
                         .times(2))
                 .times(2)
                 .path().by("id");
-        toListAndPrint("tripleNested", tripleNested);
         GraphTraversal<Vertex, Path> tripleNestedUnfolded = g.V().has("id", "l1-0")
                 .limit(1).out("knows")
                 .limit(1).in("knows")
@@ -134,46 +161,46 @@ public class TinkerGraphPlayTest {
                 .limit(1).out("knows")
                 .limit(1).out("knows")
                 .path().by("id");
-        toListAndPrint("tripleNestedUnfolded", tripleNestedUnfolded);
+        assertEquals(toListAndPrint("tripleNested", tripleNested), toListAndPrint("tripleNestedUnfolded", tripleNestedUnfolded));
+    }
 
-        GraphTraversal<Vertex, Path> nested2 = g.V().has("id", "l3-0").out("knows").
-                repeat(__.limit(1).out("knows")
-                        .repeat(__.limit(1).in("knows"))
-                        .times(2)).
-                times(2)
-                .path().by("id");
-        toListAndPrint("nested2", nested2);
-        GraphTraversal<Vertex, Path> nested2Unfolded = g.V().has("id", "l3-0").out("knows")
-                .limit(1).out("knows")
-                .limit(1).in("knows")
-                .limit(1).in("knows")
-                .limit(1).out("knows")
-                .limit(1).in("knows")
-                .limit(1).in("knows")
-                .path().by("id");
-        toListAndPrint("nested2Unfolded", nested2Unfolded);
-        GraphTraversal<Vertex, Object> aggregate = g.V().has("id", "l1-0").repeat(__.limit(1).out("knows").aggregate("x")).times(2).cap("x");
-        toListAndPrint("aggregate", aggregate);
+    @Test
+    public void testAggregateRepeatLimit() {
+        GraphTraversal<Vertex, Object> aggregate = g.V().has("id", "l1-0")
+                .repeat(__.limit(1).out("knows").aggregate("x"))
+                .times(2)
+                .cap("x");
+        GraphTraversal<Vertex, Object> aggregateUnfolded = g.V().has("id", "l1-0")
+                .limit(1).out("knows").aggregate("x")
+                .limit(1).out("knows").aggregate("x")
+                .cap("x");
+        assertEquals(toListAndPrint("aggregate", aggregate), toListAndPrint("aggregateUnfolded", aggregateUnfolded));
+    }
 
-        GraphTraversal<Vertex, Path> test = g.V().has("id", "l1-0")
+    @Test
+    public void testUnionRepeatLimit() {
+        GraphTraversal<Vertex, Path> union = g.V().has("id", "l1-0")
                 .union(out().limit(1), out().out().limit(1))
-                .repeat(__.limit(1))
-                .times(1).path().by("id");
-        toListAndPrint("test", test);
-        GraphTraversal<Vertex, Path> test2 = g.V().has("id", "l1-0").union(out().limit(1), out().out().limit(1)).limit(1).path().by("id");
-        toListAndPrint("test2", test2);
+                .repeat(__.limit(1)).times(1)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> unionUnfolded = g.V().has("id", "l1-0")
+                .union(out().limit(1), out().out().limit(1))
+                .limit(1)
+                .path().by("id");
+        assertEquals(toListAndPrint("union", union), toListAndPrint("unionUnfolded", unionUnfolded));
     }
     
-    private void toListAndPrint(String header, GraphTraversal t) {
+    private List toListAndPrint(String header, GraphTraversal t) {
         System.out.println("=====" + header + "===================================");
         System.out.println(t);
         List<?> list = t.toList();
         for (Object o : list) {
             System.out.println(o);
         }
+        return list;
     }
     
-    private void load(GraphTraversalSource g) {
+    private static void load(GraphTraversalSource g) {
         g.V().drop();
 
         g.addV("node").property("id","l1-0").iterate();
@@ -659,6 +686,7 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    @Ignore
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
