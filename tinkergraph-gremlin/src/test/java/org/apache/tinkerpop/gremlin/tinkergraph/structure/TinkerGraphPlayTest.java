@@ -86,6 +86,18 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    public void testBasicRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Path> basic = g.V().has("id", "l1-0")
+                .repeat(__.limit(2).out("knows"))
+                .times(2).path().by("id");
+        GraphTraversal<Vertex, Path> basicUnfolded = g.V().has("id", "l1-0")
+                .limit(2).out("knows")
+                .limit(2).out("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("basic", basic), toListAndPrint("basicUnfolded", basicUnfolded));
+    }
+
+    @Test
     public void testChainedRepeatLimit() {
         GraphTraversal<Vertex, Path> chained = g.V().has("id", "l2-0")
                 .repeat(__.limit(1).out("knows")).times(2)
@@ -96,6 +108,21 @@ public class TinkerGraphPlayTest {
                 .limit(1).out("knows")
                 .limit(1).in("knows")
                 .limit(1).in("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("chained", chained),  toListAndPrint("chainedUnfolded", chainedUnfolded));
+    }
+
+    @Test
+    public void testChainedRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Path> chained = g.V().has("id", "l2-0")
+                .repeat(__.limit(2).out("knows")).times(2)
+                .repeat(__.limit(3).in("knows")).times(2)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> chainedUnfolded = g.V().has("id", "l2-0")
+                .limit(2).out("knows")
+                .limit(2).out("knows")
+                .limit(3).in("knows")
+                .limit(3).in("knows")
                 .path().by("id");
         assertEquals(toListAndPrint("chained", chained),  toListAndPrint("chainedUnfolded", chainedUnfolded));
     }
@@ -115,6 +142,41 @@ public class TinkerGraphPlayTest {
                 .limit(1).out("knows")
                 .limit(1).in("knows")
                 .limit(1).in("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("nested", nested), toListAndPrint("nestedUnfolded", nestedUnfolded));
+
+        GraphTraversal<Vertex, Path> nested2 = g.V().has("id", "l3-0").out("knows").
+                repeat(__.limit(1).out("knows")
+                        .repeat(__.limit(1).in("knows"))
+                        .times(2)).
+                times(2)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> nested2Unfolded = g.V().has("id", "l3-0").out("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .limit(1).out("knows")
+                .limit(1).in("knows")
+                .limit(1).in("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("nested2", nested2), toListAndPrint("nested2Unfolded", nested2Unfolded));
+    }
+
+    @Test
+    public void testNestedRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Path> nested = g.V().has("id", "l3-0")
+                .repeat(__.limit(2).out("knows")
+                        .repeat(__.limit(3).in("knows"))
+                        .times(2))
+                .times(2)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> nestedUnfolded = g.V().has("id", "l3-0")
+                .limit(2).out("knows")
+                .limit(3).in("knows")
+                .limit(3).in("knows")
+                .limit(2).out("knows")
+                .limit(3).in("knows")
+                .limit(3).in("knows")
                 .path().by("id");
         assertEquals(toListAndPrint("nested", nested), toListAndPrint("nestedUnfolded", nestedUnfolded));
 
@@ -165,6 +227,35 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    public void testTripleNestedRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Path> tripleNested = g.V().has("id", "l1-0")
+                .repeat(__.limit(2).out("knows")
+                        .repeat(__.limit(3).in("knows")
+                                .repeat(__.limit(4).out("knows"))
+                                .times(2))
+                        .times(2))
+                .times(2)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> tripleNestedUnfolded = g.V().has("id", "l1-0")
+                .limit(2).out("knows")
+                .limit(3).in("knows")
+                .limit(4).out("knows")
+                .limit(4).out("knows")
+                .limit(3).in("knows")
+                .limit(4).out("knows")
+                .limit(4).out("knows")
+                .limit(2).out("knows")
+                .limit(3).in("knows")
+                .limit(4).out("knows")
+                .limit(4).out("knows")
+                .limit(3).in("knows")
+                .limit(4).out("knows")
+                .limit(4).out("knows")
+                .path().by("id");
+        assertEquals(toListAndPrint("tripleNested", tripleNested), toListAndPrint("tripleNestedUnfolded", tripleNestedUnfolded));
+    }
+
+    @Test
     public void testAggregateRepeatLimit() {
         GraphTraversal<Vertex, Object> aggregate = g.V().has("id", "l1-0")
                 .repeat(__.limit(1).out("knows").aggregate("x"))
@@ -178,6 +269,19 @@ public class TinkerGraphPlayTest {
     }
 
     @Test
+    public void testAggregateRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Object> aggregate = g.V().has("id", "l1-0")
+                .repeat(__.limit(3).out("knows").aggregate("x"))
+                .times(2)
+                .cap("x");
+        GraphTraversal<Vertex, Object> aggregateUnfolded = g.V().has("id", "l1-0")
+                .limit(3).out("knows").aggregate("x")
+                .limit(3).out("knows").aggregate("x")
+                .cap("x");
+        assertEquals(toListAndPrint("aggregate", aggregate), toListAndPrint("aggregateUnfolded", aggregateUnfolded));
+    }
+
+    @Test
     public void testUnionRepeatLimit() {
         GraphTraversal<Vertex, Path> union = g.V().has("id", "l1-0")
                 .union(out().limit(1), out().out().limit(1))
@@ -186,6 +290,19 @@ public class TinkerGraphPlayTest {
         GraphTraversal<Vertex, Path> unionUnfolded = g.V().has("id", "l1-0")
                 .union(out().limit(1), out().out().limit(1))
                 .limit(1)
+                .path().by("id");
+        assertEquals(toListAndPrint("union", union), toListAndPrint("unionUnfolded", unionUnfolded));
+    }
+
+    @Test
+    public void testUnionRepeatLimitIncreasedLimit() {
+        GraphTraversal<Vertex, Path> union = g.V().has("id", "l1-0")
+                .union(out().limit(1), out().out().limit(1))
+                .repeat(__.limit(3)).times(1)
+                .path().by("id");
+        GraphTraversal<Vertex, Path> unionUnfolded = g.V().has("id", "l1-0")
+                .union(out().limit(1), out().out().limit(1))
+                .limit(3)
                 .path().by("id");
         assertEquals(toListAndPrint("union", union), toListAndPrint("unionUnfolded", unionUnfolded));
     }
