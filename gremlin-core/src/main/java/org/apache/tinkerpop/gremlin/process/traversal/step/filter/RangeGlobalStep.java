@@ -18,20 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_NL_O_P_S_SE_SL_Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +27,18 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -75,8 +73,9 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (usePerIterationCounters) {
             // Create counter key that isolates between different repeat step contexts
             String pathStructure = String.valueOf(traverser.path().size());
+            // consider removing the stepId from the key
             String iterationKey = this.getId() + ":" + traverser.loops() + ":" + pathStructure;
-            Object vId = ((Vertex) ((B_LP_NL_O_P_S_SE_SL_Traverser) traverser).get()).property("id").value();
+            Object vId = ((Vertex) traverser.get()).property("id").value();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
             System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
         }
