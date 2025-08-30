@@ -132,7 +132,7 @@ public class TinkerGraphPlayTest {
                 .out("knows").has("id", P.neq("l4-3")).limit(2)
                 .out("knows").has("id", P.neq("l4-3")).limit(2)
                 .path().by("id");
-        assertEquals(toListAndPrint("filterLimit", filterLimit), toListAndPrint("basicUnfolded", filterLimitUnfolded));
+        assertEquals(toListAndPrint("filterLimit", filterLimit), toListAndPrint("filterLimitUnfolded", filterLimitUnfolded));
     }
 
     @Test
