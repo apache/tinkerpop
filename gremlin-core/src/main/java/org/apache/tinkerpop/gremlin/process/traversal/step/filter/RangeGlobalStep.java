@@ -100,8 +100,12 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         }
 
         if (this.high != -1 && currentCounter.get() >= this.high) {
-            System.out.printf("Filtering out traverser (reached high limit): %s Counter: %d%n", traverser.path(), currentCounter.get());
-            return false;
+            if (usePerIterationCounters) {
+                System.out.printf("Filter false for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
+                return false;
+            }
+            System.out.printf("FastNoSuchElementException for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
+            throw FastNoSuchElementException.instance();
         }
 
         long avail = traverser.bulk();

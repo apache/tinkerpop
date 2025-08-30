@@ -366,12 +366,17 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                     start.resetLoops();
                     return IteratorUtils.of(start);
                 } else {
-                    System.out.printf("RepeatEndStep continuing repeat: %s%n", 
-                        ((Vertex) start.get()).property("id").value());
-                    if (!repeatStep.untilFirst && !repeatStep.emitFirst)
+                    System.out.printf("RepeatEndStep continuing repeat: %s Loops: %d%n", 
+                        ((Vertex) start.get()).property("id").value(), start.loops());
+                    if (!repeatStep.untilFirst && !repeatStep.emitFirst) {
                         repeatStep.repeatTraversal.addStart(start);
-                    else
+                        System.out.printf("RepeatEndStep added start to repeatTraversal: %s Loops: %d%n",
+                                ((Vertex) start.get()).property("id").value(), start.loops());
+                    } else {
                         repeatStep.addStart(start);
+                        System.out.printf("RepeatEndStep adding start to repeatStep: %s Loops: %d%n",
+                                ((Vertex) start.get()).property("id").value(), start.loops());
+                    }
                     if (repeatStep.doEmit(start, false)) {
                         final Traverser.Admin<S> emitSplit = start.split();
                         emitSplit.resetLoops();
