@@ -73,8 +73,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         // Determine which counter to use
         AtomicLong currentCounter = this.counter;
         if (usePerIterationCounters) {
-
-
             StringBuilder sb = new StringBuilder();
             Traversal.Admin t = this.traversal;
             while (!t.isRoot()) {
@@ -82,15 +80,11 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
                 // TODO: account scenario where parent is not repeat step?
                 Step<?, ?> ps = pt.asStep();
                 String pid = ps.getId();
-                int loops = traverser.loops(pid);
-                System.out.printf("Parent: %s PID: %s Loops: %d TraverserLoops: %d%n", ps, pid, loops, traverser.loops());
                 sb.append(pid).append(":");
-                sb.append(loops).append(":");
+                sb.append(traverser.loops(pid)).append(":");
                 t = ps.getTraversal();
             }
             sb.append(this.getId()).append(":").append(traverser.loops());
-//            Object pathHead = traverser.path().get(0);
-//            sb.append(":").append(pathHead.toString());
 
             // Create counter key that isolates between different repeat step contexts
             String iterationKey = sb.toString();

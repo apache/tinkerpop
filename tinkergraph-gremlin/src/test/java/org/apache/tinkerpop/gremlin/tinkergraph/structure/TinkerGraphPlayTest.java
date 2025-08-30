@@ -59,7 +59,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com);
@@ -101,15 +101,38 @@ public class TinkerGraphPlayTest {
 
     @Test
     public void testRepeatOutLimit() {
-        GraphTraversal<Vertex, Path> basic = g.V().has("id", "l2-0")
+        GraphTraversal<Vertex, Path> outLimit = g.V().has("id", "l2-0")
                 .repeat(__.out("knows").limit(2))
                 .times(2).path().by("id");
-        GraphTraversal<Vertex, Path> basicUnfolded = g.V().has("id", "l2-0")
+        GraphTraversal<Vertex, Path> outLimitUnfolded = g.V().has("id", "l2-0")
                 .out("knows").limit(2)
                 .out("knows").limit(2)
                 .path().by("id");
-        assertEquals(toListAndPrint("basic", basic), toListAndPrint("basicUnfolded", basicUnfolded));
+        assertEquals(toListAndPrint("outLimit", outLimit), toListAndPrint("outLimitUnfolded", outLimitUnfolded));
+    }
 
+    @Test
+    public void testRepeatWithBothAndLimit() {
+        GraphTraversal<Vertex, Path> bothLimit = g.V().has("id", "l3-0")
+                .repeat(__.both("knows").limit(3))
+                .times(2).path().by("id");
+        GraphTraversal<Vertex, Path> bothLimitUnfolded = g.V().has("id", "l3-0")
+                .both("knows").limit(3)
+                .both("knows").limit(3)
+                .path().by("id");
+        assertEquals(toListAndPrint("bothLimit", bothLimit), toListAndPrint("bothLimitUnfolded", bothLimitUnfolded));
+    }
+
+    @Test
+    public void testRepeatWithFilterAndLimit() {
+        GraphTraversal<Vertex, Path> filterLimit = g.V().has("id", "l2-0")
+                .repeat(__.out("knows").has("id", P.neq("l4-3")).limit(2))
+                .times(2).path().by("id");
+        GraphTraversal<Vertex, Path> filterLimitUnfolded = g.V().has("id", "l2-0")
+                .out("knows").has("id", P.neq("l4-3")).limit(2)
+                .out("knows").has("id", P.neq("l4-3")).limit(2)
+                .path().by("id");
+        assertEquals(toListAndPrint("filterLimit", filterLimit), toListAndPrint("basicUnfolded", filterLimitUnfolded));
     }
 
     @Test
@@ -329,6 +352,7 @@ public class TinkerGraphPlayTest {
         for (Object o : list) {
             System.out.println(o);
         }
+        assertFalse(list.isEmpty());
         return list;
     }
     
