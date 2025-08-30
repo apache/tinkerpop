@@ -62,6 +62,7 @@ public class B_LP_NL_O_S_SE_SL_Traverser<T> extends B_LP_O_S_SE_SL_Traverser<T> 
         if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {
             final LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
             this.nestedLoops.push(lc);
+            this.loopNames.put(stepLabel, lc);
             if (loopName != null)
                 this.loopNames.put(loopName, lc);
         }

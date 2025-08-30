@@ -59,6 +59,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com);
@@ -95,6 +96,20 @@ public class TinkerGraphPlayTest {
                 .limit(2).out("knows")
                 .path().by("id");
         assertEquals(toListAndPrint("basic", basic), toListAndPrint("basicUnfolded", basicUnfolded));
+
+    }
+
+    @Test
+    public void testRepeatOutLimit() {
+        GraphTraversal<Vertex, Path> basic = g.V().has("id", "l2-0")
+                .repeat(__.out("knows").limit(2))
+                .times(2).path().by("id");
+        GraphTraversal<Vertex, Path> basicUnfolded = g.V().has("id", "l2-0")
+                .out("knows").limit(2)
+                .out("knows").limit(2)
+                .path().by("id");
+        assertEquals(toListAndPrint("basic", basic), toListAndPrint("basicUnfolded", basicUnfolded));
+
     }
 
     @Test
