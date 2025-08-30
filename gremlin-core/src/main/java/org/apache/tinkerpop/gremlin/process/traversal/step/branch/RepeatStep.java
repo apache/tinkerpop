@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -235,9 +236,13 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         while (true) {
             if (this.repeatTraversal.getEndStep().hasNext()) {
-                return this.repeatTraversal.getEndStep();
+                Traverser.Admin<S> result = this.repeatTraversal.getEndStep().next();
+                System.out.printf("RepeatStep returning result: %s Path: %s%n", 
+                    ((Vertex) result.get()).property("id").value(), result.path());
+                return IteratorUtils.of(result);
             } else {
                 final Traverser.Admin<S> start = this.starts.next();
+                
                 String ln;
                 if (this.loopName != null) {
                     ln = this.getId();
@@ -246,11 +251,19 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 }
                     
                 start.initialiseLoops(this.getId(), ln);
+                System.out.printf("RepeatStep processing start: %s Path: %s Loops: %d%n", 
+                    ((Vertex) start.get()).property("id").value(), start.path(), start.loops());
                 if (doUntil(start, true)) {
+                    System.out.printf("RepeatStep until condition met, exiting: %s%n", 
+                        ((Vertex) start.get()).property("id").value());
                     start.resetLoops();
                     return IteratorUtils.of(start);
                 }
+                
+                System.out.printf("RepeatStep adding to repeat traversal: %s%n", 
+                    ((Vertex) start.get()).property("id").value());
                 this.repeatTraversal.addStart(start);
+                
                 if (doEmit(start, true)) {
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
@@ -342,11 +355,19 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
                 final Traverser.Admin<S> start = this.starts.next();
+                System.out.printf("RepeatEndStep processing: %s Path: %s Loops: %d%n", 
+                    ((Vertex) start.get()).property("id").value(), start.path(), start.loops());
                 start.incrLoops();
+                System.out.printf("RepeatEndStep after incrLoops: %s Loops: %d%n", 
+                    ((Vertex) start.get()).property("id").value(), start.loops());
                 if (repeatStep.doUntil(start, false)) {
+                    System.out.printf("RepeatEndStep until condition met, resetting loops: %s%n", 
+                        ((Vertex) start.get()).property("id").value());
                     start.resetLoops();
                     return IteratorUtils.of(start);
                 } else {
+                    System.out.printf("RepeatEndStep continuing repeat: %s%n", 
+                        ((Vertex) start.get()).property("id").value());
                     if (!repeatStep.untilFirst && !repeatStep.emitFirst)
                         repeatStep.repeatTraversal.addStart(start);
                     else
