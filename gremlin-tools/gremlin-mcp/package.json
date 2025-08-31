@@ -1,0 +1,94 @@
+{
+  "name": "@kpritam/gremlin-mcp",
+  "version": "0.0.11-SNAPSHOT",
+  "description": "A Gremlin MCP server that allows for fetching status, schema, and querying using Gremlin for any Gremlin-compatible graph database (TypeScript implementation).",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "gremlin-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/server.js",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:it": "GREMLIN_ENDPOINT=localhost:8182/g jest tests/integration --testPathIgnorePatterns=\"/node_modules/|/dist/\" --forceExit --detectOpenHandles",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run format && npm run lint && npm run type-check && npm test",
+    "clean": "rm -rf dist",
+    "prepare": "husky",
+    "prepublishOnly": "npm run clean && npm run build && npm run validate",
+    "prepack": "npm run build",
+    "postinstall": "chmod +x dist/server.js || true"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "apache-tinkerpop",
+    "gremlin",
+    "graph",
+    "database"
+  ],
+  "author": {
+    "name": "Gremlin MCP Contributors"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@effect/platform": "^0.90.6",
+    "@effect/platform-node": "^0.96.0",
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "@types/gremlin": "^3.6.7",
+    "effect": "^3.17.9",
+    "gremlin": "^3.7.4",
+    "winston": "^3.17.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.0",
+    "audit-ci": "^7.1.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "jest": "^30.0.5",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/tinkerpop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/apache/tinkerpop/issues"
+  },
+  "homepage": "https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-tools/gremlin-mcp#readme",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
