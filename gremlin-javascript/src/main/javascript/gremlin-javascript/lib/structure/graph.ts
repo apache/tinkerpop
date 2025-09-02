@@ -93,17 +93,18 @@ export class Edge<
   ) {
     super(id, label);
     if (properties) {
-    if (Array.isArray(properties)) {
-      // Handle array of Property objects
-      properties.forEach((prop) => {
-        // Use type assertion to inform TypeScript that prop.key is a valid key for TProperties
-        (this.properties as any)[prop.key] = prop.value;
-      });
-    } else {
-      // Handle object format as before
-      Object.keys(properties).forEach((k) => {
-        (this.properties as any)[k] = properties[k].value;
-      });
+      if (Array.isArray(properties)) {
+        // Handle array of Property objects
+        properties.forEach((prop) => {
+            // Use type assertion to inform TypeScript that prop.key is a valid key for TProperties
+            (this.properties as any)[prop.key] = prop.value;
+        });
+      } else {
+        // Handle object format as before
+        Object.keys(properties).forEach((k) => {
+            (this.properties as any)[k] = properties[k].value;
+        });
+      }
     }
   }
 
