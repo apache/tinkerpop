@@ -411,3 +411,165 @@ Feature: Step - range()
       | result |
       | l[d[2].i] |
       | l[d[5].i] |
+
+  Scenario: g_V_hasXnameX_repeatXlimitX1X_outXfollowedByXX_timesX2X_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX7XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.limit(1).out("followedBy")).times(2).has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(7))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | GLORIA |
+      | DRUMS |
+
+  Scenario: g_V_hasXnameX_limitX1X_outXfollowedByX_limitX1X_outXfollowedByX_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX7XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").limit(1).out("followedBy").limit(1).out("followedBy").has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(7))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | GLORIA |
+      | DRUMS |
+
+  Scenario: g_V_hasXnameX_repeatXlimitX2X_outXfollowedByXX_timesX2X_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.limit(2).out("followedBy")).times(2).has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(5))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | RAIN |
+      | DEAL |
+
+  Scenario: g_V_hasXnameX_limitX2X_outXfollowedByX_limitX2X_outXfollowedByX_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").limit(2).out("followedBy").limit(2).out("followedBy").has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(5))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | RAIN |
+      | DEAL |
+
+  Scenario: g_V_hasXnameX_repeatXoutXfollowedByX_limitX1XX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.out("followedBy").limit(1)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | PLAYING IN THE BAND |
+
+  Scenario: g_V_hasXnameX_outXfollowedByX_limitX1X_outXfollowedByX_limitX1X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").out("followedBy").limit(1).out("followedBy").limit(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | PLAYING IN THE BAND |
+
+  Scenario: g_V_hasXnameX_repeatXoutXfollowedByX_limitX2XX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.out("followedBy").limit(2)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | SUGAR MAGNOLIA |
+      | PLAYING IN THE BAND |
+
+  Scenario: g_V_hasXnameX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").out("followedBy").limit(2).out("followedBy").limit(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | SUGAR MAGNOLIA |
+      | PLAYING IN THE BAND |
+
+  Scenario: g_V_hasXnameX_repeatXlimitX1X_outXfollowedByXX_timesX2X_repeatXlimitX1X_inXfollowedByXX_timesX1X_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.limit(1).out("followedBy")).times(2).repeat(__.limit(1).in("followedBy")).times(1).has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(5))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | DEAL |
+
+  Scenario: g_V_hasXnameX_limitX1X_outXfollowedByX_limitX1X_outXfollowedByX_limitX1X_inXfollowedByX_hasXnameX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").limit(1).out("followedBy").limit(1).out("followedBy").limit(1).in("followedBy").has("name", neq("")).filter(__.values("name").map(__.length()).is(lt(5))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | DEAL |
+
+  Scenario: g_V_hasXnameX_repeatXlimitX1X_outXfollowedByX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_aggregateXxX_byXnameXX_timesX2X_capXxX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").repeat(__.limit(1).out("followedBy").filter(__.values("name").map(__.length()).is(lt(5))).aggregate("x").by("name")).times(2).cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | DEAL |
+      | RAIN |
+
+  Scenario: g_V_hasXnameX_limitX1X_outXfollowedByX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_aggregateXxX_byXnameX_limitX1X_outXfollowedByX_filterXvaluesXnameX_mapXlengthXX_isXltX5XXX_aggregateXxX_byXnameX_capXxX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").limit(1).out("followedBy").filter(__.values("name").map(__.length()).is(lt(5))).aggregate("x").by("name").limit(1).out("followedBy").filter(__.values("name").map(__.length()).is(lt(5))).aggregate("x").by("name").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | DEAL |
+      | RAIN |
+
+  Scenario: g_V_hasXnameX_unionXoutXfollowedByX_limitX1X_outXfollowedByX_outXfollowedByX_limitX1XX_repeatXlimitX1XX_timesX1X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").union(__.out("followedBy").limit(1), __.out("followedBy").out("followedBy").limit(1)).repeat(__.limit(1)).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | MORNING DEW |
+
+  Scenario: g_V_hasXnameX_unionXoutXfollowedByX_limitX1X_outXfollowedByX_outXfollowedByX_limitX1XX_limitX1X_valuesXnameX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().has("name", "DARK STAR").union(__.out("followedBy").limit(1), __.out("followedBy").out("followedBy").limit(1)).limit(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | MORNING DEW |
