@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import java.util.Set;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
@@ -56,6 +57,11 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
             throw new IllegalArgumentException("Loop name not defined: " + loopName);
     }
 
+    @Override
+    public Set<String> getLoopNames() {
+        return loopNames.keySet();
+    }
+    
     @Override
     public void initialiseLoops(final String stepLabel, final String loopName) {
         if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {

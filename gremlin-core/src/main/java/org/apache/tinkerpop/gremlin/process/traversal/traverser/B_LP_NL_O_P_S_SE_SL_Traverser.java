@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import java.util.Set;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
@@ -45,6 +46,11 @@ public class B_LP_NL_O_P_S_SE_SL_Traverser<T> extends B_LP_O_P_S_SE_SL_Traverser
     @Override
     public int loops() {
         return this.nestedLoops.peek().count();
+    }
+
+    @Override
+    public Set<String> getLoopNames() {
+        return loopNames.keySet();
     }
 
     @Override
