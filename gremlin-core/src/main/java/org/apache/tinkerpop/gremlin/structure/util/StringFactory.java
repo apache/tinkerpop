@@ -268,11 +268,6 @@ public final class StringFactory {
     }
 
     public static String pathString(final Path path) {
-        return PATH + L_BRACKET + String.join(", ", IteratorUtils.map(path, p -> {
-            if (p instanceof Vertex) {
-                return ((Vertex) p).property("id").value().toString();
-            }
-            return Objects.toString(p);
-        })) + R_BRACKET;
+        return PATH + L_BRACKET + String.join(", ", IteratorUtils.map(path, Objects::toString)) + R_BRACKET;
     }
 }

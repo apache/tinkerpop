@@ -90,15 +90,15 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
             String iterationKey = sb.toString();
             Object vId = ((Vertex) traverser.get()).property("id").value();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
-            System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
+            // System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
         }
 
         if (this.high != -1 && currentCounter.get() >= this.high) {
             if (usePerIterationCounters) {
-                System.out.printf("Filter false for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
+                // System.out.printf("Filter false for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
                 return false;
             }
-            System.out.printf("FastNoSuchElementException for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
+            // System.out.printf("FastNoSuchElementException for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
             throw FastNoSuchElementException.instance();
         }
 
@@ -106,7 +106,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         if (currentCounter.get() + avail <= this.low) {
             // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
             currentCounter.getAndAdd(avail);
-            System.out.printf("False for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
+            // System.out.printf("False for Traverser: %s Counter: %d%n", traverser.path(), currentCounter.get());
             return false;
         }
 
