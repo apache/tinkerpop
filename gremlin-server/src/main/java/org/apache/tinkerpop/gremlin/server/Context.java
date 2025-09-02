@@ -194,19 +194,13 @@ public class Context {
 
     public void handleDetachment(final List<Object> aggregate) {
         if (!aggregate.isEmpty() && !this.getMaterializeProperties().equals(Tokens.MATERIALIZE_PROPERTIES_ALL)) {
-            final Object firstElement = aggregate.get(0);
-
-            if (firstElement instanceof Element) {
-                for (int i = 0; i < aggregate.size(); i++) {
-                    aggregate.set(i, ReferenceFactory.detach(aggregate.get(i)));
+            for (int i = 0; i < aggregate.size(); i++) {
+                final Object o = aggregate.get(i);
+                if (o instanceof AbstractTraverser) {
+                    ((AbstractTraverser) o).detach();
+                } else {
+                    aggregate.set(i, ReferenceFactory.detach(o));
                 }
-            } else if (firstElement instanceof Path) {
-                for (int i = 0; i < aggregate.size(); i++) {
-                    aggregate.set(i, ReferenceFactory.detach((Path) aggregate.get(i)));
-                }
-            } else if (firstElement instanceof AbstractTraverser) {
-                for (final Object item : aggregate)
-                    ((AbstractTraverser) item).detach();
             }
         }
     }

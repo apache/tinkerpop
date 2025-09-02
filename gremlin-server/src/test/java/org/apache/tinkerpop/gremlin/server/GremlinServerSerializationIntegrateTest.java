@@ -175,13 +175,13 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
     @Test
     public void shouldDeserializePathPropertiesForScripts() {
-        final Path p = client.submit("gmodern.V().has('name','marko').outE().inV().hasLabel('software').path()").one().getPath();
+        final Path p = client.submit("g.V().has('name','marko').outE().inV().hasLabel('software').path()", gmodern).one().getPath();
         assertPathElementsWithProperties(p);
     }
 
     @Test
     public void shouldDeserializePathPropertiesForScriptsWithTokens() {
-        final Path p = client.submit("gmodern.with('materializeProperties','tokens').V().has('name','marko').outE().inV().hasLabel('software').path()").one().getPath();
+        final Path p = client.submit("g.with('materializeProperties','tokens').V().has('name','marko').outE().inV().hasLabel('software').path()", gmodern).one().getPath();
         assertPathElementsWithoutProperties(p);
     }
 
