@@ -74,14 +74,15 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         AtomicLong currentCounter = this.counter;
         if (usePerIterationCounters) {
             StringBuilder sb = new StringBuilder();
-            Traversal.Admin t = this.traversal;
+            Traversal.Admin<?,?> t = this.traversal;
             while (!t.isRoot()) {
                 TraversalParent pt = t.getParent();
-                // TODO: account scenario where parent is not repeat step?
                 Step<?, ?> ps = pt.asStep();
                 String pid = ps.getId();
-                sb.append(pid).append(":");
-                sb.append(traverser.loops(pid)).append(":");
+                if (traverser.getLoopNames().contains(pid)) {
+                    sb.append(pid).append(":");
+                    sb.append(traverser.loops(pid)).append(":");
+                }
                 t = ps.getTraversal();
             }
             sb.append(this.getId()).append(":").append(traverser.loops());
