@@ -89,7 +89,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
             // Create counter key that isolates between different repeat step contexts
             String iterationKey = sb.toString();
-            Object vId = ((Vertex) traverser.get()).property("id").value();
+//            Object vId = ((Vertex) traverser.get()).property("id").value();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
             // System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
         }
