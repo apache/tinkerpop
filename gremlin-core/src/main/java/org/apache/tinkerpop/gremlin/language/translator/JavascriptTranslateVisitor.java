@@ -88,6 +88,15 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalN(GremlinParser.TraversalNContext ctx) {
+        final String[] split = ctx.getText().split("\\.");
+        sb.append(processGremlinSymbol(split[0])).append(".");
+        sb.append(processGremlinSymbol(split[1]));
+        if (!split[1].startsWith("big")) sb.append("_");
+        return null;
+    }
+
+    @Override
     public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("new Map([");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {

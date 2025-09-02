@@ -208,6 +208,17 @@ statics.add_static('on_match', Merge.on_match)
 statics.add_static('in_v', Merge.in_v)
 statics.add_static('out_v', Merge.out_v)
 
+N = Enum('N', ' byte short int long float double big_int big_decimal')
+# no keyword collision so enum is defined as lang, but has collision with type aliases defined in statics
+statics.add_static('byte_', N.byte)
+statics.add_static('short_', N.short)
+statics.add_static('int_', N.int)
+statics.add_static('long_', N.long)
+statics.add_static('float_', N.float)
+statics.add_static('double_', N.double)
+statics.add_static('big_int', N.big_int)
+statics.add_static('big_decimal', N.big_decimal)
+
 Order = Enum('Order', ' asc desc shuffle')
 
 statics.add_static('shuffle', Order.shuffle)

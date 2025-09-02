@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Shortest
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -101,8 +102,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsBoolStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsNumberStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsStringLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
@@ -2304,6 +2306,30 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, OffsetDateTime> asDate() {
         this.asAdmin().getBytecode().addStep(Symbols.asDate);
         return this.asAdmin().addStep(new AsDateStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Parse value of the incoming traverser as a {@link Number}.
+     *
+     * @return the traversal with an appended {@link AsNumberStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
+     * @since 3.8.0
+     */
+    public default GraphTraversal<S, Number> asNumber() {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Parse value of the incoming traverser as a {@link Number}.
+     *
+     * @return the traversal with an appended {@link AsNumberStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
+     * @since 3.8.0
+     */
+    public default GraphTraversal<S, Number> asNumber(final N numberToken) {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
     }
 
     /**
@@ -4933,6 +4959,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         public static final String asDate = "asDate";
         public static final String dateAdd = "dateAdd";
         public static final String dateDiff = "dateDiff";
+        public static final String asNumber = "asNumber";
         public static final String all = "all";
         public static final String any = "any";
         public static final String none = "none";

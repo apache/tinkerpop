@@ -270,6 +270,7 @@ func initSerializers() {
 		columnType:            enumWriter,
 		directionType:         enumWriter,
 		dtType:                enumWriter,
+		nType:                 enumWriter,
 		operatorType:          enumWriter,
 		orderType:             enumWriter,
 		pickType:              enumWriter,
@@ -327,6 +328,7 @@ func initDeserializers() {
 		tType:              enumReader,
 		directionType:      enumReader,
 		dtType:             enumReader,
+		nType:             	enumReader,
 		bindingType:        bindingReader,
 
 		// Metrics
