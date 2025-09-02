@@ -172,7 +172,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     public void shouldHandlePathResult() throws Exception {
         final ResultSet results = client.submit("gmodern.V().out().path()");
         final Path p = results.all().get().get(0).getPath();
-        assertThat(p, instanceOf(ReferencePath.class));
+        assertThat(p, instanceOf(Path.class));
     }
 
     @Test

@@ -281,10 +281,14 @@ class GraphSONSerializersV3 {
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
 
+            // prior to 3.7.5, the code was such that:
             // paths shouldn't serialize with properties if the path contains graph elements
-            final Path p = DetachedFactory.detach(path, false);
-            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, p.labels());
-            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, p.objects());
+            //
+            // however, there was the idea that v3 untyped should essentially match v1 which does include the
+            // properties. as of 3.7.5, we remove detachment to references and allow users to control the inclusion
+            // or exclusion of properties with the materializeProperties option.
+            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, path.labels());
+            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, path.objects());
 
             jsonGenerator.writeEndObject();
         }
