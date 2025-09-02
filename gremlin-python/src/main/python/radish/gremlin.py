@@ -717,7 +717,7 @@ world.gremlins = {
     'g_injectX1_2_3_4X_unfold_asNumber': [(lambda g:g.inject([1, 2, 3, 4]).unfold().as_number())], 
     'g_injectX_1__2__3__4_X_asNumberXX_foldXX': [(lambda g:g.inject('1', 2, '3', 4).as_number().fold())], 
     'g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX': [(lambda g:g.inject(1.0, 2, 3, '4', '0x5').as_number().sum_().as_number(N.byte))], 
-    'g_VX1X_asNumberXN_intX': [(lambda g:g.inject(None).as_number(N.int))], 
+    'g_injectXnullX_asNumberXN_intX': [(lambda g:g.inject(None).as_number(N.int))], 
     'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age').as_number(N.int))], 
     'g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX': [(lambda g:g.with_side_effect('x', 100).V().values('age').math('_ + x').as_number(N.long))], 
     'g_injectX1_2X_asString': [(lambda g:g.inject(1, 2).as_string())], 

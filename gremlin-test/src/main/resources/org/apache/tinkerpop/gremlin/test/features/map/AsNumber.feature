@@ -264,14 +264,16 @@ Feature: Step - asNumber()
       | d[15].b |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_VX1X_asNumberXN_intX
+  Scenario: g_injectXnullX_asNumberXN_intX
     Given the empty graph
     And the traversal of
       """
       g.inject(null).asNumber(N.int)
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "Can't parse type null as number."
+    Then the result should be unordered
+      | result |
+      | null |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX

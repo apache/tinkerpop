@@ -745,7 +745,7 @@ const gremlins = {
     g_injectX1_2_3_4X_unfold_asNumber: [function({g}) { return g.inject([1, 2, 3, 4]).unfold().asNumber() }], 
     g_injectX_1__2__3__4_X_asNumberXX_foldXX: [function({g}) { return g.inject("1", 2, "3", 4).asNumber().fold() }], 
     g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX: [function({g}) { return g.inject(1.0, 2, 3, "4", "0x5").asNumber().sum().asNumber(N.byte_) }], 
-    g_VX1X_asNumberXN_intX: [function({g}) { return g.inject(null).asNumber(N.int_) }], 
+    g_injectXnullX_asNumberXN_intX: [function({g}) { return g.inject(null).asNumber(N.int_) }], 
     g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(N.int_) }], 
     g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX: [function({g}) { return g.withSideEffect("x", 100).V().values("age").math("_ + x").asNumber(N.long_) }], 
     g_injectX1_2X_asString: [function({g}) { return g.inject(1, 2).asString() }], 

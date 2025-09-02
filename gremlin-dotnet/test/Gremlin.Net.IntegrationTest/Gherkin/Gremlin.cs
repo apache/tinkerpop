@@ -744,7 +744,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectX1_2_3_4X_unfold_asNumber", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new List<object> { 1, 2, 3, 4 }).Unfold<object>().AsNumber()}}, 
                {"g_injectX_1__2__3__4_X_asNumberXX_foldXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>("1", 2, "3", 4).AsNumber().Fold()}}, 
                {"g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1.0, 2, 3, "4", "0x5").AsNumber().Sum<object>().AsNumber(N.Byte)}}, 
-               {"g_VX1X_asNumberXN_intX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null).AsNumber(N.Int)}}, 
+               {"g_injectXnullX_asNumberXN_intX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null).AsNumber(N.Int)}}, 
                {"g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().As("a").Out("knows").As("b").Math("a + b").By("age").AsNumber(N.Int)}}, 
                {"g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSideEffect("x", 100).V().Values<object>("age").Math("_ + x").AsNumber(N.Long)}}, 
                {"g_injectX1_2X_asString", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1, 2).AsString()}}, 

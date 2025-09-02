@@ -714,7 +714,7 @@ var translationMap = map[string][]func(g *gremlingo.GraphTraversalSource, p map[
     "g_injectX1_2_3_4X_unfold_asNumber": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject([]interface{}{1, 2, 3, 4}).Unfold().AsNumber()}}, 
     "g_injectX_1__2__3__4_X_asNumberXX_foldXX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject("1", 2, "3", 4).AsNumber().Fold()}}, 
     "g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1.0, 2, 3, "4", "0x5").AsNumber().Sum().AsNumber(gremlingo.N.Byte)}}, 
-    "g_VX1X_asNumberXN_intX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil).AsNumber(gremlingo.N.Int)}}, 
+    "g_injectXnullX_asNumberXN_intX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(nil).AsNumber(gremlingo.N.Int)}}, 
     "g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.V().As("a").Out("knows").As("b").Math("a + b").By("age").AsNumber(gremlingo.N.Int)}}, 
     "g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.WithSideEffect("x", 100).V().Values("age").Math("_ + x").AsNumber(gremlingo.N.Long)}}, 
     "g_injectX1_2X_asString": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.Inject(1, 2).AsString()}}, 
