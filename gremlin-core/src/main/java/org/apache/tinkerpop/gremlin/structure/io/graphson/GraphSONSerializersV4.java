@@ -19,16 +19,8 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ImmutableExplanation;
-import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -36,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -54,8 +45,6 @@ import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdScalarSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.type.TypeFactory;
-import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,11 +52,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * GraphSON serializers for graph-based objects such as vertices, edges, properties, and paths. These serializers
@@ -297,10 +284,14 @@ class GraphSONSerializersV4 {
                 throws IOException, JsonGenerationException {
             jsonGenerator.writeStartObject();
 
+            // prior to 3.7.5, the code was such that:
             // paths shouldn't serialize with properties if the path contains graph elements
-            final Path p = DetachedFactory.detach(path, false);
-            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, p.labels());
-            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, p.objects());
+            //
+            // however, there was the idea that v3 untyped should essentially match v1 which does include the
+            // properties. as of 3.7.5, we remove detachment to references and allow users to control the inclusion
+            // or exclusion of properties with the materializeProperties option.
+            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, path.labels());
+            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, path.objects());
 
             jsonGenerator.writeEndObject();
         }
