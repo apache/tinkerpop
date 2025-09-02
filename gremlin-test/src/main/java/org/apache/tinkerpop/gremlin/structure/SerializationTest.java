@@ -53,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -721,25 +722,21 @@ public class SerializationTest {
             final Vertex detachedVOut = detached.get("a");
             assertEquals(vOut.label(), detachedVOut.label());
             assertEquals(vOut.id(), detachedVOut.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVOut.properties().hasNext());
+            assertEquals("marko", detachedVOut.value("name").toString());
+            assertEquals(Integer.valueOf(29), detachedVOut.value("age"));
 
             final Edge e = p.get("b");
             final Edge detachedE = detached.get("b");
             assertEquals(e.label(), detachedE.label());
             assertEquals(e.id(), detachedE.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedE.properties().hasNext());
+            assertEquals((double) e.value("weight"), detachedE.value("weight"), 0.0001d);
 
             final Vertex vIn = p.get("c");
             final Vertex detachedVIn = detached.get("c");
             assertEquals(vIn.label(), detachedVIn.label());
             assertEquals(vIn.id(), detachedVIn.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVIn.properties().hasNext());
+            assertEquals("lop", detachedVIn.value("name").toString());
+            assertEquals("java", detachedVIn.value("lang").toString());
         }
 
         @Test
@@ -923,25 +920,21 @@ public class SerializationTest {
             final Vertex detachedVOut = detached.get("a");
             assertEquals(vOut.label(), detachedVOut.label());
             assertEquals(vOut.id(), detachedVOut.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVOut.properties().hasNext());
+            assertEquals("marko", detachedVOut.value("name").toString());
+            assertEquals(Integer.valueOf(29), detachedVOut.value("age"));
 
             final Edge e = p.get("b");
             final Edge detachedE = detached.get("b");
             assertEquals(e.label(), detachedE.label());
             assertEquals(e.id(), detachedE.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedE.properties().hasNext());
+            assertEquals((double) e.value("weight"), detachedE.value("weight"), 0.0001d);
 
             final Vertex vIn = p.get("c");
             final Vertex detachedVIn = detached.get("c");
             assertEquals(vIn.label(), detachedVIn.label());
             assertEquals(vIn.id(), detachedVIn.id());
-
-            // this is a SimpleTraverser so no properties are present in detachment
-            assertFalse(detachedVIn.properties().hasNext());
+            assertEquals("lop", detachedVIn.value("name").toString());
+            assertEquals("java", detachedVIn.value("lang").toString());
         }
 
         @Test

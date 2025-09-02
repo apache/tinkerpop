@@ -333,5 +333,52 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
                 Assert.True(vp.Properties == null || vp.Properties.Length == 0);
             }
         }
+        
+        [Fact]
+        public void shouldUseMaterializedPropertiesTokenInPath()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var p = g.With("materializeProperties", "tokens").V().Has("name", "marko").OutE().InV().HasLabel("software").Path().Next();
+            
+            Assert.NotNull(p);
+            Assert.Equal(3, p.Count);
+            
+            var a = p[0] as Vertex;
+            var b = p[1] as Edge;
+            var c = p[2] as Vertex;
+            
+            Assert.NotNull(a);
+            Assert.NotNull(b);
+            Assert.NotNull(c);
+            
+            // GraphSON will deserialize into null and GraphBinary to []
+            Assert.True(a.Properties == null || a.Properties.Length == 0);
+            Assert.True(b.Properties == null || b.Properties.Length == 0);
+            Assert.True(c.Properties == null || c.Properties.Length == 0);
+        }
+        
+        [Fact]
+        public void shouldMaterializePropertiesAllInPath()
+        {
+            var connection = _connectionFactory.CreateRemoteConnection();
+            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var p = g.With("materializeProperties", "all").V().Has("name", "marko").OutE().InV().HasLabel("software").Path().Next();
+
+            Assert.NotNull(p);
+            Assert.Equal(3, p.Count);
+
+            var a = p[0] as Vertex;
+            var b = p[1] as Edge;
+            var c = p[2] as Vertex;
+
+            Assert.NotNull(a);
+            Assert.NotNull(b);
+            Assert.NotNull(c);
+
+            Assert.True(a.Properties != null && a.Properties.Length > 0);
+            Assert.True(b.Properties != null && b.Properties.Length > 0);
+            Assert.True(c.Properties != null && c.Properties.Length > 0);
+        }
     }
 }

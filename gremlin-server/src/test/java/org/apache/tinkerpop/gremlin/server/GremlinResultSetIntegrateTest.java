@@ -147,7 +147,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         RequestOptions options = RequestOptions.build().addG("gmodern").create();
         final ResultSet results = client.submit("g.V().out().path()", options);
         final Path p = results.all().get().get(0).getPath();
-        assertThat(p, instanceOf(ReferencePath.class));
+        assertThat(p, instanceOf(Path.class));
     }
 
     @Test

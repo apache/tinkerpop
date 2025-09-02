@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptChecker;
@@ -196,8 +197,13 @@ public class Context {
             final Object firstElement = aggregate.get(0);
 
             if (firstElement instanceof Element) {
-                for (int i = 0; i < aggregate.size(); i++)
+                for (int i = 0; i < aggregate.size(); i++) {
                     aggregate.set(i, ReferenceFactory.detach(aggregate.get(i)));
+                }
+            } else if (firstElement instanceof Path) {
+                for (int i = 0; i < aggregate.size(); i++) {
+                    aggregate.set(i, ReferenceFactory.detach((Path) aggregate.get(i)));
+                }
             } else if (firstElement instanceof AbstractTraverser) {
                 for (final Object item : aggregate)
                     ((AbstractTraverser) item).detach();
