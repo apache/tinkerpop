@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.util.GremlinValueComparator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -394,7 +393,6 @@ public class PTest {
         private static final int INITIAL_VALUE = 5;
         private static final int UPDATED_VALUE = 10;
         private static final String EQ_FORMAT = "eq(%d)";
-        private static final String NEQ_FORMAT = "neq(%d)";
         public static final String GT_FORMAT = "gt(%d)";
         public static final String LT_FORMAT = "lt(%d)";
         public static final String NOT_FORMAT = "not(%s)";

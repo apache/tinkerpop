@@ -344,10 +344,6 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
             return comparable(((Map.Entry) f).getKey(), ((Map.Entry) s).getKey()) &&
                     comparable(((Map.Entry) f).getValue(), ((Map.Entry) s).getValue());
         }
-        else if (ft == Type.MapEntry && st == Type.MapEntry) {
-            return comparable(((Map.Entry) f).getKey(), ((Map.Entry) s).getKey()) &&
-                    comparable(((Map.Entry) f).getValue(), ((Map.Entry) s).getValue());
-        }
         else if (ft == Type.Vertex && st == Type.Vertex ||
                 ft == Type.Edge && st == Type.Edge ||
                 ft == Type.VertexProperty && st == Type.VertexProperty) {
