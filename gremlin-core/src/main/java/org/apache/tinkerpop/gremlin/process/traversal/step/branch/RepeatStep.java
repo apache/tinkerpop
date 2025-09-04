@@ -264,19 +264,22 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
 
         final Traverser.Admin<S> start = this.starts.next();
+        System.out.printf("RepeatStep.computerAlgorithm: received traverser%n");
         if (doUntil(start, true)) {
+            System.out.printf("RepeatStep.computerAlgorithm: doUntil=true, exiting%n");
             start.setStepId(this.getNextStep().getId());
             start.addLabels(this.labels);
             return IteratorUtils.of(start);
         } else {
+            System.out.printf("RepeatStep.computerAlgorithm: entering repeat body%n");
             start.setStepId(this.repeatTraversal.getStartStep().getId());
             String ln;
             if (this.loopName != null) {
                 ln = this.loopName;
             } else {
-                ln = start.getStepId();
+                ln = this.getId();
             }
-            start.initialiseLoops(start.getStepId(), ln);
+            start.initialiseLoops(this.getId(), ln);
             if (doEmit(start, true)) {
                 final Traverser.Admin<S> emitSplit = start.split();
                 emitSplit.resetLoops();
@@ -368,8 +371,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
+            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d before incrLoops%n", start.path(), start.loops());
             start.incrLoops();
+            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d after incrLoops%n", start.path(), start.loops());
             if (repeatStep.doUntil(start, false)) {
+                System.out.printf("RepeatEndStep.computerAlgorithm: doUntil=true, calling resetLoops for %s%n", start.path());
                 start.resetLoops();
                 start.setStepId(repeatStep.getNextStep().getId());
                 start.addLabels(repeatStep.labels);
@@ -378,6 +384,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 start.setStepId(repeatStep.getId());
                 if (repeatStep.doEmit(start, false)) {
                     final Traverser.Admin<S> emitSplit = start.split();
+                    System.out.printf("RepeatEndStep.computerAlgorithm: doEmit=true, calling resetLoops for emitSplit %s%n", emitSplit.path());
                     emitSplit.resetLoops();
                     emitSplit.setStepId(repeatStep.getNextStep().getId());
                     emitSplit.addLabels(repeatStep.labels);

@@ -70,9 +70,16 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implem
 
     @Override
     protected Iterator<E> flatMap(final Traverser.Admin<Vertex> traverser) {
-        return Vertex.class.isAssignableFrom(this.returnClass) ?
+        Iterator<E> result = Vertex.class.isAssignableFrom(this.returnClass) ?
                 (Iterator<E>) traverser.get().vertices(this.direction, this.edgeLabels) :
                 (Iterator<E>) traverser.get().edges(this.direction, this.edgeLabels);
+
+        // Count results for debugging
+        List<E> resultList = new java.util.ArrayList<>();
+        result.forEachRemaining(resultList::add);
+        System.out.printf("VertexStep.flatMap: traverser=%s direction=%s labels=%s results=%s%n",
+                traverser, this.direction, Arrays.toString(this.edgeLabels), resultList);
+        return resultList.iterator();
     }
 
     @Override
