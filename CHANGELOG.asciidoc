@@ -25,7 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
-* Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
+* Removed `Vertex` and `ReferenceVertex` from grammar. Use vertex id in traversals now instead.
+* Changed `Element.properties` for Python and Javascript to always return an empty list when properties are not present as opposed to `None` and `undefined` respectively.
 * Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
