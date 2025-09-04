@@ -73,7 +73,7 @@ public class TinkerGraphPlayTest {
     public static void setup() {
         g = TinkerGraph.open().traversal().withoutStrategies(RepeatUnrollStrategy.class);
         load(g);
-        g = g.withComputer(Computer.compute().workers(1));
+//        g = g.withComputer(Computer.compute().workers(1));
     }
     
     @Test

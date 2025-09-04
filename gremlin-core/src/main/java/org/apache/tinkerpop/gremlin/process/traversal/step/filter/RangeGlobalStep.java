@@ -68,34 +68,31 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        System.out.printf("Filter called: %s loops=%d%n", traverser.path(), traverser.loops());
+//        System.out.printf("Filter called: %s loops=%d%n", traverser.path(), traverser.loops());
         if (this.bypass) return true;
 
         // Determine which counter to use
         AtomicLong currentCounter = this.counter;
         if (usePerIterationCounters) {
-            // Find the parent repeat step and use its loop context
-            String repeatStepId = null;
-            int repeatLoops = 0;
-            
+            StringBuilder sb = new StringBuilder();
             Traversal.Admin<?,?> t = this.traversal;
             while (!t.isRoot()) {
                 TraversalParent pt = t.getParent();
                 Step<?, ?> ps = pt.asStep();
-                if (ps.getClass().getSimpleName().equals("RepeatStep")) {
-                    repeatStepId = ps.getId();
-                    if (traverser.getLoopNames().contains(repeatStepId)) {
-                        repeatLoops = traverser.loops(repeatStepId);
-                    }
-                    break;
+                String pid = ps.getId();
+                if (traverser.getLoopNames().contains(pid)) {
+                    sb.append(pid).append(":");
+                    sb.append(traverser.loops(pid)).append(":");
                 }
                 t = ps.getTraversal();
             }
-            
-            // Create key based on repeat step and its current iteration
-            String iterationKey = repeatStepId + ":" + repeatLoops;
+            sb.append(this.getId()).append(":").append(traverser.loops());
+
+            // Create counter key that isolates between different repeat step contexts
+            String iterationKey = sb.toString();
+//            Object vId = ((Vertex) traverser.get()).property("id").value();
             currentCounter = perIterationCounters.computeIfAbsent(iterationKey, k -> new AtomicLong(0L));
-            System.out.printf("IterationKey: %s RepeatLoops: %d Counter: %d Path: %s%n", iterationKey, repeatLoops, currentCounter.get(), traverser.path());
+            // System.out.printf("IterationKey: %s Traverser: %s Path: %s Counter: %s High: %s%n", iterationKey, vId, traverser.path(), currentCounter.get(), this.high);
         }
 
         System.out.printf("Traverser: %s%n", traverser);
@@ -238,9 +235,9 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public void addBarrier(final TraverserSet<S> barrier) {
-        System.out.printf("=== addBarrier called with %d traversers ===%n", barrier.size());
+//        System.out.printf("=== addBarrier called with %d traversers ===%n", barrier.size());
         IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-            System.out.printf("Barrier traverser: %s loops=%d%n", traverser.path(), traverser.loops());
+//            System.out.printf("Barrier traverser: %s loops=%d%n", traverser.path(), traverser.loops());
             traverser.setSideEffects(this.getTraversal().getSideEffects());
             this.addStart(traverser);
         });
