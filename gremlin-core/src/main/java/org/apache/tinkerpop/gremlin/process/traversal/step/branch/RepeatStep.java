@@ -371,11 +371,11 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         protected Iterator<Traverser.Admin<S>> computerAlgorithm() throws NoSuchElementException {
             final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
-            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d before incrLoops%n", start.path(), start.loops());
+//            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d before incrLoops%n", start.path(), start.loops());
             start.incrLoops();
-            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d after incrLoops%n", start.path(), start.loops());
+//            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d after incrLoops%n", start.path(), start.loops());
             if (repeatStep.doUntil(start, false)) {
-                System.out.printf("RepeatEndStep.computerAlgorithm: doUntil=true, calling resetLoops for %s%n", start.path());
+//                System.out.printf("RepeatEndStep.computerAlgorithm: doUntil=true, calling resetLoops for %s%n", start.path());
                 start.resetLoops();
                 start.setStepId(repeatStep.getNextStep().getId());
                 start.addLabels(repeatStep.labels);
@@ -384,7 +384,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                 start.setStepId(repeatStep.getId());
                 if (repeatStep.doEmit(start, false)) {
                     final Traverser.Admin<S> emitSplit = start.split();
-                    System.out.printf("RepeatEndStep.computerAlgorithm: doEmit=true, calling resetLoops for emitSplit %s%n", emitSplit.path());
+//                    System.out.printf("RepeatEndStep.computerAlgorithm: doEmit=true, calling resetLoops for emitSplit %s%n", emitSplit.path());
                     emitSplit.resetLoops();
                     emitSplit.setStepId(repeatStep.getNextStep().getId());
                     emitSplit.addLabels(repeatStep.labels);
