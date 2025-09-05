@@ -21,6 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * A NotP wraps a P and represents its negation. This class provides the logical NOT operation
+ * for predicates, inverting the result of the wrapped predicate's test method.
+ */
 public class NotP<V> extends P<V> {
     private P<V> originalP;
     public NotP(final P<V> p) {
@@ -54,6 +58,9 @@ public class NotP<V> extends P<V> {
         return null == this.getValue() ? this.biPredicate.toString() : String.format("not(%s(%s))", this.originalP.biPredicate.toString(), this.getValue());
     }
 
+    /**
+     * Returns the original unwrapped P contained within this NotP, as double negation cancels out.
+     */
     @Override
     public P<V> negate() {
         return originalP;
@@ -63,15 +70,18 @@ public class NotP<V> extends P<V> {
         return new NotP<>(this.originalP.clone());
     }
 
-    public static class NotPBiPredicate<T, U> implements PBiPredicate<T, U>, Serializable {
+    /**
+     * A NotPBiPredicate wraps a PBiPredicate and represents its negation.
+     */
+    public final static class NotPBiPredicate<T, U> implements PBiPredicate<T, U>, Serializable {
         PBiPredicate<T, U> original;
 
-        public NotPBiPredicate(PBiPredicate<T, U> predicate) {
+        public NotPBiPredicate(final PBiPredicate<T, U> predicate) {
             this.original = predicate;
         }
 
         @Override
-        public boolean test(T t, U u) {
+        public boolean test(final T t, final U u) {
             return !original.test(t, u);
         }
 
