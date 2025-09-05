@@ -702,7 +702,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy)",  // javascript needs TINKERPOP-3055
-                            "g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy')])"},
+                            "g.without_strategies(*[GremlinDataType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy')])"},
                     {"g.withStrategies(ReservedKeysVerificationStrategy(throwException: true, keys: [\"age\"])).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
                             "g.withStrategies(ReservedKeysVerificationStrategy(throwException:true, keys:[\"age\"])).addV(\"person\").property(\"age\", 29).property(\"name\", \"marko\")",
                             "g.withStrategies(ReservedKeysVerificationStrategy(throwException:boolean0, keys:list0)).addV(string0).property(string1, number0).property(string2, string3)",
@@ -721,7 +721,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.withoutStrategies(ReadOnlyStrategy.class, PathRetractionStrategy.class, FilterRankingStrategy.class)",
                             "g.withoutStrategies(ReadOnlyStrategy, PathRetractionStrategy, FilterRankingStrategy)",  // javascript - needs TINKERPOP-3055
-                            "g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'), GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy'), GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy')])"},
+                            "g.without_strategies(*[GremlinDataType('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy'), GremlinDataType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy'), GremlinDataType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy')])"},
                     {"g.inject(0..5)",
                             null,
                             "g.inject(number0..number1)",

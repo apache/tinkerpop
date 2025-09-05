@@ -58,6 +58,8 @@ public class EnumSerializer<E extends Enum> extends SimpleTypeSerializer<E> {
     public static final EnumSerializer<Pop> PopSerializer = new EnumSerializer<>(DataType.POP, Pop::valueOf);
     public static final EnumSerializer<Scope> ScopeSerializer = new EnumSerializer<>(DataType.SCOPE, Scope::valueOf);
     public static final EnumSerializer<T> TSerializer = new EnumSerializer<>(DataType.T, T::valueOf);
+//    public static final EnumSerializer<GType> GTypeSerializer = new EnumSerializer<>(DataType.GTYPE, GType::valueOf);
+//    public static final EnumSerializer<NType> NTypeSerializer = new EnumSerializer<>(DataType.NTYPE, NType::valueOf);
 
     private final Function<String, E> readFunc;
 

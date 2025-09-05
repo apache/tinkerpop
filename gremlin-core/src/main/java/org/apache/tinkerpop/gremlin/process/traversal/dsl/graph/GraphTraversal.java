@@ -195,16 +195,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.PropertyType;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.time.OffsetDateTime;
@@ -1950,6 +1941,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.8.0
      */
     public default GraphTraversal<S, Number> asNumber(final N numberToken) {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
+    }
+
+    public default GraphTraversal<S, Number> asNumber(final GremlinDataType numberToken) {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
+    }
+
+    public default GraphTraversal<S, Number> asNumber(final Class numberToken) {
         this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
         return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
     }

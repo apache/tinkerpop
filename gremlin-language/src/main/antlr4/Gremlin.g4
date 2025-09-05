@@ -362,6 +362,7 @@ traversalMethod_asDate
  traversalMethod_asNumber
      : K_ASNUMBER LPAREN RPAREN #traversalMethod_asNumber_Empty
      | K_ASNUMBER LPAREN traversalN RPAREN #traversalMethod_asNumber_traversalN
+     | K_ASNUMBER LPAREN traversalGremlinTypes RPAREN #traversalMethod_asNumber_traversalGremlinTypes
      ;
 
 traversalMethod_asString
@@ -961,6 +962,11 @@ traversalMethod_write
     ARGUMENT AND TERMINAL RULES
 **********************************************/
 
+traversalGremlinTypes
+    : nakedKey
+    | nakedKey DOT nakedKey
+    ;
+
 traversalStrategy
     : K_NEW? classType (LPAREN (configuration (COMMA configuration)*)? RPAREN)?
     ;
@@ -1095,6 +1101,7 @@ traversalPredicate
     | traversalPredicate_inside
     | traversalPredicate_outside
     | traversalPredicate_between
+    | traversalPredicate_typeOf
     | traversalPredicate_within
     | traversalPredicate_without
     | traversalPredicate_not
@@ -1148,6 +1155,10 @@ traversalPredicate_eq
 
 traversalPredicate_neq
     : (K_P DOT K_NEQ | K_NEQ) LPAREN genericArgument RPAREN
+    ;
+
+traversalPredicate_typeOf
+    : (K_P DOT K_TYPEOF | K_TYPEOF) LPAREN genericArgument RPAREN
     ;
 
 traversalPredicate_lt
@@ -1579,6 +1590,7 @@ genericLiteral
     | traversalPick
     | traversalDT
     | traversalN
+    | traversalGremlinTypes
     | genericSetLiteral
     | genericCollectionLiteral
     | genericRangeLiteral
@@ -1676,6 +1688,10 @@ classType
 variable
     : Identifier
     ;
+
+//gremlinType
+//    : Identifier
+//    ;
 
 // every Gremlin keyword must be listed here or else these words will not be able to be used as
 // Map/Configuration keys as naked identifiers like [all: 123]. without having that definition
@@ -2109,6 +2125,7 @@ K_NEQ: 'neq';
 K_NEW: 'new';
 K_NORMSACK: 'normSack';
 K_NULL: 'null';
+K_TYPEOF: 'typeOf';
 K_ONCREATE: 'onCreate';
 K_ONMATCH: 'onMatch';
 K_OPERATOR: 'Operator';

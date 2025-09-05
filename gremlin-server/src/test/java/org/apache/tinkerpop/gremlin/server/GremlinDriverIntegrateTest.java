@@ -22,11 +22,16 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
+import org.apache.tinkerpop.gremlin.structure.CustomType;
+import org.apache.tinkerpop.gremlin.structure.GType;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.GremlinDataType;
+import org.apache.tinkerpop.gremlin.structure.NType;
+import org.apache.tinkerpop.gremlin.structure.Point;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.GremlinDataTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV2;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.TestHelper;
@@ -44,7 +49,6 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
-import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV2;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV3;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
@@ -1974,6 +1978,26 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(1, returnedList.size());
             Object value = returnedList.get(0).getObject();
             assertTrue(value instanceof UUID);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void test() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        try {
+            final Client client = cluster.connect().alias("g");
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client));
+            GremlinDataType.GlobalTypeCache.registerDataType(NType.class);
+            GremlinDataTypeSerializer.registerTypeFactory("NType", NType::valueOf);
+            GremlinDataType.GlobalTypeCache.registerDataType(CustomType.class);
+            GremlinDataTypeSerializer.registerTypeFactory("CustomType", CustomType::valueOf);
+            System.out.println(g.inject("1").asNumber(NType.DOUBLE).next());
+            System.out.println(client.submit("g.inject('1').asNumber(NType.DOUBLE)", RequestOptions.build().language("gremlin-lang").create()).all().get());
+            System.out.println(g.inject(1.0,2,3,"hello",false).is(P.typeOf(GType.NUMBER)).fold().next());
+            System.out.println(client.submit("g.inject(1.0,'hello').is(P.typeOf(GType.DOUBLE)).fold()", RequestOptions.build().language("gremlin-lang").create()).all().get());
+            cluster.close();
         } finally {
             cluster.close();
         }

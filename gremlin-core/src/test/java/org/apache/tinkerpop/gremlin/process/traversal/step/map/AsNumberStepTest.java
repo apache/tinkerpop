@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.structure.GType;
+import org.apache.tinkerpop.gremlin.structure.GremlinDataType;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -49,6 +51,7 @@ public class AsNumberStepTest extends StepTest {
         assertEquals(1L, __.__(1L).asNumber().next());
         assertEquals(3.14f, __.__(3.14).asNumber(N.float_).next());
         assertEquals(3.14, __.__(3.14f).asNumber(N.double_).next());
+        assertEquals(3.14, __.__(3.14f).asNumber(GType.DOUBLE).next());
         assertEquals(1, __.__("1").asNumber(N.int_).next());
         assertEquals(1, __.__("1").asNumber().next());
         assertEquals((byte) 1, __.__("1").asNumber(N.byte_).next());

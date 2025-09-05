@@ -111,7 +111,7 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     public Void visitClassType(final GremlinParser.ClassTypeContext ctx) {
         final Optional<? extends Class<? extends TraversalStrategy>> strategy = TraversalStrategies.GlobalCache.getRegisteredStrategyClass(ctx.getText());
         final String fqcn = strategy.map(Class::getName).orElse(ctx.getText());
-        sb.append("GremlinType('").append(fqcn).append("')");
+        sb.append("GremlinDataType('").append(fqcn).append("')");
         return null;
     }
 

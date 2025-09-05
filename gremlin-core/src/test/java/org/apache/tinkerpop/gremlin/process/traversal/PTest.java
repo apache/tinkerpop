@@ -21,6 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.CustomType;
+import org.apache.tinkerpop.gremlin.structure.GType;
+import org.apache.tinkerpop.gremlin.structure.Point;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +58,10 @@ public class PTest {
         @Parameterized.Parameters(name = "{0}.test({1}) = {2}")
         public static Iterable<Object[]> data() {
             return new ArrayList<>(Arrays.asList(new Object[][]{
+                    {P.typeOf(Number.class), 1, true},
+                    {P.typeOf(GType.NUMBER), 1, true},
+                    {P.typeOf(CustomType.POINT), new Point(1, 2), true},
+                    {P.typeOf(Number.class.getCanonicalName()), 1, true},
                     {P.eq(0), 0, true},
                     {P.eq(0), -0, true},
                     {P.eq(0), +0, true},

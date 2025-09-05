@@ -146,6 +146,15 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if values are of a type.
+     *
+     * @since 3.8.0-incubating
+     */
+    public static <V> P<V> typeOf(final V value) {
+        return new P(Type.typeOf, value);
+    }
+
+    /**
      * Determines if a value is less than another.
      *
      * @since 3.0.0-incubating

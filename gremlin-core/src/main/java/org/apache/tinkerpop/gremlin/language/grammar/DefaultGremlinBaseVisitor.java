@@ -1082,6 +1082,9 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalMethod_asNumber_traversalGremlinTypes(final GremlinParser.TraversalMethod_asNumber_traversalGremlinTypesContext ctx) { notImplemented(ctx); return null; }/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalScope(final GremlinParser.TraversalScopeContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1126,6 +1129,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override public T visitTraversalGremlinTypes(final GremlinParser.TraversalGremlinTypesContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitTraversalPredicate(final GremlinParser.TraversalPredicateContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
@@ -1155,6 +1162,14 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalPredicate_typeOf(final GremlinParser.TraversalPredicate_typeOfContext ctx) { notImplemented(ctx); return null; }
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	@Override public T visitTraversalPredicate_nof(final GremlinParser.TraversalPredicate_nofContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */

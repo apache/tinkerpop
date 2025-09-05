@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
@@ -77,6 +75,14 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) {
         return P.neq(getSingleGenericLiteralArgument(ctx));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public P visitTraversalPredicate_typeOf(final GremlinParser.TraversalPredicate_typeOfContext ctx) {
+        return P.typeOf(getSingleGenericLiteralArgument(ctx));
     }
 
     /**

@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.GType;
+import org.apache.tinkerpop.gremlin.structure.GremlinDataType;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
@@ -35,6 +37,8 @@ import java.util.Set;
 public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
 
     private N numberToken;
+    private GremlinDataType gDT;
+    private Class<?> clazz;
 
     public AsNumberStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -46,16 +50,30 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         this.numberToken = numberToken;
     }
 
+    public AsNumberStep(final Traversal.Admin traversal, final GremlinDataType numberToken) {
+        super(traversal);
+        this.gDT = numberToken;
+    }
+
+    public AsNumberStep(final Traversal.Admin traversal, final Class<?> numberToken) {
+        super(traversal);
+        this.gDT = GType.valueOf(numberToken.getSimpleName().toUpperCase());
+    }
+
     @Override
     protected Number map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
         if (object instanceof String) {
             String numberText = (String) object;
             Number number = parseNumber(numberText);
-            return numberToken == null ? number : castNumber(number, numberToken);
+            return numberToken == null ? (gDT == null ? number : castNumber(number, gDT))
+                    : castNumber(number, numberToken);
+//            return numberToken == null ? number : castNumber(number, numberToken);
         } else if (object instanceof Number) {
             Number number = (Number) object;
-            return numberToken == null ? number : castNumber(number, numberToken);
+            return numberToken == null ? (gDT == null ? number : castNumber(number, gDT))
+                    : castNumber(number, numberToken);
+//            return numberToken == null ? number : castNumber(number, numberToken);
         }
         throw new IllegalArgumentException(String.format("Can't parse type %s as number.", object == null ? "null" : object.getClass().getSimpleName()));
     }
@@ -97,6 +115,10 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     }
 
     private static Number castNumber(final Number number, final N numberToken) {
+        return NumberHelper.castTo(number, numberToken);
+    }
+
+    private static Number castNumber(final Number number, final GremlinDataType numberToken) {
         return NumberHelper.castTo(number, numberToken);
     }
 

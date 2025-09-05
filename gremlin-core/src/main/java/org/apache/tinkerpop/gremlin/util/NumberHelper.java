@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.structure.GremlinDataType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -709,6 +710,15 @@ public final class NumberHelper {
      */
     public static Number castTo(final Number a, final N numberToken) {
         Class<? extends Number> clazz = numberToken.getType();
+        return performConversion(a, clazz);
+    }
+
+    public static Number castTo(final Number a, final GremlinDataType numberToken) {
+        Class<? extends Number> clazz = (Class<? extends Number>) numberToken.getType();
+        return performConversion(a, clazz);
+    }
+
+    public static Number castTo(final Number a, final Class<? extends Number> clazz) {
         return performConversion(a, clazz);
     }
 

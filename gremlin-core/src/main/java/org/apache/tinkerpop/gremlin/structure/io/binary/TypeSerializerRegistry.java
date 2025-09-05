@@ -40,14 +40,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
-import org.apache.tinkerpop.gremlin.structure.Column;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.*;
 import org.apache.tinkerpop.gremlin.util.function.Lambda;
@@ -123,6 +116,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(DT.class, EnumSerializer.DTSerializer),
             new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
             new RegistryEntry<>(N.class, new NSerializer()),
+            new RegistryEntry<>(GremlinDataType.class, new GremlinDataTypeSerializer()),
             new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
             new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
             new RegistryEntry<>(Pick.class, EnumSerializer.PickSerializer),

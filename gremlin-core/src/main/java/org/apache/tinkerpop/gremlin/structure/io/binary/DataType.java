@@ -73,6 +73,7 @@ public enum DataType {
     MERGE(0x2E),
     DT(0x2F),
     N(0x30),
+    GREMLINDATATYPE(0X31),
 
     CHAR(0X80),
     DURATION(0X81),

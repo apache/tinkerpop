@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.GremlinDataType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
@@ -93,6 +94,11 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
      * Parses {@link TraversalStrategy} instances.
      */
     final TraversalStrategyVisitor traversalStrategyVisitor;
+
+    /**
+     * Parses {@link GremlinDataType} instances.
+     */
+    final TraversalGremlinTypesVisitor traversalGremlinTypesVisitor;
 
     /**
      * Parses {@link P} instances.
@@ -191,6 +197,7 @@ public class GremlinAntlrToJava extends DefaultGremlinBaseVisitor<Object> {
         this.txVisitor = new TraversalSourceTxVisitor(g, this);
         this.traversalPredicateVisitor = new TraversalPredicateVisitor(this);
         this.traversalStrategyVisitor = new TraversalStrategyVisitor(this);
+        this.traversalGremlinTypesVisitor = new TraversalGremlinTypesVisitor(this);
         this.genericVisitor = new GenericLiteralVisitor(this);
         this.argumentVisitor = new ArgumentVisitor(variableResolver, this);
     }
