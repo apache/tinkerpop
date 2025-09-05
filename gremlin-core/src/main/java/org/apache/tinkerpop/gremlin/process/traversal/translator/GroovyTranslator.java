@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tinkerpop.gremlin.jsr223.CoreImports;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pick;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
@@ -394,6 +395,9 @@ public final class GroovyTranslator implements Translator.ScriptTranslator {
                         script.append(".").append(connector).append("(");
                     }
                 }
+            } else if (p instanceof NotP) {
+                script.append("P.not(");
+                produceScript(p.negate());
             } else {
                 script.append("P.").append(p.getPredicateName()).append("(");
                 convertToScript(p.getValue());

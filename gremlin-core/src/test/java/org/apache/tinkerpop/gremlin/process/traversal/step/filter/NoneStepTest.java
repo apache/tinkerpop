@@ -78,12 +78,13 @@ public class NoneStepTest extends StepTest {
         final List validOne = new ArrayList() {{ add(20); }};
         final List validTwo = new ArrayList() {{ add(21); add(25);}};
         final List validThree = new ArrayList() {{ add(51); add(57); add(71); }};
+        final List validIncorrectType = new ArrayList() {{ add(100); add("25"); }};
+        final List validEmpty = new ArrayList();
         final List containsNull = new ArrayList() {{ add(50); add(null); add(60); }};
-        final List empty = new ArrayList();
-        final List incorrectType = new ArrayList() {{ add(100); add("25"); }};
+        final List invalidIncorrectType = new ArrayList() {{ add(2); add("25"); }};
         final List valueTooSmall = new ArrayList() {{ add(101); add(1); add(10);}};
 
-        assertEquals(4L, __.__(validOne, null, containsNull, empty, incorrectType, valueTooSmall, validTwo, validThree)
+        assertEquals(6L, __.__(validOne, null, containsNull, validEmpty, invalidIncorrectType, validIncorrectType, valueTooSmall, validTwo, validThree)
                 .none(P.lte(3)).count().next().longValue());
     }
 }

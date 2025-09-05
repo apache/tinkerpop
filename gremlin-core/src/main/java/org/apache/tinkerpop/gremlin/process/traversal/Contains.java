@@ -64,18 +64,10 @@ public enum Contains implements PBiPredicate<Object, Collection> {
                  */
                 return second.contains(first);
             }
-            GremlinTypeErrorException typeError = null;
             for (final Object o : second) {
-                try {
-                    if (Compare.eq.test(first, o))
-                        return true;
-                } catch (GremlinTypeErrorException ex) {
-                    // hold onto it until the end in case any other arguments evaluate to TRUE
-                    typeError = ex;
-                }
+                if (Compare.eq.test(first, o))
+                    return true;
             }
-            if (typeError != null)
-                throw typeError;
             return false;
         }
     },
@@ -98,12 +90,4 @@ public enum Contains implements PBiPredicate<Object, Collection> {
      */
     @Override
     public abstract boolean test(final Object first, final Collection second);
-
-    /**
-     * Produce the opposite representation of the current {@code Contains} enum.
-     */
-    @Override
-    public Contains negate() {
-        return this.equals(within) ? without : within;
-    }
 }

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -49,20 +48,13 @@ public final class AnyStep<S, S2> extends FilterStep<S> {
         final S item = traverser.get();
 
         if (item instanceof Iterable || item instanceof Iterator || ((item != null) && item.getClass().isArray())) {
-            GremlinTypeErrorException typeError = null;
             final Iterator<S2> iterator = IteratorUtils.asIterator(item);
             while (iterator.hasNext()) {
-                try {
-                    if (this.predicate.test(iterator.next())) {
-                        return true;
-                    }
-                } catch (GremlinTypeErrorException gtee) {
-                    // hold onto it until the end in case any other element evaluates to TRUE
-                    typeError = gtee;
+                if (this.predicate.test(iterator.next())) {
+                    return true;
                 }
             }
 
-            if (typeError != null) throw typeError;
         }
 
         return false;

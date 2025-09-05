@@ -40,7 +40,7 @@ public enum Text implements PBiPredicate<String, String> {
     startingWith {
         @Override
         public boolean test(final String value, final String prefix) {
-            checkNull(value, prefix);
+            if (isNull(value, prefix)) return false;
             return value.startsWith(prefix);
         }
 
@@ -81,7 +81,7 @@ public enum Text implements PBiPredicate<String, String> {
     endingWith {
         @Override
         public boolean test(final String value, final String suffix) {
-            checkNull(value, suffix);
+            if (isNull(value, suffix)) return false;
             return value.endsWith(suffix);
         }
 
@@ -122,7 +122,7 @@ public enum Text implements PBiPredicate<String, String> {
     containing {
         @Override
         public boolean test(final String value, final String search) {
-            checkNull(value, search);
+            if (isNull(value, search)) return false;
             return value.contains(search);
         }
 
@@ -155,10 +155,11 @@ public enum Text implements PBiPredicate<String, String> {
         }
     };
 
-    private static void checkNull(final String... args) {
+    private static boolean isNull(final String... args) {
         for (String arg : args)
             if (arg == null)
-                throw new GremlinTypeErrorException();
+                return true;
+        return false;
     }
 
     /**

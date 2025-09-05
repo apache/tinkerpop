@@ -41,14 +41,6 @@ public enum Compare implements PBiPredicate<Object, Object> {
         public boolean test(final Object first, final Object second) {
             return GremlinValueComparator.COMPARABILITY.equals(first, second);
         }
-
-        /**
-         * The negative of {@code eq} is {@link #neq}.
-         */
-        @Override
-        public Compare negate() {
-            return neq;
-        }
     },
 
     /**
@@ -61,14 +53,6 @@ public enum Compare implements PBiPredicate<Object, Object> {
         public boolean test(final Object first, final Object second) {
             return !eq.test(first, second);
         }
-
-        /**
-         * The negative of {@code neq} is {@link #eq}
-         */
-        @Override
-        public Compare negate() {
-            return eq;
-        }
     },
 
     /**
@@ -79,15 +63,10 @@ public enum Compare implements PBiPredicate<Object, Object> {
     gt {
         @Override
         public boolean test(final Object first, final Object second) {
+            if (!GremlinValueComparator.COMPARABILITY.comparable(first, second)) {
+                return false;
+            }
             return GremlinValueComparator.COMPARABILITY.compare(first, second) > 0;
-        }
-
-        /**
-         * The negative of {@code gt} is {@link #lte}.
-         */
-        @Override
-        public Compare negate() {
-            return lte;
         }
     },
 
@@ -99,15 +78,10 @@ public enum Compare implements PBiPredicate<Object, Object> {
     gte {
         @Override
         public boolean test(final Object first, final Object second) {
+            if (!GremlinValueComparator.COMPARABILITY.comparable(first, second)) {
+                return false;
+            }
             return GremlinValueComparator.COMPARABILITY.compare(first, second) >= 0;
-        }
-
-        /**
-         * The negative of {@code gte} is {@link #lt}.
-         */
-        @Override
-        public Compare negate() {
-            return lt;
         }
     },
 
@@ -119,15 +93,10 @@ public enum Compare implements PBiPredicate<Object, Object> {
     lt {
         @Override
         public boolean test(final Object first, final Object second) {
+            if (!GremlinValueComparator.COMPARABILITY.comparable(first, second)) {
+                return false;
+            }
             return GremlinValueComparator.COMPARABILITY.compare(first, second) < 0;
-        }
-
-        /**
-         * The negative of {@code lt} is {@link #gte}.
-         */
-        @Override
-        public Compare negate() {
-            return gte;
         }
     },
 
@@ -139,21 +108,11 @@ public enum Compare implements PBiPredicate<Object, Object> {
     lte {
         @Override
         public boolean test(final Object first, final Object second) {
+            if (!GremlinValueComparator.COMPARABILITY.comparable(first, second)) {
+                return false;
+            }
             return GremlinValueComparator.COMPARABILITY.compare(first, second) <= 0;
-        }
-
-        /**
-         * The negative of {@code lte} is {@link #gt}.
-         */
-        @Override
-        public Compare negate() {
-            return gt;
         }
     };
 
-    /**
-     * Produce the opposite representation of the current {@code Compare} enum.
-     */
-    @Override
-    public abstract Compare negate();
 }

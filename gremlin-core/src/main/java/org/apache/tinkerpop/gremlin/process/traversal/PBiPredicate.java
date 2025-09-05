@@ -36,11 +36,4 @@ public interface PBiPredicate<T, U> extends BiPredicate<T, U> {
         return toString();
     }
 
-    /**
-     * Returns a predicate that represents the logical negation of this predicate.
-     **/
-    default PBiPredicate<T, U> negate() {
-        return (T t, U u) -> !test(t, u);
-    }
-
 }

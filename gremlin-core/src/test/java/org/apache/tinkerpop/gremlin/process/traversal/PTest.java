@@ -249,19 +249,20 @@ public class PTest {
                     {TextP.containing(GValue.ofString("x", "o")).and(P.gte(GValue.ofString("y", "j"))).and(TextP.endingWith("ko")), "marko", true},
                     {TextP.containing(GValue.ofString("x", "o")).and(P.gte(GValue.ofString("y", "j"))).and(TextP.endingWith("ko")), "josh", false},
 
-                    // type errors
-                    {P.outside(Double.NaN, Double.NaN), 0, GremlinTypeErrorException.class},
-                    {P.inside(-1, Double.NaN), 0, GremlinTypeErrorException.class},
-                    {P.inside(Double.NaN, 1), 0, GremlinTypeErrorException.class},
-                    {TextP.containing((String) null), "abc", GremlinTypeErrorException.class},
-                    {TextP.containing("abc"), null, GremlinTypeErrorException.class},
-                    {TextP.containing((String) null), null, GremlinTypeErrorException.class},
-                    {TextP.startingWith((String) null), "abc", GremlinTypeErrorException.class},
-                    {TextP.startingWith("abc"), null, GremlinTypeErrorException.class},
-                    {TextP.startingWith((String) null), null, GremlinTypeErrorException.class},
-                    {TextP.endingWith((String) null), "abc", GremlinTypeErrorException.class},
-                    {TextP.endingWith("abc"), null, GremlinTypeErrorException.class},
-                    {TextP.endingWith((String) null), null, GremlinTypeErrorException.class},
+                    // non-comparable cases
+                    {P.outside(Double.NaN, Double.NaN), 0, false},
+                    {P.inside(-1, Double.NaN), 0, false},
+                    {P.inside(Double.NaN, 1), 0, false},
+                    {P.lt(Double.NaN), 0, false},
+                    {TextP.containing((String) null), "abc", false},
+                    {TextP.containing("abc"), null, false},
+                    {TextP.containing((String) null), null, false},
+                    {TextP.startingWith((String) null), "abc", false},
+                    {TextP.startingWith("abc"), null, false},
+                    {TextP.startingWith((String) null), null, false},
+                    {TextP.endingWith((String) null), "abc", false},
+                    {TextP.endingWith("abc"), null, false},
+                    {TextP.endingWith((String) null), null, false},
 
                     // regex
                     {TextP.regex("D"), "Dallas Fort Worth", true},
@@ -392,9 +393,9 @@ public class PTest {
         private static final int INITIAL_VALUE = 5;
         private static final int UPDATED_VALUE = 10;
         private static final String EQ_FORMAT = "eq(%d)";
-        private static final String NEQ_FORMAT = "neq(%d)";
         public static final String GT_FORMAT = "gt(%d)";
         public static final String LT_FORMAT = "lt(%d)";
+        public static final String NOT_FORMAT = "not(%s)";
 
         @Test
         public void shouldUseUpdatedValueAfterSetValue() {
@@ -418,13 +419,13 @@ public class PTest {
             P<Integer> predicate = P.eq(INITIAL_VALUE);
             P<Integer> negated = predicate.negate();
             assertFalse(negated.test(INITIAL_VALUE));
-            assertEquals(String.format(NEQ_FORMAT, INITIAL_VALUE), negated.toString());
-            
+            assertEquals(String.format(NOT_FORMAT, String.format(EQ_FORMAT, INITIAL_VALUE)), negated.toString());
+
             predicate.setValue(UPDATED_VALUE);
             P<Integer> updatedNegated = predicate.negate();
             assertTrue(updatedNegated.test(INITIAL_VALUE));
             assertFalse(updatedNegated.test(UPDATED_VALUE));
-            assertEquals(String.format(NEQ_FORMAT, UPDATED_VALUE), updatedNegated.toString());
+            assertEquals(String.format(NOT_FORMAT, String.format(EQ_FORMAT, UPDATED_VALUE)), updatedNegated.toString());
         }
 
         @Test

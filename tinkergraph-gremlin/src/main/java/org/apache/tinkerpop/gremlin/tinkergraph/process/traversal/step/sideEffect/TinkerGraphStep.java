@@ -19,10 +19,8 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
@@ -134,21 +132,8 @@ public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E>
         try {
             while (iterator.hasNext()) {
                 final E e = iterator.next();
-                try {
-                    if (HasContainer.testAll(e, this.hasContainers))
-                        list.add(e);
-                } catch (GremlinTypeErrorException ex) {
-                    if (getTraversal().isRoot() || !(getTraversal().getParent() instanceof FilterStep)) {
-                        /*
-                         * Either we are at the top level of the query, or our parent query is not a FilterStep and thus
-                         * cannot handle a GremlinTypeErrorException. In any of these cases we do a binary reduction
-                         * from ERROR -> FALSE and filter the solution quietly.
-                         */
-                    } else {
-                        // not a ternary -> binary reducer, pass the ERROR on
-                        throw ex;
-                    }
-                }
+                if (HasContainer.testAll(e, this.hasContainers))
+                    list.add(e);
             }
         } finally {
             // close the old iterator to release resources since we are returning a new iterator (over list)

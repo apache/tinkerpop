@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -46,7 +48,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -72,8 +73,8 @@ public final class CountStrategy extends AbstractTraversalStrategy<TraversalStra
         put(Contains.within, 1L);
         put(Contains.without, 0L);
     }};
-    private static final Set<Compare> INCREASED_OFFSET_SCALAR_PREDICATES =
-            EnumSet.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt);
+    private static final Set<PBiPredicate> INCREASED_OFFSET_SCALAR_PREDICATES =
+            Set.of(Compare.eq, Compare.neq, Compare.lte, Compare.gt, new NotP.NotPBiPredicate(Compare.eq), new NotP.NotPBiPredicate(Compare.neq), new NotP.NotPBiPredicate(Compare.lt), new NotP.NotPBiPredicate(Compare.gt));
 
     private static final CountStrategy INSTANCE = new CountStrategy();
 

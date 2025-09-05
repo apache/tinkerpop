@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -177,6 +178,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(P.class, new PSerializer<>(DataType.P, P.class)),
             new RegistryEntry<>(AndP.class, new PSerializer<>(DataType.P, AndP.class)),
             new RegistryEntry<>(OrP.class, new PSerializer<>(DataType.P, OrP.class)),
+            new RegistryEntry<>(NotP.class, new PSerializer<>(DataType.P, NotP.class)),
             new RegistryEntry<>(TextP.class, new PSerializer<>(DataType.TEXTP, TextP.class)),
             new RegistryEntry<>(Scope.class, EnumSerializer.ScopeSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),

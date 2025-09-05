@@ -167,7 +167,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public P<V> negate() {
-        return new P<>(this.biPredicate.negate(), this.literals, this.variables, this.isCollection);
+        return new NotP<>(this);
     }
 
     @Override

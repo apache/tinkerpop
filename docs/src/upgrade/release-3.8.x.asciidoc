@@ -128,6 +128,22 @@ version, the `none()` step was used to "throw away" all traversers that passed i
 renamed to `discard()`. The `discard()` step with its verb tone arguably makes for a better name for that feature, but
 it also helped make room for `none()` to be repurposed as `none(P)` which is a complement to `any(P)` and `all(P) steps.
 
+==== Simplified Comparability Semantics
+
+The previous system of ternary boolean semantics has been replaced with simplified binary semantics. The triggers for
+"ERROR" states from illegal comparisons are unchanged (typically comparisons with NaN or between incomparable types
+such as String and int). The difference now is that instead of the ERROR being propagated according to ternary logic
+semantics until a reduction point is reached, the error now immediately returns a value of FALSE.
+
+This will be most visible in expressions which include negations. Prior to this change, `g.inject(NaN).not(is(1))` would
+produce no results as `!(NaN == 1)` -> `!(ERROR)` -> `ERROR` -> traverser is filtered out. After this change, the same
+traversal will return NaN as the same expression now evaluates as `!(NaN == 1)` -> `!(FALSE)` -> `TRUE` -> traverser is
+not filtered.
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gremlin-semantics-equality-comparability[Comparability semantics docs]
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3173[TINKERPOP-3173]
+
 ==== Set minimum Java version to 11
 
 TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
@@ -690,6 +706,15 @@ As of 3.8.0 `with()` modulation of the following steps will no longer work: `add
 The `DiscardStep` is now renamed to `DiscardStep`. Providers who developed strategies or other optimizations around
 `DiscardStep` should switch to `DiscardStep`. Note that `DiscardStep` has been repurposed as `none(P)` for filtering
 collections as a complement to `any(P)` and `all(P)`.
+
+===== Added `NotP`
+
+Added a new subclass of `P` to model negated predicates. This has been introduced as the previous system of taking the
+complementary PBiPredicate during negation does not account for edge cases involving illegal comparisons:
+
+`!(1 < NaN) != (1 >= NaN)` -> `!(FALSE) != (FALSE)`
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3173[TINKERPOP-3173]
 
 ===== Set minimum Java version to 11
 
