@@ -33,7 +33,7 @@ from gremlin_python.process.strategies import *
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, T, Pick, Operator, IO, WithOptions
+from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, N, T, Pick, Operator, IO, WithOptions
 
 world.gremlins = {
     'g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX': [(lambda g, xx1=None,xx2=None:g.V().branch(__.label().is_('person').count()).option(xx1, __.values('age')).option(xx2, __.values('lang')).option(xx2, __.values('name')))], 
@@ -696,6 +696,30 @@ world.gremlins = {
     'g_injectX1_2X_asDate': [(lambda g:g.inject([1, 2]).as_date())], 
     'g_injectXnullX_asDate': [(lambda g:g.inject(None).as_date())], 
     'g_injectXinvalidstrX_asDate': [(lambda g:g.inject('This String is not an ISO 8601 Date').as_date())], 
+    'g_injectX5bX_asNumber': [(lambda g:g.inject(5).as_number())], 
+    'g_injectX5sX_asNumber': [(lambda g:g.inject(5).as_number())], 
+    'g_injectX5iX_asNumber': [(lambda g:g.inject(5).as_number())], 
+    'g_injectX5lX_asNumber': [(lambda g:g.inject(long(5)).as_number())], 
+    'g_injectX5nX_asNumber': [(lambda g:g.inject(bigint(5)).as_number())], 
+    'g_injectX5_0X_asNumber': [(lambda g:g.inject(5.0).as_number())], 
+    'g_injectX5_75fX_asNumber': [(lambda g:g.inject(5.75).as_number())], 
+    'g_injectX5_43X_asNumberXN_intX': [(lambda g:g.inject(5.43).as_number(N.int))], 
+    'g_injectX5_67X_asNumberXN_intX': [(lambda g:g.inject(5.67).as_number(N.int))], 
+    'g_injectX5X_asNumberXN_longX': [(lambda g:g.inject(5).as_number(N.long))], 
+    'g_injectX12X_asNumberXN_byteX': [(lambda g:g.inject(12).as_number(N.byte))], 
+    'g_injectX32768X_asNumberXN_shortX': [(lambda g:g.inject(32768).as_number(N.short))], 
+    'g_injectX300X_asNumberXN_byteX': [(lambda g:g.inject(300).as_number(N.byte))], 
+    'g_injectX5X_asNumber': [(lambda g:g.inject('5').as_number())], 
+    'g_injectX5X_asNumberXN_byteX': [(lambda g:g.inject('5').as_number(N.byte))], 
+    'g_injectX1_000X_asNumberXN_bigIntX': [(lambda g:g.inject('1,000').as_number(N.big_int))], 
+    'g_injectXtestX_asNumber': [(lambda g:g.inject('test').as_number())], 
+    'g_injectX_1_2_3_4X_asNumber': [(lambda g:g.inject([1, 2, 3, 4]).as_number())], 
+    'g_injectX1_2_3_4X_unfold_asNumber': [(lambda g:g.inject([1, 2, 3, 4]).unfold().as_number())], 
+    'g_injectX_1__2__3__4_X_asNumberXX_foldXX': [(lambda g:g.inject('1', 2, '3', 4).as_number().fold())], 
+    'g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX': [(lambda g:g.inject(1.0, 2, 3, '4', '0x5').as_number().sum_().as_number(N.byte))], 
+    'g_injectXnullX_asNumberXN_intX': [(lambda g:g.inject(None).as_number(N.int))], 
+    'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age').as_number(N.int))], 
+    'g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX': [(lambda g:g.with_side_effect('x', 100).V().values('age').math('_ + x').as_number(N.long))], 
     'g_injectX1_2X_asString': [(lambda g:g.inject(1, 2).as_string())], 
     'g_injectX1_2X_asStringXlocalX': [(lambda g:g.inject(1, 2).as_string(Scope.local))], 
     'g_injectXlist_1_2X_asStringXlocalX': [(lambda g:g.inject([1, 2]).as_string(Scope.local))], 

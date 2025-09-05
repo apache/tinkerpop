@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -456,6 +457,40 @@ public class GeneralLiteralVisitorTest {
             } else {
                 assertEquals(expectedValue, result);
             }
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidEnumNLiteralTest {
+
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public N expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"byte", N.byte_},
+                    {"short", N.short_},
+                    {"int", N.int_},
+                    {"long", N.long_},
+                    {"float", N.float_},
+                    {"double", N.double_},
+                    {"bigInt", N.bigInt},
+                    {"bigDecimal", N.bigDecimal},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.TraversalNContext ctx = parser.traversalN();
+
+            final N n = (N) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalN(ctx);
+            assertEquals(expected, n);
         }
     }
 

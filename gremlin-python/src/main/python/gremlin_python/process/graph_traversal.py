@@ -322,6 +322,10 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("asDate", *args)
         return self
 
+    def as_number(self, *args):
+        self.bytecode.add_step("asNumber", *args)
+        return self
+
     def as_string(self, *args):
         self.bytecode.add_step("asString", *args)
         return self
@@ -1112,6 +1116,10 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).as_date(*args)
 
     @classmethod
+    def as_number(cls, *args):
+        return cls.graph_traversal(None, None, Bytecode()).as_number(*args)
+
+    @classmethod
     def as_string(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).as_string(*args)
 
@@ -1891,6 +1899,10 @@ def as_date(*args):
     return __.as_date(*args)
 
 
+def as_number(*args):
+    return __.as_number(*args)
+
+
 def as_string(*args):
     return __.as_string(*args)
 
@@ -2440,6 +2452,8 @@ statics.add_static('as_', as_)
 statics.add_static('as_bool', as_bool)
 
 statics.add_static('as_date', as_date)
+
+statics.add_static('as_number', as_number)
 
 statics.add_static('as_string', as_string)
 

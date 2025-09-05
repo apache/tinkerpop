@@ -459,6 +459,14 @@ namespace Gremlin.Net.Process.Traversal
         }
 
         /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateAdd step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AsNumber(N numberToken)
+        {
+            return new GraphTraversal<object, object>().AsNumber(numberToken);
+        }
+
+        /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dedup step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> Dedup(Scope scope, params string?[] dedupLabels)

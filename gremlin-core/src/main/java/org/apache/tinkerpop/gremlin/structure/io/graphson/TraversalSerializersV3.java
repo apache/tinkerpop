@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -139,6 +140,21 @@ final class TraversalSerializersV3 {
         public void serialize(final Enum enumInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeString(enumInstance.name());
+        }
+
+    }
+
+    static class NJacksonSerializer extends StdScalarSerializer<N> {
+
+        public NJacksonSerializer() {
+            super(N.class);
+        }
+
+        @Override
+        public void serialize(final N enumInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            String name = enumInstance.name();
+            jsonGenerator.writeString(name.replace("_", ""));
         }
 
     }
@@ -328,6 +344,24 @@ final class TraversalSerializersV3 {
                     return (A) a;
             }
             throw new IOException("Unknown enum type: " + enumClass);
+        }
+
+        @Override
+        public boolean isCachable() {
+            return true;
+        }
+    }
+
+    final static class NJacksonDeserializer extends StdDeserializer<N> {
+
+        public NJacksonDeserializer() {
+            super(N.class);
+        }
+
+        @Override
+        public N deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+            final String enumName = jsonParser.getText();
+            return N.valueOf(enumName.startsWith("big") ? enumName : enumName + "_");
         }
 
         @Override

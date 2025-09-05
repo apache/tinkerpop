@@ -332,7 +332,7 @@ type dts struct {
 	Day dt
 }
 
-// Merge is a set of operations for Vertex and Edge merging.
+// DT is a set of operations for calculating date
 var DT = dts{
 	Second: "second",
 	Minute: "minute",
@@ -359,6 +359,40 @@ var Merge = merges{
 	OnMatch:  "onMatch",
 	OutV:     "outV",
 	InV:      "inV",
+}
+
+
+type n string
+
+type ns struct {
+	// number type byte
+	Byte n
+	// number type short
+	Short n
+	// number type int
+	Int n
+	// number type long
+	Long n
+    // number type float
+	Float n
+    // number type double
+	Double n
+    // number type bigInt
+	BigInt n
+    // number type bigDecimal
+	BigDecimal n
+}
+
+// N is a set of operations for denoting number types during conversion.
+var N = ns{
+	Byte:       "byte",
+	Short:      "short",
+	Int:        "int",
+	Long:       "long",
+	Float:      "float",
+	Double:     "double",
+	BigInt:     "bigInt",
+	BigDecimal: "bigDecimal",
 }
 
 type operator string
