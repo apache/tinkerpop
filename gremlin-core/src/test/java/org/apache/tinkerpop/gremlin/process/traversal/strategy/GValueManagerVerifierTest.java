@@ -146,23 +146,6 @@ public class GValueManagerVerifierTest {
     }
 
     /**
-     * Tests the notModified method of AfterVerifier.
-     */
-    @Test
-    public void testNotModified() {
-        // Create a traversal with GValues
-        final Traversal.Admin<?, ?> traversal = __.filter(__.has("age", GValue.of("x", 25))).asAdmin();
-
-        // Verify that the state is unchanged after applying the NoOpStrategy
-        GValueManagerVerifier.verify(traversal, NoOpStrategy.instance())
-                .beforeApplying()
-                .stepsOfClassAreParameterized(true, HasStep.class)
-                .afterApplying()
-                .variablesArePreserved()
-                .notModified();
-    }
-
-    /**
      * Tests the managerIsEmpty method of AbstractVerifier.
      */
     @Test

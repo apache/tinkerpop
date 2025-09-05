@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
@@ -31,10 +32,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -119,8 +122,11 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         final Step newStep;
         if (step instanceof VertexStepContract) {
             final VertexStepContract vs = (VertexStepContract) step;
-            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
-            // TODO:: preserve GValue and leave unpinned if vs is a GValueHolder
+            newStep = step instanceof VertexStepPlaceholder ?
+                    // It is safe to use getGValues() here as edgeLabels are the only GValues in VertexStepPlaceholder,
+                    // although the interface is not ideal.
+                    new VertexStepPlaceholder<>(traversal, Edge.class, vs.getDirection(), ((VertexStepPlaceholder<?>) vs).getGValues().toArray(new GValue[0])) :
+                    new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());

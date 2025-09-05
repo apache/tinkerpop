@@ -25,4 +25,8 @@ public interface PropertyAdding {
     void addProperty(Object key, Object value);
     Map<Object, List<Object>> getProperties();
     boolean removeProperty(Object k);
+
+    default public Map<Object, List<Object>> getPropertiesWithGValues() {
+        return getProperties();
+    }
 }

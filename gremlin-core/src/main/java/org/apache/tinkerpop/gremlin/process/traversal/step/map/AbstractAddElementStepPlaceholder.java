@@ -211,6 +211,10 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         return GValueHelper.resolveProperties(properties);
     }
 
+    public Map<Object, List<Object>> getPropertiesWithGValues() {
+        return Collections.unmodifiableMap(properties);
+    }
+
     @Override
     public boolean removeProperty(Object k) {
         if (properties.containsKey(k)) {

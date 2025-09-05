@@ -45,7 +45,9 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
     public default Collection<P<?>> getPredicates() {
         Collection<P<?>> predicates = getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
         for (P<?> predicate : predicates) {
-            getTraversal().getGValueManager().pinGValues(predicate.getGValues());
+            if (predicate.isParameterized()) {
+                getTraversal().getGValueManager().pinGValues(predicate.getGValues());
+            }
         }
         return predicates;
     }
@@ -68,7 +70,7 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
 
     public default Collection<GValue<?>> getGValues() {
         Set<GValue<?>> allGValues = new HashSet<>();
-        for (final P<?> p : getPredicates()) {
+        for (final P<?> p : getPredicatesGValueSafe()) {
             allGValues.addAll(p.getGValues());
         }
         return allGValues;
