@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -931,6 +932,20 @@ public class __ {
      */
     public static <A> GraphTraversal<A, OffsetDateTime> asDate() {
         return __.<A>start().asDate();
+    }
+
+    /**
+     * @see GraphTraversal#asNumber()
+     */
+    public static <A> GraphTraversal<A, Number> asNumber() {
+        return __.<A>start().asNumber();
+    }
+
+    /**
+     * @see GraphTraversal#asNumber(N)
+     */
+    public static <A> GraphTraversal<A, Number> asNumber(final N numberToken) {
+        return __.<A>start().asNumber(numberToken);
     }
 
     /**

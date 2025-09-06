@@ -142,6 +142,9 @@ public class GremlinLang implements Cloneable, Serializable {
             // special handling for enums with additional interfaces
             if (arg instanceof T)
                 return String.format("T.%s", arg);
+            if (arg instanceof N) {
+                return String.format("N.%s", arg).replace("_","");
+            }
             if (arg instanceof Order)
                 return String.format("Order.%s", arg);
             if (arg instanceof Column)

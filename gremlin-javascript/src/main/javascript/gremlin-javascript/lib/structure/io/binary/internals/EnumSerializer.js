@@ -35,6 +35,7 @@ import {
   pop,
   scope,
   t as _t,
+  n as _n,
   EnumValue,
 } from '../../../../process/traversal.js';
 
@@ -63,6 +64,7 @@ export default class EnumSerializer {
       { name: 'Pop', code: DT.POP, enum: to_orig_enum(pop) },
       { name: 'Scope', code: DT.SCOPE, enum: to_orig_enum(scope) },
       { name: 'T', code: DT.T, enum: to_orig_enum(_t) },
+      { name: 'N', code: DT.N, enum: to_orig_enum(_n) },
     ];
     this.byname = {};
     this.bycode = {};

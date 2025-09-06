@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.N;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -687,26 +689,69 @@ public final class NumberHelper {
      * @throws IllegalArgumentException if the specified numeric type is unsupported
      */
     public static Number coerceTo(final Number a, final Class<? extends Number> clazz) {
+        try {
+            return performConversion(a, clazz);
+        } catch (ArithmeticException e) {
+            // return as-is since it didn't fit the type we wanted to coerce to
+            return a;
+        }
+    }
+
+    /**
+     * Casts the given number to the specified numeric type if it can fit into it.
+     * Otherwise, throw.
+     *
+     * @param a the number to be cast
+     * @param numberToken the number token denoting the desired type to cast
+     * @return the number cast to the specified type
+     * @throws IllegalArgumentException if the specified numeric type is unsupported
+     * @throws ArithmeticException if the number overflows
+     */
+    public static Number castTo(final Number a, final N numberToken) {
+        Class<? extends Number> clazz = numberToken.getType();
+        return performConversion(a, clazz);
+    }
+
+    /**
+     * Core conversion logic.
+     * Throws ArithmeticException when conversion would overflow.
+     */
+    private static Number performConversion(final Number a, final Class<? extends Number> clazz) {
         if (a.getClass().equals(clazz)) {
             return a;
-        } else if (clazz.equals(Integer.class)) {
-            if (a.longValue() >= Integer.MIN_VALUE && a.longValue() <= Integer.MAX_VALUE) {
+        }
+        if (clazz.equals(Integer.class)) {
+            Long val = longValue(a, clazz);
+            if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
                 return a.intValue();
             }
         } else if (clazz.equals(Long.class)) {
-            return a.longValue();
+            return longValue(a, clazz);
         } else if (clazz.equals(Float.class)) {
+            // BigDecimal or BigInteger to double can overflow into Infinity, we want to prevent this
+            if (isInfinityOrNaN(a)) {
+                return a.floatValue();
+            }
             if (a.doubleValue() >= -Float.MAX_VALUE && a.doubleValue() <= Float.MAX_VALUE) {
                 return a.floatValue();
             }
         } else if (clazz.equals(Double.class)) {
-            return a.doubleValue();
+            // BigDecimal or BigInteger to double can overflow into Infinity, we want to prevent this
+            if (isInfinityOrNaN(a)) {
+                return a.doubleValue();
+            }
+            if (!Double.isInfinite(a.doubleValue())) {
+                // float losses precision, use string intermediate
+                return a.getClass().equals(Float.class) ? Double.parseDouble(a.toString()) : a.doubleValue();
+            }
         } else if (clazz.equals(Byte.class)) {
-            if (a.longValue() >= Byte.MIN_VALUE && a.longValue() <= Byte.MAX_VALUE) {
+            Long val = longValue(a, clazz);
+            if (val >= Byte.MIN_VALUE && val <= Byte.MAX_VALUE) {
                 return a.byteValue();
             }
         } else if (clazz.equals(Short.class)) {
-            if (a.longValue() >= Short.MIN_VALUE && a.longValue() <= Short.MAX_VALUE) {
+            Long val = longValue(a, clazz);
+            if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
                 return a.shortValue();
             }
         } else if (clazz.equals(BigInteger.class)) {
@@ -717,8 +762,44 @@ public final class NumberHelper {
             throw new IllegalArgumentException("Unsupported numeric type: " + clazz);
         }
 
-        // return as-is since it didn't fit the type we wanted to coerce to
-        return a;
+        throw new ArithmeticException(String.format("Can't convert number of type %s to %s due to overflow.",
+                a.getClass().getSimpleName(), clazz.getSimpleName()));
+    }
+
+    private static Long longValue(final Number num, final Class<? extends Number> targetClass) {
+        // Explicitly throw when converting floating point infinity and NaN to whole numbers
+        if (Double.isNaN(num.doubleValue())) {
+            throw new ArithmeticException(String.format("Can't convert NaN to %s.", targetClass.getSimpleName()));
+        }
+        if (Double.isInfinite(num.doubleValue())) {
+            throw new ArithmeticException(String.format("Can't convert floating point infinity to %s.", targetClass.getSimpleName()));
+        }
+        String msgOverflow = String.format("Can't convert number of type %s to %s due to overflow.",
+                num.getClass().getSimpleName(), targetClass.getSimpleName());
+
+        if (num.getClass().equals(Double.class) || num.getClass().equals(Float.class)) {
+            double value = num.doubleValue();
+            if (value > Long.MAX_VALUE) {
+                throw new ArithmeticException(msgOverflow);
+            }
+            if (value < Long.MIN_VALUE) {
+                throw new ArithmeticException(String.format("Can't convert number of type %s to %s due to underflow.",
+                        num.getClass().getSimpleName(), targetClass.getSimpleName()));
+            }
+        }
+
+        try {
+            if (num.getClass().equals(BigDecimal.class)) return ((BigDecimal) num).longValueExact();
+            return num.getClass().equals(BigInteger.class) ? ((BigInteger) num).longValueExact() : num.longValue();
+        } catch (ArithmeticException ae) {
+            throw new ArithmeticException(msgOverflow);
+        }
+
+    }
+
+    private static boolean isInfinityOrNaN(Number num) {
+        return (!num.getClass().equals(BigDecimal.class) && !num.getClass().equals(BigInteger.class) &&
+                (Double.isInfinite(num.doubleValue()) || Double.isNaN(num.doubleValue())));
     }
 
     private static NumberHelper getHelper(final Class<? extends Number> clazz) {
@@ -752,6 +833,8 @@ public final class NumberHelper {
     private static BigInteger bigIntegerValue(final Number number) {
         if (number == null) return null;
         if (number instanceof BigInteger) return (BigInteger) number;
+        if (number instanceof BigDecimal) return ((BigDecimal) number).toBigInteger();
+        if (number instanceof Double) return BigDecimal.valueOf(number.doubleValue()).toBigInteger();
         return BigInteger.valueOf(number.longValue());
     }
 
@@ -759,7 +842,8 @@ public final class NumberHelper {
         if (number == null) return null;
         if (number instanceof BigDecimal) return (BigDecimal) number;
         if (number instanceof BigInteger) return new BigDecimal((BigInteger) number);
-        return (number instanceof Double || number instanceof Float)
+        if (number instanceof Float) return new BigDecimal(number.toString()); // float losses precision, use string intermediate
+        return (number instanceof Double)
                 ? BigDecimal.valueOf(number.doubleValue())
                 : BigDecimal.valueOf(number.longValue());
     }

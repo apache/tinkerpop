@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalExplanation;
@@ -46,7 +47,9 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.ListSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateTimeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.NSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
+import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializer;
@@ -105,6 +108,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
             new RegistryEntry<>(T.class, EnumSerializer.TSerializer),
             new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
+            new RegistryEntry<>(N.class, new NSerializer()),
             new RegistryEntry<>(BigDecimal.class, new BigDecimalSerializer()),
             new RegistryEntry<>(BigInteger.class, new BigIntegerSerializer()),
             new RegistryEntry<>(Byte.class, SingleTypeSerializer.ByteSerializer),

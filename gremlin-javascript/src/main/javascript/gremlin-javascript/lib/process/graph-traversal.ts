@@ -474,6 +474,16 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
+   * Graph traversal asNumber method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asNumber(...args: any[]) {
+    this.bytecode.addStep('asNumber', args);
+    return this;
+  }
+
+  /**
    * Graph traversal asString method.
    * @param {...Object} args
    * @returns {GraphTraversal}

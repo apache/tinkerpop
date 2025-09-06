@@ -52,6 +52,7 @@ const Direction = {
 const IO = traversalModule.IO;
 const DT = traversalModule.dt;
 const Merge = traversalModule.merge;
+const N = traversalModule.n;
 const P = traversalModule.P;
 const Pick = traversalModule.pick
 const Pop = traversalModule.pop
@@ -725,6 +726,30 @@ const gremlins = {
     g_injectX1_2X_asDate: [function({g, xx1}) { return g.inject(xx1).asDate() }], 
     g_injectXnullX_asDate: [function({g}) { return g.inject(null).asDate() }], 
     g_injectXinvalidstrX_asDate: [function({g}) { return g.inject("This String is not an ISO 8601 Date").asDate() }], 
+    g_injectX5bX_asNumber: [function({g}) { return g.inject(5).asNumber() }], 
+    g_injectX5sX_asNumber: [function({g}) { return g.inject(5).asNumber() }], 
+    g_injectX5iX_asNumber: [function({g}) { return g.inject(5).asNumber() }], 
+    g_injectX5lX_asNumber: [function({g}) { return g.inject(5).asNumber() }], 
+    g_injectX5nX_asNumber: [function({g}) { return g.inject(5).asNumber() }], 
+    g_injectX5_0X_asNumber: [function({g}) { return g.inject(5.0).asNumber() }], 
+    g_injectX5_75fX_asNumber: [function({g}) { return g.inject(5.75).asNumber() }], 
+    g_injectX5_43X_asNumberXN_intX: [function({g}) { return g.inject(5.43).asNumber(N.int_) }], 
+    g_injectX5_67X_asNumberXN_intX: [function({g}) { return g.inject(5.67).asNumber(N.int_) }], 
+    g_injectX5X_asNumberXN_longX: [function({g}) { return g.inject(5).asNumber(N.long_) }], 
+    g_injectX12X_asNumberXN_byteX: [function({g}) { return g.inject(12).asNumber(N.byte_) }], 
+    g_injectX32768X_asNumberXN_shortX: [function({g}) { return g.inject(32768).asNumber(N.short_) }], 
+    g_injectX300X_asNumberXN_byteX: [function({g}) { return g.inject(300).asNumber(N.byte_) }], 
+    g_injectX5X_asNumber: [function({g}) { return g.inject("5").asNumber() }], 
+    g_injectX5X_asNumberXN_byteX: [function({g}) { return g.inject("5").asNumber(N.byte_) }], 
+    g_injectX1_000X_asNumberXN_bigIntX: [function({g}) { return g.inject("1,000").asNumber(N.bigInt) }], 
+    g_injectXtestX_asNumber: [function({g}) { return g.inject("test").asNumber() }], 
+    g_injectX_1_2_3_4X_asNumber: [function({g}) { return g.inject([1, 2, 3, 4]).asNumber() }], 
+    g_injectX1_2_3_4X_unfold_asNumber: [function({g}) { return g.inject([1, 2, 3, 4]).unfold().asNumber() }], 
+    g_injectX_1__2__3__4_X_asNumberXX_foldXX: [function({g}) { return g.inject("1", 2, "3", 4).asNumber().fold() }], 
+    g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXbyteX: [function({g}) { return g.inject(1.0, 2, 3, "4", "0x5").asNumber().sum().asNumber(N.byte_) }], 
+    g_injectXnullX_asNumberXN_intX: [function({g}) { return g.inject(null).asNumber(N.int_) }], 
+    g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(N.int_) }], 
+    g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX: [function({g}) { return g.withSideEffect("x", 100).V().values("age").math("_ + x").asNumber(N.long_) }], 
     g_injectX1_2X_asString: [function({g, xx1, xx2}) { return g.inject(xx1, xx2).asString() }], 
     g_injectX1_2X_asStringXlocalX: [function({g, xx1, xx2}) { return g.inject(xx1, xx2).asString(Scope.local) }], 
     g_injectXlist_1_2X_asStringXlocalX: [function({g, xx1}) { return g.inject(xx1).asString(Scope.local) }], 

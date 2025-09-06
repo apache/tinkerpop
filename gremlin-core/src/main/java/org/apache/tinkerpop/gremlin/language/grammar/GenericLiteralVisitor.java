@@ -602,6 +602,11 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
+    public Object visitTraversalN(final GremlinParser.TraversalNContext ctx) {
+        return TraversalEnumParser.parseTraversalNFromContext(ctx);
+    }
+
+    @Override
     public Object visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         return antlr.traversalStrategyVisitor.visitTraversalStrategy(ctx);
     }

@@ -24,7 +24,7 @@
 import { ser_title, des_title, cbuf_title } from './utils.js';
 import assert from 'assert';
 import { enumSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
-import { barrier, cardinality, column, direction, operator, order, pick, pop, scope, t, EnumValue } from '../../../lib/process/traversal.js';
+import { barrier, cardinality, column, direction, operator, order, pick, pop, scope, t, n, EnumValue } from '../../../lib/process/traversal.js';
 
 const { from, concat } = Buffer;
 
@@ -41,6 +41,7 @@ describe('GraphBinary.EnumSerializer', () => {
     { name: 'Pop',         code: from([0x1C]), enum: pop },
     { name: 'Scope',       code: from([0x1F]), enum: scope },
     { name: 'T',           code: from([0x20]), enum: t },
+    { name: 'N',           code: from([0x30]), enum: n },
   ];
   const value_flag = from([0x00]);
 
