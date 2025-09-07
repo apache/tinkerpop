@@ -178,7 +178,7 @@ limitations under the License.
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.5.4</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
-        <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
+        <ayza.version>10.0.0</ayza.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -779,8 +779,8 @@ limitations under the License.
             </dependency>
             <dependency>
                 <groupId>io.github.hakky54</groupId>
-                <artifactId>sslcontext-kickstart-for-netty</artifactId>
-                <version>${sslcontext.kickstart.version}</version>
+                <artifactId>ayza-for-netty</artifactId>
+                <version>${ayza.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>
