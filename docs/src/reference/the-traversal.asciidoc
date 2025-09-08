@@ -3099,13 +3099,6 @@ g.E().elementMap()
 <1> Create three dogs.
 <2> Stream the edge maps into `mergeE()` steps.
 
-WARNING: There is a bit of an inconsistency present when `mergeE()` is used as a start step versus when it is used
-mid-traversal. As a start step, `mergeE()` will promote the currently created or matched `Edge` to the child traversal,
-allowing you to directly update it like `option(onMatch, property('k', 'v').constant([:]))`. However, when `mergeE()` is
-used mid-traversal, the `Edge` is not promoted to the child traversal and the incoming traverser is used instead. Such
-behavior is essentially blocked to prevent accidental misuse and will result in an exception at execution time that will
-have a message like, "The incoming traverser for MergeEdgeStep cannot be an Element".
-
 The `mergeE` step can be combined with the `mergeV` step (or any other step producing a `Vertex`) using the
 `Merge.outV` and `Merge.inV` option modulators. These options can be used to "late-bind" the `OUT` and `IN`
 vertices in the main merge argument and in the `onCreate` argument:
@@ -3318,15 +3311,15 @@ contains additional information that will be applied if an existing vertex is fo
 
 [gremlin-groovy]
 ----
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1).unfold()). <1>
-  option(Merge.onCreate,range(local,1,2)). <2>
-  option(Merge.onMatch,tail(local)) <3>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1).unfold()). <1>
+  option(Merge.onCreate, select('m').range(local,1,2)). <2>
+  option(Merge.onMatch, select('m').tail(local)) <3>
 g.V(400).valueMap().with(WithOptions.tokens)
-g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).
-  mergeV(limit(local,1).unfold()).
-  option(Merge.onCreate,range(local,1,2)).
-  option(Merge.onMatch,tail(local))  <4>
+g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
+  mergeV(select('m').limit(local,1).unfold()).
+  option(Merge.onCreate, select('m').range(local,1,2)).
+  option(Merge.onMatch, select('m').tail(local))  <4>
 g.V(400).valueMap().with(WithOptions.tokens)  <5>
 ----
 
@@ -3335,13 +3328,6 @@ g.V(400).valueMap().with(WithOptions.tokens)  <5>
 <3> If the vertex was found, add an `updated` property.
 <4> Pixel exists now, so we will take this option.
 <5> The `updated` property has now been added.
-
-WARNING: There is a bit of an inconsistency present when `mergeV()` is used as a start step versus when it is used
-mid-traversal. As a start step, `mergeV()` will promote the currently created or matched `Vertex` to the child
-traversal, allowing you to directly update it like `option(onMatch, property('k', 'v').constant([:]))`. However, when
-`mergeV()` is used mid-traversal, the `Vertex` is not promoted to the child traversal and the incoming traverser is used
-instead. Such behavior is essentially blocked to prevent accidental misuse and will result in an exception at execution
-time that will have a message like, "The incoming traverser for MergeVertexStep cannot be an Element".
 
 *Additional References*
 
