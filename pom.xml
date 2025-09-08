@@ -179,6 +179,8 @@ limitations under the License.
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.3.2</spark.version>
         <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
+        <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
+        <bouncycastle.version>1.69</bouncycastle.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
