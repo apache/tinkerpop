@@ -147,14 +147,6 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
         if (token == Merge.onCreate) {
             this.onCreateTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.onMatch) {
-            // add a guard rail to ensure that the incoming object is not an Element. this will prevent
-            // a possibly inadvertent mutation of the graph if you did something like g.V().mergeE(). for
-            // 3.x we won't allow this behavior at all but in 4.x we will make it consistent like it will
-            // be in 4.x
-            if (!isStart && traversalOption != null && !(traversalOption instanceof ConstantTraversal)) {
-                traversalOption.addStep(0, new GuardRailStep<>(traversalOption, getClass().getSimpleName()));
-            }
-
             this.onMatchTraversal = this.integrateChild(traversalOption);
         } else {
             throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
@@ -388,13 +380,6 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
 
     @Override
     public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchTraversal) {
-        // add a guard rail to ensure that the incoming object is not an Element. this will prevent
-        // a possibly inadvertent mutation of the graph if you did something like g.V().mergeE(). for
-        // 3.x we won't allow this behavior at all but in 4.x we will make it consistent like it will
-        // be in 4.x
-        if (!isStart && onMatchTraversal != null && !(onMatchTraversal instanceof ConstantTraversal)) {
-            onMatchTraversal.addStep(0, new GuardRailStep<>(onMatchTraversal, getClass().getSimpleName()));
-        }
         this.onMatchTraversal = integrateChild(onMatchTraversal);
     }
 
@@ -422,32 +407,6 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
             return true;
         }
         return false;
-    }
-
-    /**
-     * Guard rail to ensure that the incoming object is not an {@link Element}.
-     */
-    public static class GuardRailStep<S, E> extends ScalarMapStep<S, E> {
-        private final String stepType;
-
-        public GuardRailStep(final Traversal.Admin traversal, final String stepType) {
-            super(traversal);
-            this.stepType = stepType;
-        }
-
-        @Override
-        protected E map(final Traverser.Admin<S> t) {
-            if (t.get() instanceof Element) {
-                throw new IllegalArgumentException(
-                        String.format("The incoming traverser for %s cannot be an Element", stepType));
-            }
-            return (E) t.get();
-        }
-
-        @Override
-        public String toString() {
-            return StringFactory.stepString(this);
-        }
     }
 
 }

@@ -272,11 +272,11 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Map<Object, Obje
             edges = IteratorUtils.peek(edges, e -> {
 
                 // override current traverser with the matched Edge so that the option() traversal can operate
-                // on it properly. this should only work this way for the start step form to retain the original
-                // behavior for 3.6.0 where you might do g.inject(Map).mergeE() and want that Map to pass through.
-                // in 4.x this will be rectified such that the edge will always be promoted and you will be forced
-                // to select() the map if you did want the behavior.
-                if (isStart) traverser.set((S) e);
+                // on it properly. prior to 3.8.x this only worked for start steps, but now it works consistently
+                // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeE() where you
+                // could operate on the Map directly with the child traversal. from 3.8.x onward you will have to do
+                // something like g.inject(Map).as('a').mergeE().option(onMatch, select('a'))
+                traverser.set((S) e);
 
                 // assume good input from GraphTraversal - folks might drop in a T here even though it is immutable
                 final Map<String, ?> onMatchMap = materializeMap(traverser, onMatchTraversal);
