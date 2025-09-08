@@ -66,7 +66,7 @@ describe('Client', function () {
         it('should not request permessage deflate compression by default', async function () {
             const result = await client.submit('1', null, {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
             const returnedExtensions = result.first()
-            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
+            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate"))
         });
         it('should not request permessage deflate compression when disabled', async function () {
             const noCompressionClient = helper.getGremlinSocketServerClientWithOptions('gmodern',
@@ -75,7 +75,7 @@ describe('Client', function () {
                 {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
 
             const returnedExtensions = result.first()
-            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate;"))
+            assert.ok(returnedExtensions == undefined || !returnedExtensions.includes("permessage-deflate"))
 
             await noCompressionClient.close();
         });
@@ -86,7 +86,7 @@ describe('Client', function () {
                 {requestId: settings.SEC_WEBSOCKET_EXTENSIONS});
 
             const returnedExtensions = result.first()
-            assert.ok(returnedExtensions.includes("permessage-deflate;"))
+            assert.ok(returnedExtensions.includes("permessage-deflate"))
 
             await compressionClient.close();
         });
