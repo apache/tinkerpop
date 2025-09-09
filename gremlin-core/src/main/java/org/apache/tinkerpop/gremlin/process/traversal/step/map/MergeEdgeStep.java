@@ -277,9 +277,9 @@ public class MergeEdgeStep<S> extends MergeElementStep<S, Edge, Object> {
             edges = IteratorUtils.peek(edges, e -> {
 
                 // override current traverser with the matched Edge so that the option() traversal can operate
-                // on it properly. prior to 4.x this only worked for start steps, but now it works consistently
+                // on it properly. prior to 3.8.x this only worked for start steps, but now it works consistently
                 // with mid-traversal usage. this breaks past behavior like g.inject(Map).mergeE() where you
-                // could operate on the Map directly with the child traversal. from 4.x onward you will have to do
+                // could operate on the Map directly with the child traversal. from 3.8.x onward you will have to do
                 // something like g.inject(Map).as('a').mergeE().option(onMatch, select('a'))
                 traverser.set((S) e);
 

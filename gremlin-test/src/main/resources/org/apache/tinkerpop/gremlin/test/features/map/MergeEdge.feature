@@ -866,7 +866,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"weight\",0)"
     And the graph should return 0 for count of "g.V().has(\"weight\")"
 
-  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
+    Scenario: g_unionXselectXmapX_selectXmapX_constantXcreated_NXX_fold_asXmX_mergeEXselectXmX_limitXlocal_1X_unfoldX_optionXonCreate_selectXmX_rangeXlocal_1_2X_unfoldX_optionXonMatch_selectXmX_tailXlocalX_unfoldX_to_match
     Given the empty graph
     And the graph initializer of
       """
@@ -883,11 +883,10 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And using the side effect map defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.union(select("map"), select("map"), constant([created: "N"])).
         fold().as("m").
         mergeE(__.select("m").limit(Scope.local,1).unfold()).
           option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2).unfold()).
@@ -900,7 +899,7 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().has(\"created\",\"N\")"
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").outE(\"knows\").has(\"created\",\"N\").inV().has(\"person\",\"name\",\"vadas\")"
 
-  Scenario: g_injectXlist1_list2X_mergeEXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_create
+   Scenario: g_unionXselectXmapX_selectXmapX_constantXcreated_NXX_fold_asXmX_mergeEXselectXmX_limitXlocal_1X_unfoldX_optionXonCreate_selectXmX_rangeXlocal_1_2X_unfoldX_optionXonMatch_selectXmX_tailXlocalX_unfoldX_to_create
     Given the empty graph
     And the graph initializer of
       """
@@ -917,11 +916,10 @@ Feature: Step - mergeE()
         addE("created").from("josh").to("lop").property("weight", 0.4d).
         addE("created").from("peter").to("lop").property("weight", 0.2d)
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
-    And using the parameter xx2 defined as "m[{\"created\": \"N\"}]"
+    And using the side effect map defined as "m[{\"t[label]\": \"self\", \"D[OUT]\":\"v[vadas].id\", \"D[IN]\":\"v[vadas].id\"}]"
     And the traversal of
       """
-      g.inject(xx1, xx1, xx2).
+      g.union(select("map"), select("map"), constant([created:"N"])).
         fold().as("m").
         mergeE(__.select("m").limit(Scope.local,1).unfold()).
           option(Merge.onCreate, __.select("m").range(Scope.local, 1, 2).unfold()).

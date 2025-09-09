@@ -931,7 +931,7 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Property key can not be a hidden key: ~label"
 
-  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_match
+  Scenario: g_injectXlist1_list2_list3X_fold_asXmX_mergeVXselectXmX_limitXlocal_1X_unfoldX_optionXonCreate_selectXmX_rangeXlocal_1_2X_unfoldX_optionXonMatch_selectXmX_tailXlocalX_unfoldX_to_match
     Given the empty graph
     And the graph initializer of
       """
@@ -952,7 +952,7 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"marko\").has(\"created\",\"N\")"
     And the graph should return 1 for count of "g.V()"
 
-  Scenario: g_injectXlist1_list2X_mergeVXlimitXlocal_1X_unfoldX_optionXonCreate_rangeXlocal_1_2X_unfoldX_optionXonMatch_tailXlocalX_unfoldX_to_create
+  Scenario: g_injectXlist1_list2_list3X_fold_asXmX_mergeVXselectXmX_limitXlocal_1X_unfoldX_optionXonCreate_selectXmX_rangeXlocal_1_2X_unfoldX_optionXonMatch_selectXmX_tailXlocalX_unfoldX_to_create
     Given the empty graph
     And the graph initializer of
       """
