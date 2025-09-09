@@ -502,19 +502,7 @@ public abstract class Client {
          */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
-            final Iterator<Host> possibleHosts;
-            if (msg.optionalArgs(Tokens.ARGS_HOST).isPresent()) {
-                // looking at this code about putting the Host on the RequestMessage in light of 3.5.4, not sure
-                // this is being used as intended here. server side usage is to place the channel.remoteAddress
-                // in this token in the status metadata for the response. can't remember why it is being used this
-                // way here exactly. created TINKERPOP-2821 to examine this more carefully to clean this up in a
-                // future version.
-                final Host host = (Host) msg.getArgs().get(Tokens.ARGS_HOST);
-                msg.getArgs().remove(Tokens.ARGS_HOST);
-                possibleHosts = IteratorUtils.of(host);
-            } else {
-                possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
-            }
+            final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
 
             // try a random host if none are marked available. maybe it will reconnect in the meantime. better than
             // going straight to a fast NoHostAvailableException as was the case in versions 3.5.4 and earlier
