@@ -178,7 +178,7 @@ limitations under the License.
         <snakeyaml.version>2.0</snakeyaml.version>
         <spark.version>3.5.4</spark.version>
         <awssdk.version>2.29.3</awssdk.version>
-        <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
+        <ayza.version>10.0.0</ayza.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -779,8 +779,8 @@ limitations under the License.
             </dependency>
             <dependency>
                 <groupId>io.github.hakky54</groupId>
-                <artifactId>sslcontext-kickstart-for-netty</artifactId>
-                <version>${sslcontext.kickstart.version}</version>
+                <artifactId>ayza-for-netty</artifactId>
+                <version>${ayza.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>
@@ -1644,6 +1644,16 @@ limitations under the License.
                                             <artifactId>apiguardian-api</artifactId>
                                             <version>1.1.2</version>
                                         </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.github.hakky54</groupId>
+                                            <artifactId>ayza-for-netty</artifactId>
+                                            <version>${ayza.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.github.hakky54</groupId>
+                                            <artifactId>ayza</artifactId>
+                                            <version>${ayza.version}</version>
+                                        </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
                             </execution>
@@ -1747,6 +1757,11 @@ limitations under the License.
                                             <version>${antlr4.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
+                                            <groupId>com.github.ben-manes.caffeine</groupId>
+                                            <artifactId>caffeine</artifactId>
+                                            <version>${caffeine.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
                                             <groupId>org.apache.commons</groupId>
                                             <artifactId>commons-text</artifactId>
                                             <version>${commons.text.version}</version>
@@ -1845,6 +1860,16 @@ limitations under the License.
                                             <groupId>org.yaml</groupId>
                                             <artifactId>snakeyaml</artifactId>
                                             <version>${snakeyaml.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.github.hakky54</groupId>
+                                            <artifactId>ayza-for-netty</artifactId>
+                                            <version>${ayza.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>io.github.hakky54</groupId>
+                                            <artifactId>ayza</artifactId>
+                                            <version>${ayza.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>software.amazon.awssdk</groupId>
