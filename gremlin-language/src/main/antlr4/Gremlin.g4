@@ -482,7 +482,7 @@ traversalMethod_difference
     ;
 
 traversalMethod_discard
-    : 'discard' LPAREN RPAREN
+    : K_DISCARD LPAREN RPAREN
     ;
 
 traversalMethod_disjunct
@@ -1748,6 +1748,7 @@ keyword
     | K_DESC
     | K_DIFFERENCE
     | K_DIRECTION
+    | K_DISCARD
     | K_DISJUNCT
     | K_DISTANCE
     | K_DIV
@@ -2018,6 +2019,7 @@ K_DECR: 'decr';
 K_DEDUP: 'dedup';
 K_DESC: 'desc';
 K_DIFFERENCE: 'difference';
+K_DISCARD : 'discard';
 K_DIRECTION: 'Direction';
 K_DISJUNCT: 'disjunct';
 K_DISTANCE: 'distance';
