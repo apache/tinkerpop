@@ -282,6 +282,13 @@ public class CountStrategyTest {
                     {__.count().as("c").is(GValue.of("x", 0))},
                     {__.union(__.count().is(GValue.of("x", 0)), __.out().count())},
                     {__.coalesce(__.count().is(GValue.of("x", 0)), __.out().count())},
+
+                    // This case may be controversial, as the GValues are accessed by the strategy, but ultimately the traversal
+                    // is not modified. The variables are pinned regardless as those variables could later be updated to values
+                    // in which the strategy is active. Leaving the variables unpinned in such a case would not lead to an
+                    // incorrect traversal, however it may result in certain cached traversals missing out on the CountStrategy
+                    // optimizations.
+                    {__.count().is(P.within(GValue.of("x", "string"), GValue.of("y", "another")))},
             });
         }
 
@@ -312,7 +319,6 @@ public class CountStrategyTest {
                     {__.flatMap(__.count().is(GValue.of("x", 0))).as("a")},
                     {__.limit(5).count().is(GValue.of("x", 0))},
                     {__.range(1, 5).count().is(GValue.of("x", 0))},
-                    {__.count().is(P.within(GValue.of("x", "string"), GValue.of("y", "another")))},
             });
         }
 

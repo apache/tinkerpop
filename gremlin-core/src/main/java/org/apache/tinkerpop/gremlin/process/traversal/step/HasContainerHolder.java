@@ -43,7 +43,7 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
     }
 
     public default Collection<P<?>> getPredicates() {
-        Collection<P<?>> predicates = getHasContainers().stream().map(p -> p.getPredicate()).collect(Collectors.toList());
+        Collection<P<?>> predicates = getPredicatesGValueSafe();
         for (P<?> predicate : predicates) {
             if (predicate.isParameterized()) {
                 getTraversal().getGValueManager().pinGValues(predicate.getGValues());
@@ -61,11 +61,11 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
     }
 
     public default boolean isParameterized() {
-        return getPredicates().stream().anyMatch(P::isParameterized);
+        return getPredicatesGValueSafe().stream().anyMatch(P::isParameterized);
     }
 
     public default void updateVariable(final String name, final Object value) {
-        getPredicates().forEach((p) -> p.updateVariable(name, value));
+        getPredicatesGValueSafe().forEach((p) -> p.updateVariable(name, value));
     }
 
     public default Collection<GValue<?>> getGValues() {
