@@ -97,10 +97,10 @@ public class GraphStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getIdsGValueSafeShouldNotPinVariable() {
+    public void getIdsAsGValuesShouldNotPinVariable() {
         GraphTraversal.Admin<?, ?> traversal = getGraphStepGValueTraversal();
-        assertEquals(new Object[]{1,2,3,4}, ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0))
-                .getIdsGValueSafe());
+        assertEquals(new GValue[]{GValue.of("x", 1), GValue.of("y", 2), GValue.of(3), GValue.of("z", 4)},
+                ((GraphStepPlaceholder<?,?>) traversal.getSteps().get(0)).getIdsAsGValues());
         verifyVariables(traversal, Set.of(), Set.of("x","y","z"));
     }
 

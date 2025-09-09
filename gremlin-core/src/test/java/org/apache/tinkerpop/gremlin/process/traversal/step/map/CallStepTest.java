@@ -115,9 +115,9 @@ public class CallStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getMergedParamsGValueSafeShouldNotPinVariables() {
+    public void getStaticParamsAsGValueShouldNotPinVariables() {
         GraphTraversal.Admin<Object, Object> traversal = getGValueTraversal();
-        assertEquals(STATIC_PARAMS, ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).getMergedParamsGValueSafe());
+        assertEquals(GValue.of("params", STATIC_PARAMS), ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(0)).getStaticParamsAsGValue());
         verifyVariables(traversal, Set.of(), Set.of("params"));
     }
 
@@ -136,20 +136,6 @@ public class CallStepTest extends GValueStepTest {
         assertEquals(Map.of("foo", "bar", "fizz", "fuzz", "abc", 123), 
                 ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(1)).getMergedParams());
         verifyVariables(traversal, Set.of("params"), Set.of());
-    }
-
-    /**
-     * This test needs to be revisited as the variables are pinned when the child traversal is executed
-     */
-    @Test
-    @Ignore
-    public void getMergedParamsGValueSafeWithChildTraversalShouldNotPinVariables() {
-        when(mockedRegistry.get(TEST_SERVICE, false, STATIC_PARAMS)).thenReturn(mockedService);
-        when(mockedService.getRequirements()).thenReturn(Set.of());
-        GraphTraversal.Admin<?, ?> traversal = getGValueWithChildTraversal();
-        assertEquals(Map.of("foo", "bar", "fizz", "fuzz", "abc", 123),
-                ((CallStepPlaceholder<?, ?>) traversal.getSteps().get(1)).getMergedParamsGValueSafe());
-        verifyVariables(traversal, Set.of(), Set.of("params"));
     }
 
     @Test
