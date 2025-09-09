@@ -227,10 +227,17 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 }
             });
 
-            assertEquals(2, connectionBorrowCount.size());
-            for (int finalBorrowCount : connectionBorrowCount.values()) {
-                assertEquals(usagePerConnection, finalBorrowCount);
-            }
+        // The intent of this test is to ensure that the driver grows from 1 connection to only as many as needed to satisfy maxSimultaneousUsagePerConnection limits
+        // (i.e. 2 fully utilized connections at 3 operations each for a total of 6 operations).
+        // On CI / Github runners, ephemeral third connections can appear.
+        // We can therefore instead of checking the connectionBorrowCount size directly, we check only the number of actually fully utilized connections (as per usagePerConnection),
+        // and the exact number of operations accounted for (allowing the existence of a third connection).
+
+        final long fullyUtilized = connectionBorrowCount.values().stream().filter(c -> c == usagePerConnection).count();
+        final long totalBorrows = connectionBorrowCount.values().stream().mapToInt(Integer::intValue).sum();
+
+        assertEquals("Expected total operations accounted for", operations, totalBorrows);
+        assertEquals("Expected exactly two fully utilized connections", 2, fullyUtilized);
 
         } finally {
             executorServiceForTesting.shutdown();
