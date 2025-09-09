@@ -105,9 +105,9 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getLabelGValueSafeShouldNotPinVariable() {
+    public void getLabelAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Edge, Edge> traversal = getAddEdgeGValueTraversal();
-        assertEquals("likes", ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getLabelGValueSafe());
+        assertEquals(GValue.of("label", "likes"), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getLabelAsGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
     }
 
@@ -125,9 +125,9 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getElementIdGValueSafeShouldNotPinVariable() {
+    public void getElementIdAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Edge, Edge> traversal = getAddEdgeGValueTraversal();
-        assertEquals("1234", ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getElementIdGValueSafe());
+        assertEquals(GValue.of("id", "1234"), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getElementIdAsGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
     }
 
@@ -186,10 +186,10 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getPropertiesGValueSafeShouldNotPinVariable() {
+    public void getPropertiesWithGValuesShouldNotPinVariable() {
         GraphTraversal.Admin<Edge, Edge> traversal = getAddEdgeGValueTraversal();
-        assertEquals(List.of("great"), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0))
-                .getPropertiesGValueSafe().get("rating"));
+        assertEquals(List.of(GValue.of("r", "great")), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0))
+                .getPropertiesWithGValues().get("rating"));
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
     }
 

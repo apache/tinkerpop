@@ -26,26 +26,42 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlaceholder<Vertex>
-        implements AddVertexStepContract<Vertex>, GValueHolder<Vertex, Vertex> {
+public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Vertex, Event.VertexAddedEvent>
+        implements AddVertexStepContract<S>, GValueHolder<S, Vertex> {
 
-    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final String label) {
+    private boolean userProvidedLabel;
+
+    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
         super(traversal, label == null ? Vertex.DEFAULT_LABEL : label);
+        userProvidedLabel = label != null;
     }
 
-    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
+    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
         super(traversal, label == null ? GValue.of(Vertex.DEFAULT_LABEL) : label);
+        userProvidedLabel = label != null;
     }
 
-    public AddVertexStartStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<?,String> vertexLabelTraversal) {
+    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
         super(traversal, vertexLabelTraversal == null ?
-                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : (Traversal.Admin<Vertex,String>) vertexLabelTraversal);
+                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : vertexLabelTraversal);
+        userProvidedLabel = vertexLabelTraversal != null;
     }
 
     @Override
-    public AddVertexStartStep asConcreteStep() {
-        AddVertexStartStep step = new AddVertexStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
-        super.configureConcreteStep(step);
-        return step;
+    public boolean hasUserProvidedLabel() {
+        return userProvidedLabel;
     }
+
+    @Override
+    public AbstractAddVertexStepPlaceholder<S> clone() {
+        final AbstractAddVertexStepPlaceholder<S> clone = (AbstractAddVertexStepPlaceholder<S>) super.clone();
+        clone.userProvidedLabel = this.userProvidedLabel;
+        return clone;
+    }
+
+    @Override
+    protected boolean supportsMultiProperties() {
+        return true;
+    }
+
 }
