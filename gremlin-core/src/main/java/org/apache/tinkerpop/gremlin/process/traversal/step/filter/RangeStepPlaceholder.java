@@ -18,13 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -154,6 +158,35 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         @Override
         public RangeGlobalStepPlaceholder<S> clone() {
             return new RangeGlobalStepPlaceholder<>(traversal, low, high);
+        }
+
+        @Override
+        public void processAllStarts() {
+
+        }
+
+        @Override
+        public boolean hasNextBarrier() {
+            return this.starts.hasNext();
+        }
+
+        @Override
+        public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+            if(!this.starts.hasNext())
+                throw FastNoSuchElementException.instance();
+            final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
+            while (this.starts.hasNext()) {
+                barrier.add(this.starts.next());
+            }
+            return barrier;
+        }
+
+        @Override
+        public void addBarrier(final TraverserSet<S> barrier) {
+            IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
+                traverser.setSideEffects(this.getTraversal().getSideEffects());
+                this.addStart(traverser);
+            });
         }
     }
 
