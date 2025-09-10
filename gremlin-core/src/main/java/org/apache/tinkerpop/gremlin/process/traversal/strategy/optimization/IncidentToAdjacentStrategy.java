@@ -113,11 +113,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      * @param step2     the vertex-emitting step to replace
      */
     private static void optimizeSteps(final Traversal.Admin traversal, final VertexStepContract step1, final Step step2) {
-        final Step newStep = step1 instanceof VertexStepPlaceholder ?
-                // It is safe to use getGValues() here as edgeLabels are the only GValues in VertexStepPlaceholder,
-                // although the interface is not ideal.
-                new VertexStepPlaceholder<>(traversal, Vertex.class, step1.getDirection(), ((VertexStepPlaceholder<?>) step1).getGValues().toArray(new GValue[0])) :
-                new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        final Step newStep = new VertexStepPlaceholder<>(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabelsAsGValues());
         for (final String label : (Iterable<String>) step2.getLabels()) {
             newStep.addLabel(label);
         }

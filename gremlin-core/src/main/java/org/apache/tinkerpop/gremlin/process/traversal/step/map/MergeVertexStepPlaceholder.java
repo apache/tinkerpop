@@ -53,6 +53,8 @@ import java.util.Set;
  */
 public class MergeVertexStepPlaceholder<S> extends AbstractMergeElementStepPlaceholder<S, Vertex> {
 
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
+
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeV");
     }
@@ -96,6 +98,17 @@ public class MergeVertexStepPlaceholder<S> extends AbstractMergeElementStepPlace
         }
 
         return step;
+    }
+
+    @Override
+    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
+        if (token == Merge.onCreate) {
+            setOnCreate(traversalOption);
+        } else if (token == Merge.onMatch) {
+            setOnMatch(traversalOption);
+        } else {
+            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
+        }
     }
 
 }

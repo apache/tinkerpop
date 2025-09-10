@@ -190,11 +190,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 continue;
 
             if (edgeCriterion != null) {
-                final VertexStepContract<Edge> someEStep = step instanceof VertexStepPlaceholder ?
-                        // It is safe to use ((VertexStepPlaceholder<?>) step).getGValues()) here as edgeLabels are the
-                        // only GValues in VertexStepPlaceholder, although the interface is not ideal.
-                        new VertexStepPlaceholder<>(traversal, Edge.class, step.getDirection(), ((VertexStepPlaceholder<?>) step).getGValues().toArray(new GValue[0])) :
-                        new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
+                final VertexStepContract<Edge> someEStep = new VertexStepPlaceholder<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabelsAsGValues());
                 final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());

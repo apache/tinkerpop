@@ -53,6 +53,7 @@ import java.util.Set;
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
 public class MergeEdgeStepPlaceholder<S> extends AbstractMergeElementStepPlaceholder<S, Edge> {
+    private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
@@ -124,5 +125,20 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractMergeElementStepPlaceho
 
         TraversalHelper.copyLabels(this, step, false);
         return step;
+    }
+
+    @Override
+    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
+        if (token == Merge.onCreate) {
+            setOnCreate(traversalOption);
+        } else if (token == Merge.onMatch) {
+            setOnMatch(traversalOption);
+        } else if (token == Merge.outV) {
+            this.outVTraversal = traversalOption;
+        } else if (token == Merge.inV) {
+            this.inVTraversal = traversalOption;
+        }else {
+            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
+        }
     }
 }

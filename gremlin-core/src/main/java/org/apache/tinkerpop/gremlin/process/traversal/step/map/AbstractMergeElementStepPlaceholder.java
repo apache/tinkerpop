@@ -46,7 +46,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class AbstractMergeElementStepPlaceholder<S, E> extends AbstractStep<S, E> implements MergeStepContract<S, E, Map>, GValueHolder<S, E> {
-    protected static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label));
     protected final boolean isStart;
     protected Map<Object, List<Object>> properties = new HashMap<>();
     protected Traversal.Admin<?, Map<Object, Object>> mergeTraversal;
@@ -151,17 +150,6 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
     @Override
     public boolean isFirst() {
         return true; // Step cannot be iterated so isFirst() is always true
-    }
-
-    @Override
-    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
-        if (token == Merge.onCreate) {
-            setOnCreate(traversalOption);
-        } else if (token == Merge.onMatch) {
-            setOnMatch(traversalOption);
-        } else {
-            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
-        }
     }
 
     @Override

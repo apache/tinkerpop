@@ -122,11 +122,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         final Step newStep;
         if (step instanceof VertexStepContract) {
             final VertexStepContract vs = (VertexStepContract) step;
-            newStep = step instanceof VertexStepPlaceholder ?
-                    // It is safe to use getGValues() here as edgeLabels are the only GValues in VertexStepPlaceholder,
-                    // although the interface is not ideal.
-                    new VertexStepPlaceholder<>(traversal, Edge.class, vs.getDirection(), ((VertexStepPlaceholder<?>) vs).getGValues().toArray(new GValue[0])) :
-                    new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
+            newStep = new VertexStepPlaceholder<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabelsAsGValues());
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());
