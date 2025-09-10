@@ -129,6 +129,18 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null) {
+            sb.append("UUID.randomUUID()");
+            return null;
+        }
+        sb.append("UUID.fromString(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
         if (ctx.getParent() instanceof GremlinParser.GenericMapNullableArgumentContext) {
             sb.append("null as Map");

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
@@ -137,6 +138,10 @@ public class GremlinLang implements Cloneable, Serializable {
 
         if (arg instanceof OffsetDateTime)
             return String.format("datetime(\"%s\")", format(((OffsetDateTime) arg).toInstant()));
+
+        if (arg instanceof UUID) {
+            return String.format("UUID(\"%s\")", arg);
+        }
 
         if (arg instanceof Enum) {
             // special handling for enums with additional interfaces

@@ -247,6 +247,18 @@ public class JavaTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
+        if (ctx.stringLiteral() == null) {
+            sb.append("UUID.randomUUID()");
+            return null;
+        }
+        sb.append("UUID.fromString(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitGenericRangeLiteral(final GremlinParser.GenericRangeLiteralContext ctx) {
         throw new TranslatorException("Java does not support range literals");
     }
