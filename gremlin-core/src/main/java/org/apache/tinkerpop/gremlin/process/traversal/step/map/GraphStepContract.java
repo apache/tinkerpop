@@ -19,10 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = Collections.unmodifiableList(Arrays.asList(GraphStep.class, GraphStepPlaceholder.class));
 
     Class<E> getReturnClass();
 

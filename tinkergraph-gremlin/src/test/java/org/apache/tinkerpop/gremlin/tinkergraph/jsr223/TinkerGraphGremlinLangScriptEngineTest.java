@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerTextSearchFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -681,7 +683,13 @@ public class TinkerGraphGremlinLangScriptEngineTest {
     public void setup() {
         // create a new engine each time to keep the cache clear
         scriptEngine = new GremlinLangScriptEngine(variableResolverCustomizer, gremlinLangCustomizer);
-        g = traversal().with(graph);
+
+        // remove strategies to allow the tests to pass. the strategies replace placeholder steps with concrete ones
+        // which remove the ability for the GValueReductionStrategy to update bindings in GValue from a cached
+        // traversal. this is a bit of a limitation of the cache features right now. prior to this change it was
+        // working because the TinkerGraphStepStrategy was only doing a replace on GraphStep instances and not on the
+        // new GraphStepContract which would have also included the placeholder. if providers want the
+        g = traversal().with(graph); // .withoutStrategies(TinkerGraphStepStrategy.class, TinkerGraphCountStrategy.class);
     }
 
     @Test

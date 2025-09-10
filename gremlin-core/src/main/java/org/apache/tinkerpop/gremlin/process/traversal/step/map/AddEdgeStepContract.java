@@ -18,8 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -36,6 +40,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 public interface AddEdgeStepContract<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepContract<S, Edge>, Writing<Event.EdgeAddedEvent> {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = Collections.unmodifiableList(Arrays.asList(AddEdgeStep.class, AddEdgeStepPlaceholder.class));
+
     Object getFrom();
     Object getTo();
 

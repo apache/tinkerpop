@@ -25,11 +25,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.util.GremlinDisabledListDelimiterHandler;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -166,6 +168,18 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
                 return -1;
             else
                 return 0;
+        }
+
+        /**
+         * The {@link GValueReductionStrategy} should be the last TinkerPop optimnization strategy applied. Adding it
+         * here ensures will help to enforce that more globally. Implementations overriding this method should have a
+         * good reason to ignore this.
+         */
+        @Override
+        default Set<Class<? extends OptimizationStrategy>> applyPost() {
+            final Set<Class<? extends OptimizationStrategy>> set = new HashSet<>();
+            set.add(GValueReductionStrategy.class);
+            return set;
         }
     }
 

@@ -31,10 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SackStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy;
@@ -43,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Coun
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy;
@@ -255,9 +254,9 @@ public interface TraversalStrategies extends Serializable, Cloneable, Iterable<T
             // finalization
             put(MatchAlgorithmStrategy.class.getSimpleName(), MatchAlgorithmStrategy.class);
             put(ReferenceElementStrategy.class.getSimpleName(), ReferenceElementStrategy.class);
-            put(GValueReductionStrategy.class.getSimpleName(), GValueReductionStrategy.class);
 
             // optimizations
+            put(GValueReductionStrategy.class.getSimpleName(), GValueReductionStrategy.class);
             put(ProductiveByStrategy.class.getSimpleName(), ProductiveByStrategy.class);
             put(PathRetractionStrategy.class.getSimpleName(), PathRetractionStrategy.class);
             put(RepeatUnrollStrategy.class.getSimpleName(), RepeatUnrollStrategy.class);

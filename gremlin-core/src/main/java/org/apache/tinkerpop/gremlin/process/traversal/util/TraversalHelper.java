@@ -18,11 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.AbstractLambdaTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
@@ -39,7 +41,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
@@ -72,14 +76,30 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * Utility class that provides functions that manipulate {@link Traversal} isntances. These functions are helpful when
+ * writing {@link TraversalStrategy} implementations.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TraversalHelper {
 
-    private TraversalHelper() {
-    }
+    /**
+     * Registry mapping a contract/interface type to the explicit list of concrete Step classes that represent it.
+     * This registry is intentionally simple and local to TraversalHelper.
+     */
+    private static final Map<Class<?>, List<Class<? extends Step>>> STEP_CONTRACT_REGISTRY = new HashMap<>() {{
+        put(GraphStepContract.class, GraphStepContract.CONCRETE_STEPS);
+        put(AddEdgeStepContract.class, AddEdgeStepContract.CONCRETE_STEPS);
+    }};
 
+    private TraversalHelper() { }
+
+    /**
+     * Determines whether the given traversal only touches local vertex/edge properties (i.e. does not traverse the
+     * graph topology). This returns false if a step is encountered that walks the graph (e.g. VertexStep/EdgeVertexStep)
+     * or if a repeat's global children contain such steps. TraversalParent children are inspected recursively.
+     */
     public static boolean isLocalProperties(final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
             if (step instanceof RepeatStep) {
@@ -101,6 +121,12 @@ public final class TraversalHelper {
         return true;
     }
 
+    /**
+     * Determines whether a traversal is confined to a single-star neighborhood of a starting vertex (i.e., a
+     * topologically local traversal over a vertex and its incident edges/adjacent vertices) without expanding further
+     * into the graph or pulling arbitrary properties that would require remote access. This method delegates to a
+     * state-machine helper and returns true if the traversal remains within the local star graph.
+     */
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         return 'x' != isLocalStarGraph(traversal, 'v');
     }
@@ -207,10 +233,28 @@ public final class TraversalHelper {
         traversal.addStep(indexToMoveTo, stepToMove);
     }
 
+    /**
+     * Inserts all steps from the supplied insertTraversal directly after the given previousStep in the specified
+     * traversal, preserving their order.
+     *
+     * @param previousStep the step after which to insert the traversal
+     * @param insertTraversal the traversal whose steps will be inserted
+     * @param traversal the traversal to receive the steps
+     * @return the last step that was inserted
+     */
     public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
     }
 
+    /**
+     * Inserts all steps from the supplied insertTraversal into the specified traversal starting at the given index.
+     * Steps are inserted in order.
+     *
+     * @param insertIndex the position at which to start inserting
+     * @param insertTraversal the traversal whose steps will be inserted
+     * @param traversal the traversal to receive the steps
+     * @return the last step that was inserted (or the existing step at insertIndex if no steps exist)
+     */
     public static <S, E> Step<?, E> insertTraversal(final int insertIndex, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         traversal.getGValueManager().mergeInto(insertTraversal.getGValueManager());
         if (0 == traversal.getSteps().size()) {
@@ -230,6 +274,14 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Removes steps from the traversal starting at startStep up to but not including endStep and appends them to
+     * newTraversal, preserving order.
+     *
+     * @param startStep the first step to move
+     * @param endStep the terminal step at which to stop (not moved)
+     * @param newTraversal the traversal to receive the moved steps
+     */
     public static <S, E> void removeToTraversal(final Step<S, ?> startStep, final Step<?, E> endStep, final Traversal.Admin<S, E> newTraversal) {
         final Traversal.Admin<?, ?> originalTraversal = startStep.getTraversal();
         Step<?, ?> currentStep = startStep;
@@ -258,15 +310,56 @@ public final class TraversalHelper {
         return -1;
     }
 
+    /**
+     * Returns all steps in the given traversal whose concrete class equals the supplied class. If the supplied class
+     * is an interface registered as a step contract, the method will match by exact equality to any of the registered
+     * concrete implementations for that contract. For example, calling this method with {@link GraphStepContract} will
+     * not match on the interface but instead will match on its {@link GraphStepContract#CONCRETE_STEPS}.
+     *
+     * @param stepClass the concrete step type to match, or a registered contract interface
+     * @param traversal the traversal to scan
+     * @return a list of matching steps (preserving traversal order)
+     */
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> steps = new ArrayList<>();
+        // If stepClass is an interface and registered as a contract, expand to its concrete classes
+        final List<Class<? extends Step>> concrete;
+        if (stepClass.isInterface()) {
+            final List<Class<? extends Step>> reg = STEP_CONTRACT_REGISTRY.get(stepClass);
+            concrete = reg != null ? reg : null;
+        } else {
+            concrete = null;
+        }
+
+        if (concrete == null) {
+            // original behavior: exact equality to the provided class
+            for (final Step step : traversal.getSteps()) {
+                if (step.getClass().equals(stepClass))
+                    steps.add((S) step);
+            }
+            return steps;
+        }
+
+        // contract expansion path: exact equality against any registered concrete classes
         for (final Step step : traversal.getSteps()) {
-            if (step.getClass().equals(stepClass))
-                steps.add((S) step);
+            final Class<?> sc = step.getClass();
+            for (final Class<?> c : concrete) {
+                if (sc.equals(c)) {
+                    steps.add((S) step);
+                    break;
+                }
+            }
         }
         return steps;
     }
 
+    /**
+     * Returns all steps in the given traversal that are instances of (i.e., assignable to) the supplied class.
+     *
+     * @param stepClass the class or interface to test with {@link Class#isAssignableFrom(Class)}
+     * @param traversal the traversal to scan
+     * @return a list of matching steps (preserving traversal order)
+     */
     public static <S> List<S> getStepsOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> steps = new ArrayList<>();
         for (final Step step : traversal.getSteps()) {
@@ -276,11 +369,25 @@ public final class TraversalHelper {
         return steps;
     }
 
+    /**
+     * Returns the last step in the traversal that is assignable to the supplied class, if present.
+     *
+     * @param stepClass the class or interface to test with {@link Class#isAssignableFrom(Class)}
+     * @param traversal the traversal to scan
+     * @return the last matching step or {@link Optional#empty()} if none found
+     */
     public static <S> Optional<S> getLastStepOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
         return steps.size() == 0 ? Optional.empty() : Optional.of(steps.get(steps.size() - 1));
     }
 
+    /**
+     * Returns the first step in the traversal that is assignable to the supplied class, if present.
+     *
+     * @param stepClass the class or interface to test with {@link Class#isAssignableFrom(Class)}
+     * @param traversal the traversal to scan
+     * @return the first matching step or {@link Optional#empty()} if none found
+     */
     public static <S> Optional<S> getFirstStepOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass()))
@@ -289,10 +396,27 @@ public final class TraversalHelper {
         return Optional.empty();
     }
 
+    /**
+     * Recursively collects steps assignable to the supplied class from the traversal and all its child traversals
+     * (both local and global).
+     *
+     * @param stepClass the class or interface to test with {@link Class#isAssignableFrom(Class)}
+     * @param traversal the root traversal to scan
+     * @return a list of matching steps found anywhere in the traversal tree
+     */
     public static <S> List<S> getStepsOfAssignableClassRecursively(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         return getStepsOfAssignableClassRecursively(null, stepClass, traversal);
     }
 
+    /**
+     * Recursively collects steps assignable to the supplied class from the traversal and its child traversals scoped
+     * by the given Scope.
+     *
+     * @param scope whether to include local, global, or both child traversals (null for both)
+     * @param stepClass the class or interface to test with {@link Class#isAssignableFrom(Class)}
+     * @param traversal the root traversal to scan
+     * @return a list of matching steps found anywhere within the scoped traversal tree
+     */
     public static <S> List<S> getStepsOfAssignableClassRecursively(final Scope scope, final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
         final List<S> list = new ArrayList<>();
         for (final Step<?, ?> step : traversal.getSteps()) {
@@ -315,7 +439,12 @@ public final class TraversalHelper {
     }
 
     /**
-     * Get steps of the specified classes throughout the traversal.
+     * Recursively collects steps that are assignable to any of the supplied classes from the traversal and all its
+     * child traversals (both local and global).
+     *
+     * @param traversal the root traversal to scan
+     * @param stepClasses the classes or interfaces to test with {@link Class#isAssignableFrom(Class)}
+     * @return a list of matching steps found anywhere in the traversal tree
      */
     public static List<Step<?,?>> getStepsOfAssignableClassRecursively(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
         final List<Step<?,?>> list = new ArrayList<>();
@@ -338,8 +467,12 @@ public final class TraversalHelper {
     }
 
     /**
-     * Get steps of the specified classes throughout the traversal, collecting them in a fashion that orders them
-     * from the deepest steps first.
+     * Recursively collects steps assignable to any of the supplied classes from the traversal and children, then
+     * orders the result by depth (deepest child steps first). Depth ordering is determined by {@link DepthComparator}.
+     *
+     * @param traversal the root traversal to scan
+     * @param stepClasses the classes or interfaces to test with {@link Class#isAssignableFrom(Class)}
+     * @return a list of matching steps ordered from deepest to shallowest
      */
     public static List<Step<?,?>> getStepsOfAssignableClassRecursivelyFromDepth(final Traversal.Admin<?, ?> traversal, final Class<?>... stepClasses) {
         final List<Step<?,?>> list = new ArrayList<>();
@@ -369,6 +502,13 @@ public final class TraversalHelper {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Determines whether the supplied traversal is a global child of its parent (as opposed to a local child).
+     * Walks up the parent chain until the root to make this determination.
+     *
+     * @param traversal the traversal to test
+     * @return true if the traversal is a global child; false if it is a local child
+     */
     public static boolean isGlobalChild(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.isRoot())) {
             if (traversal.getParent().getLocalChildren().contains(traversal))
@@ -550,8 +690,9 @@ public final class TraversalHelper {
     /**
      * Apply the provider {@link Consumer} function to the provided {@link Traversal} and all of its children.
      *
-     * @param consumer  the function to apply to the each traversal in the tree
-     * @param traversal the root traversal to start application
+     * @param consumer the function to apply
+     * @param traversal the root traversal
+     * @param applyToChildrenOnly if true, only child traversals receive the function (the root is skipped)
      */
     public static void applyTraversalRecursively(final Consumer<Traversal.Admin<?, ?>> consumer, final Traversal.Admin<?, ?> traversal,
                                                  final boolean applyToChildrenOnly) {
@@ -573,6 +714,15 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Adds the supplied element to the collection according to the provided bulk count. If the collection is a
+     * {@link BulkSet}, the element is added with the given bulk. If it is a Set, the element is added once. Otherwise
+     * the element is added repeatedly bulk times.
+     *
+     * @param collection the collection to mutate
+     * @param s the element to add
+     * @param bulk the bulk count
+     */
     public static <S> void addToCollection(final Collection<S> collection, final S s, final long bulk) {
         if (collection instanceof BulkSet) {
             ((BulkSet<S>) collection).add(s, bulk);
@@ -601,6 +751,14 @@ public final class TraversalHelper {
         return name;
     }
 
+    /**
+     * Reassigns identifiers for every step in the supplied traversal using the provided StepPosition state object. The
+     * StepPosition is mutated to reflect the current parent context (x/y/z/parentId) and each step receives a new id
+     * via StepPosition#nextXId().
+     *
+     * @param stepPosition the position tracker to mutate and use to generate ids
+     * @param traversal the traversal whose steps will be re-identified
+     */
     public static void reIdSteps(final StepPosition stepPosition, final Traversal.Admin<?, ?> traversal) {
         stepPosition.x = 0;
         stepPosition.y = -1;
@@ -636,6 +794,12 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Returns the root traversal by walking up the parent chain until encountering an {@link EmptyStep} parent.
+     *
+     * @param traversal a traversal that may be nested
+     * @return the root (top-most) traversal
+     */
     public static Traversal.Admin<?, ?> getRootTraversal(Traversal.Admin<?, ?> traversal) {
         while (!((traversal.getParent()) instanceof EmptyStep)) {
             traversal = traversal.getParent().asStep().getTraversal();
@@ -643,6 +807,12 @@ public final class TraversalHelper {
         return traversal;
     }
 
+    /**
+     * Determines whether any non-hidden labels are present anywhere in the traversal or its children.
+     *
+     * @param traversal the traversal to inspect
+     * @return true if at least one non-hidden label exists; false otherwise
+     */
     public static boolean hasLabels(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             for (final String label : step.getLabels()) {
@@ -663,6 +833,12 @@ public final class TraversalHelper {
         return false;
     }
 
+    /**
+     * Collects all labels (including hidden) present in the traversal and its child traversals.
+     *
+     * @param traversal the traversal to inspect
+     * @return a set of labels
+     */
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.getLabels(new HashSet<>(), traversal);
     }
@@ -682,6 +858,13 @@ public final class TraversalHelper {
         return labels;
     }
 
+    /**
+     * Determines whether labels are referenced at the START and/or END of the traversal by inspecting the first and
+     * last steps (and appropriate children for certain step types). Returned variables include START and/or END.
+     *
+     * @param traversal the traversal to inspect
+     * @return a set containing zero, one, or both of {@link Scoping.Variable#START} and {@link Scoping.Variable#END}
+     */
     public static Set<Scoping.Variable> getVariableLocations(final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.getVariableLocations(EnumSet.noneOf(Scoping.Variable.class), traversal);
     }
@@ -726,6 +909,13 @@ public final class TraversalHelper {
         return variables;
     }
 
+    /**
+     * Determines if the traversal is executing on a {@link GraphComputer} by walking up the parent chain and checking
+     * for a  {@link TraversalVertexProgramStep}.
+     *
+     * @param traversal the traversal to inspect
+     * @return true if the traversal is under a TraversalVertexProgramStep; false otherwise
+     */
     public static boolean onGraphComputer(Traversal.Admin<?, ?> traversal) {
         while (!(traversal.isRoot())) {
             if (traversal.getParent() instanceof TraversalVertexProgramStep)
@@ -735,10 +925,22 @@ public final class TraversalHelper {
         return false;
     }
 
+    /**
+     * Removes the specified step from the traversal and returns the traversal for chaining.
+     *
+     * @param stepToRemove the step to remove
+     * @param traversal the traversal to mutate
+     * @return the traversal argument for chaining
+     */
     public static Traversal.Admin<?, ?> removeStep(final Step<?, ?> stepToRemove, final Traversal.Admin<?, ?> traversal) {
         return traversal.removeStep(stepToRemove);
     }
 
+    /**
+     * Removes all steps from the traversal.
+     *
+     * @param traversal the traversal to clear
+     */
     public static void removeAllSteps(final Traversal.Admin<?, ?> traversal) {
         final int size = traversal.getSteps().size();
         for (int i = 0; i < size; i++) {
@@ -746,6 +948,14 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Copies labels from one step to another. If moveLabels is true, labels are removed from the source after copying;
+     * otherwise labels are left in place and only added to the target.
+     *
+     * @param fromStep the step to copy labels from
+     * @param toStep the step to add labels to
+     * @param moveLabels whether to remove labels from the source after copying
+     */
     public static void copyLabels(final Step<?, ?> fromStep, final Step<?, ?> toStep, final boolean moveLabels) {
         if (!fromStep.getLabels().isEmpty()) {
             for (final String label : moveLabels ? new LinkedHashSet<>(fromStep.getLabels()) : fromStep.getLabels()) {
@@ -756,6 +966,13 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Tests whether every step in the traversal is an instance of at least one of the supplied classes.
+     *
+     * @param traversal the traversal to test
+     * @param classesToCheck the classes to check with {@link Class#isInstance(Object)}
+     * @return true if all steps match at least one class; false otherwise
+     */
     public static boolean hasAllStepsOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
         for (final Step step : traversal.getSteps()) {
             boolean foundInstance = false;
@@ -771,6 +988,13 @@ public final class TraversalHelper {
         return true;
     }
 
+    /**
+     * Tests whether any step in the traversal is an instance of any of the supplied classes.
+     *
+     * @param traversal the traversal to test
+     * @param classesToCheck the classes to check with {@link Class#isInstance(Object)}
+     * @return true if any step matches at least one class; false otherwise
+     */
     public static boolean hasStepOfClass(final Traversal.Admin<?, ?> traversal, final Class<?>... classesToCheck) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             for (final Class<?> classToCheck : classesToCheck) {
@@ -786,7 +1010,6 @@ public final class TraversalHelper {
      *
      * @param traversal    the traversal to fold or append.
      * @param hasContainer the container to add left or append.
-     * @param <T>          the traversal type
      * @return the has container folded or appended traversal
      */
     public static <T extends Traversal.Admin<?, ?>> T addHasContainer(final T traversal, final HasContainer hasContainer) {
@@ -808,6 +1031,13 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Gathers all steps that implement {@link GValueHolder} and returns a map from step to the collection of
+     * {@link GValue} instances they hold.
+     *
+     * @param traversal the traversal to scan recursively
+     * @return a map of steps to their GValue collections
+     */
     public static Map<Step, Collection<GValue<?>>> gatherStepGValues(final Traversal.Admin<?, ?> traversal) {
         Map<Step, Collection<GValue<?>>> gValues = new HashMap<>();
         applyTraversalRecursively(
@@ -822,6 +1052,13 @@ public final class TraversalHelper {
         return gValues;
     }
 
+    /**
+     * Gathers all steps that implement {@link GValueHolder} and returns them as a set. This is useful when only the
+     * presence of placeholders is needed and not the values themselves.
+     *
+     * @param traversal the traversal to scan recursively
+     * @return the set of steps that are {@link GValueHolder}s
+     */
     public static Set<Step<?,?>> gatherGValuePlaceholders(final Traversal.Admin<?, ?> traversal) {
         final Set<Step<?,?>> steps = new HashSet<>();
         applyTraversalRecursively(

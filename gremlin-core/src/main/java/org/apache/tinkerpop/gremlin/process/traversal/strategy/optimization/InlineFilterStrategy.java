@@ -311,7 +311,9 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
 
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPost() {
-        return POSTS;
+        final Set<Class<? extends OptimizationStrategy>> post = OptimizationStrategy.super.applyPost();
+        post.addAll(POSTS);
+        return post;
     }
 
     @Override
