@@ -362,7 +362,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             
             var traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters);
+                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
             
             var count = 0;
             while (traversal.MoveNext())
