@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlaceholder<Vertex>

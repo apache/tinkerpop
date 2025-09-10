@@ -145,9 +145,9 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getFromGValueSafeShouldNotPinVariable() {
+    public void getFromWithGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Edge, Edge> traversal = getAddEdgeGValueTraversal();
-        assertEquals(1, ((Vertex) (((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getFromGValueSafe())).id());
+        assertEquals(GValue.of("from", 1), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getFromWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
     }
 
@@ -165,9 +165,9 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getToShouldNotPinVariable() {
+    public void getToWithGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Edge, Edge> traversal = getAddEdgeGValueTraversal();
-        assertEquals(2, ((Vertex) (((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getToGValueSafe())).id());
+        assertEquals(GValue.of("to", 2), ((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getToWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "from", "to", "id", "r"));
     }
 
