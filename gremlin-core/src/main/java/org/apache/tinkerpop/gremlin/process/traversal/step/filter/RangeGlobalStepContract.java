@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 /**
  * Defines the contract for {@code range} related steps.
@@ -38,4 +39,24 @@ public interface RangeGlobalStepContract<S> extends Step<S, S> {
      * @return the higher bound of the range as an object of type V
      */
     Long getHighRange();
+
+    /**
+     * getLowRange, retaining the GValue container and without pinning the variable. It is the caller's
+     * responsibility to ensure that this value is not used to alter the traversal in any way which is not generalizable
+     * to any parameter value.
+     * @return the lower bound for range().
+     */
+    default GValue<Long> getLowRangeAsGValue() {
+        return GValue.of(getLowRange());
+    }
+
+    /**
+     * getHighRange, retaining the GValue container and without pinning the variable. It is the caller's
+     * responsibility to ensure that this value is not used to alter the traversal in any way which is not generalizable
+     * to any parameter value.
+     * @return the upper bound for range().
+     */
+    default GValue<Long> getHighRangeAsGValue() {
+        return GValue.of(getHighRange());
+    }
 }

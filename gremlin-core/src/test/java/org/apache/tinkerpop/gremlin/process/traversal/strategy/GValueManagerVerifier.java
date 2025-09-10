@@ -271,10 +271,8 @@ public class GValueManagerVerifier {
 
             RangeGlobalStepPlaceholder<?> rangeGlobalStepPlaceholder = (RangeGlobalStepPlaceholder<?>) step;
 
-            assertEquals("Low range should match", expectedLow, rangeGlobalStepPlaceholder.getLowRangeGValueSafe());
-            assertEquals("High range should match", expectedHigh, rangeGlobalStepPlaceholder.getHighRangeGValueSafe());
-            assertEquals("Low range name should match", lowName, rangeGlobalStepPlaceholder.getLowName());
-            assertEquals("High range name should match", highName, rangeGlobalStepPlaceholder.getHighName());
+            assertEquals("Low range should match", GValue.of(lowName, expectedLow), rangeGlobalStepPlaceholder.getLowRangeAsGValue());
+            assertEquals("High range should match", GValue.of(highName, expectedHigh), rangeGlobalStepPlaceholder.getHighRangeAsGValue());
 
             return self();
         }

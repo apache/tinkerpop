@@ -102,31 +102,23 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
     }
 
     /**
-     * getLowRange without marking the GValue as dirty and thus automatically pinning the GValue. It is the caller's
+     * getLowRange, retaining the GValue container and without pinning the variable. It is the caller's
      * responsibility to ensure that this value is not used to alter the traversal in any way which is not generalizable
      * to any parameter value.
      * @return the lower bound for range().
      */
-    public long getLowRangeGValueSafe() {
-        return low.get();
+    public GValue<Long> getLowRangeAsGValue() {
+        return low;
     }
 
     /**
-     * getHighRange without marking the GValue as dirty and thus automatically pinning the GValue. It is the caller's
+     * getHighRange, retaining the GValue container and without pinning the variable. It is the caller's
      * responsibility to ensure that this value is not used to alter the traversal in any way which is not generalizable
      * to any parameter value.
      * @return the upper bound for range().
      */
-    public long getHighRangeGValueSafe() {
-        return high.get();
-    }
-
-    public String getLowName() {
-        return low.getName();
-    }
-
-    public String getHighName() {
-        return high.getName();
+    public GValue<Long> getHighRangeAsGValue() {
+        return high;
     }
 
     @Override
