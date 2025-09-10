@@ -71,7 +71,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -85,14 +84,14 @@ public class TraversalHelperTest {
         //transform the traversal to __.V().not(out())
         //the VertexStep's previousStep should be the EmptyStep
         Optional<VertexStep> vertexStepOpt = TraversalHelper.getFirstStepOfAssignableClass(VertexStep.class, traversal);
-        assertTrue(vertexStepOpt.isPresent());
+        assertThat(vertexStepOpt.isPresent(), is(true));
         Traversal.Admin<?,?> inner = __.start().asAdmin();
         inner.addStep(0, vertexStepOpt.get());
         TraversalHelper.replaceStep(vertexStepOpt.get(), new NotStep<>(__.identity().asAdmin(), inner), traversal);
         List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClassRecursively(VertexStep.class, traversal);
         assertEquals(1, vertexSteps.size());
         VertexStep vertexStep = vertexSteps.get(0);
-        assertTrue("Expected the previousStep to be an EmptyStep, found instead " + vertexStep.getPreviousStep().toString(),vertexStep.getPreviousStep() == EmptyStep.instance());
+        assertThat("Expected the previousStep to be an EmptyStep, found instead " + vertexStep.getPreviousStep().toString(), vertexStep.getPreviousStep() == EmptyStep.instance(), is(true));
     }
 
     @Test
@@ -123,25 +122,25 @@ public class TraversalHelperTest {
         final Traversal.Admin<?, ?> globalChild = __.select("a", "b").by("name").asAdmin();
         TraversalParent parent = new RepeatStep<>(new DefaultTraversal());
         ((RepeatStep) parent).setRepeatTraversal(globalChild);
-        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        assertThat(TraversalHelper.isGlobalChild(globalChild), is(true));
         ///
         new UnionStep<>(new DefaultTraversal(), globalChild);
-        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        assertThat(TraversalHelper.isGlobalChild(globalChild), is(true));
         ///
         new TraversalVertexProgramStep(new DefaultTraversal<>(), globalChild);
-        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        assertThat(TraversalHelper.isGlobalChild(globalChild), is(true));
         ///
         final Traversal.Admin<?, ?> remoteRemoteChild = __.repeat(globalChild).asAdmin();
         new UnionStep<>(new DefaultTraversal(), remoteRemoteChild);
-        assertTrue(TraversalHelper.isGlobalChild(globalChild));
+        assertThat(TraversalHelper.isGlobalChild(globalChild), is(true));
     }
 
     @Test
     public void shouldIdentifyLocalProperties() {
-        assertTrue(TraversalHelper.isLocalProperties(__.identity().asAdmin()));
-        assertTrue(TraversalHelper.isLocalProperties(__.id().asAdmin()));
-        assertTrue(TraversalHelper.isLocalProperties(__.label().asAdmin()));
-        assertTrue(TraversalHelper.isLocalProperties(__.values("name").asAdmin()));
+        assertThat(TraversalHelper.isLocalProperties(__.identity().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalProperties(__.id().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalProperties(__.label().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalProperties(__.values("name").asAdmin()), is(true));
         assertFalse(TraversalHelper.isLocalProperties(outE("knows").asAdmin()));
     }
 
@@ -333,22 +332,22 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldIdentifyStarGraphTraversals() {
-        assertTrue(TraversalHelper.isLocalStarGraph(__.identity().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.id().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.out().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.label().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.bothE().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.values().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.properties().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.repeat(__.identity()).asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name")).asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.out().repeat(__.identity()).asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.out().id().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).id().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().asAdmin()));
-        assertTrue(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by(T.id).asAdmin()));
+        assertThat(TraversalHelper.isLocalStarGraph(__.identity().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.id().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.out().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.label().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.bothE().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.values().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.properties().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.repeat(__.identity()).asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.repeat(__.has("name")).asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.out().repeat(__.identity()).asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.out().id().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.label().union(__.out(), in()).id().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.coalesce(out("likes"), out("knows"), out("created")).groupCount().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().asAdmin()), is(true));
+        assertThat(TraversalHelper.isLocalStarGraph(__.local(__.out()).groupCount().by(T.id).asAdmin()), is(true));
         // assertTrue(TraversalHelper.isLocalStarGraph(__.out().repeat(__.has("name")).asAdmin()));
         //
         assertFalse(TraversalHelper.isLocalStarGraph(__.out().label().asAdmin()));
@@ -372,25 +371,25 @@ public class TraversalHelperTest {
                 .flatMap(s -> s.getLabels().stream())
                 .collect(Collectors.toSet());
         assertEquals(2, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("c"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("c"), is(true));
         //
         labels = (Set) TraversalHelper.getStepsOfAssignableClass(VertexStep.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
                 .stream()
                 .flatMap(s -> s.getLabels().stream())
                 .collect(Collectors.toSet());
         assertEquals(2, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("c"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("c"), is(true));
         //
         labels = (Set) TraversalHelper.getStepsOfAssignableClass(FlatMapStep.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
                 .stream()
                 .flatMap(s -> s.getLabels().stream())
                 .collect(Collectors.toSet());
         assertEquals(3, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("b"));
-        assertTrue(labels.contains("c"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("b"), is(true));
+        assertThat(labels.contains("c"), is(true));
         //
         labels = (Set) TraversalHelper.getStepsOfClass(Step.class, __.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin())
                 .stream()
@@ -403,28 +402,28 @@ public class TraversalHelperTest {
                 .flatMap(s -> s.getLabels().stream())
                 .collect(Collectors.toSet());
         assertEquals(4, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("b"));
-        assertTrue(labels.contains("c"));
-        assertTrue(labels.contains("d"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("b"), is(true));
+        assertThat(labels.contains("c"), is(true));
+        assertThat(labels.contains("d"), is(true));
     }
 
     @Test
     public void shouldGetLabels() {
         Set<String> labels = (Set) TraversalHelper.getLabels(__.out().as("a").values("name").as("b").in().as("c").groupCount().as("d").asAdmin());
         assertEquals(4, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("b"));
-        assertTrue(labels.contains("c"));
-        assertTrue(labels.contains("d"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("b"), is(true));
+        assertThat(labels.contains("c"), is(true));
+        assertThat(labels.contains("d"), is(true));
         labels = (Set) TraversalHelper.getLabels(__.out().as("a").repeat(__.out("name").as("b")).local(in().as("c")).as("d").groupCount().by(outE().as("e")).as("f").asAdmin());
         assertEquals(6, labels.size());
-        assertTrue(labels.contains("a"));
-        assertTrue(labels.contains("b"));
-        assertTrue(labels.contains("c"));
-        assertTrue(labels.contains("d"));
-        assertTrue(labels.contains("e"));
-        assertTrue(labels.contains("f"));
+        assertThat(labels.contains("a"), is(true));
+        assertThat(labels.contains("b"), is(true));
+        assertThat(labels.contains("c"), is(true));
+        assertThat(labels.contains("d"), is(true));
+        assertThat(labels.contains("e"), is(true));
+        assertThat(labels.contains("f"), is(true));
     }
 
     @Test
@@ -577,5 +576,28 @@ public class TraversalHelperTest {
         for (int i = 0; i < traversals.size(); i++) {
             assertEquals(TraversalHelper.getPopInstructions(traversals.get(i)), expectedResults.get(i));
         }
+    }
+
+    @Test
+    public void shouldUseContractRegistryInGetStepsOfClass() {
+        // Build a traversal that will include a GraphStepPlaceholder as start (V()) and then some steps
+        final Traversal.Admin<?,?> t = __.V().out().values("name").asAdmin();
+        // Ensure that asking for GraphStepContract.class returns the start step
+        final List<Step<?,?>> steps = (List) TraversalHelper.getStepsOfClass(org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract.class, t);
+        // There should be exactly one GraphStep* at the start
+        assertEquals(1, steps.size());
+        // And it should be one of the registered concrete classes
+        final Class<?> sc = steps.get(0).getClass();
+        final java.util.List<Class<? extends Step>> concretes = org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract.CONCRETE_STEPS;
+        assertThat(concretes.stream().anyMatch(c -> c.equals(sc)), is(true));
+    }
+
+    @Test
+    public void shouldNotAffectNonRegisteredInterfaces() {
+        // Use a random interface that is not a registered contract
+        final Traversal.Admin<?,?> t = __.out().in().asAdmin();
+        // Step is an interface but exact equality semantics should apply and thus return empty here
+        final List<Step<?,?>> steps = (List) TraversalHelper.getStepsOfClass(Step.class, t);
+        assertEquals(0, steps.size());
     }
 }

@@ -123,10 +123,7 @@ public abstract class ConnectiveP<V> extends P<V> {
 
     @Override
     public void updateVariable(final String name, final Object value) {
-        predicates.stream().map((p) -> {
-            p.updateVariable(name, value);
-            return p;
-        });
+        predicates.stream().forEach((p) -> p.updateVariable(name, value));
     }
 
     @Override

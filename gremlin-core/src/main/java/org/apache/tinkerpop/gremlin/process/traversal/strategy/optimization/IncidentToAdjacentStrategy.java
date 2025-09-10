@@ -160,6 +160,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
 
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPost() {
-        return Collections.singleton(PathRetractionStrategy.class);
+        final Set<Class<? extends OptimizationStrategy>> post = OptimizationStrategy.super.applyPost();
+        post.add(PathRetractionStrategy.class);
+        return post;
     }
 }

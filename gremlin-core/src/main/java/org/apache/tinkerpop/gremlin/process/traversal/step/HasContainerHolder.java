@@ -63,9 +63,7 @@ public interface HasContainerHolder<S, E> extends GValueHolder<S, E> {
     }
 
     public default void updateVariable(final String name, final Object value) {
-        getPredicates().forEach((p) -> {
-            p.updateVariable(name, value);
-        });
+        getPredicates().forEach((p) -> p.updateVariable(name, value));
     }
 
     public default Collection<GValue<?>> getGValues() {
