@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -34,9 +36,48 @@ public interface MergeStepContract<S, E, C> extends Writing<Event>, Deleting<Eve
 
     Traversal.Admin<S, Map> getMergeTraversal();
 
+    /**
+     * Gets the merge map from this step. If the map was originally passed as a {@link GValue<Map>}, that is returned
+     * directly. If it was originally passed as a {@link Map} or {@link ConstantTraversal<Map>}, then a {@link Map} is
+     * returned. Otherwise, the MergeMap is returned in Traversal form.
+     */
+    default Object getMergeMapWithGValue() {
+        Traversal mergeTraversal = getMergeTraversal();
+        if (mergeTraversal instanceof ConstantTraversal) {
+            return mergeTraversal.next();
+        }
+        return mergeTraversal;
+    }
+
     Traversal.Admin<S, Map> getOnCreateTraversal();
 
+    /**
+     * Gets the onCreate map from this step. If the map was originally passed as a {@link GValue<Map>}, that is returned
+     * directly. If it was originally passed as a {@link Map} or {@link ConstantTraversal<Map>}, then a {@link Map} is
+     * returned. Otherwise, the onCreate is returned in Traversal form.
+     */
+    default Object getOnCreateMapWithGValue() {
+        Traversal onCreateTraversal = getOnCreateTraversal();
+        if (onCreateTraversal instanceof ConstantTraversal) {
+            return onCreateTraversal.next();
+        }
+        return onCreateTraversal;
+    }
+
     Traversal.Admin<S, Map<String, ?>> getOnMatchTraversal();
+
+    /**
+     * Gets the onMatch map from this step. If the map was originally passed as a {@link GValue<Map>}, that is returned
+     * directly. If it was originally passed as a {@link Map} or {@link ConstantTraversal<Map>}, then a {@link Map} is
+     * returned. Otherwise, the onMatch is returned in Traversal form.
+     */
+    default Object getOnMatchMapWithGValue() {
+        Traversal onMatchTraversal = getOnMatchTraversal();
+        if (onMatchTraversal instanceof ConstantTraversal) {
+            return onMatchTraversal.next();
+        }
+        return onMatchTraversal;
+    }
 
     boolean isStart();
 
