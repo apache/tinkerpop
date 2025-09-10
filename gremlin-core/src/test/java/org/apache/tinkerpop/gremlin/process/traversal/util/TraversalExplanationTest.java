@@ -100,7 +100,7 @@ public class TraversalExplanationTest {
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
         int found = 0;
         for (final String line : traversal.explain().toString().split("\n")) {
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(OUT,edge)"))
+            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(OUT,edge)"))
                 found++;
         }
         assertEquals(1, found);
@@ -109,7 +109,7 @@ public class TraversalExplanationTest {
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
         found = 0;
         for (final String line : traversal.explain().toString().split("\n")) {
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(IN,edge)"))
+            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(IN,edge)"))
                 found++;
         }
         assertEquals(1, found);
@@ -120,11 +120,11 @@ public class TraversalExplanationTest {
         found = 0;
         for (final String line : traversal.explain().toString().split("]\n")) { // need to split cause of word wrap
             //System.out.println(line + "\n\n");
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
                 found++;
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(OUT,vertex)"))
                 found++;
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(BOTH,edge)"))
+            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(BOTH,edge)"))
                 found++;
             if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;
@@ -134,11 +134,11 @@ public class TraversalExplanationTest {
         //System.out.println(traversal.explain().prettyPrint(160));
         found = 0;
         for (final String line : traversal.explain().prettyPrint(170).split("]\n")) { // need to split cause of word wrap
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(IN,vertex)"))
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
                 found++;
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStep(OUT,vertex)"))
+            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(OUT,vertex)"))
                 found++;
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStep(BOTH,edge)"))
+            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(BOTH,edge)"))
                 found++;
             if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;

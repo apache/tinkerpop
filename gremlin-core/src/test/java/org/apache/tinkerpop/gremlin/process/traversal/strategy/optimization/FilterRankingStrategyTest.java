@@ -289,10 +289,10 @@ public class FilterRankingStrategyTest {
                     // Examples with TraversalStrategies.GlobalCache
                     {has("value", GValue.ofInteger("x", 0)).or(out(), in()).as(Graph.Hidden.hide("x")).has("value", GValue.ofInteger("y", 1)).dedup(),
                              CollectionUtil.asSet("x", "y"),
-                             TraversalStrategies.GlobalCache.getStrategies(Graph.class).removeStrategies(GValueReductionStrategy.class).toList()},
+                             TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
                     {has("value", GValue.ofInteger("x", 0)).filter(or(not(has("age")), has("age", GValue.ofInteger("y", 1)))).has("value", GValue.ofInteger("z", 1)).dedup(),
                              CollectionUtil.asSet("x", "y", "z"),
-                             TraversalStrategies.GlobalCache.getStrategies(Graph.class).removeStrategies(GValueReductionStrategy.class).toList()},
+                             TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList()},
             });
         }
 
