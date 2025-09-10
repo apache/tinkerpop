@@ -74,8 +74,9 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
         return Arrays.stream(GValue.resolveToValues(edgeLabels)).toArray(String[]::new);
     }
 
-    public String[] getEdgeLabelsGValueSafe() {
-        return Arrays.stream(GValue.resolveToValues(edgeLabels)).toArray(String[]::new);
+    @Override
+    public GValue<String>[] getEdgeLabelsAsGValues() {
+        return edgeLabels;
     }
 
     @Override

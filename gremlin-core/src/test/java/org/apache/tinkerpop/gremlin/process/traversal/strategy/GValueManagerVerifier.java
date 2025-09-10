@@ -288,9 +288,9 @@ public class GValueManagerVerifier {
 
             VertexStepPlaceholder<?> vertexStepPlaceholder = (VertexStepPlaceholder<?>) step;
 
-            assertEquals("Label count should match", expectedLabelCount, vertexStepPlaceholder.getEdgeLabelsGValueSafe().length);
+            assertEquals("Label count should match", expectedLabelCount, vertexStepPlaceholder.getEdgeLabelsAsGValues().length);
             assertTrue("Expected names should match", CollectionUtils.isEqualCollection(expectedNames, vertexStepPlaceholder.getGValues().stream().map(GValue::getName).collect(Collectors.toSet())));
-            assertTrue("Expected values should match", CollectionUtils.isEqualCollection(expectedValues, Set.of(vertexStepPlaceholder.getEdgeLabelsGValueSafe())));
+            assertTrue("Expected values should match", CollectionUtils.isEqualCollection(expectedValues, Set.of(GValue.resolveToValues(vertexStepPlaceholder.getEdgeLabelsAsGValues()))));
 
             return self();
         }
