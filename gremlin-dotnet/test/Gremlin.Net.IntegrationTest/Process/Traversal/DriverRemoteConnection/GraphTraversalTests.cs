@@ -338,7 +338,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void shouldUseMaterializedPropertiesTokenInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var p = g.With("materializeProperties", "tokens").V().Has("name", "marko").OutE().InV().HasLabel("software").Path().Next();
             
             Assert.NotNull(p);
@@ -362,7 +362,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public void shouldMaterializePropertiesAllInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().WithRemote(connection);
+            var g = AnonymousTraversalSource.Traversal().With(connection);
             var p = g.With("materializeProperties", "all").V().Has("name", "marko").OutE().InV().HasLabel("software").Path().Next();
 
             Assert.NotNull(p);

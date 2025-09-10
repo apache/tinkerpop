@@ -457,9 +457,17 @@ namespace Gremlin.Net.Process.Traversal
         {
             return new GraphTraversal<object, long>().DateDiff(dateTraversal);
         }
+        
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asNumber step to that traversal.
+        /// </summary>
+        public static GraphTraversal<object, object> AsNumber()
+        {
+            return new GraphTraversal<object, object>().AsNumber();
+        }
 
         /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the dateAdd step to that traversal.
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the asNumber step to that traversal.
         /// </summary>
         public static GraphTraversal<object, object> AsNumber(N numberToken)
         {
@@ -497,7 +505,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the discard step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> discard()
+        public static GraphTraversal<object, object> Discard()
         {
             return new GraphTraversal<object, object>().Discard();
         }

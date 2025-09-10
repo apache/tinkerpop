@@ -36,7 +36,7 @@ Feature: Step - range()
   Scenario: g_VX1X_out_limitX2varX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter xx1 defined as "d[2].i"
+    And using the parameter xx1 defined as "d[2].l"
     And the traversal of
       """
       g.V(vid1).out().limit(xx1)
@@ -110,8 +110,8 @@ Feature: Step - range()
   Scenario: g_VX1X_outXcreatedX_inXcreatedX_rangeX1var_3varX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[3].i"
+    And using the parameter xx1 defined as "d[1].l"
+    And using the parameter xx2 defined as "d[3].l"
     And the traversal of
       """
       g.V(vid1).out("created").in("created").range(xx1, xx2)
@@ -170,7 +170,7 @@ Feature: Step - range()
 
   Scenario: g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2varX
     Given the modern graph
-    And using the parameter xx1 defined as "d[2].i"
+    And using the parameter xx1 defined as "d[2].l"
     And the traversal of
       """
       g.V().as("a").in().as("b").in().as("c").select("a","b","c").by("name").limit(Scope.local, xx1)
@@ -207,8 +207,8 @@ Feature: Step - range()
 
   Scenario: g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1var_3varX
     Given the modern graph
-    And using the parameter xx1 defined as "d[1].i"
-    And using the parameter xx2 defined as "d[3].i"
+    And using the parameter xx1 defined as "d[1].l"
+    And using the parameter xx2 defined as "d[3].l"
     And the traversal of
       """
       g.V().as("a").out().as("b").out().as("c").select("a","b","c").by("name").range(Scope.local, xx1, xx2)
@@ -246,7 +246,7 @@ Feature: Step - range()
 
   Scenario: g_V_hasLabelXpersonX_order_byXageX_skipX1varX_valuesXnameX
     Given the modern graph
-    And using the parameter xx1 defined as "d[1].i"
+    And using the parameter xx1 defined as "d[1].l"
     And the traversal of
       """
       g.V().hasLabel("person").order().by("age").skip(xx1).values("name")
@@ -283,7 +283,7 @@ Feature: Step - range()
 
   Scenario: g_V_outE_valuesXweightX_fold_orderXlocalX_skipXlocal_2varX
     Given the modern graph
-    And using the parameter xx1 defined as "d[2].i"
+    And using the parameter xx1 defined as "d[2].l"
     And the traversal of
       """
       g.V().outE().values("weight").fold().order(Scope.local).skip(Scope.local, xx1)

@@ -19,12 +19,10 @@
 package org.apache.tinkerpop.gremlin.language.translator;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;
@@ -113,9 +111,9 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
                 sb.append(integerLiteral);
                 break;
             case 'n':
-                sb.append("new BigInteger(");
+                sb.append("BigInteger.Parse(\"");
                 sb.append(integerLiteral, 0, lastCharIndex);
-                sb.append(")");
+                sb.append("\")");
                 break;
             default:
                 // everything else just goes as specified
@@ -291,6 +289,62 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     @Override
     public Void visitTraversalSourceSpawnMethod_io(final GremlinParser.TraversalSourceSpawnMethod_ioContext ctx) {
         return handleGenerics(ctx);
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_addV(final GremlinParser.TraversalSourceSpawnMethod_addVContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+
+        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
+            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
+                tryAppendCastToString((GremlinParser.StringArgumentContext) ctx.getChild(ix));
+            }
+            visit(ctx.getChild(ix));
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_addV_String(GremlinParser.TraversalMethod_addV_StringContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+
+        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
+            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
+                tryAppendCastToString((GremlinParser.StringArgumentContext) ctx.getChild(ix));
+            }
+            visit(ctx.getChild(ix));
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_addE(final GremlinParser.TraversalSourceSpawnMethod_addEContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+
+        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
+            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
+                tryAppendCastToString((GremlinParser.StringArgumentContext) ctx.getChild(ix));
+            }
+            visit(ctx.getChild(ix));
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_addE_String(GremlinParser.TraversalMethod_addE_StringContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+
+        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
+            if (ctx.getChild(ix) instanceof GremlinParser.StringArgumentContext) {
+                tryAppendCastToString((GremlinParser.StringArgumentContext) ctx.getChild(ix));
+            }
+            visit(ctx.getChild(ix));
+        }
+        return null;
     }
 
     @Override
@@ -766,12 +820,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalMethod_limit_Scope_long(final GremlinParser.TraversalMethod_limit_Scope_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
     public Void visitTraversalMethod_limit_long(final GremlinParser.TraversalMethod_limit_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
@@ -967,12 +1021,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalMethod_range_Scope_long_long(final GremlinParser.TraversalMethod_range_Scope_long_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
     public Void visitTraversalMethod_range_long_long(final GremlinParser.TraversalMethod_range_long_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
@@ -1027,12 +1081,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalMethod_skip_long(final GremlinParser.TraversalMethod_skip_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
     public Void visitTraversalMethod_skip_Scope_long(final GremlinParser.TraversalMethod_skip_Scope_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
@@ -1072,12 +1126,12 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
 
     @Override
     public Void visitTraversalMethod_tail_Scope_long(final GremlinParser.TraversalMethod_tail_Scope_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
     public Void visitTraversalMethod_tail_long(final GremlinParser.TraversalMethod_tail_longContext ctx) {
-        return handleGenerics(ctx);
+        return handleLongArguments(ctx);
     }
 
     @Override
@@ -1166,6 +1220,24 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         return null;
     }
 
+    /**
+     * Steps that takes long needs the type declared for variables.
+     */
+    private Void handleLongArguments(final ParseTree ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+
+        sb.append("<object>");
+
+        for (int ix = 1; ix < ctx.getChildCount(); ix++) {
+            if (ctx.getChild(ix) instanceof GremlinParser.IntegerArgumentContext) {
+                tryAppendCastToLong((GremlinParser.IntegerArgumentContext) ctx.getChild(ix));
+            }
+            visit(ctx.getChild(ix));
+        }
+        return null;
+    }
+
     @Override
     protected String processGremlinSymbol(final String step) {
         return SymbolHelper.toCSharp(step);
@@ -1192,8 +1264,26 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         return "CardinalityValue";
     }
 
+    private void tryAppendCastToLong(final GremlinParser.IntegerLiteralContext ctx) {
+        if (ctx != null) {
+            sb.append("(long) ");
+        }
+    }
+
+    private void tryAppendCastToLong(final GremlinParser.IntegerArgumentContext ctx) {
+        if (ctx.variable() != null) {
+            sb.append("(long) ");
+        }
+    }
+
     private void tryAppendCastToString(final GremlinParser.StringLiteralContext ctx) {
         if (ctx != null) {
+            sb.append("(string) ");
+        }
+    }
+
+    private void tryAppendCastToString(final GremlinParser.StringArgumentContext ctx) {
+        if (ctx.variable() != null) {
             sb.append("(string) ");
         }
     }

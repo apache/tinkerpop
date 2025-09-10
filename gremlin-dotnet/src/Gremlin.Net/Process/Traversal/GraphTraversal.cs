@@ -678,6 +678,15 @@ namespace Gremlin.Net.Process.Traversal
             Bytecode.AddStep("dateDiff", dateTraversal);
             return Wrap<TStart, long>(this);
         }
+        
+        /// <summary>
+        ///     Adds the asNumber step to this <see cref="GraphTraversal{SType, EType}" />.
+        /// </summary>
+        public GraphTraversal<TStart, object> AsNumber()
+        {
+            Bytecode.AddStep("asNumber");
+            return Wrap<TStart, object>(this);
+        }
 
         /// <summary>
         ///     Adds the asNumber step to this <see cref="GraphTraversal{SType, EType}" />.
