@@ -152,7 +152,6 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
     @Override
     protected void writeValue(final T value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         // the predicate name is either a static method of P or an instance method when a type ConnectiveP
-        final boolean isConnectedP = value instanceof ConnectiveP;
         final String predicateName = value.getPredicateName();
         final Object args;
         if (value instanceof ConnectiveP) {

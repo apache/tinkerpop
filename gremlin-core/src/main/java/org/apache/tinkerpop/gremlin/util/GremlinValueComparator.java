@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -174,11 +176,11 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
             Comparator.<Property,Object>comparing(Property::key, this).thenComparing(Property::value, this);
 
     /**
-     * Sort List, Set, Path, and Map element-by-element in the order presented by their natural iterator.
+     * Sort List, Set, Path, and Array element-by-element in the order presented by their natural iterator.
      */
-    private final Comparator<Iterable> iterableComparator = (f, s) -> {
-        final Iterator fi = f.iterator();
-        final Iterator si = s.iterator();
+    private final Comparator<Object> iterableComparator = (f, s) -> {
+        final Iterator fi = IteratorUtils.asIterator(f); // Use IteratorUtils as input may be Iterable or Array
+        final Iterator si = IteratorUtils.asIterator(s);
 
         while (fi.hasNext() && si.hasNext()) {
             final int i = this.compare(fi.next(), si.next());
@@ -260,6 +262,9 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         public static Type type(final Object o) {
             if (o == null)
                 return Nulltype;
+            if (o.getClass().isArray())
+                return List;
+
 
             final Type[] types = Type.values();
             for (int i = 1; i < types.length; i++) {
@@ -319,7 +324,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
 
         // if objects are collections or composites, their contents must be mutually comparable
         if (ft == Type.List && st == Type.List) {
-            return contentsComparable(((List) f).iterator(), ((List) s).iterator());
+            return contentsComparable(IteratorUtils.asIterator(f), IteratorUtils.asIterator(s));
         }
         else if (ft == Type.Path && st == Type.Path) {
             return contentsComparable(((Path) f).iterator(), ((Path) s).iterator());
