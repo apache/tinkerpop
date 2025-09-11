@@ -165,8 +165,9 @@ story.
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures.asciidoc[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-transaction-4.asciidoc[Proposal 4] |TinkerGraph Transaction Support |3.7.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-scoping-5.asciidoc[Proposal 5] |Lazy vs. Eager Evaluation|3.8.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asnumber-step-6.asciidoc[Proposal 6] |asNumber() Step|3.8.0 |N
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asbool-step-7.asciidoc[Proposal 7] |asBool() Step|3.8.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asnumber-step-6.asciidoc[Proposal 6] |asNumber() Step|3.8.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asbool-step-7.asciidoc[Proposal 7] |asBool() Step|3.8.0 |Y
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-type-predicate-8.asciidoc[Proposal 8] |asBool() Step|3.8.0 |N
 |=========================================================
 
 = Appendix
