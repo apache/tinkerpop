@@ -50,15 +50,12 @@ public final class GValueReductionStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        TraversalHelper.applyTraversalRecursively(t -> {
-            // we get accused of concurrentmodification if we try a for(Iterable)
-            final List<Step> steps = t.getSteps();
-            for (int i = 0; i < steps.size(); i++) {
-                if (steps.get(i) instanceof GValueHolder) {
-                    ((GValueHolder) steps.get(i)).reduce();
-                }
+        final List<Step> steps = traversal.getSteps();
+        for (int i = 0; i < steps.size(); i++) {
+            if (steps.get(i) instanceof GValueHolder) {
+                ((GValueHolder) steps.get(i)).reduce();
             }
-        }, traversal);
+        }
     }
 
     public static GValueReductionStrategy instance() {
