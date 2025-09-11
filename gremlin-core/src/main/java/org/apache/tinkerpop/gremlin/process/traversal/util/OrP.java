@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.PBiPredicate;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -79,18 +79,10 @@ public final class OrP<V> extends ConnectiveP<V> {
 
         @Override
         public boolean test(final V valueA, final V valueB) {
-            GremlinTypeErrorException typeError = null;
             for (final P<V> predicate : this.orP.predicates) {
-                try {
-                    if (predicate.test(valueA))
-                        return true;
-                } catch (GremlinTypeErrorException ex) {
-                    // hold onto it until the end in case any other arguments evaluate to TRUE
-                    typeError = ex;
-                }
+                if (predicate.test(valueA))
+                    return true;
             }
-            if (typeError != null)
-                throw typeError;
             return false;
         }
 

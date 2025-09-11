@@ -144,67 +144,10 @@ Key differences include handling of numeric types and NaN.
 Both Equality and Equivalence can be understood as complete, i.e. the result of equality and equivalence checks is
 always either `TRUE` or `FALSE` (in particular, it never returns `nulltype` or throws an exception). Similarly,
 Orderability can be also understood as complete - any two values can be compared without error for ordering purposes.
-Comparability semantics are not complete with respect to binary boolean semantics, and as such, Gremlin introduces a
-ternary boolean semantics for Comparability that includes a third boolean state - `ERROR`, with its own well-defined
-semantics.
-
-=== Ternary Boolean Logics
-
-When evaluating boolean value expressions, we sometimes encounter situations that cannot be proved as either `TRUE` or
-`FALSE`. Common `ERROR` cases are Comparability against `NaN`, cross-type Comparability (e.g. `String` vs `Numeric`), or
-other invalid arguments to other boolean value expressions.
-
-Rather than throwing an exception and halting the traversal, we extend normal binary boolean logics and introduce a
-third boolean option - `ERROR`. How this `ERROR` result is handled is Graph provider dependent. For the reference
-implementation, `ERROR` is an internal representation only and will not be propagated back to the client as an
-exception - it will eventually hit a binary reduction operation and be reduced to `FALSE` (thus quietly filters the
-solution that produced the `ERROR`). Before that happens though, it will be treated as its own boolean value with its
-own semantics that can be used in other boolean value expressions, such as Connective predicates (`P.and/or`) and
-negation (`P.not`).
-
-==== Ternary Boolean Semantics for `AND`
-
-|===
-|A|B|AND|Intuition
-
-| `TRUE` | `TRUE` | `TRUE` |
-| `TRUE` | `FALSE` | `FALSE` |
-| `TRUE` | `ERROR` | `ERROR` | `TRUE && X == X`
-| `FALSE` | `TRUE` | `FALSE` |
-| `FALSE` | `FALSE` | `FALSE` |
-| `FALSE` | `ERROR` | `FALSE` | `FALSE && X == FALSE`
-| `ERROR` | `TRUE` | `ERROR` | `X && TRUE == X`
-| `ERROR` | `FALSE` | `FALSE` | `X && FALSE == FALSE`
-| `ERROR` | `ERROR` | `ERROR` | `X && X == X`
-|===
-
-==== Ternary Boolean Semantics for `OR`
-
-|===
-|A|B|OR|Intuition
-
-| `TRUE` | `TRUE` | `TRUE` |
-| `TRUE` | `FALSE` | `TRUE` |
-| `TRUE` | `ERROR` | `TRUE` | `TRUE \|\| X == TRUE`
-| `FALSE` | `TRUE` | `TRUE` |
-| `FALSE` | `FALSE` | `FALSE` |
-| `FALSE` | `ERROR` | `ERROR` | `FALSE \|\| X == X`
-| `ERROR` | `TRUE` | `TRUE` | `X \|\| TRUE == TRUE`
-| `ERROR` | `FALSE` | `ERROR` | `X \|\| FALSE == X`
-| `ERROR` | `ERROR` | `ERROR` | `X \|\| X == X`
-|===
-
-==== Ternary Boolean Semantics for `NOT`
-
-The `NOT` predicate inverts `TRUE` and `FALSE`, respectively, but maintains `ERROR` values. The key idea is that, for an
-`ERROR` value, we can neither prove nor disprove the expression, and hence stick with `ERROR`.
-|===
-|Argument | Result
-
-|`TRUE` | `FALSE`
-|`FALSE` | `TRUE`
-|`ERROR` | `ERROR`
-|===
+Comparability semantics are not complete with respect to traditional binary boolean semantics, as certain comparisons
+cannot be proved as either `TRUE` or `FALSE`. Common examples of such cases are Comparability against `NaN`, cross-type
+Comparability (e.g. `String` vs `Numeric`). For the purposes of Comparability within Gremlin, any such incomputable
+comparison is defined to be `FALSE`, and traditional binary boolean semantics apply thereafter.
 
 [[gremlin-semantics-equality-comparability]]
 === Equality and Comparability
@@ -243,12 +186,12 @@ classes of comparison:
 
 |Comparisons Involving `NaN`|`(NaN,X)` +
 
-where `X` = any value, including `NaN`|`ERROR` +
+where `X` = any value, including `NaN`|`FALSE` +
 
 Comparing `NaN` to anything (including itself) cannot be evaluated.|`FALSE`
 
 |Comparisons Involving `null`|`(null,null)`|`compare() == 0`|`TRUE`
-||`(null, X)`|`ERROR` +
+||`(null, X)`|`FALSE` +
 
 Since `nulltype` is its own type, this falls under the umbrella of cross-type comparisons. |`FALSE`
 |Comparisons within the same type family (i.e. String vs. String, Number vs. Number, etc.)|`(X, Y)` +
@@ -256,7 +199,7 @@ Since `nulltype` is its own type, this falls under the umbrella of cross-type co
 where `X` and `Y` of same type|Result of `compare()` depends on type semantics, defined below.|`TRUE` iff `compare() == 0`
 |Comparisons across types (i.e. String vs. Number)|`(X, Y)` +
 
-where `X` and `Y` of different type|`ERROR`|`FALSE`
+where `X` and `Y` of different type|`FALSE`|`FALSE`
 
 |===
 
@@ -316,8 +259,8 @@ not <<Equality,Equal>> and not <<Comparability,Comparable>>.
 ===== List
 
 Lists are compared pairwise, element-by-element, in their natural list order. For each element, if the pairs are
-<<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair whose
-`Comparability.compare()` value is non-zero (`-1`, `1`, or `ERROR`), and we return that value. Lists can be evaluated
+<<Equality and Comparability,Equal>>, we simply move on to the next element pair until we encounter a pair which is not
+comparable, or whose `Comparability.compare()` value is non-zero, and we return that value. Lists can be evaluated
 for <<Equality and Comparability,Equality and Comparability>> even if they contain multiple types of elements, so long
 as their elements are pairwise comparable per <<Equality and Comparability,Equality/Comparability>> semantics. During
 this element by element comparison, if iteration `A` exhausts its elements before iteration `B` then `A < B`, and
@@ -400,7 +343,7 @@ treat pairwise entries with semantically equivalent keys as the same.
 <<Equality and Comparability,Equality and Comparability>> were described in depth in the sections above, and their
 semantics map to the `P` predicates. <<Comparability,Comparability>> in particular is limited to
 comparison of values within the same type family. Comparability is complete within a given type (except for `NaN`,
-which results in `ERROR` for any comparison), but returns `ERROR` for comparisons across types (e.g., an integer cannot
+which results in `FALSE` for any comparison), but returns `FALSE` for comparisons across types (e.g., an integer cannot
 be compared to a string).
 
 Orderability semantics are very similar to Comparability for the most part, except that Orderability will never result
@@ -409,8 +352,8 @@ we will still be able to determine their respective order. This allows for a tot
 the reference implementation, any step using `Order.asc` or `Order.desc` (e.g. OrderGlobalStep, OrderLocalStep) will
 follow these semantics.
 
-To achieve this globally complete order, we need to address any cases in Comparability that produce a comparison
-`ERROR`, we must define a global order across type families, and we must provide semantics for ordering "unknown"
+To achieve this globally complete order, we need to address any cases in Comparability which are incomputable, we must
+define a global order across type families, and we must provide semantics for ordering "unknown"
 values (for cases of in-process JVM implementations, like the TinkerGraph).
 
 We define the type space, and the global order across the type space as follows:
@@ -439,11 +382,11 @@ Within a given type space, Orderability determines if two values are ordered at 
 positioned before or after the another. When the position is identical, which value comes first (in other words,
 whether it should perform stable sort) depends on graph providers' implementation.
 
-To allow for this total ordering, we must also address the cases in <<Equality and Comparability,Comparability>> that
-produce an comparison `ERROR`:
+To allow for this total ordering, we must also address the cases in <<Equality and Comparability,Comparability>> where
+the comparison is incomputable:
 
 |===
-|`ERROR` Scenario|Comparability|Orderability
+|Incomputable Scenario|Comparability|Orderability
 
 |Comparison against `NaN`|`NaN` not comparable to anything, including itself.|`NaN` appears after `+Infinity` in the numeric type space.
 |Comparison across types|Cannot compare values of different types. This includes the `nulltype`.|Subject to a total

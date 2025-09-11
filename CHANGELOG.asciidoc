@@ -84,6 +84,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.
 * Removed lambda oriented Gremlin testing from Gherkin test suite.
 * Removed `P.getOriginalValue()` in favor of `P.getValue()`
+* Simplified comparability semantics from ternary boolean logic to binary logic.
+* Introduced `NotP` class for negation of `P`
 * Increase minimum Java version from 1.8 to 11 for building and running.
 * Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
