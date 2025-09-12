@@ -293,9 +293,31 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (label != null) {
             clone.label = label.clone();
         }
-        clone.properties.putAll(properties);
-        clone.elementId = elementId;
-        clone.scopeKeys.addAll(scopeKeys);
+
+        // deep clone properties
+        clone.properties = new HashMap<>();
+        for (Map.Entry<Object, List<Object>> entry : this.properties.entrySet()) {
+            final Object key = entry.getKey();
+            final List<Object> oldValues = entry.getValue();
+            final List<Object> newValues = new ArrayList<>(oldValues.size());
+            for (Object v : oldValues) {
+                if (v instanceof Traversal) {
+                    newValues.add(((Traversal<?, ?>) v).asAdmin().clone());
+                } else if (v instanceof GValue) {
+                    try {
+                        newValues.add(((GValue) v).clone());
+                    } catch (CloneNotSupportedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    newValues.add(v);
+                }
+            }
+            clone.properties.put(key, newValues);
+        }
+
+        clone.elementId = this.elementId;
+        clone.scopeKeys = new HashSet<>(this.scopeKeys);
         return clone;
     }
 
