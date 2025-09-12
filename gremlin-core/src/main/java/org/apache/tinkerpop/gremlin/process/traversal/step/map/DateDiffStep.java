@@ -30,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -103,8 +104,16 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     }
 
     @Override
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        return dateTraversal == null ? Collections.emptyList() : List.of(dateTraversal);
+    }
+
+    @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
+        if (dateTraversal != null) {
+            integrateChild(dateTraversal);
+        }
     }
 
     @Override

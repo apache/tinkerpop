@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Partit
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.T;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +56,7 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
     public AbstractMergeElementStepPlaceholder(Traversal.Admin traversal, final Traversal.Admin<?, Map<Object, Object>> mergeTraversal, final boolean isStart) {
         super(traversal);
         this.mergeTraversal = mergeTraversal;
+        this.integrateChild(mergeTraversal);
         this.isStart = isStart;
     }
 
@@ -71,6 +73,27 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return super.getRequirements();
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
+    }
+    
+    @Override
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        List<Traversal.Admin<?, ?>> localChildren = new ArrayList<>();
+        if (mergeTraversal != null) {
+            localChildren.add(mergeTraversal);
+        }
+        if (onCreateTraversal != null) {
+            localChildren.add(onCreateTraversal);
+        }
+        if (onMatchTraversal != null) {
+            localChildren.add(onMatchTraversal);
+        }
+        return localChildren;
     }
 
     @Override
@@ -158,27 +181,30 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
     }
 
     @Override
-    public void setOnMatch(final Traversal.Admin<?, Map<Object, Object>> onMatchMap) {
-        this.onMatchTraversal = onMatchMap;
-        if (onMatchMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).getGValue());
+    public void setOnMatch(final Traversal.Admin<?, Map<Object, Object>> onMatchTraversal) {
+        this.onMatchTraversal = onMatchTraversal;
+        if (onMatchTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).isParameterized()) {
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getGValue());
         }
+        this.integrateChild(onMatchTraversal);
     }
 
     @Override
-    public void setOnCreate(final Traversal.Admin<?, Map<Object, Object>> onCreateMap) {
-        this.onCreateTraversal = onCreateMap;
-        if (onCreateMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).getGValue());
+    public void setOnCreate(final Traversal.Admin<?, Map<Object, Object>> onCreateTraversal) {
+        this.onCreateTraversal = onCreateTraversal;
+        if (onCreateTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).isParameterized()) {
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getGValue());
         }
+        this.integrateChild(onCreateTraversal);
     }
 
     @Override
-    public void setMerge(Traversal.Admin<?, Map<Object, Object>> mergeMap) {
-        this.mergeTraversal = mergeMap;
-        if (mergeMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).getGValue());
+    public void setMerge(Traversal.Admin<?, Map<Object, Object>> mergeTraversal) {
+        this.mergeTraversal = mergeTraversal;
+        if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).isParameterized()) {
+            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue());
         }
+        this.integrateChild(mergeTraversal);
     }
 
     @Override

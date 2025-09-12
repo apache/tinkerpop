@@ -114,7 +114,7 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        this.integrateChild(this.selectTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
     }
 
     @Override

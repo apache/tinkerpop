@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -31,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,7 +53,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     /**
      * property value
      */
-    private GValue<?> value;
+    private Traversal.Admin<?, ?> value;
     /**
      * cardinality of the property
      */
@@ -66,11 +69,19 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
             throw new IllegalArgumentException("GValue is not allowed for property keys");
         }
         this.key = keyObject;
-        this.value = GValue.of(valueObject);
-        this.cardinality = cardinality;
+        if (this.key instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) this.key).asAdmin());
+        }
         if (valueObject instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) valueObject);
+            this.value = new GValueConstantTraversal<>((GValue<?>) valueObject);
+        } else if (valueObject instanceof Traversal) {
+            this.value = ((Traversal<?, ?>) valueObject).asAdmin();
+            this.integrateChild(((Traversal<?, ?>) valueObject).asAdmin());
+        } else {
+            this.value = new ConstantTraversal<>(valueObject);
         }
+        this.cardinality = cardinality;
     }
 
     @Override
@@ -79,13 +90,36 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     }
 
     @Override
-    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return Collections.emptyList(); //TODO:: is this right?
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        List<Traversal.Admin<?, ?>> childTraversals = new ArrayList<>();
+        for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            if (entry.getKey() instanceof Traversal) {
+                childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) entry.getKey()).asAdmin());
+            }
+            for (Object value : entry.getValue()) {
+                if (value instanceof Traversal) {
+                    childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) value).asAdmin());
+                }
+            }
+        }
+        if (key != null && key instanceof Traversal) {
+            childTraversals.add(((Traversal<?, ?>) key).asAdmin());
+        }
+        if (value != null) {
+            childTraversals.add(value);
+        }
+        return childTraversals;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
     }
 
     @Override
@@ -110,19 +144,28 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public Object getValue() {
-        if (value != null) {
-            traversal.getGValueManager().pinVariable(value.getName());
-            return value.get();
+        if (value == null) {
+            return null;
         }
-        return null;
+        if (value instanceof GValueConstantTraversal) {
+            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) value).getGValue().getName());
+            return value.next();
+        }
+        if (value instanceof ConstantTraversal) {
+            return value.next();
+        }
+        return value;
     }
 
     /**
      * Get the value as a GValue, without pinning the variable
      */
     @Override
-    public GValue<?> getValueAsGValue() {
-        return value;
+    public Object getValueWithGValue() {
+        if (value instanceof GValueConstantTraversal) {
+            return ((GValueConstantTraversal<?, ?>) value).getGValue();
+        }
+        return getValue(); // Don't need to worry about pinning variable as GValue case is already covered
     }
 
     @Override
@@ -137,7 +180,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public AddPropertyStep<S> asConcreteStep() {
-        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value.get());
+        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, ?>) value).getConstantTraversal() : value);
 
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
@@ -151,7 +194,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public boolean isParameterized() {
-        if (value.isVariable()) {
+        if (value instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) value).isParameterized()) {
             return true;
         }
         for (List<Object> list : properties.values()) {
@@ -164,8 +207,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
 
     @Override
     public void updateVariable(String name, Object value) {
-        if (name.equals(this.value.getName())) {
-            this.value = GValue.of(name, value);
+        if (value instanceof GValueConstantTraversal && name.equals(((GValueConstantTraversal<?, ?>) value).getGValue().getName())) {
+            this.value = new GValueConstantTraversal<>(GValue.of(name, value));
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (final Object propertyVal : entry.getValue()) {
@@ -179,8 +222,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     @Override
     public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
-        if (value.isVariable()) {
-            gValues.add(value);
+        if (value instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) value).isParameterized()) {
+            gValues.add(((GValueConstantTraversal<?, ?>) value).getGValue());
         }
         return gValues;
     }
@@ -190,8 +233,14 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
         }
-        if (value instanceof GValue) { //TODO could value come in as a traversal?
+        if (key instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) key).asAdmin());
+        }
+        if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);
+        }
+        if (value instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) value).asAdmin());
         }
         if (properties.containsKey(key)) {
             throw new IllegalArgumentException("Only single value meta-properties are supported");
