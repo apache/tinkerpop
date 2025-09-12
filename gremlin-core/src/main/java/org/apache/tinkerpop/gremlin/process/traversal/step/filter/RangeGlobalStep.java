@@ -41,7 +41,7 @@ import java.util.function.BinaryOperator;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, FilteringBarrier<TraverserSet<S>>, RangeGlobalStepContract<S> {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing, RangeGlobalStepContract<S> {
 
     private long low;
     private long high;
@@ -138,12 +138,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
         return Collections.singleton(TraverserRequirement.BULK);
     }
 
-
-    @Override
-    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new RangeBiOperator<>(this.high), false, true);
-    }
-
     @Override
     public void setBypass(final boolean bypass) {
         this.bypass = bypass;
@@ -152,11 +146,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     @Override
     public void processAllStarts() {
 
-    }
-
-    @Override
-    public TraverserSet<S> getEmptyBarrier() {
-        return new TraverserSet<>();
     }
 
     @Override

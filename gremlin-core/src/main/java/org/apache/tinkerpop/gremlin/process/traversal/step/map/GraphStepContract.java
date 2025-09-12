@@ -19,8 +19,11 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.Element;
+
+import java.util.Arrays;
 
 public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing {
 
@@ -33,6 +36,10 @@ public interface GraphStepContract<S, E extends Element> extends Step<S, E>, Gra
     boolean returnsEdge();
 
     Object[] getIds();
+
+    default GValue<?>[] getIdsAsGValues() {
+        return Arrays.stream(getIds()).map(o -> GValue.of(o)).toArray(GValue[]::new);
+    }
 
     void clearIds();
 }

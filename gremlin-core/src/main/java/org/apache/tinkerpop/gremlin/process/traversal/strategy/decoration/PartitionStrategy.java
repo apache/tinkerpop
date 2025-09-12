@@ -28,16 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
@@ -237,18 +233,17 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             // ends up being a Vertex or not.  AddPropertyStep currently chooses to simply not bother
             // to use the additional "property mutations" if the Element being mutated is a Edge or
             // VertexProperty
-            ((PropertyAdding) step).addProperty(partitionKey, writePartition);
+            ((PropertiesHolder) step).addProperty(partitionKey, writePartition);
 
             if (vertexFeatures.isPresent()) {
                 // GraphTraversal folds g.addV().property('k','v') to just AddVertexStep/AddVertexStartStep so this
                 // has to be exploded back to g.addV().property(cardinality, 'k','v','partition','A')
-                if (step instanceof AddVertexStartStep || step instanceof AddVertexStep ||
-                        step instanceof AddVertexStartStepPlaceholder || step instanceof AddEdgeStartStepPlaceholder) {
-                    final Map<Object, List<Object>> params = ((PropertyAdding) step).getProperties();
+                if (step instanceof AddVertexStepContract) {
+                    final Map<Object, List<Object>> properties = ((AddVertexStepContract) step).getPropertiesWithGValues();
 
                     // we get accused of ConcurrentModification if we rely on either the entry set or key set iterators in HashMap here
-                    for (Object k : params.keySet().toArray()) {
-                        final List<Object> v = params.get(k);
+                    for (Object k : properties.keySet().toArray()) {
+                        final List<Object> v = properties.get(k);
                         // need to filter out T based keys
                         if (k instanceof String) {
                             final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
@@ -260,9 +255,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
                                 // need to remove the property from the AddVertex/StartStep because it's now being
                                 // added via the AddPropertyStep
-                                ((PropertyAdding) step).removeProperty(k);
-
-                                //TODO:: Extract properties as GValue from addV/addE and preserve GValue in AddPropertyStepPlaceholder
+                                ((PropertiesHolder) step).removeProperty(k);
 
                                 TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
                             });

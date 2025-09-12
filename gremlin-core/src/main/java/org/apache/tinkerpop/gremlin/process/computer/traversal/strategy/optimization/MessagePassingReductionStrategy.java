@@ -35,10 +35,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
@@ -51,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.Inli
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
@@ -91,7 +94,7 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
                 final Traversal.Admin<?, ?> computerTraversal = step.computerTraversal.get().clone();
                 if (computerTraversal.getSteps().size() > 1 &&
                         !(computerTraversal.getStartStep().getNextStep() instanceof Barrier) &&
-                        TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStep.class, EdgeVertexStep.class), computerTraversal) &&
+                        TraversalHelper.hasStepOfAssignableClassRecursively(Arrays.asList(VertexStepContract.class, EdgeVertexStep.class), computerTraversal) &&
                         TraversalHelper.isLocalStarGraph(computerTraversal)) {
                     Step barrier = (Step) TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, computerTraversal).orElse(null);
 
@@ -117,7 +120,7 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
                         TraversalHelper.insertBeforeStep(new IdStep(computerTraversal), barrier, computerTraversal);
                     if (!(MessagePassingReductionStrategy.endsWithElement(null == barrier ? computerTraversal.getEndStep() : barrier))) {
                         Traversal.Admin newChildTraversal = new DefaultGraphTraversal<>();
-                        TraversalHelper.removeToTraversal(computerTraversal.getStartStep() instanceof GraphStep ?
+                        TraversalHelper.removeToTraversal(computerTraversal.getStartStep() instanceof GraphStepContract ?
                                 computerTraversal.getStartStep().getNextStep() :
                                 (Step) computerTraversal.getStartStep(), null == barrier ?
                                 EmptyStep.instance() :
@@ -152,8 +155,8 @@ public final class MessagePassingReductionStrategy extends AbstractTraversalStra
 
     public static final boolean endsWithElement(Step<?, ?> currentStep) {
         while (!(currentStep instanceof EmptyStep)) {
-            if (currentStep instanceof VertexStep) // only inE, in, and out send messages
-                return (((VertexStep) currentStep).returnsVertex() || !((VertexStep) currentStep).getDirection().equals(Direction.OUT));
+            if (currentStep instanceof VertexStepContract) // only inE, in, and out send messages
+                return (((VertexStepContract) currentStep).returnsVertex() || !((VertexStepContract) currentStep).getDirection().equals(Direction.OUT));
             else if (currentStep instanceof EdgeVertexStep) // TODO: add GraphStep but only if its mid-traversal V()/E()
                 return true;
             else if (currentStep instanceof TraversalFlatMapStep || currentStep instanceof TraversalMapStep || currentStep instanceof LocalStep)

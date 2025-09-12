@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.GValueManagerVerifier;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -40,6 +41,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
@@ -130,7 +132,7 @@ public class RepeatUnrollStrategyTest {
                     //
                     {__.repeat(__.outE().inV()).times(2), __.outE().inV().barrier(repeatBarrierSize).outE().inV().barrier(repeatBarrierSize), Collections.emptyList()},
                     {__.repeat(__.outE().filter(path()).inV()).times(2), __.outE().filter(path()).inV().barrier(repeatBarrierSize).outE().filter(path()).inV().barrier(repeatBarrierSize), Collections.singletonList(IncidentToAdjacentStrategy.instance())},
-                    {__.repeat(__.outE().inV()).times(2), __.out().barrier(repeatBarrierSize).out().barrier(repeatBarrierSize), Collections.singletonList(IncidentToAdjacentStrategy.instance())},
+                    {__.repeat(__.outE().inV()).times(2), __.out().barrier(repeatBarrierSize).out().barrier(repeatBarrierSize), List.of(IncidentToAdjacentStrategy.instance(), GValueReductionStrategy.instance())},
                     // Nested Loop tests
                     {__.repeat(out().repeat(out()).times(0)).times(1), __.out().repeat(out()).times(0).barrier(repeatBarrierSize), Collections.emptyList()},
                     {__.repeat(out().repeat(out()).times(1)).times(1), __.out().out().barrier(repeatBarrierSize), Collections.emptyList()},

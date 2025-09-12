@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -53,8 +53,8 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
     @Override
     void verify(final Traversal.Admin<?, ?> traversal) throws VerificationException {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof PropertyAdding) {
-                final PropertyAdding propertySettingStep = (PropertyAdding) step;
+            if (step instanceof PropertiesHolder) {
+                final PropertiesHolder propertySettingStep = (PropertiesHolder) step;
                 final Map<Object, List<Object>> properties = propertySettingStep.getProperties();
                 for (String key : reservedKeys) {
                     if (properties.containsKey(key)) {

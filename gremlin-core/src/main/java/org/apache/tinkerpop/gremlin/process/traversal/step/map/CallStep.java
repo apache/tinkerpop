@@ -200,6 +200,10 @@ public final class CallStep<S, E> extends AbstractStep<S, E> implements AutoClos
     }
 
     @Override
+    public Map getStaticParams() {
+        return Collections.unmodifiableMap(this.staticParams);
+    }
+
     public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only

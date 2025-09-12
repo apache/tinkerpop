@@ -110,12 +110,12 @@ public class MergeVertexStepTest extends GValueStepTest {
                 true);
         step.addProperty("name", GValue.of("vadas"));
         step.addProperty("age", GValue.of(27));
-        assertTrue(step.getPropertiesGValueSafe().containsKey("name"));
-        assertTrue(step.getPropertiesGValueSafe().containsKey("age"));
+        assertTrue(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
 
         assertTrue(step.removeProperty("name"));
-        assertFalse(step.getPropertiesGValueSafe().containsKey("name"));
-        assertTrue(step.getPropertiesGValueSafe().containsKey("age"));
+        assertFalse(step.getProperties().containsKey("name"));
+        assertTrue(step.getProperties().containsKey("age"));
         assertFalse(step.removeProperty("name"));
     }
 
@@ -261,9 +261,9 @@ public class MergeVertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getMergeTraversalGValueSafeShouldNotPinVariable() {
+    public void getMergeMapWithGValueShouldNotPinVariable() {
         GraphTraversal.Admin<?, ?> traversal = getMergeVGValueTraversal();
-        assertEquals(NAME_MAP, ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getMergeTraversalGValueSafe().next());
+        assertEquals(GValue.of("mergeMap", NAME_MAP), ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getMergeMapWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("mergeMap", "matchMap", "createMap"));
     }
 
@@ -281,9 +281,9 @@ public class MergeVertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getOnCreateTraversalGValueSafeShouldNotPinVariable() {
+    public void getOnCreateMapWithGValueShouldNotPinVariable() {
         GraphTraversal.Admin<?, ?> traversal = getMergeVGValueTraversal();
-        assertEquals(AGE_30_MAP, ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getOnCreateTraversalGValueSafe().next());
+        assertEquals(GValue.of("createMap", AGE_30_MAP), ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getOnCreateMapWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("mergeMap", "matchMap", "createMap"));
     }
 
@@ -301,9 +301,9 @@ public class MergeVertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getOnMatchTraversalGValueSafeShouldNotPinVariable() {
+    public void getOnMatchMapWithGValueShouldNotPinVariable() {
         GraphTraversal.Admin<?, ?> traversal = getMergeVGValueTraversal();
-        assertEquals(AGE_29_MAP, ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getOnMatchTraversalGValueSafe().next());
+        assertEquals(GValue.of("matchMap", AGE_29_MAP), ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0)).getOnMatchMapWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("mergeMap", "matchMap", "createMap"));
     }
 
@@ -325,13 +325,13 @@ public class MergeVertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getPropertiesGValueSafeShouldNotPinVariable() {
+    public void getPropertiesWithGValuesShouldNotPinVariable() {
         GraphTraversal.Admin<?, ?> traversal = getMergeVGValueTraversal();
         MergeVertexStepPlaceholder step = (MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0);
         //There is no direct way to add properties to mergeV via Gremlin, this interface is only exposed for the purposes of PartitionStrategy
         step.addProperty("key", GValue.of("x", "value"));
-        assertEquals(List.of("value"), ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0))
-                .getPropertiesGValueSafe().get("key"));
+        assertEquals(List.of(GValue.of("x", "value")), ((MergeVertexStepPlaceholder<?>) traversal.getSteps().get(0))
+                .getPropertiesWithGValues().get("key"));
         verifyVariables(traversal, Set.of(), Set.of("mergeMap", "matchMap", "createMap", "x"));
     }
 

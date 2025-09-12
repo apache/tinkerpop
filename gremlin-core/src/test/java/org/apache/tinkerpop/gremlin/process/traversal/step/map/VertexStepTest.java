@@ -121,11 +121,11 @@ public class VertexStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getEdgeLabelsGValueSafeShouldNotPinVariables() {
+    public void getEdgeLabelsAsGValuesShouldNotPinVariables() {
         GraphTraversal.Admin<Vertex, Vertex> traversal = getVertexGValueTraversal();
-        String[] edgeLabels = ((VertexStepPlaceholder<?>) traversal.getSteps().get(0)).getEdgeLabelsGValueSafe();
+        GValue<String>[] edgeLabels = ((VertexStepPlaceholder<?>) traversal.getSteps().get(0)).getEdgeLabelsAsGValues();
         assertEquals(2, edgeLabels.length);
-        assertTrue(List.of(edgeLabels).containsAll(List.of("knows", "created")));
+        assertTrue(List.of(edgeLabels).containsAll(List.of(GValue.of("k", "knows"), GValue.of("c", "created"))));
         verifyVariables(traversal, Set.of(), Set.of("k", "c"));
     }
 

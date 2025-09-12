@@ -19,17 +19,9 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 
 /**
  * {@code EdgeLabelVerificationStrategy} does not allow edge traversal steps to have no label specified.
@@ -55,7 +47,7 @@ public final class EdgeLabelVerificationStrategy extends AbstractWarningVerifica
     @Override
     void verify(final Traversal.Admin<?, ?> traversal) throws VerificationException {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if (step instanceof VertexStep && ((VertexStep) step).getEdgeLabels().length == 0) {
+            if (step instanceof VertexStepContract && ((VertexStepContract) step).getEdgeLabels().length == 0) {
                 final String msg = String.format(
                         "The provided traversal contains a vertex step without any specified edge label: %s\nAlways " +
                                 "specify edge labels which restrict traversal paths ensuring optimal performance.", step);

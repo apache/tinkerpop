@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.VertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.PathFilterStep;
@@ -29,8 +30,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexSt
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -110,8 +111,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      * @param step2     the vertex-emitting step to replace
      */
     private static void optimizeSteps(final Traversal.Admin traversal, final VertexStepContract step1, final Step step2) {
-        final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
-        //TODO:: preserve GValue and leave unpinned if step1 is a GValueHolder
+        final Step newStep = new VertexStepPlaceholder<>(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabelsAsGValues());
         for (final String label : (Iterable<String>) step2.getLabels()) {
             newStep.addLabel(label);
         }

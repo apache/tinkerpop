@@ -54,6 +54,7 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         }
     }
 
+    @Override
     public String toString() {
         return StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
     }
@@ -88,8 +89,9 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         return GValue.resolveToValues(this.ids);
     }
 
-    public Object[] getIdsGValueSafe() {
-        return GValue.resolveToValues(this.ids);
+    @Override
+    public GValue<?>[] getIdsAsGValues() {
+        return this.ids.clone();
     }
 
     @Override
