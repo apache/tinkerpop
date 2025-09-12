@@ -76,7 +76,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {typeof(Traverser), new TraverserSerializer()},
                 {typeof(decimal), new BigDecimalSerializer()},
                 {typeof(BigInteger), new BigIntegerSerializer()},
-                {typeof(byte), SingleTypeSerializers.ByteSerializer},
+                {typeof(sbyte), SingleTypeSerializers.ByteSerializer},
                 {typeof(byte[]), new ByteBufferSerializer()},
                 {typeof(short), SingleTypeSerializers.ShortSerializer},
                 {typeof(bool), SingleTypeSerializers.BooleanSerializer},

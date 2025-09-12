@@ -81,11 +81,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
                 (stream, cancellationToken) => stream.ReadBoolAsync(cancellationToken));
 
         /// <summary>
-        /// A serializer for <see cref="byte"/> values.
+        /// A serializer for <see cref="sbyte"/> values.
         /// </summary>
-        public static readonly SingleTypeSerializer<byte> ByteSerializer = new SingleTypeSerializer<byte>(DataType.Byte,
-            (value, stream, cancellationToken) => stream.WriteByteAsync(value, cancellationToken),
-            (stream, cancellationToken) => stream.ReadByteAsync(cancellationToken));
+        public static readonly SingleTypeSerializer<sbyte> ByteSerializer = new SingleTypeSerializer<sbyte>(DataType.Byte,
+            (value, stream, cancellationToken) => stream.WriteSByteAsync(value, cancellationToken),
+            (stream, cancellationToken) => stream.ReadSByteAsync(cancellationToken));
     }
     
     /// <summary>
