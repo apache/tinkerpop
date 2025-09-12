@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
@@ -52,6 +55,7 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
             traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) toObject).getGValue());
         }
         this.to = toObject;
+        this.integrateChild(this.to);
     }
 
     @Override
@@ -61,6 +65,15 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder
             traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
         }
         this.from = fromObject;
+        this.integrateChild(this.from);
+    }
+
+    @Override
+    public List<Traversal.Admin<S, Edge>> getLocalChildren() {
+        final List<Traversal.Admin<S, Edge>> childTraversals = super.getLocalChildren();
+        if (from != null) childTraversals.add((Traversal.Admin) from);
+        if (to != null) childTraversals.add((Traversal.Admin) to);
+        return childTraversals;
     }
 
     @Override

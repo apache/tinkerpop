@@ -856,7 +856,7 @@ capabilities by persisting query parameters further in the traversal lifecycle. 
 are constructed into GValues and passed into `GraphTraversal`. The traversal is then populated with special
 `GValueHolder` placeholder steps, which are temporary non-executable steps which implement a corresponding step
 interface. TraversalStrategies are able to operate on these placeholder steps and update the traversal as normal. By
-default, there is a new `FinalizationStrategy`, `GValueReductionStrategy` which cleans up the traversal by reducing all
+default, there is a new `OptimizationStrategy`, `GValueReductionStrategy` which cleans up the traversal by reducing all
 `GValueHolder` steps with their corresponding concrete step object. Providers may choose disable this strategy in order
 to store a fully constructed and optimized traversal with parameters into a query cache.
 

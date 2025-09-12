@@ -77,16 +77,6 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
     }
 
     @Override
-    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
-        return Collections.singleton(MatchPredicateStrategy.class);
-    }
-
-    @Override
-    public Set<Class<? extends OptimizationStrategy>> applyPost() {
-        return Collections.singleton(InlineFilterStrategy.class);
-    }
-
-    @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         // using a hidden label marker to denote whether the traversal should not be processed by this strategy
         if ((traversal.getParent() instanceof EmptyStep || traversal.getParent() instanceof VertexProgramStep) &&
@@ -185,6 +175,18 @@ public final class PathProcessorStrategy extends AbstractTraversalStrategy<Trave
                 }
             }
         }
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return Collections.singleton(MatchPredicateStrategy.class);
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPost() {
+        final Set<Class<? extends OptimizationStrategy>> post = OptimizationStrategy.super.applyPost();
+        post.add(InlineFilterStrategy.class);
+        return post;
     }
 
     public static PathProcessorStrategy instance() {

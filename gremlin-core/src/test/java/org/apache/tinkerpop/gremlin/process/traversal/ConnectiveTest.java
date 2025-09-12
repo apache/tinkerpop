@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -36,6 +37,68 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Enclosed.class)
 public class ConnectiveTest {
+
+    @Test
+    public void shouldUpdateVariablesInOr() {
+        // P.gt and P.lt have GValue overloads enabling variables
+        final P<Integer> p1 = P.gt(GValue.of("x", 0));
+        final P<Integer> p2 = P.lt(GValue.of("y", 10));
+        final OrP<Integer> or = new OrP<>(Arrays.asList(p1, p2));
+
+        // Initially variables x=0, y=10
+        // For value 5 -> gt(0) true OR lt(10) true => true
+        assertEquals(true, or.test(5));
+
+        // Update only x so that gt(7) for value 5 is false, but lt(10) still true => overall true
+        or.updateVariable("x", 7);
+        assertEquals(true, or.test(5));
+
+        // Update y so that lt(4) for value 5 is false; now both false => overall false
+        or.updateVariable("y", 4);
+        assertEquals(false, or.test(5));
+    }
+
+    @Test
+    public void shouldUpdateVariablesInAndWithNestedConnectives() {
+        // Build nested ((gt(x) AND lt(y)) AND gt(z))
+        final P<Integer> gtX = P.gt(GValue.of("x", 0));
+        final P<Integer> ltY = P.lt(GValue.of("y", 10));
+        final P<Integer> gtZ = P.gt(GValue.of("z", -1));
+        final AndP<Integer> inner = new AndP<>(Arrays.asList(gtX, ltY));
+        final AndP<Integer> and = new AndP<>(Arrays.asList(inner, gtZ));
+
+        // value 5 should satisfy defaults
+        assertEquals(true, and.test(5));
+
+        // change x so gt(6) on 5 becomes false -> whole AND false
+        and.updateVariable("x", 6);
+        assertEquals(false, and.test(5));
+
+        // fix x back and then make y tighter so lt(4) on 5 is false
+        and.updateVariable("x", 0);
+        and.updateVariable("y", 4);
+        assertEquals(false, and.test(5));
+
+        // relax y and tighten z so gt(6) on 5 false
+        and.updateVariable("y", 10);
+        and.updateVariable("z", 6);
+        assertEquals(false, and.test(5));
+
+        // final: set z to -1 so condition holds again
+        and.updateVariable("z", -1);
+        assertEquals(true, and.test(5));
+    }
+
+    @Test
+    public void shouldNotAffectUnknownVariables() {
+        final P<Integer> p1 = P.gt(GValue.of("known", 3));
+        final P<Integer> p2 = P.lt(GValue.of("also", 9));
+        final AndP<Integer> and = new AndP<>(Arrays.asList(p1, p2));
+
+        // Update a name that does not exist should have no effect
+        and.updateVariable("unknown", 100);
+        assertEquals(true, and.test(5));
+    }
 
     private static final Object VAL = 1;
     private static final P TRUE = P.eq(1);
