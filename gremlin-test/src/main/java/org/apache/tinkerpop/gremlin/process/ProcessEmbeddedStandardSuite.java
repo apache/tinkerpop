@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TernaryBooleanLogicsTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ComparabilitySemanticsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
@@ -70,7 +70,7 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             EarlyLimitStrategyProcessTest.class,
 
             // semantics
-            TernaryBooleanLogicsTest.class,
+            ComparabilitySemanticsTest.class,
     };
 
     /**

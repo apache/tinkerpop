@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.OrderabilityTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TernaryBooleanLogicsTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ComparabilitySemanticsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalTest;
@@ -212,7 +212,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // semantics
             OrderabilityTest.Traversals.class,
-            TernaryBooleanLogicsTest.class,
+            ComparabilitySemanticsTest.class,
     };
 
     /**

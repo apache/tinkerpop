@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -133,6 +134,8 @@ final class TraversalSerializersV3 {
                     jsonGenerator.writeObject(predicate);
                 }
                 jsonGenerator.writeEndArray();
+            } else if (p instanceof NotP) {
+                jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.negate());
             } else
                 jsonGenerator.writeObjectField(GraphSONTokens.VALUE, p.getValue());
 

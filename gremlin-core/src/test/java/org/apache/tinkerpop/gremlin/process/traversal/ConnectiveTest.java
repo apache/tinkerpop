@@ -40,7 +40,6 @@ public class ConnectiveTest {
     private static final Object VAL = 1;
     private static final P TRUE = P.eq(1);
     private static final P FALSE = P.gt(1);
-    private static final P ERROR = P.lt(Double.NaN);
 
     @RunWith(Parameterized.class)
     public static class OrTest {
@@ -52,13 +51,8 @@ public class ConnectiveTest {
             return Arrays.asList(new Object[][]{
                     {TRUE, TRUE, true},
                     {TRUE, FALSE, true},
-                    {TRUE, ERROR, true},
                     {FALSE, TRUE, true},
                     {FALSE, FALSE, false},
-                    {FALSE, ERROR, GremlinTypeErrorException.class},
-                    {ERROR, TRUE, true},
-                    {ERROR, FALSE, GremlinTypeErrorException.class},
-                    {ERROR, ERROR, GremlinTypeErrorException.class},
             });
         }
 
@@ -90,13 +84,8 @@ public class ConnectiveTest {
             return Arrays.asList(new Object[][]{
                     {TRUE, TRUE, true},
                     {TRUE, FALSE, false},
-                    {TRUE, ERROR, GremlinTypeErrorException.class},
                     {FALSE, TRUE, false},
                     {FALSE, FALSE, false},
-                    {FALSE, ERROR, false},
-                    {ERROR, TRUE, GremlinTypeErrorException.class},
-                    {ERROR, FALSE, false},
-                    {ERROR, ERROR, GremlinTypeErrorException.class},
             });
         }
 
@@ -128,13 +117,8 @@ public class ConnectiveTest {
             return Arrays.asList(new Object[][]{
                     {TRUE, TRUE, false},
                     {TRUE, FALSE, true},
-                    {TRUE, ERROR, GremlinTypeErrorException.class},
                     {FALSE, TRUE, true},
                     {FALSE, FALSE, false},
-                    {FALSE, ERROR, GremlinTypeErrorException.class},
-                    {ERROR, TRUE, GremlinTypeErrorException.class},
-                    {ERROR, FALSE, GremlinTypeErrorException.class},
-                    {ERROR, ERROR, GremlinTypeErrorException.class},
             });
         }
 

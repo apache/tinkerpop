@@ -18,15 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.GremlinTypeErrorException;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -104,13 +105,9 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
          */
         @Override
         public int compare(final Object f, final Object s) {
-            // For Compare, NaN always produces ERROR
-            if (eitherAreNaN(f, s))
-                throwTypeError();
-
             // For Compare we do not cross type boundaries, including null
             if (!comparable(f, s))
-                throwTypeError();
+                throw new IllegalStateException("Objects are not comparable");
 
             // comparable(f, s) assures that type(f) == type(s)
             final Type type = Type.type(f);
@@ -134,30 +131,13 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
             if (containersOfDifferentSize(f, s))
                 return false;
 
-            // For Compare, NaN always produces ERROR
-            if (eitherAreNaN(f, s))
-                return false;
-
             // For Compare we do not cross type boundaries, including null
             if (!comparable(f, s))
                 return false;
 
-            try {
-                // comparable(f, s) assures that type(f) == type(s)
-                final Type type = Type.type(f);
-                return comparator(type).compare(f, s) == 0;
-            } catch (GremlinTypeErrorException ex) {
-                /**
-                 * By routing through the compare(f, s) path we expose ourselves to type errors, which should be
-                 * reduced to false for equality:
-                 *
-                 * compare(NaN, anything) -> ERROR -> FALSE for equality
-                 * compare(Type1, Type2) -> ERROR -> FALSE for equality
-                 *
-                 * Can also happen for elements nested inside of collections.
-                 */
-                return false;
-            }
+            // comparable(f, s) assures that type(f) == type(s)
+            final Type type = Type.type(f);
+            return comparator(type).compare(f, s) == 0;
         }
 
         private boolean containersOfDifferentSize(final Object f, final Object s) {
@@ -172,10 +152,6 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
             return false;
         }
     };
-
-    private static <T> T throwTypeError() {
-        throw new GremlinTypeErrorException();
-    }
 
     /**
      * Boolean, Date, String, UUID.
@@ -200,11 +176,11 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
             Comparator.<Property,Object>comparing(Property::key, this).thenComparing(Property::value, this);
 
     /**
-     * Sort List, Set, Path, and Map element-by-element in the order presented by their natural iterator.
+     * Sort List, Set, Path, and Array element-by-element in the order presented by their natural iterator.
      */
-    private final Comparator<Iterable> iterableComparator = (f, s) -> {
-        final Iterator fi = f.iterator();
-        final Iterator si = s.iterator();
+    private final Comparator<Object> iterableComparator = (f, s) -> {
+        final Iterator fi = IteratorUtils.asIterator(f); // Use IteratorUtils as input may be Iterable or Array
+        final Iterator si = IteratorUtils.asIterator(s);
 
         while (fi.hasNext() && si.hasNext()) {
             final int i = this.compare(fi.next(), si.next());
@@ -286,6 +262,9 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         public static Type type(final Object o) {
             if (o == null)
                 return Nulltype;
+            if (o.getClass().isArray())
+                return List;
+
 
             final Type[] types = Type.values();
             for (int i = 1; i < types.length; i++) {
@@ -312,11 +291,13 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     /**
      * Compare the two objects using their natural comparator. Also handles the special case: f.equals(s) -> 0 even
      * for objects without a natural comparator.
+     * @throws IllegalStateException if objects are not naturally comparable
      */
     private static int naturallyCompare(final Object f, final Object s) {
         if (f instanceof Comparable && s instanceof Comparable)
             return ((Comparable) f).compareTo(s);
-        return f.equals(s) ? 0 : throwTypeError();
+        if (f.equals(s)) return 0;
+        throw new IllegalStateException("Objects are not naturally comparable");
     }
 
     /**
@@ -331,15 +312,68 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
     /**
      * Return true if the two objects are of the same comparison type (although they may not be the exact same Class)
      */
-    private static boolean comparable(final Object f, final Object s) {
+    public static boolean comparable(final Object f, final Object s) {
         if (f == null || s == null)
             return f == s; // true iff both in the null space
+
+        if (eitherAreNaN(f, s))
+            return false;
 
         final Type ft = Type.type(f);
         final Type st = Type.type(s);
 
+        // if objects are collections or composites, their contents must be mutually comparable
+        if (ft == Type.List && st == Type.List) {
+            return contentsComparable(IteratorUtils.asIterator(f), IteratorUtils.asIterator(s));
+        }
+        else if (ft == Type.Path && st == Type.Path) {
+            return contentsComparable(((Path) f).iterator(), ((Path) s).iterator());
+        }
+        else if (ft == Type.Set && st == Type.Set) {
+            final List l1 = new ArrayList((Set) f);
+            final List l2 = new ArrayList((Set) s);
+            Collections.sort(l1, ORDERABILITY);
+            Collections.sort(l2, ORDERABILITY);
+
+            return contentsComparable(l1.iterator(), l2.iterator());
+        }
+        else if (ft == Type.Map && st == Type.Map) {
+            final List l1 = new ArrayList(((Map) f).entrySet());
+            final List l2 = new ArrayList(((Map) s).entrySet());
+            Collections.sort(l1, ORDERABILITY);
+            Collections.sort(l2, ORDERABILITY);
+
+            return contentsComparable(l1.iterator(), l2.iterator());
+        }
+        else if (ft == Type.MapEntry && st == Type.MapEntry) {
+            return comparable(((Map.Entry) f).getKey(), ((Map.Entry) s).getKey()) &&
+                    comparable(((Map.Entry) f).getValue(), ((Map.Entry) s).getValue());
+        }
+        else if (ft == Type.Vertex && st == Type.Vertex ||
+                ft == Type.Edge && st == Type.Edge ||
+                ft == Type.VertexProperty && st == Type.VertexProperty) {
+            return comparable(((Element) f).id(), ((Element) s).id());
+        }
+        else if (ft == Type.Property && st == Type.Property) {
+            return comparable(((Property) f).key(), ((Property) s).key()) &&
+                    comparable(((Property) f).value(), ((Property) s).value());
+        }
+
         // Check for same type. If they're both the unknown type then return true iff they are naturally Comparable
         return ft == Type.Unknown && st == Type.Unknown ? naturallyComparable(f, s) : ft == st;
+    }
+
+    private static boolean contentsComparable(Iterator fi, Iterator si) {
+        while (fi.hasNext() && si.hasNext()) {
+            final boolean b = comparable(fi.next(), si.next());
+            if (!b) {
+                return false;
+            }
+        }
+        if (fi.hasNext() || si.hasNext()) {
+            return false;
+        }
+        return true;
     }
 
     private final Map<Type, Comparator> comparators = new EnumMap<Type, Comparator>(Type.class) {{

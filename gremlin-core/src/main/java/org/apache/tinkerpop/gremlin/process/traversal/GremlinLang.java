@@ -267,11 +267,14 @@ public class GremlinLang implements Cloneable, Serializable {
                 // for the first/last P there is no parent to close
                 if (i > 0 && i < list.size() - 1) sb.append(")");
 
-                // add teh connector for all but last P
+                // add the connector for all but last P
                 if (i < list.size() - 1) {
                     sb.append(".").append(connector).append("(");
                 }
             }
+        } else if (p instanceof NotP) {
+            sb.append("P.not(");
+            sb.append(argAsString(p.negate())); // Wrap internal P in `P.not(%s)`
         } else {
             sb.append("P.").append(p.getPredicateName()).append("(");
             sb.append(argAsString(p.getValue()));

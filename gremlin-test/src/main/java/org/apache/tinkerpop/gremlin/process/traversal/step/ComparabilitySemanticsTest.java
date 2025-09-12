@@ -41,10 +41,10 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeature
  * @author Mike Personick (http://github.com/mikepersonick)
  */
 @RunWith(GremlinProcessRunner.class)
-public class TernaryBooleanLogicsTest extends AbstractGremlinProcessTest {
+public class ComparabilitySemanticsTest extends AbstractGremlinProcessTest {
 
     /**
-     * NaN comparisons always produce UNDEF comparison, reducing to FALSE in ternary->binary reduction.
+     * NaN comparisons always produce UNDEF comparison, which by definition results in FALSE.
      */
     @Test
     @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
@@ -274,15 +274,15 @@ public class TernaryBooleanLogicsTest extends AbstractGremlinProcessTest {
         checkHasNext(false, g.inject(1).not(is(TRUE)));
         // FALSE -> TRUE
         checkHasNext(true, g.inject(1).not(is(FALSE)));
-        // ERROR -> ERROR -> FALSE
-        checkHasNext(false, g.inject(1).not(is(ERROR)));
+        // ERROR -> FALSE -> TRUE
+        checkHasNext(true, g.inject(1).not(is(ERROR)));
 
         // Binary reduction with NaN
         checkHasNext(false, g.inject(1).is(P.eq(Double.NaN)));
         checkHasNext(true, g.inject(1).is(P.neq(Double.NaN)));
         checkHasNext(true, g.inject(1).not(is(P.eq(Double.NaN))));
         checkHasNext(false, g.inject(1).not(not(is(P.eq(Double.NaN)))));
-        checkHasNext(false, g.inject(1).where(__.inject(1).not(is(ERROR))));
+        checkHasNext(true, g.inject(1).where(__.inject(1).not(is(ERROR))));
     }
 
     /**
@@ -302,39 +302,21 @@ public class TernaryBooleanLogicsTest extends AbstractGremlinProcessTest {
         checkHasNext(false, g.inject(1).filter(xor.apply(TRUE, TRUE)));
         // TRUE, FALSE -> TRUE
         checkHasNext(true, g.inject(1).filter(xor.apply(TRUE, FALSE)));
-        // TRUE, ERROR -> ERROR -> FALSE
-        checkHasNext(false, g.inject(1).filter(xor.apply(TRUE, ERROR)));
+        // TRUE, ERROR -> TRUE, FALSE -> TRUE
+        checkHasNext(true, g.inject(1).filter(xor.apply(TRUE, ERROR)));
 
         // FALSE, TRUE -> TRUE
         checkHasNext(true, g.inject(1).filter(xor.apply(FALSE, TRUE)));
         // FALSE, FALSE -> FALSE
         checkHasNext(false, g.inject(1).filter(xor.apply(FALSE, FALSE)));
-        // FALSE, ERROR -> ERROR -> FALSE
+        // FALSE, ERROR -> FALSE, FALSE -> FALSE
         checkHasNext(false, g.inject(1).filter(xor.apply(FALSE, ERROR)));
 
-        // ERROR, TRUE -> ERROR -> FALSE
-        checkHasNext(false, g.inject(1).filter(xor.apply(ERROR, TRUE)));
-        // ERROR, FALSE -> ERROR -> FALSE
+        // ERROR, TRUE -> FALSE, TRUE -> TRUE
+        checkHasNext(true, g.inject(1).filter(xor.apply(ERROR, TRUE)));
+        // ERROR, FALSE -> FALSE, FALSE -> FALSE
         checkHasNext(false, g.inject(1).filter(xor.apply(ERROR, FALSE)));
-        // ERROR, ERROR -> ERROR -> FALSE
+        // ERROR, ERROR -> FALSE, FALSE -> FALSE
         checkHasNext(false, g.inject(1).filter(xor.apply(ERROR, ERROR)));
-    }
-
-    /**
-     * Child traversals should propagate error states to their parent traversal if and only if the parent step is a
-     * filter step.
-     */
-    @Test
-    @FeatureRequirement(featureClass = GraphFeatures.class, feature = GraphFeatures.FEATURE_ORDERABILITY_SEMANTICS)
-    public void testErrorPropagation() {
-        final P ERROR = P.lt(Double.NaN);
-
-        // Propagates Error to parent not()
-        checkHasNext(false, g.inject(1).not(not(is(ERROR))));
-        checkHasNext(false, g.inject(1).not(is(ERROR)));
-
-        // Does not propagate Error through non-filter parent
-        checkHasNext(true, g.inject(1).not(union((is(ERROR)))));
-        checkHasNext(false, g.inject(1).union((is(ERROR))));
     }
 }

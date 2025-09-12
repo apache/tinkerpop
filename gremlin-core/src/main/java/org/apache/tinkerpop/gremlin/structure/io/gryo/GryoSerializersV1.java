@@ -153,7 +153,7 @@ public final class GryoSerializersV1 {
 
         @Override
         public <I extends InputShim> P read(final KryoShim<I, ?> kryo, final I input, final Class<P> clazz) {
-            final String predicate = input.readString();
+            String predicate = input.readString();
             final boolean isCollection = input.readByte() == (byte) 0;
             final Object value;
             if (isCollection) {
@@ -167,23 +167,32 @@ public final class GryoSerializersV1 {
             }
 
             try {
+                boolean negated = false;
+                P result = null;
+                if (predicate.startsWith("not(")) {
+                    predicate = predicate.substring(4, predicate.length()-1);
+                    negated = true;
+                }
+
                 if (predicate.equals("and") || predicate.equals("or"))
-                    return predicate.equals("and") ? new AndP((List<P>) value) : new OrP((List<P>) value);
+                    result = predicate.equals("and") ? new AndP((List<P>) value) : new OrP((List<P>) value);
                 else if (value instanceof Collection) {
                     if (predicate.equals("between"))
-                        return P.between(((List) value).get(0), ((List) value).get(1));
+                        result = P.between(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("inside"))
-                        return P.inside(((List) value).get(0), ((List) value).get(1));
+                        result = P.inside(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("outside"))
-                        return P.outside(((List) value).get(0), ((List) value).get(1));
+                        result = P.outside(((List) value).get(0), ((List) value).get(1));
                     else if (predicate.equals("within"))
-                        return P.within((Collection) value);
+                        result = P.within((Collection) value);
                     else if (predicate.equals("without"))
-                        return P.without((Collection) value);
+                        result = P.without((Collection) value);
                     else
-                        return (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
+                        result = (P) P.class.getMethod(predicate, Collection.class).invoke(null, (Collection) value);
                 } else
-                    return (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+                    result = (P) P.class.getMethod(predicate, Object.class).invoke(null, value);
+
+                return negated ? result.negate() : result;
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

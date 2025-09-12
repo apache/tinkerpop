@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimiza
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -295,6 +296,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(BulkSet.class, "BulkSet");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
+                    put(NotP.class, "P");
                     put(P.class, "P");
                     put(TextP.class, "TextP");
                     put(TraversalStrategyProxy.class, "TraversalStrategy");
@@ -542,6 +544,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     put(Tree.class, "Tree");
                     put(AndP.class, "P");
                     put(OrP.class, "P");
+                    put(NotP.class, "P");
                     put(P.class, "P");
                     put(TextP.class, "TextP");
                     put(TraversalStrategyProxy.class, "TraversalStrategy");
