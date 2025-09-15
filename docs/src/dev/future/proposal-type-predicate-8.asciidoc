@@ -31,9 +31,9 @@ To facilitate type assertion across GLVs, using a unified set of enum tokens is 
 
 ==== Gremlin Type Enum
 
-We will define a `GType` enum consiste of core types in Gremlin be used with the type predicate (for full set of types, see Appendix), for type safety and maintainability across GLVs. This will also be the singel set of type enum used in Gremlin steps (e.g. replacing `N` in `asNumber()`).
+We will define a `GType` enum consisting of core types in Gremlin to be used with the type predicate (for full set of types, see Appendix), for type safety and maintainability across GLVs. This will also be the single set of type enum used in Gremlin steps (e.g. replacing `N` in `asNumber()`).
 
-This enum itself will not be extensable, however it will contain a GlobalCache which providers can use to register their own types with the Grammar to be used as string arguments.
+This enum itself will not be extendable, however it will contain a GlobalCache which providers can use to register their own types with the Grammar to be used as string arguments.
 
 [source,java]
 ----
@@ -144,7 +144,7 @@ gremlin> g.V().values().is(not(typeOf(GType.NULL)))
 
 === Extending Addition Type Tokens via Global Cache
 
-To reduce complexity of serialization and registration, providers who implement their own custom types will use `String` tokens only. They will need to register their type into the cache to be recognized by the embeded traversal and the Grammar.
+To reduce complexity of the grammar, providers who implement their own custom types can use `String` tokens only. They will need to register their type into the cache to be recognized by the embedded traversal and the Grammar.
 
 For example, given a new custom `Point` class that's already integrated as a custom type in Gremlin:
 
