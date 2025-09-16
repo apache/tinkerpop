@@ -25,7 +25,8 @@ image::gremlin-hindu.png[width=225]
 
 *Release Date: October 19, 2015*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -80,7 +81,8 @@ link:https://tinkerpop.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments
 
 *Release Date: September 2, 2015*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -112,7 +114,10 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-804[TINKERPOP-804]
 
 ===== GraphFactoryClass Annotation
 
-Providers can consider the use of the new `GraphFactoryClass` annotation to specify the factory class that `GraphFactory` will use to open a new `Graph` instance. This is an optional feature and will generally help implementations that have an interface extending `Graph`.  If that is the case, then this annotation can be used in the following fashion:
+Providers can consider the use of the new `GraphFactoryClass` annotation to specify the factory class that
+`GraphFactory` will use to open a new `Graph` instance. This is an optional feature and will generally help
+implementations that have an interface extending `Graph`.  If that is the case, then this annotation can be used in the
+following fashion:
 
 [source,java]
 ----
@@ -127,7 +132,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-778[TINKERPOP-778]
 
 ===== GraphProvider.Descriptor Annotation
 
-There was a change that affected providers who implemented `GraphComputer` related tests such as the `ProcessComputerSuite`.  If the provider runs those tests, then edit the `GraphProvider` implementation for those suites to include the `GraphProvider.Descriptor` annotation as follows:
+There was a change that affected providers who implemented `GraphComputer` related tests such as the
+`ProcessComputerSuite`.  If the provider runs those tests, then edit the `GraphProvider` implementation for those suites
+to include the `GraphProvider.Descriptor` annotation as follows:
 
 [source,java]
 ----
@@ -144,7 +151,10 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-690[TINKERPOP-690] for
 
 ===== Semantics of Transaction.close()
 
-There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues there.
+There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most
+providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs
+when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues
+there.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-764[TINKERPOP-764] for more information.
 

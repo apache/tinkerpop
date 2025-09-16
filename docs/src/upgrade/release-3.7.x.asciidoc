@@ -136,9 +136,9 @@ gremlin> g.V(1).outE().as("a").V(1).values("name").concat(select("a").label(), s
 ==>markoknowsjosh
 ----
 
-A notable breaking change from 3.7.0 is that we have output order of `inject()` as a child of `concat()` to be
-consistent with other parent steps. Any 3.7.0 uses of `concat(inject(X))` should change to `concat(constant(X))` to
-retain the old semantics.
+A notable breaking change from 3.7.0 is that the output order of `inject()` as a child of `concat()` has been adjusted
+to be consistent with other parent steps. Any 3.7.0 uses of `concat(inject(X))` should change to `concat(constant(X))`
+to retain the previous semantics.
 
 [source,text]
 ----
@@ -160,6 +160,7 @@ link:https://tinkerpop.apache.org/docs/3.7.1/reference/#concat-step[concat()-ste
 ===== New String Steps asString(), length(), toLower(), toUpper():
 
 The following example demonstrates the use of a closure to perform the above functions:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("person").values("age").map{it.get().toString()}
@@ -188,6 +189,7 @@ gremlin> g.V().values("name").map{it.get().toUpperCase()}
 ----
 
 With these additional steps this operation can be performed with standard Gremlin syntax:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("person").values("age").asString()
@@ -215,8 +217,9 @@ gremlin> g.V().values("name").toUpper()
 ==>PETER
 ----
 
-Scopes are also enabled on these string functions. The global scope functions synonymous to parameterless function call, and will only accept string traversers.
-The local scope will also operate inside of lists of strings.
+Scopes are also enabled on these string functions. The global scope functions synonymous to parameterless function call,
+and will only accept string traversers. The local scope will also operate inside of lists of strings.
+
 [source,text]
 ----
 gremlin> g.V().values("name").fold().toUpper(local)
@@ -231,7 +234,8 @@ link:https://tinkerpop.apache.org/docs/3.7.1/reference/#toUpper-step[toUpper()-s
 
 ===== New String Steps trim(), lTrim(), rTrim(), reverse():
 
-The following example demonstrates the use of a closure to reverse and trim strings (concatenated with a string for demonstration):
+The following example shows the use of a closure to reverse and trim strings (concatenated with a string for
+demonstration):
 
 [source,text]
 ----
@@ -251,6 +255,7 @@ gremlin>  g.inject("  hi  ").map{it.get().replaceAll(/\s+$/, '') + "right_trim"}
 ----
 
 With these additional steps this operation can be performed with standard Gremlin syntax:
+
 [source,text]
 ----
 gremlin> g.V().values("name").reverse()
@@ -268,9 +273,11 @@ gremlin>  g.inject("  hi  ").rTrim().concat("right_trim")
 ==>  hiright_trim
 ----
 
-Scopes are enabled on trim(), lTrim(), and rTrim(). The global scope functions synonymous to parameterless function call, and will only accept string traversers.
-The local scope will also operate inside of lists of strings.
-Due to reverse() overloading as a list function, scope is not applied, as reversing lists inside of lists is not a practical use case.
+`Scope` arguments are allowed on `trim()`, `lTrim()`, and `rTrim()`. The global scope functions synonymous to
+parameterless function call, and will only accept string traversers. Using `Scope.local` will configure the step to
+operate inside of lists of strings. Due to `reverse()` overloading as a list function, `Scope` is not applied, as
+reversing lists inside of lists is not a practical use case.
+
 [source,text]
 ----
 gremlin> g.inject(["  hello  ", " world "]).trim(Scope.local)
@@ -286,6 +293,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 ===== New String Steps replace(), split(), substring()
 
 The following example demonstrates the use of a closure to perform `replace()` and `split()` functions:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("software").values("name").map{it.get().replace("p", "g")}
@@ -297,7 +305,9 @@ gremlin> g.V().hasLabel("person").values("name").map{it.get().split("a")}
 ==>[josh]
 ==>[peter]
 ----
+
 With these additional steps this operation can be performed with standard Gremlin syntax:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("software").values("name").replace("p", "g")
@@ -310,8 +320,9 @@ gremlin> g.V().hasLabel("person").values("name").split("a")
 ==>[peter]
 ----
 
-For `substring()`, the new Gremlin step follows the Python standard, taking parameters start index and optionally an
-end index. This will enable certain operations that would be complex to achieve with closure:
+For `substring()`, the new Gremlin step follows the Python standard, taking a start index and optionally an end index.
+This will enable certain operations that would be complex to achieve with closure:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("person").values("name").map{it.get().substring(1,4)}
@@ -332,6 +343,7 @@ Type ':help' or ':h' for help.
 The `substring()`-step will return a substring with indices specified by the start and end indices, or from
 the start index to the remainder of the string if an end index is not specified. Negative indices are allowed and will
 count from the end of the string:
+
 [source,text]
 ----
 gremlin> g.V().hasLabel("person").values("name").substring(1,4)
@@ -357,8 +369,10 @@ link:https://tinkerpop.apache.org/docs/3.7.1/reference/#substring-step[substring
 link:https://issues.apache.org/jira/browse/TINKERPOP-2672[TINKERPOP-2672]
 
 ===== New String Step format()
-This step is designed to simplify some string operations. In general, it is similar to the string formatting function
-available in many programming languages. Variable values can be picked up from Element properties, maps and scope variables.
+
+The `format()` step is designed to simplify some string operations. In general, it is similar to the string formatting
+function available in many programming languages. Variable values can be picked up from `Element` properties, `Map` and
+step labels.
 
 [source,text]
 ----
@@ -378,6 +392,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2334[TINKERPOP-2334],
 link:https://tinkerpop.apache.org/docs/3.7.1/reference/#format-step[format()-step]
 
 ==== List Manipulation Steps
+
 Additional List manipulation/filter steps have been added to replace the use of closures: `any()`, `all()`, `product()`,
 `merge()`, `intersect()`, `combine()`, `conjoin()`, `difference()`,`disjunct()` and `reverse()`.
 
@@ -421,7 +436,7 @@ link:https://tinkerpop.apache.org/docs/3.7.1/reference/#disjunct-step[disjunct()
 ==== Date Manipulation Steps
 
 Date manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
-different providers. In 3.7.1, we introduce the `asDate()`, `dateAdd` and `dateDiff` steps aimed to replace the usage of closure.
+different providers. In 3.7.1, the `asDate()`, `dateAdd` and `dateDiff` steps were introduced.
 
 The following example demonstrates usage of newly introduced steps:
 
@@ -461,20 +476,23 @@ removed.
 
 ===== InsertionOrderingRequired Test Tag
 
-Added a new `@InsertionOrderingRequired` tag which signifies Gherkin feature tests which are reliant on the graph system predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the graph. These tests should be skipped by any graph which does not guarantee such ordering.
+Added a new `@InsertionOrderingRequired` tag which signifies Gherkin feature tests which are reliant on the graph system
+predictably returning results (vertices, edges, properties) in the same order in which they were inserted into the
+graph. These tests should be skipped by any graph which does not guarantee such ordering.
 
 == TinkerPop 3.7.0
 
 *Release Date: July 31, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asciidoc#release-3-7-0[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.7.0/CHANGELOG.asciidoc#release-3-7-0[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
 ==== String concat() Step
 
 String manipulations in Gremlin queries were only possible using closures, which may or may not be supported by
-different providers. In 3.7.0, we introduce the `concat()`-step as the beginning of a series of string manipulation steps
+different providers. In 3.7.0, the `concat()`-step is introduced as the first in a series of string manipulation steps
 aimed to replace the usage of closure.
 
 The following example demonstrates the use of a closure to add a new vertex with a label like an existing vertex but
@@ -538,9 +556,9 @@ to vertices, a `Map` can be given to `mergeV()` and `property()` steps. The limi
 with this syntax was not possible without reverting back to `property()` steps that took a `Cardinality` as an argument
 in some way. The following paragraphs show how changes for in 3.6.5 make this syntax much better for multi-properties.
 
-The `mergeV()` step makes it much easier to write upsert-like traversals. Of course, if you had a graph that required
-the use of multi-properties, some of the ease of `mergeV()` was lost. It typically meant falling back to traversals
-using `sideEffect()` or similar direct uses of `property()` to allow it to work properly:
+The `mergeV()` step makes it much easier to write upsert-like traversals. Of course, if a graph required the use of
+multi-properties, some of the ease of `mergeV()` was lost. It typically meant falling back to traversals using
+`sideEffect()` or similar direct uses of `property()` to allow it to work properly:
 
 [source,groovy]
 ----
@@ -605,16 +623,16 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2957[TINKERPOP-2957]
 ==== TinkerGraph Transactions
 
 Previously, there was no reference implementation provided for the `Transaction` API as this feature wasn't supported by
-TinkerGraph. Users were instead directed towards the Neo4jGraph provided in `neo4j-gremlin` if they wanted to get access
-to a `Graph` implementation that supported transactions. Unfortunately, the maintenance around this plugin has largely
-been abandoned and is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
+TinkerGraph. Users were instead directed towards the Neo4jGraph provided in `neo4j-gremlin` to gain access
+to a `Graph` implementation that supported transactions. Unfortunately, maintenance around this plugin has largely
+been abandoned and it is only compatible with Neo4j version 3.4, which reached end of life in March 2020.
 
-As of this version, we are introducing the transactional TinkerGraph, `TinkerTransactionGraph`, which is TinkerGraph with
+As of this version, the transactional TinkerGraph, `TinkerTransactionGraph`, is introduced, which is TinkerGraph with
 transaction capabilities. The `TinkerTransactionGraph` has `read committed` isolation level, which is the same as the
 Neo4jGraph provided in `neo4j-gremlin`. Only `ThreadLocal` transactions are implemented, therefore embedded graph
-transactions may not be fully supported. These transaction semantics may not fit the use case for some production
-scenarios that require strict ACID-like transactions. Therefore, it is recommended that TinkerTransactionGraph be used
-as a Graph for test environments where you still require support for transactions.
+transactions may not be fully supported. These transaction semantics may not fit certain production
+scenarios that require strict ACID-like transactions. Therefore, `TinkerTransactionGraph` is recommended for test
+environments where transaction support is still required.
 
 ===== Usage examples
 
@@ -687,9 +705,9 @@ gremlin> g.V().valueMap() <5>
 
 <1> Open remote Console session and spawn remote graph traversal source for the empty TinkerTransactionGraph.
 <2> Spawn a GraphTraversalSource by opening a transaction.
-<3> The vertex is added in the remote graph until we commit the transaction (which automatically closes the transaction).
+<3> The vertex is added in the remote graph until the commit of the transaction (which automatically closes the transaction).
 <4> Spawn another GraphTraversalSource by opening a new transaction.
-<5> The second vertex will not bed added to the remote graph since we rolled back the change
+<5> The second vertex will not be added to the remote graph since the change was rolled back.
 
 To use the embedded TinkerTransactionGraph in Gremlin Console:
 
@@ -734,13 +752,12 @@ link:https://tinkerpop.apache.org/docs/3.7.0/reference/#tinkergraph-gremlin-tx[R
 
 ==== Properties on Elements
 
-One of the peculiar aspects of using Gremlin remotely is that if you do something like `v = g.V().next()` you will
-find that the `v`, the `Vertex` object, does not have any properties associated with it, even if the database
-associates some with it. It will be a "reference" only, in that it will only have an `id` and `label`. The reason and
+One of the peculiar aspects of using Gremlin remotely is that a traversal such as `v = g.V().next()` will
+return a `Vertex` object without any properties associated with it, even if the database
+associates properties. It will be a "reference" only, with just an `id` and `label`. The reason and
 history for this approach can be found on the link:https://lists.apache.org/thread/xltcon4zxnwq4fyw2r2126syyrqm8spy[dev list].
-While this has been a long-standing way TinkerPop operates, it is a confusing point for new users and often forces
-some inconvenience on folks by requiring them to alter queries to transform graph elements to other forms that can
-carry the property data (e.g. `elementMap()`).
+While this has been a long-standing way TinkerPop operates, it can be confusing and often forces inconvenience by
+requiring queries to transform graph elements to other forms that can carry the property data (e.g. `elementMap()`).
 
 With this new release, properties are finally available on graph elements for all programming languages and are now
 returned by default for OLTP requests. Gremlin Server 3.5 and 3.6 can return properties only in some special cases.
@@ -785,7 +802,8 @@ drivers connecting to 3.7.x servers should disable this functionality server-sid
 globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy)]
 ----
 
-For 3.7 drivers, properties on elements can also be disabled per request using the `tokens` option with `materializeProperties`.
+For 3.7 drivers, properties on elements can also be disabled per request using the `tokens` option with
+`materializeProperties`.
 
 [source,csharp]
 ----
@@ -795,7 +813,7 @@ g.With("materializeProperties", "tokens").V(1).Next()
 ===== Possible issues
 
 `ReferenceElement`-type objects are no longer returned by the server by default. When upgrading existing code to 3.7.0,
-it is possible that this change could have some impact if you directly declared use of those classes. For example:
+it is possible that this change could have some impact if code directly declared use of those classes. For example:
 
 [source,java]
 ----
@@ -829,7 +847,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 
 Removed the `connectOnStartup` option for Gremlin Javascript API to resolve potential `unhandledRejection` and race
 conditions. New `DriverRemoteConnection` objects no longer initiate connection by default at startup. Call `open()`
-explicitly if one wishes to manually connect on startup.
+explicitly to manually connect on startup if desired.
 
 For example:
 
@@ -875,7 +893,7 @@ the GraphSON `MessageSerializer` implementations. For GraphSON 1.0, untyped Grap
 `GraphSONMessageSerializerV1d0` and typed as `GraphSONMessageSerializerGremlinV1d0`, but for version 2.0 of GraphSON,
 the idea of untyped GraphSON was left behind and so typed GraphSON became `GraphSONMessageSerializerV2d0` which
 followed to version 3.0. With the return of typed and untyped GraphSON for 3.6.5, it seemed important to unify all
-of this naming and given the previously mentioned removal of the "d0" we now have:
+of this naming and given the previously mentioned removal of the "d0" the following changes apply:
 
 * `GraphSONMessageSerializerV1` is now typed GraphSON 1.0
 * `GraphSONMessageSerializerGremlinV1d0` is removed.
@@ -888,10 +906,10 @@ of this naming and given the previously mentioned removal of the "d0" we now hav
 
 ==== Building and Running with JDK 17
 
-You can now run TinkerPop with Java 17. Be advised that there are some issues with reflection and so you may need to
-either --add-opens or --add-exports certain modules to enable it to work with Java 17. This mostly affects the Kryo
-serialization library which is used with OLAP. If you use OLTP, then you may not need to add any of these options to
-the JVM. The following are only examples used by TinkerPop's automated tests and are placed here for convenience.
+TinkerPop can now be run with Java 17. Be advised that there are some issues with reflection and so it may be necessary
+to either --add-opens or --add-exports certain modules to enable it to work with Java 17. This mostly affects the Kryo
+serialization library which is used with OLAP. For OLTP usage, these options may not be required.
+The following are examples used by TinkerPop's automated tests and are placed here for convenience.
 
 [source,text]
 ----
@@ -923,7 +941,7 @@ one method `ReadValueAsync`, there are now methods `WriteNullableValueAsync` and
 
 Some `set` property accessors were removed from some pure data classes in the `Structure` and the `Driver.Messages`
 namespaces to initialize these properties directly from the constructor which ensures that they are really not `null`.
-We also used this opportunity to convert some of these pure data classes into a `record`.
+This update also converted some of these pure data classes into a `record`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2348[TINKERPOP-2348]
 
@@ -939,9 +957,9 @@ link:https://tinkerpop.apache.org/docs/3.7.0/dev/developer/#gremlin-socket-serve
 
 Traversals now support mid-traversal E()-steps.
 
-Prior to this change you were limited to using E()-step only at the start of traversal, but now you can this step in
-the middle. This improvement makes it easier for users to build certain types of queries. For example, get edges with
-label knows, if there is none then add new one between josh and vadas.
+Prior to this change, the E()-step was limited to use at the start of a traversal, but this step can now appear in
+the middle. This improvement makes it easier to build certain types of queries. For example, get edges with
+label knows; if there is none then add a new one between josh and vadas.
 
 `g.inject(1).coalesce(E().hasLabel("knows"), addE("knows").from(V().has("name","josh")).to(V().has("name","vadas")))`
 

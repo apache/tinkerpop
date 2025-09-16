@@ -1685,28 +1685,28 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1219[TINKERPOP-1219]
 
 ===== Step API Update
 
-The `Step` interface is fundamental to Gremlin. `Step.processNextStart()` and `Step.next()` both returned `Traverser<E>`.
-We had so many `Traverser.asAdmin()` and direct typecast calls throughout (especially in `TraversalVertexProgram`) that
-it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return `Traverser.Admin<E>`. Moreover it makes
-sense as this is internal logic where `Admins` are always needed. Providers with their own step definitions will simply
-need to change the method signatures of `Step.processNextStart()` and `Step.next()`. No logic update is required -- save
-that `asAdmin()` can be safely removed if used. Also, `Step.addStart()` and `Step.addStarts()` take `Traverser.Admin<S>`
-and `Iterator<Traverser.Admin<S>>`, respectively.
+The `Step` interface is fundamental to Gremlin. `Step.processNextStart()` and `Step.next()` both returned
+`Traverser<E>`. There were so many `Traverser.asAdmin()` and direct typecast calls throughout (especially in
+`TraversalVertexProgram`) that it was deemed prudent to have `Step.processNextStart()` and `Step.next()` return
+`Traverser.Admin<E>`. Moreover it makes sense as this is internal logic where `Admins` are always needed. Providers with
+their own step definitions will simply need to change the method signatures of `Step.processNextStart()` and
+`Step.next()`. No logic update is required -- save that `asAdmin()` can be safely removed if used. Also,
+`Step.addStart()` and `Step.addStarts()` take `Traverser.Admin<S>` and `Iterator<Traverser.Admin<S>>`, respectively.
 
 ===== Traversal API Update
 
 The way in which `TraverserRequirements` are calculated has been changed (for the better). The ramification is that post
 compilation requirement additions no longer make sense and should not be allowed. To enforce this,
-`Traversal.addTraverserRequirement()` method has been removed from the interface. Moreover, providers/users should never be able
-to add requirements manually (this should all be inferred from the end compilation). However, if need be, there is always
-`RequirementStrategy` which will allow the provider to add a requirement at strategy application time
-(though again, there should not be a reason to do so).
+`Traversal.addTraverserRequirement()` method has been removed from the interface. Moreover, providers/users should never
+be able to add requirements manually (this should all be inferred from the end compilation). However, if need be, there
+is always `RequirementStrategy` which will allow the provider to add a requirement at strategy application time (though
+again, there should not be a reason to do so).
 
 ===== ComparatorHolder API Change
 
-Providers that either have their own `ComparatorHolder` implementation or reason on `OrderXXXStep` will need to update their code.
-`ComparatorHolder` now returns `List<Pair<Traversal,Comparator>>`. This has greatly reduced the complexity of comparison-based
-steps like `OrderXXXStep`. However, its a breaking API change that is trivial to update to, just some awareness is required.
+Providers that either have their own `ComparatorHolder` implementation or reason on `OrderXXXStep` will need to update
+their code. `ComparatorHolder` now returns `List<Pair<Traversal,Comparator>>`. This has greatly reduced the complexity
+of comparison-based steps like `OrderXXXStep`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1209[TINKERPOP-1209]
 
@@ -1737,60 +1737,68 @@ Operational semantic test cases have been added to `GraphComputerTest` to ensure
 
 The `Barrier` interface use to simply be a marker interface. Now it has methods and it is the primary means by which
 distributed steps across an OLAP job are aggregated and distributed. It is unlikely that `Barrier` was ever used
-directly by a provider's custom step. Instead, a provider most likely extended `SupplyingBarrierStep`, `CollectingBarrierStep`,
-and/or `ReducingBarrierStep`.
+directly by a provider's custom step. Instead, a provider most likely extended `SupplyingBarrierStep`,
+`CollectingBarrierStep`, and/or `ReducingBarrierStep`.
 
-Providers that have custom extensions to these steps or that use `Barrier` directly will need to adjust their implementation slightly to
-accommodate a new API that reflects the `Memory` updates above. This should be a simple change. Note that `FinalGet`
-no longer exists and such post-reduction processing is handled by the reducing step (via the new `Generating` interface).
+Providers that have custom extensions to these steps or that use `Barrier` directly will need to adjust their
+implementation slightly to accommodate a new API that reflects the `Memory` updates above. This should be a simple
+change. Note that `FinalGet` no longer exists and such post-reduction processing is handled by the reducing step (via
+the new `Generating` interface).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1164[TINKERPOP-1164]
 
 ===== Performance Tests
 
-The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going forward,
-providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based performance test suite.
+The `ProcessPerformanceSuite` and `TraversalPerformanceTest` have been deprecated.  They are still available, but going
+forward, providers should implement their own performance tests and not rely on the built-in JUnit benchmark-based
+performance test suite.
 
 ==== Graph Processor Providers
 
 ===== GraphFilter and GraphComputer
 
-The `GraphComputer` API has changed with the addition of `GraphComputer.vertices(Traversal)` and `GraphComputer.edges(Traversal)`.
-These methods construct a `GraphFilter` object which is also new to TinkerPop 3.2.0. `GraphFilter` is a "push-down predicate"
-used to selectively retrieve subgraphs of the underlying graph to be OLAP processed.
+The `GraphComputer` API has changed with the addition of `GraphComputer.vertices(Traversal)` and
+`GraphComputer.edges(Traversal)`. These methods construct a `GraphFilter` object which is also new to TinkerPop 3.2.0.
+`GraphFilter` is a "push-down predicate" used to selectively retrieve subgraphs of the underlying graph to be OLAP
+processed.
 
-* If the graph system provider relies on an existing `GraphComputer` implementations such as `SparkGraphComputer` and/or `GiraphGraphComputer`,
-then there is no immediate action required on their part to remain TinkerPop-compliant. However, they may wish to update
-their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the `GraphFilter` filtering at the disk/database
-level. It is advisable to do so in order to reduce OLAP load times and memory/GC usage.
+* If the graph system provider relies on an existing `GraphComputer` implementations such as `SparkGraphComputer` and/or
+`GiraphGraphComputer`, then there is no immediate action required on their part to remain TinkerPop-compliant. However,
+they may wish to update their `InputFormat` or `InputRDD` implementation to be `GraphFilterAware` and handle the
+`GraphFilter` filtering at the disk/database level. It is advisable to do so in order to reduce OLAP load times and
+memory/GC usage.
 
-* If the graph system provider has their own `GraphComputer` implementation, then they should implement the two new methods
-and ensure that `GraphFilter` is processed correctly. There is a new test case called `GraphComputerTest.shouldSupportGraphFilter()`
-which ensures the semantics of `GraphFilter` are handled correctly. For a "quick and easy" way to move forward, look to
-`GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to do filtering prior to `VertexProgram` or `MapReduce`
-execution.
+* If the graph system provider has their own `GraphComputer` implementation, then they should implement the two new
+methods and ensure that `GraphFilter` is processed correctly. There is a new test case called
+`GraphComputerTest.shouldSupportGraphFilter()` which ensures the semantics of `GraphFilter` are handled correctly. For a
+"quick and easy" way to move forward, look to `GraphFilterInputFormat` as a way of wrapping an existing `InputFormat` to
+do filtering prior to `VertexProgram` or `MapReduce` execution.
 
-NOTE: To quickly move forward, the `GraphComputer` implementation can simply set `GraphComputer.Features.supportsGraphFilter()`
-to `false` and ensure that `GraphComputer.vertices()` and `GraphComputer.edges()` throws `GraphComputer.Exceptions.graphFilterNotSupported()`.
-This is not recommended as its best to support `GraphFilter`.
+NOTE: To quickly move forward, the `GraphComputer` implementation can simply set
+`GraphComputer.Features.supportsGraphFilter()` to `false` and ensure that `GraphComputer.vertices()` and
+`GraphComputer.edges()` throws `GraphComputer.Exceptions.graphFilterNotSupported()`. This is not recommended as its best
+to support `GraphFilter`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-962[TINKERPOP-962]
 
 ===== Job Chaining and GraphComputer
 
-TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile to multiple
-`GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit tests to verify if a
-provider's `GraphComputer` could be chained, but now there are. Given a reasonable implementation, it is likely that no changes
-are required of the provider. However, to ensure the implementation is "reasonable" `GraphComputerTests` have been added.
+TinkerPop 3.2.0 has integrated `VertexPrograms` into `GraphTraversal`. This means, that a single traversal can compile
+to multiple `GraphComputer` OLAP jobs. This requires that `ComputeResults` be chainable. There was never any explicit
+tests to verify if a provider's `GraphComputer` could be chained, but now there are. Given a reasonable implementation,
+it is likely that no changes are required of the provider. However, to ensure the implementation is "reasonable"
+`GraphComputerTests` have been added.
 
-* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportJobChaining()`.
-This tests verifies that the `ComputerResult` output of one job can be fed into the input of a subsequent job. Only linear chains are tested/required
-currently. In the future, branching DAGs may be required.
+* For providers that support their own `GraphComputer` implementation, note that there is a new
+`GraphComputerTest.shouldSupportJobChaining()`. This tests verifies that the `ComputerResult` output of one job can be
+fed into the input of a subsequent job. Only linear chains are tested/required currently. In the future, branching DAGs
+may be required.
 
-* For providers that support their own `GraphComputer` implementation, note that there is a new `GraphComputerTest.shouldSupportPreExistingComputeKeys()`.
-When chaining OLAP jobs together, if an OLAP job requires the compute keys of a previous OLAP job, then the existing compute keys must be accessible.
-A simple 2 line change to `SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update as
-this feature was already naturally supported.
+* For providers that support their own `GraphComputer` implementation, note that there is a new
+`GraphComputerTest.shouldSupportPreExistingComputeKeys()`. When chaining OLAP jobs together, if an OLAP job requires the
+compute keys of a previous OLAP job, then the existing compute keys must be accessible. A simple 2 line change to
+`SparkGraphComputer` and `TinkerGraphComputer` solved this for TinkerPop. `GiraphGraphComputer` did not need an update
+as this feature was already naturally supported.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-570[TINKERPOP-570]
 
@@ -1798,10 +1806,11 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-570[TINKERPOP-570]
 
 ===== ScriptTraversal
 
-Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called `ScriptTraversal`
-which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated to use this new class.
-The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not required, but do look into
-`ScriptTraversal` as TinkerPop will be using it as a way to serialize "String-based traversals" over the network moving forward.
+Providers that have custom Gremlin language implementations (e.g. Gremlin-Scala), there is a new class called
+`ScriptTraversal` which will handle script-based processing of traversals. The entire `GroovyXXXTest`-suite was updated
+to use this new class. The previous `TraversalScriptHelper` class has been deprecated so immediate upgrading is not
+required, but do look into `ScriptTraversal` as TinkerPop will be using it as a way to serialize
+"String-based traversals" over the network moving forward.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1154[TINKERPOP-1154]
 
@@ -1818,8 +1827,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1153[TINKERPOP-1153]
 
 ===== TraversalEngine Deprecation and GraphProvider
 
-The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards compatible.
-Unfortunately for graph system providers, a few tweaks to their implementation are in order.
+The `TraversalSource` infrastructure has been completely rewritten. Fortunately for users, their code is backwards
+compatible. Unfortunately for graph system providers, a few tweaks to their implementation are in order.
 
 * If the graph system supports more than `Graph.compute()`, then implement `GraphProvider.getGraphComputer()`.
 * For custom `TraversalStrategy` implementations, change `traverser.getEngine().isGraphComputer()` to `TraversalHelper.onGraphComputer(Traversal)`.

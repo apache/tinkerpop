@@ -72,14 +72,15 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Providers
 
-The `HttpGremlinRequestEncoder` constructor has been deprecated in favor of one with an additional parameter `boolean userAgentEnabled`.
-User agent HTTP headers can now be encoded if this flag is enabled.
+The `HttpGremlinRequestEncoder` constructor has been deprecated in favor of one with an additional parameter
+`boolean userAgentEnabled`. User agent HTTP headers can now be encoded if this flag is enabled.
 
 == TinkerPop 3.6.5
 
 *Release Date: July 31, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.5/CHANGELOG.asciidoc#release-3.6.5[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.5/CHANGELOG.asciidoc#release-3.6.5[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -124,20 +125,22 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2965[TINKERPOP-2965]
 
 *Release Date: May 12, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.4/CHANGELOG.asciidoc#release-3-6-4[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.4/CHANGELOG.asciidoc#release-3-6-4[changelog] for a
+complete list of all the modifications that are part of this release.
 
 == TinkerPop 3.6.3
 
 *Release Date: May 1, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.3/CHANGELOG.asciidoc#release-3-6-3[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.3/CHANGELOG.asciidoc#release-3-6-3[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
 ==== Deprecation Warning for Go 1.17
 
-Release 3.6.3 will be one of the last versions of 3.6.x to use Go 1.17 for `gremlin-go` as this runtime is no longer supported.
-Upcoming releases of `gremlin-go` will attempt to use the latest available version of Go.
+Release 3.6.3 will be one of the last versions of 3.6.x to use Go 1.17 for `gremlin-go` as this runtime is no longer
+supported. Upcoming releases of `gremlin-go` will attempt to use the latest available version of Go.
 
 === Upgrading for Providers
 
@@ -159,7 +162,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2929[TINKERPOP-2929]
 
 *Release Date: January 16, 2023*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.2/CHANGELOG.asciidoc#release-3-6-2[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.2/CHANGELOG.asciidoc#release-3-6-2[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -218,7 +222,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2850[TINKERPOP-2850]
 
 *Release Date: July 18, 2022*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.1/CHANGELOG.asciidoc#release-3-6-1[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.1/CHANGELOG.asciidoc#release-3-6-1[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -236,7 +241,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2723[TINKERPOP-2723]
 
 *Release Date: April 4, 2022*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.6.0/CHANGELOG.asciidoc#release-3-6-0[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.6.0/CHANGELOG.asciidoc#release-3-6-0[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -902,7 +908,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2650[TINKERPOP-2650]
 
 ==== `property()` with Map
 
-The `property()` step has been extended to take a `Map` of property key/value pairs as an argument with two new signatures:
+The `property()` step has been extended to take a `Map` of property key/value pairs as an argument with two new
+signatures:
 
 ```text
 property(Map)

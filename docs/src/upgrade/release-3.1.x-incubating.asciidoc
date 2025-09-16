@@ -25,13 +25,15 @@ image::gremlin-gangster.png[width=225]
 
 *Release Date: August 21, 2017*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.8/CHANGELOG.asciidoc#tinkerpop-318-release-date-august-21-2017[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.8/CHANGELOG.asciidoc#tinkerpop-318-release-date-august-21-2017[changelog]
+for a complete list of all the modifications that are part of this release.
 
 == TinkerPop 3.1.7
 
 *Release Date: June 12, 2017*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.7/CHANGELOG.asciidoc#tinkerpop-317-release-date-june-12-2017[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.7/CHANGELOG.asciidoc#tinkerpop-317-release-date-june-12-2017[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -48,7 +50,8 @@ See: https://issues.apache.org/jira/browse/TINKERPOP-1608[TINKERPOP-1608]
 
 *Release Date: February 3, 2017*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#tinkerpop-316-release-date-february-3-2017[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.6/CHANGELOG.asciidoc#tinkerpop-316-release-date-february-3-2017[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Providers
 
@@ -68,7 +71,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1544[TINKERPOP-1544]
 
 *Release Date: October 17, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.5/CHANGELOG.asciidoc#tinkerpop-315-release-date-october-17-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.5/CHANGELOG.asciidoc#tinkerpop-315-release-date-october-17-2016[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -87,7 +91,8 @@ See: https://issues.apache.org/jira/browse/TINKERPOP-1467[TINKERPOP-1467]
 
 *Release Date: September 6, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#tinkerpop-314-release-date-september-6-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.4/CHANGELOG.asciidoc#tinkerpop-314-release-date-september-6-2016[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -104,7 +109,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1350[TINKERPOP-1350]
 
 *Release Date: July 18, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-july-18-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.3/CHANGELOG.asciidoc#tinkerpop-313-release-date-july-18-2016[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -198,7 +204,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1263[TINKERPOP-1263]
 
 *Release Date: April 8, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.2-incubating/CHANGELOG.asciidoc#tinkerpop-312-release-date-april-8-2016[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -303,9 +310,9 @@ link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#sessions[Refe
 
 ===== scriptEvalTimeout Override
 
-The Gremlin Server protocol now allows the passing of `scriptEvaluationTimeout` as an argument to the `SessionOpProcessor`
-and the `StandardOpProcessor`. This value will override the setting of the same name provided in the Gremlin Server
-configuration file on a per request basis.
+The Gremlin Server protocol now allows the passing of `scriptEvaluationTimeout` as an argument to the
+`SessionOpProcessor` and the `StandardOpProcessor`. This value will override the setting of the same name provided in
+the Gremlin Server configuration file on a per request basis.
 
 ==== Plugin Providers
 
@@ -325,7 +332,8 @@ See: link:https://tinkerpop.apache.org/docs/3.1.2-incubating/reference/#console-
 
 *Release Date: February 8, 2016*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#tinkerpop-311-release-date-february-8-2016[changelog]
+for a complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -337,7 +345,8 @@ The `gremlin-core` io-package now has a `Storage` interface. The methods that we
 persisted RDDs in the Spark cache.
 
 This update changed a few of the file handling methods. As it stands, these changes only effect manual Gremlin Console
-usage as HDFS support was previously provided via Groovy meta-programing. Thus, these are not "code-based" breaking changes.
+usage as HDFS support was previously provided via Groovy meta-programing. Thus, these are not "code-based" breaking
+changes.
 
 * `hdfs.rmr()` no longer exists. `hdfs.rm()` is now recursive. Simply change all references to `rmr()` to `rm()` for identical behavior.
 * `hdfs.head(location,lines,writableClass)` no longer exists.
@@ -515,7 +524,8 @@ interested provider, study the implementations therein to see the purpose of the
 
 *Release Date: November 16, 2015*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog]
+for a complete list of all the modifications that are part of this release.
 
 Additional upgrade information can be found here:
 
@@ -755,9 +765,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-876[TINKERPOP-876]
 
 ===== GraphComputer Updates
 
-`GraphComputer.configure(String key, Object value)` is now a method (with default implementation).
-This allows the user to specify engine-specific parameters to the underlying OLAP system. These parameters are not intended
-to be cross engine supported. Moreover, if there are not parameters that can be altered (beyond the standard `GraphComputer`
+`GraphComputer.configure(String key, Object value)` is now a method (with default implementation). This allows the user
+to specify engine-specific parameters to the underlying OLAP system. These parameters are not intended to be
+cross-engine supported. Moreover, if there are not parameters that can be altered (beyond the standard `GraphComputer`
 methods), then the provider's `GraphComputer` implementation should simply return and do nothing.
 
 ==== Driver Providers
