@@ -32,13 +32,12 @@ complete list of all the modifications that are part of this release.
 
 ==== Number Conversion Step
 
-We have been iteratively introducing new language features into Gremlin, with the most recent major additions being string, list and date manipulation
-steps introduced in the 3.7 line. In 3.8.0, we are now introducing a number conversion step, `asNumber()`, to bridge
-a gap in casting functionalities.
+The new `asNumber()` step provides type casting functionality to Gremlin. It serves as an umbrella step that parses
+strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these available types
+are denoted by a set of number tokens (`N`).
 
-The new `asNumber()` serves as an umbrella step that parses strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these number types are denoted by a set of number tokens (`N`).
-
-This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a consistent format, making it easier to perform downstream mathematical operations. As an example:
+This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a
+consistent format, making it easier to perform downstream mathematical operations. As an example:
 
 [source,text]
 ----
@@ -55,9 +54,11 @@ gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.int_)
 ==>15
 ----
 
-Semantically, the `asNumber()` step will convert the incoming traverser to a logical parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+Semantically, the `asNumber()` step will convert the incoming traverser to a logical parsable type if no argument is
+provided, or to the desired numerical type, based on the number token (`N`) provided.
 
-Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown for any overflow as a result of narrowing of types:
+Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
+for any overflow as a result of narrowing of types:
 
 [source,text]
 ----
@@ -69,7 +70,8 @@ gremlin> g.inject(128).asNumber(N.byte_)
 ==> ArithmeticException
 ----
 
-String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is provided. `NumberFormatException` will be thrown for any unparsable strings:
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is
+provided. `NumberFormatException` will be thrown for any unparsable strings:
 
 [source,text]
 ----
@@ -95,8 +97,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
 
 ==== Boolean Conversion Step
 
-The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse strings and 
-numbers into boolean values, both for normalization and to perform boolean logic with numerical values.
+The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse
+strings and numbers into boolean values, both for normalization and to perform boolean logic with numerical values.
 
 [source,text]
 ----
@@ -813,7 +815,8 @@ transformation of `Date` to `OffsetDateTime` to retain consistency.
 
 The semantics have changed for the handling of by modulators to the `valueMap` and `propertyMap` steps. Only one by
 modulator is required to be accepted and an exception should be thrown when there are more than one `by()` modulators.
-The exception thrown should contain the following: `valueMap()` and `propertyMap()` step can only have one by modulator".
+The exception thrown should contain the following: `valueMap()` and `propertyMap()` step can only have one by
+modulator".
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 

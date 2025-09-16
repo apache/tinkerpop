@@ -853,11 +853,15 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[asNumber-step]]
 === AsNumber Step
 
-The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
+The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided,
+or to the desired numerical type, based on the number token (`N`) provided.
 
-Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown for any overflow during narrowing of types.
+Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
+for any overflow during narrowing of types.
 
-String inputs are parsed into numeric values. By default, the value will be parsed as an integer if it represents a whole number, or as a double if it contains a decimal point. A `NumberFormatException` will be thrown if the string cannot be parsed into a valid number format.
+String inputs are parsed into numeric values. By default, the value will be parsed as an integer if it represents a
+whole number, or as a double if it contains a decimal point. A `NumberFormatException` will be thrown if the string
+cannot be parsed into a valid number format.
 
 All other input types will result in `IllegalArgumentException`.
 
@@ -878,17 +882,22 @@ g.inject(33550336).asNumber(N.byte_) <5>
 
 [NOTE, caption=Java]
 ====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Java, and therefore must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Java, and therefore must be
+referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
 ====
 
 [NOTE, caption=Groovy & Gremlin Console]
 ====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Groovy, therefore as the Gremlin Console is Groovy-based, they must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Groovy, therefore as the Gremlin
+Console is Groovy-based, they must be referred to in Gremlin with an underscore appended as a suffix: `byte_`,
+`short_`, `int_`, `long_`, `float_`, `double_`.
 ====
 
 [NOTE, caption=JavaScript]
 ====
-The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Javascript, and therefore must be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`, `double_`.
+The enums values `byte`, `short`, `int`, `long`, `float`, `double` are reserved word in Javascript, and therefore must
+be referred to in Gremlin with an underscore appended as a suffix: `byte_`, `short_`, `int_`, `long_`, `float_`,
+`double_`.
 ====
 
 *Additional References*
