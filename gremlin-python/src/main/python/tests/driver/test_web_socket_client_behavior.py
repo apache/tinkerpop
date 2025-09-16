@@ -80,7 +80,7 @@ def test_should_not_request_compression_by_default(socket_server_client, socket_
     response = socket_server_client.submit(
         "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
 
-    assert 'permessage-deflate;' not in response
+    assert 'permessage-deflate' not in response
 
 
 # Tests that client does not request permessage deflate compression when disabled
@@ -89,7 +89,7 @@ def test_should_not_request_compression_when_disabled(socket_server_client, sock
     response = socket_server_client.submit(
         "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
 
-    assert 'permessage-deflate;' not in response
+    assert 'permessage-deflate' not in response
 
 
 # Tests that client requests permessage deflate compression when enabled
@@ -98,7 +98,7 @@ def test_should_request_compression_when_enabled(socket_server_client, socket_se
     response = socket_server_client.submit(
         "1", request_options={'requestId': socket_server_settings["SEC_WEBSOCKET_EXTENSIONS"]}).one()[0]
 
-    assert 'permessage-deflate;' in response
+    assert 'permessage-deflate' in response
 
 
 # Tests that client is correctly sending all overridable per request settings (requestId, batchSize,
