@@ -44,8 +44,8 @@ complete list of all the modifications that are part of this release.
 
 Introduced max number length (10000 chars), string length (20 000 000 chars), and nesting depth (1000)
 constraints for GraphSON deserialization due to security vulnerabilities with earlier versions of Jackson Databind.
-New constraints are not expected to impact most users but can be overriden via GraphSONMapper.Builder or through serializer configuration.
-Example:
+New constraints are not expected to impact most users but can be overriden via GraphSONMapper.Builder or through
+serializer configuration.
 
 [source,yaml]
 ----
@@ -94,14 +94,15 @@ There are various performance improvements included in this release:
 
 * Gremlin Console now uses `ImportCustomizer` to add imports, reducing the time spent resolving imports. This especially
 reduces the overhead for executing many simple lines of code. Processing for documentation (which runs thousands of
-simple lines) was reduced from 90 minutes to 25 minutes. Users should notice performance improvements when using the Gremlin Console.
-* In some instances, a graph may contain elements whose Ids are sequentially increasing integers. When using the `path()`
-step with a `CollectingBarrierStep` in these graphs, one may observe a huge increase in processing time because of an
-inefficient hash algorithm. This hash algorithm has been updated and tests have shown a 40x improvement in these
+simple lines) was reduced from 90 minutes to 25 minutes. Users should notice performance improvements when using the
+Gremlin Console.
+* In some instances, a graph may contain elements whose Ids are sequentially increasing integers. When using the
+`path()` step with a `CollectingBarrierStep` in these graphs, one may observe a huge increase in processing time because
+of an inefficient hash algorithm. This hash algorithm has been updated and tests have shown a 40x improvement in these
 `CollectingBarrierStep` queries involving `path()`.
-* There is an important performance improvement to `TraversalStrategy` application which removes some unnecessary recursion
-when evaluating the Gremlin syntax tree and should improve traversal compilation times, particularly on traversals with
-many children. Tests have shown a 10x improvement in compilation time.
+* There is an important performance improvement to `TraversalStrategy` application which removes some unnecessary
+recursion when evaluating the Gremlin syntax tree and should improve traversal compilation times, particularly on
+traversals with many children. Tests have shown a 10x improvement in compilation time.
 * `FilterRankingStrategy` saw a fairly specific performance improvement that should be particularly noticeable for
 traversal that have many children and some depth to their syntax tree. A particularly complex traversal that was used in
 testing this behavior improved its compilation time from 1 minute 48 seconds to just a few milliseconds.
@@ -219,9 +220,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2813[TINKERPOP-2813]
 
 ==== Added User Agent to Gremlin drivers
 
-Previously, a server does not distinguish amongst the different types of clients connecting to it. We have now added
-user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user agent.
-User agent is enabled by default for all drivers.
+Previously, a server does not distinguish amongst the different types of clients connecting to it. This release adds a
+user agent to web socket handshake in all the drivers, each with their own configuration to enable or disable user
+agent. User agent is enabled by default for all drivers.
 
 * Java driver can be controlled by the `enableUserAgentOnConnect` configuration.
 * .Net driver can be controlled by the `EnableUserAgentOnConnect` in `ConnectionPoolSettings`.
@@ -233,8 +234,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2480[TINKERPOP-2480]
 
 ==== Update to SSL Handshake Timeout Configuration
 
-Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. We have removed
-the default SSL handshake timeout. The SSL handshake timeout will instead be capped by setting `connectionSetupTimeoutMillis`.
+Previously, the java driver relies on the default 10 second SSL handshake timeout defined by Netty. The default SSL
+handshake timeout has been removed. The SSL handshake timeout will instead be capped by setting
+`connectionSetupTimeoutMillis`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2814[TINKERPOP-2814]
 
@@ -265,7 +267,7 @@ In the root directory of your project, containing the `go.mod` file, run the fol
 
 `go get github.com/apache/tinkerpop/gremlin-go/v3@v3.5.4`
 
-Afterwards, we can quickly get started with writing Gremlin in Go:
+Writing Gremlin in Go looks like this:
 
 [source,go]
 ----
@@ -587,7 +589,8 @@ See: link: https://issues.apache.org/jira/browse/TINKERPOP-2616[TINKERPOP-2616]
 
 *Release Date: May 3, 2021*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asciidoc#release-3-5-0[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.5.0/CHANGELOG.asciidoc#release-3-5-0[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -1122,8 +1125,8 @@ confusing approach as the behavior of the step changes simply because another st
 execution of the traversal, relies on the execution of traversal strategies when the same traversal should produce
 the same results irrespective of the strategies applied to it.
 
-In 3.5.0, we look to better adhere to that guiding design principle and ensure a more consistent output for these types
-of traversals. While the preferred method is to specify the labels to preserve from `match()` with a following
+In 3.5.0, there is better adherence to that guiding design principle and ensuring a more consistent output for these
+types of traversals. While the preferred method is to specify the labels to preserve from `match()` with a following
 `select()` step as shown above, `match()` will now consistently return all labels when they are not specified
 explicitly.
 

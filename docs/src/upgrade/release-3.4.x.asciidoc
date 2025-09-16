@@ -303,8 +303,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2445[TINKERPOP-2445]
 
 With Java it has been possible to pass per-request settings for both scripts and bytecode. While Javascript, Python,
 and .NET allowed this in various ways, it wasn't quite as convenient as Java, nor was it well documented. In this
-release, the approach for making this sort of per-request configurations is now much more consistent across languages.
-We see this most evident in bytecode based requests:
+release, the approach for making this sort of per-request configurations is now much more consistent across languages,
+as is most evidently demonstrated in bytecode-based requests:
 
 *Java*
 
@@ -677,7 +677,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2318[TINKERPOP-2318]
 ===== GraphBinary API Change
 
 In GraphBinary serialization, Java `GraphBinaryReader` and `GraphBinaryWriter`, along with `TypeSerializer<T>`
-interface now take a `Buffer` instance instead of Netty's `ByteBuf`, that way we avoid exposing Netty's API in our own
+interface now take a `Buffer` instance instead of Netty's `ByteBuf`, thereby avoiding exposure of Netty's API in our own
 public API.
 
 Using our own `Buffer` interface, wrapping Netty's buffer API, allowed us to move `TypeSerializer<T>` implementations,
@@ -692,7 +692,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2305[TINKERPOP-2305]
 
 *Release Date: October 14, 2019*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.4.4/CHANGELOG.asciidoc#release-3-4-4[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.4/CHANGELOG.asciidoc#release-3-4-4[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -890,7 +891,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2216[TINKERPOP-2216]
 
 In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
 `ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
-of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+of a message. Additionally, the unused parameter was removed from `ResponseMessageSerializer`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
 
@@ -948,7 +949,7 @@ link:https://tinkerpop.apache.org/docs/3.4.1/reference/#sparql-with-gremlin[Refe
 
 In GraphBinary serialization, Java `write()` and `writeValue()` from `TypeSerializer<T>` interface now take a Netty's
 `ByteBuf` instance instead of an `ByteBufAllocator`, that way the same buffer instance gets reused during the write
-of a message. Additionally, we took the opportunity to remove the unused parameter from `ResponseMessageSerializer`.
+of a message. Additionally, the unused parameter was removed from `ResponseMessageSerializer`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
 
@@ -956,7 +957,8 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2161[TINKERPOP-2161]
 
 *Release Date: January 2, 2019*
 
-Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asciidoc#release-3-4-0[changelog] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/tinkerpop/blob/3.4.0/CHANGELOG.asciidoc#release-3-4-0[changelog] for a
+complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
@@ -985,7 +987,8 @@ whereas it could previously create an unlimited number of connections. Each `Con
 `MaxInProcessPerConnection` requests in parallel. If this limit is reached for all connections, then a
 `NoConnectionAvailableException` is thrown which makes this a breaking change.
 
-These settings can be set as properties on the `ConnectionPoolSettings` instance that can be passed to the `GremlinClient`.
+These settings can be set as properties on the `ConnectionPoolSettings` instance that can be passed to the
+GremlinClient`.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1774[TINKERPOP-1774],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1775[TINKERPOP-1775],
@@ -993,7 +996,8 @@ link:https://tinkerpop.apache.org/docs/3.4.0/reference/#_connection_pool[Referen
 
 ==== Indexing of Collections
 
-TinkerPop 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or maps.
+TinkerPop 3.4.0 adds a new `index()`-step, which allows users to transform simple collections into index collections or
+maps.
 
 ```
 gremlin> g.V().hasLabel("software").values("name").fold().
@@ -1010,11 +1014,13 @@ gremlin> g.V().hasLabel("person").values("name").fold().
 
 ==== Modulation of valueMap()
 
-The `valueMap()` step now supports `by` and `with` modulation, which also led to the deprecation of `valueMap(true)` overloads.
+The `valueMap()` step now supports `by` and `with` modulation, which also led to the deprecation of `valueMap(true)`
+overloads.
 
 ===== by() Modulation
 
-With the help of the `by()` modulator `valueMap()` result values can now be adjusted, which is particularly useful to turn multi-/list-values into single values.
+With the help of the `by()` modulator `valueMap()` result values can now be adjusted, which is particularly useful to
+turn multi-/list-values into single values.
 
 ```
 gremlin> g.V().hasLabel("person").valueMap()
@@ -1642,7 +1648,8 @@ Server:
 bin/gremlin-server.sh install org.codehaus.groovy groovy-sql 2.5.2
 ```
 
-If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven: pom.xml).
+If your project depended on groovy-sql transitively, simply include it in your project's build file (e.g. maven:
+pom.xml).
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2037[TINKERPOP-2037]
 
