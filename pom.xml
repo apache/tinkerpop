@@ -181,6 +181,7 @@ limitations under the License.
         <sslcontext.kickstart.version>9.1.0</sslcontext.kickstart.version>
         <!-- Version aligned with Netty's optional bcpkix dependency used for SelfSignedCertificate -->
         <bouncycastle.version>1.69</bouncycastle.version>
+        <ayza.version>10.0.0</ayza.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -788,8 +789,8 @@ limitations under the License.
             </dependency>
             <dependency>
                 <groupId>io.github.hakky54</groupId>
-                <artifactId>sslcontext-kickstart-for-netty</artifactId>
-                <version>${sslcontext.kickstart.version}</version>
+                <artifactId>ayza-for-netty</artifactId>
+                <version>${ayza.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.codahale.metrics</groupId>
@@ -1640,13 +1641,13 @@ limitations under the License.
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.github.hakky54</groupId>
-                                            <artifactId>sslcontext-kickstart-for-netty</artifactId>
-                                            <version>${sslcontext.kickstart.version}</version>
+                                            <artifactId>ayza-for-netty</artifactId>
+                                            <version>${ayza.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.github.hakky54</groupId>
-                                            <artifactId>sslcontext-kickstart</artifactId>
-                                            <version>${sslcontext.kickstart.version}</version>
+                                            <artifactId>ayza</artifactId>
+                                            <version>${ayza.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
@@ -1857,13 +1858,13 @@ limitations under the License.
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.github.hakky54</groupId>
-                                            <artifactId>sslcontext-kickstart-for-netty</artifactId>
-                                            <version>${sslcontext.kickstart.version}</version>
+                                            <artifactId>ayza-for-netty</artifactId>
+                                            <version>${ayza.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>io.github.hakky54</groupId>
-                                            <artifactId>sslcontext-kickstart</artifactId>
-                                            <version>${sslcontext.kickstart.version}</version>
+                                            <artifactId>ayza</artifactId>
+                                            <version>${ayza.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>
