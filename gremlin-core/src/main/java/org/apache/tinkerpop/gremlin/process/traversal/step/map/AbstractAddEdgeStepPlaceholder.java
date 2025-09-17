@@ -74,6 +74,12 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
+    }
+
+    @Override
     public int hashCode() {
         int hash = super.hashCode();
         if (from != null) {
@@ -147,10 +153,10 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     public AbstractAddEdgeStepPlaceholder<S> clone() {
         final AbstractAddEdgeStepPlaceholder<S> clone = (AbstractAddEdgeStepPlaceholder) super.clone();
         if (from != null) {
-            clone.from = from.clone();
+            clone.addFrom(from.clone());
         }
         if (to != null) {
-            clone.to = to.clone();
+            clone.addTo(to.clone());
         }
         return clone;
     }
