@@ -92,6 +92,7 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
         return getServiceRegistry().get(serviceName, isStart, staticParams.get());
     }
 
+    @Override
     public Service<S, E> serviceGValueSafe() {
         // throws exception for unrecognized service
         return getServiceRegistry().get(serviceName, isStart, staticParams.get());
@@ -108,41 +109,39 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     }
 
     @Override
+    public Map getStaticParams() {
+        if (staticParams.isVariable()) {
+            traversal.getGValueManager().pinVariable(staticParams.getName());
+        }
+        return Collections.unmodifiableMap(this.staticParams.get());
+    }
+
+    @Override
+    public GValue<Map> getStaticParamsAsGValue() {
+        if (staticParams == null) {
+            return GValue.ofMap(null);
+        }
+        return GValue.of(staticParams.getName(), Collections.unmodifiableMap(this.staticParams.get()));
+    }
+
+    @Override
     public Map getMergedParams() {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            if (staticParams.isVariable()) {
-                traversal.getGValueManager().pinVariable(staticParams.getName());
-            }
-            return Collections.unmodifiableMap(this.staticParams.get());
+            return getStaticParams();
         }
 
-        return getMergedParams(new DummyTraverser<>(this.traversal.getTraverserGenerator()), 
-                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
+        return getMergedParams(new DummyTraverser<>(this.traversal.getTraverserGenerator()));
     }
 
-    public Map getMergedParamsGValueSafe() {
+    protected Map getMergedParams(final Traverser.Admin<S> traverser) {
         if (mapTraversal == null && parameters.isEmpty()) {
             // static params only
-            return Collections.unmodifiableMap(this.staticParams.get());
-        }
-        return getMergedParams(new DummyTraverser<>(this.traversal.getTraverserGenerator()), null);
-    }
-
-    protected Map getMergedParams(final Traverser.Admin<S> traverser, Consumer<GValue> gValueConsumer) {
-        if (mapTraversal == null && parameters.isEmpty()) {
-            // static params only
-            if (gValueConsumer != null && staticParams.isVariable()) {
-                gValueConsumer.accept(staticParams);
-            }
-            return Collections.unmodifiableMap(this.staticParams.get());
+            return this.getStaticParams();
         }
 
         // merge dynamic with static params
-        if(gValueConsumer != null && staticParams.isVariable()) {
-            gValueConsumer.accept(staticParams);
-        }
-        final Map params = new LinkedHashMap(this.staticParams.get());
+        final Map params = new LinkedHashMap(this.getStaticParams());
         if (mapTraversal != null) params.putAll(TraversalUtil.apply(traverser, mapTraversal));
         final Object[] kvs = this.parameters.getKeyValues(traverser);
         for (int i = 0; i < kvs.length; i += 2) {

@@ -19,7 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
 public interface TailLocalStepContract<S> extends Step<S, S> {
     Long getLimit();
+
+    default GValue<Long> getLimitAsGValue() {
+        return GValue.of(getLimit());
+    }
 }

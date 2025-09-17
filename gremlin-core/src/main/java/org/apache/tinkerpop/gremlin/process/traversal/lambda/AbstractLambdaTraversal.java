@@ -206,7 +206,6 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     public void setGraph(final Graph graph) {
         if (null != this.bypassTraversal)
             this.bypassTraversal.setGraph(graph);
-
     }
 
     @Override

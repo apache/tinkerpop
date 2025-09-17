@@ -83,7 +83,7 @@ public class IncidentToAdjacentStrategyTest {
         @Test
         public void doTest() {
             final String repr = translator.translate(original.getBytecode()).getScript();
-            GValueManagerVerifier.verify(original.asAdmin(), IncidentToAdjacentStrategy.instance())
+            GValueManagerVerifier.verify(original.asAdmin(), IncidentToAdjacentStrategy.instance(), Set.of(GValueReductionStrategy.instance()))
                     .afterApplying()
                     .managerIsEmpty();
             assertEquals(repr, this.optimized, this.original);

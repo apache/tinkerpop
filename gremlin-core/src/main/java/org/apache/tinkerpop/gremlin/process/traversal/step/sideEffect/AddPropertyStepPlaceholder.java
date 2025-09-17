@@ -118,10 +118,11 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     }
 
     /**
-     * Get the value without pinning the variable.
+     * Get the value as a GValue, without pinning the variable
      */
-    public Object getValueGValueSafe() {
-        return value == null ? null : value.get();
+    @Override
+    public GValue<?> getValueAsGValue() {
+        return value;
     }
 
     @Override
@@ -204,8 +205,9 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
                 gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return GValueHelper.resolveProperties(properties);
+    @Override
+    public Map<Object, List<Object>> getPropertiesWithGValues() {
+        return Collections.unmodifiableMap(properties);
     }
 
     @Override

@@ -97,16 +97,16 @@ public class AddPropertyStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getValueGValueSafeShouldNotPinVariable() {
+    public void getValueAsGValueShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PNAME, GValue.of(GNAME, PVALUE)).asAdmin();
-        assertEquals(PVALUE, ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValueGValueSafe());
+        assertEquals(GValue.of(GNAME, PVALUE), ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValueAsGValue());
         verifySingleUnpinnedVariable(traversal, GNAME);
     }
 
     @Test
-    public void getPropertiesGValueSafeShouldNotPinVariable() {
+    public void getPropertiesWithGValuesShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PNAME, PVALUE, META_NAME, GValue.of(GMETA_NAME, META_VALUE)).asAdmin();
-        assertEquals(List.of(META_VALUE), ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getPropertiesGValueSafe().get(META_NAME));
+        assertEquals(List.of(GValue.of(GMETA_NAME, META_VALUE)), ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getPropertiesWithGValues().get(META_NAME));
         verifySingleUnpinnedVariable(traversal, GMETA_NAME);
     }
 

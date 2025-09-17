@@ -55,6 +55,7 @@ public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GVa
         return this.predicate;
     }
 
+    @Override
     public P<S> getPredicateGValueSafe() {
         return this.predicate;
     }

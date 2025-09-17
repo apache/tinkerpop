@@ -33,6 +33,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -80,10 +81,10 @@ public class LazyBarrierStrategyTest {
                 {__.out().out().count(), __.out().out().count(), Collections.emptyList()},
                 {__.out().out().out().count(), __.out().out().barrier(LAZY_SIZE).out().count(), Collections.emptyList()},
                 {__.out().out().out().out().count(), __.out().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).out().count(), Collections.emptyList()},
-                {__.out().out().out().count(), __.out().out().barrier(LAZY_SIZE).outE().count(), Arrays.asList(CountStrategy.instance(), AdjacentToIncidentStrategy.instance())},
-                {__.out().out().out().count().is(P.gt(10)), __.out().out().barrier(LAZY_SIZE).outE().limit(11).count().is(P.gt(10)), Arrays.asList(CountStrategy.instance(), AdjacentToIncidentStrategy.instance())},
+                {__.out().out().out().count(), __.out().out().barrier(LAZY_SIZE).outE().count(), Arrays.asList(CountStrategy.instance(), AdjacentToIncidentStrategy.instance(), GValueReductionStrategy.instance())},
+                {__.out().out().out().count().is(P.gt(10)), __.out().out().barrier(LAZY_SIZE).outE().limit(11).count().is(P.gt(10)), Arrays.asList(CountStrategy.instance(), AdjacentToIncidentStrategy.instance(), GValueReductionStrategy.instance())},
                 {__.outE().inV().outE().inV().outE().inV().groupCount(), __.outE().inV().outE().inV().barrier(LAZY_SIZE).outE().inV().groupCount(), Collections.emptyList()},
-                {__.outE().inV().outE().inV().outE().inV().groupCount(), __.out().out().barrier(LAZY_SIZE).out().groupCount(), Collections.singletonList(IncidentToAdjacentStrategy.instance())},
+                {__.outE().inV().outE().inV().outE().inV().groupCount(), __.out().out().barrier(LAZY_SIZE).out().groupCount(), List.of(IncidentToAdjacentStrategy.instance(), GValueReductionStrategy.instance())},
                 {__.out().out().has("age", 32).out().count(), __.out().out().barrier(LAZY_SIZE).has("age", 32).out().count(), Collections.emptyList()},
                 {__.V().out().out().has("age", 32).out().count(), __.V().out().barrier(LAZY_SIZE).out().barrier(LAZY_SIZE).has("age", 32).out().count(), Collections.emptyList()},
                 {__.V().out().has("age", 32).out().count(), __.V().out().barrier(LAZY_SIZE).has("age", 32).out().count(), Collections.emptyList()},

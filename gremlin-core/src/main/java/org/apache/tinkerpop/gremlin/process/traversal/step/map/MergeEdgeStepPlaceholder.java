@@ -52,18 +52,13 @@ import java.util.Set;
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
-public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implements MergeStepContract<S, Edge, Map<Object, Object>>, GValueHolder<S, Edge> {
-
+public class MergeEdgeStepPlaceholder<S> extends AbstractMergeElementStepPlaceholder<S, Edge> {
     private static final Set allowedTokens = new LinkedHashSet(Arrays.asList(T.id, T.label, Direction.IN, Direction.OUT));
-    private Map<Object, List<Object>> properties = new HashMap<>();
 
     public static void validateMapInput(final Map map, final boolean ignoreTokens) {
         MergeElementStep.validate(map, ignoreTokens, allowedTokens, "mergeE");
     }
 
-    private Traversal.Admin<?,Map<Object,Object>> mergeTraversal;
-    private Traversal.Admin<?,Map<Object,Object>> onCreateTraversal;
-    private Traversal.Admin<?,Map<Object,Object>> onMatchTraversal;
     private Traversal.Admin<S,Map<Object,Object>> outVTraversal = null;
     private Traversal.Admin<S,Map<Object,Object>> inVTraversal = null;
     private final boolean isStart;
@@ -83,128 +78,11 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     }
 
     public MergeEdgeStepPlaceholder(final Traversal.Admin traversal, final boolean isStart, final Traversal.Admin<?,Map<Object, Object>> mergeTraversal) {
-        super(traversal);
+        super(traversal, mergeTraversal, isStart);
         this.isStart = isStart;
         this.mergeTraversal = mergeTraversal;
         if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).isParameterized()) {
             traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue());
-        }
-    }
-
-    @Override
-    protected Traverser.Admin<Edge> processNextStart() throws NoSuchElementException {
-        return null;
-    }
-
-    @Override
-    public MergeEdgeStepPlaceholder<S> clone() {
-        return (MergeEdgeStepPlaceholder<S>) super.clone();
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return super.getRequirements();
-    }
-
-    @Override
-    public Traversal.Admin getMergeTraversal() {
-        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getGValue().getName());
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getConstantTraversal();
-        }
-        return mergeTraversal;
-    }
-
-    public Traversal.Admin getMergeTraversalGValueSafe() {
-        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).getConstantTraversal();
-        }
-        return mergeTraversal;
-    }
-
-    @Override
-    public Traversal.Admin getOnCreateTraversal() {
-        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getGValue().getName());
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getConstantTraversal();
-        }
-        return onCreateTraversal;
-    }
-
-    public Traversal.Admin getOnCreateTraversalGValueSafe() {
-        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).getConstantTraversal();
-        }
-        return onCreateTraversal;
-    }
-
-    @Override
-    public Traversal.Admin getOnMatchTraversal() {
-        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getGValue().getName());
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getConstantTraversal();
-        }
-        return onMatchTraversal;
-    }
-
-    public Traversal.Admin getOnMatchTraversalGValueSafe() {
-        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
-            return ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).getConstantTraversal();
-        }
-        return onMatchTraversal;
-    }
-
-    @Override
-    public boolean isStart() {
-        return isStart;
-    }
-
-    @Override
-    public boolean isFirst() {
-        return true; // Step cannot be iterated so isFirst() is always true
-    }
-
-    @Override
-    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
-        if (token == Merge.onCreate) {
-            setOnCreate(traversalOption);
-        } else if (token == Merge.onMatch) {
-            setOnMatch(traversalOption);
-        } else if (token == Merge.outV) {
-            this.outVTraversal = traversalOption;
-        } else if (token == Merge.inV) {
-            this.inVTraversal = traversalOption;
-        }else {
-            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
-        }
-    }
-
-    @Override
-    public boolean isUsingPartitionStrategy() {
-        return false;
-    }
-
-    @Override
-    public void setOnMatch(final Traversal.Admin<?,Map<Object, Object>> onMatchMap) {
-        this.onMatchTraversal = onMatchMap;
-        if (onMatchMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onMatchMap).getGValue());
-        }
-    }
-
-    @Override
-    public void setOnCreate(final Traversal.Admin<?,Map<Object, Object>> onCreateMap) {
-        this.onCreateTraversal = onCreateMap;
-        if (onCreateMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) onCreateMap).getGValue());
-        }
-    }
-
-    @Override
-    public void setMerge(Traversal.Admin<?,Map<Object, Object>> mergeMap) {
-        this.mergeTraversal = mergeMap;
-        if (mergeMap instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).isParameterized()) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, Map<Object, Object>>) mergeMap).getGValue());
         }
     }
 
@@ -214,12 +92,12 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         MergeEdgeStepPlaceholder<?> that = (MergeEdgeStepPlaceholder<?>) o;
-        return isStart == that.isStart && Objects.equals(properties, that.properties) && Objects.equals(mergeTraversal, that.mergeTraversal) && Objects.equals(onCreateTraversal, that.onCreateTraversal) && Objects.equals(onMatchTraversal, that.onMatchTraversal) && Objects.equals(outVTraversal, that.outVTraversal) && Objects.equals(inVTraversal, that.inVTraversal);
+        return Objects.equals(outVTraversal, that.outVTraversal) && Objects.equals(inVTraversal, that.inVTraversal);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), properties, mergeTraversal, onCreateTraversal, onMatchTraversal, outVTraversal, inVTraversal, isStart);
+        return Objects.hash(super.hashCode(), outVTraversal, inVTraversal);
     }
 
     @Override
@@ -250,78 +128,17 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractStep<S, Edge> implement
     }
 
     @Override
-    public boolean isParameterized() {
-        return onMatchTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) onMatchTraversal).isParameterized() ||
-                onCreateTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) onCreateTraversal).isParameterized() ||
-                mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal) mergeTraversal).isParameterized();
-    }
-
-    @Override
-    public void updateVariable(String name, Object value) {
-        if (mergeTraversal != null && mergeTraversal instanceof GValueConstantTraversal) {
-            ((GValueConstantTraversal<?, Map<Object, Object>>) mergeTraversal).updateVariable(name, value);
+    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
+        if (token == Merge.onCreate) {
+            setOnCreate(traversalOption);
+        } else if (token == Merge.onMatch) {
+            setOnMatch(traversalOption);
+        } else if (token == Merge.outV) {
+            this.outVTraversal = traversalOption;
+        } else if (token == Merge.inV) {
+            this.inVTraversal = traversalOption;
+        }else {
+            throw new UnsupportedOperationException(String.format("Option %s for Merge is not supported", token.name()));
         }
-        if (onMatchTraversal != null && onMatchTraversal instanceof GValueConstantTraversal) {
-            ((GValueConstantTraversal<?, Map<Object, Object>>) onMatchTraversal).updateVariable(name, value);
-        }
-        if (onCreateTraversal != null && onCreateTraversal instanceof GValueConstantTraversal) {
-            ((GValueConstantTraversal<?, Map<Object, Object>>) onCreateTraversal).updateVariable(name, value);
-        }
-    }
-
-    @Override
-    public Collection<GValue<?>> getGValues() {
-        Set<GValue<?>> gValues = new HashSet<>();
-        if (mergeTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) mergeTraversal).getGValue().isVariable()) {
-            gValues.add(((GValueConstantTraversal<?, ?>) mergeTraversal).getGValue());
-        }
-        if (onMatchTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) onMatchTraversal).getGValue().isVariable()) {
-            gValues.add(((GValueConstantTraversal<?, ?>) onMatchTraversal).getGValue());
-        }
-        if (onCreateTraversal instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) onCreateTraversal).getGValue().isVariable()) {
-            gValues.add(((GValueConstantTraversal<?, ?>) onCreateTraversal).getGValue());
-        }
-        return gValues;
-    }
-
-    @Override
-    public CallbackRegistry<Event> getMutatingCallbackRegistry() {
-        throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
-    }
-
-    /**
-     * This implementation should only be used as a mechanism for supporting {@link PartitionStrategy}.
-     */
-    @Override
-    public void addProperty(Object key, Object value) {
-        if (key instanceof GValue) {
-            throw new IllegalArgumentException("GValue cannot be used as a property key");
-        }
-        if (value instanceof GValue) {
-            traversal.getGValueManager().register((GValue<?>) value);
-        }
-        if (properties.containsKey(key)) {
-            throw new IllegalArgumentException("MergeElement.addProperty only support properties with single cardinality");
-        }
-        properties.put(key, Collections.singletonList(value));
-    }
-
-    @Override
-    public Map<Object, List<Object>> getProperties() {
-        return GValueHelper.resolveProperties(properties,
-                gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
-    }
-
-    public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return GValueHelper.resolveProperties(properties);
-    }
-
-    @Override
-    public boolean removeProperty(Object k) {
-        if (properties.containsKey(k)) {
-            properties.remove(k);
-            return true;
-        }
-        return false;
     }
 }

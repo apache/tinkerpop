@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
@@ -29,11 +30,18 @@ import java.util.Map;
 public interface CallStepContract<S, E> extends Step<S, E>, Configuring, TraversalParent {
     Service<S, E> service();
 
+    default Service<S, E> serviceGValueSafe() {
+        return service();
+    }
+
     String getServiceName();
 
-    /**
-     * TODO: re-evaluate if we should change this to return the static params only
-     */
+    Map getStaticParams();
+
+    default GValue<Map> getStaticParamsAsGValue() {
+        return GValue.of(getStaticParams());
+    }
+
     Map getMergedParams();
 
     ServiceRegistry getServiceRegistry();

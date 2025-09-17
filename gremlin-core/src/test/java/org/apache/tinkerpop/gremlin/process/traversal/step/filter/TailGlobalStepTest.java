@@ -65,9 +65,9 @@ public class TailGlobalStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getLimitGValueSafeShouldNotPinVariable() {
+    public void getLimitAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Object, Object> traversal = __.tail(GValue.of(GVALUE_NAME, LIMIT_10)).asAdmin();
-        assertNotNull(((TailGlobalStepPlaceholder) traversal.getSteps().get(0)).getLimitGValueSafe());
+        assertEquals(GValue.of(GVALUE_NAME, LIMIT_10), ((TailGlobalStepPlaceholder) traversal.getSteps().get(0)).getLimitAsGValue());
         verifySingleUnpinnedVariable(traversal, GVALUE_NAME);
     }
 

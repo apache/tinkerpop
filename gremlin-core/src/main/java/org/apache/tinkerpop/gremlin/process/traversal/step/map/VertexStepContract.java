@@ -19,17 +19,23 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public interface VertexStepContract<E extends Element> extends Step<Vertex, E> {
     Direction getDirection();
 
     String[] getEdgeLabels();
+
+    default GValue<String>[] getEdgeLabelsAsGValues() {
+        return Arrays.stream(getEdgeLabels()).map(GValue::of).toArray(GValue[]::new);
+    }
 
     Class<E> getReturnClass();
 

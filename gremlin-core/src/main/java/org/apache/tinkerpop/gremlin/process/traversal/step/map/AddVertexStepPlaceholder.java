@@ -19,49 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class AddVertexStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Vertex, Event.VertexAddedEvent>
-        implements AddVertexStepContract<S>, GValueHolder<S, Vertex> {
+public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholder<S> {
 
-    private boolean userProvidedLabel;
-
-    public AddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        super(traversal, label == null ? Vertex.DEFAULT_LABEL : label);
-        userProvidedLabel = label != null;
+    public AddVertexStepPlaceholder(Traversal.Admin traversal, String label) {
+        super(traversal, label);
     }
 
-    public AddVertexStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal, label == null ? GValue.of(Vertex.DEFAULT_LABEL) : label);
-        userProvidedLabel = label != null;
+    public AddVertexStepPlaceholder(Traversal.Admin traversal, GValue<String> label) {
+        super(traversal, label);
     }
 
-    public AddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
-        super(traversal, vertexLabelTraversal == null ?
-                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : vertexLabelTraversal);
-        userProvidedLabel = vertexLabelTraversal != null;
-    }
-
-    @Override
-    public boolean hasUserProvidedLabel() {
-        return userProvidedLabel;
-    }
-
-    @Override
-    public AddVertexStepPlaceholder<S> clone() {
-        final AddVertexStepPlaceholder<S> clone = (AddVertexStepPlaceholder<S>) super.clone();
-        clone.userProvidedLabel = this.userProvidedLabel;
-        return clone;
-    }
-
-    @Override
-    protected boolean supportsMultiProperties() {
-        return true;
+    public AddVertexStepPlaceholder(Traversal.Admin traversal, Traversal.Admin<S, String> vertexLabelTraversal) {
+        super(traversal, vertexLabelTraversal);
     }
 
     @Override

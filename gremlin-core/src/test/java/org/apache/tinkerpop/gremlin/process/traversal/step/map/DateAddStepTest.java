@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
@@ -134,7 +135,7 @@ public class DateAddStepTest extends StepTest {
     public void shouldAddDaysForDateCompatibility() {
         final Date now = new Date();
 
-        final Calendar cal = Calendar.getInstance();
+        final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         cal.setTime(now);
         cal.add(Calendar.DAY_OF_MONTH, 50);
         final OffsetDateTime expected = OffsetDateTime.ofInstant(cal.getTime().toInstant(), ZoneOffset.UTC);

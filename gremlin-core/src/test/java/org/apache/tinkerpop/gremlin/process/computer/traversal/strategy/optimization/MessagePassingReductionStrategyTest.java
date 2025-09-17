@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.GValueReductionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -38,6 +39,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
@@ -85,7 +87,7 @@ public class MessagePassingReductionStrategyTest {
         final Function<Traverser<Vertex>, Vertex> mapFunction = t -> t.get().vertices(Direction.OUT).next();
         return Arrays.asList(new Object[][]{
                 {__.V().out().count(), __.V().outE().count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())},
-                {__.V().in().count(), __.V().local(__.inE().id()).count(), Collections.singletonList(AdjacentToIncidentStrategy.instance())},
+                {__.V().in().count(), __.V().local(__.inE().id()).count(), List.of(AdjacentToIncidentStrategy.instance(), GValueReductionStrategy.instance())},
                 {__.V().id(), __.V().id(), Collections.emptyList()},
                 {__.V().local(out()), __.V().local(out()), Collections.emptyList()},
                 {__.V().local(in()), __.V().local(in()), Collections.emptyList()},

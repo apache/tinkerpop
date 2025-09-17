@@ -21,13 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -46,8 +44,37 @@ public interface AddEdgeStepContract<S> extends TraversalParent, Scoping, FromTo
      */
     List<Class<? extends Step>> CONCRETE_STEPS = Collections.unmodifiableList(Arrays.asList(AddEdgeStep.class, AddEdgeStepPlaceholder.class));
 
+    /**
+     * Gets the "from" vertex for the edge to be added. If the "from" vertex was added as a {@link Vertex}, ID, {@link GValue},
+     * or {@link ConstantTraversal}, it is returned as a {@link ReferenceVertex}. Otherwise, it is returned in {@link Traversal} form.
+     */
     Object getFrom();
+
+    /**
+     * Gets the "to" vertex for the edge to be added. If the "to" vertex was added as a {@link Vertex}, ID, {@link GValue},
+     * or {@link ConstantTraversal}, it is returned as a {@link ReferenceVertex}. Otherwise, it is returned in {@link Traversal} form.
+     */
     Object getTo();
+
+    /**
+     * Gets the "from" vertex for the edge to be added. If the "from" vertex was added as a {@link Vertex}, ID,
+     * or {@link ConstantTraversal}, it is returned as a {@link ReferenceVertex}. If it was added as a {@link GValue}
+     * containing a {@link Vertex} or ID, the {@link GValue} is returned. Otherwise, it is returned in {@link Traversal} form.
+     */
+    default Object getFromWithGValue() {
+        Object from = getFrom();
+        return from instanceof Traversal ? from : GValue.of(from);
+    }
+
+    /**
+     * Gets the "from" vertex for the edge to be added. If the "from" vertex was added as a {@link Vertex}, ID,
+     * or {@link ConstantTraversal}, it is returned as a {@link ReferenceVertex}. If it was added as a {@link GValue}
+     * containing a {@link Vertex} or ID, the {@link GValue} is returned. Otherwise, it is returned in {@link Traversal} form.
+     */
+    default Object getToWithGValue() {
+        Object to = getTo();
+        return to instanceof Traversal ? to : GValue.of(to);
+    }
 
     default Object getAdjacentVertex(Parameters parameters, String key) {
         Object vertex;
@@ -82,21 +109,5 @@ public interface AddEdgeStepContract<S> extends TraversalParent, Scoping, FromTo
         return (Vertex) vertex;
     }
 
-    default Object resolveVertexTraversal(Traversal.Admin<?,?> vertexTraversal) {
-        return resolveVertexTraversal(vertexTraversal, null);
-    }
 
-    default Object resolveVertexTraversal(Traversal.Admin<?,?> vertexTraversal, Consumer<GValue<?>> gValueConsumer) {
-        if (vertexTraversal instanceof GValueConstantTraversal) {
-            if (gValueConsumer != null) {
-                gValueConsumer.accept(((GValueConstantTraversal<?, ?>) vertexTraversal).getGValue());
-            }
-            return new ReferenceVertex(vertexTraversal.next());
-        }
-        if (vertexTraversal instanceof ConstantTraversal) {
-            return new ReferenceVertex(vertexTraversal.next());
-        }
-        // anything other than a ConstantTraversal is returned as-is
-        return vertexTraversal;
-    }
 }
