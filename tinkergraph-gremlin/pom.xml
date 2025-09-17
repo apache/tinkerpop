@@ -140,7 +140,8 @@ limitations under the License.
                                             <directory>${io.tmp.dir}</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <exclude>grateful-dead.kryo</exclude>
+                                                <include>grateful-dead.kryo</include>
+                                                <include>air-routes.kryo</include>
                                             </includes>
                                         </resource>
                                     </resources>

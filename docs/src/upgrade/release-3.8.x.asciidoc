@@ -30,6 +30,26 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Air Routes Dataset
+
+The Air Routes sample dataset has long been used to help showcase and teach Gremlin. Popularized by the first edition
+of link:https://kelvinlawrence.net/book/PracticalGremlin.html[Practical Gremlin], this dataset offers a real-world graph
+structure that allows for practical demonstration of virtually every feature that Gremlin syntax has to offer. While it
+was easy to simply get the dataset from the Practical Gremlin link:https://github.com/krlawrence/graph[repository],
+including it with the TinkerPop distribution makes it much more convenient to use with Gremlin Server, Gremlin Console,
+or directly in code that depends on the `tinkergraph-gremlin` package.
+
+[source,text]
+----
+plugin activated: tinkerpop.tinkergraph
+gremlin> graph = TinkerFactory.createAirRoutes()
+==>tinkergraph[vertices:3619 edges:50148]
+gremlin> g = traversal().with(graph)
+==>graphtraversalsource[tinkergraph[vertices:3619 edges:50148], standard]
+gremlin> g.V().has('airport','code','IAD').valueMap('code','desc','lon','lat')
+==>[code:[IAD],lon:[-77.45580292],lat:[38.94449997],desc:[Washington Dulles International Airport]]
+----
+
 ==== Number Conversion Step
 
 The new `asNumber()` step provides type casting functionality to Gremlin. It serves as an umbrella step that parses
