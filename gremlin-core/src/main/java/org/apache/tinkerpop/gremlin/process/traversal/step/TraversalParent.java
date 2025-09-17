@@ -88,7 +88,7 @@ public interface TraversalParent extends PopContaining, AutoCloseable {
         final GValueManager childManager = childTraversal.getGValueManager();
         final GValueManager parentManager = this.asStep().getTraversal().getGValueManager();
         childManager.mergeInto(parentManager);
-        TraversalHelper.applyTraversalRecursively(t -> t.setGValueManager(this.asStep().getTraversal().getGValueManager()), childTraversal);
+        TraversalHelper.applyTraversalRecursively(t -> t.setGValueManager(parentManager), childTraversal);
         return (Traversal.Admin<S, E>) childTraversal;
     }
 

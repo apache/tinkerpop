@@ -16,13 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step; //TODO:: relocate class
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import java.util.List;
 import java.util.Map;
 
-public interface PropertyAdding {
+public interface PropertiesHolder {
     void addProperty(Object key, Object value);
     Map<Object, List<Object>> getProperties();
     boolean removeProperty(Object k);
+
+    default public Map<Object, List<Object>> getPropertiesWithGValues() {
+        return getProperties();
+    }
 }

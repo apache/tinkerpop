@@ -69,8 +69,9 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
         return limit.get();
     }
 
-    public Long getLimitGValueSafe() {
-        return limit.get();
+    @Override
+    public GValue<Long> getLimitAsGValue() {
+        return limit;
     }
 
     @Override

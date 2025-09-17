@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ClassFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
@@ -36,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
@@ -188,13 +190,10 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
                 continue;
 
             if (edgeCriterion != null) {
-                final VertexStepContract<Edge> someEStep = new VertexStep<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabels());
+                final VertexStepContract<Edge> someEStep = new VertexStepPlaceholder<>(traversal, Edge.class, step.getDirection(), step.getEdgeLabelsAsGValues());
                 final Step<Edge, Vertex> someVStep = step.getDirection() == Direction.BOTH ?
                         new EdgeOtherVertexStep(traversal) :
                         new EdgeVertexStep(traversal, step.getDirection().opposite());
-
-                // TODO:: preserve GValues from out() to outE() for example
-
                 TraversalHelper.replaceStep((Step<Vertex, Edge>) step, someEStep, traversal);
                 TraversalHelper.insertAfterStep(someVStep, someEStep, traversal);
                 TraversalHelper.copyLabels(step, someVStep, true);

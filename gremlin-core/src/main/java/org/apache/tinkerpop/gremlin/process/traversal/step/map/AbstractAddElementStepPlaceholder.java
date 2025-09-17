@@ -156,12 +156,13 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         return label.next();
     }
 
-    public String getLabelGValueSafe() {
-        return label.next();
+    @Override
+    public GValue<String> getLabelAsGValue() {
+        return label instanceof GValueConstantTraversal ? ((GValueConstantTraversal) label).getGValue() : GValue.of(label.next());
     }
 
     private void setLabel(Object label) {// TODO should this be public and added to step interface?
-        if (getLabelGValueSafe().equals(Vertex.DEFAULT_LABEL)) {
+        if (getLabelAsGValue().get().equals(Vertex.DEFAULT_LABEL)) {
             this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
             if (label instanceof GValue) {
                 traversal.getGValueManager().register((GValue<?>) label);
@@ -207,8 +208,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
     }
 
-    public Map<Object, List<Object>> getPropertiesGValueSafe() {
-        return GValueHelper.resolveProperties(properties);
+    @Override
+    public Map<Object, List<Object>> getPropertiesWithGValues() {
+        return Collections.unmodifiableMap(properties);
     }
 
     @Override
@@ -231,11 +233,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         return elementId.get();
     }
 
-    public Object getElementIdGValueSafe() {
-        if (elementId == null) {
-            return null;
-        }
-        return elementId.get();
+    @Override
+    public GValue<?> getElementIdAsGValue() {
+        return elementId;
     }
 
     @Override

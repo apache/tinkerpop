@@ -20,16 +20,17 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.HashSet;
 
-public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertyAdding, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
+public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertiesHolder, Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent> {
     VertexProperty.Cardinality getCardinality();
 
     @Override
@@ -49,4 +50,11 @@ public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent,
      * Get the property value
      */
     Object getValue();
+
+    /**
+     * Get the value as a GValue, without pinning the variable
+     */
+    default GValue<?> getValueAsGValue() {
+        return GValue.of(getValue());
+    }
 }

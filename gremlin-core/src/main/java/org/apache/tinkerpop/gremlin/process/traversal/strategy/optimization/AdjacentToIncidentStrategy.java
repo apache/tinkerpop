@@ -29,8 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -104,7 +104,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
      * @return <code>true</code> if the step is optimizable, otherwise <code>false</code>
      */
     private static boolean isOptimizable(final Step step) {
-        return ((step instanceof VertexStep && ((VertexStep) step).returnsVertex()) ||
+        return ((step instanceof VertexStepContract && ((VertexStepContract) step).returnsVertex()) ||
                 (step instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) step).getReturnType()))) && (step.getTraversal().getEndStep().getLabels().isEmpty() || step.getNextStep() instanceof CountGlobalStep);
     }
 
@@ -119,8 +119,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         final Step newStep;
         if (step instanceof VertexStepContract) {
             final VertexStepContract vs = (VertexStepContract) step;
-            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
-            // TODO:: preserve GValue and leave unpinned if vs is a GValueHolder
+            newStep = new VertexStepPlaceholder<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabelsAsGValues());
         } else if (step instanceof PropertiesStep) {
             final PropertiesStep ps = (PropertiesStep) step;
             newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());

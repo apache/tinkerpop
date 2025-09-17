@@ -22,18 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
-import java.util.Collection;
-
-public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlaceholder<Edge, Edge, Event.EdgeAddedEvent>
-        implements AddEdgeStepContract<Edge>, GValueHolder<Edge, Edge>, PropertyAdding {
-
-    private Traversal.Admin<?,?> from;
-    private Traversal.Admin<?,?> to;
+public class AddEdgeStartStepPlaceholder extends AbstractAddEdgeStepPlaceholder<Edge> {
 
     public AddEdgeStartStepPlaceholder(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal, edgeLabel == null ? Edge.DEFAULT_LABEL : edgeLabel);
@@ -50,36 +41,6 @@ public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlacehold
     }
 
     @Override
-    public void addTo(final Traversal.Admin<?, ?> toObject) {
-        addTraversal(toObject);
-        if (toObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) toObject).getGValue());
-        }
-        this.to = toObject;
-    }
-
-    @Override
-    public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        addTraversal(fromObject);
-        if (fromObject instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().register(((GValueConstantTraversal<?, ?>) fromObject).getGValue());
-        }
-        this.from = fromObject;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = super.hashCode();
-        if (from != null) {
-            hash ^= from.hashCode();
-        }
-        if (to != null) {
-            hash ^= to.hashCode();
-        }
-        return hash;
-    }
-
-    @Override
     public AddEdgeStartStep asConcreteStep() {
         AddEdgeStartStep step = new AddEdgeStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
         super.configureConcreteStep(step);
@@ -90,73 +51,5 @@ public class AddEdgeStartStepPlaceholder extends AbstractAddElementStepPlacehold
             step.addTo(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) to).getConstantTraversal() : to);
         }
         return step;
-    }
-
-    @Override
-    public boolean isParameterized() {
-        if (super.isParameterized() ||
-                (from instanceof GValueConstantTraversal && ((GValueConstantTraversal<Edge, String>) from).isParameterized()) ||
-                (to instanceof GValueConstantTraversal && ((GValueConstantTraversal<Edge, String>) to).isParameterized())) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    protected boolean supportsMultiProperties() {
-        return false;
-    }
-
-    @Override
-    public Object getFrom() {
-        return resolveVertexTraversal(from, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
-    }
-
-    public Object getFromGValueSafe() {
-        return resolveVertexTraversal(from);
-    }
-
-    @Override
-    public Object getTo() {
-        return resolveVertexTraversal(to, gValue -> traversal.getGValueManager().pinVariable(gValue.getName()));
-    }
-
-    public Object getToGValueSafe() {
-        return resolveVertexTraversal(to);
-    }
-
-    @Override
-    public void updateVariable(String name, Object value) {
-        super.updateVariable(name, value);
-        if (from instanceof GValueConstantTraversal) {
-            ((GValueConstantTraversal<Edge, String>) from).updateVariable(name, value);
-        }
-        if (to instanceof GValueConstantTraversal) {
-            ((GValueConstantTraversal<Edge, String>) to).updateVariable(name, value);
-        }
-    }
-
-    @Override
-    public Collection<GValue<?>> getGValues() {
-        Collection<GValue<?>> gValues = super.getGValues();
-        if (from instanceof GValueConstantTraversal && ((GValueConstantTraversal<Edge, String>) from).getGValue().isVariable()) {
-            gValues.add(((GValueConstantTraversal<Edge, String>) from).getGValue());
-        }
-        if (to instanceof GValueConstantTraversal && ((GValueConstantTraversal<Edge, String>) to).getGValue().isVariable()) {
-            gValues.add(((GValueConstantTraversal<Edge, String>) to).getGValue());
-        }
-        return gValues;
-    }
-
-    @Override
-    public AddEdgeStartStepPlaceholder clone() {
-        final AddEdgeStartStepPlaceholder clone = (AddEdgeStartStepPlaceholder) super.clone();
-        if (from != null){
-            clone.from = from.clone();
-        }
-        if (to != null){
-            clone.to = to.clone();
-        }
-        return clone;
     }
 }

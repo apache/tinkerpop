@@ -186,64 +186,11 @@ public class GValueManagerVerifier {
         }
 
         /**
-         * Verifies that all variables are preserved
+         * Verifies that all variables are preserved and unpinned
          */
         public AfterVerifier<S, E> variablesArePreserved() {
-            final Set<String> currentVariables = manager.getVariableNames();
-            assertEquals("All variables should be preserved", preVariables, currentVariables);
-            return this;
-        }
-
-        /**
-         * Verifies that the contents of the GValueManager before and after applying strategies are unchanged.
-         * This ensures that they have the same Step references, StepContract objects, and the contents of the
-         * StepContracts are also the same.
-         */
-        public AfterVerifier<S, E> notModified() {
-            // Verify that the same steps are in the manager
-            // Use identity-based sets for Step objects
-            final Set<Step> preSteps = Collections.newSetFromMap(new IdentityHashMap<>());
-            preSteps.addAll(preStepGValues.keySet());
-
-            final Set<Step> currentSteps = Collections.newSetFromMap(new IdentityHashMap<>());
-            currentSteps.addAll(TraversalHelper.gatherGValuePlaceholders(traversal));
-
-            assertEquals("Steps in GValueManager should be unchanged", preSteps.size(), currentSteps.size());
-
-            for (Step preStep : preSteps) {
-                boolean found = false;
-                for (Step currentStep : currentSteps) {
-                    if (preStep.toString().equals(currentStep.toString())) {
-                        found = true;
-
-                        // Verify that the step has the same GValues
-                        final Collection<GValue<?>> preGValuesForStep = preStepGValues.get(preStep);
-                        final Collection<GValue<?>> currentGValuesForStep = currentStep instanceof GValueHolder ?
-                                ((GValueHolder<?, ?>) currentStep).getGValues() :
-                                Collections.emptySet();
-                        assertEquals("GValues for step should be unchanged", preGValuesForStep, currentGValuesForStep);
-
-                        // Verify that the step has the same variables
-                        final Set<String> preVariablesForStep = preStepVariables.get(preStep);
-                        if (preVariablesForStep != null) {
-                            final Set<String> currentVariablesForStep = currentGValuesForStep.stream()
-                                    .filter(GValue::isVariable)
-                                    .map(GValue::getName)
-                                    .collect(Collectors.toSet());
-                            assertEquals("Variables for step should be unchanged", preVariablesForStep, currentVariablesForStep);
-                        }
-
-                        // TODO:: Verify that the GValues are the same if they exist
-                        break;
-                    }
-                }
-                assertTrue("Step not found in current steps: " + preStep, found);
-            }
-
-            // Verify that the same GValues are in the manager
-            final Set<GValue<?>> currentGValues = manager.getGValues();
-            assertEquals("GValues in GValueManager should be unchanged", preGValues, currentGValues);
-
+            final Set<String> currentVariables = manager.getUnpinnedVariableNames();
+            assertEquals("All variables should be preserved and unpinned", preVariables, currentVariables);
             return this;
         }
     }
@@ -324,10 +271,8 @@ public class GValueManagerVerifier {
 
             RangeGlobalStepPlaceholder<?> rangeGlobalStepPlaceholder = (RangeGlobalStepPlaceholder<?>) step;
 
-            assertEquals("Low range should match", expectedLow, rangeGlobalStepPlaceholder.getLowRangeGValueSafe());
-            assertEquals("High range should match", expectedHigh, rangeGlobalStepPlaceholder.getHighRangeGValueSafe());
-            assertEquals("Low range name should match", lowName, rangeGlobalStepPlaceholder.getLowName());
-            assertEquals("High range name should match", highName, rangeGlobalStepPlaceholder.getHighName());
+            assertEquals("Low range should match", GValue.of(lowName, expectedLow), rangeGlobalStepPlaceholder.getLowRangeAsGValue());
+            assertEquals("High range should match", GValue.of(highName, expectedHigh), rangeGlobalStepPlaceholder.getHighRangeAsGValue());
 
             return self();
         }
@@ -341,9 +286,9 @@ public class GValueManagerVerifier {
 
             VertexStepPlaceholder<?> vertexStepPlaceholder = (VertexStepPlaceholder<?>) step;
 
-            assertEquals("Label count should match", expectedLabelCount, vertexStepPlaceholder.getEdgeLabelsGValueSafe().length);
+            assertEquals("Label count should match", expectedLabelCount, vertexStepPlaceholder.getEdgeLabelsAsGValues().length);
             assertTrue("Expected names should match", CollectionUtils.isEqualCollection(expectedNames, vertexStepPlaceholder.getGValues().stream().map(GValue::getName).collect(Collectors.toSet())));
-            assertTrue("Expected values should match", CollectionUtils.isEqualCollection(expectedValues, Set.of(vertexStepPlaceholder.getEdgeLabelsGValueSafe())));
+            assertTrue("Expected values should match", CollectionUtils.isEqualCollection(expectedValues, Set.of(GValue.resolveToValues(vertexStepPlaceholder.getEdgeLabelsAsGValues()))));
 
             return self();
         }

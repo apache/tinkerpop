@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
  * Handles the logic of traversing to adjacent vertices or edges given a direction and edge labels for steps like,
  * {@code out}, {@code in}, {@code both}, {@code outE}, {@code inE}, and {@code bothE}.
  */
-public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepContract<E> {
+public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepContract<E> {
 
     private final GValue<String>[] edgeLabels;
     private Direction direction;
@@ -74,8 +75,9 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
         return Arrays.stream(GValue.resolveToValues(edgeLabels)).toArray(String[]::new);
     }
 
-    public String[] getEdgeLabelsGValueSafe() {
-        return Arrays.stream(GValue.resolveToValues(edgeLabels)).toArray(String[]::new);
+    @Override
+    public GValue<String>[] getEdgeLabelsAsGValues() {
+        return edgeLabels;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class VertexStepPlaceholder<E extends Element> extends AbstractStep<Verte
     }
 
     @Override
-    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+    protected Iterator<E> flatMap(Traverser.Admin<Vertex> traverser) {
         throw new IllegalStateException("VertexStepPlaceholder is not executable");
     }
 

@@ -62,7 +62,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlac
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStepPlaceholder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.PropertyAdding;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
@@ -3869,7 +3869,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if ((endStep instanceof AddEdgeStepContract) ||
                 ((endStep instanceof AddVertexStepContract) && keyValues.length == 0 &&
                   (key instanceof T || (key instanceof String && null == cardinality) || key instanceof Traversal))) {
-            ((PropertyAdding) endStep).addProperty(key, value);
+            ((PropertiesHolder) endStep).addProperty(key, value);
         } else {
             final AddPropertyStepContract<Element> addPropertyStep = new AddPropertyStepPlaceholder<>(this.asAdmin(), cardinality, key, value);
             this.asAdmin().addStep(addPropertyStep);

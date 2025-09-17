@@ -71,10 +71,10 @@ public class RangeGlobalStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getLowHighRangeGValueSafeShouldNotPinVariables() {
+    public void getLowHighRangeAsGValueShouldNotPinVariables() {
         GraphTraversal.Admin<Object, Object> traversal = __.range(GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
-        assertEquals(LOW_VALUE, ((RangeStepPlaceholder.RangeGlobalStepPlaceholder) traversal.getSteps().get(0)).getLowRangeGValueSafe());
-        assertEquals(HIGH_VALUE, ((RangeStepPlaceholder.RangeGlobalStepPlaceholder) traversal.getSteps().get(0)).getHighRangeGValueSafe());
+        assertEquals(GValue.of(LOW_NAME, LOW_VALUE), ((RangeStepPlaceholder.RangeGlobalStepPlaceholder) traversal.getSteps().get(0)).getLowRangeAsGValue());
+        assertEquals(GValue.of(HIGH_NAME, HIGH_VALUE), ((RangeStepPlaceholder.RangeGlobalStepPlaceholder) traversal.getSteps().get(0)).getHighRangeAsGValue());
         verifyVariables(traversal, Set.of(), Set.of(LOW_NAME, HIGH_NAME));
     }
 

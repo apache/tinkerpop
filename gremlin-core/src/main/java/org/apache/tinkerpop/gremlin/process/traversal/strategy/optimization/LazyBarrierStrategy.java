@@ -28,9 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ElementStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -108,10 +108,10 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
             }
 
             if (step instanceof FlatMapStep &&
-                    !(step instanceof VertexStep && ((VertexStep) step).returnsEdge()) ||
-                    (step instanceof GraphStep &&
-                            (i > 0 || ((GraphStep) step).getIds().length >= BIG_START_SIZE ||
-                                    (((GraphStep) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
+                    !(step instanceof VertexStepContract && ((VertexStepContract) step).returnsEdge()) ||
+                    (step instanceof GraphStepContract &&
+                            (i > 0 || ((GraphStepContract) step).getIds().length >= BIG_START_SIZE ||
+                                    (((GraphStepContract) step).getIds().length == 0 && !(step.getNextStep() instanceof HasStep))))) {
 
                 // DiscardStep, EmptyStep signify the end of the traversal where no barriers are really going to be
                 // helpful after that. ProfileSideEffectStep means the traversal had profile() called on it and if

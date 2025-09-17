@@ -34,7 +34,11 @@ public interface IsStepContract<S> extends Step<S, S> {
      *
      * @return the predicate associated with the step
      */
-    public P<?> getPredicate();
+    public P<S> getPredicate();
+
+    default P<S> getPredicateGValueSafe() {
+        return getPredicate();
+    }
 
     public Set<TraverserRequirement> getRequirements();
 }

@@ -99,9 +99,9 @@ public class AddVertexStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getLabelGValueSafeShouldNotPinVariable() {
+    public void getLabelAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Vertex, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals("person", ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0)).getLabelGValueSafe());
+        assertEquals(GValue.of("label", "person"), ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0)).getLabelAsGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
     
@@ -120,9 +120,9 @@ public class AddVertexStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getElementIdGValueSafeShouldNotPinVariable() {
+    public void getElementIdAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Vertex, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals("1234", ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0)).getElementIdGValueSafe());
+        assertEquals(GValue.of("id", "1234"), ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0)).getElementIdAsGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
 
@@ -140,10 +140,10 @@ public class AddVertexStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getPropertiesGValueSafeShouldNotPinVariable() {
+    public void getPropertiesWithGValuesShouldNotPinVariable() {
         GraphTraversal.Admin<Vertex, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals(List.of(29), ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0))
-                .getPropertiesGValueSafe().get("age"));
+        assertEquals(List.of(GValue.of("a", 29)), ((AddVertexStartStepPlaceholder) traversal.getSteps().get(0))
+                .getPropertiesWithGValues().get("age"));
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
 

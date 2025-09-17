@@ -80,7 +80,7 @@ public class IncidentToAdjacentStrategyTest {
         @Test
         public void doTest() {
             final String repr = original.getGremlinLang().getGremlin("__");
-            GValueManagerVerifier.verify(original.asAdmin(), IncidentToAdjacentStrategy.instance())
+            GValueManagerVerifier.verify(original.asAdmin(), IncidentToAdjacentStrategy.instance(), Set.of(GValueReductionStrategy.instance()))
                     .afterApplying()
                     .managerIsEmpty();
             assertEquals(repr, this.optimized, this.original);
