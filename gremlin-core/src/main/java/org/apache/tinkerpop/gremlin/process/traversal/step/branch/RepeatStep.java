@@ -21,9 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -46,6 +49,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     private String loopName = null;
     public boolean untilFirst = false;
     public boolean emitFirst = false;
+    private boolean first = true;
 
     public RepeatStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -206,23 +210,37 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             throw new IllegalStateException("The repeat()-traversal was not defined: " + this);
 
         while (true) {
-            if (this.repeatTraversal.getEndStep().hasNext()) {
+            if (!first && this.repeatTraversal.getEndStep().hasNext()) {
                 return this.repeatTraversal.getEndStep();
             } else {
-                final Traverser.Admin<S> start = this.starts.next();
-                start.initialiseLoops(this.getId(), this.loopName);
-                if (doUntil(start, true)) {
-                    start.resetLoops();
-                    return IteratorUtils.of(start);
-                }
-                this.repeatTraversal.addStart(start);
-                if (doEmit(start, true)) {
-                    final Traverser.Admin<S> emitSplit = start.split();
-                    emitSplit.resetLoops();
-                    return IteratorUtils.of(emitSplit);
+                this.first = false;
+                if (!TraversalHelper.getStepsOfAssignableClassRecursively(Barrier.class, repeatTraversal).isEmpty()) {
+                    if (!this.starts.hasNext())
+                        throw FastNoSuchElementException.instance();
+                    while (this.starts.hasNext()) {
+                        initStart(this.starts.next());
+                    }
+                } else {
+                    Iterator<Traverser.Admin<S>> iter = initStart(this.starts.next());
+                    return iter == null ? Collections.emptyIterator() : iter;
                 }
             }
         }
+    }
+
+    private Iterator<Traverser.Admin<S>> initStart(final Traverser.Admin<S> start) {
+        start.initialiseLoops(this.getId(), this.loopName);
+        if (doUntil(start, true)) {
+            start.resetLoops();
+            return IteratorUtils.of(start);
+        }
+        this.repeatTraversal.addStart(start);
+        if (doEmit(start, true)) {
+            final Traverser.Admin<S> emitSplit = start.split();
+            emitSplit.resetLoops();
+            return IteratorUtils.of(emitSplit);
+        }
+        return null;
     }
 
     @Override
