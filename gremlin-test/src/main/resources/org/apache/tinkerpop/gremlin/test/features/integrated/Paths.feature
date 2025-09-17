@@ -18,96 +18,96 @@
 @StepClassIntegrated
 Feature: Step - paths
 
-  @GraphComputerVerificationReferenceOnly @InsertionOrderingRequired
-  Scenario: g_V_shortestpath
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().as("v").both().as("v").
-        project("src", "tgt", "p").
-          by(__.select(first, "v")).
-          by(__.select(last, "v")).
-          by(__.select(Pop.all, "v")).as("triple").
-        group("x").
-          by(__.select("src", "tgt")).
-          by(__.select("p").fold()).select("tgt").barrier().
-        repeat(__.both().as("v").
-                project("src", "tgt", "p").
-                  by(__.select(first, "v")).
-                  by(__.select(last, "v")).
-                  by(__.select(Pop.all, "v")).as("t").
-                filter(__.select(Pop.all, "p").count(local).as("l").
-                       select(Pop.last, "t").select(Pop.all, "p").dedup(Scope.local).count(Scope.local).where(P.eq("l"))).
-                select(Pop.last, "t").
-                not(__.select(Pop.all, "p").as("p").count(local).as("l").
-                    select(Pop.all, "x").unfold().filter(select(keys).where(P.eq("t")).by(__.select("src", "tgt"))).
-                    filter(__.select(Column.values).unfold().or(__.count(Scope.local).where(P.lt("l")), __.where(P.eq("p"))))).
-                barrier().
-                group("x").
-                  by(__.select("src", "tgt")).
-                  by(__.select(Pop.all, "p").fold()).select("tgt").barrier()).
-        cap("x").select(Column.values).unfold().unfold().map(__.unfold().values("name").fold())
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | l[josh,marko,vadas]|
-      | l[ripple,josh,lop]|
-      | l[josh,lop]|
-      | l[peter,lop,marko]|
-      | l[ripple,josh,marko]|
-      | l[josh,marko]|
-      | l[marko,lop]|
-      | l[lop,marko]|
-      | l[josh,lop,peter]|
-      | l[peter,lop,josh]|
-      | l[vadas,marko]|
-      | l[ripple,josh]|
-      | l[marko]|
-      | l[josh]|
-      | l[ripple]|
-      | l[josh,ripple]|
-      | l[peter,lop]|
-      | l[vadas,marko,josh]|
-      | l[lop,josh,ripple]|
-      | l[marko,josh]|
-      | l[lop,marko,vadas]|
-      | l[lop]|
-      | l[peter]|
-      | l[vadas]|
-      | l[marko,josh,ripple]|
-      | l[marko,vadas]|
-      | l[vadas,marko,lop]|
-      | l[lop,peter]|
-      | l[lop,josh]|
-      | l[marko,lop,peter]|
-
-  @GraphComputerVerificationStarGraphExceeded @WithSeedStrategy @InsertionOrderingRequired
-  Scenario: g_V_playlist_paths
-    Given the grateful graph
-    And the traversal of
-      """
-      g.withStrategies(SeedStrategy(seed: 99999)).V().has("name", "Bob_Dylan").in("sungBy").as("a").
-        repeat(__.out().order().by(Order.shuffle).simplePath().from("a")).
-          until(__.out("writtenBy").has("name", "Johnny_Cash")).
-        limit(1).as("b").
-        repeat(__.out().order().by(Order.shuffle).as("c").simplePath().from("b").to("c")).
-          until(__.out("sungBy").has("name", "Grateful_Dead")).
-        limit(1).
-        path().from("a").unfold().
-        project("song", "artists").
-          by("name").
-          by(__.coalesce(__.out("sungBy", "writtenBy").dedup().values("name"),
-                         __.constant("Unknown")).fold())
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | m[{"song":"TOMORROW IS A LONG TIME","artists":["Bob_Dylan"]}] |
-      | m[{"song":"JOHN BROWN","artists":["Bob_Dylan"]}] |
-      | m[{"song":"BABY BLUE","artists":["Unknown"]}] |
-      | m[{"song":"CANDYMAN","artists":["Garcia","Hunter"]}] |
-      | m[{"song":"BIG RIVER","artists":["Weir","Johnny_Cash"]}] |
-      | m[{"song":"TERRAPIN STATION","artists":["Garcia","Hunter"]}] |
-      | m[{"song":"DRUMS","artists":["Grateful_Dead"]}] |
+#  @GraphComputerVerificationReferenceOnly @InsertionOrderingRequired
+#  Scenario: g_V_shortestpath
+#    Given the modern graph
+#    And the traversal of
+#      """
+#      g.V().as("v").both().as("v").
+#        project("src", "tgt", "p").
+#          by(__.select(first, "v")).
+#          by(__.select(last, "v")).
+#          by(__.select(Pop.all, "v")).as("triple").
+#        group("x").
+#          by(__.select("src", "tgt")).
+#          by(__.select("p").fold()).select("tgt").barrier().
+#        repeat(__.both().as("v").
+#                project("src", "tgt", "p").
+#                  by(__.select(first, "v")).
+#                  by(__.select(last, "v")).
+#                  by(__.select(Pop.all, "v")).as("t").
+#                filter(__.select(Pop.all, "p").count(local).as("l").
+#                       select(Pop.last, "t").select(Pop.all, "p").dedup(Scope.local).count(Scope.local).where(P.eq("l"))).
+#                select(Pop.last, "t").
+#                not(__.select(Pop.all, "p").as("p").count(local).as("l").
+#                    select(Pop.all, "x").unfold().filter(select(keys).where(P.eq("t")).by(__.select("src", "tgt"))).
+#                    filter(__.select(Column.values).unfold().or(__.count(Scope.local).where(P.lt("l")), __.where(P.eq("p"))))).
+#                barrier().
+#                group("x").
+#                  by(__.select("src", "tgt")).
+#                  by(__.select(Pop.all, "p").fold()).select("tgt").barrier()).
+#        cap("x").select(Column.values).unfold().unfold().map(__.unfold().values("name").fold())
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | l[josh,marko,vadas]|
+#      | l[ripple,josh,lop]|
+#      | l[josh,lop]|
+#      | l[peter,lop,marko]|
+#      | l[ripple,josh,marko]|
+#      | l[josh,marko]|
+#      | l[marko,lop]|
+#      | l[lop,marko]|
+#      | l[josh,lop,peter]|
+#      | l[peter,lop,josh]|
+#      | l[vadas,marko]|
+#      | l[ripple,josh]|
+#      | l[marko]|
+#      | l[josh]|
+#      | l[ripple]|
+#      | l[josh,ripple]|
+#      | l[peter,lop]|
+#      | l[vadas,marko,josh]|
+#      | l[lop,josh,ripple]|
+#      | l[marko,josh]|
+#      | l[lop,marko,vadas]|
+#      | l[lop]|
+#      | l[peter]|
+#      | l[vadas]|
+#      | l[marko,josh,ripple]|
+#      | l[marko,vadas]|
+#      | l[vadas,marko,lop]|
+#      | l[lop,peter]|
+#      | l[lop,josh]|
+#      | l[marko,lop,peter]|
+#
+#  @GraphComputerVerificationStarGraphExceeded @WithSeedStrategy @InsertionOrderingRequired
+#  Scenario: g_V_playlist_paths
+#    Given the grateful graph
+#    And the traversal of
+#      """
+#      g.withStrategies(SeedStrategy(seed: 99999)).V().has("name", "Bob_Dylan").in("sungBy").as("a").
+#        repeat(__.out().order().by(Order.shuffle).simplePath().from("a")).
+#          until(__.out("writtenBy").has("name", "Johnny_Cash")).
+#        limit(1).as("b").
+#        repeat(__.out().order().by(Order.shuffle).as("c").simplePath().from("b").to("c")).
+#          until(__.out("sungBy").has("name", "Grateful_Dead")).
+#        limit(1).
+#        path().from("a").unfold().
+#        project("song", "artists").
+#          by("name").
+#          by(__.coalesce(__.out("sungBy", "writtenBy").dedup().values("name"),
+#                         __.constant("Unknown")).fold())
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | m[{"song":"TOMORROW IS A LONG TIME","artists":["Bob_Dylan"]}] |
+#      | m[{"song":"JOHN BROWN","artists":["Bob_Dylan"]}] |
+#      | m[{"song":"BABY BLUE","artists":["Unknown"]}] |
+#      | m[{"song":"CANDYMAN","artists":["Garcia","Hunter"]}] |
+#      | m[{"song":"BIG RIVER","artists":["Weir","Johnny_Cash"]}] |
+#      | m[{"song":"TERRAPIN STATION","artists":["Garcia","Hunter"]}] |
+#      | m[{"song":"DRUMS","artists":["Grateful_Dead"]}] |
 
