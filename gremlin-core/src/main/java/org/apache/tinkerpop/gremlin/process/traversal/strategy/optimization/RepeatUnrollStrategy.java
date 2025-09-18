@@ -19,7 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -28,14 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * {@code RepeatUnrollStrategy} is an OLTP-only strategy that unrolls any {@link RepeatStep} if it uses a constant
@@ -56,8 +55,8 @@ import java.util.Set;
 public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final RepeatUnrollStrategy INSTANCE = new RepeatUnrollStrategy();
-    protected static final int MAX_BARRIER_SIZE = 2500;
-    private static final Set<Class> INVALIDATING_STEPS = new HashSet<>(Arrays.asList(LambdaHolder.class, LoopsStep.class));
+    static final int MAX_BARRIER_SIZE = 2500;
+    private static final Set<Class> ALLOWED_STEPS = Set.of(VertexStep.class, EdgeVertexStep.class, RepeatStep.class, RepeatStep.RepeatEndStep.class);
 
     private RepeatUnrollStrategy() {
     }
@@ -73,10 +72,16 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
         for (int i = 0; i < traversal.getSteps().size(); i++) {
             if (traversal.getSteps().get(i) instanceof RepeatStep) {
                 final RepeatStep<?> repeatStep = (RepeatStep) traversal.getSteps().get(i);
+
+                Set<? extends Class<? extends Step>> stepClasses = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, repeatStep.getRepeatTraversal())
+                        .stream()
+                        .map(step -> step.getClass())
+                        .collect(Collectors.toSet());
+                System.out.println("Found Step Classes: " + stepClasses.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")));
+
                 if (null == repeatStep.getEmitTraversal() && null != repeatStep.getRepeatTraversal() &&
-                        repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 &&
-                        !TraversalHelper.hasStepOfAssignableClassRecursively(Scope.global, DedupGlobalStep.class, repeatStep.getRepeatTraversal()) &&
-                        !TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEPS, repeatStep.getRepeatTraversal())) {
+                        repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 && 
+                        ALLOWED_STEPS.containsAll(stepClasses)) {
 
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
                     repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
@@ -105,6 +110,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
                     // remove the RepeatStep
                     traversal.removeStep(i);
+                } else {
+                    System.out.println("RepeatUnrollStrategy not applied");
                 }
             }
         }

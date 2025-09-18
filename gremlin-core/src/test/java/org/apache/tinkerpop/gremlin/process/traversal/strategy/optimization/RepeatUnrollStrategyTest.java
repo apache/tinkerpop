@@ -69,6 +69,7 @@ public class RepeatUnrollStrategyTest {
         @Test
         public void doTest() {
             final String repr = translator.translate(original.getBytecode()).getScript();
+            System.out.println("Original Query: " + repr);
             final TraversalStrategies strategiesWithLazy = new DefaultTraversalStrategies();
             strategiesWithLazy.addStrategies(RepeatUnrollStrategy.instance());
             Traversal.Admin<?, ?> clonedOriginal = this.original.clone();
