@@ -67,7 +67,39 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
 
     @Override
     public AbstractMergeElementStepPlaceholder<S, E> clone() {
-        return (AbstractMergeElementStepPlaceholder<S, E>) super.clone();
+        AbstractMergeElementStepPlaceholder<S, E> clone = (AbstractMergeElementStepPlaceholder<S, E>) super.clone();
+        if (mergeTraversal != null){
+            clone.setMerge(mergeTraversal.clone());
+        }
+        if (onMatchTraversal != null) {
+            clone.setOnMatch(onMatchTraversal.clone());
+        }
+        if (onCreateTraversal != null) {
+            clone.setOnCreate(onCreateTraversal.clone());
+        }
+
+        // deep clone properties
+        clone.properties = new HashMap<>();
+        for (Map.Entry<Object, List<Object>> entry : this.properties.entrySet()) {
+            final Object key = entry.getKey();
+            final List<Object> oldValues = entry.getValue();
+            final List<Object> newValues = new ArrayList<>(oldValues.size());
+            for (Object v : oldValues) {
+                if (v instanceof Traversal) {
+                    newValues.add(((Traversal<?, ?>) v).asAdmin().clone());
+                } else if (v instanceof GValue) {
+                    try {
+                        newValues.add(((GValue) v).clone());
+                    } catch (CloneNotSupportedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    newValues.add(v);
+                }
+            }
+            clone.properties.put(key, newValues);
+        }
+        return clone;
     }
 
     @Override
