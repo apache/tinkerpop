@@ -102,7 +102,7 @@ mime type is made explicit on requests to avoid breaking changes or unexpected r
 
 Version 4.0 of GraphSON was first introduced on TinkerPop 4.0.0 and is represented by the
 `application/vnd.gremlin-v4.0+json` mime type. There also exists an untyped version:
-`application/vnd.gremlin-v3.0+json;types=false`. It is very similar to GraphSON 3.0, with just several key differences:
+`application/vnd.gremlin-v4.0+json;types=false`. It is very similar to GraphSON 3.0, with just several key differences:
 many underused or duplicated types have been removed, labels are now list of strings and request/response formats have
 changed quite a bit, and custom types have been replaced with Provider Defined Type (PDT).
 
