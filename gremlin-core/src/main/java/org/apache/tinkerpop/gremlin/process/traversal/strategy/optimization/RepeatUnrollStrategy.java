@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -32,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -56,7 +55,11 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
     private static final RepeatUnrollStrategy INSTANCE = new RepeatUnrollStrategy();
     static final int MAX_BARRIER_SIZE = 2500;
-    private static final Set<Class> ALLOWED_STEPS = Set.of(VertexStep.class, EdgeVertexStep.class, RepeatStep.class, RepeatStep.RepeatEndStep.class);
+    private static final Set<Class> ALLOWED_STEP_CLASSES = Set.of(
+            VertexStepContract.class,
+            EdgeVertexStep.class,
+            RepeatStep.class,
+            RepeatStep.RepeatEndStep.class);
 
     private RepeatUnrollStrategy() {
     }
@@ -73,15 +76,9 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
             if (traversal.getSteps().get(i) instanceof RepeatStep) {
                 final RepeatStep<?> repeatStep = (RepeatStep) traversal.getSteps().get(i);
 
-                Set<? extends Class<? extends Step>> stepClasses = TraversalHelper.getStepsOfAssignableClassRecursively(Step.class, repeatStep.getRepeatTraversal())
-                        .stream()
-                        .map(step -> step.getClass())
-                        .collect(Collectors.toSet());
-                System.out.println("Found Step Classes: " + stepClasses.stream().map(Class::getSimpleName).collect(Collectors.joining(", ")));
-
                 if (null == repeatStep.getEmitTraversal() && null != repeatStep.getRepeatTraversal() &&
-                        repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 && 
-                        ALLOWED_STEPS.containsAll(stepClasses)) {
+                        repeatStep.getUntilTraversal() instanceof LoopTraversal && ((LoopTraversal) repeatStep.getUntilTraversal()).getMaxLoops() > 0 &&
+                        TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(ALLOWED_STEP_CLASSES, repeatStep.getRepeatTraversal())) {
 
                     final Traversal.Admin<?, ?> repeatTraversal = repeatStep.getGlobalChildren().get(0);
                     repeatTraversal.removeStep(repeatTraversal.getSteps().size() - 1); // removes the RepeatEndStep
@@ -116,7 +113,6 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
             }
         }
     }
-
 
     public static RepeatUnrollStrategy instance() {
         return INSTANCE;
