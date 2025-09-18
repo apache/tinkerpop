@@ -25,13 +25,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -39,14 +36,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
  * {@code RepeatUnrollStrategy} is an OLTP-only strategy that unrolls any {@link RepeatStep} if it uses a constant
- * number of loops ({@code times(x)}) and doesn't emit intermittent elements. If any of the following 3 steps appears
- * within the repeat-traversal, the strategy will not be applied:
+ * number of loops ({@code times(x)}) and doesn't emit intermittent elements. The strategy only applies to repeat
+ * traversals that contain exclusively safe, stateless steps from the allowed set:
  * <p/>
  * <ul>
- *     <li>{@link DedupGlobalStep}</li>
- *     <li>{@link LoopsStep}</li>
- *     <li>{@link LambdaHolder}</li>
+ *     <li>{@link VertexStepContract}</li>
+ *     <li>{@link EdgeVertexStep}</li>
+ *     <li>{@link EdgeOtherVertexStep}</li>
+ *     <li>{@link HasStep}</li>
+ *     <li>{@link RepeatStep} and {@link RepeatStep.RepeatEndStep}</li>
  * </ul>
+ * <p/>
+ * Steps that are not in this allowed set will prevent the strategy from being applied. This allowed set of steps is 
+ * intentionally conservative as there have been unintentional traversal semantics changes in the past when allowing a 
+ * large variety of steps (especially barriers). Only steps that can be safely executed outside the repeat (and not 
+ * modify semantics of the traversal) should be included. The allowed set can be expanded in future versions as 
+ * additional steps are verified to be safe.
+ * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
@@ -96,7 +102,7 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
                         // the addition of barriers is determined by the existence of LazyBarrierStrategy
                         if (lazyBarrierStrategyInstalled) {
-                            // only add a final NoOpBarrier is subsequent step is not a barrier
+                            // only add a final NoOpBarrier if subsequent step is not a barrier
                             // Don't add a barrier if this step is a barrier (prevents nested repeat adding the barrier multiple times)
                             Step step = traversal.getSteps().get(insertIndex);
                             if ((j != (loops - 1) || !(step.getNextStep() instanceof Barrier)) && !(step instanceof NoOpBarrierStep)) {
