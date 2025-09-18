@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
@@ -58,6 +60,8 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
     private static final Set<Class> ALLOWED_STEP_CLASSES = Set.of(
             VertexStepContract.class,
             EdgeVertexStep.class,
+            //EdgeOtherVertexStep.class?,
+            HasStep.class,
             RepeatStep.class,
             RepeatStep.RepeatEndStep.class);
 
