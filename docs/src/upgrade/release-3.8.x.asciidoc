@@ -699,6 +699,95 @@ some of the interfaces in the gremlin traversal engine. This has led to several 
 As of 3.8.0 `with()` modulation of the following steps will no longer work: `addV()`, `addE()`, `property()`, `drop()`,
 `mergeV()`, and `mergeE()`.
 
+==== Stricter RepeatUnrollStrategy
+
+The `RepeatUnrollStrategy` has been updated to use a more conservative approach for determining which repeat traversals 
+are safe to unroll. Previously, the strategy would attempt to unroll most usages of `repeat()` used with `times()` 
+without `emit()`. This caused unintentional traversal semantic changes when some steps were unrolled (especially barrier 
+steps). 
+
+As of 3.8.0, the strategy will still only be applied if `repeat()` is used with `times()` without `emit()` but now only 
+applies to repeat traversals that contain exclusively safe, well-understood steps: `out()`, `in()`, `both()`, `inV()`, 
+`outV()`, `otherV()`, `has(key, value)`. 
+
+Repeat traversals containing other steps will no longer be unrolled. There may be some performance differences for 
+traversals that previously benefited from automatic unrolling but the consistency of semantics outweighs the performance 
+impact.
+
+===== Examples of Affected Traversals =====
+
+Usage of `limit()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
+returned from the `modern` graph demonstrate the change of semantics if the `limit()` in `repeat()` were to be unrolled:
+
+[source,text]
+----
+gremlin> g.V().both().limit(1).both().limit(1)
+==>v[1]
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().repeat(both().limit()).times(2)
+gremlin>
+----
+
+Another example is the usage of `aggregate()` inside `repeat()`. The following results returned from the `modern` graph 
+demonstrate the change of semantics if the `aggregate()` in `repeat()` were to be unrolled:
+
+[source,text]
+----
+gremlin> g.V().both().aggregate('x').both().aggregate('x').limit(10)
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[4]
+==>v[4]
+==>v[4]
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().repeat(both().aggregate('x')).times(2).limit(10)
+==>v[1]
+==>v[1]
+==>v[1]
+==>v[4]
+==>v[6]
+==>v[5]
+==>v[3]
+==>v[3]
+==>v[2]
+==>v[4]
+----
+
+Other examples of affected traversals include (but are not limited to):
+
+[source,groovy]
+----
+g.V().repeat(out().limit(10)).times(3)
+g.V().repeat(in().order().by("name")).times(2)
+g.V().repeat(both().simplePath()).times(4)
+g.V().repeat(both().sample(1)).times(2)
+----
+
+===== Migration Strategies
+
+Before upgrading, analyze existing traversals which use `repeat()` with any steps other than `out()`, `in()`, `both()`,
+`inV()`, `outV()`, `otherV()`, `has(key, value)` and determine if the semantics of these traversals are as expected when 
+the `RepeatUnrollStrategy` is disabled using `withoutStrategies(RepeatUnrollStrategy)`. If the semantics are unexpected
+the traversal should be restructured to no longer use `repeat()` by manually unrolling the steps inside `repeat()` or by
+moving affected steps outside the `repeat()`.
+
+Example:
+
+[source,groovy]
+----
+// original traversal
+g.V().repeat(both().dedup()).times(2)
+// can be manually unrolled to
+g.V().both().dedup().both().dedup()
+// or dedup can be moved outside of repeat
+g.V().repeat(both()).times(2).dedup()
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

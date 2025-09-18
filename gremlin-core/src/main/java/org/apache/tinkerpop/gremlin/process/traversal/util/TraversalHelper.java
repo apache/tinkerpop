@@ -641,6 +641,24 @@ public final class TraversalHelper {
     }
 
     /**
+     * Checks if the traversal only has steps that are equal to or assignable from the given step classes.
+     *
+     * @param stepClasses the collection of allowed step classes
+     * @param traversal the traversal to check
+     * @return true if all steps in the traversal are equal to or assignable from the given classes
+     */
+    public static boolean hasOnlyStepsOfAssignableClassesRecursively(final Collection<Class> stepClasses, final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : getStepsOfAssignableClassRecursively(Step.class, traversal)) {
+            final boolean isSupported = stepClasses.stream()
+                    .anyMatch(allowedClass -> allowedClass.isAssignableFrom(step.getClass()));
+            if (!isSupported) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Determine if any step in {@link Traversal} or its children match the step given the provided {@link Predicate}.
      *
      * @param predicate the match function
