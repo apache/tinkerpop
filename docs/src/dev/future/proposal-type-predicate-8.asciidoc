@@ -33,7 +33,7 @@ To facilitate type assertion across GLVs, using a unified set of enum tokens is 
 
 We will define a `GType` enum consisting of core types in Gremlin to be used with the type predicate (for full set of types, see Appendix), for type safety and maintainability across GLVs. This will also be the single set of type enum used in Gremlin steps (e.g. replacing `N` in `asNumber()`).
 
-This enum itself will not be extendable, however it will contain a GlobalCache which providers can use to register their own types with the Grammar to be used as string arguments.
+This enum itself will not be extendable. Providers will be able to add their own types into the GlobalTypeCache to be resolved as string literals.
 
 [source,java]
 ----
@@ -46,6 +46,7 @@ public enum GType {
   LONG(Long.class),
   MAP(Map.class),
   NULL(OffsetDateTime.class),;
+  // for comprehensive list please see Appendix
 
   private final Class<?> javaType;
 
@@ -54,24 +55,12 @@ public enum GType {
   }
 
   public Class<?> getType() { return javaType; }
-
-  public GType fromName(String name) { return GType.valueOf(name.toUpperCase()); }
-
-  static final class GlobalTypeCache {
-
-      private GlobalTypeCache() {
-          throw new IllegalStateException("Utility class");
-      }
-
-      private static final Map<String, Class<?>> GLOBAL_TYPE_REGISTRY = new ConcurrentHashMap<>() {
-      };
-    }
 }
 ----
 
 === Addition of `P.typeOf(token)`
 
-Given `P` is widely used by filter steps and has existing evaluation structure, we would also introduce a new predicate `Type` for type assertions.
+Given `P` is widely used by filter steps and has existing evaluation structure, we would also introduce a new enum `Type` for type assertions, while adding a `typeOf` predicate into `P`, which will have 3 overloads, `GType`, `String`, and `Class` (for Java/Groovy only).
 
 [source,java]
 ----
@@ -80,16 +69,22 @@ public enum Type implements PBiPredicate<Object, Object> {
         @Override
         public boolean test(final Object first, final Object second) {
             // implementations
-        }}
+        }};
+
+    static final class GlobalTypeCache {
+        private GlobalTypeCache() {
+          throw new IllegalStateException("Utility class");
+        }
+        private static final Map<String, Class<?>> GLOBAL_TYPE_REGISTRY = new ConcurrentHashMap<>() {};
+    }
 }
 ----
 
 There are several accepted overloads for the token.
 
 * `P.typeOf(GType)` - default case, accepts core Gremlin type enum.
-* `P.typeOf(String)` - string for extensions:
-** Can be the string key used in the Global Cache (e.g. `"GType.NUMBER"`), for providers
-** Can be canonical Java class names for which we can derive the class from (e.g. `"java.lang.Number"`)
+* `P.typeOf(String)` - string for provider extensions:
+** Only the registered type names inside GlobalTypeCache will resolve. None-registered string will result in `false`
 * `P.typeOf(Class)` - Java-specific for convenience, can be used as sugar syntax in Groovy
 
 Any other input, while accepted, will return `false` and lead to result being filtered out (alternative is to throw exception).
@@ -108,16 +103,20 @@ gremlin> g.inject(1.0,2,3,'hello',false).is(P.typeOf(GType.NUMBER)).fold()
 gremlin> g.inject(1.0,2,3,'hello',false).is(not(P.typeOf(GType.NUMBER))).fold()
 ==> [hello,false]
 
-// Use of String key in GlobalTypeCache
-gremlin> g.inject(1.0,2,3,'hello',false).is(P.typeOf("GType.NUMBER")).fold() // in this case
-==> [1.0,2,3]
-// Use of canonical Java name
-gremlin> g.inject(1.0,2,3,'hello',false).is(P.typeOf("java.lang.Number")).fold() // in this case
-==> [1.0,2,3]
+// Use of String key in GlobalTypeCache, assuming 'String' and 'Integer' are registered
+gremlin> g.V().or(__.has('name', P.typeOf('String')), __.has('age', P.typeOf('Integer'))).values('name')
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
 
 // Use of Java class for sugar syntx
 gremlin> g.V().is(P.typeOf(Vertex.class)).fold()
 ==> [v[1],v[2],[v3],[v4],[v5],[v6]]
+
+// Use of Groovy syntax in console
 gremlin> g.inject(1.0,2,3,'hello',false).is(typeOf(Number)).fold()
 ==> [1.0,2,3]
 gremlin> typeOf(Number).test(1)
@@ -166,9 +165,9 @@ public class Point {
 Register the desired string token representing the type in the Global Cache, and provide the appropriate user documentation:
 
 ----
-GType.GlobalTypeCache.registerDataType("MyPoint", Point.class);
+Type.GlobalTypeCache.registerDataType(Point.class);
 
-g.inject(new Point(1, 2)).is(P.typeOf("MyPoint")).fold().next();
+g.inject(new Point(1, 2)).is(P.typeOf('Point')).fold().next();
 ----
 
 === Appendix
@@ -196,7 +195,7 @@ A proof-of-concept implementation is located https://github.com/apache/tinkerpop
 |GType.BIGDECIMAL
 |GraphBinary 4.0
 
-|GType.BIGINTEGER
+|GType.BIGINT
 |GraphBinary 4.0
 
 |GType.BYTE
@@ -247,7 +246,7 @@ A proof-of-concept implementation is located https://github.com/apache/tinkerpop
 |GType.BINARY
 |GraphBinary 4.0
 
-|GType.BOOL
+|GType.BOOLEAN
 |GraphBinary 4.0
 
 |GType.TREE
