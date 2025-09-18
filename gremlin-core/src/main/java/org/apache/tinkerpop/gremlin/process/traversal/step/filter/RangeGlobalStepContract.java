@@ -20,14 +20,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface RangeGlobalStepContract<S> extends Step<S, S>, FilteringBarrier<TraverserSet<S>> {
+public interface RangeGlobalStepContract<S> extends Step<S, S>, FilteringBarrier<TraverserSet<S>>, Ranging, Bypassing {
 
     /**
      * Retrieves the lower bound of the range.

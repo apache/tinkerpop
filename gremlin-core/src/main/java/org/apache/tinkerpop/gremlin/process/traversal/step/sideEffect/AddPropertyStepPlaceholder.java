@@ -43,7 +43,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<S, S>
+public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectStep<S>
         implements AddPropertyStepContract<S>, GValueHolder<S, S> {
 
     /**
@@ -128,7 +128,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
     }
 
     @Override
-    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
+    protected void sideEffect(Traverser.Admin<S> traverser) {
         throw new IllegalStateException("AddPropertyStepPlaceholder is not executable");
     }
 

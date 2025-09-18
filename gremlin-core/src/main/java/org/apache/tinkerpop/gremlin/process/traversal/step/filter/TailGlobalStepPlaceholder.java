@@ -18,16 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
@@ -36,6 +41,7 @@ import java.util.Objects;
 public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> implements TailGlobalStepContract<S>, GValueHolder<S, S> {
 
     private GValue<Long> limit;
+    private boolean bypass = false;
 
     public TailGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
@@ -48,6 +54,11 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     @Override
     public Traverser.Admin<S> processNextStart() {
         throw new IllegalStateException("GValueHolder is not executable");
+    }
+
+    @Override
+    public void setBypass(final boolean bypass) {
+        this.bypass = bypass;
     }
 
     @Override
@@ -75,9 +86,49 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     }
 
     @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), new RangeGlobalStep.RangeBiOperator<>(this.limit.get()), false, true);
+    }
+
+    @Override
+    public void processAllStarts() {
+
+    }
+
+    @Override
+    public TraverserSet<S> getEmptyBarrier() {
+        return new TraverserSet<>();
+    }
+
+    @Override
+    public boolean hasNextBarrier() {
+        return this.starts.hasNext();
+    }
+
+    @Override
+    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        if (!this.starts.hasNext())
+            throw FastNoSuchElementException.instance();
+        final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
+        while (this.starts.hasNext()) {
+            barrier.add(this.starts.next());
+        }
+        return barrier;
+    }
+
+    @Override
+    public void addBarrier(final TraverserSet<S> barrier) {
+        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());
+            this.addStart(traverser);
+        });
+    }
+
+    @Override
     public Step<S, S> asConcreteStep() {
         TailGlobalStep<S> step = new TailGlobalStep<>(traversal, limit.get());
         TraversalHelper.copyLabels(this, step, false);
+        step.setBypass(bypass);
         return step;
     }
 

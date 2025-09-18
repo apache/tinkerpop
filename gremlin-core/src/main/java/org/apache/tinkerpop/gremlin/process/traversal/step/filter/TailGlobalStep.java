@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing, FilteringBarrier<TraverserSet<S>>, TailGlobalStepContract<S> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailGlobalStepContract<S> {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;

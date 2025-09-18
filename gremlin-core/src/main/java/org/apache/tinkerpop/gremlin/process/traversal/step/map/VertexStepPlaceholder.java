@@ -180,4 +180,9 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
     public Collection<GValue<?>> getGValues() {
         return Arrays.asList(edgeLabels);
     }
+
+    @Override
+    public void close() throws Exception {
+        closeIterator();
+    }
 }

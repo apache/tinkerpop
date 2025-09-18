@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
+import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
-public interface TailGlobalStepContract<S> extends Step<S, S> {
+public interface TailGlobalStepContract<S> extends Step<S, S>, Bypassing, FilteringBarrier<TraverserSet<S>> {
     Long getLimit();
 
     default GValue<Long> getLimitAsGValue() {

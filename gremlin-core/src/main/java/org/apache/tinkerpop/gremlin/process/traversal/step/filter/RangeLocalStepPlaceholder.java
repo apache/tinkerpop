@@ -18,30 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ScalarMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S> {
+public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements RangeLocalStepContract<S>, GValueHolder<S, S> {
 
     protected GValue<Long> low;
     protected GValue<Long> high;
 
-    public RangeStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
+    public RangeLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
         this.low = low;
         this.high = high;
@@ -96,7 +91,7 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        RangeStepPlaceholder<?> that = (RangeStepPlaceholder<?>) o;
+        RangeLocalStepPlaceholder<?> that = (RangeLocalStepPlaceholder<?>) o;
         return Objects.equals(low, that.low) && Objects.equals(high, that.high);
     }
 
@@ -126,8 +121,8 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
     }
 
     @Override
-    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
-        throw new IllegalStateException("RangeGlobalGValueContract is not executable");
+    protected S map(Traverser.Admin<S> traverser) {
+        throw new IllegalStateException("RangeLocalStepPlaceholder is not executable");
     }
 
     @Override
@@ -142,70 +137,15 @@ public abstract class RangeStepPlaceholder<S> extends AbstractStep<S,S> implemen
         return gValues;
     }
 
-    public static class RangeGlobalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeGlobalStepContract<S> {
-
-        public RangeGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
-            super(traversal, low, high);
-        }
-
-        @Override
-        public RangeGlobalStep<S> asConcreteStep() {
-            RangeGlobalStep<S> step = new RangeGlobalStep<>(traversal, low.get(), high.get());
-            TraversalHelper.copyLabels(this, step, false);
-            return step;
-        }
-
-        @Override
-        public RangeGlobalStepPlaceholder<S> clone() {
-            return new RangeGlobalStepPlaceholder<>(traversal, low, high);
-        }
-
-        @Override
-        public void processAllStarts() {
-
-        }
-
-        @Override
-        public boolean hasNextBarrier() {
-            return this.starts.hasNext();
-        }
-
-        @Override
-        public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-            if(!this.starts.hasNext())
-                throw FastNoSuchElementException.instance();
-            final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
-            while (this.starts.hasNext()) {
-                barrier.add(this.starts.next());
-            }
-            return barrier;
-        }
-
-        @Override
-        public void addBarrier(final TraverserSet<S> barrier) {
-            IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-                traverser.setSideEffects(this.getTraversal().getSideEffects());
-                this.addStart(traverser);
-            });
-        }
+    @Override
+    public RangeLocalStep<S> asConcreteStep() {
+        RangeLocalStep<S> step = new RangeLocalStep<>(traversal, low.get(), high.get());
+        TraversalHelper.copyLabels(this, step, false);
+        return step;
     }
 
-    public static class RangeLocalStepPlaceholder<S> extends RangeStepPlaceholder<S> implements RangeLocalStepContract<S> {
-
-        public RangeLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
-            super(traversal, low, high);
-        }
-
-        @Override
-        public RangeLocalStep<S> asConcreteStep() {
-            RangeLocalStep<S> step = new RangeLocalStep<>(traversal, low.get(), high.get());
-            TraversalHelper.copyLabels(this, step, false);
-            return step;
-        }
-
-        @Override
-        public RangeLocalStepPlaceholder<S> clone() {
-            return new RangeLocalStepPlaceholder<>(traversal, low, high);
-        }
+    @Override
+    public RangeLocalStepPlaceholder<S> clone() {
+        return new RangeLocalStepPlaceholder<>(traversal, low, high);
     }
 }
