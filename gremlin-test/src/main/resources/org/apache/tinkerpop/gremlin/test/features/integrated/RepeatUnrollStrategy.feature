@@ -146,3 +146,28 @@ Feature: Step - RepeatUnrollStrategy
       | v[vadas] |
       | v[vadas] |
       | v[vadas] |
+
+  @WithRepeatUnrollStrategy
+  Scenario: g_withStrategiesXRepeatUnrollStrategyX_V_repeatXbothE_otherV_hasXage_gtX30XXX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(RepeatUnrollStrategy).V().repeat(bothE().otherV().has("age", lt(30))).times(2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXbothE_otherV_hasXage_gtX30XXX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.withoutStrategies(RepeatUnrollStrategy).V().repeat(bothE().otherV().has("age", lt(30))).times(2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[peter] |

@@ -60,7 +60,7 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
     private static final Set<Class> ALLOWED_STEP_CLASSES = Set.of(
             VertexStepContract.class,
             EdgeVertexStep.class,
-            //EdgeOtherVertexStep.class?,
+            EdgeOtherVertexStep.class,
             HasStep.class,
             RepeatStep.class,
             RepeatStep.RepeatEndStep.class);

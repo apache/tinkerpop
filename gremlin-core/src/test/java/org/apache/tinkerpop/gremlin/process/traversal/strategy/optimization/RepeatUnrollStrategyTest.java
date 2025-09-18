@@ -147,6 +147,8 @@ public class RepeatUnrollStrategyTest {
                     // EdgeVertexStep tests  
                     {__.repeat(__.outE().inV()).times(2), __.outE().inV().barrier(repeatBarrierSize).outE().inV().barrier(repeatBarrierSize), Collections.emptyList()},
                     {__.repeat(__.inE().outV()).times(2), __.inE().outV().barrier(repeatBarrierSize).inE().outV().barrier(repeatBarrierSize), Collections.emptyList()},
+                    {__.repeat(__.bothE().otherV()).times(2), __.bothE().otherV().barrier(repeatBarrierSize).bothE().otherV().barrier(repeatBarrierSize), Collections.emptyList()},
+                    {__.repeat(__.outE("knows").otherV()).times(2), __.outE("knows").otherV().barrier(repeatBarrierSize).outE("knows").otherV().barrier(repeatBarrierSize), Collections.emptyList()},
                     // Combined tests
                     {__.repeat(__.outE("knows").inV().has("name", "josh")).times(2), __.outE("knows").inV().has("name", "josh").barrier(repeatBarrierSize).outE("knows").inV().barrier(repeatBarrierSize).has("name", "josh").barrier(repeatBarrierSize), Collections.emptyList()},
             });
