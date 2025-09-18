@@ -97,6 +97,14 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
+        final String[] split = ctx.getText().split("\\.");
+        sb.append(processGremlinSymbol(split[0])).append(".");
+        sb.append(processGremlinSymbol(split[1].toLowerCase()));
+        return null;
+    }
+
+    @Override
     public Void visitGenericMapLiteral(final GremlinParser.GenericMapLiteralContext ctx) {
         sb.append("new Map([");
         for (int i = 0; i < ctx.mapEntry().size(); i++) {
@@ -257,6 +265,8 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
             TO_JS_MAP.put("from", "from_");
             TO_JS_MAP.put("in", "in_");
             TO_JS_MAP.put("with", "with_");
+            TO_JS_MAP.put("bigdecimal", "bigDeciaml");
+            TO_JS_MAP.put("bigint", "bigInt");
             //
             TO_JS_MAP.forEach((k, v) -> FROM_JS_MAP.put(v, k));
         }

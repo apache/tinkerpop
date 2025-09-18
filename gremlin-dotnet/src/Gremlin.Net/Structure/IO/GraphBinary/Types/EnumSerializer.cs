@@ -76,6 +76,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         /// </summary>
         public static readonly EnumSerializer<N> NSerializer =
             new EnumSerializer<N>(DataType.N, N.GetByValue);
+        
+        /// <summary>
+        /// A serializer for <see cref="GType"/> values.
+        /// </summary>
+        public static readonly EnumSerializer<GType> GTypeSerializer =
+            new EnumSerializer<GType>(DataType.GType, GType.GetByValue);
 
         /// <summary>
         /// A serializer for <see cref="Operator"/> values.

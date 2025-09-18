@@ -22,6 +22,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 
 /**
  * Traversal enum parser parses all the enums like (e.g. {@link Scope} in graph traversal.
@@ -75,5 +76,16 @@ public class TraversalEnumParser {
         if (text.startsWith(N.class.getSimpleName()))
             text = text.substring(N.class.getSimpleName().length() + 1);
         return text.startsWith("big") ? N.valueOf(text) : N.valueOf(text + "_");
+    }
+
+    /**
+     * Parsing of {@link GType} requires some special handling as grammar allows lowercase for tokens.
+     */
+    public static GType parseTraversalGTypeFromContext(final GremlinParser.TraversalGTypeContext context) {
+        String text = context.getText();
+        if (text.startsWith(GType.class.getSimpleName())) {
+            text = text.substring(GType.class.getSimpleName().length() + 1);
+        }
+        return GType.valueOf(text.toUpperCase());
     }
 }

@@ -349,6 +349,18 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(N.Byte, deserializedValue);
         }
         
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeGType(int version)
+        {
+            const string serializedValue = "{\"@type\":\"g:GType\",\"@value\":\"BYTE\"}";
+            var reader = CreateStandardGraphSONReader(version);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
+            var deserializedValue = reader.ToObject(jsonElement);
+
+            Assert.Equal(GType.Byte, deserializedValue);
+        }
+        
         [Fact]
         public void ShouldDeserializePathFromGraphSON2()
         {

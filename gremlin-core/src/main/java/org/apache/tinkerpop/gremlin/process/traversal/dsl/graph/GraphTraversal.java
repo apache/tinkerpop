@@ -218,6 +218,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -2328,6 +2329,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @since 3.8.0
      */
     public default GraphTraversal<S, Number> asNumber(final N numberToken) {
+        this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
+    }
+
+    /**
+     * Parse value of the incoming traverser as a {@link Number}.
+     *
+     * @return the traversal with an appended {@link AsNumberStep}.
+     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
+     * @since 3.8.0
+     */
+    public default GraphTraversal<S, Number> asNumber(final GType numberToken) {
         this.asAdmin().getBytecode().addStep(Symbols.asNumber, numberToken);
         return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
     }

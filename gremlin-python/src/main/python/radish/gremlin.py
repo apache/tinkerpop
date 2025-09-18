@@ -33,7 +33,7 @@ from gremlin_python.process.strategies import *
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.structure.graph import Graph
-from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, N, T, Pick, Operator, IO, WithOptions
+from gremlin_python.process.traversal import Barrier, Cardinality, CardinalityValue, P, TextP, Pop, Scope, Column, Order, Direction, DT, Merge, N, GType, T, Pick, Operator, IO, WithOptions
 
 world.gremlins = {
     'g_V_branchXlabel_isXpersonX_countX_optionX1__ageX_optionX0__langX_optionX0__nameX': [(lambda g, xx1=None,xx2=None:g.V().branch(__.label().is_('person').count()).option(xx1, __.values('age')).option(xx2, __.values('lang')).option(xx2, __.values('name')))], 
@@ -344,6 +344,18 @@ world.gremlins = {
     'g_V_valuesXageX_isXgte_29vaarX_isXlt_34varX': [(lambda g, xx1=None,xx2=None:g.V().values('age').is_(P.gte(xx1)).is_(P.lt(xx2)))], 
     'g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX': [(lambda g:g.V().where(__.in_('created').count().is_(1)).values('name'))], 
     'g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX': [(lambda g:g.V().where(__.in_('created').count().is_(P.gte(2))).values('name'))], 
+    'g_V_valuesXageX_isXtypeOfXINTXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.INT)))], 
+    'g_V_valuesXnameX_isXtypeOfXSTRINGXX': [(lambda g:g.V().values('name').is_(P.type_of(GType.STRING)))], 
+    'g_V_valuesXageX_isXtypeOfXSTRINGXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.STRING)))], 
+    'g_V_isXtypeOfXVERTEXXX_valuesXnameX': [(lambda g:g.V().is_(P.type_of(GType.VERTEX)).values('name'))], 
+    'g_E_isXtypeOfXEDGEXX_count': [(lambda g:g.E().is_(P.type_of(GType.EDGE)).count())], 
+    'g_V_valuesXageX_isXtypeOfXNUMBERXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.NUMBER)))], 
+    'g_V_valuesXageX_isXtypeOfXintegerStringXX': [(lambda g:g.V().values('age').is_(P.type_of('Integer')))], 
+    'g_V_valuesXnameX_isXtypeOfXstringStringXX': [(lambda g:g.V().values('name').is_(P.type_of('String')))], 
+    'g_V_valuesXageX_isXtypeOfXinvalidStringXX': [(lambda g:g.V().values('age').is_(P.type_of('invalid.type.Name')))], 
+    'g_V_whereXvaluesXageX_isXtypeOfXINTXXX_valuesXnameX': [(lambda g:g.V().where(__.values('age').is_(P.type_of(GType.INT))).values('name'))], 
+    'g_V_propertiesXnameX_isXtypeOfXGType_PROPERTYXX_valueXX': [(lambda g:g.V().properties('name').is_(P.type_of(GType.PROPERTY)).value())], 
+    'g_V_valuesXageX_isXtypeOfXGType_NULLXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.NULL)))], 
     'g_V_valuesXageX_noneXgtX32XX': [(lambda g:g.V().values('age').none(P.gt(32)))], 
     'g_V_valuesXageX_whereXisXP_gtX33XXX_fold_noneXlteX33XX': [(lambda g:g.V().values('age').where(__.is_(P.gt(33))).fold().none(P.lte(33)))], 
     'g_V_valuesXageX_order_byXdescX_fold_noneXltX10XX': [(lambda g:g.V().values('age').order().by(Order.desc).fold().none(P.lt(10)))], 
@@ -363,6 +375,7 @@ world.gremlins = {
     'g_V_orXhasXage_gt_27X__outE_count_gte_2X_name': [(lambda g:g.V().or_(__.has('age', P.gt(27)), __.out_e().count().is_(P.gte(2))).values('name'))], 
     'g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name': [(lambda g:g.V().or_(__.out_e('knows'), __.has(T.label, 'software').or_().has('age', P.gte(35))).values('name'))], 
     'g_V_asXaX_orXselectXaX_selectXaXX': [(lambda g:g.V().as_('a').or_(__.select('a'), __.select('a')))], 
+    'g_V_orXhasXname_isXtypeOfXGType_STRINGXXX__hasXage_isXtypeOfXGType_INTXXXX_valuesXnameX': [(lambda g:g.V().or_(__.has('name', P.type_of(GType.STRING)), __.has('age', P.type_of(GType.INT))).values('name'))], 
     'g_VX1X_out_limitX2X': [(lambda g, vid1=None:g.V(vid1).out().limit(2))], 
     'g_VX1X_out_limitX2varX': [(lambda g, xx1=None,vid1=None:g.V(vid1).out().limit(xx1))], 
     'g_V_localXoutE_limitX1X_inVX_limitX3X': [(lambda g:g.V().local(__.out_e().limit(1)).in_v().limit(3))], 
@@ -723,6 +736,19 @@ world.gremlins = {
     'g_injectXnullX_asNumberXN_intX': [(lambda g:g.inject(None).as_number(N.int))], 
     'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age').as_number(N.int))], 
     'g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX': [(lambda g:g.with_side_effect('x', 100).V().values('age').math('_ + x').as_number(N.long))], 
+    'g_injectX5_43X_asNumberXGType_INTX': [(lambda g:g.inject(5.43).as_number(GType.INT))], 
+    'g_injectX5_67X_asNumberXGType_INTX': [(lambda g:g.inject(5.67).as_number(GType.INT))], 
+    'g_injectX5X_asNumberXGType_LONGX': [(lambda g:g.inject(5).as_number(GType.LONG))], 
+    'g_injectX12X_asNumberXGType_BYTEX': [(lambda g:g.inject(12).as_number(GType.BYTE))], 
+    'g_injectX32768X_asNumberXGType_SHORTX': [(lambda g:g.inject(32768).as_number(GType.SHORT))], 
+    'g_injectX300X_asNumberXGType_BYTEX': [(lambda g:g.inject(300).as_number(GType.BYTE))], 
+    'g_injectX32768X_asNumberXGType_VertexX': [(lambda g:g.inject(32768).as_number(GType.VERTEX))], 
+    'g_injectX5X_asNumberXGType_BYTEX': [(lambda g:g.inject('5').as_number(GType.BYTE))], 
+    'g_injectX1_000X_asNumberXGType_BIGINTX': [(lambda g:g.inject('1,000').as_number(GType.BIGINT))], 
+    'g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXGType_BYTEX': [(lambda g:g.inject(1.0, 2, 3, '4', '0x5').as_number().sum_().as_number(GType.BYTE))], 
+    'g_injectXnullX_asNumberXGType_INTX': [(lambda g:g.inject(None).as_number(GType.INT))], 
+    'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXGType_INTX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age').as_number(GType.INT))], 
+    'g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXGType_LONGX': [(lambda g:g.with_side_effect('x', 100).V().values('age').math('_ + x').as_number(GType.LONG))], 
     'g_injectX1_2X_asString': [(lambda g:g.inject(1, 2).as_string())], 
     'g_injectX1_2X_asStringXlocalX': [(lambda g:g.inject(1, 2).as_string(Scope.local))], 
     'g_injectXlist_1_2X_asStringXlocalX': [(lambda g:g.inject([1, 2]).as_string(Scope.local))], 

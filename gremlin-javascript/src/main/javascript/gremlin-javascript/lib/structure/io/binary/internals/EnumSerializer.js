@@ -45,6 +45,7 @@ module.exports = class EnumSerializer {
       { name: 'DT', code: DT.DT, enum: to_orig_enum(t.dt) },
       { name: 'Merge', code: DT.MERGE, enum: to_orig_enum(t.merge) },
       { name: 'N', code: DT.N, enum: to_orig_enum(t.n) },
+      { name: 'GType', code: DT.GTYPE, enum: to_orig_enum(t.gType) },
       { name: 'Operator', code: DT.OPERATOR, enum: to_orig_enum(t.operator) },
       { name: 'Order', code: DT.ORDER, enum: to_orig_enum(t.order) },
       { name: 'Pick', code: DT.PICK, enum: to_orig_enum(t.pick) },

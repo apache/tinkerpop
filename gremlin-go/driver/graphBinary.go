@@ -83,6 +83,7 @@ const (
 	mergeType             dataType = 0x2e
 	dtType                dataType = 0x2f
 	nType                 dataType = 0x30
+	gTypeType             dataType = 0x31
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
@@ -722,7 +723,7 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 	case Set:
 		return setType, nil
 	case time.Time:
-		return offsetDateTimeType, nil  // default serialization of Time will become OffsetDateTime
+		return offsetDateTimeType, nil // default serialization of Time will become OffsetDateTime
 	case time.Duration:
 		return durationType, nil
 	case cardinality:
@@ -749,8 +750,10 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return mergeType, nil
 	case dt:
 		return dtType, nil
-    case n:
-        return nType, nil
+	case n:
+		return nType, nil
+	case gType:
+		return gTypeType, nil
 	case p, Predicate:
 		return pType, nil
 	case textP, TextPredicate:

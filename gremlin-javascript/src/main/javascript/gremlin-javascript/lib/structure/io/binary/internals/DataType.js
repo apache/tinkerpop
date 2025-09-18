@@ -76,6 +76,7 @@ const DataType = {
   MERGE: 0x2e,
   DT: 0x2f,
   N: 0x30,
+  GTYPE: 0x31,
 
   CHAR: 0x80,
   DURATION: 0x81,

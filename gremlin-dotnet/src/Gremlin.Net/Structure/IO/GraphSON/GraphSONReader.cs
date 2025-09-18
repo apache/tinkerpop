@@ -48,6 +48,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { "g:DT", new DTDeserializer() },
             { "g:Merge", new MergeDeserializer() },
             { "g:N", new NDeserializer() },
+            { "g:GType", new GTypeDeserializer() },
             { "g:UUID", new UuidDeserializer() },
             { "g:Date", new DateDeserializer() },
             { "g:Timestamp", new DateDeserializer() },

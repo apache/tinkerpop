@@ -28,6 +28,7 @@ const { AssertionError } = require('assert');
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
 const { Vertex, Edge, VertexProperty} = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
+const { P, gType, n } = require('../../lib/process/traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
 const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, HaltedTraverserStrategy, FilterRankingStrategy,
         OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');
@@ -90,6 +91,18 @@ describe('Traversal', function () {
     it('should submit the traversal and return a list', function () {
       var g = traversal().with_(connection);
       return g.V().toList().then(function (list) {
+        assert.ok(list);
+        assert.strictEqual(list.length, 6);
+        list.forEach(v => assert.ok(v instanceof Vertex));
+      });
+    });
+  });
+  describe('#testTypeOf()', function () {
+    it('should submit the traversal typeOf and return a list', function () {
+      var g = traversal().with_(connection);
+      return g.V().is(P.typeOf(gType.vertex)).toList().then(function (list) {
+        console.log(gType.BYTE)
+        console.log(n.byte_)
         assert.ok(list);
         assert.strictEqual(list.length, 6);
         list.forEach(v => assert.ok(v instanceof Vertex));

@@ -813,7 +813,7 @@ public class NumberHelperTest {
     @Test(expected = ArithmeticException.class)
     public void shouldUnderflowIfDoubleCannotFitInInteger() {
         final Double value = -Double.MAX_VALUE;
-        System.out.println(NumberHelper.castTo(value, N.int_));
+        NumberHelper.castTo(value, N.int_);
     }
 
     @Test

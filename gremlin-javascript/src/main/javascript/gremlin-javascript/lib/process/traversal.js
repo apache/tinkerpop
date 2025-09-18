@@ -346,6 +346,11 @@ class P {
   }
 
   /** @param {...Object} args */
+  static typeOf(...args) {
+    return createP('typeOf', args);
+  }
+
+  /** @param {...Object} args */
   static test(...args) {
     return createP('test', args);
   }
@@ -495,6 +500,14 @@ function toNEnum(typeName, keys) {
   return result;
 }
 
+function toGTypeEnum(typeName, keys) {
+  const result = {};
+  keys.split(' ').forEach((k) => {
+    result[k] = new EnumValue(typeName, k.toUpperCase());
+  });
+  return result;
+}
+
 class EnumValue {
   constructor(typeName, elementName) {
     this.typeName = typeName;
@@ -521,6 +534,10 @@ module.exports = {
   direction: toDirectionEnum('Direction', 'BOTH IN OUT from_ to'),
   dt: toEnum('DT', 'second minute hour day'),
   n: toNEnum('N', 'byte_ short_ int_ long_ float_ double_ bigInt bigDecimal'),
+  gType: toGTypeEnum(
+    'GType',
+    'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vp',
+  ),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),
   merge: toEnum('Merge', 'onCreate onMatch outV inV'),

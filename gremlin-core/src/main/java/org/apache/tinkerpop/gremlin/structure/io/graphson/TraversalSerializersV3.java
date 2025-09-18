@@ -23,6 +23,7 @@ import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -413,6 +414,11 @@ final class TraversalSerializersV3 {
                             return P.without((Collection) value);
                         else
                             return (P) tryFindMethod(P.class, predicate, Collection.class).invoke(null, (Collection) value);
+                    } else if (predicate.equals("typeOf")) {
+                        if (value instanceof GType)
+                            return P.typeOf((GType) value);
+                        else
+                            return P.typeOf((String) value);
                     } else {
                         try {
                             return (P) tryFindMethod(P.class, predicate, Object.class).invoke(null, value);

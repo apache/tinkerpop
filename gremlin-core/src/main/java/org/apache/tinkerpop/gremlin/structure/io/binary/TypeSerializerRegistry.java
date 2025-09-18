@@ -44,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -170,6 +171,7 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(DT.class, EnumSerializer.DTSerializer),
             new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
             new RegistryEntry<>(N.class, new NSerializer()),
+            new RegistryEntry<>(GType.class, EnumSerializer.GTypeSerializer),
             new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
             new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
             new RegistryEntry<>(Pick.class, EnumSerializer.PickSerializer),

@@ -61,3 +61,18 @@ Feature: Step - or()
       | v[ripple] |
       | v[peter]  |
 
+  Scenario: g_V_orXhasXname_isXtypeOfXGType_STRINGXXX__hasXage_isXtypeOfXGType_INTXXXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().or(__.has("name", P.typeOf(GType.STRING)), __.has("age", P.typeOf(GType.INT))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |

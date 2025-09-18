@@ -53,6 +53,7 @@ const IO = traversalModule.IO;
 const DT = traversalModule.dt;
 const Merge = traversalModule.merge;
 const N = traversalModule.n;
+const GType = traversalModule.gType;
 const P = traversalModule.P;
 const Pick = traversalModule.pick
 const Pop = traversalModule.pop
@@ -372,6 +373,18 @@ const gremlins = {
     g_V_valuesXageX_isXgte_29vaarX_isXlt_34varX: [function({g, xx1, xx2}) { return g.V().values("age").is(P.gte(xx1)).is(P.lt(xx2)) }], 
     g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX: [function({g}) { return g.V().where(__.in_("created").count().is(1)).values("name") }], 
     g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX: [function({g}) { return g.V().where(__.in_("created").count().is(P.gte(2))).values("name") }], 
+    g_V_valuesXageX_isXtypeOfXINTXX: [function({g}) { return g.V().values("age").is(P.typeOf(GType.int)) }], 
+    g_V_valuesXnameX_isXtypeOfXSTRINGXX: [function({g}) { return g.V().values("name").is(P.typeOf(GType.string)) }], 
+    g_V_valuesXageX_isXtypeOfXSTRINGXX: [function({g}) { return g.V().values("age").is(P.typeOf(GType.string)) }], 
+    g_V_isXtypeOfXVERTEXXX_valuesXnameX: [function({g}) { return g.V().is(P.typeOf(GType.vertex)).values("name") }], 
+    g_E_isXtypeOfXEDGEXX_count: [function({g}) { return g.E().is(P.typeOf(GType.edge)).count() }], 
+    g_V_valuesXageX_isXtypeOfXNUMBERXX: [function({g}) { return g.V().values("age").is(P.typeOf(GType.number)) }], 
+    g_V_valuesXageX_isXtypeOfXintegerStringXX: [function({g}) { return g.V().values("age").is(P.typeOf("Integer")) }], 
+    g_V_valuesXnameX_isXtypeOfXstringStringXX: [function({g}) { return g.V().values("name").is(P.typeOf("String")) }], 
+    g_V_valuesXageX_isXtypeOfXinvalidStringXX: [function({g}) { return g.V().values("age").is(P.typeOf("invalid.type.Name")) }], 
+    g_V_whereXvaluesXageX_isXtypeOfXINTXXX_valuesXnameX: [function({g}) { return g.V().where(__.values("age").is(P.typeOf(GType.int))).values("name") }], 
+    g_V_propertiesXnameX_isXtypeOfXGType_PROPERTYXX_valueXX: [function({g}) { return g.V().properties("name").is(P.typeOf(GType.property)).value() }], 
+    g_V_valuesXageX_isXtypeOfXGType_NULLXX: [function({g}) { return g.V().values("age").is(P.typeOf(GType.null)) }], 
     g_V_valuesXageX_noneXgtX32XX: [function({g}) { return g.V().values("age").none(P.gt(32)) }], 
     g_V_valuesXageX_whereXisXP_gtX33XXX_fold_noneXlteX33XX: [function({g}) { return g.V().values("age").where(__.is(P.gt(33))).fold().none(P.lte(33)) }], 
     g_V_valuesXageX_order_byXdescX_fold_noneXltX10XX: [function({g}) { return g.V().values("age").order().by(Order.desc).fold().none(P.lt(10)) }], 
@@ -391,6 +404,7 @@ const gremlins = {
     g_V_orXhasXage_gt_27X__outE_count_gte_2X_name: [function({g}) { return g.V().or(__.has("age", P.gt(27)), __.outE().count().is(P.gte(2))).values("name") }], 
     g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name: [function({g}) { return g.V().or(__.outE("knows"), __.has(T.label, "software").or().has("age", P.gte(35))).values("name") }], 
     g_V_asXaX_orXselectXaX_selectXaXX: [function({g}) { return g.V().as("a").or(__.select("a"), __.select("a")) }], 
+    g_V_orXhasXname_isXtypeOfXGType_STRINGXXX__hasXage_isXtypeOfXGType_INTXXXX_valuesXnameX: [function({g}) { return g.V().or(__.has("name", P.typeOf(GType.string)), __.has("age", P.typeOf(GType.int))).values("name") }], 
     g_VX1X_out_limitX2X: [function({g, vid1}) { return g.V(vid1).out().limit(2) }], 
     g_VX1X_out_limitX2varX: [function({g, xx1, vid1}) { return g.V(vid1).out().limit(xx1) }], 
     g_V_localXoutE_limitX1X_inVX_limitX3X: [function({g}) { return g.V().local(__.outE().limit(1)).inV().limit(3) }], 
@@ -751,6 +765,19 @@ const gremlins = {
     g_injectXnullX_asNumberXN_intX: [function({g}) { return g.inject(null).asNumber(N.int_) }], 
     g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXintX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(N.int_) }], 
     g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXlongX: [function({g}) { return g.withSideEffect("x", 100).V().values("age").math("_ + x").asNumber(N.long_) }], 
+    g_injectX5_43X_asNumberXGType_INTX: [function({g}) { return g.inject(5.43).asNumber(GType.int) }], 
+    g_injectX5_67X_asNumberXGType_INTX: [function({g}) { return g.inject(5.67).asNumber(GType.int) }], 
+    g_injectX5X_asNumberXGType_LONGX: [function({g}) { return g.inject(5).asNumber(GType.long) }], 
+    g_injectX12X_asNumberXGType_BYTEX: [function({g}) { return g.inject(12).asNumber(GType.byte) }], 
+    g_injectX32768X_asNumberXGType_SHORTX: [function({g}) { return g.inject(32768).asNumber(GType.short) }], 
+    g_injectX300X_asNumberXGType_BYTEX: [function({g}) { return g.inject(300).asNumber(GType.byte) }], 
+    g_injectX32768X_asNumberXGType_VertexX: [function({g}) { return g.inject(32768).asNumber(GType.vertex) }], 
+    g_injectX5X_asNumberXGType_BYTEX: [function({g}) { return g.inject("5").asNumber(GType.byte) }], 
+    g_injectX1_000X_asNumberXGType_BIGINTX: [function({g}) { return g.inject("1,000").asNumber(GType.bigInt) }], 
+    g_injectX1_2_3_4_0x5X_asNumber_sum_asNumberXGType_BYTEX: [function({g}) { return g.inject(1.0, 2, 3, "4", "0x5").asNumber().sum().asNumber(GType.byte) }], 
+    g_injectXnullX_asNumberXGType_INTX: [function({g}) { return g.inject(null).asNumber(GType.int) }], 
+    g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXGType_INTX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(GType.int) }], 
+    g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXGType_LONGX: [function({g}) { return g.withSideEffect("x", 100).V().values("age").math("_ + x").asNumber(GType.long) }], 
     g_injectX1_2X_asString: [function({g}) { return g.inject(1, 2).asString() }], 
     g_injectX1_2X_asStringXlocalX: [function({g}) { return g.inject(1, 2).asString(Scope.local) }], 
     g_injectXlist_1_2X_asStringXlocalX: [function({g}) { return g.inject([1, 2]).asString(Scope.local) }], 

@@ -270,6 +270,37 @@ statics.add_static('add_all', Operator.add_all)
 statics.add_static('sum_long', Operator.sum_long)
 
 
+GType = Enum('GType', ' BIGDECIMAL BIGINT BINARY BOOLEAN BYTE CHAR DATETIME DOUBLE DURATION EDGE FLOAT GRAPH INT LIST LONG MAP NULL NUMBER PATH PROPERTY SET SHORT STRING TREE UUID VERTEX VP')
+
+statics.add_static('BIGDECIMAL', GType.BIGDECIMAL)
+statics.add_static('BIGINT', GType.BIGINT)
+statics.add_static('BINARY', GType.BINARY)
+statics.add_static('BOOLEAN', GType.BOOLEAN)
+statics.add_static('BYTE', GType.BYTE)
+statics.add_static('CHAR', GType.CHAR)
+statics.add_static('DATETIME', GType.DATETIME)
+statics.add_static('DOUBLE', GType.DOUBLE)
+statics.add_static('DURATION', GType.DURATION)
+statics.add_static('EDGE', GType.EDGE)
+statics.add_static('FLOAT', GType.FLOAT)
+statics.add_static('GRAPH', GType.GRAPH)
+statics.add_static('INT', GType.INT)
+statics.add_static('LIST', GType.LIST)
+statics.add_static('LONG', GType.LONG)
+statics.add_static('MAP', GType.MAP)
+statics.add_static('NULL', GType.NULL)
+statics.add_static('NUMBER', GType.NUMBER)
+statics.add_static('PATH', GType.PATH)
+statics.add_static('PROPERTY', GType.PROPERTY)
+statics.add_static('SET', GType.SET)
+statics.add_static('SHORT', GType.SHORT)
+statics.add_static('STRING', GType.STRING)
+statics.add_static('TREE', GType.TREE)
+statics.add_static('UUID', GType.UUID)
+statics.add_static('VERTEX', GType.VERTEX)
+statics.add_static('VP', GType.VP)
+
+
 class P(object):
     def __init__(self, operator, value, other=None):
         self.operator = operator
@@ -319,6 +350,10 @@ class P(object):
     @staticmethod
     def test(*args):
         return P("test", *args)
+
+    @staticmethod
+    def type_of(*args):
+        return P("typeOf", *args)
 
     @staticmethod
     def within(*args):
@@ -399,6 +434,10 @@ def without(*args):
     return P.without(*args)
 
 
+def type_of(*args):
+    return P.type_of(*args)
+
+
 statics.add_static('between', between)
 
 statics.add_static('eq', eq)
@@ -422,6 +461,8 @@ statics.add_static('outside', outside)
 statics.add_static('within', within)
 
 statics.add_static('without', without)
+
+statics.add_static('typeOf', type_of)
 
 
 class TextP(P):

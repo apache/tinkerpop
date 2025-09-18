@@ -340,6 +340,69 @@ var DT = dts{
 	Day:    "day",
 }
 
+type gType string
+
+type gTypes struct {
+	BigDecimal gType
+	BigInt     gType
+	Binary     gType
+	Boolean    gType
+	Byte       gType
+	Char       gType
+	DateTime   gType
+	Double     gType
+	Duration   gType
+	Edge       gType
+	Float      gType
+	Graph      gType
+	Int        gType
+	List       gType
+	Long       gType
+	Map        gType
+	Null       gType
+	Number     gType
+	Path       gType
+	Property   gType
+	Set        gType
+	Short      gType
+	String     gType
+	Tree       gType
+	UUID       gType
+	Vertex     gType
+	VP         gType
+}
+
+// GType is a set of Gremlin types for type checking.
+var GType = gTypes{
+	BigDecimal: "BIGDECIMAL",
+	BigInt:     "BIGINT",
+	Binary:     "BINARY",
+	Boolean:    "BOOLEAN",
+	Byte:       "BYTE",
+	Char:       "CHAR",
+	DateTime:   "DATETIME",
+	Double:     "DOUBLE",
+	Duration:   "DURATION",
+	Edge:       "EDGE",
+	Float:      "FLOAT",
+	Graph:      "GRAPH",
+	Int:        "INT",
+	List:       "LIST",
+	Long:       "LONG",
+	Map:        "MAP",
+	Null:       "NULL",
+	Number:     "NUMBER",
+	Path:       "PATH",
+	Property:   "PROPERTY",
+	Set:        "SET",
+	Short:      "SHORT",
+	String:     "STRING",
+	Tree:       "TREE",
+	UUID:       "UUID",
+	Vertex:     "VERTEX",
+	VP:         "VP",
+}
+
 type merge string
 
 type merges struct {
@@ -361,7 +424,6 @@ var Merge = merges{
 	InV:      "inV",
 }
 
-
 type n string
 
 type ns struct {
@@ -373,13 +435,13 @@ type ns struct {
 	Int n
 	// number type long
 	Long n
-    // number type float
+	// number type float
 	Float n
-    // number type double
+	// number type double
 	Double n
-    // number type bigInt
+	// number type bigInt
 	BigInt n
-    // number type bigDecimal
+	// number type bigDecimal
 	BigDecimal n
 }
 
@@ -466,6 +528,8 @@ type Predicate interface {
 	Not(args ...interface{}) Predicate
 	// Outside Predicate to determine of value is not within range of specified values (exclusive).
 	Outside(args ...interface{}) Predicate
+	// TypeOf Predicate to determine of value is of a type.
+	TypeOf(args ...interface{}) Predicate
 	// Test evaluates Predicate on given argument.
 	Test(args ...interface{}) Predicate
 	// Within Predicate determines if value is within given list of values.
@@ -541,6 +605,11 @@ func (*p) Not(args ...interface{}) Predicate {
 // Outside Predicate to determine of value is not within range of specified values (exclusive).
 func (*p) Outside(args ...interface{}) Predicate {
 	return newP("outside", args...)
+}
+
+// TypeOf Predicate to determine of value is of a type..
+func (*p) TypeOf(args ...interface{}) Predicate {
+	return newP("typeOf", args...)
 }
 
 // Test evaluates Predicate on given argument.
