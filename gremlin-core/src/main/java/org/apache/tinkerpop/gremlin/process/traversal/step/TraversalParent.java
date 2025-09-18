@@ -34,9 +34,10 @@ import java.util.Set;
 
 /**
  * Indicates that a step can contain child Traversals. Any step which implements this interface should override at least
- * one of getGlobalChildren() or getLocalChildren(). All TraversalParents should call integrateChild() for all child
- * traversals as they are added to the step, and TraversalParents should override {@link Step::setTraversal()}, and
- * call integrateChild() again for all child traversals.
+ * one of {@link #getGlobalChildren()} or {@link #getLocalChildren()}. All
+ * TraversalParents should call {@link #integrateChild(Traversal.Admin<?, ?>)} for all child traversals as they are added to
+ * the step, and TraversalParents should override {@link Step#setTraversal(Traversal.Admin<?, ?>)}, and call
+ * {@link #integrateChild(Traversal.Admin<?, ?>)} again for all child traversals.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
