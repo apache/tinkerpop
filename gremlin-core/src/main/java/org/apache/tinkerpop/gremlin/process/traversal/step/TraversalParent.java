@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 import org.apache.tinkerpop.gremlin.process.traversal.GValueManager;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -31,14 +33,31 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Indicates that a step can contain child Traversals. Any step which implements this interface should override at least
+ * one of {@link #getGlobalChildren()} or {@link #getLocalChildren()}. All
+ * TraversalParents should call {@link #integrateChild(Traversal.Admin<?, ?>)} for all child traversals as they are added to
+ * the step, and TraversalParents should override {@link Step#setTraversal(Traversal.Admin<?, ?>)}, and call
+ * {@link #integrateChild(Traversal.Admin<?, ?>)} again for all child traversals.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalParent extends PopContaining, AutoCloseable {
 
+    /**
+     * Gets a list of all "global" child traversals for this step. A "global" traversal is one which evaluates across
+     * all of its parents incoming traversers at once. This is typically used in cases where the child traversal
+     * represents a branch of traversal flow. See {@link BranchStep} as an example.
+     */
     public default <S, E> List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.emptyList();
     }
 
+    /**
+     * Gets a list of all "local" child traversals for this step. A "local" traversal is one which is evaluated
+     * independently for each incoming traverser to the parent step. This is typically used in cases where the child
+     * is used to process or augment each traverser individually. See {@link LocalStep} or {@link ByModulating} as
+     * examples.
+     */
     public default <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return Collections.emptyList();
     }

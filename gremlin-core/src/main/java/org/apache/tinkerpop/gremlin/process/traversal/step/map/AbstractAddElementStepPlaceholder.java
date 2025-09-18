@@ -81,20 +81,33 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     protected void addTraversal(final Traversal.Admin<?, ?> traversal) {
+        integrateChild(traversal);
         TraversalHelper.getStepsOfAssignableClassRecursively(Scoping.class, traversal).forEach(s -> scopeKeys.addAll(s.getScopeKeys()));
     }
 
     @Override
-    public List<Traversal.Admin<S, E>> getLocalChildren() {
-        List<Traversal.Admin<S, E>> childTraversals = new ArrayList<>();
-        for (List<Object> values : properties.values()) {
-            for (Object value : values) {
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        List<Traversal.Admin<?, ?>> childTraversals = new ArrayList<>();
+        for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            if (entry.getKey() instanceof Traversal) {
+                childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) entry.getKey()).asAdmin());
+            }
+            for (Object value : entry.getValue()) {
                 if (value instanceof Traversal) {
-                    childTraversals.add((Traversal.Admin<S, E>) ((Traversal) value).asAdmin());
+                    childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) value).asAdmin());
                 }
             }
         }
+        if (label != null) {
+            childTraversals.add(label);
+        }
         return childTraversals;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
     }
 
     @Override
@@ -174,6 +187,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
+        }
+        if (key instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) key).asAdmin());
         }
         if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);

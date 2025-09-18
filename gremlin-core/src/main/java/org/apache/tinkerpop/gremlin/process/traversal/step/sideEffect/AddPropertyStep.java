@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
@@ -209,7 +210,10 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
     @Override
     public Object getValue() {
         List<Object> values = parameters.get(T.value, null);
-        return values.isEmpty() ? null : values.get(0);
+        if (values.isEmpty()) {
+            return null;
+        }
+        return values.get(0) instanceof ConstantTraversal ? ((ConstantTraversal<?, ?>) values.get(0)).next() : values.get(0);
     }
 
     @Override

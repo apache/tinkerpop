@@ -57,6 +57,17 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
         return constantTraversal.equals(other);
     }
 
+    @Override
+    public GValueConstantTraversal<S, E> clone() {
+        GValueConstantTraversal<S, E> clone = new GValueConstantTraversal<>(GValue.of(this.end.getName(), this.end.get()));
+        try {
+            clone.setGValueManager(this.getGValueManager().clone());
+        } catch (CloneNotSupportedException e) { //TODO:: handle properly
+            throw new RuntimeException(e);
+        }
+        return clone;
+    }
+
     public ConstantTraversal<S, E> getConstantTraversal() {
         return constantTraversal;
     }

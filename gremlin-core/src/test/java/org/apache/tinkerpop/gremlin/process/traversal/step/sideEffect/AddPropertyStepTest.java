@@ -99,7 +99,7 @@ public class AddPropertyStepTest extends GValueStepTest {
     @Test
     public void getValueAsGValueShouldNotPinVariable() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PNAME, GValue.of(GNAME, PVALUE)).asAdmin();
-        assertEquals(GValue.of(GNAME, PVALUE), ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValueAsGValue());
+        assertEquals(GValue.of(GNAME, PVALUE), ((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getValueWithGValue());
         verifySingleUnpinnedVariable(traversal, GNAME);
     }
 
