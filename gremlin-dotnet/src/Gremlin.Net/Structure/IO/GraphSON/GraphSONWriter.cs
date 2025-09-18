@@ -73,7 +73,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             { typeof(decimal), new DecimalConverter() },
             { typeof(TimeSpan), new DurationSerializer() },
             { typeof(BigInteger), new BigIntegerSerializer() },
-            { typeof(byte), new ByteConverter() },
+            { typeof(sbyte), new SByteConverter() },
             { typeof(byte[]), new ByteBufferSerializer() },
             { typeof(char), new CharConverter() },
             { typeof(short), new Int16Converter() }
