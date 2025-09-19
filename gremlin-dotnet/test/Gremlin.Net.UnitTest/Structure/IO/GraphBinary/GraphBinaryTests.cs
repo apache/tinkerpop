@@ -565,11 +565,11 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
 
             Assert.Equal(expected, actual);
         }
-
+        
         [Fact]
-        public async Task TestN()
+        public async Task TestGType()
         {
-            var expected = N.Byte;
+            var expected = GType.Byte;
             var writer = CreateGraphBinaryWriter();
             var reader = CreateGraphBinaryReader();
             var serializationStream = new MemoryStream();

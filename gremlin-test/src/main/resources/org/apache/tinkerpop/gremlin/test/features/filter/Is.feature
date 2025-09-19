@@ -113,3 +113,161 @@ Feature: Step - is()
     Then the result should be unordered
       | result |
       | lop |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXINTXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf(GType.INT))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_valuesXnameX_isXtypeOfXSTRINGXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").is(P.typeOf(GType.STRING))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXSTRINGXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf(GType.STRING))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_V_isXtypeOfXVERTEXXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().is(P.typeOf(GType.VERTEX)).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_E_isXtypeOfXEDGEXX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.E().is(P.typeOf(GType.EDGE)).count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXNUMBERXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf(GType.NUMBER))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXintegerStringXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf("Integer"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
+  Scenario: g_V_valuesXnameX_isXtypeOfXstringStringXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("name").is(P.typeOf("String"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXinvalidStringXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf("invalid.type.Name"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "invalid.type.Name is not a registered type"
+
+  Scenario: g_V_whereXvaluesXageX_isXtypeOfXINTXXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(__.values("age").is(P.typeOf(GType.INT))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+
+  Scenario: g_V_propertiesXnameX_isXtypeOfXGType_PROPERTYXX_valueXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().properties("name").is(P.typeOf(GType.PROPERTY)).value()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_valuesXageX_isXtypeOfXGType_NULLXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf(GType.NULL))
+      """
+    When iterated to list
+    Then the result should be empty

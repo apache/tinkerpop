@@ -854,7 +854,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AsNumber Step
 
 The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided,
-or to the desired numerical type, based on the number token (`N`) provided.
+or to the desired numerical type, based on the type token (`GType`) provided. If a type token entered isn't a numerical type, an `IllegalArgumentException` will be thrown.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow during narrowing of types.
@@ -869,9 +869,9 @@ All other input types will result in `IllegalArgumentException`.
 ----
 g.inject(1234).asNumber() <1>
 g.inject(1.76).asNumber() <2>
-g.inject(1.76).asNumber(N.int_) <3>
+g.inject(1.76).asNumber(GType.INT) <3>
 g.inject("1b").asNumber() <4>
-g.inject(33550336).asNumber(N.byte_) <5>
+g.inject(33550336).asNumber(GType.BYTE) <5>
 ----
 
 <1> An int will be passed through.

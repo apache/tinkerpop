@@ -103,6 +103,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added optional traversal cache to `GremlinLangScriptEngine`
 * Introduced step interfaces for all parameterizable steps
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
+* Implemented `P.typeOf()` predicate
+* Added `GType` enum to denote types
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
 
