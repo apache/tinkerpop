@@ -9,6 +9,6 @@
   "author": "Ryan Tan",
   "license": "Apache-2.0",
   "dependencies": {
-    "gremlin": "^3.7.3"
+    "gremlin": "file:../../src/main/javascript/gremlin-javascript"
   }
 }
