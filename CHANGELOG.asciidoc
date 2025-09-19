@@ -105,6 +105,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
+* Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
