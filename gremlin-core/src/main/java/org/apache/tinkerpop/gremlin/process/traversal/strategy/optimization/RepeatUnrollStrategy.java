@@ -117,8 +117,6 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
                     // remove the RepeatStep
                     traversal.removeStep(i);
-                } else {
-                    System.out.println("RepeatUnrollStrategy not applied");
                 }
             }
         }

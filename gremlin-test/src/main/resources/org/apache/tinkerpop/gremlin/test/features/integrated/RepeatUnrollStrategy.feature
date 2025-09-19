@@ -157,8 +157,10 @@ Feature: Step - RepeatUnrollStrategy
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[josh] |
-      | v[peter] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[vadas] |
 
   Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXbothE_otherV_hasXage_gtX30XXX_timesX2X
     Given the modern graph
@@ -169,5 +171,7 @@ Feature: Step - RepeatUnrollStrategy
     When iterated to list
     Then the result should be unordered
       | result |
-      | v[josh] |
-      | v[peter] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[vadas] |
