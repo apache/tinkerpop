@@ -362,7 +362,6 @@ traversalMethod_asDate
 
  traversalMethod_asNumber
      : K_ASNUMBER LPAREN RPAREN #traversalMethod_asNumber_Empty
-     | K_ASNUMBER LPAREN traversalN RPAREN #traversalMethod_asNumber_traversalN
      | K_ASNUMBER LPAREN traversalGType RPAREN #traversalMethod_asNumber_traversalGType
      ;
 
@@ -1081,17 +1080,6 @@ traversalDT
     | K_DAY | K_DT DOT K_DAY
     ;
 
-traversalN
-    : K_BYTE | K_N DOT K_BYTE
-    | K_SHORT | K_N DOT K_SHORT
-    | K_INT | K_N DOT K_INT
-    | K_LONG | K_N DOT K_LONG
-    | K_FLOAT | K_N DOT K_FLOAT
-    | K_DOUBLE | K_N DOT K_DOUBLE
-    | K_BIGINT | K_N DOT K_BIGINT
-    | K_BIGDECIMAL | K_N DOT K_BIGDECIMAL
-    ;
-
 traversalGType
     : K_BIGDECIMAL | K_GTYPE DOT K_BIGDECIMAL
     | K_BIGDECIMALU | K_GTYPE DOT K_BIGDECIMALU
@@ -1647,7 +1635,6 @@ genericLiteral
     | traversalMerge
     | traversalPick
     | traversalDT
-    | traversalN
     | traversalGType
     | genericSetLiteral
     | genericCollectionLiteral

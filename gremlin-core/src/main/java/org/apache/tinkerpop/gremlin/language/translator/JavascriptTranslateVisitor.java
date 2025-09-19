@@ -88,15 +88,6 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalN(GremlinParser.TraversalNContext ctx) {
-        final String[] split = ctx.getText().split("\\.");
-        sb.append(processGremlinSymbol(split[0])).append(".");
-        sb.append(processGremlinSymbol(split[1]));
-        if (!split[1].startsWith("big")) sb.append("_");
-        return null;
-    }
-
-    @Override
     public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
         final String[] split = ctx.getText().split("\\.");
         sb.append(processGremlinSymbol(split[0])).append(".");

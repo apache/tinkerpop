@@ -97,18 +97,6 @@ describe('Traversal', function () {
       });
     });
   });
-  describe('#testTypeOf()', function () {
-    it('should submit the traversal typeOf and return a list', function () {
-      var g = traversal().with_(connection);
-      return g.V().is(P.typeOf(gType.vertex)).toList().then(function (list) {
-        console.log(gType.BYTE)
-        console.log(n.byte_)
-        assert.ok(list);
-        assert.strictEqual(list.length, 6);
-        list.forEach(v => assert.ok(v instanceof Vertex));
-      });
-    });
-  });
   describe('#clone()', function () {
     it('should reset a traversal when cloned', function () {
       var g = traversal().with_(connection);

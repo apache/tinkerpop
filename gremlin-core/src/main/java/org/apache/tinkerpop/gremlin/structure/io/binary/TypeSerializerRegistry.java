@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.io.binary;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -76,7 +75,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapEntrySerializer
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MetricsSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.MonthDaySerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.NSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetDateTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.OffsetTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PSerializer;
@@ -169,9 +167,8 @@ public class TypeSerializerRegistry {
             new RegistryEntry<>(Column.class, EnumSerializer.ColumnSerializer),
             new RegistryEntry<>(Direction.class, EnumSerializer.DirectionSerializer),
             new RegistryEntry<>(DT.class, EnumSerializer.DTSerializer),
-            new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
-            new RegistryEntry<>(N.class, new NSerializer()),
             new RegistryEntry<>(GType.class, EnumSerializer.GTypeSerializer),
+            new RegistryEntry<>(Merge.class, EnumSerializer.MergeSerializer),
             new RegistryEntry<>(Operator.class, EnumSerializer.OperatorSerializer),
             new RegistryEntry<>(Order.class, EnumSerializer.OrderSerializer),
             new RegistryEntry<>(Pick.class, EnumSerializer.PickSerializer),

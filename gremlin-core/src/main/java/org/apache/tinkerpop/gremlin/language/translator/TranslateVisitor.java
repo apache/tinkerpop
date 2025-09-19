@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -206,12 +205,6 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     @Override
     public Void visitTraversalDT(final GremlinParser.TraversalDTContext ctx) {
         appendExplicitNaming(ctx.getText(), DT.class.getSimpleName());
-        return null;
-    }
-
-    @Override
-    public Void visitTraversalN(final GremlinParser.TraversalNContext ctx) {
-        appendExplicitNaming(ctx.getText(), N.class.getSimpleName());
         return null;
     }
 

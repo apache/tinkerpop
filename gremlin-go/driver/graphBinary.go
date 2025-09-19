@@ -82,8 +82,7 @@ const (
 	bulkSetType           dataType = 0x2a
 	mergeType             dataType = 0x2e
 	dtType                dataType = 0x2f
-	nType                 dataType = 0x30
-	gTypeType             dataType = 0x31
+	gTypeType             dataType = 0x30
 	metricsType           dataType = 0x2c
 	traversalMetricsType  dataType = 0x2d
 	durationType          dataType = 0x81
@@ -750,8 +749,6 @@ func (serializer *graphBinaryTypeSerializer) getType(val interface{}) (dataType,
 		return mergeType, nil
 	case dt:
 		return dtType, nil
-	case n:
-		return nType, nil
 	case gType:
 		return gTypeType, nil
 	case p, Predicate:
