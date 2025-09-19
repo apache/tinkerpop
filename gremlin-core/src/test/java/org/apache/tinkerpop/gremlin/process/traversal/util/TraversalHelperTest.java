@@ -39,10 +39,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -52,7 +55,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -71,7 +73,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -604,70 +605,46 @@ public class TraversalHelperTest {
 
     @Test
     public void hasOnlyShouldReturnTrueWhenAllStepsAreAssignable() {
-        final Traversal.Admin<?,?> t = __.V().out().has("name", "marko").asAdmin();
-        final Set<Class> allowedClasses = Set.of(
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep.class
-        );
-        assertTrue(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, VertexStep.class, HasStep.class),
+                __.V().out().has("name", "marko").asAdmin()), is(true));
     }
 
     @Test
     public void hasOnlyShouldReturnFalseWhenStepNotAssignable() {
-        final Traversal.Admin<?,?> t = __.V().out().count().asAdmin();
-        final Set<Class> allowedClasses = Set.of(
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep.class
-        );
-        assertFalse(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, VertexStep.class),
+                __.V().out().count().asAdmin()), is(false));
     }
 
     @Test
     public void hasOnlyShouldWorkWithInterfaceClasses() {
-        final Traversal.Admin<?,?> t = __.V().out().asAdmin();
-        final Set<Class> allowedClasses = Set.of(
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract.class
-        );
-        assertTrue(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStepContract.class, VertexStepContract.class),
+                __.V().out().asAdmin()), is(true));
     }
 
     @Test
     public void hasOnlyShouldWorkRecursivelyWithNestedTraversals() {
-        final Traversal.Admin<?,?> t = __.V().repeat(__.out().has("name", "marko")).times(2).asAdmin();
-        final Set<Class> allowedClasses = Set.of(
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep.RepeatEndStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep.class
-        );
-        assertTrue(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, RepeatStep.class, RepeatStep.RepeatEndStep.class, VertexStep.class, HasStep.class),
+                __.V().repeat(__.out().has("name", "marko")).times(2).asAdmin()), is(true));
     }
 
     @Test
     public void hasOnlyShouldReturnFalseForNestedTraversalWithDisallowedStep() {
-        final Traversal.Admin<?,?> t = __.V().repeat(__.out().limit(1)).times(2).asAdmin();
-        final Set<Class> allowedClasses = Set.of(
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep.class
-        );
-        assertFalse(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, RepeatStep.class, VertexStep.class),
+                __.V().repeat(__.out().limit(1)).times(2).asAdmin()), is(false));
     }
 
     @Test
     public void hasOnlyShouldReturnTrueForEmptyTraversal() {
-        final Traversal.Admin<?,?> t = __.identity().asAdmin();
-        final Set<Class> allowedClasses = Set.of(IdentityStep.class);
-        assertTrue(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(Set.of(IdentityStep.class), __.identity().asAdmin()), is(true));
     }
 
     @Test
     public void hasOnlyShouldReturnFalseForEmptyAllowedClasses() {
-        final Traversal.Admin<?,?> t = __.V().out().asAdmin();
-        final Set<Class> allowedClasses = Set.of();
-        assertFalse(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(allowedClasses, t));
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(Set.of(), __.V().out().asAdmin()), is(false));
     }
 }

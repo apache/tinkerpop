@@ -649,7 +649,7 @@ public final class TraversalHelper {
      */
     public static boolean hasOnlyStepsOfAssignableClassesRecursively(final Collection<Class> stepClasses, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : getStepsOfAssignableClassRecursively(Step.class, traversal)) {
-            boolean isSupported = stepClasses.stream()
+            final boolean isSupported = stepClasses.stream()
                     .anyMatch(allowedClass -> allowedClass.isAssignableFrom(step.getClass()));
             if (!isSupported) {
                 return false;
