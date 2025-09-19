@@ -699,6 +699,17 @@ some of the interfaces in the gremlin traversal engine. This has led to several 
 As of 3.8.0 `with()` modulation of the following steps will no longer work: `addV()`, `addE()`, `property()`, `drop()`,
 `mergeV()`, and `mergeE()`.
 
+==== Stricter RepeatUnrollStrategy
+
+The `RepeatUnrollStrategy` has been updated to use a more conservative approach for determining which repeat traversals 
+are safe to unroll. Previously, the strategy would attempt to unroll most repeat loops. This caused unintentional 
+traversal semantic changes when some steps were unrolled (especially barrier steps). 
+
+Now, the strategy only applies to repeat traversals that contain exclusively safe, well-understood steps: 
+`out()`, `in()`, `both()`, `inV()`, `outV()`, `otherV()`, `has(key, value)`
+
+Repeat traversals containing other steps will no longer be unrolled.
+
 === Upgrading for Providers
 
 ==== Graph System Providers
