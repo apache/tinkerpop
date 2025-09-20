@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class AbstractMergeElementStepPlaceholder<S, E> extends AbstractStep<S, E> implements MergeStepContract<S, E, Map>, GValueHolder<S, E> {
+public abstract class AbstractMergeElementStepPlaceholder<S, E> extends FlatMapStep<S, E> implements MergeStepContract<S, E, Map>, GValueHolder<S, E> {
     protected final boolean isStart;
     protected Map<Object, List<Object>> properties = new HashMap<>();
     protected Traversal.Admin<?, Map<Object, Object>> mergeTraversal;
@@ -59,7 +60,7 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends Abstract
     }
 
     @Override
-    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+    protected Iterator<E> flatMap(Traverser.Admin<S> traverser) {
         throw new IllegalStateException("GValuePlaceholder step is not executable");
     }
 

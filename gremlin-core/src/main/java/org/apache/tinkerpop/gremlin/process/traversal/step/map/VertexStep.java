@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements AutoCloseable, Configuring, VertexStepContract<E> {
+public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> implements Configuring, VertexStepContract<E> {
 
     protected Parameters parameters = new Parameters();
     private final String[] edgeLabels;

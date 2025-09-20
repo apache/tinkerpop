@@ -52,7 +52,7 @@ import static org.apache.tinkerpop.gremlin.structure.service.Service.ServiceCall
  *
  * @author Mike Personick (http://github.com/mikepersonick)
  */
-public final class CallStep<S, E> extends AbstractStep<S, E> implements AutoCloseable, CallStepContract<S, E> {
+public final class CallStep<S, E> extends AbstractStep<S, E> implements CallStepContract<S, E> {
 
     private final boolean isStart;
     private boolean first = true;

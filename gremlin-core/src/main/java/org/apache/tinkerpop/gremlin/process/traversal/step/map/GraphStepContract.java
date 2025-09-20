@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing {
+public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing, AutoCloseable {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.

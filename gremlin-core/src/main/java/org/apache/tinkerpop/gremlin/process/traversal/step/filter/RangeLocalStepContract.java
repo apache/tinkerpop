@@ -20,11 +20,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 
 /**
  * Defines the contract for {@code range} related steps.
  */
-public interface RangeLocalStepContract<S> extends Step<S, S> {
+public interface RangeLocalStepContract<S> extends Step<S, S>, Ranging {
 
     /**
      * Retrieves the lower bound of the range.

@@ -50,7 +50,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, GraphStepContract<S, E> {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements Configuring, GraphStepContract<S, E> {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;

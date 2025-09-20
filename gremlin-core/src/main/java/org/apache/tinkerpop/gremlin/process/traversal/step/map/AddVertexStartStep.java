@@ -46,8 +46,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AddVertexStartStep extends AbstractStep<Vertex, Vertex>
-        implements TraversalParent, Scoping, AddVertexStepContract<Vertex>, Configuring {
+public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements AddVertexStepContract<Vertex>, Configuring {
 
     private Parameters parameters = new Parameters();
     private boolean first = true;
