@@ -262,6 +262,20 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jsonElement);
         
             Assert.Equal(1, deserializedValue);
+            Assert.IsType<sbyte>(deserializedValue);
+        }
+        
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeByteNegative(int version)
+        {
+            const string serializedValue = "{\"@type\":\"gx:Byte\",\"@value\":-42}";
+            var reader = CreateStandardGraphSONReader(version);
+        
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(serializedValue);
+            var deserializedValue = reader.ToObject(jsonElement);
+        
+            Assert.Equal(-42, deserializedValue);
+            Assert.IsType<sbyte>(deserializedValue);
         }
         
         [Theory, MemberData(nameof(Versions))]

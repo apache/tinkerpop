@@ -168,6 +168,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Introduced `GValue` to represent parameterized values in a `GraphTraversal`
 * Added optional traversal cache to `GremlinLangScriptEngine`
 * Introduced step interfaces for all parameterizable steps
+* Switched `gremlin-net` byte serializers to signed bytes (`sbyte`) to be consistent with IO doc
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
 * Renamed `MergeStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `TraversalMergeStep` of `merge()` to `MergeStep` for consistency.

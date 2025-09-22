@@ -277,6 +277,15 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
+==== .NET Byte Serialization Change
+
+The Gremlin .NET serializers has been updated to correctly handle byte values as signed integers to align with the IO
+specification, whereas previously it incorrectly serialized and deserialized bytes as unsigned values.
+
+This is a breaking change for .NET applications that rely on byte values. Existing applications using byte values should consider switching to `sbyte` for signed byte operations or `short` for a wider range of values to maintain compatibility.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3161[TINKERPOP-3161]
+
 ==== Removal of P.getOriginalValue()
 
 `P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.

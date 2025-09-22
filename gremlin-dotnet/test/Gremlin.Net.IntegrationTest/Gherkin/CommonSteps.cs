@@ -87,7 +87,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly IDictionary<char, Func<string, object>> NumericParsers =
             new Dictionary<char, Func<string, object>>
             {
-                { 'b', s => Convert.ToByte(s) },
+                { 'b', s => Convert.ToSByte(s) },
                 { 's', s => Convert.ToInt16(s) },
                 { 'i', s => Convert.ToInt32(s) },
                 { 'l', s => Convert.ToInt64(s) },
