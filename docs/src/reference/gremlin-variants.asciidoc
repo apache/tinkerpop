@@ -525,10 +525,9 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/greml
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-There are two ways to run Gremlin Server for these examples:
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
 
-- *Running locally* – see the <<gremlin-server,Gremlin Server>> documentation.
-- *Running with Docker*:
+To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
 [source,shell]
 ----
@@ -549,8 +548,10 @@ Modern toy graph server:
 docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 ----
 
+The remote connection and basic Gremlin examples can be run on a clean server, while traversal examples should be run on a server with the Modern graph preloaded.
+
 ==== Prerequisites
-- Go 1.24+ installed
+- Compatible Go installed (see <<development-environment,Development Environment>> for supported versions)
 
 Navigate to the examples directory:
 
@@ -1282,10 +1283,9 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/greml
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-There are two ways to run Gremlin Server for these examples:
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
 
-- *Running locally* – see the <<gremlin-server,Gremlin Server>> documentation.
-- *Running with Docker*:
+To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
 [source,shell]
 ----
@@ -1306,8 +1306,10 @@ Modern toy graph server:
 docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 ----
 
+The remote connection and basic Gremlin examples can be run on a clean server, while traversal examples should be run on a server with the Modern graph preloaded.
+
 ==== Prerequisites
-- Java 11 (JDK) installed
+- Compatible JDK installed (see <<development-environment,Development Environment>> for supported versions)
 - Maven installed
 
 Navigate to the examples directory:
@@ -1747,10 +1749,9 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/greml
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-There are two ways to run Gremlin Server for these examples:
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
 
-- *Running locally* – see the <<gremlin-server,Gremlin Server>> documentation.
-- *Running with Docker*:
+To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
 [source,shell]
 ----
@@ -1771,8 +1772,10 @@ Modern toy graph server:
 docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 ----
 
+The remote connection and basic Gremlin examples can be run on a clean server, while traversal examples should be run on a server with the Modern graph preloaded.
+
 ==== Prerequisites
-- Node.js v20 installed
+- Compatible Node.js installed (see <<development-environment,Development Environment>> for supported versions)
 - npm installed
 
 Navigate to the examples directory:
@@ -2165,10 +2168,9 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/greml
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-There are two ways to run Gremlin Server for these examples:
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
 
-- *Running locally* – see the <<gremlin-server,Gremlin Server>> documentation.
-- *Running with Docker*:
+To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
 [source,shell]
 ----
@@ -2189,8 +2191,10 @@ Modern toy graph server:
 docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 ----
 
+The remote connection and basic Gremlin examples can be run on a clean server, while traversal examples should be run on a server with the Modern graph preloaded.
+
 ==== Prerequisites
-- .NET 8 SDK installed
+- Compatible .NET SDK installed (see <<development-environment,Development Environment>> for supported versions)
 
 Navigate to the examples directory:
 
@@ -2199,21 +2203,20 @@ Navigate to the examples directory:
 cd gremlin-dotnet/Examples
 ----
 
-For each example project, navigate to its folder, then build and run:
+Build all projects:
 
 [source,shell]
 ----
-cd BasicGremlin
-dotnet build
-dotnet run
+dotnet build Examples.sln
+----
 
-cd ../Connections
-dotnet build
-dotnet run
+Run specific examples:
 
-cd ../ModernTraversals
-dotnet build
-dotnet run
+[source,shell]
+----
+dotnet run --project BasicGremlin
+dotnet run --project Connections  
+dotnet run --project ModernTraversals
 ----
 
 [[gremlin-python]]
@@ -2760,10 +2763,9 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/greml
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-There are two ways to run Gremlin Server for these examples:
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
 
-- *Running locally* – see the <<gremlin-server,Gremlin Server>> documentation.
-- *Running with Docker*:
+To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
 [source,shell]
 ----
@@ -2784,8 +2786,10 @@ Modern toy graph server:
 docker run -d -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
 ----
 
+The remote connection and basic Gremlin examples can be run on a clean server, while traversal examples should be run on a server with the Modern graph preloaded.
+
 ==== Prerequisites
-- Python 3.9+ installed
+- Compatible Python installed (see <<development-environment,Development Environment>> for supported versions)
 - pip installed
 
 NOTE: On some systems, you may need to use `python3` and `pip3` instead of `python` and `pip`.

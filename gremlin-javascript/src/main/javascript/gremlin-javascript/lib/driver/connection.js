@@ -163,9 +163,9 @@ class Connection extends EventEmitter {
 
     this._ws.addEventListener('open', this.#handleOpen);
     this._ws.addEventListener('error', this.#handleError);
-    // Only attach unexpected-response listener for Node.js WebSocket (ws package)
+    // Only attach unexpected-response listener if WebSocket supports .on() method
     // Browser WebSocket does not have this event and .on() method
-    if (!useGlobalWebSocket) {
+    if (this._ws && 'on' in this._ws) {
       // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
       // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
       this._ws.on('unexpected-response', this.#handleUnexpectedResponse);
