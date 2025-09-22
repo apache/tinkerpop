@@ -997,6 +997,41 @@ pinned variable is one which must remain bound to the current value. By paramete
 variable, as it can be substituted in the optimized traversal without any loss of meaning, however the variable "count"
 will be pinned as the optimized traversal is not valid for other values of "count".
 
+===== Decouple internal step state from `Configuring`/`Parameterizing` interfaces
+
+Previously `AddVertexStep`, `AddVertexStartStep`, `AddEdgeStep`, `AddEdgeStartStep`, and `AddPropertyStep` stored their
+internal state (id, label, properties, from/to vertices...) in a `Parameters` object which was exposed via the
+`Configuring` and `Parameterizing` interfaces. These interfaces are primarily intended to support with()-modulation, and
+thus these steps had weird unintended behaviors when combined with with()-modulation:
+
+[source,text]
+----
+gremlin> g.addV().with("name", "cole").valueMap()
+==>[name:[cole]]
+----
+
+This internal step state has now been decoupled from the `Configuring` and `Parameterizing` interfaces, which are now
+exclusively used for the purposes of with()-modulation. All accesses of these steps internal data must now go through
+methods defined in the new `StepContract` interfaces: `AddVertexStepContract`, `AddEdgeStepContract`, and
+`AddPropertyStepContract`:
+
+[source,text]
+----
+// Read label
+Object label = addVertexStep.getParameters().getRaw().get(T.label).get(0) // 3.7.4
+Object label = addVertexStep.getLabel() // 3.8.0
+
+// Set property
+addVertexStep.configure("name", "cole") // 3.7.4
+addVertexStep.addProperty("name", "cole") // 3.8.0
+
+// Get properties
+Map<Object, List<Object>> properties = addVertexStep.getParameters.getRaw() // 3.7.4
+Map<Object, List<Object>> properties = addVertexStep.getProperties() // 3.8.0
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3193[TINKERPOP-3193]
+
 ==== Graph Driver Providers
 
 ===== Prefer OffsetDateTime
