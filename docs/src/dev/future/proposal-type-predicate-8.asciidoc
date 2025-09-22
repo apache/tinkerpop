@@ -121,7 +121,7 @@ gremlin> g.inject(1.0,2,3,'hello',false).is(typeOf(Number)).fold()
 ==> [1.0,2,3]
 gremlin> typeOf(Number).test(1)
 ==>true
-gremlin> g.inject(1.0,2,3,'hello',false).or(is(typeOf(Integer)), is(typeOf(Boolean))).fold()
+gremlin> g.inject(1.0,2,3,'hello',false).is(typeOf(Integer).or(typeOf(Boolean))).fold()
 ==>[2,3,false]
 
 // Potentially used to filter a certain type of value in all properties:
