@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -44,8 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
-        implements AddEdgeStepContract<S>, Configuring {
+public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeStepContract<S> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");

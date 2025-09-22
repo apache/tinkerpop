@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -48,8 +47,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
-        implements AddEdgeStepContract<Edge>, Configuring {
+public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdgeStepContract<Edge> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
