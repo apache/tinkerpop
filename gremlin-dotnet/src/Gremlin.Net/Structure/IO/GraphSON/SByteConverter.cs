@@ -24,10 +24,10 @@ using System.Text.Json;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class ByteConverter : NumberConverter<byte>
+    internal class SByteConverter : NumberConverter<sbyte>
     {
         protected override string GraphSONTypeName => "Byte";
         protected override string Prefix => "gx";
-        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetByte();
+        protected override dynamic FromJsonElement(JsonElement graphson) => graphson.GetSByte();
     }
 }

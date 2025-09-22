@@ -708,7 +708,10 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
         [Theory]
         [InlineData(1)]
         [InlineData(123)]
-        public async Task TestByte(byte expected)
+        [InlineData(-1)]
+        [InlineData(-128)]
+        [InlineData(127)]
+        public async Task TestSByte(sbyte expected)
         {
             var writer = CreateGraphBinaryWriter();
             var reader = CreateGraphBinaryReader();
@@ -719,6 +722,66 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             var actual = await reader.ReadAsync(serializationStream);
             
             Assert.Equal(expected, actual);
+        }
+        
+        [Theory]
+        [InlineData((sbyte)0, new byte[] { 0x00 })]
+        [InlineData((sbyte)1, new byte[] { 0x01 })]
+        [InlineData((sbyte)127, new byte[] { 0x7F })]
+        [InlineData((sbyte)-1, new byte[] { 0xFF })]
+        [InlineData((sbyte)-128, new byte[] { 0x80 })]
+        public async Task TestSByteSerializationSpec(sbyte value, byte[] expected)
+        {
+            var writer = new GraphBinaryWriter();
+            var serializationStream = new MemoryStream();
+            
+            await writer.WriteNonNullableValueAsync(value, serializationStream);
+
+            var serBytes = serializationStream.ToArray();
+            Assert.Equal(expected, serBytes);
+        }
+        
+        [Theory]
+        [InlineData((sbyte)0)]
+        [InlineData((sbyte)1)]
+        [InlineData((sbyte)127)]
+        [InlineData((sbyte)-1)]
+        [InlineData((sbyte)-128)]
+        [InlineData((sbyte)42)]
+        [InlineData((sbyte)-42)]
+        public async Task TestSByteRoundTrip(sbyte expected)
+        {
+            var writer = new GraphBinaryWriter();
+            var reader = new GraphBinaryReader();
+            var serializationStream = new MemoryStream();
+            
+            await writer.WriteAsync(expected, serializationStream);
+            serializationStream.Position = 0;
+            var actual = await reader.ReadAsync(serializationStream);
+            
+            Assert.Equal(expected, actual);
+            Assert.IsType<sbyte>(actual);
+        }
+        
+        [Fact]
+        public async Task TestSByteMinMaxValues()
+        {
+            var writer = new GraphBinaryWriter();
+            var reader = new GraphBinaryReader();
+            
+            // Test minimum value
+            var minStream = new MemoryStream();
+            await writer.WriteAsync(sbyte.MinValue, minStream);
+            minStream.Position = 0;
+            var actualMin = await reader.ReadAsync(minStream);
+            Assert.Equal(sbyte.MinValue, actualMin);
+            
+            // Test maximum value
+            var maxStream = new MemoryStream();
+            await writer.WriteAsync(sbyte.MaxValue, maxStream);
+            maxStream.Position = 0;
+            var actualMax = await reader.ReadAsync(maxStream);
+            Assert.Equal(sbyte.MaxValue, actualMax);
         }
         
         [Fact]
