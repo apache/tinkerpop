@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Json;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Process.Traversal.Strategy.Optimization;
@@ -582,9 +583,35 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         {
             var writer = CreateGraphSONWriter(version);
 
-            var graphSon = writer.WriteObject((byte)1);
+            var graphSon = writer.WriteObject((sbyte)1);
 
             Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":1}", graphSon);
+        }
+        
+        [Theory, MemberData(nameof(Versions))]
+        public void ShouldSerializeByteNegativeValue(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            
+            var graphSon = writer.WriteObject((sbyte)-42);
+
+            Assert.Equal("{\"@type\":\"gx:Byte\",\"@value\":-42}", graphSon);
+        }
+        
+        [Theory, MemberData(nameof(Versions))]
+        public void TestSByteGraphSONFormat(int version)
+        {
+            var writer = CreateGraphSONWriter(version);
+            var value = (sbyte)42;
+            
+            var serialized = writer.WriteObject(value);
+            var jsonDoc = JsonDocument.Parse(serialized);
+            
+            Assert.True(jsonDoc.RootElement.TryGetProperty("@type", out var typeProperty));
+            Assert.Equal("gx:Byte", typeProperty.GetString());
+            
+            Assert.True(jsonDoc.RootElement.TryGetProperty("@value", out var valueProperty));
+            Assert.Equal(42, valueProperty.GetSByte());
         }
 
         [Theory, MemberData(nameof(Versions))]

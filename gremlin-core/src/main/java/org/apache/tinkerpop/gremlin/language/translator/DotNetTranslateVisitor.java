@@ -93,8 +93,8 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         final char lastCharacter = integerLiteral.charAt(lastCharIndex);
         switch (lastCharacter) {
             case 'b':
-                // parse B/b as byte
-                sb.append("(byte) ");
+                // parse B/b as sbyte
+                sb.append("(sbyte) ");
                 sb.append(integerLiteral, 0, lastCharIndex);
                 break;
             case 's':

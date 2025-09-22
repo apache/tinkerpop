@@ -60,6 +60,29 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         }
 
         /// <summary>
+        ///     Asynchronously writes a <see cref="sbyte"/> to a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to write the <see cref="sbyte"/> to.</param>
+        /// <param name="value">The <see cref="sbyte"/> to write.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        public static async Task WriteSByteAsync(this Stream stream, sbyte value,
+            CancellationToken cancellationToken = default)
+        {
+            await stream.WriteByteAsync((byte)value, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        ///     Asynchronously reads a <see cref="sbyte"/> from a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to read from.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <returns>The read <see cref="sbyte"/>.</returns>
+        public static async Task<sbyte> ReadSByteAsync(this Stream stream, CancellationToken cancellationToken = default)
+        {
+            return (sbyte)await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
         ///     Asynchronously writes an <see cref="int"/> to a <see cref="Stream"/>.
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> to write the <see cref="int"/> to.</param>
