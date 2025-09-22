@@ -235,9 +235,9 @@ public class AddVertexStepTest extends GValueStepTest {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
         final AddVertexStep step = new AddVertexStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
     }
 
     @Test
@@ -245,9 +245,9 @@ public class AddVertexStepTest extends GValueStepTest {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?, String>) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
         final AddVertexStep step = new AddVertexStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
     }
 
     @Test
