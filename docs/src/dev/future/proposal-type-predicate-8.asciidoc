@@ -1,0 +1,263 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*x.y.z - Proposal 8*
+
+== Type Predicate
+
+=== Motivation
+
+Following up on link:https://issues.apache.org/jira/browse/TINKERPOP-2234[TINKERPOP-2234], filtering of traversers based on types would be a very convenient addition to data manipulation in Gremlin. For example, when we perform union of traversals and only want vertices or edges, currently there is no simple way to assert the type and pass it through.
+
+=== Type Token Definition & Implementation
+
+To facilitate type assertion across GLVs, using a unified set of enum tokens is the most convenient, especially given we do not want to leak Java types into other languages. The proposal here is to use a defined set of Gremlin Type tokens (see Appendix), and use an interface structure to allow providers to implement and register their own type tokens to be used with the Gremlin Language.
+
+==== Gremlin Type Enum
+
+We will define a `GType` enum consisting of core types in Gremlin to be used with the type predicate (for full set of types, see Appendix), for type safety and maintainability across GLVs. This will also be the single set of type enum used in Gremlin steps (e.g. replacing `N` in `asNumber()`).
+
+This enum itself will not be extendable. Providers will be able to add their own types into the GlobalTypeCache to be resolved as string literals.
+
+[source,java]
+----
+public enum GType {
+  BYTE(Byte.class),
+  DOUBLE(Double.class),
+  FLOAT(Float.class),
+  INT(Integer.class),
+  LIST(List.class),
+  LONG(Long.class),
+  MAP(Map.class),
+  NULL(OffsetDateTime.class),;
+  // for comprehensive list please see Appendix
+
+  private final Class<?> javaType;
+
+  GType(Class<?> javaType) {
+    this.javaType = javaType;
+  }
+
+  public Class<?> getType() { return javaType; }
+}
+----
+
+=== Addition of `P.typeOf(token)`
+
+Given `P` is widely used by filter steps and has existing evaluation structure, we would also introduce a new enum `Type` for type assertions, while adding a `typeOf` predicate into `P`, which will have 3 overloads, `GType`, `String`, and `Class` (for Java/Groovy only).
+
+[source,java]
+----
+public enum Type implements PBiPredicate<Object, Object> {
+    typeOf {
+        @Override
+        public boolean test(final Object first, final Object second) {
+            // implementations
+        }};
+
+    static final class GlobalTypeCache {
+        private GlobalTypeCache() {
+          throw new IllegalStateException("Utility class");
+        }
+        private static final Map<String, Class<?>> GLOBAL_TYPE_REGISTRY = new ConcurrentHashMap<>() {};
+    }
+}
+----
+
+There are several accepted overloads for the token.
+
+* `P.typeOf(GType)` - default case, accepts core Gremlin type enum.
+* `P.typeOf(String)` - string for provider extensions:
+** Only the registered type names inside GlobalTypeCache will resolve. None-registered string will result in `false`
+* `P.typeOf(Class)` - Java-specific for convenience, can be used as sugar syntax in Groovy
+
+Any other input, while accepted, will return `false` and lead to result being filtered out (alternative is to throw exception).
+
+For negation, use `not(P.typeOf(token))`.
+
+==== Examples
+
+----
+// Use of GType
+gremlin> g.V().is(P.of(GType.VERTEX)).fold()
+==> [v[1],v[2],[v3],[v4],[v5],[v6]]
+gremlin> g.inject(1.0,2,3,'hello',false).is(P.typeOf(GType.NUMBER)).fold()
+==> [1.0,2,3]
+// for negation, use not()
+gremlin> g.inject(1.0,2,3,'hello',false).is(not(P.typeOf(GType.NUMBER))).fold()
+==> [hello,false]
+
+// Use of String key in GlobalTypeCache, assuming 'String' and 'Integer' are registered
+gremlin> g.V().or(__.has('name', P.typeOf('String')), __.has('age', P.typeOf('Integer'))).values('name')
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+
+// Use of Java class for sugar syntx
+gremlin> g.V().is(P.typeOf(Vertex.class)).fold()
+==> [v[1],v[2],[v3],[v4],[v5],[v6]]
+
+// Use of Groovy syntax in console
+gremlin> g.inject(1.0,2,3,'hello',false).is(typeOf(Number)).fold()
+==> [1.0,2,3]
+gremlin> typeOf(Number).test(1)
+==>true
+gremlin> g.inject(1.0,2,3,'hello',false).is(typeOf(Integer).or(typeOf(Boolean))).fold()
+==>[2,3,false]
+
+// Potentially used to filter a certain type of value in all properties:
+gremlin> g.V().hasLabel('person').values().is(typeOf(Integer)).sum()
+==>123
+
+// Potentially used to ensure a sideeffect is properly applied:
+gremlin> g.V().hasLabel('person').
+......1>   sideEffect(property('age', values('age').asNumber(GType.DOUBLE))).
+......2>   values('age').is(typeOf(Double))
+==>29.0
+==>27.0
+==>32.0
+==>35.0
+
+// Potentially used to filter out nulls for subsequent data processing:
+gremlin> g.V().values().is(not(typeOf(GType.NULL)))
+----
+
+=== Extending Addition Type Tokens via Global Cache
+
+To reduce complexity of the grammar, providers who implement their own custom types can use `String` tokens only. They will need to register their type into the cache to be recognized by the embedded traversal and the Grammar.
+
+For example, given a new custom `Point` class that's already integrated as a custom type in Gremlin:
+
+[source,java]
+----
+public class Point {
+  private Integer x;
+  private Integer y;
+
+  public Point(final Integer x, final Integer y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  // getters and setters
+}
+----
+
+Register the desired string token representing the type in the Global Cache, and provide the appropriate user documentation:
+
+----
+Type.GlobalTypeCache.registerDataType(Point.class);
+
+g.inject(new Point(1, 2)).is(P.typeOf('Point')).fold().next();
+----
+
+=== Appendix
+
+A proof-of-concept implementation is located https://github.com/apache/tinkerpop/tree/type-predicate-poc.
+
+==== Proposed Range of Gremlin Type Tokens
+
+[cols="1,1"]
+|===
+|Token |Gremlin Type Reference
+
+|GType.INT
+|GraphBinary 4.0
+
+|GType.LONG
+|GraphBinary 4.0
+
+|GType.DOUBLE
+|GraphBinary 4.0
+
+|GType.FLOAT
+|GraphBinary 4.0
+
+|GType.BIGDECIMAL
+|GraphBinary 4.0
+
+|GType.BIGINT
+|GraphBinary 4.0
+
+|GType.BYTE
+|GraphBinary 4.0
+
+|GType.SHORT
+|GraphBinary 4.0
+
+|GType.STRING
+|GraphBinary 4.0
+
+|GType.DATETIME
+|GraphBinary 4.0
+
+|GType.LIST
+|GraphBinary 4.0
+
+|GType.SET
+|GraphBinary 4.0
+
+|GType.MAP
+|GraphBinary 4.0
+
+|GType.NUMBER
+|Utility type
+
+|GType.UUID
+|GraphBinary 4.0
+
+|GType.EDGE
+|GraphBinary 4.0
+
+|GType.PATH
+|GraphBinary 4.0
+
+|GType.PROPERTY
+|GraphBinary 4.0
+
+|GType.GRAPH
+|GraphBinary 4.0
+
+|GType.VERTEX
+|GraphBinary 4.0
+
+|GType.VP
+|GraphBinary 4.0(VertexProperty)
+
+|GType.BINARY
+|GraphBinary 4.0
+
+|GType.BOOLEAN
+|GraphBinary 4.0
+
+|GType.TREE
+|GraphBinary 4.0
+
+|GType.CHAR
+|GraphBinary 4.0
+
+|GType.DURATION
+|GraphBinary 4.0
+
+|GType.NULL
+|GraphBinary 4.0(Unspecified Null Object)
+|===
