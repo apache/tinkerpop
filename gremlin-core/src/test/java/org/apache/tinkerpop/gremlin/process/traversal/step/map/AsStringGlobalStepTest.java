@@ -49,14 +49,18 @@ public class AsStringGlobalStepTest extends StepTest {
         assertEquals("1", __.__(Arrays.asList(1, 2)).unfold().asString().next());
         assertArrayEquals(new String[]{"1", "2"}, __.inject(Arrays.asList(1, 2)).unfold().asString().toList().toArray());
 
-        assertEquals(null, __.__(null).asString().next());
-
         assertEquals("[1, 2]test", __.__(Arrays.asList(1, 2)).asString().concat("test").next());
         assertEquals("1test", __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").next());
         assertArrayEquals(new String[]{"1test", "2test"},
                 __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").toList().toArray());
         assertArrayEquals(new String[]{"1test", "2test"},
                 __.__(Arrays.asList(1, 2)).unfold().asString().concat("test").fold().next().toArray());
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenNullInput() {
+        __.__(null).asString().next();
     }
 
 }

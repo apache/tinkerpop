@@ -790,7 +790,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[asString-step]]
 === AsString Step
 
-The `asString()`-step (*map*) returns the value of incoming traverser as strings. Null values are returned unchanged.
+The `asString()`-step (*map*) returns the value of incoming traverser as strings. Any `null` value will cause an `IllegalArgumentException`.
 
 [gremlin-groovy,modern]
 ----

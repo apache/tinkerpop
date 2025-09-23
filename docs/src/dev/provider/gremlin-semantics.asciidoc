@@ -799,6 +799,35 @@ If no type token is provided, the incoming number remains unchanged.
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsNumberStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asNumber-step[reference]
 
+[[asString-step]]
+=== asString()
+
+*Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
+incoming list traverser as string.
+
+*Syntax:* `asString()` | `asString(Scope scope)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`String`/`List`
+|=========================================================
+
+*Arguments:*
+
+* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
+The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
+`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
+list of string instead.
+
+*Exceptions*
+
+* If the incoming traverser is a `null` value then an `IllegalArgumentException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
+
 [[barrier-step]]
 === barrier()
 
@@ -1001,36 +1030,6 @@ None
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SideEffectCapStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#cap-step[reference]
-
-[[asString-step]]
-=== asString()
-
-*Description:* Returns the value of incoming traverser as strings, or if `Scope.local` is specified, returns each element inside
-incoming list traverser as string.
-
-*Syntax:* `asString()` | `asString(Scope scope)`
-
-[width="100%",options="header"]
-|=========================================================
-|Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |N |`any` |`String`/`List`
-|=========================================================
-
-*Arguments:*
-
-* `scope` - Determines the type of traverser it operates on. Both scopes will operate on the level of individual traversers.
-The `global` scope will operate on individual traverser, casting all (except `null`) to string. The `local` scope will behave like
-`global` for everything except lists, where it will cast individual non-`null` elements inside the list into string and return a
-list of string instead.
-
-Null values from the incoming traverser are not processed and remain as null when returned.
-
-*Exceptions*
-None
-
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asString-step[reference]
 
 [[call-step]]
 === call()

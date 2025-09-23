@@ -272,6 +272,11 @@ g.inject("Hello").split("")
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
+==== asString() No Longer Allow Nulls
+The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
+
+See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
+
 ==== Javascript Set Deserialization
 
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,

@@ -64,10 +64,7 @@ Feature: Step - asString()
       g.inject(null, 1).asString()
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | null |
-      | 1 |
+    Then the traversal will raise an error with message containing text of "Can't parse"
 
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectX1_nullX_asStringXlocalX
@@ -77,9 +74,7 @@ Feature: Step - asString()
       g.inject([1,null]).asString(Scope.local)
       """
     When iterated to list
-    Then the result should be unordered
-      | result |
-      | l[1,null] |
+    Then the traversal will raise an error with message containing text of "Can't parse"
 
   Scenario: g_V_valueMapXnameX_asString
     Given the modern graph
