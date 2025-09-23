@@ -159,12 +159,8 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
     public RangeGlobalStepPlaceholder<S> clone() {
         RangeGlobalStepPlaceholder<S> clone = (RangeGlobalStepPlaceholder<S>) super.clone();
         clone.bypass = this.bypass;
-        try {
-            clone.low = this.low.clone(); //TODO:: cleanup unnecessary try-catch
-            clone.high = this.high.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        clone.low = this.low.clone();
+        clone.high = this.high.clone();
         return clone;
     }
 

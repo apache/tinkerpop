@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepContract<E> {
 
-    private final GValue<String>[] edgeLabels;
+    private GValue<String>[] edgeLabels;
     private Direction direction;
     private final Class<E> returnClass;
 
@@ -146,6 +146,17 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
             }
         }
         return result;
+    }
+
+    @Override
+    public VertexStepPlaceholder<E> clone() {
+        VertexStepPlaceholder<E> clone = (VertexStepPlaceholder<E>) super.clone();
+        clone.direction = this.direction;
+        clone.edgeLabels = new GValue[this.edgeLabels.length];
+        for (int i = 0; i < this.edgeLabels.length; i++) {
+            clone.edgeLabels[i] = this.edgeLabels[i].clone();
+        }
+        return clone;
     }
 
     @Override

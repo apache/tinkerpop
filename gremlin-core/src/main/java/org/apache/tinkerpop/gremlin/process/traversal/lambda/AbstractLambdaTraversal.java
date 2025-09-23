@@ -145,6 +145,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     public Traversal.Admin<S, E> clone() {
         try {
             final AbstractLambdaTraversal<S, E> clone = (AbstractLambdaTraversal<S, E>) super.clone();
+            clone.gValueManager = this.gValueManager.clone();
             if (null != this.bypassTraversal)
                 clone.bypassTraversal = this.bypassTraversal.clone();
             return clone;

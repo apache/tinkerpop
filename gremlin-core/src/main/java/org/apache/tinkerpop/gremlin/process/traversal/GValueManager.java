@@ -141,10 +141,9 @@ public final class GValueManager implements Serializable, Cloneable {
      * Creates a deep copy of this GValueManager with cloned GValue instances.
      *
      * @return a new GValueManager instance with cloned state
-     * @throws CloneNotSupportedException if cloning fails
      */
     @Override
-    public GValueManager clone() throws CloneNotSupportedException {
+    public GValueManager clone() {
         final Map<String, GValue<?>> clonedRegistry = new HashMap<>();
         for (final Map.Entry<String, GValue<?>> entry : gValueRegistry.entrySet()) {
             // clone each gValue

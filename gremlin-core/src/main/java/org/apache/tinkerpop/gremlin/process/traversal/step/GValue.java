@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  * the name is not given, the value was provided literally in the traversal. The value of the variable can be any
  * object.
  */
-public class GValue<V> implements Serializable {
+public class GValue<V> implements Serializable, Cloneable {
     private final String name;
     private final V value;
 
@@ -107,7 +107,7 @@ public class GValue<V> implements Serializable {
     }
 
     @Override
-    public GValue<V> clone() throws CloneNotSupportedException {
+    public GValue<V> clone() {
         if (this.value == null) {
             return new GValue<>(this.name, null);
         }
