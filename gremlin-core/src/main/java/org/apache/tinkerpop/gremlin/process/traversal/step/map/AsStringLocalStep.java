@@ -47,14 +47,15 @@ public final class AsStringLocalStep<S, E> extends ScalarMapStep<S, E> {
         final S item = traverser.get();
 
         if (null == item) {
-            // we will pass null lists to next step
-            return null;
+            throw new IllegalArgumentException("Can't parse null as String.");
         } else if ((item instanceof Iterable) || (item instanceof Iterator) || item.getClass().isArray()) {
             final List<String> resList = new ArrayList<>();
             final Iterator<E> iterator = IteratorUtils.asIterator(item);
             while (iterator.hasNext()) {
                 final E i = iterator.next();
-                resList.add((i == null) ? null : String.valueOf(i));
+                if (i == null)
+                    throw new IllegalArgumentException("Can't parse null as String.");
+                resList.add(String.valueOf(i));
             }
             return (E) resList;
         } else {

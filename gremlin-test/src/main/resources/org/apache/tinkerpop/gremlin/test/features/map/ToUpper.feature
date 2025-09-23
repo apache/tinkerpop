@@ -45,20 +45,6 @@ Feature: Step - toUpper()
       | l[FEATURE,TEST,null] |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXfeature_test_nullX_asString_toUpper
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject("feature", "tESt", null).asString().toUpper()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | FEATURE |
-      | TEST |
-      | null |
-
-  @GraphComputerVerificationInjectionNotSupported
   Scenario: g_injectXListXa_bXX_toUpper
     Given the empty graph
     And the traversal of

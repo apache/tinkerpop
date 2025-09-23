@@ -104,6 +104,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Introduced step interfaces for all parameterizable steps
 * Switched `gremlin-net` byte serializers to signed bytes (`sbyte`) to be consistent with IO doc
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
+* Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
 

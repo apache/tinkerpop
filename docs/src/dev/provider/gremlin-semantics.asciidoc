@@ -1026,7 +1026,7 @@ list of string instead.
 Null values from the incoming traverser are not processed and remain as null when returned.
 
 *Exceptions*
-None
+* If the incoming traverser is a `null` value then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsStringLocalStep.java[source (local)],

@@ -41,7 +41,9 @@ public final class AsStringGlobalStep<S, E> extends ScalarMapStep<S, E> {
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         S traverserObject = traverser.get();
-        return (E) ((traverserObject == null) ? null : String.valueOf(traverserObject));
+        if (traverserObject == null)
+            throw new IllegalArgumentException("Can't parse null as String.");
+        return (E) String.valueOf(traverserObject);
     }
 
     @Override
