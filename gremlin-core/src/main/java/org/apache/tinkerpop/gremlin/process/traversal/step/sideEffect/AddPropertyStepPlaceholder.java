@@ -77,10 +77,10 @@ public class AddPropertyStepPlaceholder<S extends Element> extends AbstractStep<
             this.value = new GValueConstantTraversal<>((GValue<?>) valueObject);
         } else if (valueObject instanceof Traversal) {
             this.value = ((Traversal<?, ?>) valueObject).asAdmin();
-            this.integrateChild(((Traversal<?, ?>) valueObject).asAdmin());
         } else {
             this.value = new ConstantTraversal<>(valueObject);
         }
+        this.integrateChild(this.value);
         this.cardinality = cardinality;
     }
 

@@ -168,6 +168,12 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddVertexStepContract.class,
+                        g.addV().property("name", __.constant("cole")).property(T.label, __.constant("label")).property(T.id, __.constant(1)),
+                        List.of(),
+                        List.of(__.constant("cole"), __.constant("label"),  __.constant(1)),
+                        null, null
+                },
+                {AddVertexStepContract.class,
                         g.addV(GValue.of("l", "label")).property("name", GValue.of("name", "cole")),
                         List.of(),
                         List.of(new ConstantTraversal<>("label")), // Property is not stored as a child traversal in this case

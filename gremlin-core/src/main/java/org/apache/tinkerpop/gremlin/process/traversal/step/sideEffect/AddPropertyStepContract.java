@@ -49,14 +49,14 @@ public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent,
 
     /**
      * Gets the property value. If the value was originally passed as a {@link GValue<?>}, {@link ConstantTraversal <?>},
-     * or a literal value, then the literal value is returned. Otherwise, the MergeMap is returned in Traversal form.
+     * or a literal value, then the literal value is returned. Otherwise, the value is returned in Traversal form.
      */
     Object getValue();
 
     /**
      * Gets the property value. If the value was originally passed as a {@link GValue<?>}, that is returned
      * directly. If it was originally passed as a {@link ConstantTraversal <?>}, or a literal value, then the literal
-     * value is returned. Otherwise, the MergeMap is returned in Traversal form.
+     * value is returned. Otherwise, the value is returned in Traversal form.
      */
     default Object getValueWithGValue() {
         return getValue();

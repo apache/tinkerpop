@@ -29,14 +29,14 @@ import java.util.HashSet;
 public interface AddElementStepContract<S, E> extends Step<S, E>, PropertiesHolder, TraversalParent, Scoping {
     Object getLabel();
 
-    default GValue<?> getLabelAsGValue(){
-        return GValue.of(getLabel());
+    default Object getLabelWithGValue() {
+        return getLabel();
     }
 
     Object getElementId();
 
-    default GValue<?> getElementIdAsGValue() {
-        return GValue.of(getElementId());
+    default Object getElementIdWithGValue() {
+        return getElementId();
     }
 
     void setElementId(Object elementId);
