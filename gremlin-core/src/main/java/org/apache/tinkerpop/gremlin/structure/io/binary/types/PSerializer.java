@@ -99,7 +99,10 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
                 } catch (NoSuchMethodException ex1) {
                     // finally go for the generics
                     try {
-                        m = classOfP.getMethod(predicateName, Object.class);
+                        if ("typeOf".equals(predicateName))
+                            m = classOfP.getMethod(predicateName, Class.class);
+                        else
+                            m = classOfP.getMethod(predicateName, Object.class);
                     } catch (NoSuchMethodException ex2) {
                         // finally go for the generics
                         try {

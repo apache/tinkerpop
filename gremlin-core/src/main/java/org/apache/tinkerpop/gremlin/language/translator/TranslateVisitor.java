@@ -24,8 +24,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinBaseVisitor;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -209,8 +209,8 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitTraversalN(final GremlinParser.TraversalNContext ctx) {
-        appendExplicitNaming(ctx.getText(), N.class.getSimpleName());
+    public Void visitTraversalGType(final GremlinParser.TraversalGTypeContext ctx) {
+        appendExplicitNaming(ctx.getText(), GType.class.getSimpleName());
         return null;
     }
 
@@ -263,6 +263,8 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
                 t -> t instanceof GremlinParser.GenericArgumentContext ||
                               t instanceof GremlinParser.GenericArgumentVarargsContext ||
                               t instanceof GremlinParser.StringArgumentContext ||
+                              t instanceof GremlinParser.StringLiteralContext ||
+                              t instanceof GremlinParser.TraversalGTypeContext ||
                               t instanceof GremlinParser.TraversalPredicateContext).collect(Collectors.toList());
         for (int ix = 0; ix < list.size(); ix++) {
             visit(list.get(ix));
@@ -323,6 +325,12 @@ public class TranslateVisitor extends GremlinBaseVisitor<Void> {
     @Override
     public Void visitTraversalPredicate_without(final GremlinParser.TraversalPredicate_withoutContext ctx) {
         visitP(ctx, P.class, "without");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalPredicate_typeOf(final GremlinParser.TraversalPredicate_typeOfContext ctx) {
+        visitP(ctx, P.class, "typeOf");
         return null;
     }
 
