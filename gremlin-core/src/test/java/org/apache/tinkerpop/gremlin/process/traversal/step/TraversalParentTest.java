@@ -216,6 +216,14 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddEdgeStepContract.class,
+                        g.addE("label").from(__.V(1)).to(__.V(2))
+                                .property("name", __.constant("cole"))
+                                .property(T.id, __.constant(5)),
+                        List.of(),
+                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2), __.constant(5)),
+                        null, null
+                },
+                {AddEdgeStepContract.class,
                         g.addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
                         List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2)),
