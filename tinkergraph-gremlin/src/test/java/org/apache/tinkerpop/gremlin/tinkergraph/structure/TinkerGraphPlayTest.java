@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.Computer;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -313,5 +314,13 @@ public class TinkerGraphPlayTest {
 
         System.out.println(result.size());
         System.out.printf("Done in %10d %n", System.currentTimeMillis() - start);
+    }
+
+    @Test
+    @Ignore
+    public void typeOfNullTest() {
+        Graph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal();
+        System.out.println(g.inject(1, null, "hello").is(P.not(P.typeOf(GType.NULL))).toList());
     }
 }

@@ -1202,6 +1202,14 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         return null;
     }
 
+    @Override
+    public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
+        final String[] split = ctx.getText().split("\\.");
+        sb.append(processGremlinSymbol(split[0])).append(".");
+        sb.append(processGremlinSymbol(split[1].toLowerCase()));
+        return null;
+    }
+
     /**
      * Steps with a {@code <TNewEnd>} defined need special handling to append generics.
      */
@@ -1333,6 +1341,11 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         static {
             TO_CS_MAP.put("graphml", "GraphML");
             TO_CS_MAP.put("graphson", "GraphSON");
+            TO_CS_MAP.put("bigdecimal", "BigDecimal");
+            TO_CS_MAP.put("bigint", "BigInt");
+            TO_CS_MAP.put("datetime", "DateTime");
+            TO_CS_MAP.put("uuid", "UUID");
+            TO_CS_MAP.put("vp", "VP");
             TO_CS_MAP.forEach((k, v) -> FROM_CS_MAP.put(v, k));
         }
 

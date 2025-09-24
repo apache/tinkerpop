@@ -233,6 +233,12 @@ public class PTest {
                     {P.within().or(P.within()), 0, false},
                     {P.within().or(P.without()), 0, true},
                     {P.without().or(P.without()), 0, true},
+
+                    {P.typeOf(GType.NUMBER), 1, true},
+                    {P.typeOf(GType.STRING), "hello", true},
+                    {P.typeOf(Boolean.class), false, true},
+                    {P.typeOf(GType.NULL), null, true},
+
                     // text predicates
                     {TextP.containing("ark"), "marko", true},
                     {TextP.containing("ark"), "josh", false},

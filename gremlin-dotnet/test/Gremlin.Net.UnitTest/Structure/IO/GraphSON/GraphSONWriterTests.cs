@@ -300,15 +300,15 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var expectedGraphSON = "{\"@type\":\"g:Merge\",\"@value\":\"onMatch\"}";
             Assert.Equal(expectedGraphSON, serializedEnum);
         }
-
+        
         [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializeN(int version)
+        public void ShouldSerializeGType(int version)
         {
             var writer = CreateGraphSONWriter(version);
 
-            var serializedEnum = writer.WriteObject(N.Byte);
+            var serializedEnum = writer.WriteObject(GType.Byte);
 
-            var expectedGraphSON = "{\"@type\":\"g:N\",\"@value\":\"byte\"}";
+            var expectedGraphSON = "{\"@type\":\"g:GType\",\"@value\":\"BYTE\"}";
             Assert.Equal(expectedGraphSON, serializedEnum);
         }
 

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.javatuples.Quartet;
 import org.javatuples.Triplet;
 import org.junit.Test;
@@ -715,127 +715,127 @@ public class NumberHelperTest {
     @Test
     public void shouldCastToReturnSameInstanceForSameClass() {
         final Integer value = 42;
-        assertEquals(value, NumberHelper.castTo(value, N.int_));
+        assertEquals(value, NumberHelper.castTo(value, GType.INT));
     }
 
     @Test
     public void shouldCastToConvertToByte() {
         final Integer value = 42;
-        assertEquals(Byte.valueOf((byte) 42), NumberHelper.castTo(value, N.byte_));
+        assertEquals(Byte.valueOf((byte) 42), NumberHelper.castTo(value, GType.BYTE));
     }
 
     @Test
     public void shouldCastToConvertToShort() {
         final Integer value = 42;
-        assertEquals(Short.valueOf((short) 42), NumberHelper.castTo(value, N.short_));
+        assertEquals(Short.valueOf((short) 42), NumberHelper.castTo(value, GType.SHORT));
     }
 
     @Test
     public void shouldCastToConvertToLong() {
         final Integer value = 42;
-        assertEquals(Long.valueOf(42L), NumberHelper.castTo(value, N.long_));
+        assertEquals(Long.valueOf(42L), NumberHelper.castTo(value, GType.LONG));
     }
 
     @Test
     public void shouldCastToConvertToFloat() {
         final Integer value = 42;
-        assertEquals(Float.valueOf(42.0f), NumberHelper.castTo(value, N.float_));
+        assertEquals(Float.valueOf(42.0f), NumberHelper.castTo(value, GType.FLOAT));
     }
 
     @Test
     public void shouldCastToConvertToDouble() {
         final Integer value = 42;
-        assertEquals(Double.valueOf(42.0), NumberHelper.castTo(value, N.double_));
+        assertEquals(Double.valueOf(42.0), NumberHelper.castTo(value, GType.DOUBLE));
     }
 
     @Test
     public void shouldCastToConvertToBigInteger() {
         final Integer value = 42;
-        assertEquals(BigInteger.valueOf(42), NumberHelper.castTo(value, N.bigInt));
+        assertEquals(BigInteger.valueOf(42), NumberHelper.castTo(value, GType.BIGINT));
     }
 
     @Test
     public void shouldCastToConvertDoubleToBigInteger() {
         final Double value = new Double("1000000000000000000000");
-        assertEquals(new BigInteger("1000000000000000000000"), NumberHelper.castTo(value, N.bigInt));
+        assertEquals(new BigInteger("1000000000000000000000"), NumberHelper.castTo(value, GType.BIGINT));
     }
 
     @Test
     public void shouldCastToConvertToBigDecimal() {
         final Integer value = 42;
-        assertEquals(BigDecimal.valueOf(42), NumberHelper.castTo(value, N.bigDecimal));
+        assertEquals(BigDecimal.valueOf(42), NumberHelper.castTo(value, GType.BIGDECIMAL));
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfCannotFitInByte() {
         final Integer value = 128;
-        NumberHelper.castTo(value, N.byte_);
+        NumberHelper.castTo(value, GType.BYTE);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfCannotFitInShort() {
         final Integer value = 32768;
-        NumberHelper.castTo(value, N.short_);
+        NumberHelper.castTo(value, GType.SHORT);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfCannotFitInInteger() {
         final Long value = 2147483648L;
-        NumberHelper.castTo(value, N.int_);
+        NumberHelper.castTo(value, GType.INT);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfCannotFitInFloat() {
         final Double value = Double.MAX_VALUE;
-        NumberHelper.castTo(value, N.float_);
+        NumberHelper.castTo(value, GType.FLOAT);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfBigDecimalCannotFitInFloat() {
-        NumberHelper.castTo(new BigDecimal("1E400"), N.float_);
+        NumberHelper.castTo(new BigDecimal("1E400"), GType.FLOAT);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfBigIntegerCannotFitInFloat() {
-        NumberHelper.castTo(new BigInteger("1").shiftLeft(2000), N.float_);
+        NumberHelper.castTo(new BigInteger("1").shiftLeft(2000), GType.FLOAT);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfBigDecimalCannotFitInDouble() {
-        NumberHelper.castTo(new BigDecimal("1E400"), N.double_);
+        NumberHelper.castTo(new BigDecimal("1E400"), GType.DOUBLE);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldOverflowIfBigIntegerCannotFitInDouble() {
-        NumberHelper.castTo(new BigInteger("1").shiftLeft(2000), N.double_);
+        NumberHelper.castTo(new BigInteger("1").shiftLeft(2000), GType.DOUBLE);
     }
 
     @Test(expected = ArithmeticException.class)
     public void shouldUnderflowIfDoubleCannotFitInInteger() {
         final Double value = -Double.MAX_VALUE;
-        System.out.println(NumberHelper.castTo(value, N.int_));
+        NumberHelper.castTo(value, GType.INT);
     }
 
     @Test
     public void shouldCastDoubleInfinityToFloatInfinity() {
-        assertEquals(Float.POSITIVE_INFINITY, NumberHelper.castTo(Double.POSITIVE_INFINITY, N.float_));
-        assertEquals(Float.NEGATIVE_INFINITY, NumberHelper.castTo(Double.NEGATIVE_INFINITY, N.float_));
+        assertEquals(Float.POSITIVE_INFINITY, NumberHelper.castTo(Double.POSITIVE_INFINITY, GType.FLOAT));
+        assertEquals(Float.NEGATIVE_INFINITY, NumberHelper.castTo(Double.NEGATIVE_INFINITY, GType.FLOAT));
     }
 
     @Test
     public void shouldCastFloatInfinityToDoubleInfinity() {
-        assertEquals(Double.POSITIVE_INFINITY, NumberHelper.castTo(Float.POSITIVE_INFINITY, N.double_));
-        assertEquals(Double.NEGATIVE_INFINITY, NumberHelper.castTo(Float.NEGATIVE_INFINITY, N.double_));
+        assertEquals(Double.POSITIVE_INFINITY, NumberHelper.castTo(Float.POSITIVE_INFINITY, GType.DOUBLE));
+        assertEquals(Double.NEGATIVE_INFINITY, NumberHelper.castTo(Float.NEGATIVE_INFINITY, GType.DOUBLE));
     }
 
     @Test
     public void shouldCastFloatNaNToDoubleNaN() {
-        assertEquals(Double.NaN, NumberHelper.castTo(Float.NaN, N.double_));
+        assertEquals(Double.NaN, NumberHelper.castTo(Float.NaN, GType.DOUBLE));
     }
 
     @Test
     public void shouldCastDoubleNaNToFloatNaN() {
-        assertEquals(Float.NaN, NumberHelper.castTo(Double.NaN, N.float_));
+        assertEquals(Float.NaN, NumberHelper.castTo(Double.NaN, GType.FLOAT));
     }
 
 }

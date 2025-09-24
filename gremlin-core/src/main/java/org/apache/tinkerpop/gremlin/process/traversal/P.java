@@ -438,6 +438,41 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     /**
+     * Determines if a value is of a type denoted by {@code GType}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final GType value) {
+        return new P(CompareType.typeOf, value.getType());
+    }
+
+    /**
+     * Determines if a value is of a type denoted by String key of GlobalTypeCache.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final String value) {
+        Class<?> valueClass;
+         // for string name of type token we can use the cache
+        final Optional<Class<?>> opt = CompareType.GlobalTypeCache.getRegisteredType(value);
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException(value + " is not a registered type");
+        }
+        else
+            valueClass = opt.get();
+        return new P(CompareType.typeOf, valueClass);
+    }
+
+    /**
+     * Sugar method for Java/Groovy embedded cases only, determines if a value is of a type denoted by class.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final Class<?> value) {
+        return new P(CompareType.typeOf, value);
+    }
+
+    /**
      * Construct an instance of {@code P} from a {@code BiPredicate}.
      *
      * @since 3.0.0-incubating

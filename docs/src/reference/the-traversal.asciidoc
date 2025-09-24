@@ -854,7 +854,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AsNumber Step
 
 The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided,
-or to the desired numerical type, based on the number token (`N`) provided.
+or to the desired numerical type, based on the type token (`GType`) provided. If a type token entered isn't a numerical type, an `IllegalArgumentException` will be thrown.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow during narrowing of types.
@@ -869,9 +869,9 @@ All other input types will result in `IllegalArgumentException`.
 ----
 g.inject(1234).asNumber() <1>
 g.inject(1.76).asNumber() <2>
-g.inject(1.76).asNumber(N.int_) <3>
+g.inject(1.76).asNumber(GType.INT) <3>
 g.inject("1b").asNumber() <4>
-g.inject(33550336).asNumber(N.byte_) <5>
+g.inject(33550336).asNumber(GType.BYTE) <5>
 ----
 
 <1> An int will be passed through.
@@ -5480,7 +5480,7 @@ the release of TinkerPop 3.4.0, Gremlin also supports simple text predicates, wh
 text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
 The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
 <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc. Two new additional `TextP` predicate members were added in the
-TinkerPop 3.6.0 release that allow working with regular expressions. These are `TextP.regex` and `TextP.notRegex`
+TinkerPop 3.6.0 release that allow working with regular expressions. These are `TextP.regex` and `TextP.notRegex`. Starting with TinkerPop 3.8.0, a new type predicate `P.typeOf` is added to support filtering traversers based on types.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
@@ -5496,6 +5496,8 @@ TinkerPop 3.6.0 release that allow working with regular expressions. These are `
 | `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `P.within(objects...)` | Is the incoming object in the array of provided objects?
 | `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `P.typeOf(GType)` | Is the incoming object of the type indicated by the provided `GType` token?
+| `P.typeOf(string)` | Is the incoming object of the type indicated by the provided `String`?
 | `TextP.startingWith(string)` | Does the incoming `String` start with the provided `String`?
 | `TextP.endingWith(string)` | Does the incoming `String` end with the provided `String`?
 | `TextP.containing(string)` | Does the incoming `String` contain the provided `String`?
