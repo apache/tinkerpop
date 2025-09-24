@@ -362,7 +362,7 @@ traversalMethod_asDate
 
  traversalMethod_asNumber
      : K_ASNUMBER LPAREN RPAREN #traversalMethod_asNumber_Empty
-     | K_ASNUMBER LPAREN traversalN RPAREN #traversalMethod_asNumber_traversalN
+     | K_ASNUMBER LPAREN traversalGType RPAREN #traversalMethod_asNumber_traversalGType
      ;
 
 traversalMethod_asString
@@ -1080,15 +1080,60 @@ traversalDT
     | K_DAY | K_DT DOT K_DAY
     ;
 
-traversalN
-    : K_BYTE | K_N DOT K_BYTE
-    | K_SHORT | K_N DOT K_SHORT
-    | K_INT | K_N DOT K_INT
-    | K_LONG | K_N DOT K_LONG
-    | K_FLOAT | K_N DOT K_FLOAT
-    | K_DOUBLE | K_N DOT K_DOUBLE
-    | K_BIGINT | K_N DOT K_BIGINT
-    | K_BIGDECIMAL | K_N DOT K_BIGDECIMAL
+traversalGType
+    : K_BIGDECIMAL | K_GTYPE DOT K_BIGDECIMAL
+    | K_BIGDECIMALU | K_GTYPE DOT K_BIGDECIMALU
+    | K_BIGINT | K_GTYPE DOT K_BIGINT
+    | K_BIGINTU | K_GTYPE DOT K_BIGINTU
+    | K_BINARY | K_GTYPE DOT K_BINARY
+    | K_BINARYU | K_GTYPE DOT K_BINARYU
+    | K_BOOLEAN | K_GTYPE DOT K_BOOLEAN
+    | K_BOOLEANU | K_GTYPE DOT K_BOOLEANU
+    | K_BYTE | K_GTYPE DOT K_BYTE
+    | K_BYTEU | K_GTYPE DOT K_BYTEU
+    | K_CHAR | K_GTYPE DOT K_CHAR
+    | K_CHARU | K_GTYPE DOT K_CHARU
+    | K_DATETIME | K_GTYPE DOT K_DATETIME
+    | K_DATETIMEU | K_GTYPE DOT K_DATETIMEU
+    | K_DOUBLE | K_GTYPE DOT K_DOUBLE
+    | K_DOUBLEU | K_GTYPE DOT K_DOUBLEU
+    | K_DURATION | K_GTYPE DOT K_DURATION
+    | K_DURATIONU | K_GTYPE DOT K_DURATIONU
+    | K_EDGE | K_GTYPE DOT K_EDGE
+    | K_EDGEU | K_GTYPE DOT K_EDGEU
+    | K_FLOAT | K_GTYPE DOT K_FLOAT
+    | K_FLOATU | K_GTYPE DOT K_FLOATU
+    | K_GRAPH | K_GTYPE DOT K_GRAPH
+    | K_GRAPHU | K_GTYPE DOT K_GRAPHU
+    | K_INT | K_GTYPE DOT K_INT
+    | K_INTU | K_GTYPE DOT K_INTU
+    | K_LIST | K_GTYPE DOT K_LIST
+    | K_LISTU | K_GTYPE DOT K_LISTU
+    | K_LONG | K_GTYPE DOT K_LONG
+    | K_LONGU | K_GTYPE DOT K_LONGU
+    | K_MAP | K_GTYPE DOT K_MAP
+    | K_MAPU | K_GTYPE DOT K_MAPU
+    | K_NULL | K_GTYPE DOT K_NULL
+    | K_NULLU | K_GTYPE DOT K_NULLU
+    | K_NUMBER | K_GTYPE DOT K_NUMBER
+    | K_NUMBERU | K_GTYPE DOT K_NUMBERU
+    | K_PATH | K_GTYPE DOT K_PATH
+    | K_PATHU | K_GTYPE DOT K_PATHU
+    | K_PROPERTY | K_GTYPE DOT K_PROPERTY
+    | K_PROPERTYU | K_GTYPE DOT K_PROPERTYU
+    | K_SET | K_GTYPE DOT K_SET
+    | K_SETU | K_GTYPE DOT K_SETU
+    | K_SHORT | K_GTYPE DOT K_SHORT
+    | K_SHORTU | K_GTYPE DOT K_SHORTU
+    | K_STRING | K_GTYPE DOT K_STRING
+    | K_STRINGU | K_GTYPE DOT K_STRINGU
+    | K_TREE | K_GTYPE DOT K_TREE
+    | K_TREEU | K_GTYPE DOT K_TREEU
+    | K_UUID | K_GTYPE DOT K_UUID
+    | K_VERTEX | K_GTYPE DOT K_VERTEX
+    | K_VERTEXU | K_GTYPE DOT K_VERTEXU
+    | K_VP | K_GTYPE DOT K_VP
+    | K_VPU | K_GTYPE DOT K_VPU
     ;
 
 traversalPredicate
@@ -1101,6 +1146,7 @@ traversalPredicate
     | traversalPredicate_inside
     | traversalPredicate_outside
     | traversalPredicate_between
+    | traversalPredicate_typeOf
     | traversalPredicate_within
     | traversalPredicate_without
     | traversalPredicate_not
@@ -1154,6 +1200,11 @@ traversalPredicate_eq
 
 traversalPredicate_neq
     : (K_P DOT K_NEQ | K_NEQ) LPAREN genericArgument RPAREN
+    ;
+
+traversalPredicate_typeOf
+    : (K_P DOT K_TYPEOF | K_TYPEOF) LPAREN traversalGType RPAREN
+    | (K_P DOT K_TYPEOF | K_TYPEOF) LPAREN stringLiteral RPAREN
     ;
 
 traversalPredicate_lt
@@ -1584,7 +1635,7 @@ genericLiteral
     | traversalMerge
     | traversalPick
     | traversalDT
-    | traversalN
+    | traversalGType
     | genericSetLiteral
     | genericCollectionLiteral
     | genericRangeLiteral
@@ -1648,8 +1699,8 @@ booleanLiteral
 dateLiteral
     : K_DATETIME LPAREN stringLiteral RPAREN
     | K_DATETIME LPAREN RPAREN
-    | K_DATETIMEU LPAREN stringLiteral RPAREN
-    | K_DATETIMEU LPAREN RPAREN
+    | K_DATETIMEC LPAREN stringLiteral RPAREN
+    | K_DATETIMEC LPAREN RPAREN
     ;
 
 nullLiteral
@@ -1706,8 +1757,12 @@ keyword
     | K_BARRIERU
     | K_BEGIN
     | K_BETWEEN
-    | K_BIGINT
     | K_BIGDECIMAL
+    | K_BIGDECIMALU
+    | K_BIGINT
+    | K_BIGINTU
+    | K_BINARY
+    | K_BINARYU
     | K_BOTH
     | K_BOTHU
     | K_BOTHE
@@ -1715,9 +1770,14 @@ keyword
     | K_BRANCH
     | K_BY
     | K_BYTE
+    | K_BYTEU
+    | K_BOOLEAN
+    | K_BOOLEANU
     | K_CALL
     | K_CAP
     | K_CARDINALITY
+    | K_CHAR
+    | K_CHARU
     | K_CHOOSE
     | K_COALESCE
     | K_COIN
@@ -1737,6 +1797,7 @@ keyword
     | K_DATEADD
     | K_DATEDIFF
     | K_DATETIME
+    | K_DATETIMEC
     | K_DATETIMEU
     | K_DECR
     | K_DEDUP
@@ -1748,9 +1809,14 @@ keyword
     | K_DISTANCE
     | K_DIV
     | K_DOUBLE
+    | K_DOUBLEU
     | K_DROP
     | K_DT
+    | K_DURATION
+    | K_DURATIONU
     | K_E
+    | K_EDGE
+    | K_EDGEU
     | K_EDGES
     | K_ELEMENTMAP
     | K_ELEMENT
@@ -1764,17 +1830,21 @@ keyword
     | K_FIRST
     | K_FLATMAP
     | K_FLOAT
+    | K_FLOATU
     | K_FOLD
     | K_FORMAT
     | K_FROM
     | K_GLOBAL
     | K_GT
     | K_GTE
+    | K_GRAPH
+    | K_GRAPHU
     | K_GRAPHML
     | K_GRAPHSON
     | K_GROUP
     | K_GROUPCOUNT
     | K_GRYO
+    | K_GTYPE
     | K_HAS
     | K_HASID
     | K_HASKEY
@@ -1797,6 +1867,7 @@ keyword
     | K_INJECT
     | K_INSIDE
     | K_INT
+    | K_INTU
     | K_INTERSECT
     | K_INV
     | K_IO
@@ -1811,13 +1882,16 @@ keyword
     | K_LENGTH
     | K_LIMIT
     | K_LIST
+    | K_LISTU
     | K_LOCAL
     | K_LONG
+    | K_LONGU
     | K_LOOPS
     | K_LT
     | K_LTE
     | K_LTRIM
     | K_MAP
+    | K_MAPU
     | K_MATCH
     | K_MATH
     | K_MAX
@@ -1845,6 +1919,9 @@ keyword
     | K_NEQ
     | K_NEXT
     | K_NULL
+    | K_NULLU
+    | K_NUMBER
+    | K_NUMBERU
     | K_NORMSACK
     | K_ONCREATE
     | K_ONMATCH
@@ -1864,6 +1941,7 @@ keyword
     | K_PAGERANK
     | K_PAGERANKU
     | K_PATH
+    | K_PATHU
     | K_PEERPRESSURE
     | K_PEERPRESSUREU
     | K_PICK
@@ -1874,6 +1952,7 @@ keyword
     | K_PROPERTYMAP
     | K_PROPERTYNAME
     | K_PROPERTY
+    | K_PROPERTYU
     | K_PRODUCT
     | K_RANGE
     | K_READ
@@ -1890,7 +1969,9 @@ keyword
     | K_SECOND
     | K_SELECT
     | K_SET
+    | K_SETU
     | K_SHORT
+    | K_SHORTU
     | K_SHORTESTPATH
     | K_SHORTESTPATHU
     | K_SHUFFLE
@@ -1901,6 +1982,8 @@ keyword
     | K_SPLIT
     | K_STARTINGWITH
     | K_STORE
+    | K_STRING
+    | K_STRINGU
     | K_SUBGRAPH
     | K_SUBSTRING
     | K_SUM
@@ -1922,9 +2005,11 @@ keyword
     | K_TOE
     | K_TOV
     | K_TREE
+    | K_TREEU
     | K_TRIM
     | K_TRUE
     | K_TRYNEXT
+    | K_TYPEOF
     | K_TX
     | K_UNFOLD
     | K_UNION
@@ -1935,6 +2020,10 @@ keyword
     | K_VALUEMAP
     | K_VALUES
     | K_VALUE
+    | K_VERTEX
+    | K_VERTEXU
+    | K_VP
+    | K_VPU
     | K_WHERE
     | K_WITH
     | K_WITHBULK
@@ -1979,7 +2068,13 @@ K_BARRIERU: 'Barrier';
 K_BEGIN: 'begin';
 K_BETWEEN: 'between';
 K_BIGDECIMAL: 'bigDecimal';
+K_BIGDECIMALU: 'BIGDECIMAL';
 K_BIGINT: 'bigInt';
+K_BIGINTU: 'BIGINT';
+K_BINARY: 'binary';
+K_BINARYU: 'BINARY';
+K_BOOLEAN: 'boolean';
+K_BOOLEANU: 'BOOLEAN';
 K_BOTH: 'both';
 K_BOTHU: 'BOTH';
 K_BOTHE: 'bothE';
@@ -1987,9 +2082,12 @@ K_BOTHV: 'bothV';
 K_BRANCH: 'branch';
 K_BY: 'by';
 K_BYTE: 'byte';
+K_BYTEU: 'BYTE';
 K_CALL: 'call';
 K_CAP: 'cap';
 K_CARDINALITY: 'Cardinality';
+K_CHAR: 'char';
+K_CHARU: 'CHAR';
 K_CHOOSE: 'choose';
 K_COALESCE: 'coalesce';
 K_COIN: 'coin';
@@ -2009,7 +2107,8 @@ K_DAY: 'day';
 K_DATEADD: 'dateAdd';
 K_DATEDIFF: 'dateDiff';
 K_DATETIME: 'datetime';
-K_DATETIMEU: 'DateTime';
+K_DATETIMEC: 'DateTime';
+K_DATETIMEU: 'DATETIME';
 K_DECR: 'decr';
 K_DEDUP: 'dedup';
 K_DESC: 'desc';
@@ -2020,9 +2119,14 @@ K_DISJUNCT: 'disjunct';
 K_DISTANCE: 'distance';
 K_DIV: 'div';
 K_DOUBLE: 'double';
+K_DOUBLEU: 'DOUBLE';
 K_DROP: 'drop';
 K_DT: 'DT';
+K_DURATION: 'duration';
+K_DURATIONU: 'DURATION';
 K_E: 'E';
+K_EDGE: 'edge';
+K_EDGEU: 'EDGE';
 K_EDGES: 'edges';
 K_ELEMENTMAP: 'elementMap';
 K_ELEMENT: 'element';
@@ -2036,17 +2140,21 @@ K_FILTER: 'filter';
 K_FIRST: 'first';
 K_FLATMAP: 'flatMap';
 K_FLOAT: 'float';
+K_FLOATU: 'FLOAT';
 K_FOLD: 'fold';
 K_FORMAT: 'format';
 K_FROM: 'from';
 K_GLOBAL: 'global';
 K_GT: 'gt';
 K_GTE: 'gte';
+K_GTYPE: 'GType';
 K_GRAPHML: 'graphml';
 K_GRAPHSON: 'graphson';
 K_GROUPCOUNT: 'groupCount';
 K_GROUP: 'group';
 K_GRYO: 'gryo';
+K_GRAPH: 'graph';
+K_GRAPHU: 'GRAPH';
 K_HAS: 'has';
 K_HASID: 'hasId';
 K_HASKEY: 'hasKey';
@@ -2069,6 +2177,7 @@ K_INFINITY: 'Infinity';
 K_INJECT: 'inject';
 K_INSIDE: 'inside';
 K_INT: 'int';
+K_INTU: 'INT';
 K_INTERSECT: 'intersect';
 K_INV: 'inV';
 K_IOU: 'IO';
@@ -2083,13 +2192,16 @@ K_LAST: 'last';
 K_LENGTH: 'length';
 K_LIMIT: 'limit';
 K_LIST: 'list';
+K_LISTU: 'LIST';
 K_LOCAL: 'local';
 K_LONG: 'long';
+K_LONGU: 'LONG';
 K_LOOPS: 'loops';
 K_LT: 'lt';
 K_LTE: 'lte';
 K_LTRIM: 'lTrim';
 K_MAP: 'map';
+K_MAPU: 'MAP';
 K_MATCH: 'match';
 K_MATH: 'math';
 K_MAX: 'max';
@@ -2118,6 +2230,9 @@ K_NEQ: 'neq';
 K_NEW: 'new';
 K_NORMSACK: 'normSack';
 K_NULL: 'null';
+K_NULLU: 'NULL';
+K_NUMBER: 'number';
+K_NUMBERU: 'NUMBER';
 K_ONCREATE: 'onCreate';
 K_ONMATCH: 'onMatch';
 K_OPERATOR: 'Operator';
@@ -2136,6 +2251,7 @@ K_P: 'P';
 K_PAGERANKU: 'PageRank';
 K_PAGERANK: 'pageRank';
 K_PATH: 'path';
+K_PATHU: 'PATH';
 K_PEERPRESSUREU: 'PeerPressure';
 K_PEERPRESSURE: 'peerPressure';
 K_PICK: 'Pick';
@@ -2146,6 +2262,7 @@ K_PROPERTIES: 'properties';
 K_PROPERTYMAP: 'propertyMap';
 K_PROPERTYNAME: 'propertyName';
 K_PROPERTY: 'property';
+K_PROPERTYU: 'PROPERTY';
 K_PRODUCT: 'product';
 K_RANGE: 'range';
 K_READ: 'read';
@@ -2162,10 +2279,12 @@ K_SCOPE: 'Scope';
 K_SECOND: 'second';
 K_SELECT: 'select';
 K_SET: 'set';
+K_SETU: 'SET';
 K_SHORTESTPATHU: 'ShortestPath';
 K_SHORTESTPATH: 'shortestPath';
 K_SHUFFLE: 'shuffle';
 K_SHORT: 'short';
+K_SHORTU: 'SHORT';
 K_SIDEEFFECT: 'sideEffect';
 K_SIMPLEPATH: 'simplePath';
 K_SINGLE: 'single';
@@ -2173,6 +2292,8 @@ K_SKIP: 'skip';
 K_SPLIT: 'split';
 K_STARTINGWITH: 'startingWith';
 K_STORE: 'store';
+K_STRING: 'string';
+K_STRINGU: 'STRING';
 K_SUBGRAPH: 'subgraph';
 K_SUBSTRING: 'substring';
 K_SUM: 'sum';
@@ -2194,9 +2315,11 @@ K_TOUPPER: 'toUpper';
 K_TOE: 'toE';
 K_TOV: 'toV';
 K_TREE: 'tree';
+K_TREEU: 'TREE';
 K_TRIM: 'trim';
 K_TRUE: 'true';
 K_TRYNEXT: 'tryNext';
+K_TYPEOF: 'typeOf';
 K_TX: 'tx';
 K_UNFOLD: 'unfold';
 K_UNION: 'union';
@@ -2207,6 +2330,10 @@ K_V: 'V';
 K_VALUEMAP: 'valueMap';
 K_VALUES: 'values';
 K_VALUE: 'value';
+K_VERTEX: 'vertex';
+K_VERTEXU: 'VERTEX';
+K_VP: 'vp';
+K_VPU: 'VP';
 K_WHERE: 'where';
 K_WITH: 'with';
 K_WITHBULK: 'withBulk';

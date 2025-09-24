@@ -28,6 +28,7 @@ const { AssertionError } = require('assert');
 const DriverRemoteConnection = require('../../lib/driver/driver-remote-connection');
 const { Vertex, Edge, VertexProperty} = require('../../lib/structure/graph');
 const { traversal } = require('../../lib/process/anonymous-traversal');
+const { P, gType, n } = require('../../lib/process/traversal');
 const { GraphTraversalSource, GraphTraversal, statics } = require('../../lib/process/graph-traversal');
 const { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, HaltedTraverserStrategy, FilterRankingStrategy,
         OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } = require('../../lib/process/traversal-strategy');

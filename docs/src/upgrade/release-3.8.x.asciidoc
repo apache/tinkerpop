@@ -30,11 +30,46 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Type Predicate
+
+The new `P.typeOf()` predicate allows filtering traversers based on their runtime type. It accepts either a `GType` 
+enum constant or a string representation of a simple class name. This predicate is particularly useful for type-safe
+filtering in heterogeneous data scenarios.
+
+[source,text]
+----
+// Filter vertices by property type
+gremlin> g.V().has("age", P.typeOf(GType.INT)).values("name")
+==>marko
+==>vadas
+==>josh
+==>peter
+
+// Filter by class name registered in the GlobalTypeCache
+gremlin> g.V().values("age").is(P.typeOf("Integer"))
+==>29
+==>27
+==>32
+==>35
+
+// Type inheritance support - NUMBER matches all numeric types
+gremlin> g.V().values("age").is(P.typeOf(GType.NUMBER))
+==>29
+==>27
+==>32
+==>35
+----
+
+The predicate supports type inheritance where `GType.NUMBER` will match any numeric type. Invalid type names will 
+throw an exception at execution time.
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#a-note-on-predicates[Predicates], link:https://issues.apache.org/jira/browse/TINKERPOP-2234[TINKERPOP-2234]
+
 ==== Number Conversion Step
 
 The new `asNumber()` step provides type casting functionality to Gremlin. It serves as an umbrella step that parses
 strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these available types
-are denoted by a set of number tokens (`N`).
+are denoted by a set of number tokens (`GType`).
 
 This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a
 consistent format, making it easier to perform downstream mathematical operations. As an example:
@@ -50,38 +85,38 @@ gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum()
 ==>15.0
 
 // given sum() step returned a double, one can use asNumber() to further cast the result into desired type
-gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.int_)
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(GType.INT)
 ==>15
 ----
 
 Semantically, the `asNumber()` step will convert the incoming traverser to a logical parsable type if no argument is
-provided, or to the desired numerical type, based on the number token (`N`) provided.
+provided, or to the desired numerical type, based on the number token (`GType`) provided.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow as a result of narrowing of types:
 
 [source,text]
 ----
-gremlin> g.inject(5.0).asNumber(N.int_)
+gremlin> g.inject(5.0).asNumber(GType.INT)
 ==> 5    // casts double to int
-gremlin> g.inject(12).asNumber(N.byte_)
+gremlin> g.inject(12).asNumber(GType.BYTE)
 ==> 12
-gremlin> g.inject(128).asNumber(N.byte_)
+gremlin> g.inject(128).asNumber(GType.BYTE)
 ==> ArithmeticException
 ----
 
-String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no type token is
 provided. `NumberFormatException` will be thrown for any unparsable strings:
 
 [source,text]
 ----
 gremlin> g.inject("5").asNumber()
 ==> 5
-gremlin> g.inject("5.7").asNumber(N.int_)
+gremlin> g.inject("5.7").asNumber(GType.INT)
 ==> 5
-gremlin> g.inject("1,000").asNumber(N.int_)
+gremlin> g.inject("1,000").asNumber(GType.INT)
 ==> NumberFormatException
-gremlin> g.inject("128").asNumber(N.byte_)
+gremlin> g.inject("128").asNumber(GType.BYTE)
 ==> ArithmeticException
 ----
 
@@ -92,8 +127,7 @@ gremlin> g.inject([1, 2, 3, 4]).asNumber()
 ==> IllegalArgumentException
 ----
 
-See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step], link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
 
 ==== Boolean Conversion Step
 
@@ -120,8 +154,7 @@ gremlin> g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and)
 ==>[v[6],true]
 ----
 
-See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step], link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
 
 ==== none() and discard()
 
@@ -716,6 +749,10 @@ As of 3.8.0 `with()` modulation of the following steps will no longer work: `add
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+==== Type Predicate
+
+Type predicate can accept custom types via `String` class name registered inside the `Type.GlobalTypeCache`. The Gremlin grammar accepts any string literal, which is resolved into the class registered inside the cache.
 
 ===== NoneStep Renaming
 

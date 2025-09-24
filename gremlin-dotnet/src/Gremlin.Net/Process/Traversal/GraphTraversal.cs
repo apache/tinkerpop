@@ -691,9 +691,9 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the asNumber step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, object> AsNumber(N numberToken)
+        public GraphTraversal<TStart, object> AsNumber(GType typeToken)
         {
-            Bytecode.AddStep("asNumber", numberToken);
+            Bytecode.AddStep("asNumber", typeToken);
             return Wrap<TStart, object>(this);
         }
 

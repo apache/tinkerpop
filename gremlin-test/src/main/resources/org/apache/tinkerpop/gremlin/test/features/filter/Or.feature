@@ -60,4 +60,3 @@ Feature: Step - or()
       | v[josh] |
       | v[ripple] |
       | v[peter]  |
-
