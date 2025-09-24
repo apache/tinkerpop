@@ -265,6 +265,7 @@ func initSerializers() {
 		setType:               setWriter,
 		dateType:              timeWriter,
 		durationType:          durationWriter,
+		offsetDateTimeType:    offsetDateTimeWriter,
 		cardinalityType:       enumWriter,
 		columnType:            enumWriter,
 		directionType:         enumWriter,
@@ -310,9 +311,10 @@ func initDeserializers() {
 		classType:  readClass,
 
 		// Date Time
-		dateType:      timeReader,
-		timestampType: timeReader,
-		durationType:  durationReader,
+		dateType:      		timeReader,
+		timestampType: 		timeReader,
+		offsetDateTimeType: offsetDateTimeReader,
+		durationType:  		durationReader,
 
 		// Graph
 		traverserType:      traverserReader,
