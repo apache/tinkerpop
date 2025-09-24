@@ -106,8 +106,7 @@ import org.junit.runners.Parameterized;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -129,10 +128,10 @@ public class TraversalParentTest {
     }
 
     @Parameterized.Parameter(value = 0)
-    public Class stepClass;
+    public Class<Step<?,?>> stepClass;
 
     @Parameterized.Parameter(value = 1)
-    public Traversal.Admin traversal;
+    public Traversal.Admin<?,?> traversal;
 
     @Parameterized.Parameter(value = 2)
     public List<Traversal.Admin<?,?>> expectedGlobalChildren;
@@ -232,7 +231,7 @@ public class TraversalParentTest {
                 {AddEdgeStepContract.class,
                         g.addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal(1), new ConstantTraversal(2)),
+                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
@@ -256,7 +255,7 @@ public class TraversalParentTest {
                 {AddEdgeStepContract.class,
                         g.inject(1).addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal(1), new ConstantTraversal(2)),
+                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
@@ -388,7 +387,7 @@ public class TraversalParentTest {
                 {AggregateGlobalStep.class,
                         g.V().aggregate("x").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {AggregateGlobalStep.class,
@@ -406,7 +405,7 @@ public class TraversalParentTest {
                 {AggregateLocalStep.class,
                         g.V().aggregate(Scope.local, "x").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {AggregateLocalStep.class,
@@ -472,7 +471,7 @@ public class TraversalParentTest {
                 {DedupGlobalStep.class,
                         g.V().dedup().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {DedupGlobalStep.class,
@@ -502,7 +501,7 @@ public class TraversalParentTest {
                 {FormatStep.class,
                         g.V().format("Hello %{name}").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {FormatStep.class,
@@ -520,7 +519,7 @@ public class TraversalParentTest {
                 {GroupCountStep.class,
                         g.V().groupCount().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {GroupCountStep.class,
@@ -538,7 +537,7 @@ public class TraversalParentTest {
                 {GroupCountSideEffectStep.class,
                         g.V().groupCount("x").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {GroupCountSideEffectStep.class,
@@ -556,13 +555,13 @@ public class TraversalParentTest {
                 {GroupStep.class,
                         g.V().group().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name"), __.fold()),
+                        List.of(new ValueTraversal<>("name"), __.fold()),
                         null, null
                 },
                 {GroupStep.class,
                         g.V().group().by("name").by("age"),
                         List.of(),
-                        List.of(new ValueTraversal("name"), __.map(new ValueTraversal("age")).fold()),
+                        List.of(new ValueTraversal<>("name"), __.map(new ValueTraversal<>("age")).fold()),
                         null, null
                 },
                 {GroupStep.class,
@@ -598,13 +597,13 @@ public class TraversalParentTest {
                 {MathStep.class,
                         g.V().math("_ + 1").by("age"),
                         List.of(),
-                        List.of(new ValueTraversal("age")),
+                        List.of(new ValueTraversal<>("age")),
                         null, null
                 },
                 {MathStep.class,
                         g.V().math("_ + _").by("age").by(__.constant(10)),
                         List.of(),
-                        List.of(new ValueTraversal("age"), __.constant(10)),
+                        List.of(new ValueTraversal<>("age"), __.constant(10)),
                         null, null
                 },
                 {MergeStep.class,
@@ -634,13 +633,13 @@ public class TraversalParentTest {
                 {OrderGlobalStep.class,
                         g.V().order().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {OrderGlobalStep.class,
                         g.V().order().by("name").by(__.constant("value")),
                         List.of(),
-                        List.of(new ValueTraversal("name"), __.constant("value")),
+                        List.of(new ValueTraversal<>("name"), __.constant("value")),
                         null, null
                 },
                 {OrderLocalStep.class,
@@ -652,7 +651,7 @@ public class TraversalParentTest {
                 {OrderLocalStep.class,
                         g.V().fold().order(Scope.local).by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {OrderLocalStep.class,
@@ -676,7 +675,7 @@ public class TraversalParentTest {
                 {PathFilterStep.class,
                         g.V().simplePath().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {PathFilterStep.class,
@@ -688,7 +687,7 @@ public class TraversalParentTest {
                 {PathFilterStep.class,
                         g.V().cyclicPath().by("age").by(__.constant("value")),
                         List.of(),
-                        List.of(new ValueTraversal("age"), __.constant("value")),
+                        List.of(new ValueTraversal<>("age"), __.constant("value")),
                         null, null
                 },
                 {PathStep.class,
@@ -700,7 +699,7 @@ public class TraversalParentTest {
                 {PathStep.class,
                         g.V().out().path().by("age").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("age"), new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("age"), new ValueTraversal<>("name")),
                         null, null
                 },
                 {PathStep.class,
@@ -718,7 +717,7 @@ public class TraversalParentTest {
                 {ProjectStep.class,
                         g.V().project("a", "b").by("name").by("age"),
                         List.of(),
-                        List.of(new ValueTraversal("name"), new ValueTraversal("age")),
+                        List.of(new ValueTraversal<>("name"), new ValueTraversal<>("age")),
                         null, null
                 },
                 {ProjectStep.class,
@@ -766,7 +765,7 @@ public class TraversalParentTest {
                 {SackValueStep.class,
                         g.withSack(0).V().sack(Operator.sum).by("age"),
                         List.of(),
-                        List.of(new ValueTraversal("age")),
+                        List.of(new ValueTraversal<>("age")),
                         null, null
                 },
                 {SackValueStep.class,
@@ -784,7 +783,7 @@ public class TraversalParentTest {
                 {SampleGlobalStep.class,
                         g.E().sample(2).by("weight"),
                         List.of(),
-                        List.of(new ValueTraversal("weight")),
+                        List.of(new ValueTraversal<>("weight")),
                         null, null
                 },
                 {SampleGlobalStep.class,
@@ -802,7 +801,7 @@ public class TraversalParentTest {
                 {SelectOneStep.class,
                         g.V().as("a").select("a").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {SelectOneStep.class,
@@ -820,7 +819,7 @@ public class TraversalParentTest {
                 {SelectStep.class,
                         g.V().as("a").as("b").select("a", "b").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {SelectStep.class,
@@ -838,7 +837,7 @@ public class TraversalParentTest {
                 {TraversalSelectStep.class,
                         g.V().select((Traversal)__.constant("a")).by("name"),
                         List.of(),
-                        List.of(__.constant("a"), new ValueTraversal("name")),
+                        List.of(__.constant("a"), new ValueTraversal<>("name")),
                         null, null
                 },
                 {TraversalFilterStep.class,
@@ -892,7 +891,7 @@ public class TraversalParentTest {
                 {TreeStep.class,
                         g.V().out().tree().by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {TreeStep.class,
@@ -910,7 +909,7 @@ public class TraversalParentTest {
                 {TreeSideEffectStep.class,
                         g.V().out().tree("x").by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {TreeSideEffectStep.class,
@@ -941,7 +940,7 @@ public class TraversalParentTest {
                 {WherePredicateStep.class,
                         g.V().as("a").out().as("b").where("a", P.eq("b")).by("name"),
                         List.of(),
-                        List.of(new ValueTraversal("name")),
+                        List.of(new ValueTraversal<>("name")),
                         null, null
                 },
                 {WherePredicateStep.class,
@@ -982,7 +981,7 @@ public class TraversalParentTest {
     }
 
     private void verifyExpectedParents(List<Traversal.Admin<?,?>> expectedGlobalChildren, List<Traversal.Admin<?,?>> expectedLocalChildren, String messageSuffix) {
-        List<Step> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
+        List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
         assertTrue(String.format("Expected a single step of class %s to test, found %d %s", stepClass.getName(), steps.size(), messageSuffix), steps.size() == 1);
         assertTrue(String.format("Expected step to implement TraversalParent %s", messageSuffix), steps.get(0) instanceof TraversalParent);
 
@@ -1005,7 +1004,7 @@ public class TraversalParentTest {
     }
 
     private static Traversal<?, ?> appendComputerAwareEndStep(final Traversal<?, ?> traversal) {
-        traversal.asAdmin().addStep(new ComputerAwareStep.EndStep(traversal.asAdmin()));
+        traversal.asAdmin().addStep(new ComputerAwareStep.EndStep<>(traversal.asAdmin()));
         return traversal;
     }
 
