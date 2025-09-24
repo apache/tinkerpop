@@ -33,8 +33,8 @@ from gremlin_python import statics
 from gremlin_python.statics import FloatType, BigDecimal, FunctionType, ShortType, IntType, LongType, BigIntType, \
                                    TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, GremlinType, \
                                    SingleChar
-from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, DT, Merge, N, \
-                                             Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
+from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, DT, GType, \
+                                             Merge,Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
 from gremlin_python.process.graph_traversal import GraphTraversal
 from gremlin_python.structure.graph import Graph, Edge, Property, Vertex, VertexProperty, Path
@@ -98,7 +98,7 @@ class DataType(Enum):
     traversalmetrics = 0x2d
     merge = 0x2e
     dt = 0x2f
-    n = 0x30
+    gtype = 0x30
     char = 0x80
     duration = 0x81
     inetaddress = 0x82            # todo
@@ -978,11 +978,6 @@ class MergeIO(_EnumIO):
     python_type = Merge
 
 
-class NIO(_EnumIO):
-    graphbinary_type = DataType.n
-    python_type = N
-
-
 class ScopeIO(_EnumIO):
     graphbinary_type = DataType.scope
     python_type = Scope
@@ -991,6 +986,11 @@ class ScopeIO(_EnumIO):
 class TIO(_EnumIO):
     graphbinary_type = DataType.t
     python_type = T
+
+
+class GTYPEIO(_EnumIO):
+    graphbinary_type = DataType.gtype
+    python_type = GType
 
 
 class TraverserIO(_GraphBinaryTypeIO):

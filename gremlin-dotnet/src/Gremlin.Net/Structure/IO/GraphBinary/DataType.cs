@@ -56,8 +56,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         public static readonly DataType Column = new DataType(0x17);
         public static readonly DataType Direction = new DataType(0x18);
         public static readonly DataType DT = new DataType(0x2F);
+        public static readonly DataType GType = new DataType(0x30);
         public static readonly DataType Merge = new DataType(0x2E);
-        public static readonly DataType N = new DataType(0x30);
         public static readonly DataType Operator = new DataType(0x19);
         public static readonly DataType Order = new DataType(0x1A);
         public static readonly DataType Pick = new DataType(0x1B);

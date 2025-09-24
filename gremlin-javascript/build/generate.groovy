@@ -81,8 +81,8 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                     '};\n' +
                     'const IO = traversalModule.IO;\n' +
                     'const DT = traversalModule.dt;\n' +
+                    'const GType = traversalModule.gType;\n' +
                     'const Merge = traversalModule.merge;\n' +
-                    'const N = traversalModule.n;\n' +
                     'const P = traversalModule.P;\n' +
                     'const Pick = traversalModule.pick\n' +
                     'const Pop = traversalModule.pop\n' +

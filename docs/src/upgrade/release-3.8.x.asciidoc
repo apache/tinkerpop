@@ -60,11 +60,45 @@ gremlin> g.V().has('airport','code','IAD').valueMap('code','desc','lon','lat')
 ==>[code:[IAD],lon:[-77.45580292],lat:[38.94449997],desc:[Washington Dulles International Airport]]
 ----
 
+==== Type Predicate
+
+The new `P.typeOf()` predicate allows filtering traversers based on their runtime type. It accepts either a `GType`
+enum constant or a string representation of a simple class name. This predicate is particularly useful for type-safe
+filtering in heterogeneous data scenarios.
+
+[source,text]
+----
+// Filter vertices by property type
+gremlin> g.V().values("age","name").is(P.typeOf(GType.INT))
+==>29
+==>27
+==>32
+==>35
+
+// Type inheritance support - NUMBER matches all numeric types
+gremlin> g.union(V(), E()).values().is(P.typeOf(GType.NUMBER))
+==>29
+==>27
+==>32
+==>35
+==>0.5
+==>1.0
+==>0.4
+==>1.0
+==>0.4
+==>0.2
+----
+
+The predicate supports type inheritance where `GType.NUMBER` will match any numeric type. Invalid type names will
+throw an exception at execution time.
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#a-note-on-predicates[Predicates], link:https://issues.apache.org/jira/browse/TINKERPOP-2234[TINKERPOP-2234]
+
 ==== Number Conversion Step
 
 The new `asNumber()` step provides type casting functionality to Gremlin. It serves as an umbrella step that parses
 strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these available types
-are denoted by a set of number tokens (`N`).
+are denoted by a set of number tokens (`GType`).
 
 This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a
 consistent format, making it easier to perform downstream mathematical operations. As an example:
@@ -80,38 +114,38 @@ gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum()
 ==>15.0
 
 // given sum() step returned a double, one can use asNumber() to further cast the result into desired type
-gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(N.int_)
+gremlin> g.inject(1.0, 2l, 3, "4", "0x5").asNumber().sum().asNumber(GType.INT)
 ==>15
 ----
 
 Semantically, the `asNumber()` step will convert the incoming traverser to a logical parsable type if no argument is
-provided, or to the desired numerical type, based on the number token (`N`) provided.
+provided, or to the desired numerical type, based on the number token (`GType`) provided.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow as a result of narrowing of types:
 
 [source,text]
 ----
-gremlin> g.inject(5.0).asNumber(N.int_)
+gremlin> g.inject(5.0).asNumber(GType.INT)
 ==> 5    // casts double to int
-gremlin> g.inject(12).asNumber(N.byte_)
+gremlin> g.inject(12).asNumber(GType.BYTE)
 ==> 12
-gremlin> g.inject(128).asNumber(N.byte_)
+gremlin> g.inject(128).asNumber(GType.BYTE)
 ==> ArithmeticException
 ----
 
-String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no number token is
+String input will be parsed. By default, the smalled unit of number to be parsed into is `int` if no type token is
 provided. `NumberFormatException` will be thrown for any unparsable strings:
 
 [source,text]
 ----
 gremlin> g.inject("5").asNumber()
 ==> 5
-gremlin> g.inject("5.7").asNumber(N.int_)
+gremlin> g.inject("5.7").asNumber(GType.INT)
 ==> 5
-gremlin> g.inject("1,000").asNumber(N.int_)
+gremlin> g.inject("1,000").asNumber(GType.INT)
 ==> NumberFormatException
-gremlin> g.inject("128").asNumber(N.byte_)
+gremlin> g.inject("128").asNumber(GType.BYTE)
 ==> ArithmeticException
 ----
 
@@ -122,8 +156,7 @@ gremlin> g.inject([1, 2, 3, 4]).asNumber()
 ==> IllegalArgumentException
 ----
 
-See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asNumber-step[asNumber()-step], link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
 
 ==== Boolean Conversion Step
 
@@ -150,8 +183,7 @@ gremlin> g.V().sack(assign).by(__.hasLabel('person').count().asBool()).sack(and)
 ==>[v[6],true]
 ----
 
-See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step]
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
+See: link:https://tinkerpop.apache.org/docs/3.8.0/reference/#asBool-step[asBool()-step], link:https://issues.apache.org/jira/browse/TINKERPOP-3175[TINKERPOP-3175]
 
 ==== none() and discard()
 
@@ -901,7 +933,7 @@ impact.
 
 ===== Examples of Affected Traversals =====
 
-Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
+Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results
 returned from the `modern` graph demonstrate the change of semantics if the `inject()` in `repeat()` were to be unrolled:
 
 [source,text]
@@ -988,12 +1020,12 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
 
 ==== Modified limit() skip() range() Semantics in repeat()
 
-The semantics of `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global` inside 
-`repeat()` have been modified to ensure consistent semantics across repeat iterations. Previously, these steps would 
+The semantics of `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global` inside
+`repeat()` have been modified to ensure consistent semantics across repeat iterations. Previously, these steps would
 track global state across iterations, leading to unexpected filtering behavior between loops.
 
 Consider the following examples which demonstrate the unexpected behavior. Note that the examples for version 3.7.4
-disable the `RepeatUnrollStrategy` so that strategy optimization does not replace the `repeat()` traversal with a 
+disable the `RepeatUnrollStrategy` so that strategy optimization does not replace the `repeat()` traversal with a
 non-looping equivalent. 3.8.0 examples do not disable the `RepeatUnrollStrategy` as the strategy was modified to be more
 restrictive in this version.
 
@@ -1025,15 +1057,23 @@ gremlin> g.V(1).out().skip(1).out().skip(1).values('name')
 ==>lop
 ----
 
-This change ensures that `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global` 
-inside `repeat()` are more consistent with manually unrolled traversals. Before upgrading, users should determine if any 
-traversals use `limit()`, skip()`, or `range()` with default `Scope` or explicit `Scope.global` inside `repeat()`. If it 
-is desired that the limit or range should apply across all loops then the `limit()`, `skip()`, or `range()` step should 
+This change ensures that `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global`
+inside `repeat()` are more consistent with manually unrolled traversals. Before upgrading, users should determine if any
+traversals use `limit()`, skip()`, or `range()` with default `Scope` or explicit `Scope.global` inside `repeat()`. If it
+is desired that the limit or range should apply across all loops then the `limit()`, `skip()`, or `range()` step should
 be moved out of the `repeat()` step.
 
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+==== Type Predicate
+
+The P.typeOf(String) predicate accepts custom type names registered in the `GlobalTypeCache`. Unregistered strings will
+throw an `IllegalArgumentException` upon execution. Providers who wish to enable type comparison with custom data types
+should register it into the cache, and provide documentations on the correct type name for users.
+
+See: link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#_comparability_of_types[Comparability of Types]
 
 ===== NoneStep Renaming
 

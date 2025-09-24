@@ -19,12 +19,11 @@
 package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
 
@@ -77,6 +76,20 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
     @Override
     public P visitTraversalPredicate_neq(final GremlinParser.TraversalPredicate_neqContext ctx) {
         return P.neq(getSingleGenericLiteralArgument(ctx));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public P visitTraversalPredicate_typeOf(final GremlinParser.TraversalPredicate_typeOfContext ctx) {
+        final int childIndex = ctx.getChildCount() == 6 ? 4 : 2;
+        final Object child = ctx.getChild(childIndex);
+        if (child instanceof GremlinParser.TraversalGTypeContext) {
+            return P.typeOf(TraversalEnumParser.parseTraversalGTypeFromContext((GremlinParser.TraversalGTypeContext) child));
+        } else {
+            return P.typeOf((String) antlr.genericVisitor.visitStringLiteral((GremlinParser.StringLiteralContext) child));
+        }
     }
 
     /**
@@ -244,7 +257,7 @@ public class TraversalPredicateVisitor extends DefaultGremlinBaseVisitor<P> {
      * Get 1 generic literal argument from the antlr parse tree context, where the arguments have the child index
      * of 2 with the short form and 4 on the long form (e.g. eq(1) vs P.eq(1) respectively)
      */
-    private Object getSingleGenericLiteralArgument(final ParseTree ctx) {;
+    private Object getSingleGenericLiteralArgument(final ParseTree ctx) {
         final int childIndexOfParameterValue = ctx.getChildCount() == 6 ? 4 : 2;
 
         return antlr.argumentVisitor.visitGenericArgument(
