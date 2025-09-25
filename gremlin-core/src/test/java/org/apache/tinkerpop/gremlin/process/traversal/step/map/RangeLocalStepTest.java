@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepPlaceholder;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep.applyRange;
@@ -81,30 +81,30 @@ public class RangeLocalStepTest extends GValueStepTest {
     @Test
     public void getLowHighRangeAsGValueShouldNotPinVariables() {
         GraphTraversal.Admin<Object, Object> traversal = __.range(Scope.local, GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
-        assertEquals(GValue.of(LOW_NAME, LOW_VALUE), ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getLowRangeAsGValue());
-        assertEquals(GValue.of(HIGH_NAME, HIGH_VALUE), ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getHighRangeAsGValue());
+        assertEquals(GValue.of(LOW_NAME, LOW_VALUE), ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getLowRangeAsGValue());
+        assertEquals(GValue.of(HIGH_NAME, HIGH_VALUE), ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getHighRangeAsGValue());
         verifyVariables(traversal, Set.of(), Set.of(LOW_NAME, HIGH_NAME));
     }
 
     @Test
     public void getLowShouldPinVariable() {
         GraphTraversal.Admin<Object, Object> traversal = __.range(Scope.local, GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
-        assertEquals((Long) LOW_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getLowRange());
+        assertEquals((Long) LOW_VALUE, ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getLowRange());
         verifyVariables(traversal, Set.of(LOW_NAME), Set.of(HIGH_NAME));
     }
 
     @Test
     public void getHighShouldPinVariable() {
         GraphTraversal.Admin<Object, Object> traversal = __.range(Scope.local, GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
-        assertEquals((Long) HIGH_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getHighRange());
+        assertEquals((Long) HIGH_VALUE, ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).getHighRange());
         verifyVariables(traversal, Set.of(HIGH_NAME), Set.of(LOW_NAME));
     }
 
     @Test
     public void getLowHighRangeGValueFromConcreteStep() {
         GraphTraversal.Admin<Object, Object> traversal = __.range(Scope.local, GValue.of(LOW_NAME, LOW_VALUE), GValue.of(HIGH_NAME, HIGH_VALUE)).asAdmin();
-        assertEquals((Long) LOW_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getLowRange());
-        assertEquals((Long) HIGH_VALUE, ((RangeStepPlaceholder.RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getHighRange());
+        assertEquals((Long) LOW_VALUE, ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getLowRange());
+        assertEquals((Long) HIGH_VALUE, ((RangeLocalStepPlaceholder) traversal.getSteps().get(0)).asConcreteStep().getHighRange());
     }
 
     @Test

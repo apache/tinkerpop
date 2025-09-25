@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
@@ -50,7 +49,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements GraphComputing, AutoCloseable, Configuring, GraphStepContract<S, E> {
+public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implements Configuring, GraphStepContract<S, E> {
 
     protected Parameters parameters = new Parameters();
     protected final Class<E> returnClass;

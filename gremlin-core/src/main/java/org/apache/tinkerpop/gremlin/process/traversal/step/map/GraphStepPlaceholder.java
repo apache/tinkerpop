@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
@@ -58,6 +59,9 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
     public String toString() {
         return StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids));
     }
+
+    @Override
+    public void close() {} // Nothing to close
 
     @Override
     public Class<E> getReturnClass() {

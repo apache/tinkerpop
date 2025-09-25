@@ -28,8 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FromToModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -37,7 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
-public interface AddEdgeStepContract<S> extends TraversalParent, Scoping, FromToModulating, AddElementStepContract<S, Edge>, Writing<Event.EdgeAddedEvent> {
+public interface AddEdgeStepContract<S> extends AddElementStepContract<S, Edge>, FromToModulating, Writing<Event.EdgeAddedEvent> {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
