@@ -221,6 +221,28 @@ public final class TinkerFactory {
         }
     }
 
+    /**
+     * Creates the "air-routes" graph which is a larger graph than most of the toy graphs but has real-world
+     * structure and application and is therefore useful for demonstrating more complex traversals.
+     */
+    public static TinkerGraph createAirRoutes() {
+        final TinkerGraph g = getTinkerGraphWithCurrentNumberManager();
+        generateAirRoutes(g);
+        return g;
+    }
+
+    /**
+     * Generate the graph in {@link #createAirRoutes()} into an existing graph.
+     */
+    public static void generateAirRoutes(final AbstractTinkerGraph graph) {
+        final InputStream stream = TinkerFactory.class.getResourceAsStream("air-routes.kryo");
+        try {
+            graph.io(gryo()).reader().create().readGraph(stream, graph);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
     private static TinkerGraph getTinkerGraphWithCurrentNumberManager() {
         return TinkerGraph.open(getConfigurationWithCurrentNumberManager());
     }

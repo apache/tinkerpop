@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Added the Air Routes dataset to the set of available samples packaged with distributions.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
