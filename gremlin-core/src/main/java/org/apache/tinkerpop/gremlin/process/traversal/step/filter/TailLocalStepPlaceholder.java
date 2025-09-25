@@ -54,6 +54,7 @@ public final class TailLocalStepPlaceholder<S> extends ScalarMapStep<S, S> imple
     @Override
     public TailLocalStepPlaceholder<S> clone() {
         final TailLocalStepPlaceholder<S> clone = (TailLocalStepPlaceholder<S>) super.clone();
+        clone.limit = this.limit.clone();
         return clone;
     }
 

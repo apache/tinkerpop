@@ -83,11 +83,7 @@ public abstract class AbstractMergeElementStepPlaceholder<S, E> extends FlatMapS
                 if (v instanceof Traversal) {
                     newValues.add(((Traversal<?, ?>) v).asAdmin().clone());
                 } else if (v instanceof GValue) {
-                    try {
-                        newValues.add(((GValue) v).clone());
-                    } catch (CloneNotSupportedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    newValues.add(((GValue) v).clone());
                 } else {
                     newValues.add(v);
                 }

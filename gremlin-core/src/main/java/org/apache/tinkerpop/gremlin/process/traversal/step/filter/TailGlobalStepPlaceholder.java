@@ -67,6 +67,8 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     @Override
     public TailGlobalStepPlaceholder<S> clone() {
         final TailGlobalStepPlaceholder<S> clone = (TailGlobalStepPlaceholder<S>) super.clone();
+        clone.limit = this.limit.clone();
+        clone.bypass = this.bypass;
         return clone;
     }
 

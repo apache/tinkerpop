@@ -144,12 +144,8 @@ public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements 
     @Override
     public RangeLocalStepPlaceholder<S> clone() {
         RangeLocalStepPlaceholder<S> clone = (RangeLocalStepPlaceholder<S>) super.clone();
-        try {
-            clone.low = this.low.clone(); //TODO:: cleanup unnecessary try-catch
-            clone.high = this.high.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        clone.low = this.low.clone();
+        clone.high = this.high.clone();
         return clone;
     }
 }

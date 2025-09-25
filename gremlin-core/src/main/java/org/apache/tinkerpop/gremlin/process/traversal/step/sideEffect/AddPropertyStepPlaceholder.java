@@ -172,9 +172,35 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     public AddPropertyStepPlaceholder<S> clone() {
         final AddPropertyStepPlaceholder<S> clone = (AddPropertyStepPlaceholder<S>) super.clone();
         clone.cardinality = cardinality;
-        clone.key = key;
-        clone.value = value;
-        clone.properties.putAll(properties);
+        clone.value = value.clone();
+
+        // Attempt to deep clone keys for Traversal and GValue. Shallow copy is fine if key is a String or enum
+        if (this.key instanceof Traversal) {
+            clone.key = ((Traversal<?, ?>) this.key).asAdmin().clone();
+        } else if (this.key instanceof GValue) {
+            clone.key = ((GValue<?>) this.key).clone();
+        } else {
+            clone.key = this.key;
+        }
+
+        // deep clone properties
+        clone.properties = new HashMap<>();
+        for (Map.Entry<Object, List<Object>> entry : this.properties.entrySet()) {
+            final Object key = entry.getKey();
+            final List<Object> oldValues = entry.getValue();
+            final List<Object> newValues = new ArrayList<>(oldValues.size());
+            for (Object v : oldValues) {
+                if (v instanceof Traversal) {
+                    newValues.add(((Traversal<?, ?>) v).asAdmin().clone());
+                } else if (v instanceof GValue) {
+                    newValues.add(((GValue) v).clone());
+                } else {
+                    newValues.add(v);
+                }
+            }
+            clone.properties.put(key, newValues);
+        }
+
         return clone;
     }
 

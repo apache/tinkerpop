@@ -60,13 +60,9 @@ public final class GValueConstantTraversal<S, E> extends AbstractLambdaTraversal
     @Override
     public GValueConstantTraversal<S, E> clone() {
         GValueConstantTraversal<S, E> clone = (GValueConstantTraversal<S, E>) super.clone();
-        try {
-            clone.end = this.end.clone();
-            clone.constantTraversal = (ConstantTraversal<S, E>) this.constantTraversal.clone();
-            clone.setGValueManager(this.getGValueManager().clone());
-        } catch (CloneNotSupportedException e) { //TODO:: handle properly
-            throw new RuntimeException(e);
-        }
+        clone.end = this.end.clone();
+        clone.constantTraversal = (ConstantTraversal<S, E>) this.constantTraversal.clone();
+        clone.setGValueManager(this.getGValueManager().clone());
         return clone;
     }
 

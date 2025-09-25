@@ -217,6 +217,7 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     @Override
     public CallStepPlaceholder<S, E> clone() {
         final CallStepPlaceholder<S, E> clone = (CallStepPlaceholder<S, E>) super.clone();
+        clone.staticParams = staticParams != null ? staticParams.clone() : null;
         clone.mapTraversal = mapTraversal != null ? mapTraversal.clone() : null;
         clone.parameters = parameters.clone();
         return clone;
