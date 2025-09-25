@@ -22,12 +22,44 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ExpandableStepIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
+import java.util.NoSuchElementException;
 
 public interface TailGlobalStepContract<S> extends Step<S, S>, Bypassing, FilteringBarrier<TraverserSet<S>> {
     Long getLimit();
 
     default GValue<Long> getLimitAsGValue() {
         return GValue.of(getLimit());
+    }
+
+    ExpandableStepIterator<S> getStarts();
+
+    default TraverserSet<S> getEmptyBarrier() {
+        return new TraverserSet<>();
+    }
+
+    default boolean hasNextBarrier() {
+        return this.getStarts().hasNext();
+    }
+
+    default TraverserSet<S> nextBarrier() throws NoSuchElementException {
+        if (!this.getStarts().hasNext())
+            throw FastNoSuchElementException.instance();
+        final TraverserSet<S> barrier = (TraverserSet<S>) this.getTraversal().getTraverserSetSupplier().get();
+        while (this.getStarts().hasNext()) {
+            barrier.add(this.getStarts().next());
+        }
+        return barrier;
+    }
+
+    default void addBarrier(final TraverserSet<S> barrier) {
+        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
+            traverser.setSideEffects(this.getTraversal().getSideEffects());
+            this.addStart(traverser);
+        });
     }
 }

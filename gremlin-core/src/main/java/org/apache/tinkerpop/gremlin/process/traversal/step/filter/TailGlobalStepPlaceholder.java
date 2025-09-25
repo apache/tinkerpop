@@ -45,6 +45,9 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
 
     public TailGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
+        if (null == limit) {
+            throw new IllegalArgumentException("TailGlobalStepPlaceholder requires limit to be non-null");
+        }
         this.limit = limit;
         if (this.limit.isVariable()) {
             traversal.getGValueManager().register(limit);
@@ -92,36 +95,7 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
 
     @Override
     public void processAllStarts() {
-
-    }
-
-    @Override
-    public TraverserSet<S> getEmptyBarrier() {
-        return new TraverserSet<>();
-    }
-
-    @Override
-    public boolean hasNextBarrier() {
-        return this.starts.hasNext();
-    }
-
-    @Override
-    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        if (!this.starts.hasNext())
-            throw FastNoSuchElementException.instance();
-        final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
-        while (this.starts.hasNext()) {
-            barrier.add(this.starts.next());
-        }
-        return barrier;
-    }
-
-    @Override
-    public void addBarrier(final TraverserSet<S> barrier) {
-        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
+        throw new IllegalStateException("TailGlobalStepPlaceholder is not executable");
     }
 
     @Override

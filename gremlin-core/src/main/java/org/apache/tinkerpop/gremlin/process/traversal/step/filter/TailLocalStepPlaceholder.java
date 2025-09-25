@@ -37,6 +37,9 @@ public final class TailLocalStepPlaceholder<S> extends ScalarMapStep<S, S> imple
 
     public TailLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> limit) {
         super(traversal);
+        if (null == limit) {
+            throw new IllegalArgumentException("TailLocalStepPlaceholder requires limit to be non-null");
+        }
         this.limit = limit;
         if (this.limit.isVariable()) {
             traversal.getGValueManager().register(limit);

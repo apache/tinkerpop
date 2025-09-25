@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 public final class IsStepPlaceholder<S> extends FilterStep<S> implements GValueHolder<S, S>, IsStepContract<S> {

@@ -144,30 +144,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     }
 
-    @Override
-    public boolean hasNextBarrier() {
-        return this.starts.hasNext();
-    }
-
-    @Override
-    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        if(!this.starts.hasNext())
-            throw FastNoSuchElementException.instance();
-        final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
-        while (this.starts.hasNext()) {
-            barrier.add(this.starts.next());
-        }
-        return barrier;
-    }
-
-    @Override
-    public void addBarrier(final TraverserSet<S> barrier) {
-        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
-    }
-
     ////////////////
 
     public static final class RangeBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {

@@ -21,19 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.FilteringBarrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -136,35 +131,6 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailG
     @Override
     public void processAllStarts() {
 
-    }
-
-    @Override
-    public TraverserSet<S> getEmptyBarrier() {
-        return new TraverserSet<>();
-    }
-
-    @Override
-    public boolean hasNextBarrier() {
-        return this.starts.hasNext();
-    }
-
-    @Override
-    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        if (!this.starts.hasNext())
-            throw FastNoSuchElementException.instance();
-        final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
-        while (this.starts.hasNext()) {
-            barrier.add(this.starts.next());
-        }
-        return barrier;
-    }
-
-    @Override
-    public void addBarrier(final TraverserSet<S> barrier) {
-        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
     }
 
     @Override

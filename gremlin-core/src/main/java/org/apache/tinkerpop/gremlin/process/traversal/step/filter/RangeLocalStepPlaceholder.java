@@ -38,6 +38,9 @@ public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements 
 
     public RangeLocalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
+        if (null == low || null == high) {
+            throw new IllegalArgumentException("RangeLocalStepPlaceholder requires both low and high values to be non-null");
+        }
         this.low = low;
         this.high = high;
         traversal.getGValueManager().register(low);
@@ -67,9 +70,6 @@ public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements 
     }
 
     public Long getLowRange() {
-        if (low == null) {
-            return null;
-        }
         if (low.isVariable()) {
             this.traversal.getGValueManager().pinVariable(low.getName());
         }
@@ -77,9 +77,6 @@ public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements 
     }
 
     public Long getHighRange() {
-        if (high == null) {
-            return null;
-        }
         if (high.isVariable()) {
             this.traversal.getGValueManager().pinVariable(high.getName());
         }
@@ -146,6 +143,13 @@ public class RangeLocalStepPlaceholder<S> extends ScalarMapStep<S,S> implements 
 
     @Override
     public RangeLocalStepPlaceholder<S> clone() {
-        return new RangeLocalStepPlaceholder<>(traversal, low, high);
+        RangeLocalStepPlaceholder<S> clone = (RangeLocalStepPlaceholder<S>) super.clone();
+        try {
+            clone.low = this.low.clone(); //TODO:: cleanup unnecessary try-catch
+            clone.high = this.high.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        return clone;
     }
 }

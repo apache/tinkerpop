@@ -41,6 +41,9 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
 
     public RangeGlobalStepPlaceholder(final Traversal.Admin traversal, final GValue<Long> low, final GValue<Long> high) {
         super(traversal);
+        if (null == low || null == high) {
+            throw new IllegalArgumentException("RangeGlobalStepPlaceholder requires both low and high values to be non-null");
+        }
         this.low = low;
         this.high = high;
         traversal.getGValueManager().register(low);
@@ -70,9 +73,6 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
     }
 
     public Long getLowRange() {
-        if (low == null) {
-            return null;
-        }
         if (low.isVariable()) {
             this.traversal.getGValueManager().pinVariable(low.getName());
         }
@@ -80,9 +80,6 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
     }
 
     public Long getHighRange() {
-        if (high == null) {
-            return null;
-        }
         if (high.isVariable()) {
             this.traversal.getGValueManager().pinVariable(high.getName());
         }
@@ -139,30 +136,6 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
     }
 
     @Override
-    public boolean hasNextBarrier() {
-        return this.starts.hasNext();
-    }
-
-    @Override
-    public TraverserSet<S> nextBarrier() throws NoSuchElementException {
-        if(!this.starts.hasNext())
-            throw FastNoSuchElementException.instance();
-        final TraverserSet<S> barrier = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
-        while (this.starts.hasNext()) {
-            barrier.add(this.starts.next());
-        }
-        return barrier;
-    }
-
-    @Override
-    public void addBarrier(final TraverserSet<S> barrier) {
-        IteratorUtils.removeOnNext(barrier.iterator()).forEachRemaining(traverser -> {
-            traverser.setSideEffects(this.getTraversal().getSideEffects());
-            this.addStart(traverser);
-        });
-    }
-
-    @Override
     public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = new HashSet<>();
         if (low.isVariable()) {
@@ -184,7 +157,15 @@ public class RangeGlobalStepPlaceholder<S> extends FilterStep<S> implements Rang
 
     @Override
     public RangeGlobalStepPlaceholder<S> clone() {
-        return new RangeGlobalStepPlaceholder<>(traversal, low, high);
+        RangeGlobalStepPlaceholder<S> clone = (RangeGlobalStepPlaceholder<S>) super.clone();
+        clone.bypass = this.bypass;
+        try {
+            clone.low = this.low.clone(); //TODO:: cleanup unnecessary try-catch
+            clone.high = this.high.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        return clone;
     }
 
 }
