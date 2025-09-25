@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Deleting;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -47,14 +48,17 @@ public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent,
     Object getKey();
 
     /**
-     * Get the property value
+     * Gets the property value. If the value was originally passed as a {@link GValue<?>}, {@link ConstantTraversal <?>},
+     * or a literal value, then the literal value is returned. Otherwise, the value is returned in Traversal form.
      */
     Object getValue();
 
     /**
-     * Get the value as a GValue, without pinning the variable
+     * Gets the property value. If the value was originally passed as a {@link GValue<?>}, that is returned
+     * directly. If it was originally passed as a {@link ConstantTraversal <?>}, or a literal value, then the literal
+     * value is returned. Otherwise, the value is returned in Traversal form.
      */
-    default GValue<?> getValueAsGValue() {
-        return GValue.of(getValue());
+    default Object getValueWithGValue() {
+        return getValue();
     }
 }

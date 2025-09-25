@@ -66,20 +66,6 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     @Override
-    public List<Traversal.Admin<S, Edge>> getLocalChildren() {
-        final List<Traversal.Admin<S, Edge>> childTraversals = super.getLocalChildren();
-        if (from != null) childTraversals.add((Traversal.Admin) from);
-        if (to != null) childTraversals.add((Traversal.Admin) to);
-        return childTraversals;
-    }
-
-    @Override
-    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
-        super.setTraversal(parentTraversal);
-        this.getLocalChildren().forEach(this::integrateChild);
-    }
-
-    @Override
     public int hashCode() {
         int hash = super.hashCode();
         if (from != null) {
@@ -99,6 +85,18 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        List<Traversal.Admin<?, ?>> childTraversals = super.getLocalChildren();
+        if (from != null) {
+            childTraversals.add(from instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, ?>) from).getConstantTraversal() : from);
+        }
+        if (to != null) {
+            childTraversals.add(to instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, ?>) to).getConstantTraversal() : to);
+        }
+        return childTraversals;
     }
 
     @Override

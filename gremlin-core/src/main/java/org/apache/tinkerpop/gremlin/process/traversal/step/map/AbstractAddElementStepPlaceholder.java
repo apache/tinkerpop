@@ -52,7 +52,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     protected Traversal.Admin<S, String> label;
     protected Map<Object, List<Object>> properties = new HashMap<>();
-    protected GValue<Object> elementId;
+    protected Traversal.Admin<S, Object> elementId;
     protected Set<String> scopeKeys = new HashSet<>();
 
     public AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final String label) {
@@ -81,20 +81,36 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     protected void addTraversal(final Traversal.Admin<?, ?> traversal) {
+        integrateChild(traversal);
         TraversalHelper.getStepsOfAssignableClassRecursively(Scoping.class, traversal).forEach(s -> scopeKeys.addAll(s.getScopeKeys()));
     }
 
     @Override
-    public List<Traversal.Admin<S, E>> getLocalChildren() {
-        List<Traversal.Admin<S, E>> childTraversals = new ArrayList<>();
-        for (List<Object> values : properties.values()) {
-            for (Object value : values) {
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        List<Traversal.Admin<?, ?>> childTraversals = new ArrayList<>();
+        for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
+            if (entry.getKey() instanceof Traversal) {
+                childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) entry.getKey()).asAdmin());
+            }
+            for (Object value : entry.getValue()) {
                 if (value instanceof Traversal) {
-                    childTraversals.add((Traversal.Admin<S, E>) ((Traversal) value).asAdmin());
+                    childTraversals.add((Traversal.Admin<?, ?>) ((Traversal) value).asAdmin());
                 }
             }
         }
+        if (label != null) {
+            childTraversals.add(label);
+        }
+        if (elementId != null) {
+            childTraversals.add(elementId);
+        }
         return childTraversals;
+    }
+
+    @Override
+    public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
+        super.setTraversal(parentTraversal);
+        this.getLocalChildren().forEach(this::integrateChild);
     }
 
     @Override
@@ -129,7 +145,11 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
             }
         }
         if (elementId != null) {
-            step.setElementId(elementId.get());
+            if (elementId instanceof GValueConstantTraversal || elementId instanceof ConstantTraversal) {
+                step.setElementId(this.elementId.next());
+            } else {
+                step.setElementId(this.elementId);
+            }
         }
         TraversalHelper.copyLabels(this, step, false);
     }
@@ -137,7 +157,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     @Override
     public boolean isParameterized() {
         if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).isParameterized() ||
-                (elementId != null && elementId.isVariable())) {
+                (elementId instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, Object>) elementId).isParameterized())) {
             return true;
         }
         for (List<Object> list : properties.values()) {
@@ -149,24 +169,36 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
-    public String getLabel() {
+    public Object getLabel() {
         if (label instanceof GValueConstantTraversal) {
             traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) label).getGValue().getName());
+            return ((GValueConstantTraversal<?, ?>) label).getGValue().get();
         }
-        return label.next();
+        if (label instanceof ConstantTraversal) {
+            return label.next();
+        }
+        return label;
     }
 
     @Override
-    public GValue<String> getLabelAsGValue() {
-        return label instanceof GValueConstantTraversal ? ((GValueConstantTraversal) label).getGValue() : GValue.of(label.next());
+    public Object getLabelWithGValue() {
+        if (label instanceof GValueConstantTraversal) {
+            return ((GValueConstantTraversal<S, String>) label).getGValue();
+        }
+        return getLabel(); //Don't need to worry about pinning as GValue case is covered above
     }
 
     private void setLabel(Object label) {// TODO should this be public and added to step interface?
-        if (getLabelAsGValue().get().equals(Vertex.DEFAULT_LABEL)) {
-            this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
+        if (getLabelWithGValue().equals(Vertex.DEFAULT_LABEL)) {
+            if (label instanceof Traversal) {
+                this.label = ((Traversal<S, String>) label).asAdmin();
+            } else {
+                this.label = label instanceof GValue ? new GValueConstantTraversal<>((GValue) label) : new ConstantTraversal<>((String) label);
+            }
             if (label instanceof GValue) {
                 traversal.getGValueManager().register((GValue<?>) label);
             }
+            this.integrateChild(this.label);
         }
     }
 
@@ -174,6 +206,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     public void addProperty(Object key, Object value) {
         if (key instanceof GValue) {
             throw new IllegalArgumentException("GValue cannot be used as a property key");
+        }
+        if (key instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) key).asAdmin());
         }
         if (value instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) value);
@@ -227,15 +262,22 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (elementId == null) {
             return null;
         }
-        if (elementId.isVariable()) {
-            this.traversal.getGValueManager().pinVariable(elementId.getName());
+        if (elementId instanceof GValueConstantTraversal) {
+            this.traversal.getGValueManager().pinVariable(((GValueConstantTraversal<S, Object>) elementId).getGValue().getName());
+            return ((GValueConstantTraversal<S, Object>) elementId).getGValue().get();
         }
-        return elementId.get();
+        if (elementId instanceof ConstantTraversal) {
+            return elementId.next();
+        }
+        return elementId;
     }
 
     @Override
-    public GValue<?> getElementIdAsGValue() {
-        return elementId;
+    public Object getElementIdWithGValue() {
+        if (elementId instanceof GValueConstantTraversal) {
+            return ((GValueConstantTraversal<S, Object>) elementId).getGValue();
+        }
+        return getElementId(); //Don't need to worry about pinning as GValue case is covered above
     }
 
     @Override
@@ -249,8 +291,15 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
 
     @Override
     public void setElementId(Object elementId) {
-        this.elementId = elementId instanceof GValue ? (GValue<Object>) elementId : GValue.of(elementId);
-        this.traversal.getGValueManager().register(this.elementId);
+        if (elementId instanceof Traversal) {
+            this.elementId = ((Traversal<S, Object>) elementId).asAdmin();
+        } else {
+            this.elementId = elementId instanceof GValue ? new GValueConstantTraversal<>((GValue) elementId) : new ConstantTraversal<>(elementId);
+        }
+        if (elementId instanceof GValue) {
+            traversal.getGValueManager().register((GValue<?>) elementId);
+        }
+        this.integrateChild(this.elementId);
     }
 
     @Override
@@ -258,8 +307,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (label instanceof GValueConstantTraversal) {
             ((GValueConstantTraversal<S, String>) label).updateVariable(name, value);
         }
-        if (elementId != null && name.equals(elementId.getName())) {
-            elementId = GValue.of(name, value);
+        if (elementId instanceof GValueConstantTraversal) {
+            ((GValueConstantTraversal<S, Object>) elementId).updateVariable(name, value);
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (final Object propertyVal : entry.getValue()) {
@@ -276,8 +325,8 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         if (label instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, String>) label).getGValue().isVariable()) {
             gValues.add(((GValueConstantTraversal<S, String>) label).getGValue());
         }
-        if (elementId != null && elementId.isVariable()) {
-            gValues.add(elementId);
+        if (elementId instanceof GValueConstantTraversal && ((GValueConstantTraversal<S, Object>) elementId).isParameterized()) {
+            gValues.add(((GValueConstantTraversal<S, Object>) elementId).getGValue());
         }
         return gValues;
     }
@@ -292,6 +341,9 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         final AbstractAddElementStepPlaceholder<S, E, X> clone = (AbstractAddElementStepPlaceholder) super.clone();
         if (label != null) {
             clone.label = label.clone();
+        }
+        if (elementId != null) {
+            clone.elementId = elementId.clone();
         }
 
         // deep clone properties
@@ -316,7 +368,6 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
             clone.properties.put(key, newValues);
         }
 
-        clone.elementId = this.elementId;
         clone.scopeKeys = new HashSet<>(this.scopeKeys);
         return clone;
     }

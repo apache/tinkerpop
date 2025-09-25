@@ -281,7 +281,7 @@ public class AddVertexStepTest extends GValueStepTest {
     @Test
     public void getLabelAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals(GValue.of("label", "person"), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getLabelAsGValue());
+        assertEquals(GValue.of("label", "person"), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getLabelWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
     
@@ -302,7 +302,7 @@ public class AddVertexStepTest extends GValueStepTest {
     @Test
     public void getElementIdAsGValueShouldNotPinVariable() {
         GraphTraversal.Admin<Object, Vertex> traversal = getAddPersonGValueTraversal();
-        assertEquals(GValue.of("id", "1234"), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getElementIdAsGValue());
+        assertEquals(GValue.of("id", "1234"), ((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getElementIdWithGValue());
         verifyVariables(traversal, Set.of(), Set.of("label", "id", "a"));
     }
 
