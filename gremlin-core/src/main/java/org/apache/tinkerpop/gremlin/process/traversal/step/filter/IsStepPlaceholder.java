@@ -23,16 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
-public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GValueHolder<S, S>, IsStepContract<S> {
+public final class IsStepPlaceholder<S> extends FilterStep<S> implements GValueHolder<S, S>, IsStepContract<S> {
 
     private P<S> predicate;
 
@@ -43,7 +41,7 @@ public final class IsStepPlaceholder<S> extends AbstractStep<S,S> implements GVa
     }
 
     @Override
-    protected Traverser.Admin<S> processNextStart() throws NoSuchElementException {
+    protected boolean filter(Traverser.Admin<S> traverser) {
         throw new IllegalStateException("IsStepPlaceholder is not executable");
     }
 

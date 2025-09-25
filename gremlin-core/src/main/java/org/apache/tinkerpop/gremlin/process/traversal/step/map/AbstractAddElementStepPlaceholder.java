@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -47,7 +46,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X extends Event> extends AbstractStep<S, E>
+public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X extends Event> extends ScalarMapStep<S, E>
         implements AddElementStepContract<S, E>, GValueHolder<S, E>, Writing<X> {
 
     protected Traversal.Admin<S, String> label;
@@ -119,7 +118,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
-    protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
+    protected E map(Traverser.Admin<S> traverser) {
         throw new IllegalStateException("GValuePlaceholder step is not executable");
     }
 

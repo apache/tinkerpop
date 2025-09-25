@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Arrays;
 import java.util.Set;
 
-public interface VertexStepContract<E extends Element> extends Step<Vertex, E> {
+public interface VertexStepContract<E extends Element> extends Step<Vertex, E>, AutoCloseable {
     Direction getDirection();
 
     String[] getEdgeLabels();
