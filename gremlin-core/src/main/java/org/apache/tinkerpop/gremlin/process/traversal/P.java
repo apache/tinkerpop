@@ -220,15 +220,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> eq(final V value) {
         return new P(Compare.eq, value);
     }
-// TODO:: Subgraph.feature tests lead to cast exception when this overload is present.
-//    /**
-//     * Determines if values are equal.
-//     *
-//     * @since 3.8.0
-//     */
-//    public static <V> P<V> eq(final GValue<V> value) {
-//        return new P(Compare.eq, value);
-//    }
+    /**
+     * Determines if values are equal.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> eq(final GValue<V> value) {
+        return new P(Compare.eq, value);
+    }
 
     /**
      * Determines if values are not equal.

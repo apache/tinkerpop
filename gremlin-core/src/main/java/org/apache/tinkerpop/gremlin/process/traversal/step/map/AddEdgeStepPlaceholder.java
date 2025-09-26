@@ -41,7 +41,14 @@ public class AddEdgeStepPlaceholder<S> extends AbstractAddEdgeStepPlaceholder<S>
 
     @Override
     public AddEdgeStep<S> asConcreteStep() {
-        AddEdgeStep<S> step = new AddEdgeStep<>(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) label).getConstantTraversal() : label);
+        AddEdgeStep<S> step;
+        if (label instanceof Traversal) {
+            step = new AddEdgeStep<>(traversal, ((Traversal<S, String>) label).asAdmin());
+        } else if (label instanceof GValue) {
+            step = new AddEdgeStep<>(traversal, ((GValue<String>) label).get());
+        } else {
+            step = new AddEdgeStep<>(traversal, (String) label);
+        }
         super.configureConcreteStep(step);
         if (from != null) {
             step.addFrom(from instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) from).getConstantTraversal() : from);

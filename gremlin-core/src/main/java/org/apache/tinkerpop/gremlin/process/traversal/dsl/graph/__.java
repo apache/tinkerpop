@@ -979,13 +979,6 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#difference(GValue)
-     */
-    public static <A> GraphTraversal<A, Set<?>> difference(final GValue<Object> values) {
-        return __.<A>start().difference(values);
-    }
-
-    /**
      * @see GraphTraversal#disjunct(Object)
      */
     public static <A> GraphTraversal<A, Set<?>> disjunct(final Object values) {
@@ -993,23 +986,9 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#disjunct(GValue)
-     */
-    public static <A> GraphTraversal<A, Set<?>> disjunct(final GValue<Object> values) {
-        return __.<A>start().disjunct(values);
-    }
-
-    /**
      * @see GraphTraversal#intersect(Object)
      */
     public static <A> GraphTraversal<A, Set<?>> intersect(final Object values) {
-        return __.<A>start().intersect(values);
-    }
-
-    /**
-     * @see GraphTraversal#intersect(GValue)
-     */
-    public static <A> GraphTraversal<A, Set<?>> intersect(final GValue<Object> values) {
         return __.<A>start().intersect(values);
     }
 

@@ -186,10 +186,10 @@ public class TraversalRootVisitorTest {
         compare(g.V().map(__.id().fold().all(gt(1))), eval("g.V().map(__.id().fold().all(gt(1)))"));
     }
 
-//    @Test
-//    public void shouldParseTraversalMethod_and() {
-//        compare(g.V().map(__.and(outE("knows"))), eval("g.V().map(__.and(outE('knows')))"));
-//    }
+    @Test
+    public void shouldParseTraversalMethod_and() {
+        compare(g.V().map(__.and(outE("knows"))), eval("g.V().map(__.and(outE('knows')))"));
+    }
 
     @Test
     public void shouldParseTraversalMethod_any_P() {

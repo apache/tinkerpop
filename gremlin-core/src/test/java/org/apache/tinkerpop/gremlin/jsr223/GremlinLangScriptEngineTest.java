@@ -27,9 +27,6 @@ import javax.script.Bindings;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
