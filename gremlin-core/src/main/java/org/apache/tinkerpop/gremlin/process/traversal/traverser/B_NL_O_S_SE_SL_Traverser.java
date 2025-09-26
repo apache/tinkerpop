@@ -44,7 +44,7 @@ public class B_NL_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public int loops() {
-        return this.nestedLoops.peek().count();
+        return this.nestedLoops.isEmpty() ? 0 : this.nestedLoops.peek().count();
     }
 
     @Override
