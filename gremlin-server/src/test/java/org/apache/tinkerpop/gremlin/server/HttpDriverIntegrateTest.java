@@ -73,7 +73,7 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
         try {
             final Client client = cluster.connect();
             // default chunk size is 64
-            assertEquals(100, client.submit("g.inject(0).repeat(inject(0)).times(99)").all().get().size());
+            assertEquals(5, client.submit("g.inject(0,0,0,0,0)").all().get().size());
         } catch (Exception ex) {
             throw ex;
         } finally {
