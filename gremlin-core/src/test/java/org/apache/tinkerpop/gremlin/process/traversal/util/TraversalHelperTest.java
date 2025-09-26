@@ -39,10 +39,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
@@ -52,7 +55,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -599,5 +601,50 @@ public class TraversalHelperTest {
         // Step is an interface but exact equality semantics should apply and thus return empty here
         final List<Step<?,?>> steps = (List) TraversalHelper.getStepsOfClass(Step.class, t);
         assertEquals(0, steps.size());
+    }
+
+    @Test
+    public void hasOnlyShouldReturnTrueWhenAllStepsAreAssignable() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, VertexStep.class, HasStep.class),
+                __.V().out().has("name", "marko").asAdmin()), is(true));
+    }
+
+    @Test
+    public void hasOnlyShouldReturnFalseWhenStepNotAssignable() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, VertexStep.class),
+                __.V().out().count().asAdmin()), is(false));
+    }
+
+    @Test
+    public void hasOnlyShouldWorkWithInterfaceClasses() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStepContract.class, VertexStepContract.class),
+                __.V().out().asAdmin()), is(true));
+    }
+
+    @Test
+    public void hasOnlyShouldWorkRecursivelyWithNestedTraversals() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, RepeatStep.class, RepeatStep.RepeatEndStep.class, VertexStep.class, HasStep.class),
+                __.V().repeat(__.out().has("name", "marko")).times(2).asAdmin()), is(true));
+    }
+
+    @Test
+    public void hasOnlyShouldReturnFalseForNestedTraversalWithDisallowedStep() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(
+                Set.of(GraphStep.class, RepeatStep.class, VertexStep.class),
+                __.V().repeat(__.out().limit(1)).times(2).asAdmin()), is(false));
+    }
+
+    @Test
+    public void hasOnlyShouldReturnTrueForEmptyTraversal() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(Set.of(IdentityStep.class), __.identity().asAdmin()), is(true));
+    }
+
+    @Test
+    public void hasOnlyShouldReturnFalseForEmptyAllowedClasses() {
+        assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(Set.of(), __.V().out().asAdmin()), is(false));
     }
 }
