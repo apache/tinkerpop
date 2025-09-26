@@ -24,6 +24,17 @@ limitations under the License.
    <artifactId>tinkergraph-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
+
+<!--
+  For a minimal version without sample datasets where TinkerFactory will not load the
+  Air Routes or Grateful Dead dataset.
+-->
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>tinkergraph-gremlin</artifactId>
+   <version>x.y.z</version>
+   <classifier>min</classifier>
+</dependency>
 ----
 
 image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional
