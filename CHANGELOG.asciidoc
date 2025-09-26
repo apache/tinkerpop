@@ -121,6 +121,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added getter for `parameterItems` and `valueTraversal` on `DifferenceStep`.
 * Added properties to `Element` objects found in a `Path` for GraphSON v2 and v3 and GraphBinary.
 * Fixed edge properties for GraphBinary which were not deserializing properly.
+* Bump netty to 4.1.125.Final
 
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (Release Date: August 1, 2025)
