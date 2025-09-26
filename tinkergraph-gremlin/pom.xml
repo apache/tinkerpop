@@ -65,6 +65,30 @@ limitations under the License.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
+            <!--
+              Adds a minimal TinkerGraph jar with the "min" classifier stripping out sample data files which bloat
+              up the jar. This jar will not be able to load these files via TinkerFactory convenience methods.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>min-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>min</classifier>
+                            <excludes>
+                                <exclude>org/apache/tinkerpop/gremlin/tinkergraph/structure/air-routes.kryo</exclude>
+                                <exclude>org/apache/tinkerpop/gremlin/tinkergraph/structure/grateful-dead.kryo</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

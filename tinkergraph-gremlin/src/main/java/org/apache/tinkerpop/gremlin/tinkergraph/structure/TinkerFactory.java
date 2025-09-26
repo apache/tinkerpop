@@ -214,6 +214,10 @@ public final class TinkerFactory {
      */
     public static void generateGratefulDead(final AbstractTinkerGraph graph) {
         final InputStream stream = TinkerFactory.class.getResourceAsStream("grateful-dead.kryo");
+        if (null == stream) {
+            throw new IllegalStateException("The dataset is not accessible - ensure that you are not using tinkergraph-gremlin with the 'min' classifier");
+        }
+
         try {
             graph.io(gryo()).reader().create().readGraph(stream, graph);
         } catch (Exception ex) {
@@ -236,6 +240,11 @@ public final class TinkerFactory {
      */
     public static void generateAirRoutes(final AbstractTinkerGraph graph) {
         final InputStream stream = TinkerFactory.class.getResourceAsStream("air-routes.kryo");
+
+        if (null == stream) {
+            throw new IllegalStateException("The dataset is not accessible - ensure that you are not using tinkergraph-gremlin with the 'min' classifier");
+        }
+
         try {
             graph.io(gryo()).reader().create().readGraph(stream, graph);
         } catch (Exception ex) {
