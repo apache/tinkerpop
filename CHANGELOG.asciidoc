@@ -109,6 +109,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
+* Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
