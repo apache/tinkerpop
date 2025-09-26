@@ -838,7 +838,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldHavePartialContentWithLongResultsCollection() throws Exception {
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
-             final RequestMessage request = RequestMessage.build("g.inject('a').repeat(inject('a')).times(100)").create();
+             final RequestMessage request = RequestMessage.build("g.inject(0).repeat(union(identity(), identity())).times(7)").create();
             final List<ResponseMessage> responses = client.submit(request);
             assertThat(responses.size(), Matchers.greaterThan(1));
 
