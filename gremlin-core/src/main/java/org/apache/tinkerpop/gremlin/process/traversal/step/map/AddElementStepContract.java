@@ -33,6 +33,8 @@ public interface AddElementStepContract<S, E> extends Step<S, E>, PropertiesHold
         return getLabel();
     }
 
+    void setLabel(Object label);
+
     Object getElementId();
 
     default Object getElementIdWithGValue() {

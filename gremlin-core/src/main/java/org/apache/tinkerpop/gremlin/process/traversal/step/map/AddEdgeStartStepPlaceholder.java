@@ -42,7 +42,14 @@ public class AddEdgeStartStepPlaceholder extends AbstractAddEdgeStepPlaceholder<
 
     @Override
     public AddEdgeStartStep asConcreteStep() {
-        AddEdgeStartStep step = new AddEdgeStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
+        AddEdgeStartStep step;
+        if (label instanceof Traversal) {
+            step = new AddEdgeStartStep(traversal, ((Traversal<?, String>) label).asAdmin());
+        } else if (label instanceof GValue) {
+            step = new AddEdgeStartStep(traversal, ((GValue<String>) label).get());
+        } else {
+            step = new AddEdgeStartStep(traversal, (String) label);
+        }
         super.configureConcreteStep(step);
         if (from != null) {
             step.addFrom(from instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) from).getConstantTraversal() : from);

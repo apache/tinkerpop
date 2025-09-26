@@ -38,7 +38,14 @@ public class AddVertexStepPlaceholder<S> extends AbstractAddVertexStepPlaceholde
 
     @Override
     public AddVertexStep<S> asConcreteStep() {
-        AddVertexStep<S> step = new AddVertexStep<>(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<S, String>) label).getConstantTraversal() : label);
+        AddVertexStep<S> step;
+        if (label instanceof Traversal) {
+            step = new AddVertexStep<>(traversal, ((Traversal<S, String>) label).asAdmin());
+        } else if (label instanceof GValue) {
+            step = new AddVertexStep<>(traversal, ((GValue<String>) label).get());
+        } else {
+            step = new AddVertexStep<>(traversal, (String) label);
+        }
         super.configureConcreteStep(step);
         return step;
     }

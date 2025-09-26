@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,7 +42,14 @@ public class AddVertexStartStepPlaceholder extends AbstractAddVertexStepPlacehol
 
     @Override
     public AddVertexStartStep asConcreteStep() {
-        AddVertexStartStep step = new AddVertexStartStep(traversal, label instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, String>) label).getConstantTraversal() : label);
+        AddVertexStartStep step;
+        if (label instanceof Traversal) {
+            step = new AddVertexStartStep(traversal, ((Traversal<?, String>) label).asAdmin());
+        } else if (label instanceof GValue) {
+            step = new AddVertexStartStep(traversal, ((GValue<String>) label).get());
+        } else {
+            step = new AddVertexStartStep(traversal, (String) label);
+        }
         super.configureConcreteStep(step);
         return step;
     }

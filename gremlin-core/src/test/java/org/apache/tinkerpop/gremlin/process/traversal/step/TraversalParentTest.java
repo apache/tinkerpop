@@ -157,7 +157,7 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.addV("label").property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
@@ -175,19 +175,19 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.addV(GValue.of("l", "label")).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label")), // Property is not stored as a child traversal in this case
+                        List.of(), // Property is not stored as a child traversal in this case
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.addV("label").property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("name"), __.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.inject(1).addV("label").property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
@@ -199,19 +199,19 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.inject(1).addV(GValue.of("l", "label")).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label")), // Property is not stored as a child traversal in this case
+                        List.of(), // Property is not stored as a child traversal in this case
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.inject(1).addV("label").property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("name"), __.constant("cole")),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(1).to(2).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
@@ -219,49 +219,49 @@ public class TraversalParentTest {
                                 .property("name", __.constant("cole"))
                                 .property(T.id, __.constant(5)),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2), __.constant(5)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2), __.constant(5)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
+                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(1).to(2).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
+                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {CallStepContract.class,

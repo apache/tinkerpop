@@ -162,6 +162,11 @@ public class AddVertexStep<S> extends ScalarMapStep<S, Vertex> implements AddVer
     }
 
     @Override
+    public void setLabel(Object label) {
+        this.configure(T.label, label);
+    }
+
+    @Override
     public Map<Object, List<Object>> getProperties() {
         return Collections.unmodifiableMap(parameters.getRaw());
     }

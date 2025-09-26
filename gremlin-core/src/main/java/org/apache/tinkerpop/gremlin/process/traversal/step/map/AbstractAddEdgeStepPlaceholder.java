@@ -46,6 +46,11 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     @Override
+    protected String getDefaultLabel() {
+        return Edge.DEFAULT_LABEL;
+    }
+
+    @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
         addTraversal(toObject);
         if (toObject instanceof GValueConstantTraversal) {

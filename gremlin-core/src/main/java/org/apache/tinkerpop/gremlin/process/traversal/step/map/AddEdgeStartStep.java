@@ -209,6 +209,11 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
     }
 
     @Override
+    public void setLabel(Object label) {
+        this.configure(T.label, label);
+    }
+
+    @Override
     public Object getFrom() {
         return getAdjacentVertex(this.parameters, FROM);
     }
