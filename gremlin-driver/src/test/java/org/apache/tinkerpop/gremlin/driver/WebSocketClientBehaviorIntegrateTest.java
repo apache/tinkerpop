@@ -158,7 +158,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         // trigger the testing server to return captured sec-websocket-extensions header
         String returnedWsExtensions = client.submit("1", RequestOptions.build()
                 .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
-        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+        assertTrue(returnedWsExtensions.contains("permessage-deflate"));
     }
 
     /**
@@ -177,7 +177,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         // trigger the testing server to return captured sec-websocket-extensions header
         String returnedWsExtensions = client.submit("1", RequestOptions.build()
                 .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
-        assertTrue(returnedWsExtensions.contains("permessage-deflate;"));
+        assertTrue(returnedWsExtensions.contains("permessage-deflate"));
     }
 
     /**
@@ -196,7 +196,7 @@ public class WebSocketClientBehaviorIntegrateTest {
         // trigger the testing server to return captured sec-websocket-extensions header
         String returnedWsExtensions = client.submit("1", RequestOptions.build()
                 .overrideRequestId(settings.SEC_WEBSOCKET_EXTENSIONS).create()).one().getString();
-        assertFalse(returnedWsExtensions.contains("permessage-deflate;"));
+        assertFalse(returnedWsExtensions.contains("permessage-deflate"));
     }
 
     /**

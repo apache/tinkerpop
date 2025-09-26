@@ -193,7 +193,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
         final int usagePerConnection = 3;
         final Cluster cluster = TestClientFactory.build()
                 .minConnectionPoolSize(1)
-                .maxConnectionPoolSize(operations)
+                .maxConnectionPoolSize(operations / usagePerConnection)
                 .minSimultaneousUsagePerConnection(1)
                 .maxSimultaneousUsagePerConnection(usagePerConnection)
                 .create();
