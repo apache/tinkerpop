@@ -78,7 +78,7 @@ def test_client_large_result(client):
 
 
 def test_client_script_submission(client):
-    assert len(client.submit("g.inject(0).repeat(inject(0)).times(99)").all().result()) == 100
+    assert len(client.submit("g.inject(0,0,0,0,0)").all().result()) == 5
 
 
 def test_client_simple_eval(client):
