@@ -119,6 +119,14 @@ limitations under the License.
             <artifactId>logcaptor</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Optional depenency needed for Netty's SelfSignedCertificate generation on JDKs which doesn't provide sun.security.x509 package -->
+        <!-- https://github.com/netty/netty/blob/netty-4.1.125.Final/pom.xml#L963 -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${bouncycastle.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
