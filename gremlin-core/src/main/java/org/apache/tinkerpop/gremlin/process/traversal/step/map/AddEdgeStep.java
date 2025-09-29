@@ -190,7 +190,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(internalParameters.getRaw(T.label, TO, FROM));
+        return Collections.unmodifiableMap(internalParameters.getRaw(T.id, T.label, TO, FROM));
     }
 
     @Override

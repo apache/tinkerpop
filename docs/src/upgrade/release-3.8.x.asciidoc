@@ -1002,7 +1002,9 @@ will be pinned as the optimized traversal is not valid for other values of "coun
 Previously `AddVertexStep`, `AddVertexStartStep`, `AddEdgeStep`, `AddEdgeStartStep`, and `AddPropertyStep` stored their
 internal state (id, label, properties, from/to vertices...) in a `Parameters` object which was exposed via the
 `Configuring` and `Parameterizing` interfaces. These interfaces are primarily intended to support with()-modulation, and
-thus these steps had weird unintended behaviors when combined with with()-modulation:
+thus these steps had weird unintended behaviors when combined with with()-modulation. The following example shows how in
+3.7.4 TinkerGraph, with()-modulation can be used to append properties to an `addV()` step, which has never been an
+intended or documented behavior.
 
 [source,text]
 ----
@@ -1011,9 +1013,11 @@ gremlin> g.addV().with("name", "cole").valueMap()
 ----
 
 This internal step state has now been decoupled from the `Configuring` and `Parameterizing` interfaces, which are now
-exclusively used for the purposes of with()-modulation. All accesses of these steps internal data must now go through
-methods defined in the new `StepContract` interfaces: `AddVertexStepContract`, `AddEdgeStepContract`, and
-`AddPropertyStepContract`:
+exclusively used for the purposes of with()-modulation. This change affects `AddVertexStep`, `AddVertexStartStep`,
+`AddEdgeStep`, `AddEdgeStartStep`, and `AddPropertyStep`. For all of these steps, `configure()` and `getParameters()`
+are now exclusively used for with()-modulation and cannot be used to read and write ids, labels, or properties. All
+accesses of these steps' internal data must now go through methods defined in the new `StepContract` interfaces:
+`AddVertexStepContract`, `AddEdgeStepContract`, and `AddPropertyStepContract`.
 
 [source,text]
 ----

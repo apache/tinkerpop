@@ -225,7 +225,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdg
     
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(internalParameters.getRaw());
+        return Collections.unmodifiableMap(internalParameters.getRaw(T.id, T.label, TO, FROM));
     }
 
     @Override

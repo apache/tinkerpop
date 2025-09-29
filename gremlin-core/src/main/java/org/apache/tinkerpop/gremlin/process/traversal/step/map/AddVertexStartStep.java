@@ -181,7 +181,7 @@ public class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements 
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(internalParameters.getRaw());
+        return Collections.unmodifiableMap(internalParameters.getRaw(T.id, T.label));
     }
 
     @Override

@@ -78,10 +78,6 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
         this.withConfiguration.set(this, keyValues);
     }
 
-    private void configureInternalParams(final Object... keyValues) {
-        this.internalParameters.set(this, keyValues);
-    }
-
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         final Object k = this.internalParameters.get(traverser, T.key, () -> {
@@ -233,7 +229,7 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
 
     @Override
     public void addProperty(Object key, Object value) {
-        configureInternalParams(key, value);
+        internalParameters.set(this, key, value);
     }
 
     @Override

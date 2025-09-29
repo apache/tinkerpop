@@ -127,7 +127,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality);
+        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality) ^
+                Objects.hashCode(properties) ^ Objects.hashCode(withConfiguration);
     }
 
     @Override

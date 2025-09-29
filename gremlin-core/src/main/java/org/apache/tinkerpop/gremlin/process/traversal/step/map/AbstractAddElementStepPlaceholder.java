@@ -136,6 +136,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 hash ^= Objects.hashCode(entry.getValue());
             };
         }
+        hash ^= withConfiguration.hashCode();
         return hash;
     }
 
