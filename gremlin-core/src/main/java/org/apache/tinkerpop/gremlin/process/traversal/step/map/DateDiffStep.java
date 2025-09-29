@@ -127,7 +127,7 @@ public final class DateDiffStep<S> extends ScalarMapStep<S, Long> implements Tra
     public DateDiffStep<S> clone() {
         final DateDiffStep<S> clone = (DateDiffStep<S>) super.clone();
         clone.value = this.value;
-        clone.dateTraversal = this.dateTraversal;
+        clone.dateTraversal = null == this.dateTraversal ? null : this.dateTraversal.clone();
         return clone;
     }
 
