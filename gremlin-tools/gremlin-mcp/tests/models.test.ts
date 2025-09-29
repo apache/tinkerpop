@@ -24,7 +24,7 @@
 
 import {
   PropertySchema,
-  NodeSchema,
+  VertexSchema,
   RelationshipSchema,
   GraphSchemaSchema,
   GremlinConfigSchema,
@@ -55,9 +55,9 @@ describe('Models and Schemas', () => {
     });
   });
 
-  describe('NodeSchema', () => {
-    it('should validate a valid node', () => {
-      const validNode = {
+  describe('VertexSchema', () => {
+    it('should validate a valid vertex', () => {
+      const validVertex = {
         labels: 'person',
         properties: [
           {
@@ -69,7 +69,7 @@ describe('Models and Schemas', () => {
         count: 100,
       };
 
-      expect(() => NodeSchema.parse(validNode)).not.toThrow();
+      expect(() => VertexSchema.parse(validVertex)).not.toThrow();
     });
   });
 
@@ -88,7 +88,7 @@ describe('Models and Schemas', () => {
   describe('GraphSchemaSchema', () => {
     it('should validate a complete graph schema with relationship_patterns', () => {
       const validSchema = {
-        nodes: [
+        vertices: [
           {
             labels: 'person',
             properties: [
@@ -108,13 +108,13 @@ describe('Models and Schemas', () => {
         ],
         relationship_patterns: [
           {
-            left_node: 'person',
-            right_node: 'person',
+            left_vertex: 'person',
+            right_vertex: 'person',
             relation: 'knows',
           },
         ],
         metadata: {
-          node_count: 1,
+          vertex_count: 1,
           relationship_count: 1,
           pattern_count: 1,
           schema_size_bytes: 1024,
@@ -177,7 +177,7 @@ describe('Models and Schemas', () => {
   describe('SchemaMetadataSchema', () => {
     it('should validate schema metadata', () => {
       const validMetadata = {
-        node_count: 10,
+        vertex_count: 10,
         relationship_count: 5,
         pattern_count: 8,
         schema_size_bytes: 2048,

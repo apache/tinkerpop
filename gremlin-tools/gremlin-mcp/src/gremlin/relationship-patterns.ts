@@ -156,8 +156,8 @@ const isValidPattern = (pattern: RawPatternData): pattern is Required<RawPattern
  * @returns Relationship pattern object
  */
 const convertToRelationshipPattern = (pattern: Required<RawPatternData>): RelationshipPattern => ({
-  left_node: pattern.from as string,
-  right_node: pattern.to as string,
+  left_vertex: pattern.from as string,
+  right_vertex: pattern.to as string,
   relation: pattern.label as string,
 });
 
@@ -173,11 +173,11 @@ export const analyzePatternStatistics = (patterns: RelationshipPattern[]) => {
   const connections = new Map<string, number>();
 
   patterns.forEach(pattern => {
-    vertexTypes.add(pattern.left_node);
-    vertexTypes.add(pattern.right_node);
+    vertexTypes.add(pattern.left_vertex);
+    vertexTypes.add(pattern.right_vertex);
     edgeTypes.add(pattern.relation);
 
-    const connectionKey = `${pattern.left_node}->${pattern.right_node}`;
+    const connectionKey = `${pattern.left_vertex}->${pattern.right_vertex}`;
     connections.set(connectionKey, (connections.get(connectionKey) || 0) + 1);
   });
 

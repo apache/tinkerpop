@@ -27,7 +27,7 @@
  */
 
 import { Effect, Duration } from 'effect';
-import { type GraphSchema, type Node, type Relationship } from './models/index.js';
+import { type GraphSchema, type Vertex, type Relationship } from './models/index.js';
 import { Errors, type GremlinConnectionError, type GremlinQueryError } from '../errors.js';
 import type { ConnectionState, SchemaConfig } from './types.js';
 import {
@@ -88,7 +88,7 @@ const executeSchemaGeneration = (
 
     // Step 3: Analyze properties and patterns in parallel
     yield* Effect.logInfo('Analyzing properties and relationship patterns');
-    const [rawNodes, rawRelationships, patterns] = yield* Effect.all(
+    const [rawVertices, rawRelationships, patterns] = yield* Effect.all(
       [
         analyzeElementProperties(g, vertexLabels, getVertexPropertyKeys, config, true),
         analyzeElementProperties(g, edgeLabels, getEdgePropertyKeys, config, false),
@@ -98,7 +98,7 @@ const executeSchemaGeneration = (
     );
 
     // Step 4: Add count information
-    const nodes = addElementCounts<Node>(rawNodes, vertexCounts, config, 'labels');
+    const vertices = addElementCounts<Vertex>(rawVertices, vertexCounts, config, 'labels');
     const relationships = addElementCounts<Relationship>(
       rawRelationships,
       edgeCounts,
@@ -107,7 +107,7 @@ const executeSchemaGeneration = (
     );
 
     // Step 5: Assemble final schema
-    return yield* assembleGraphSchema(nodes, relationships, patterns, config, startTime);
+    return yield* assembleGraphSchema(vertices, relationships, patterns, config, startTime);
   });
 
 /**
@@ -127,7 +127,7 @@ const getElementCounts = (
 /**
  * Adds count information to analysis results.
  */
-const addElementCounts = <T extends Node | Relationship>(
+const addElementCounts = <T extends Vertex | Relationship>(
   rawElements: unknown[],
   counts: SchemaCountData,
   config: SchemaConfig,

@@ -63,9 +63,9 @@ describe('relationship-patterns', () => {
       ];
 
       const expectedPatterns: RelationshipPattern[] = [
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' },
-        { left_node: 'person', right_node: 'person', relation: 'knows' },
-        { left_node: 'company', right_node: 'project', relation: 'sponsors' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
+        { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
       ];
 
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed(mockRawPatterns));
@@ -120,13 +120,13 @@ describe('relationship-patterns', () => {
       // Should filter out invalid patterns and process only valid ones
       expect(result).toHaveLength(2); // Only valid patterns processed
       expect(result[0]).toEqual({
-        left_node: 'person',
-        right_node: 'company',
+        left_vertex: 'person',
+        right_vertex: 'company',
         relation: 'worksAt',
       });
       expect(result[1]).toEqual({
-        left_node: 'company',
-        right_node: 'project',
+        left_vertex: 'company',
+        right_vertex: 'project',
         relation: 'sponsors',
       });
     });
@@ -156,15 +156,15 @@ describe('relationship-patterns', () => {
       expect(result).toHaveLength(5);
 
       // Verify self-referencing patterns
-      const selfReferencingPatterns = result.filter(p => p.left_node === p.right_node);
+      const selfReferencingPatterns = result.filter(p => p.left_vertex === p.right_vertex);
       expect(selfReferencingPatterns).toHaveLength(3);
 
       // Verify bidirectional potential
       const personToCompany = result.find(
-        p => p.left_node === 'person' && p.right_node === 'company'
+        p => p.left_vertex === 'person' && p.right_vertex === 'company'
       );
       const companyToPerson = result.find(
-        p => p.left_node === 'company' && p.right_node === 'person'
+        p => p.left_vertex === 'company' && p.right_vertex === 'person'
       );
       expect(personToCompany).toBeDefined();
       expect(companyToPerson).toBeUndefined(); // Not in this dataset
@@ -174,9 +174,9 @@ describe('relationship-patterns', () => {
   describe('analyzePatternStatistics', () => {
     it('should analyze basic pattern statistics', () => {
       const patterns: RelationshipPattern[] = [
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' },
-        { left_node: 'person', right_node: 'person', relation: 'knows' },
-        { left_node: 'company', right_node: 'project', relation: 'sponsors' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
+        { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
       ];
 
       const stats = analyzePatternStatistics(patterns);
@@ -204,10 +204,10 @@ describe('relationship-patterns', () => {
 
     it('should count connection frequencies correctly', () => {
       const patterns: RelationshipPattern[] = [
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' },
-        { left_node: 'person', right_node: 'company', relation: 'contractsWith' },
-        { left_node: 'person', right_node: 'person', relation: 'knows' },
-        { left_node: 'company', right_node: 'project', relation: 'sponsors' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'contractsWith' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
+        { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
       ];
 
       const stats = analyzePatternStatistics(patterns);
@@ -219,9 +219,9 @@ describe('relationship-patterns', () => {
 
     it('should handle duplicate patterns correctly', () => {
       const patterns: RelationshipPattern[] = [
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' },
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' }, // Duplicate
-        { left_node: 'person', right_node: 'company', relation: 'contractsWith' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' }, // Duplicate
+        { left_vertex: 'person', right_vertex: 'company', relation: 'contractsWith' },
       ];
 
       const stats = analyzePatternStatistics(patterns);
@@ -234,12 +234,12 @@ describe('relationship-patterns', () => {
 
     it('should calculate averages correctly for complex patterns', () => {
       const patterns: RelationshipPattern[] = [
-        { left_node: 'person', right_node: 'company', relation: 'worksAt' },
-        { left_node: 'person', right_node: 'project', relation: 'owns' },
-        { left_node: 'person', right_node: 'person', relation: 'knows' },
-        { left_node: 'company', right_node: 'project', relation: 'sponsors' },
-        { left_node: 'project', right_node: 'person', relation: 'managedBy' },
-        { left_node: 'organization', right_node: 'person', relation: 'employs' },
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'project', relation: 'owns' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
+        { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
+        { left_vertex: 'project', right_vertex: 'person', relation: 'managedBy' },
+        { left_vertex: 'organization', right_vertex: 'person', relation: 'employs' },
       ];
 
       const stats = analyzePatternStatistics(patterns);
@@ -252,9 +252,9 @@ describe('relationship-patterns', () => {
 
     it('should sort vertex and edge types alphabetically', () => {
       const patterns: RelationshipPattern[] = [
-        { left_node: 'zebra', right_node: 'apple', relation: 'eats' },
-        { left_node: 'banana', right_node: 'cherry', relation: 'grows' },
-        { left_node: 'apple', right_node: 'banana', relation: 'becomes' },
+        { left_vertex: 'zebra', right_vertex: 'apple', relation: 'eats' },
+        { left_vertex: 'banana', right_vertex: 'cherry', relation: 'grows' },
+        { left_vertex: 'apple', right_vertex: 'banana', relation: 'becomes' },
       ];
 
       const stats = analyzePatternStatistics(patterns);

@@ -169,9 +169,9 @@ describe('MCP Server Integration Tests', () => {
       }
 
       expect(schema).toBeDefined();
-      expect(schema.nodes).toBeDefined();
+      expect(schema.vertices).toBeDefined();
       expect(schema.relationships).toBeDefined();
-      expect(Array.isArray(schema.nodes)).toBe(true);
+      expect(Array.isArray(schema.vertices)).toBe(true);
       expect(Array.isArray(schema.relationships)).toBe(true);
 
       // Verify relationship_patterns is present and adjacency_list is removed
@@ -181,7 +181,7 @@ describe('MCP Server Integration Tests', () => {
 
       // Verify metadata structure
       if (schema.metadata) {
-        expect(schema.metadata.node_count).toBeGreaterThanOrEqual(0);
+        expect(schema.metadata.vertex_count).toBeGreaterThanOrEqual(0);
         expect(schema.metadata.relationship_count).toBeGreaterThanOrEqual(0);
         expect(schema.metadata.optimization_settings).toBeDefined();
       }
