@@ -1,7 +1,7 @@
 {
-  "name": "@kpritam/gremlin-mcp",
-  "version": "0.0.11-SNAPSHOT",
-  "description": "A Gremlin MCP server that allows for fetching status, schema, and querying using Gremlin for any Gremlin-compatible graph database (TypeScript implementation).",
+  "name": "gremlin-mcp",
+  "version": "3.8.0-alpha1",
+  "description": "The official Apache TinkerPop MCP server for Gremlin that allows for fetching status, schema, and querying using Gremlin for any TinkerPop-compatible graph database (TypeScript implementation).",
   "type": "module",
   "main": "dist/server.js",
   "bin": {
@@ -31,12 +31,14 @@
     "mcp",
     "model-context-protocol",
     "apache-tinkerpop",
+    "tinkerpop",
     "gremlin",
     "graph",
-    "database"
+    "database",
+    "graphdb"
   ],
   "author": {
-    "name": "Gremlin MCP Contributors"
+    "name": "Apache TinkerPop team"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -66,16 +68,16 @@
     "typescript-eslint": "^8.40.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/apache/tinkerpop.git"
   },
   "bugs": {
-    "url": "https://github.com/apache/tinkerpop/issues"
+    "url": "https://issues.apache.org/jira/browse/TINKERPOP"
   },
-  "homepage": "https://github.com/apache/tinkerpop/tree/3.8-dev/gremlin-tools/gremlin-mcp#readme",
+  "homepage": "https://tinkerpop.apache.org/",
   "files": [
     "dist/",
     "README.md",
