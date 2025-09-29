@@ -41,14 +41,14 @@ Talk to your graph database naturally:
 
 Your AI assistant gets access to these powerful tools:
 
-| Tool                        | Purpose          | What It Does                                                      |
-| --------------------------- | ---------------- | ----------------------------------------------------------------- |
-| 🔍 **get_graph_status**     | Health Check     | Verify database connectivity and server status                    |
-| 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with nodes, edges, and relationships |
-| ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support      |
-| 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information              |
-| 📥 **import_graph_data**    | Data Import      | Load data from GraphSON, CSV, or JSON with batch processing       |
-| 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats               |
+| Tool                        | Purpose          | What It Does                                                 |
+| --------------------------- | ---------------- |--------------------------------------------------------------|
+| 🔍 **get_graph_status**     | Health Check     | Verify database connectivity and server status               |
+| 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
+| ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
+| 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
+| 📥 **import_graph_data**    | Data Import      | Load data from GraphSON, CSV, or JSON with batch processing  |
+| 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats          |
 
 ## 🚀 Quick Setup
 
@@ -152,7 +152,7 @@ Restart your AI client and try asking:
 
 **You ask:** _"What's the structure of my graph database?"_
 
-**AI response:** The AI calls `get_graph_schema` and tells you about your node types, edge types, and how they're connected.
+**AI response:** The AI calls `get_graph_schema` and tells you about your vertex types, edge types, and how they're connected.
 
 ### Data Analysis
 
@@ -164,7 +164,7 @@ Restart your AI client and try asking:
 
 **You ask:** _"Give me some statistics about my graph"_
 
-**AI response:** The AI runs multiple queries to count nodes, edges, and analyze the distribution, then presents a summary.
+**AI response:** The AI runs multiple queries to count vertices, edges, and analyze the distribution, then presents a summary.
 
 ### Data Import
 

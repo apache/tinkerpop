@@ -29,7 +29,7 @@ import { Effect } from 'effect';
 import {
   GraphSchemaSchema,
   type GraphSchema,
-  type Node,
+  type Vertex,
   type Relationship,
   type RelationshipPattern,
 } from './models/index.js';
@@ -42,7 +42,7 @@ import type { SchemaConfig } from './types.js';
 export interface SchemaMetadata {
   generated_at: string;
   generation_time_ms: number;
-  node_count: number;
+  vertex_count: number;
   relationship_count: number;
   pattern_count: number;
   optimization_settings: {
@@ -58,7 +58,7 @@ export interface SchemaMetadata {
 /**
  * Assembles and validates the final graph schema from analyzed components.
  *
- * @param nodes - Analyzed vertex nodes
+ * @param vertices - Analyzed vertex types
  * @param relationships - Analyzed edge relationships
  * @param patterns - Relationship patterns
  * @param config - Schema generation configuration
@@ -66,7 +66,7 @@ export interface SchemaMetadata {
  * @returns Effect with validated graph schema
  */
 export const assembleGraphSchema = (
-  nodes: Node[],
+  vertices: Vertex[],
   relationships: Relationship[],
   patterns: RelationshipPattern[],
   config: SchemaConfig,
@@ -74,18 +74,18 @@ export const assembleGraphSchema = (
 ): Effect.Effect<GraphSchema, GremlinQueryError> =>
   Effect.gen(function* () {
     // Create metadata
-    const metadata = createSchemaMetadata(nodes, relationships, patterns, config, startTime);
+    const metadata = createSchemaMetadata(vertices, relationships, patterns, config, startTime);
 
     // Assemble schema data
     const schemaData = {
-      nodes,
+      vertices,
       relationships,
       relationship_patterns: patterns,
       metadata,
     };
 
     yield* Effect.logDebug('Schema assembly completed', {
-      nodeCount: nodes.length,
+      vertexCount: vertices.length,
       relationshipCount: relationships.length,
       patternCount: patterns.length,
       generationTimeMs: metadata.generation_time_ms,
@@ -98,7 +98,7 @@ export const assembleGraphSchema = (
 /**
  * Creates schema metadata with generation statistics and configuration.
  *
- * @param nodes - Analyzed nodes
+ * @param vertices - Analyzed vertices
  * @param relationships - Analyzed relationships
  * @param patterns - Relationship patterns
  * @param config - Configuration used for generation
@@ -106,7 +106,7 @@ export const assembleGraphSchema = (
  * @returns Schema metadata object
  */
 const createSchemaMetadata = (
-  nodes: Node[],
+  vertices: Vertex[],
   relationships: Relationship[],
   patterns: RelationshipPattern[],
   config: SchemaConfig,
@@ -114,7 +114,7 @@ const createSchemaMetadata = (
 ): SchemaMetadata => ({
   generated_at: new Date().toISOString(),
   generation_time_ms: Date.now() - startTime,
-  node_count: nodes.length,
+  vertex_count: vertices.length,
   relationship_count: relationships.length,
   pattern_count: patterns.length,
   optimization_settings: {
@@ -164,37 +164,37 @@ const safeStringify = (obj: unknown): string => {
 };
 
 /**
- * Validates node data consistency and completeness.
+ * Validates vertex data consistency and completeness.
  *
- * @param nodes - Array of nodes to validate
+ * @param vertices - Array of vertices to validate
  * @returns Effect with validation result
  */
-export const validateNodes = (nodes: Node[]): Effect.Effect<void, GremlinQueryError> =>
+export const validateVertices = (vertices: Vertex[]): Effect.Effect<void, GremlinQueryError> =>
   Effect.gen(function* () {
     const issues: string[] = [];
 
-    nodes.forEach((node, index) => {
-      if (!node.labels || typeof node.labels !== 'string') {
-        issues.push(`Node ${index}: Invalid or missing labels`);
+    vertices.forEach((vertex, index) => {
+      if (!vertex.labels || typeof vertex.labels !== 'string') {
+        issues.push(`Vertex ${index}: Invalid or missing labels`);
       }
 
-      if (!Array.isArray(node.properties)) {
-        issues.push(`Node ${index}: Properties must be an array`);
+      if (!Array.isArray(vertex.properties)) {
+        issues.push(`Vertex ${index}: Properties must be an array`);
       }
 
-      node.properties?.forEach((prop, propIndex) => {
+      vertex.properties?.forEach((prop, propIndex) => {
         if (!prop.name || typeof prop.name !== 'string') {
-          issues.push(`Node ${index}, Property ${propIndex}: Invalid or missing name`);
+          issues.push(`Vertex ${index}, Property ${propIndex}: Invalid or missing name`);
         }
         if (!Array.isArray(prop.type)) {
-          issues.push(`Node ${index}, Property ${propIndex}: Type must be an array`);
+          issues.push(`Vertex ${index}, Property ${propIndex}: Type must be an array`);
         }
       });
     });
 
     if (issues.length > 0) {
       return yield* Effect.fail(
-        Errors.query('Node validation failed', 'node-validation', { issues })
+        Errors.query('Vertex validation failed', 'vertex-validation', { issues })
       );
     }
   });
@@ -250,11 +250,11 @@ export const validateRelationshipPatterns = (
     const issues: string[] = [];
 
     patterns.forEach((pattern, index) => {
-      if (!pattern.left_node || typeof pattern.left_node !== 'string') {
-        issues.push(`Pattern ${index}: Invalid or missing left_node`);
+      if (!pattern.left_vertex || typeof pattern.left_vertex !== 'string') {
+        issues.push(`Pattern ${index}: Invalid or missing left_vertex`);
       }
-      if (!pattern.right_node || typeof pattern.right_node !== 'string') {
-        issues.push(`Pattern ${index}: Invalid or missing right_node`);
+      if (!pattern.right_vertex || typeof pattern.right_vertex !== 'string') {
+        issues.push(`Pattern ${index}: Invalid or missing right_vertex`);
       }
       if (!pattern.relation || typeof pattern.relation !== 'string') {
         issues.push(`Pattern ${index}: Invalid or missing relation`);
@@ -271,18 +271,18 @@ export const validateRelationshipPatterns = (
 /**
  * Performs comprehensive validation of all schema components.
  *
- * @param nodes - Nodes to validate
+ * @param vertices - Vertices to validate
  * @param relationships - Relationships to validate
  * @param patterns - Patterns to validate
  * @returns Effect with validation result
  */
 export const validateAllComponents = (
-  nodes: Node[],
+  vertices: Vertex[],
   relationships: Relationship[],
   patterns: RelationshipPattern[]
 ): Effect.Effect<void, GremlinQueryError> =>
   Effect.gen(function* () {
-    yield* validateNodes(nodes);
+    yield* validateVertices(vertices);
     yield* validateRelationships(relationships);
     yield* validateRelationshipPatterns(patterns);
 

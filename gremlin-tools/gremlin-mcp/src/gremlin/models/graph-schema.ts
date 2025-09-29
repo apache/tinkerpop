@@ -43,18 +43,18 @@ export const PropertySchema = z.object({
 export type Property = z.infer<typeof PropertySchema>;
 
 /**
- * Node type in the graph schema.
+ * Vertex type in the graph schema.
  */
-export const NodeSchema = z.object({
-  /** The label(s) that categorize this node type */
+export const VertexSchema = z.object({
+  /** The label(s) that categorize this vertex type */
   labels: z.string(),
-  /** List of properties that can be assigned to this node type */
+  /** List of properties that can be assigned to this vertex type */
   properties: z.array(PropertySchema).default([]),
   /** Count of vertices with this label */
   count: z.number().optional(),
 });
 
-export type Node = z.infer<typeof NodeSchema>;
+export type Vertex = z.infer<typeof VertexSchema>;
 
 /**
  * Relationship type in the graph schema.
@@ -71,14 +71,14 @@ export const RelationshipSchema = z.object({
 export type Relationship = z.infer<typeof RelationshipSchema>;
 
 /**
- * Valid relationship pattern between nodes.
+ * Valid relationship pattern between vertices.
  */
 export const RelationshipPatternSchema = z.object({
-  /** The label of the source/starting node */
-  left_node: z.string(),
-  /** The label of the target/ending node */
-  right_node: z.string(),
-  /** The type of relationship connecting the nodes */
+  /** The label of the source/starting vertex */
+  left_vertex: z.string(),
+  /** The label of the target/ending vertex */
+  right_vertex: z.string(),
+  /** The type of relationship connecting the vertices */
   relation: z.string(),
 });
 
@@ -90,8 +90,8 @@ export type RelationshipPattern = z.infer<typeof RelationshipPatternSchema>;
 export const SchemaMetadataSchema = z.object({
   /** Total size of the schema in bytes */
   schema_size_bytes: z.number().optional(),
-  /** Number of node types */
-  node_count: z.number(),
+  /** Number of vertex types */
+  vertex_count: z.number(),
   /** Number of relationship types */
   relationship_count: z.number(),
   /** Number of relationship patterns */
@@ -117,11 +117,11 @@ export type SchemaMetadata = z.infer<typeof SchemaMetadataSchema>;
  * Complete graph schema definition.
  */
 export const GraphSchemaSchema = z.object({
-  /** List of all node types defined in the schema */
-  nodes: z.array(NodeSchema),
+  /** List of all vertex types defined in the schema */
+  vertices: z.array(VertexSchema),
   /** List of all relationship types defined in the schema */
   relationships: z.array(RelationshipSchema),
-  /** List of valid relationship patterns between nodes */
+  /** List of valid relationship patterns between vertices */
   relationship_patterns: z.array(RelationshipPatternSchema),
   /** Schema metadata and optimization information */
   metadata: SchemaMetadataSchema.optional(),
