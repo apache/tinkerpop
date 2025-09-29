@@ -59,30 +59,30 @@ export type Vertex = z.infer<typeof VertexSchema>;
 /**
  * Relationship type in the graph schema.
  */
-export const RelationshipSchema = z.object({
-  /** The type/category of the relationship */
+export const EdgeSchema = z.object({
+  /** The type/category of the edge */
   type: z.string(),
-  /** List of properties that can be assigned to this relationship type */
+  /** List of properties that can be assigned to this edge type */
   properties: z.array(PropertySchema).default([]),
   /** Count of edges with this label */
   count: z.number().optional(),
 });
 
-export type Relationship = z.infer<typeof RelationshipSchema>;
+export type Edge = z.infer<typeof EdgeSchema>;
 
 /**
- * Valid relationship pattern between vertices.
+ * Valid edge pattern between vertices.
  */
-export const RelationshipPatternSchema = z.object({
+export const EdgePatternSchema = z.object({
   /** The label of the source/starting vertex */
   left_vertex: z.string(),
   /** The label of the target/ending vertex */
   right_vertex: z.string(),
-  /** The type of relationship connecting the vertices */
+  /** The label/type of the edge connecting the vertices */
   relation: z.string(),
 });
 
-export type RelationshipPattern = z.infer<typeof RelationshipPatternSchema>;
+export type EdgePattern = z.infer<typeof EdgePatternSchema>;
 
 /**
  * Schema metadata and optimization settings.
@@ -92,9 +92,9 @@ export const SchemaMetadataSchema = z.object({
   schema_size_bytes: z.number().optional(),
   /** Number of vertex types */
   vertex_count: z.number(),
-  /** Number of relationship types */
-  relationship_count: z.number(),
-  /** Number of relationship patterns */
+  /** Number of edge types */
+  edge_count: z.number(),
+  /** Number of edge patterns */
   pattern_count: z.number(),
   /** Time taken to generate the schema in milliseconds */
   generation_time_ms: z.number().optional(),
@@ -119,10 +119,10 @@ export type SchemaMetadata = z.infer<typeof SchemaMetadataSchema>;
 export const GraphSchemaSchema = z.object({
   /** List of all vertex types defined in the schema */
   vertices: z.array(VertexSchema),
-  /** List of all relationship types defined in the schema */
-  relationships: z.array(RelationshipSchema),
-  /** List of valid relationship patterns between vertices */
-  relationship_patterns: z.array(RelationshipPatternSchema),
+  /** List of all edge types defined in the schema */
+  edges: z.array(EdgeSchema),
+  /** List of valid edge patterns between vertices */
+  edge_patterns: z.array(EdgePatternSchema),
   /** Schema metadata and optimization information */
   metadata: SchemaMetadataSchema.optional(),
 });

@@ -170,19 +170,19 @@ describe('MCP Server Integration Tests', () => {
 
       expect(schema).toBeDefined();
       expect(schema.vertices).toBeDefined();
-      expect(schema.relationships).toBeDefined();
+      expect(schema.edges).toBeDefined();
       expect(Array.isArray(schema.vertices)).toBe(true);
-      expect(Array.isArray(schema.relationships)).toBe(true);
+      expect(Array.isArray(schema.edges)).toBe(true);
 
-      // Verify relationship_patterns is present and adjacency_list is removed
-      expect(schema.relationship_patterns).toBeDefined();
-      expect(Array.isArray(schema.relationship_patterns)).toBe(true);
+      // Verify edge_patterns is present and adjacency_list is removed
+      expect(schema.edge_patterns).toBeDefined();
+      expect(Array.isArray(schema.edge_patterns)).toBe(true);
       expect(schema.adjacency_list).toBeUndefined();
 
       // Verify metadata structure
       if (schema.metadata) {
         expect(schema.metadata.vertex_count).toBeGreaterThanOrEqual(0);
-        expect(schema.metadata.relationship_count).toBeGreaterThanOrEqual(0);
+        expect(schema.metadata.edge_count).toBeGreaterThanOrEqual(0);
         expect(schema.metadata.optimization_settings).toBeDefined();
       }
     },

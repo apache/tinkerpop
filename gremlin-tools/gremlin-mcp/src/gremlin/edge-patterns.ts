@@ -27,7 +27,7 @@
 
 import { Effect } from 'effect';
 import gremlin from 'gremlin';
-import type { RelationshipPattern } from './models/index.js';
+import type { EdgePattern } from './models/index.js';
 import { executeGremlinQuery } from './query-utils.js';
 import type { GremlinQueryError } from '../errors.js';
 import type { process } from 'gremlin';
@@ -52,12 +52,12 @@ interface RawPatternData {
  * @param maxPatterns - Maximum number of patterns to retrieve (default: 1000)
  * @returns Effect with array of relationship patterns
  */
-export const generateRelationshipPatterns = (
+export const generateEdgePatterns = (
   g: GraphTraversalSource,
   maxPatterns: number = 1000
-): Effect.Effect<RelationshipPattern[], GremlinQueryError> =>
+): Effect.Effect<EdgePattern[], GremlinQueryError> =>
   Effect.gen(function* () {
-    yield* Effect.logInfo('Generating relationship patterns from edge connectivity');
+    yield* Effect.logInfo('Generating edge patterns from edge connectivity');
 
     // Get all patterns in a single optimized query
     const allPatterns = yield* executeGremlinQuery(
@@ -71,7 +71,7 @@ export const generateRelationshipPatterns = (
           .dedup()
           .limit(maxPatterns)
           .toList(),
-      'Failed to get relationship patterns',
+      'Failed to get edge patterns',
       `g.E().project('from', 'to', 'label').by(outV().label()).by(inV().label()).by(label()).dedup().limit(${maxPatterns}).toList()`
     );
 
@@ -95,12 +95,12 @@ export const generateRelationshipPatterns = (
  */
 const processRawPatterns = (
   rawPatterns: unknown[]
-): Effect.Effect<RelationshipPattern[], never> => {
+): Effect.Effect<EdgePattern[], never> => {
   // Extract pattern data handling both Map and object formats
   const extractedPatterns = rawPatterns.map(extractPatternData);
 
   // Filter out invalid patterns and convert to final format
-  const validPatterns = extractedPatterns.filter(isValidPattern).map(convertToRelationshipPattern);
+  const validPatterns = extractedPatterns.filter(isValidPattern).map(convertToEdgePattern);
 
   return Effect.succeed(validPatterns);
 };
@@ -150,12 +150,12 @@ const isValidPattern = (pattern: RawPatternData): pattern is Required<RawPattern
   typeof pattern.label === 'string';
 
 /**
- * Converts validated pattern data to final RelationshipPattern format.
+ * Converts validated pattern data to final EdgePattern format.
  *
  * @param pattern - Validated pattern data
  * @returns Relationship pattern object
  */
-const convertToRelationshipPattern = (pattern: Required<RawPatternData>): RelationshipPattern => ({
+const convertToEdgePattern = (pattern: Required<RawPatternData>): EdgePattern => ({
   left_vertex: pattern.from as string,
   right_vertex: pattern.to as string,
   relation: pattern.label as string,
@@ -167,7 +167,7 @@ const convertToRelationshipPattern = (pattern: Required<RawPatternData>): Relati
  * @param patterns - Array of relationship patterns
  * @returns Pattern analysis statistics
  */
-export const analyzePatternStatistics = (patterns: RelationshipPattern[]) => {
+export const analyzePatternStatistics = (patterns: EdgePattern[]) => {
   const vertexTypes = new Set<string>();
   const edgeTypes = new Set<string>();
   const connections = new Map<string, number>();
