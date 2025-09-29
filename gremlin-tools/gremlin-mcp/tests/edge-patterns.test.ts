@@ -19,20 +19,20 @@
 
 
 /**
- * @fileoverview Tests for the relationship patterns module.
+ * @fileoverview Tests for the edge patterns module.
  *
- * Tests relationship pattern analysis including edge connectivity patterns,
- * pattern processing, and relationship statistics generation.
+ * Tests edge pattern analysis including edge connectivity patterns,
+ * pattern processing, and edge statistics generation.
  */
 
 import { Effect } from 'effect';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
-  generateRelationshipPatterns,
+  generateEdgePatterns as generateEdgePatterns,
   analyzePatternStatistics,
-} from '../src/gremlin/relationship-patterns.js';
+} from '../src/gremlin/edge-patterns.js';
 import { Errors } from '../src/errors.js';
-import type { RelationshipPattern } from '../src/gremlin/models.js';
+import type { EdgePattern } from '../src/gremlin/models.js';
 
 // Mock Gremlin query utilities
 jest.mock('../src/gremlin/query-utils.js', () => ({
@@ -45,24 +45,24 @@ const mockExecuteGremlinQuery = executeGremlinQuery as jest.MockedFunction<
   typeof executeGremlinQuery
 >;
 
-describe('relationship-patterns', () => {
+describe('edge-patterns', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('generateRelationshipPatterns', () => {
+  describe('generateEdgePatterns', () => {
     const mockTraversalSource = {
       E: jest.fn(),
     } as any;
 
-    it('should generate relationship patterns successfully', async () => {
+    it('should generate edge patterns successfully', async () => {
       const mockRawPatterns = [
         { from: 'person', to: 'company', label: 'worksAt' },
         { from: 'person', to: 'person', label: 'knows' },
         { from: 'company', to: 'project', label: 'sponsors' },
       ];
 
-      const expectedPatterns: RelationshipPattern[] = [
+      const expectedPatterns: EdgePattern[] = [
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
         { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
         { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
@@ -70,12 +70,12 @@ describe('relationship-patterns', () => {
 
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed(mockRawPatterns));
 
-      const result = await Effect.runPromise(generateRelationshipPatterns(mockTraversalSource));
+      const result = await Effect.runPromise(generateEdgePatterns(mockTraversalSource));
 
       expect(result).toEqual(expectedPatterns);
       expect(mockExecuteGremlinQuery).toHaveBeenCalledWith(
         expect.any(Function),
-        'Failed to get relationship patterns',
+        'Failed to get edge patterns',
         expect.stringContaining('project')
       );
     });
@@ -86,13 +86,13 @@ describe('relationship-patterns', () => {
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed(mockRawPatterns));
 
       const result = await Effect.runPromise(
-        generateRelationshipPatterns(mockTraversalSource, 500)
+        generateEdgePatterns(mockTraversalSource, 500)
       );
 
       expect(result).toHaveLength(1);
       expect(mockExecuteGremlinQuery).toHaveBeenCalledWith(
         expect.any(Function),
-        'Failed to get relationship patterns',
+        'Failed to get edge patterns',
         expect.stringContaining('limit(500)')
       );
     });
@@ -100,7 +100,7 @@ describe('relationship-patterns', () => {
     it('should handle empty pattern results', async () => {
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed([]));
 
-      const result = await Effect.runPromise(generateRelationshipPatterns(mockTraversalSource));
+      const result = await Effect.runPromise(generateEdgePatterns(mockTraversalSource));
 
       expect(result).toEqual([]);
     });
@@ -115,7 +115,7 @@ describe('relationship-patterns', () => {
 
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed(mockRawPatterns));
 
-      const result = await Effect.runPromise(generateRelationshipPatterns(mockTraversalSource));
+      const result = await Effect.runPromise(generateEdgePatterns(mockTraversalSource));
 
       // Should filter out invalid patterns and process only valid ones
       expect(result).toHaveLength(2); // Only valid patterns processed
@@ -135,7 +135,7 @@ describe('relationship-patterns', () => {
       const error = Errors.query('Connection failed', 'pattern query', new Error('Network error'));
       mockExecuteGremlinQuery.mockReturnValue(Effect.fail(error));
 
-      const result = await Effect.runPromiseExit(generateRelationshipPatterns(mockTraversalSource));
+      const result = await Effect.runPromiseExit(generateEdgePatterns(mockTraversalSource));
 
       expect(result._tag).toBe('Failure');
     });
@@ -151,7 +151,7 @@ describe('relationship-patterns', () => {
 
       mockExecuteGremlinQuery.mockReturnValue(Effect.succeed(mockRawPatterns));
 
-      const result = await Effect.runPromise(generateRelationshipPatterns(mockTraversalSource));
+      const result = await Effect.runPromise(generateEdgePatterns(mockTraversalSource));
 
       expect(result).toHaveLength(5);
 
@@ -173,7 +173,7 @@ describe('relationship-patterns', () => {
 
   describe('analyzePatternStatistics', () => {
     it('should analyze basic pattern statistics', () => {
-      const patterns: RelationshipPattern[] = [
+      const patterns: EdgePattern[] = [
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
         { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
         { left_vertex: 'company', right_vertex: 'project', relation: 'sponsors' },
@@ -190,7 +190,7 @@ describe('relationship-patterns', () => {
     });
 
     it('should handle empty patterns array', () => {
-      const patterns: RelationshipPattern[] = [];
+      const patterns: EdgePattern[] = [];
 
       const stats = analyzePatternStatistics(patterns);
 
@@ -203,7 +203,7 @@ describe('relationship-patterns', () => {
     });
 
     it('should count connection frequencies correctly', () => {
-      const patterns: RelationshipPattern[] = [
+      const patterns: EdgePattern[] = [
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
         { left_vertex: 'person', right_vertex: 'company', relation: 'contractsWith' },
         { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
@@ -218,7 +218,7 @@ describe('relationship-patterns', () => {
     });
 
     it('should handle duplicate patterns correctly', () => {
-      const patterns: RelationshipPattern[] = [
+      const patterns: EdgePattern[] = [
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' }, // Duplicate
         { left_vertex: 'person', right_vertex: 'company', relation: 'contractsWith' },
@@ -233,7 +233,7 @@ describe('relationship-patterns', () => {
     });
 
     it('should calculate averages correctly for complex patterns', () => {
-      const patterns: RelationshipPattern[] = [
+      const patterns: EdgePattern[] = [
         { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
         { left_vertex: 'person', right_vertex: 'project', relation: 'owns' },
         { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
@@ -251,7 +251,7 @@ describe('relationship-patterns', () => {
     });
 
     it('should sort vertex and edge types alphabetically', () => {
-      const patterns: RelationshipPattern[] = [
+      const patterns: EdgePattern[] = [
         { left_vertex: 'zebra', right_vertex: 'apple', relation: 'eats' },
         { left_vertex: 'banana', right_vertex: 'cherry', relation: 'grows' },
         { left_vertex: 'apple', right_vertex: 'banana', relation: 'becomes' },

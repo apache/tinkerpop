@@ -42,10 +42,10 @@ Talk to your graph database naturally:
 Your AI assistant gets access to these powerful tools:
 
 | Tool                        | Purpose          | What It Does                                                 |
-| --------------------------- | ---------------- |--------------------------------------------------------------|
+|-----------------------------| ---------------- |--------------------------------------------------------------|
 | 🔍 **get_graph_status**     | Health Check     | Verify database connectivity and server status               |
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
-| ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
+| ⚡ **run_gremlin_query**     | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
 | 📥 **import_graph_data**    | Data Import      | Load data from GraphSON, CSV, or JSON with batch processing  |
 | 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats          |

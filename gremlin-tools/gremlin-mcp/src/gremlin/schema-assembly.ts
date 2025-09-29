@@ -30,8 +30,8 @@ import {
   GraphSchemaSchema,
   type GraphSchema,
   type Vertex,
-  type Relationship,
-  type RelationshipPattern,
+  type Edge,
+  type EdgePattern,
 } from './models/index.js';
 import { Errors, type GremlinQueryError } from '../errors.js';
 import type { SchemaConfig } from './types.js';
@@ -43,7 +43,7 @@ export interface SchemaMetadata {
   generated_at: string;
   generation_time_ms: number;
   vertex_count: number;
-  relationship_count: number;
+  edge_count: number;
   pattern_count: number;
   optimization_settings: {
     sample_values_included: boolean;
@@ -59,34 +59,34 @@ export interface SchemaMetadata {
  * Assembles and validates the final graph schema from analyzed components.
  *
  * @param vertices - Analyzed vertex types
- * @param relationships - Analyzed edge relationships
- * @param patterns - Relationship patterns
+ * @param edges - Analyzed edges
+ * @param patterns - Edge patterns
  * @param config - Schema generation configuration
  * @param startTime - Generation start timestamp for performance metrics
  * @returns Effect with validated graph schema
  */
 export const assembleGraphSchema = (
   vertices: Vertex[],
-  relationships: Relationship[],
-  patterns: RelationshipPattern[],
+  edges: Edge[],
+  patterns: EdgePattern[],
   config: SchemaConfig,
   startTime: number
 ): Effect.Effect<GraphSchema, GremlinQueryError> =>
   Effect.gen(function* () {
     // Create metadata
-    const metadata = createSchemaMetadata(vertices, relationships, patterns, config, startTime);
+    const metadata = createSchemaMetadata(vertices, edges, patterns, config, startTime);
 
     // Assemble schema data
     const schemaData = {
       vertices,
-      relationships,
-      relationship_patterns: patterns,
+      edges,
+      edge_patterns: patterns,
       metadata,
     };
 
     yield* Effect.logDebug('Schema assembly completed', {
       vertexCount: vertices.length,
-      relationshipCount: relationships.length,
+      edgeCount: edges.length,
       patternCount: patterns.length,
       generationTimeMs: metadata.generation_time_ms,
     });
@@ -107,15 +107,15 @@ export const assembleGraphSchema = (
  */
 const createSchemaMetadata = (
   vertices: Vertex[],
-  relationships: Relationship[],
-  patterns: RelationshipPattern[],
+  edges: Edge[],
+  patterns: EdgePattern[],
   config: SchemaConfig,
   startTime: number
 ): SchemaMetadata => ({
   generated_at: new Date().toISOString(),
   generation_time_ms: Date.now() - startTime,
   vertex_count: vertices.length,
-  relationship_count: relationships.length,
+  edge_count: edges.length,
   pattern_count: patterns.length,
   optimization_settings: {
     sample_values_included: config.includeSampleValues,
@@ -200,51 +200,51 @@ export const validateVertices = (vertices: Vertex[]): Effect.Effect<void, Gremli
   });
 
 /**
- * Validates relationship data consistency and completeness.
+ * Validates edge data consistency and completeness.
  *
- * @param relationships - Array of relationships to validate
+ * @param edges - Array of edges to validate
  * @returns Effect with validation result
  */
-export const validateRelationships = (
-  relationships: Relationship[]
+export const validateEdges = (
+  edges: Edge[]
 ): Effect.Effect<void, GremlinQueryError> =>
   Effect.gen(function* () {
     const issues: string[] = [];
 
-    relationships.forEach((rel, index) => {
-      if (!rel.type || typeof rel.type !== 'string') {
-        issues.push(`Relationship ${index}: Invalid or missing type`);
+    edges.forEach((edge, index) => {
+      if (!edge.type || typeof edge.type !== 'string') {
+        issues.push(`Edge ${index}: Invalid or missing type`);
       }
 
-      if (!Array.isArray(rel.properties)) {
-        issues.push(`Relationship ${index}: Properties must be an array`);
+      if (!Array.isArray(edge.properties)) {
+        issues.push(`Edge ${index}: Properties must be an array`);
       }
 
-      rel.properties?.forEach((prop, propIndex) => {
+      edge.properties?.forEach((prop, propIndex) => {
         if (!prop.name || typeof prop.name !== 'string') {
-          issues.push(`Relationship ${index}, Property ${propIndex}: Invalid or missing name`);
+          issues.push(`Edge ${index}, Property ${propIndex}: Invalid or missing name`);
         }
         if (!Array.isArray(prop.type)) {
-          issues.push(`Relationship ${index}, Property ${propIndex}: Type must be an array`);
+          issues.push(`Edge ${index}, Property ${propIndex}: Type must be an array`);
         }
       });
     });
 
     if (issues.length > 0) {
       return yield* Effect.fail(
-        Errors.query('Relationship validation failed', 'relationship-validation', { issues })
+        Errors.query('Edge validation failed', 'edge-validation', { issues })
       );
     }
   });
 
 /**
- * Validates relationship patterns for consistency.
+ * Validates edge patterns for consistency.
  *
- * @param patterns - Array of relationship patterns to validate
+ * @param patterns - Array of edge patterns to validate
  * @returns Effect with validation result
  */
-export const validateRelationshipPatterns = (
-  patterns: RelationshipPattern[]
+export const validateEdgePatterns = (
+  patterns: EdgePattern[]
 ): Effect.Effect<void, GremlinQueryError> =>
   Effect.gen(function* () {
     const issues: string[] = [];
@@ -263,7 +263,7 @@ export const validateRelationshipPatterns = (
 
     if (issues.length > 0) {
       return yield* Effect.fail(
-        Errors.query('Relationship pattern validation failed', 'pattern-validation', { issues })
+        Errors.query('Edge pattern validation failed', 'pattern-validation', { issues })
       );
     }
   });
@@ -278,13 +278,13 @@ export const validateRelationshipPatterns = (
  */
 export const validateAllComponents = (
   vertices: Vertex[],
-  relationships: Relationship[],
-  patterns: RelationshipPattern[]
+  edges: Edge[],
+  patterns: EdgePattern[]
 ): Effect.Effect<void, GremlinQueryError> =>
   Effect.gen(function* () {
     yield* validateVertices(vertices);
-    yield* validateRelationships(relationships);
-    yield* validateRelationshipPatterns(patterns);
+    yield* validateEdges(edges);
+    yield* validateEdgePatterns(patterns);
 
     yield* Effect.logInfo('All schema components validated successfully');
   });

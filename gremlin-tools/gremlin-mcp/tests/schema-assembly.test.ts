@@ -30,11 +30,11 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import {
   assembleGraphSchema,
   validateVertices,
-  validateRelationships,
-  validateRelationshipPatterns,
+  validateEdges,
+  validateEdgePatterns,
   validateAllComponents,
 } from '../src/gremlin/schema-assembly.js';
-import type { Vertex, Relationship, RelationshipPattern } from '../src/gremlin/models.js';
+import type { Vertex, Edge, EdgePattern } from '../src/gremlin/models.js';
 import type { SchemaConfig } from '../src/gremlin/types.js';
 
 describe('schema-assembly', () => {
@@ -65,7 +65,7 @@ describe('schema-assembly', () => {
     },
   ];
 
-  const sampleRelationships: Relationship[] = [
+  const sampleEdges: Edge[] = [
     {
       type: 'worksAt',
       properties: [
@@ -79,7 +79,7 @@ describe('schema-assembly', () => {
     },
   ];
 
-  const samplePatterns: RelationshipPattern[] = [
+  const samplePatterns: EdgePattern[] = [
     { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
     { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
   ];
@@ -93,18 +93,18 @@ describe('schema-assembly', () => {
       const startTime = Date.now();
 
       const result = await Effect.runPromise(
-        assembleGraphSchema(sampleVertices, sampleRelationships, samplePatterns, mockConfig, startTime)
+        assembleGraphSchema(sampleVertices, sampleEdges, samplePatterns, mockConfig, startTime)
       );
 
       // Verify schema structure
       expect(result.vertices).toEqual(sampleVertices);
-      expect(result.relationships).toEqual(sampleRelationships);
-      expect(result.relationship_patterns).toEqual(samplePatterns);
+      expect(result.edges).toEqual(sampleEdges);
+      expect(result.edge_patterns).toEqual(samplePatterns);
 
       // Verify metadata
       expect(result.metadata).toBeDefined();
       expect(result.metadata!.vertex_count).toBe(2);
-      expect(result.metadata!.relationship_count).toBe(2);
+      expect(result.metadata!.edge_count).toBe(2);
       expect(result.metadata!.pattern_count).toBe(2);
       expect(result.metadata!.generated_at).toBeDefined();
       expect(result.metadata!.generation_time_ms).toBeGreaterThanOrEqual(0);
@@ -128,10 +128,10 @@ describe('schema-assembly', () => {
       );
 
       expect(result.vertices).toEqual([]);
-      expect(result.relationships).toEqual([]);
-      expect(result.relationship_patterns).toEqual([]);
+      expect(result.edges).toEqual([]);
+      expect(result.edge_patterns).toEqual([]);
       expect(result.metadata!.vertex_count).toBe(0);
-      expect(result.metadata!.relationship_count).toBe(0);
+      expect(result.metadata!.edge_count).toBe(0);
       expect(result.metadata!.pattern_count).toBe(0);
     });
 
@@ -139,7 +139,7 @@ describe('schema-assembly', () => {
       const startTime = Date.now() - 1000; // 1 second ago
 
       const result = await Effect.runPromise(
-        assembleGraphSchema(sampleVertices, sampleRelationships, samplePatterns, mockConfig, startTime)
+        assembleGraphSchema(sampleVertices, sampleEdges, samplePatterns, mockConfig, startTime)
       );
 
       expect(result.metadata!.generation_time_ms).toBeGreaterThanOrEqual(1000);
@@ -157,7 +157,7 @@ describe('schema-assembly', () => {
       const result = await Effect.runPromiseExit(
         assembleGraphSchema(
           invalidVertices,
-          sampleRelationships,
+          sampleEdges,
           samplePatterns,
           mockConfig,
           Date.now()
@@ -234,28 +234,28 @@ describe('schema-assembly', () => {
     });
   });
 
-  describe('validateRelationships', () => {
+  describe('validateEdges', () => {
     it('should validate correct relationships successfully', async () => {
-      const result = await Effect.runPromise(validateRelationships(sampleRelationships));
+      const result = await Effect.runPromise(validateEdges(sampleEdges));
 
       expect(result).toBeUndefined(); // Void return on success
     });
 
     it('should detect missing labels', async () => {
-      const invalidRelationships: Relationship[] = [
+      const invalidEdges: Edge[] = [
         {
           type: '', // Invalid empty type
           properties: [],
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateRelationships(invalidRelationships));
+      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
 
       expect(result._tag).toBe('Failure');
     });
 
     it('should detect invalid properties', async () => {
-      const invalidRelationships: Relationship[] = [
+      const invalidEdges: Edge[] = [
         {
           type: 'knows',
           properties: [
@@ -264,34 +264,34 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateRelationships(invalidRelationships));
+      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
 
       expect(result._tag).toBe('Failure');
     });
 
     it('should handle missing properties array', async () => {
-      const invalidRelationships: Relationship[] = [
+      const invalidEdges: Edge[] = [
         {
           type: 'knows',
           properties: undefined as any, // Missing properties
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateRelationships(invalidRelationships));
+      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
 
       expect(result._tag).toBe('Failure');
     });
   });
 
-  describe('validateRelationshipPatterns', () => {
+  describe('validateEdgePatterns', () => {
     it('should validate correct patterns successfully', async () => {
-      const result = await Effect.runPromise(validateRelationshipPatterns(samplePatterns));
+      const result = await Effect.runPromise(validateEdgePatterns(samplePatterns));
 
       expect(result).toBeUndefined(); // Void return on success
     });
 
     it('should detect missing pattern fields', async () => {
-      const invalidPatterns: RelationshipPattern[] = [
+      const invalidPatterns: EdgePattern[] = [
         {
           left_vertex: '', // Empty left vertex
           right_vertex: 'company',
@@ -309,13 +309,13 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateRelationshipPatterns(invalidPatterns));
+      const result = await Effect.runPromiseExit(validateEdgePatterns(invalidPatterns));
 
       expect(result._tag).toBe('Failure');
     });
 
     it('should detect invalid pattern field types', async () => {
-      const invalidPatterns: RelationshipPattern[] = [
+      const invalidPatterns: EdgePattern[] = [
         {
           left_vertex: null as any, // Invalid type
           right_vertex: 'company',
@@ -323,7 +323,7 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateRelationshipPatterns(invalidPatterns));
+      const result = await Effect.runPromiseExit(validateEdgePatterns(invalidPatterns));
 
       expect(result._tag).toBe('Failure');
     });
@@ -332,7 +332,7 @@ describe('schema-assembly', () => {
   describe('validateAllComponents', () => {
     it('should validate all components successfully', async () => {
       const result = await Effect.runPromise(
-        validateAllComponents(sampleVertices, sampleRelationships, samplePatterns)
+        validateAllComponents(sampleVertices, sampleEdges, samplePatterns)
       );
 
       expect(result).toBeUndefined(); // Void return on success
@@ -347,15 +347,15 @@ describe('schema-assembly', () => {
       ];
 
       const result = await Effect.runPromiseExit(
-        validateAllComponents(invalidVertices, sampleRelationships, samplePatterns)
+        validateAllComponents(invalidVertices, sampleEdges, samplePatterns)
       );
 
       expect(result._tag).toBe('Failure');
     });
 
     it('should validate each component type independently', async () => {
-      // Test with valid vertices but invalid relationships
-      const invalidRelationships: Relationship[] = [
+      // Test with valid vertices but invalid edges
+      const invalidEdges: Edge[] = [
         {
           type: '', // Invalid
           properties: [],
@@ -363,7 +363,7 @@ describe('schema-assembly', () => {
       ];
 
       const result = await Effect.runPromiseExit(
-        validateAllComponents(sampleVertices, invalidRelationships, samplePatterns)
+        validateAllComponents(sampleVertices, invalidEdges, samplePatterns)
       );
 
       expect(result._tag).toBe('Failure');
@@ -375,7 +375,7 @@ describe('schema-assembly', () => {
       const startTime = Date.now() - 500;
 
       const result = await Effect.runPromise(
-        assembleGraphSchema(sampleVertices, sampleRelationships, samplePatterns, mockConfig, startTime)
+        assembleGraphSchema(sampleVertices, sampleEdges, samplePatterns, mockConfig, startTime)
       );
 
       const metadata = result.metadata!;
@@ -384,7 +384,7 @@ describe('schema-assembly', () => {
       expect(metadata.generated_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO format
       expect(metadata.generation_time_ms).toBeGreaterThanOrEqual(500);
       expect(metadata.vertex_count).toBe(sampleVertices.length);
-      expect(metadata.relationship_count).toBe(sampleRelationships.length);
+      expect(metadata.edge_count).toBe(sampleEdges.length);
       expect(metadata.pattern_count).toBe(samplePatterns.length);
 
       // Check optimization settings
@@ -410,7 +410,7 @@ describe('schema-assembly', () => {
       const result = await Effect.runPromise(
         assembleGraphSchema(
           sampleVertices,
-          sampleRelationships,
+          sampleEdges,
           samplePatterns,
           minimalConfig,
           Date.now()

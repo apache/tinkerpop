@@ -25,7 +25,7 @@
 import {
   PropertySchema,
   VertexSchema,
-  RelationshipSchema,
+  EdgeSchema,
   GraphSchemaSchema,
   GremlinConfigSchema,
   GremlinQueryResultSchema,
@@ -73,20 +73,20 @@ describe('Models and Schemas', () => {
     });
   });
 
-  describe('RelationshipSchema', () => {
-    it('should validate a valid relationship', () => {
-      const validRelationship = {
+  describe('EdgeSchema', () => {
+    it('should validate a valid edge', () => {
+      const validEdge = {
         type: 'knows',
         properties: [],
         count: 50,
       };
 
-      expect(() => RelationshipSchema.parse(validRelationship)).not.toThrow();
+      expect(() => EdgeSchema.parse(validEdge)).not.toThrow();
     });
   });
 
   describe('GraphSchemaSchema', () => {
-    it('should validate a complete graph schema with relationship_patterns', () => {
+    it('should validate a complete graph schema with edge_patterns', () => {
       const validSchema = {
         vertices: [
           {
@@ -100,13 +100,13 @@ describe('Models and Schemas', () => {
             ],
           },
         ],
-        relationships: [
+        edges: [
           {
             type: 'knows',
             properties: [],
           },
         ],
-        relationship_patterns: [
+        edge_patterns: [
           {
             left_vertex: 'person',
             right_vertex: 'person',
@@ -115,7 +115,7 @@ describe('Models and Schemas', () => {
         ],
         metadata: {
           vertex_count: 1,
-          relationship_count: 1,
+          edge_count: 1,
           pattern_count: 1,
           schema_size_bytes: 1024,
           optimization_settings: {
@@ -130,9 +130,9 @@ describe('Models and Schemas', () => {
 
       expect(() => GraphSchemaSchema.parse(validSchema)).not.toThrow();
 
-      // Verify relationship_patterns is present and adjacency_list is not
+      // Verify edge_patterns is present and adjacency_list is not
       const parsed = GraphSchemaSchema.parse(validSchema);
-      expect('relationship_patterns' in parsed).toBe(true);
+      expect('edge_patterns' in parsed).toBe(true);
       expect('adjacency_list' in parsed).toBe(false);
     });
   });
@@ -178,7 +178,7 @@ describe('Models and Schemas', () => {
     it('should validate schema metadata', () => {
       const validMetadata = {
         vertex_count: 10,
-        relationship_count: 5,
+        edge_count: 5,
         pattern_count: 8,
         schema_size_bytes: 2048,
         optimization_settings: {

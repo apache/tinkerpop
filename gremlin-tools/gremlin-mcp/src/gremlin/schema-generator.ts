@@ -27,7 +27,7 @@
  */
 
 import { Effect, Duration } from 'effect';
-import { type GraphSchema, type Vertex, type Relationship } from './models/index.js';
+import { type GraphSchema, type Vertex, type Edge } from './models/index.js';
 import { Errors, type GremlinConnectionError, type GremlinQueryError } from '../errors.js';
 import type { ConnectionState, SchemaConfig } from './types.js';
 import {
@@ -39,7 +39,7 @@ import {
   getEdgePropertyKeys,
 } from './query-utils.js';
 import { analyzeElementProperties, withElementCounts } from './property-analyzer.js';
-import { generateRelationshipPatterns } from './relationship-patterns.js';
+import { generateEdgePatterns } from './edge-patterns.js';
 import { assembleGraphSchema } from './schema-assembly.js';
 import type { process } from 'gremlin';
 
@@ -88,26 +88,26 @@ const executeSchemaGeneration = (
 
     // Step 3: Analyze properties and patterns in parallel
     yield* Effect.logInfo('Analyzing properties and relationship patterns');
-    const [rawVertices, rawRelationships, patterns] = yield* Effect.all(
+    const [rawVertices, rawEdges, patterns] = yield* Effect.all(
       [
         analyzeElementProperties(g, vertexLabels, getVertexPropertyKeys, config, true),
         analyzeElementProperties(g, edgeLabels, getEdgePropertyKeys, config, false),
-        generateRelationshipPatterns(g),
+        generateEdgePatterns(g),
       ],
       { concurrency: 3 }
     );
 
     // Step 4: Add count information
     const vertices = addElementCounts<Vertex>(rawVertices, vertexCounts, config, 'labels');
-    const relationships = addElementCounts<Relationship>(
-      rawRelationships,
+    const edges = addElementCounts<Edge>(
+      rawEdges,
       edgeCounts,
       config,
       'type'
     );
 
     // Step 5: Assemble final schema
-    return yield* assembleGraphSchema(vertices, relationships, patterns, config, startTime);
+    return yield* assembleGraphSchema(vertices, edges, patterns, config, startTime);
   });
 
 /**
@@ -127,7 +127,7 @@ const getElementCounts = (
 /**
  * Adds count information to analysis results.
  */
-const addElementCounts = <T extends Vertex | Relationship>(
+const addElementCounts = <T extends Vertex | Edge>(
   rawElements: unknown[],
   counts: SchemaCountData,
   config: SchemaConfig,
