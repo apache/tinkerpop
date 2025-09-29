@@ -498,3 +498,20 @@ Feature: Step - addE()
     When iterated to list
     Then the result should have a count of 1
     And the graph should return 1 for count of "g.E().has(\"knows\",\"weight\", 1)"
+
+
+  Scenario: g_addEXedgeX_fromXV_hasXname_markoXX_toXV_hasXname_vadasXX_propertyXweight_0_5X_withXkey_valueX_valuesXweight_keyX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").property("age", 29).
+        addV("person").property("name", "vadas").property("age", 27)
+      """
+    And the traversal of
+      """
+      g.addE("edge").from(V().has("name","marko")).to(V().has("name","vadas")).property("weight", 0.5).with("key", "value").values("weight", "key")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0.5].d |

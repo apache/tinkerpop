@@ -21,14 +21,18 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -137,5 +141,14 @@ public class AddPropertyStepTest extends GValueStepTest {
     public void getGValuesNoneShouldReturnEmptyCollection() {
         final GraphTraversal.Admin<Object, Object> traversal = __.property(PNAME, PVALUE, META_NAME, META_VALUE).asAdmin();
         assertTrue(((AddPropertyStepPlaceholder) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    @Test
+    public void configuringShouldNotSetProperties() {
+        AddPropertyStep<?> step = new AddPropertyStep<>(new DefaultGraphTraversal(), VertexProperty.Cardinality.single, "prop", "value");
+        step.configure("key", "option");
+        step.addProperty("meta", "meta-value");
+        assertEquals(Map.of("meta", List.of("meta-value")), step.getProperties());
+        assertEquals(List.of("option"), step.getParameters().get("key", () -> null));
     }
 }

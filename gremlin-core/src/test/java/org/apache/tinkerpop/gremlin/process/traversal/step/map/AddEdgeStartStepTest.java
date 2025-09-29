@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -218,6 +219,15 @@ public class AddEdgeStartStepTest extends GValueStepTest {
                 .property("rating", "great")
                 .asAdmin();
         assertTrue(((AddEdgeStartStepPlaceholder) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    @Test
+    public void configuringShouldNotSetProperties() {
+        AddEdgeStartStep step = new AddEdgeStartStep(new DefaultGraphTraversal(), "Edge");
+        step.configure("key", "option");
+        step.addProperty("prop", "value");
+        assertEquals(Map.of("prop", List.of("value")), step.getProperties());
+        assertEquals(List.of("option"), step.getParameters().get("key", () -> null));
     }
 
     private GraphTraversal.Admin<Edge, Edge> getAddEdgeGValueTraversal() {

@@ -24,7 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 /**
  * Identifies a {@link Step} as one that can accept configurations via the {@link GraphTraversal#with(String, Object)}
- * step modulator. The nature of the configuration allowed is specific to the implementation.
+ * step modulator. The nature of the configuration allowed is specific to the implementation. This interface should not
+ * be used to store step data which is unrelated to the {@link GraphTraversal#with(String, Object)} step modulator.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

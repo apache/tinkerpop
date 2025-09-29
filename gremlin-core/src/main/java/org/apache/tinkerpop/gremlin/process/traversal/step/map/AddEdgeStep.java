@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -44,72 +43,76 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
-        implements AddEdgeStepContract<S>, Configuring {
+public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeStepContract<S> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
 
-    private Parameters parameters = new Parameters();
+    private Parameters internalParameters = new Parameters();
+    private Parameters withConfiguration = new Parameters();
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabel);
+        this.internalParameters.set(this, T.label, edgeLabel);
     }
 
     public AddEdgeStep(final Traversal.Admin traversal, final Traversal.Admin<S,String> edgeLabelTraversal) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabelTraversal);
+        this.internalParameters.set(this, T.label, edgeLabelTraversal);
     }
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.parameters.getTraversals();
+        return this.internalParameters.getTraversals();
     }
 
     @Override
     public Parameters getParameters() {
-        return this.parameters;
+        return this.withConfiguration;
     }
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.parameters.getReferencedLabels();
+        return this.internalParameters.getReferencedLabels();
     }
 
     @Override
     public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
+        this.withConfiguration.set(this, keyValues);
+    }
+
+    private void configureInternalParams(final Object... keyValues) {
+        this.internalParameters.set(this, keyValues);
     }
 
     @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
-        this.parameters.set(this, TO, toObject);
+        this.internalParameters.set(this, TO, toObject);
     }
 
     @Override
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        this.parameters.set(this, FROM, fromObject);
+        this.internalParameters.set(this, FROM, fromObject);
     }
 
     @Override
     public Object getElementId() {
-        List<Object> ids = this.parameters.get(T.id, null);
+        List<Object> ids = this.internalParameters.get(T.id, null);
         return ids.isEmpty() ? null : ids.get(0);
     }
 
     @Override
     public void setElementId(Object elementId) {
-        configure(T.id, elementId);
+        configureInternalParams(T.id, elementId);
     }
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        final String edgeLabel = this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
-        Vertex toVertex = getAdjacentVertex(this.parameters, TO, traverser, edgeLabel);
-        Vertex fromVertex = getAdjacentVertex(this.parameters, FROM, traverser, edgeLabel);
+        Vertex toVertex = getAdjacentVertex(this.internalParameters, TO, traverser, edgeLabel);
+        Vertex fromVertex = getAdjacentVertex(this.internalParameters, FROM, traverser, edgeLabel);
 
         try {
             if (toVertex instanceof Attachable)
@@ -131,8 +134,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
                     "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
         }
 
-
-        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.internalParameters.getKeyValues(traverser, TO, FROM, T.label));
         EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
         return edge;
     }
@@ -150,30 +152,31 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.parameters.hashCode();
+        return super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.parameters.toString());
+        return StringFactory.stepString(this, this.internalParameters.toString());
     }
 
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        this.parameters.getTraversals().forEach(this::integrateChild);
+        this.internalParameters.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
     public AddEdgeStep<S> clone() {
         final AddEdgeStep<S> clone = (AddEdgeStep<S>) super.clone();
-        clone.parameters = this.parameters.clone();
+        clone.internalParameters = this.internalParameters.clone();
+        clone.withConfiguration = this.withConfiguration.clone();
         return clone;
     }
 
     @Override
     public Object getLabel() {
-        Object label = parameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        Object label = internalParameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
         if (label instanceof ConstantTraversal) {
             return ((ConstantTraversal<?, ?>) label).next();
         }
@@ -182,18 +185,18 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public void addProperty(Object key, Object value) {
-        configure(key, value);
+        configureInternalParams(key, value);
     }
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(parameters.getRaw(T.label, TO, FROM));
+        return Collections.unmodifiableMap(internalParameters.getRaw(T.id, T.label, TO, FROM));
     }
 
     @Override
     public boolean removeProperty(Object k) {
-        if (parameters.contains(k)) {
-            parameters.remove(k);
+        if (internalParameters.contains(k)) {
+            internalParameters.remove(k);
             return true;
         }
         return false;
@@ -201,8 +204,8 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public boolean removeElementId() {
-        if (this.parameters.contains(T.id)) {
-            this.parameters.remove(T.id);
+        if (this.internalParameters.contains(T.id)) {
+            this.internalParameters.remove(T.id);
             return true;
         }
         return false;
@@ -210,11 +213,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge>
 
     @Override
     public Object getFrom() {
-        return getAdjacentVertex(this.parameters, FROM);
+        return getAdjacentVertex(this.internalParameters, FROM);
     }
 
     @Override
     public Object getTo() {
-        return getAdjacentVertex(this.parameters, TO);
+        return getAdjacentVertex(this.internalParameters, TO);
     }
 }

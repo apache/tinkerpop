@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -62,6 +63,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
      * meta-properties of the property
      */
     private Map<Object, List<Object>> properties = new HashMap<>();
+
+    private Parameters withConfiguration = new Parameters();
 
     public AddPropertyStepPlaceholder(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);
@@ -124,7 +127,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality);
+        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality) ^
+                Objects.hashCode(properties) ^ Objects.hashCode(withConfiguration);
     }
 
     @Override
@@ -214,6 +218,12 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
             }
         }
 
+        for (Map.Entry<Object, List<Object>> entry : withConfiguration.getRaw().entrySet()) {
+            for (Object value : entry.getValue()) {
+                step.configure(entry.getKey(), value);
+            }
+        }
+
         TraversalHelper.copyLabels(this, step, false);
         return step;
     }
@@ -297,5 +307,15 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     @Override
     public CallbackRegistry<Event.ElementPropertyChangedEvent> getMutatingCallbackRegistry() {
         throw new IllegalStateException("Cannot get mutating CallbackRegistry on GValue placeholder step");
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.withConfiguration.set(this, keyValues);
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return withConfiguration;
     }
 }

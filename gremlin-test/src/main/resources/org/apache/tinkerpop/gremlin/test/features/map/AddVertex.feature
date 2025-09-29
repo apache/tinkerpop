@@ -681,3 +681,26 @@ Feature: Step - addV()
     Then the result should be unordered
       | result |
       | m[{"a1": ["software", "software", "software"], "a2": ["software", "software", "software"]}] |
+
+  Scenario: g_addV_propertyXname_markoX_withXkey_valueX_valuesXname_keyX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV().property("name", "marko").with("key", "value").values("name", "key")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+
+  @MetaProperties
+  Scenario: g_addV_propertyXname_marko_since_2010X_withXkey_valueX_propertiesXnameX_valuesXsince_keyX
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV().property("name", "marko", "since", 2010).with("key", "value").properties("name").values("since", "key")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[2010].i |

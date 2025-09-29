@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import java.util.stream.Collectors;
@@ -235,9 +236,9 @@ public class AddVertexStepTest extends GValueStepTest {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
         final AddVertexStep step = new AddVertexStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
     }
 
     @Test
@@ -245,9 +246,9 @@ public class AddVertexStepTest extends GValueStepTest {
         final Traversal.Admin t = mock(Traversal.Admin.class);
         when(t.getTraverserSetSupplier()).thenReturn(TraverserSetSupplier.instance());
         final AddVertexStartStep starStep = new AddVertexStartStep(t, (Traversal<?, String>) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
         final AddVertexStep step = new AddVertexStep(t, (String) null);
-        assertEquals(Vertex.DEFAULT_LABEL, starStep.getParameters().getRaw().get(T.label).get(0));
+        assertEquals(Vertex.DEFAULT_LABEL, starStep.getLabel());
     }
 
     @Test
@@ -349,6 +350,15 @@ public class AddVertexStepTest extends GValueStepTest {
                 .property("age", 29)
                 .asAdmin();
         assertTrue(((AddVertexStepPlaceholder) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    @Test
+    public void configuringShouldNotSetProperties() {
+        AddVertexStep<?> step = new AddVertexStep<>(new DefaultGraphTraversal(), "Vertex");
+        step.configure("key", "option");
+        step.addProperty("prop", "value");
+        assertEquals(Map.of("prop", List.of("value")), step.getProperties());
+        assertEquals(List.of("option"), step.getParameters().get("key", () -> null));
     }
 
     private GraphTraversal.Admin<Object, Vertex> getAddPersonGValueTraversal() {

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
@@ -311,6 +312,15 @@ public class AddEdgeStepTest extends GValueStepTest {
                 .property("rating", "great")
                 .asAdmin();
         assertTrue(((AddEdgeStepPlaceholder<?>) traversal.getSteps().get(0)).getGValues().isEmpty());
+    }
+
+    @Test
+    public void configuringShouldNotSetProperties() {
+        AddEdgeStep<?> step = new AddEdgeStep<>(new DefaultGraphTraversal(), "Edge");
+        step.configure("key", "option");
+        step.addProperty("prop", "value");
+        assertEquals(Map.of("prop", List.of("value")), step.getProperties());
+        assertEquals(List.of("option"), step.getParameters().get("key", () -> null));
     }
 
     private GraphTraversal.Admin<Object, Edge> getAddEdgeGValueTraversal() {
