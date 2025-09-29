@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategy;
@@ -46,42 +45,42 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
-        implements AddPropertyStepContract<S>, Configuring {
+public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements AddPropertyStepContract<S> {
 
-    private Parameters parameters = new Parameters();
+    private Parameters internalParameters = new Parameters();
+    private Parameters withConfiguration = new Parameters();
     private final VertexProperty.Cardinality cardinality;
     private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
 
     public AddPropertyStep(final Traversal.Admin traversal, final VertexProperty.Cardinality cardinality, final Object keyObject, final Object valueObject) {
         super(traversal);
-        this.parameters.set(this, T.key, keyObject, T.value, valueObject);
+        this.internalParameters.set(this, T.key, keyObject, T.value, valueObject);
         this.cardinality = cardinality;
     }
 
     @Override
     public Parameters getParameters() {
-        return this.parameters;
+        return this.withConfiguration;
     }
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.parameters.getReferencedLabels();
+        return this.internalParameters.getReferencedLabels();
     }
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.parameters.getTraversals();
+        return this.internalParameters.getTraversals();
     }
 
     @Override
     public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
+        this.withConfiguration.set(this, keyValues);
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final Object k = this.parameters.get(traverser, T.key, () -> {
+        final Object k = this.internalParameters.get(traverser, T.key, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided key: " + this);
         }).get(0);
 
@@ -90,10 +89,10 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
             throw new IllegalStateException(String.format("T.%s is immutable on existing elements", ((T) k).name()));
 
         final String key = (String) k;
-        final Object value = this.parameters.get(traverser, T.value, () -> {
+        final Object value = this.internalParameters.get(traverser, T.value, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
         }).get(0);
-        final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
+        final Object[] vertexPropertyKeyValues = this.internalParameters.getKeyValues(traverser, T.key, T.value);
 
         final Element element = traverser.get();
 
@@ -184,14 +183,15 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     public int hashCode() {
-        final int hash = super.hashCode() ^ this.parameters.hashCode();
+        final int hash = super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
         return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
     }
 
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        this.parameters.getTraversals().forEach(this::integrateChild);
+        this.internalParameters.getTraversals().forEach(this::integrateChild);
+        this.withConfiguration.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -201,13 +201,13 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     public Object getKey() {
-        List<Object> keyParams = parameters.get(T.key, null);
+        List<Object> keyParams = internalParameters.get(T.key, null);
         return keyParams.isEmpty() ? null : keyParams.get(0);
     }
 
     @Override
     public Object getValue() {
-        List<Object> values = parameters.get(T.value, null);
+        List<Object> values = internalParameters.get(T.value, null);
         if (values.isEmpty()) {
             return null;
         }
@@ -216,30 +216,31 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S>
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.parameters);
+        return StringFactory.stepString(this, this.internalParameters);
     }
 
     @Override
     public AddPropertyStep<S> clone() {
         final AddPropertyStep<S> clone = (AddPropertyStep<S>) super.clone();
-        clone.parameters = this.parameters.clone();
+        clone.internalParameters = this.internalParameters.clone();
+        clone.withConfiguration = this.withConfiguration.clone();
         return clone;
     }
 
     @Override
     public void addProperty(Object key, Object value) {
-        configure(key, value);
+        internalParameters.set(this, key, value);
     }
 
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return parameters.getRaw(T.key, T.value);
+        return internalParameters.getRaw(T.key, T.value);
     }
 
     @Override
     public boolean removeProperty(Object k) {
-        if (parameters.contains(k)) {
-            parameters.remove(k);
+        if (internalParameters.contains(k)) {
+            internalParameters.remove(k);
             return true;
         }
         return false;

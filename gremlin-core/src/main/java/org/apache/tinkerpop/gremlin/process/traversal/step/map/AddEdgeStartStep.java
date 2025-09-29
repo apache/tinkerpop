@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -48,65 +47,69 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
-        implements AddEdgeStepContract<Edge>, Configuring {
+public class AddEdgeStartStep extends AbstractStep<Edge, Edge> implements AddEdgeStepContract<Edge> {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
 
     private boolean first = true;
-    private Parameters parameters = new Parameters();
+    private Parameters internalParameters = new Parameters();
+    private Parameters withConfiguration = new Parameters();
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStartStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabel);
+        this.internalParameters.set(this, T.label, edgeLabel);
     }
 
     public AddEdgeStartStep(final Traversal.Admin traversal, final Traversal<?, String> edgeLabelTraversal) {
         super(traversal);
-        this.parameters.set(this, T.label, edgeLabelTraversal);
+        this.internalParameters.set(this, T.label, edgeLabelTraversal);
     }
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.parameters.getTraversals();
+        return this.internalParameters.getTraversals();
     }
 
     @Override
     public Parameters getParameters() {
-        return this.parameters;
+        return this.withConfiguration;
     }
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.parameters.getReferencedLabels();
+        return this.internalParameters.getReferencedLabels();
     }
 
     @Override
     public void configure(final Object... keyValues) {
-        this.parameters.set(this, keyValues);
+        this.withConfiguration.set(this, keyValues);
+    }
+
+    private void configureInternalParams(final Object... keyValues) {
+        this.internalParameters.set(this, keyValues);
     }
 
     @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
-        this.parameters.set(this, TO, toObject);
+        this.internalParameters.set(this, TO, toObject);
     }
 
     @Override
     public void addFrom(final Traversal.Admin<?, ?> fromObject) {
-        this.parameters.set(this, FROM, fromObject);
+        this.internalParameters.set(this, FROM, fromObject);
     }
 
     @Override
     public Object getElementId() {
-        List<Object> ids = this.parameters.get(T.id, null);
+        List<Object> ids = this.internalParameters.get(T.id, null);
         return ids.isEmpty() ? null : ids.get(0);
     }
 
     @Override
     public void setElementId(Object elementId) {
-        configure(T.id, elementId);
+        configureInternalParams(T.id, elementId);
     }
 
     @Override
@@ -118,10 +121,10 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
             // a dead traverser to trigger the traversal
             final Traverser.Admin traverser = generator.generate(1, (Step) this, 1);
 
-            final String edgeLabel = (String) this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+            final String edgeLabel = (String) this.internalParameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
             // FROM/TO must be set and must be vertices
-            Object theTo = this.parameters.get(traverser, TO, () -> null).get(0);
+            Object theTo = this.internalParameters.get(traverser, TO, () -> null).get(0);
             if (theTo != null && !(theTo instanceof Vertex)) {
                 theTo = new ReferenceVertex(theTo);
             }
@@ -130,7 +133,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
                 throw new IllegalStateException(String.format(
                         "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph, but null was specified instead", edgeLabel));
 
-            Object theFrom = this.parameters.get(traverser, FROM, () -> null).get(0);
+            Object theFrom = this.internalParameters.get(traverser, FROM, () -> null).get(0);
             if (theFrom != null && !(theFrom instanceof Vertex)) {
                 theFrom = new ReferenceVertex(theFrom);
             }
@@ -161,7 +164,7 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
                         "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
             }
 
-            final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+            final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.internalParameters.getKeyValues(traverser, TO, FROM, T.label));
             EventUtil.registerEdgeCreation(callbackRegistry, getTraversal(), edge);
             return generator.generate(edge, this, 1L);
         } else
@@ -178,30 +181,32 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.parameters.hashCode();
+        return super.hashCode() ^ this.internalParameters.hashCode() ^ this.withConfiguration.hashCode();
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.parameters.toString());
+        return StringFactory.stepString(this, this.internalParameters.toString());
     }
 
     @Override
     public void setTraversal(final Traversal.Admin<?, ?> parentTraversal) {
         super.setTraversal(parentTraversal);
-        this.parameters.getTraversals().forEach(this::integrateChild);
+        this.internalParameters.getTraversals().forEach(this::integrateChild);
+        this.withConfiguration.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
     public AddEdgeStartStep clone() {
         final AddEdgeStartStep clone = (AddEdgeStartStep) super.clone();
-        clone.parameters = this.parameters.clone();
+        clone.internalParameters = this.internalParameters.clone();
+        clone.withConfiguration = this.withConfiguration.clone();
         return clone;
     }
 
     @Override
     public Object getLabel() {
-        Object label = parameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
+        Object label = internalParameters.get(T.label, () -> Edge.DEFAULT_LABEL).get(0);
         if (label instanceof ConstantTraversal) {
             return ((ConstantTraversal<?, ?>) label).next();
         }
@@ -210,23 +215,23 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
     @Override
     public Object getFrom() {
-        return getAdjacentVertex(this.parameters, FROM);
+        return getAdjacentVertex(this.internalParameters, FROM);
     }
 
     @Override
     public Object getTo() {
-        return getAdjacentVertex(this.parameters, TO);
+        return getAdjacentVertex(this.internalParameters, TO);
     }
     
     @Override
     public Map<Object, List<Object>> getProperties() {
-        return Collections.unmodifiableMap(parameters.getRaw());
+        return Collections.unmodifiableMap(internalParameters.getRaw(T.id, T.label, TO, FROM));
     }
 
     @Override
     public boolean removeProperty(Object k) {
-        if (parameters.contains(k)) {
-            parameters.remove(k);
+        if (internalParameters.contains(k)) {
+            internalParameters.remove(k);
             return true;
         }
         return false;
@@ -234,8 +239,8 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
     @Override
     public boolean removeElementId() {
-        if (this.parameters.contains(T.id)) {
-            this.parameters.remove(T.id);
+        if (this.internalParameters.contains(T.id)) {
+            this.internalParameters.remove(T.id);
             return true;
         }
         return false;
@@ -243,6 +248,6 @@ public class AddEdgeStartStep extends AbstractStep<Edge, Edge>
 
     @Override
     public void addProperty(final Object key, final Object value) {
-        configure(key, value);
+        configureInternalParams(key, value);
     }
 }

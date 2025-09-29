@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -53,6 +54,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     protected Map<Object, List<Object>> properties = new HashMap<>();
     protected Traversal.Admin<S, Object> elementId;
     protected Set<String> scopeKeys = new HashSet<>();
+    protected Parameters withConfiguration = new Parameters();
 
     public AbstractAddElementStepPlaceholder(final Traversal.Admin traversal, final String label) {
         this(traversal, label == null ? null : new ConstantTraversal<>(label));
@@ -134,6 +136,7 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 hash ^= Objects.hashCode(entry.getValue());
             };
         }
+        hash ^= withConfiguration.hashCode();
         return hash;
     }
 
@@ -148,6 +151,11 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
                 step.setElementId(this.elementId.next());
             } else {
                 step.setElementId(this.elementId);
+            }
+        }
+        for (Map.Entry<Object, List<Object>> entry : withConfiguration.getRaw().entrySet()) {
+            for (Object value : entry.getValue()) {
+                step.configure(entry.getKey(), value);
             }
         }
         TraversalHelper.copyLabels(this, step, false);
@@ -364,7 +372,17 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
         }
 
         clone.scopeKeys = new HashSet<>(this.scopeKeys);
+        clone.withConfiguration = this.withConfiguration.clone();
         return clone;
     }
 
+    @Override
+    public Parameters getParameters() {
+        return this.withConfiguration;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.withConfiguration.set(this, keyValues);
+    }
 }

@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -208,6 +209,9 @@ public class Parameters implements Cloneable, Serializable {
         for (int ix = 0; ix < keyValues.length; ix = ix + 2) {
             if (!(keyValues[ix] instanceof String) && !(keyValues[ix] instanceof T) && !(keyValues[ix] instanceof Traversal))
                 throw new IllegalArgumentException("The provided key/value array must have a String, T, or Traversal on even array indices");
+            if (keyValues[ix+1] instanceof GValue) {
+                throw new IllegalArgumentException("The provided key/value array must not contain GValues");
+            }
 
             // check both key and value for traversal instances. track the list of traversals that are present so
             // that elsewhere in Parameters there is no need to iterate all values to not find any. also grab

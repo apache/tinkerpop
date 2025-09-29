@@ -169,7 +169,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Updated which steps are able to accept arguments in grammar
 * Introduced `GValue` to represent parameterized values in a `GraphTraversal`
 * Added optional traversal cache to `GremlinLangScriptEngine`
-* Introduced step interfaces for all parameterizable steps
+* Introduced `StepContract` interfaces for all parameterizable steps
+* Decoupled management of id, label, and properties from `Configuring` interface in `addV()`, `addE()` and `property()`
 * Switched `gremlin-net` byte serializers to signed bytes (`sbyte`) to be consistent with IO doc
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
 * Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency

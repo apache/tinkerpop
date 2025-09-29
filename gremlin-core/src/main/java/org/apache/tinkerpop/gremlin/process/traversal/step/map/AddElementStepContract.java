@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
@@ -26,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 import java.util.HashSet;
 
-public interface AddElementStepContract<S, E> extends Step<S, E>, PropertiesHolder, TraversalParent, Scoping {
+public interface AddElementStepContract<S, E> extends Step<S, E>, PropertiesHolder, TraversalParent, Scoping, Configuring {
     Object getLabel();
 
     default Object getLabelWithGValue() {
