@@ -73,7 +73,6 @@ public class ReservedKeysVerificationStrategyTest {
                 {__.addV().property("id", 123), false},
                 {__.addE("knows").property("id", 123), false},
                 {__.addV().property(T.id, 123), true},
-                {__.addE("knows").property(T.label, "blah"), true},
                 {__.addV().property("label", "xyz"), false},
                 {__.addE("knows").property("id", "xyz"), false},
                 {__.addV().property("x", "xyz", "label", "xxx"), false},

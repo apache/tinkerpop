@@ -157,7 +157,7 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.addV("label").property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
@@ -175,19 +175,19 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.addV(GValue.of("l", "label")).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label")), // Property is not stored as a child traversal in this case
+                        List.of(), // Property is not stored as a child traversal in this case
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.addV("label").property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("name"), __.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.inject(1).addV("label").property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("cole")),
                         null, null
                 },
                 {AddVertexStepContract.class,
@@ -199,19 +199,19 @@ public class TraversalParentTest {
                 {AddVertexStepContract.class,
                         g.inject(1).addV(GValue.of("l", "label")).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label")), // Property is not stored as a child traversal in this case
+                        List.of(), // Property is not stored as a child traversal in this case
                         null, null
                 },
                 {AddVertexStepContract.class,
                         g.inject(1).addV("label").property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label")),
+                        List.of(__.constant("name"), __.constant("cole")),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(1).to(2).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
@@ -219,49 +219,49 @@ public class TraversalParentTest {
                                 .property("name", __.constant("cole"))
                                 .property(T.id, __.constant(5)),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2), __.constant(5)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2), __.constant(5)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
+                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(1).to(2).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("cole"), new ConstantTraversal<>("label"), __.V(1), __.V(2)),
+                        List.of(__.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
                         List.of(),
-                        List.of(new ConstantTraversal<>("label"), new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
+                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
                         g.inject(1).addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), new ConstantTraversal<>("label"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
                         null, null
                 },
                 {CallStepContract.class,
@@ -291,7 +291,7 @@ public class TraversalParentTest {
                 {AddPropertyStepContract.class,
                         g.inject(1).property("key", "value"),
                         List.of(),
-                        List.of(new ConstantTraversal<>("value")), // constant Value's are internally boxed in Traversals
+                        List.of(),
                         null, null
                 },
                 {AddPropertyStepContract.class,
@@ -309,7 +309,7 @@ public class TraversalParentTest {
                 {AddPropertyStepContract.class,
                         g.addV().property("name", "value", "metaKey", "metaValue"),
                         List.of(),
-                        List.of(new ConstantTraversal<>("value")), // constant Value's are internally boxed in Traversals
+                        List.of(),
                         null, null
                 },
                 {AddPropertyStepContract.class,
@@ -327,7 +327,7 @@ public class TraversalParentTest {
                 {AddPropertyStepContract.class,
                         g.addV().property("name", "value", "metaKey1", "metaValue1", "metaKey2", "metaValue2"),
                         List.of(),
-                        List.of(new ConstantTraversal<>("value")), // constant Value's are internally boxed in Traversals
+                        List.of(),
                         null, null
                 },
                 {MergeStepContract.class,
@@ -982,23 +982,23 @@ public class TraversalParentTest {
 
     private void verifyExpectedParents(List<Traversal.Admin<?,?>> expectedGlobalChildren, List<Traversal.Admin<?,?>> expectedLocalChildren, String messageSuffix) {
         List<Step<?,?>> steps = TraversalHelper.getStepsOfAssignableClass(stepClass, traversal);
-        assertTrue(String.format("Expected a single step of class %s to test, found %d %s", stepClass.getName(), steps.size(), messageSuffix), steps.size() == 1);
-        assertTrue(String.format("Expected step to implement TraversalParent %s", messageSuffix), steps.get(0) instanceof TraversalParent);
+        assertTrue(String.format("Expected a single step of class %s to test, found %d for Traversal [%s] %s", stepClass.getName(), steps.size(), traversal, messageSuffix), steps.size() == 1);
+        assertTrue(String.format("Expected step to implement TraversalParent for Traversal [%s] %s", traversal, messageSuffix), steps.get(0) instanceof TraversalParent);
 
         TraversalParent testStep = (TraversalParent) steps.get(0);
-        assertThat(String.format("getGlobalChildren() did not produce the expected results %s", messageSuffix), testStep.getGlobalChildren(), containsInAnyOrder(expectedGlobalChildren.toArray()));
-        assertThat(String.format("getLocalChildren() did not produce the expected results %s", messageSuffix), testStep.getLocalChildren(), containsInAnyOrder(expectedLocalChildren.toArray()));
+        assertThat(String.format("getGlobalChildren() did not produce the expected results for Traversal [%s] %s", traversal, messageSuffix), testStep.getGlobalChildren(), containsInAnyOrder(expectedGlobalChildren.toArray()));
+        assertThat(String.format("getLocalChildren() did not produce the expected results for Traversal [%s] %s", traversal, messageSuffix), testStep.getLocalChildren(), containsInAnyOrder(expectedLocalChildren.toArray()));
 
         for (Traversal.Admin<?, ?> child : testStep.getGlobalChildren()) {
             if (!(child instanceof AbstractLambdaTraversal)) {
                 // Use reference equality to ensure parent points to the correct object. It's not enough that the parents contents match.
-                assertTrue(String.format("Expected child traversal %s to have correctly assigned parent %s", child.toString(), messageSuffix), testStep == child.getParent());
+                assertTrue(String.format("Expected child traversal %s to have correctly assigned parent for Traversal [%s] %s", child.toString(), traversal, messageSuffix), testStep == child.getParent());
             }
         }
         for (Traversal.Admin<?, ?> child : testStep.getLocalChildren()) {
             if (!(child instanceof AbstractLambdaTraversal)) {
                 // Use reference equality to ensure parent points to the correct object. It's not enough that the parents contents match.
-                assertTrue(String.format("Expected child traversal %s to have correctly assigned parent %s", child.toString(), messageSuffix), testStep == child.getParent());
+                assertTrue(String.format("Expected child traversal %s to have correctly assigned parent for Traversal [%s] %s", child.toString(), traversal, messageSuffix), testStep == child.getParent());
             }
         }
     }

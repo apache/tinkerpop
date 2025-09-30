@@ -19,8 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
@@ -31,20 +29,24 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
 
     private boolean userProvidedLabel;
 
-    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
-        super(traversal, label == null ? Vertex.DEFAULT_LABEL : label);
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final String label) {
+        super(traversal, label);
         userProvidedLabel = label != null;
     }
 
-    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
-        super(traversal, label == null ? GValue.of(Vertex.DEFAULT_LABEL) : label);
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final GValue<String> label) {
+        super(traversal, label);
         userProvidedLabel = label != null;
     }
 
-    public AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
-        super(traversal, vertexLabelTraversal == null ?
-                new ConstantTraversal<>(Vertex.DEFAULT_LABEL) : vertexLabelTraversal);
+    protected AbstractAddVertexStepPlaceholder(final Traversal.Admin traversal, final Traversal.Admin<S,String> vertexLabelTraversal) {
+        super(traversal, vertexLabelTraversal);
         userProvidedLabel = vertexLabelTraversal != null;
+    }
+
+    @Override
+    protected String getDefaultLabel() {
+        return Vertex.DEFAULT_LABEL;
     }
 
     @Override

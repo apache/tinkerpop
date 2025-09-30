@@ -46,6 +46,11 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     @Override
+    protected String getDefaultLabel() {
+        return Edge.DEFAULT_LABEL;
+    }
+
+    @Override
     public void addTo(final Traversal.Admin<?, ?> toObject) {
         addTraversal(toObject);
         if (toObject instanceof GValueConstantTraversal) {
@@ -180,7 +185,8 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     /**
-     * TODO
+     * Attempts to extract a Vertex from a given Traversal. If the traversal is wrapping a GValue, the GValue is
+     * returned without pinning the variable
      * @param vertexTraversal
      * @return If vertexTraversal is a ConstantTraversal, returns the constant vertex or id as a GValue, otherwise returns vertexTraversal as-is
      */

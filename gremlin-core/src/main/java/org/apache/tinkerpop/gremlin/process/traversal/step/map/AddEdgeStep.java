@@ -184,6 +184,11 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
     }
 
     @Override
+    public void setLabel(Object label) {
+        this.configure(T.label, label);
+    }
+
+    @Override
     public void addProperty(Object key, Object value) {
         configureInternalParams(key, value);
     }

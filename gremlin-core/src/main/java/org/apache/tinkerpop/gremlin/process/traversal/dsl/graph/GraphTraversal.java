@@ -99,9 +99,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsBoolStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsDateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AsNumberStep;
@@ -189,7 +186,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TrimLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.FailStep;
@@ -1386,7 +1382,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Adds a {@link Vertex}.
      *
      * @param vertexLabel the label of the {@link Vertex} to add
-     * @return the traversal with the {@link AddVertexStep} added
+     * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.1.0-incubating
      */
@@ -1399,7 +1395,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Adds a {@link Vertex} with a vertex label determined by a {@link Traversal}.
      *
-     * @return the traversal with the {@link AddVertexStep} added
+     * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.3.1
      */
@@ -1413,7 +1409,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Adds a {@link Vertex}.
      *
      * @param vertexLabel the label of the {@link Vertex} to add
-     * @return the traversal with the {@link AddVertexStep} added
+     * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.8.0
      */
@@ -1426,13 +1422,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Adds a {@link Vertex} with a default vertex label.
      *
-     * @return the traversal with the {@link AddVertexStep} added
+     * @return the traversal with the {@link AddVertexStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addvertex-step" target="_blank">Reference Documentation - AddVertex Step</a>
      * @since 3.1.0-incubating
      */
     public default GraphTraversal<S, Vertex> addV() {
         this.asAdmin().getGremlinLang().addStep(Symbols.addV);
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), (String) null));
+        return this.asAdmin().addStep(new AddVertexStepPlaceholder<>(this.asAdmin(), (String) null));
     }
 
     /**
@@ -1555,7 +1551,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Adds an {@link Edge} with the specified edge label.
      *
      * @param edgeLabel the label of the newly added edge
-     * @return the traversal with the {@link AddEdgeStep} added
+     * @return the traversal with the {@link AddEdgeStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.1.0-incubating
      */
@@ -1568,7 +1564,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Adds a {@link Edge} with an edge label determined by a {@link Traversal}.
      *
-     * @return the traversal with the {@link AddEdgeStep} added
+     * @return the traversal with the {@link AddEdgeStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.3.1
      */
@@ -1582,7 +1578,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Adds an {@link Edge} with the specified edge label.
      *
      * @param edgeLabel the label of the newly added edge
-     * @return the traversal with the {@link AddEdgeStep} added
+     * @return the traversal with the {@link AddEdgeStepContract} added
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - AddEdge Step</a>
      * @since 3.8.0
      */
@@ -1616,7 +1612,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * outgoing vertex of the newly added {@link Edge}.
      *
      * @param fromVertex the vertex for selecting the outgoing vertex
-     * @return the traversal with the modified {@link AddEdgeStep}
+     * @return the traversal with the modified {@link AddEdgeStepContract}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.8.0
      */
@@ -1636,7 +1632,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * outgoing vertex of the newly added {@link Edge}.
      *
      * @param fromVertex the vertex for selecting the outgoing vertex
-     * @return the traversal with the modified {@link AddEdgeStep}
+     * @return the traversal with the modified {@link AddEdgeStepContract}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
@@ -1656,7 +1652,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * outgoing vertex of the newly added {@link Edge}.
      *
      * @param fromVertex the traversal for selecting the outgoing vertex
-     * @return the traversal with the modified {@link AddEdgeStep}
+     * @return the traversal with the modified {@link AddEdgeStepContract}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.1.0-incubating
      */
@@ -1676,7 +1672,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * incoming vertex of the newly added {@link Edge}.
      *
      * @param toVertex the vertex for selecting the incoming vertex
-     * @return the traversal with the modified {@link AddEdgeStep}
+     * @return the traversal with the modified {@link AddEdgeStepContract}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.8.0
      */
@@ -1696,7 +1692,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * outgoing vertex of the newly added {@link Edge}.
      *
      * @param fromVertexOrId the vertex for selecting the outgoing vertex
-     * @return the traversal with the modified {@link AddEdgeStep}
+     * @return the traversal with the modified {@link AddEdgeStepContract}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#addedge-step" target="_blank">Reference Documentation - From Step</a>
      * @since 3.3.0
      */
@@ -3799,9 +3795,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
      * can be supplied.
      * <p/>* 
-     * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
-     * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
-     * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
+     * Generally speaking, this method will append an {@link AddPropertyStepContract} to the {@link Traversal} but when
+     * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStepContract} or {@link AddEdgeStepContract}.
+     * This potential optimization can only happen if cardinality is not supplied
      * and when meta-properties are not included.
      *
      * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link Graph}

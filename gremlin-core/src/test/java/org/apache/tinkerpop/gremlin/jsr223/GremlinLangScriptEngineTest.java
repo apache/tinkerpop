@@ -26,8 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.TraversalStrategyProxyTest;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 
@@ -37,16 +35,12 @@ import javax.script.SimpleBindings;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class GremlinLangScriptEngineTest {
 

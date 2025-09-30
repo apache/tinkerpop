@@ -20,11 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -40,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -54,7 +50,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     /**
      * property value
      */
-    private Traversal.Admin<?, ?> value;
+    private Object value;
     /**
      * cardinality of the property
      */
@@ -77,13 +73,11 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         }
         if (valueObject instanceof GValue) {
             traversal.getGValueManager().register((GValue<?>) valueObject);
-            this.value = new GValueConstantTraversal<>((GValue<?>) valueObject);
-        } else if (valueObject instanceof Traversal) {
-            this.value = ((Traversal<?, ?>) valueObject).asAdmin();
-        } else {
-            this.value = new ConstantTraversal<>(valueObject);
         }
-        this.integrateChild(this.value);
+        this.value = valueObject;
+        if (this.value instanceof Traversal) {
+            this.integrateChild(((Traversal<?, ?>) this.value).asAdmin());
+        }
         this.cardinality = cardinality;
     }
 
@@ -108,8 +102,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         if (key != null && key instanceof Traversal) {
             childTraversals.add(((Traversal<?, ?>) key).asAdmin());
         }
-        if (value != null) {
-            childTraversals.add(value);
+        if (value != null && value instanceof Traversal) {
+            childTraversals.add(((Traversal<?, ?>) value).asAdmin());
         }
         return childTraversals;
     }
@@ -151,40 +145,42 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
         if (value == null) {
             return null;
         }
-        if (value instanceof GValueConstantTraversal) {
-            traversal.getGValueManager().pinVariable(((GValueConstantTraversal<?, ?>) value).getGValue().getName());
-            return value.next();
-        }
-        if (value instanceof ConstantTraversal) {
-            return value.next();
+        if (value instanceof GValue) {
+            traversal.getGValueManager().pinVariable(((GValue<?>) value).getName());
+            return ((GValue<?>) value).get();
         }
         return value;
     }
 
     /**
-     * Get the value as a GValue, without pinning the variable
+     * Get the value as-is, without unboxing GValues if present, and without pinning the variable
      */
     @Override
     public Object getValueWithGValue() {
-        if (value instanceof GValueConstantTraversal) {
-            return ((GValueConstantTraversal<?, ?>) value).getGValue();
-        }
-        return getValue(); // Don't need to worry about pinning variable as GValue case is already covered
+        return value;
     }
 
     @Override
     public AddPropertyStepPlaceholder<S> clone() {
         final AddPropertyStepPlaceholder<S> clone = (AddPropertyStepPlaceholder<S>) super.clone();
         clone.cardinality = cardinality;
-        clone.value = value.clone();
 
-        // Attempt to deep clone keys for Traversal and GValue. Shallow copy is fine if key is a String or enum
+        // Attempt to deep clone key for Traversal and GValue. Shallow copy is fine if key is a String or enum
         if (this.key instanceof Traversal) {
             clone.key = ((Traversal<?, ?>) this.key).asAdmin().clone();
         } else if (this.key instanceof GValue) {
             clone.key = ((GValue<?>) this.key).clone();
         } else {
             clone.key = this.key;
+        }
+
+        // Attempt to deep clone value for Traversal and GValue.
+        if (this.value instanceof Traversal) {
+            clone.value = ((Traversal<?, ?>) this.value).asAdmin().clone();
+        } else if (this.value instanceof GValue) {
+            clone.value = ((GValue<?>) this.value).clone();
+        } else {
+            clone.value = this.value;
         }
 
         // deep clone properties
@@ -210,7 +206,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public AddPropertyStep<S> asConcreteStep() {
-        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value instanceof GValueConstantTraversal ? ((GValueConstantTraversal<?, ?>) value).getConstantTraversal() : value);
+        AddPropertyStep<S> step = new AddPropertyStep<>(traversal, cardinality, key, value instanceof GValue ? ((GValue<?>) value).get() : value);
 
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (Object value : entry.getValue()) {
@@ -230,7 +226,7 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public boolean isParameterized() {
-        if (value instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) value).isParameterized()) {
+        if (value instanceof GValue && ((GValue<?>) value).isVariable()) {
             return true;
         }
         for (List<Object> list : properties.values()) {
@@ -243,8 +239,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
 
     @Override
     public void updateVariable(String name, Object value) {
-        if (value instanceof GValueConstantTraversal && name.equals(((GValueConstantTraversal<?, ?>) value).getGValue().getName())) {
-            this.value = new GValueConstantTraversal<>(GValue.of(name, value));
+        if (this.value instanceof GValue && name.equals(((GValue<?>) this.value).getName())) {
+            this.value = GValue.of(name, value);
         }
         for (final Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
             for (final Object propertyVal : entry.getValue()) {
@@ -258,8 +254,8 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     @Override
     public Collection<GValue<?>> getGValues() {
         Set<GValue<?>> gValues = GValueHelper.getGValuesFromProperties(properties);
-        if (value instanceof GValueConstantTraversal && ((GValueConstantTraversal<?, ?>) value).isParameterized()) {
-            gValues.add(((GValueConstantTraversal<?, ?>) value).getGValue());
+        if (value instanceof GValue && ((GValue<?>) value).isVariable()) {
+            gValues.add((GValue<?>) value);
         }
         return gValues;
     }

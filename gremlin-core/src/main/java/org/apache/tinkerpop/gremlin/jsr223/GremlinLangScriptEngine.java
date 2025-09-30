@@ -167,14 +167,17 @@ public class GremlinLangScriptEngine extends AbstractScriptEngine implements Gre
 
         try {
             // parse the script
-            final Object result = GremlinQueryParser.parse(script, antlr);
+            final Object parsedResult = GremlinQueryParser.parse(script, antlr);
 
-            // add the traversal to the cache in its executable form - note that the cache is really just sparing us
-            // script parsing
-            // Note that caching is skipped if the result is not a Traversal (ie the script is terminated with next())
-            if (cacheEnabled && result instanceof Traversal.Admin) traversalCache.put(script, ((Traversal.Admin<?,?>) result).clone());
+            // parsedResult is typically a traversal, but may be a literal result if the script includes a terminal step
+            // Only parsed Traversals are to the cache.
+            if (parsedResult instanceof Traversal){
+                // add the traversal to the cache in its executable form - note that the cache is really just sparing us
+                // script parsing
+                if (cacheEnabled) traversalCache.put(script, ((Traversal<?, ?>) parsedResult).asAdmin().clone());
+            }
 
-            return result;
+            return parsedResult;
         } catch (Exception ex) {
             throw new ScriptException(ex);
         }

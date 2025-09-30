@@ -471,8 +471,8 @@ public final class StepDefinition {
             for (Vertex vertex : expectedVertices) {
                 final String variableKey = vertex.label().equals("person") ? "age" : "lang";
 
-                assertThat(sg.V(vertex.id()).has(vertex.label(), "name", eq(vertex.value("name"))).
-                                has(variableKey, eq(vertex.value(variableKey))).hasNext(),
+                assertThat(sg.V(vertex.id()).has(vertex.label(), "name", eq((Object) vertex.value("name"))).
+                                has(variableKey, eq((Object) vertex.value(variableKey))).hasNext(),
                         equalTo(true));
             }
         } else {
@@ -490,7 +490,7 @@ public final class StepDefinition {
             // wouldn't be hard to add others.
             for (Edge edge : expectedEdges) {
                 assertThat(sg.E(edge.id()).
-                                has(edge.label(), "weight", eq(edge.value("weight"))).
+                                has(edge.label(), "weight", eq((Object) edge.value("weight"))).
                                 filter(__.outV().hasId(edge.outVertex().id())).
                                 filter(__.inV().hasId(edge.inVertex().id())).hasNext(),
                         equalTo(true));
