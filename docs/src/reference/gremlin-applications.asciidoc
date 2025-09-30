@@ -23,6 +23,8 @@ users when working with graphs.  There are two key applications:
 . Gremlin Console - A link:http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop[REPL] environment for
 interactive development and analysis
 . Gremlin Server - A server that hosts a Gremlin Traversal Machine thus enabling remote Gremlin execution
+. Gremlin MCP - An link:https://modelcontextprotocol.io/[MCP] (Model Context Protocol) server that enables AI assistants
+to interact with any Gremlin Server hosted graph system through natural language. *[currently in experimental release]*
 
 image:gremlin-lab-coat.png[width=310,float=left] Gremlin is designed to be extensible, making it possible for users
 and graph system/language providers to customize it to their needs.  Such extensibility is also found in the Gremlin
@@ -3009,3 +3011,100 @@ for `HadoopGraph`:
 ----
 describeGraph(HadoopGraph)
 ----
+
+[[gremlin-mcp]]
+=== Gremlin MCP
+
+Gremlin MCP integrates Apache TinkerPop with the Model Context Protocol (MCP) so that MCP‑capable assistants (for
+example, desktop chat clients that support MCP) can discover your graph, run Gremlin traversals and exchange graph data
+through a small set of well‑defined tools. It allows users to “talk to your graph” while keeping full Gremlin power
+available when they or the assistant need it.
+
+MCP is an open protocol that lets assistants call server‑hosted tools in a structured way. Each tool has a name, an
+input schema, and a result schema. When connected to a Gremlin MCP server, the assistant can:
+
+* Inspect the server’s health and connection to a Gremlin data source
+* Discover the graph’s schema (labels, properties, relationships, counts)
+* Execute Gremlin traversals
+* Import/export graph data in common formats
+
+The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
+the graph via standard Gremlin traversals.
+
+IMPORTANT: Gremlin MCP is currently available for experimental use only. It is under active development and its features
+may change.
+
+WARNING: Gremlin MCP executes global graph traversal to help it understand the schema and gather statistics. On a large
+grpah these queries will be costly. If you are trying Gremlin MCP, please try it with a smaller subset of your graph for
+experimentation purposes.
+
+MCP defines a simple request/response model for invoking named tools. A tool declares its input and output schema so an
+assistant can construct valid calls and reason about results. The Gremlin MCP server implements several tools and, when
+invoked by an MCP client, translates those calls to Gremlin traversals against a configured Gremlin endpoint. The
+endpoint is typically Gremlin Server, but could be used with any graph system that implements its protocols.
+
+TIP: Gremlin MCP does not replace Gremlin itself. It complements it by helping assistants discover data and propose
+traversals. You can always provide an explicit traversal when you know what you want.
+
+The Gremlin MCP server exposes these tools:
+
+* get_graph_status — Returns basic health and connectivity information for the backing Gremlin data source.
+* get_graph_schema — Discovers vertex labels, edge labels, property keys, and relationship patterns. Low‑cardinality
+  properties may be surfaced as enums to encourage valid values in queries.
+* run_gremlin_query — Executes an arbitrary Gremlin traversal and returns JSON results.
+* refresh_schema_cache — Forces schema discovery to run again when the graph has changed.
+* import_graph_data — Loads graph data (for example, GraphSON/JSON/CSV) in batches and reports progress.
+* export_subgraph — Exports a selected subgraph to JSON, GraphSON, or CSV.
+
+NOTE: Import and export operate on potentially large portions of the graph. Ensure proper authorization and confirm the
+assistant’s intent in the client before approving such operations.
+
+==== Schema discovery
+
+Schema discovery uses Gremlin traversals and sampling:
+
+* Labels — Vertex and edge labels are collected and de‑duplicated.
+* Properties — For each label, a sample of elements is inspected to list observed property keys.
+* Counts (optional) — Approximate counts can be included per label.
+* Relationship patterns — Connectivity is derived from the labels of edges and their incident vertices.
+* Enums — Properties with a small set of distinct values may be surfaced as enumerations to promote precise filters.
+
+The resulting schema helps assistants construct well‑formed traversals and explain results in natural language.
+
+==== Executing traversals
+
+When the assistant needs to answer a question, a common sequence is:
+
+. Optionally call get_graph_status.
+. Retrieve (or reuse) schema via get_graph_schema.
+. Formulate a traversal and call run_gremlin_query.
+. Present results and, if required, refine the traversal.
+
+For example, the assistant may execute a traversal like the following:
+
+[source,groovy]
+----
+// list the names of people over 30 and who they know
+g.V().hasLabel('person').has('age', gt(30)).out('knows').values('name')
+----
+
+==== Import and export
+
+* Import — Provide the data format and mapping to labels/properties. The server processes records in batches and
+  reports progress and validation errors.
+* Export — Describe the subgraph or selection criteria (for example, all person vertices and their knows edges) and
+  choose a target format. The server returns the exported data for download by the client.
+
+==== Connecting from an MCP client
+
+The MCP client is responsible for launching the Gremlin MCP server and providing connection details for the Gremlin
+endpoint the server should use. Typical environment variables include:
+
+* GREMLIN_ENDPOINT — host:port for the target Gremlin Server or compatible endpoint
+* GREMLIN_USERNAME / GREMLIN_PASSWORD — credentials when authentication is enabled
+* GREMLIN_USE_SSL — set to true when TLS is required by the endpoint
+* LOG_LEVEL — optional logging verbosity for troubleshooting
+
+Consult the MCP client documentation for how environment variables are supplied and how tool calls are approved and
+presented to the user.
+

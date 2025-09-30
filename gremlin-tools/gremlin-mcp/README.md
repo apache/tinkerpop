@@ -23,7 +23,10 @@
 
 > **Connect AI agents like Claude, Cursor, and Windsurf to your graph databases!**
 
-An MCP (Model Context Protocol) server that enables AI assistants to interact with any Gremlin-compatible graph database through natural language. Query your data, discover schemas, analyze relationships, and manage graph data using simple conversations.
+An [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server that enables AI assistants to interact with 
+any Apache TinkerPop-compatible graph database hosted in [Gremlin Server](https://tinkerpop.apache.org/docs/current/reference/#gremlin-server)
+through natural language. Query your data, discover schemas, analyze relationships, and manage graph data using simple 
+conversations.
 
 ## ✨ What You Can Do
 
