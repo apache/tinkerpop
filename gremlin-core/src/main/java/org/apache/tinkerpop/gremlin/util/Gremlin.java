@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.util;
 import java.io.IOException;
 
 /**
+ * Small change for testing.
+ * 
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Gremlin {
