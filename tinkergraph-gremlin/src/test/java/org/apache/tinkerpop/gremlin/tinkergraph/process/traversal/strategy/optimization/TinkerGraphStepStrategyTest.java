@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
@@ -90,6 +91,13 @@ public class TinkerGraphStepStrategyTest {
         return traversal.addStep(graphStep);
     }
 
+    private static GraphTraversal.Admin<?, ?> g_Vid(final Object[] ids, final Object... hasKeyValues) {
+        final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>();
+        final GraphStep<?, ?> graphStep = V(hasKeyValues);
+        graphStep.addIds(ids);
+        return traversal.addStep(graphStep);
+    }
+
     private static GraphStep<?, ?> V(final Object... hasKeyValues) {
         final TinkerGraphStep<Vertex, Vertex> graphStep = new TinkerGraphStep<>(new GraphStep<>(EmptyTraversal.instance(), Vertex.class, true));
         for (int i = 0; i < hasKeyValues.length; i = i + 2) {
@@ -103,7 +111,12 @@ public class TinkerGraphStepStrategyTest {
         final int LAZY_SIZE = 2500;
         return Arrays.asList(new Object[][]{
                 {__.V().out(), g_V().out(), Collections.emptyList()},
+                {__.V(1).out(), g_Vid(new Integer[]{1}).out(), Collections.emptyList()},
+                {__.V(GValue.of("id", 1)).out(), g_Vid(new Integer[]{1}).out(), Collections.emptyList()}, // Note that GValue ids are currently reduced to literals as TinkerGraphStep is not currently equipped to handle GValues.
                 {__.V().has("name", "marko").out(), g_V("name", eq("marko")).out(), Collections.emptyList()},
+                {__.V().has("name", GValue.of("name", "marko")).out(), g_V("name", eq(GValue.of("name", "marko"))).out(), Collections.emptyList()},
+                {__.V(1).has("name", "marko").out(), g_Vid(new Integer[]{1}, "name", eq("marko")).out(), Collections.emptyList()},
+                {__.V(GValue.of("id", 1)).has("name", "marko").out(), g_Vid(new Integer[]{1}, "name", eq("marko")).out(), Collections.emptyList()},
                 {__.V().has("name", "marko").has("age", gt(31).and(lt(10))).out(),
                         g_V("name", eq("marko"), "age", gt(31), "age", lt(10)).out(), Collections.emptyList()},
                 {__.V().has("name", "marko").or(has("age"), has("age", gt(32))).has("lang", "java"),
