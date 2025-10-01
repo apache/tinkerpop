@@ -16,12 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 
+import java.util.List;
+
 public interface TailLocalStepContract<S> extends Step<S, S> {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(TailLocalStep.class, TailLocalStepPlaceholder.class);
+
     Long getLimit();
 
     default GValue<Long> getLimitAsGValue() {

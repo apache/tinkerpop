@@ -26,9 +26,16 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public interface VertexStepContract<E extends Element> extends Step<Vertex, E>, AutoCloseable {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(VertexStep.class, VertexStepPlaceholder.class);
+
     Direction getDirection();
 
     String[] getEdgeLabels();

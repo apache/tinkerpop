@@ -140,7 +140,7 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
                         step.removeHasContainer(hasContainer);
                     } else if (hasContainer.getBiPredicate() == Contains.within &&
                             hasContainer.getValue() instanceof Collection &&
-                            ((Collection) hasContainer.getValue()).containsAll(Arrays.asList(GValue.resolveToValues(edgeLabelGValues.toArray())))) {
+                            ((Collection) hasContainer.getValue()).containsAll(Arrays.asList(GValue.resolveToValues(edgeLabelGValues.stream().toArray(GValue[]::new))))) {
                         edgeLabelGValues.addAll(hasContainer.getPredicate().isParameterized() ?
                                 hasContainer.getPredicate().getGValues() :
                                 Arrays.asList(GValue.ensureGValues(((Collection<String>) hasContainer.getValue()).toArray())));

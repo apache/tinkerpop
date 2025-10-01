@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 
+import java.util.List;
+
 /**
  * Defines the contract for {@code range} related steps.
  */
 public interface RangeLocalStepContract<S> extends Step<S, S>, Ranging {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(RangeLocalStep.class, RangeLocalStepPlaceholder.class);
 
     /**
      * Retrieves the lower bound of the range.

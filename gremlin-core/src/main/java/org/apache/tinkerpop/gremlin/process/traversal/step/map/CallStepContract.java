@@ -25,9 +25,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.structure.service.Service;
 import org.apache.tinkerpop.gremlin.structure.service.ServiceRegistry;
 
+import java.util.List;
 import java.util.Map;
 
 public interface CallStepContract<S, E> extends Step<S, E>, Configuring, TraversalParent {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(CallStep.class, CallStepContract.class);
+
     Service<S, E> service();
 
     default Service<S, E> serviceGValueSafe() {

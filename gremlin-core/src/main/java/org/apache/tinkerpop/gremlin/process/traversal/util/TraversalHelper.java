@@ -38,20 +38,30 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddElementStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -89,8 +99,19 @@ public final class TraversalHelper {
      * This registry is intentionally simple and local to TraversalHelper.
      */
     private static final Map<Class<?>, List<Class<? extends Step>>> STEP_CONTRACT_REGISTRY = new HashMap<>() {{
-        put(GraphStepContract.class, GraphStepContract.CONCRETE_STEPS);
         put(AddEdgeStepContract.class, AddEdgeStepContract.CONCRETE_STEPS);
+        put(AddElementStepContract.class, AddElementStepContract.CONCRETE_STEPS);
+        put(AddPropertyStepContract.class, AddPropertyStepContract.CONCRETE_STEPS);
+        put(AddVertexStepContract.class, AddVertexStepContract.CONCRETE_STEPS);
+        put(CallStepContract.class, CallStepContract.CONCRETE_STEPS);
+        put(GraphStepContract.class, GraphStepContract.CONCRETE_STEPS);
+        put(IsStepContract.class, IsStepContract.CONCRETE_STEPS);
+        put(MergeStepContract.class, MergeStepContract.CONCRETE_STEPS);
+        put(RangeGlobalStepContract.class, RangeGlobalStepContract.CONCRETE_STEPS);
+        put(RangeLocalStepContract.class, RangeLocalStepContract.CONCRETE_STEPS);
+        put(TailGlobalStepContract.class, TailGlobalStepContract.CONCRETE_STEPS);
+        put(TailLocalStepContract.class, TailLocalStepContract.CONCRETE_STEPS);
+        put(VertexStepContract.class, VertexStepContract.CONCRETE_STEPS);
     }};
 
     private TraversalHelper() { }

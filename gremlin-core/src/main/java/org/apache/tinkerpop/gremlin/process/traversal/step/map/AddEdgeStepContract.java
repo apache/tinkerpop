@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -40,7 +38,7 @@ public interface AddEdgeStepContract<S> extends AddElementStepContract<S, Edge>,
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
      */
-    List<Class<? extends Step>> CONCRETE_STEPS = Collections.unmodifiableList(Arrays.asList(AddEdgeStep.class, AddEdgeStepPlaceholder.class));
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(AddEdgeStep.class, AddEdgeStepPlaceholder.class, AddEdgeStartStep.class, AddEdgeStartStepPlaceholder.class);
 
     /**
      * Gets the "from" vertex for the edge to be added. If the "from" vertex was added as a {@link Vertex}, ID, {@link GValue},

@@ -29,12 +29,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
  * Defines the contract for {@code range} related steps.
  */
 public interface RangeGlobalStepContract<S> extends Step<S, S>, FilteringBarrier<TraverserSet<S>>, Ranging, Bypassing {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(RangeGlobalStep.class, RangeGlobalStepPlaceholder.class);
 
     /**
      * Retrieves the lower bound of the range.

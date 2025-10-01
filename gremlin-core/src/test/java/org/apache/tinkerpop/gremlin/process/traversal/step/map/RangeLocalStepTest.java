@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeLocalStepPlaceholder;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep.applyRange;
