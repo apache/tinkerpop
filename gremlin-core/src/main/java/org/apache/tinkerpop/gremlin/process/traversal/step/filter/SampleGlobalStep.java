@@ -97,7 +97,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     public void processAllStarts() {
         while (this.starts.hasNext()) {
             Traverser.Admin<S> next = this.starts.next();
-            System.out.println("Adding start: " + next + " to traverserSet: " + this.traverserSet);
+            //System.out.println("Adding start: " + next + " to traverserSet: " + this.traverserSet);
             this.createProjectedTraverser(next).ifPresent(traverserSet::add);
         }
     }
@@ -113,7 +113,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             totalWeight = totalWeight + (((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue() * s.bulk());
         }
         ///////
-        System.out.println("Sampling from traverserSet: " + traverserSet);
+        //System.out.println("Sampling from traverserSet: " + traverserSet);
         final TraverserSet<S> sampledSet = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         int runningAmountToSample = 0;
         while (runningAmountToSample < this.amountToSample) {
@@ -127,7 +127,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                         if (random.nextDouble() <= ((currentWeight / runningTotalWeight))) {
                             final Traverser.Admin<S> split = s.split();
                             split.setBulk(1L);
-                            System.out.println("Adding sample: " + split);
+                            //System.out.println("Adding sample: " + split);
                             sampledSet.add(split);
                             runningAmountToSample++;
                             reSample = true;
@@ -141,9 +141,9 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             }
         }
         traverserSet.clear();
-        System.out.println("SampledSet: " + sampledSet);
+        //System.out.println("SampledSet: " + sampledSet);
         traverserSet.addAll(sampledSet);
-        System.out.println("TraverserSet: " + traverserSet);
+        //System.out.println("TraverserSet: " + traverserSet);
     }
 
     @Override
@@ -169,7 +169,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
         @Override
         public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
-            System.out.println("SampleBiOperator.apply: " + setA + " -> " + setB);
+            //System.out.println("SampleBiOperator.apply: " + setA + " -> " + setB);
 
             Map<Integer, TraverserSet> loopMap = new TreeMap<>(Comparator.reverseOrder());
 

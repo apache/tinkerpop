@@ -392,7 +392,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 //            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d before incrLoops%n", start.path(), start.loops());
             start.incrLoops();
 //            System.out.printf("RepeatEndStep.computerAlgorithm: %s loops=%d after incrLoops%n", start.path(), start.loops());
-            System.out.println("RepeatEndStep traverser: " + start);
+//            System.out.println("RepeatEndStep traverser: " + start);
             if (repeatStep.doUntil(start, false)) {
 //                System.out.printf("RepeatEndStep.computerAlgorithm: doUntil=true, calling resetLoops for %s%n", start.path());
                 start.resetLoops();
