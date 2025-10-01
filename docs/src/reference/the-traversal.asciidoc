@@ -5865,7 +5865,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         if (TraversalHelper.onGraphComputer(traversal))
             return;
 
-        for (GraphStep originalGraphStep : TraversalHelper.getStepsOfClass(GraphStep.class, traversal)) {
+        for (GraphStepContract originalGraphStep : TraversalHelper.getStepsOfAssignableClass(GraphStepContract.class, traversal)) {
             TinkerGraphStep<?, ?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
             TraversalHelper.replaceStep(originalGraphStep, tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
@@ -5938,6 +5938,58 @@ g.V().hasLabel('person'). <1>
 <7> `CountStrategy` will limit the traversal to only the number of traversers required for the `count().is(x)`-check.
 <8> `PathRetractionStrategy` will remove paths from the traversers and increase the likelihood of bulking as path data is not required after `select('b')`.
 <9> `AdjacentToIncidentStrategy` will turn `out()` into `outE()` to increase data access locality.
+
+==== A note on Traversal Parameters
+
+Certain gremlin steps are able to accept parameterized arguments in the form of one of more `GValue` objects. Please see
+the <<traversal-parameterization,parameterizable steps documentation>> for a complete listing of such steps.
+
+When authoring strategies that interact with parameterizable steps, it's important to work with `StepContract` interfaces
+rather than concrete step classes. Parameterizable steps can exist as either concrete implementations or as placeholder
+steps that hold `GValue` objects (parameterized arguments). The placeholders are temporary proxies for the concrete
+steps which exist during strategy execution, but must be "reduced" to concrete steps prior to traversal execution. Both
+concrete and placeholder forms of a step implement the same contract interface, allowing strategies to work uniformly
+with either representation.
+
+[source,java]
+----
+// Use contract interfaces for parameterizable steps
+ for (GraphStepContract originalGraphStep : TraversalHelper.getStepsOfAssignableClass(GraphStepContract.class, traversal)) {
+    // Work with all matching instances of a step through its contract  <1>
+ }
+if (step instanceof GraphStepContract) {
+    GraphStepContract graphStep = (GraphStepContract) step;
+    // Work with the step through its contract
+}
+
+// Instead of checking concrete classes
+if (step instanceof GraphStep) {
+    // This approach has the risk of missing instances of GraphStepPlaceholder
+}
+----
+
+<1> Note that use of `TraversalHelper.getStepsOfAssignableClass(GraphStepContract.class, traversal))` will match all
+instances of TinkerPop's reference implementations of `GraphStepContract`, ie `GraphStep` and `GraphStepPlaceholder`,
+but will not match and provider specific implementations of the contract such as `TinkerGraphStep`. Similar rules apply
+to matching any StepContract via this method.
+
+The contract-based approach ensures strategies work correctly whether the step is in its concrete form or placeholder
+form with `GValue` parameters. Common contract interfaces include:
+
+* `AddVertexStepContract` - for `AddVertexStep` and `AddVertexStartStep`
+* `AddEdgeStepContract` - for `AddEdgeStep` and `AddEdgeStartStep`
+* `VertexStepContract` - for `VertexStep`
+* `GraphStepContract` - for `GraphStep`
+* `MergeStepContract` - for `MergeVertexStep` and `MergeEdgeStep`
+
+Strategy authors should consult the `GValueReductionStrategy` to understand how placeholder steps are converted to
+concrete steps, and consider whether their strategy should execute before or after this conversion based on whether
+they need to work with `GValue` objects or concrete step implementations. As this is an `OptimizationStrategy`, any
+`ProviderOptimizationStrategy` are excluded by default from the above considerations regarding parameterizable steps.
+Any providers who wish to leverage `GValue` in a `ProviderOptimizationStrategy` should first remove
+`GValueReductionStrategy`, and take ownership over ensuring all placeholder steps are reduced to concrete steps
+afterward. `ProviderGValueReductionStrategy` is offered for such purposes.
+----
 
 === EdgeLabelVerificationStrategy
 
@@ -6065,6 +6117,34 @@ IMPORTANT: If setting the `detach()` configuration to `null`, be aware that tran
 new transaction immediately following the `commit()` that raises the events. The graph elements raised in the events
 may also not behave as "snapshots" at the time of their creation as they are "live" references to actual database
 elements.
+
+=== GValueReductionStrategy
+
+`GValueReductionStrategy` converts placeholder steps that hold `GValue` objects to their concrete implementations.
+While not an optimization in and of itself, the `GValue` functionality provides a mechanism for traversal optimization
+and parameterization, so this strategy falls in the optimization category. Converting to concrete steps at this stage
+also allows provider optimization strategies to execute on concrete steps rather than step interfaces, which are much
+easier to reason about for the vast majority of providers.
+
+This strategy is automatically applied and typically does not need to be explicitly configured by users. However,
+providers hoping to do more advanced optimizations that require `GValue` objects to be present for their strategies
+will need to remove `GValueReductionStrategy` and offer their own mechanism for converting step placeholders to
+concrete steps. `ProviderGValueReductionStrategy` is a base class available to help with this need.
+
+The strategy operates by calling the `reduce()` method on any step that implements `GValueHolder`:
+
+[source,java]
+----
+@Override
+public void apply(final Traversal.Admin<?, ?> traversal) {
+    final List<Step> steps = traversal.getSteps();
+    for (int i = 0; i < steps.size(); i++) {
+        if (steps.get(i) instanceof GValueHolder) {
+            ((GValueHolder) steps.get(i)).reduce();
+        }
+    }
+}
+----
 
 [[partitionstrategy]]
 === PartitionStrategy
