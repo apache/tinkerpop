@@ -3048,13 +3048,13 @@ traversals. You can always provide an explicit traversal when you know what you 
 
 The Gremlin MCP server exposes these tools:
 
-* get_graph_status — Returns basic health and connectivity information for the backing Gremlin data source.
-* get_graph_schema — Discovers vertex labels, edge labels, property keys, and relationship patterns. Low‑cardinality
+* `get_graph_status` — Returns basic health and connectivity information for the backing Gremlin data source.
+* `get_graph_schema` — Discovers vertex labels, edge labels, property keys, and relationship patterns. Low‑cardinality
   properties may be surfaced as enums to encourage valid values in queries.
-* run_gremlin_query — Executes an arbitrary Gremlin traversal and returns JSON results.
-* refresh_schema_cache — Forces schema discovery to run again when the graph has changed.
-* import_graph_data — Loads graph data (for example, GraphSON/JSON/CSV) in batches and reports progress.
-* export_subgraph — Exports a selected subgraph to JSON, GraphSON, or CSV.
+* `run_gremlin_query` — Executes an arbitrary Gremlin traversal and returns JSON results.
+* `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
+* `import_graph_data` — Loads graph data (for example, GraphSON/JSON/CSV) in batches and reports progress.
+* `export_subgraph` — Exports a selected subgraph to JSON, GraphSON, or CSV.
 
 NOTE: Import and export operate on potentially large portions of the graph. Ensure proper authorization and confirm the
 assistant’s intent in the client before approving such operations.
@@ -3075,9 +3075,9 @@ The resulting schema helps assistants construct well‑formed traversals and exp
 
 When the assistant needs to answer a question, a common sequence is:
 
-. Optionally call get_graph_status.
-. Retrieve (or reuse) schema via get_graph_schema.
-. Formulate a traversal and call run_gremlin_query.
+. Optionally, call get_graph_status.
+. Retrieve (or reuse) schema via `get_graph_schema`.
+. Formulate a traversal and call `run_gremlin_query`.
 . Present results and, if required, refine the traversal.
 
 For example, the assistant may execute a traversal like the following:

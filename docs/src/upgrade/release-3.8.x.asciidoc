@@ -30,6 +30,20 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlin MCP Server
+
+Gremlin MCP Server is an experimental application that implements the link:https://modelcontextprotocol.io/[Model Context Protocol]
+(MCP) to expose Gremlin Server-backed graph operations to MCP-capable clients such as Claude Desktop, Cursor, or
+Windsurf. Through this integration, graph structure can be discovered, Gremlin traversals can be executed, and common
+import/export tasks (for example, GraphSON or CSV) can be performed. Basic health checks are included to validate
+connectivity.
+
+A running Gremlin Server that fronts the target TinkerPop graph is required. An MCP client can be configured to connect
+to the Gremlin MCP Server endpoint.
+
+This feature is *experimental* and its interfaces and behavior may change based on feedback in future versions. As a
+result, there is no official 3.8.0 release for it, and it is only offered as a 3.8.0-alpha1.
+
 ==== Air Routes Dataset
 
 The Air Routes sample dataset has long been used to help showcase and teach Gremlin. Popularized by the first edition
