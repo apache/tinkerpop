@@ -24,11 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Converts placeholder steps that hold {@link GValue} objects to their concrete implementations. While not an
