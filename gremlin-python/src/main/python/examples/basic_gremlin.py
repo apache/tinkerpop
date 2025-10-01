@@ -16,6 +16,7 @@
 # under the License.
 
 import sys
+import os
 
 sys.path.append("..")
 
@@ -25,8 +26,12 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 
 
 def main():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
+
+    # drop existing vertices
+    g.V().drop().iterate()
 
     # basic Gremlin: adding and retrieving data
     v1 = g.add_v('person').property('name', 'marko').next()
@@ -46,6 +51,9 @@ def main():
     people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').to_list()
     for person in people_marko_knows:
         print("marko knows " + person)
+
+    # clean added data
+    g.V().drop().iterate()
 
     rc.close()
 

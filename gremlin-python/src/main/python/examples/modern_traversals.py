@@ -16,6 +16,7 @@
 # under the License.
 
 import sys
+import os
 
 sys.path.append("..")
 
@@ -31,7 +32,15 @@ def main():
     # This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
     # For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
     # conf/gremlin-server-modern.yaml.
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    
+    # CI uses port 45940 with gmodern binding, local uses 8182 with g binding
+    if ':45940' in server_url:
+        graph_binding = 'gmodern'  # CI environment
+    else:
+        graph_binding = 'g'        # Local environment
+    
+    rc = DriverRemoteConnection(server_url, graph_binding)
     g = traversal().with_remote(rc)
 
     e1 = g.V(1).both_e().to_list()  # (1)
