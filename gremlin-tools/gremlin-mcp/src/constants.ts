@@ -24,10 +24,12 @@
  * including server metadata, MCP protocol identifiers, and configuration defaults.
  */
 
+export const gremlinVersion = '3.8.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+
 // Server Information
 export const SERVER_INFO = {
   NAME: 'gremlin-mcp',
-  VERSION: '0.0.11-SNAPSHOT',
+  VERSION: gremlinVersion,
 } as const;
 
 // MCP Resource URIs
