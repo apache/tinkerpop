@@ -341,23 +341,6 @@ public class GValue<V> implements Serializable, Cloneable {
     }
 
     /**
-     * Converts possible {@link GValue} objects argument array to their values to prevent them from leaking to the Graph API.
-     * Providers extending from this step should use this method to get actual values to prevent any {@link GValue}
-     * objects from leaking to the Graph API.
-     */
-    public static Object[] resolveToValues(final Object[] gvalues) {
-        final Object[] values = new Object[gvalues.length];
-        for (int i = 0; i < gvalues.length; i++) {
-            values[i] = gvalues[i] instanceof GValue ? ((GValue<?>) gvalues[i]).get() : gvalues[i];
-            if (values[i] instanceof GValueConstantTraversal) {
-                // TODO:: This seems out of place here, find a better home for this.
-                values[i] = ((GValueConstantTraversal<?, ?>) values[i]).getConstantTraversal();
-            }
-        }
-        return values;
-    }
-
-    /**
      * Tests if any of the objects are GValues.
      */
     public static boolean containsGValues(final Object... args) {

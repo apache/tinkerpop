@@ -22,12 +22,18 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * Defines the contract for steps containing a single {@link P}.
  */
 public interface IsStepContract<S> extends Step<S, S> {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(IsStep.class, IsStepPlaceholder.class);
 
     /**
      * Retrieves the step's predicate.

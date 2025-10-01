@@ -27,9 +27,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public interface TailGlobalStepContract<S> extends Step<S, S>, Bypassing, FilteringBarrier<TraverserSet<S>> {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(TailGlobalStep.class, TailGlobalStepPlaceholder.class);
+
     Long getLimit();
 
     default GValue<Long> getLimitAsGValue() {

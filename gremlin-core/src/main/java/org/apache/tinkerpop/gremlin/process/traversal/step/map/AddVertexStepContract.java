@@ -23,7 +23,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Writing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
+
 public interface AddVertexStepContract<S> extends Step<S, Vertex>, AddElementStepContract<S, Vertex>, Writing<Event.VertexAddedEvent> {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(AddVertexStep.class, AddVertexStepPlaceholder.class, AddVertexStartStep.class, AddVertexStartStepPlaceholder.class);
 
     boolean hasUserProvidedLabel();
 }

@@ -30,9 +30,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.HashSet;
+import java.util.List;
 
 public interface AddPropertyStepContract<S> extends Step<S, S>, TraversalParent, Scoping, PropertiesHolder,
         Writing<Event.ElementPropertyChangedEvent>, Deleting<Event.ElementPropertyChangedEvent>, Configuring {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = List.of(AddPropertyStep.class, AddPropertyStepPlaceholder.class);
+
     VertexProperty.Cardinality getCardinality();
 
     @Override

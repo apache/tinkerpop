@@ -20,14 +20,23 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface AddElementStepContract<S, E> extends Step<S, E>, PropertiesHolder, TraversalParent, Scoping, Configuring {
+
+    /**
+     * Concrete implementations of this contract that can be referenced as TinkerPop implementations.
+     */
+    List<Class<? extends Step>> CONCRETE_STEPS = Stream.of(AddVertexStepContract.CONCRETE_STEPS, AddEdgeStepContract.CONCRETE_STEPS)
+            .flatMap(List::stream).collect(Collectors.toList());
+
     Object getLabel();
 
     default Object getLabelWithGValue() {
