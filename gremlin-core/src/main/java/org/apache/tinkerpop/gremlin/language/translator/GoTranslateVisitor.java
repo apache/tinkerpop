@@ -383,7 +383,7 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
             TO_GO_MAP.put("bigint", "BigInt");
             TO_GO_MAP.put("datetime", "DateTime");
             TO_GO_MAP.put("uuid", "UUID");
-            TO_GO_MAP.put("vp", "VP");
+            TO_GO_MAP.put("vproperty", "VProperty");
             TO_GO_MAP.put("WithOptions", GO_PACKAGE_NAME + "WithOptions");
             TO_GO_MAP.put("IO", GO_PACKAGE_NAME + "IO");
             TO_GO_MAP.put("__", GO_PACKAGE_NAME + "T__");

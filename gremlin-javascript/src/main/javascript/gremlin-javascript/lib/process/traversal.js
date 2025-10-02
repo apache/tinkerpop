@@ -527,7 +527,7 @@ module.exports = {
   dt: toEnum('DT', 'second minute hour day'),
   gType: toGTypeEnum(
     'GType',
-    'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vp',
+    'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vproperty',
   ),
   graphSONVersion: toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0'),
   gryoVersion: toEnum('GryoVersion', 'V1_0 V3_0'),

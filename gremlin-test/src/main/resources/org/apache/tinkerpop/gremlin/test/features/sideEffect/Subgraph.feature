@@ -68,3 +68,26 @@ Feature: Step - subgraph()
       | edges |
     And the result should be a subgraph with the following
       | vertices |
+
+
+  Scenario: g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX_isXtypeOfXGType_GRAPHXX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE("knows").subgraph("sg").cap("sg").is(P.typeOf(GType.GRAPH)).count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+
+  Scenario: g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX_isX_notXtypeOfXGType_GRAPHXXX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().outE("knows").subgraph("sg").cap("sg").is(not(P.typeOf(GType.GRAPH))).count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].l |

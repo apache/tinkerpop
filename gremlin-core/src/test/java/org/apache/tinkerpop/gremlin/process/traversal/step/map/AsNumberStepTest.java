@@ -84,6 +84,11 @@ public class AsNumberStepTest extends StepTest {
         __.__(UUID.randomUUID()).asNumber().next();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWithWrongGTypeInput() {
+        __.__("128").asNumber(GType.VERTEX).next();
+    }
+
     @Test(expected = ArithmeticException.class)
     public void shouldThrowOverflowExceptionWhenParsedNumberOverflows() {
         __.__("128").asNumber(GType.BYTE).next();

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -132,7 +131,7 @@ public class DateAddStepTest extends StepTest {
         assertEquals(expected, __.__(now).dateAdd(DT.second, 15).next());
     }
 
-    @Test @Ignore("need to restruture to account for day light saving changes")
+    @Test
     public void shouldAddDaysForDateCompatibility() {
         final Date now = new Date();
 

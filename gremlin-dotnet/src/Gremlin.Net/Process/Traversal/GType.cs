@@ -61,7 +61,7 @@ namespace Gremlin.Net.Process.Traversal
         public static GType Tree => new GType("TREE");
         public static GType UUID => new GType("UUID");
         public static GType Vertex => new GType("VERTEX");
-        public static GType VP => new GType("VP");
+        public static GType VProperty => new GType("VPROPERTY");
 
         private static readonly Dictionary<string, GType> Properties = new()
         {
@@ -91,7 +91,7 @@ namespace Gremlin.Net.Process.Traversal
             { "TREE", Tree },
             { "UUID", UUID },
             { "VERTEX", Vertex },
-            { "VP", VP },
+            { "VPROPERTY", VProperty },
         };
 
         /// <summary>

@@ -1130,10 +1130,11 @@ traversalGType
     | K_TREE | K_GTYPE DOT K_TREE
     | K_TREEU | K_GTYPE DOT K_TREEU
     | K_UUID | K_GTYPE DOT K_UUID
+    | K_UUIDL | K_GTYPE DOT K_UUIDL
     | K_VERTEX | K_GTYPE DOT K_VERTEX
     | K_VERTEXU | K_GTYPE DOT K_VERTEXU
-    | K_VP | K_GTYPE DOT K_VP
-    | K_VPU | K_GTYPE DOT K_VPU
+    | K_VPROPERTY | K_GTYPE DOT K_VPROPERTY
+    | K_VPROPERTYU | K_GTYPE DOT K_VPROPERTYU
     ;
 
 traversalPredicate
@@ -2016,14 +2017,15 @@ keyword
     | K_UNPRODUCTIVE
     | K_UNTIL
     | K_UUID
+    | K_UUIDL
     | K_V
     | K_VALUEMAP
     | K_VALUES
     | K_VALUE
     | K_VERTEX
     | K_VERTEXU
-    | K_VP
-    | K_VPU
+    | K_VPROPERTY
+    | K_VPROPERTYU
     | K_WHERE
     | K_WITH
     | K_WITHBULK
@@ -2326,14 +2328,15 @@ K_UNION: 'union';
 K_UNPRODUCTIVE: 'unproductive';
 K_UNTIL: 'until';
 K_UUID: 'UUID';
+K_UUIDL: 'uuid';
 K_V: 'V';
 K_VALUEMAP: 'valueMap';
 K_VALUES: 'values';
 K_VALUE: 'value';
 K_VERTEX: 'vertex';
 K_VERTEXU: 'VERTEX';
-K_VP: 'vp';
-K_VPU: 'VP';
+K_VPROPERTY: 'vproperty';
+K_VPROPERTYU: 'VPROPERTY';
 K_WHERE: 'where';
 K_WITH: 'with';
 K_WITHBULK: 'withBulk';

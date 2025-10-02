@@ -32,15 +32,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -498,7 +495,7 @@ public class GeneralLiteralVisitorTest {
                     {"tree", GType.TREE},
                     {"UUID", GType.UUID},
                     {"vertex", GType.VERTEX},
-                    {"vp", GType.VP},
+                    {"vproperty", GType.VPROPERTY},
             });
         }
 

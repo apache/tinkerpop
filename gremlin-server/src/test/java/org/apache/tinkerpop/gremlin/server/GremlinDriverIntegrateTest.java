@@ -22,6 +22,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import nl.altindag.log.LogCaptor;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
@@ -1974,6 +1975,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(1, returnedList.size());
             Object value = returnedList.get(0).getObject();
             assertTrue(value instanceof UUID);
+        } finally {
+            cluster.close();
+        }
+    }
+
+
+    @Test
+    public void testTest() throws Exception {
+        final Cluster cluster = TestClientFactory.build().serializer(Serializers.GRAPHBINARY_V1).create();
+        final Client client = cluster.connect();
+
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(client));
+//            System.out.println(g.V().count().toList());
+//            System.out.println(g.inject(1.0,2,"hello",false).is(P.typeOf("Doublel")).fold().next());
+//            System.out.println(client.submit("g.inject(1.0, 2, 'hello').is(P.typeOf('Doublel')).fold()", RequestOptions.build().language("gremlin-lang").create()).all().get());
+            System.out.println(client.submit("g.inject(1s, 1b)", RequestOptions.build().language("gremlin-lang").create()).all().get());
         } finally {
             cluster.close();
         }
