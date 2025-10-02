@@ -1369,6 +1369,30 @@ java -cp target/run-examples-shaded.jar examples.BasicGremlin
 java -cp target/run-examples-shaded.jar examples.ModernTraversals
 ----
 
+[[gremlin-java-differences]]
+=== Differences
+
+Gremlin-Java provides additional syntactic sugar that leverages Java's type system. Most notably, the `P.typeOf()` 
+predicate accepts Java `Class` objects directly, providing a more natural and type-safe way to perform type checking:
+
+[source,java]
+----
+// Java-specific syntax using Class objects
+g.V().values("age").is(P.typeOf(Integer.class))
+g.V().values("name").is(P.typeOf(String.class))
+g.V().has("weight", P.typeOf(Double.class))
+----
+
+This is equivalent to using `GType` enums, but offers compile-time type checking and IDE support. Other Gremlin 
+language variants must use the canonical `GType` enum approach:
+
+[source,java]
+----
+// Canonical syntax available in all languages
+g.V().values("age").is(P.typeOf(GType.INT))
+g.V().values("name").is(P.typeOf(GType.STRING))
+----
+
 [[gremlin-javascript]]
 == Gremlin-JavaScript
 

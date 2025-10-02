@@ -259,7 +259,7 @@ statics.add_static('add_all', Operator.add_all)
 statics.add_static('sum_long', Operator.sum_long)
 
 
-GType = Enum('GType', ' BIGDECIMAL BIGINT BINARY BOOLEAN BYTE CHAR DATETIME DOUBLE DURATION EDGE FLOAT GRAPH INT LIST LONG MAP NULL NUMBER PATH PROPERTY SET SHORT STRING TREE UUID VERTEX VP')
+GType = Enum('GType', ' BIGDECIMAL BIGINT BINARY BOOLEAN BYTE CHAR DATETIME DOUBLE DURATION EDGE FLOAT GRAPH INT LIST LONG MAP NULL NUMBER PATH PROPERTY SET SHORT STRING TREE UUID VERTEX VPROPERTY')
 
 statics.add_static('BIGDECIMAL', GType.BIGDECIMAL)
 statics.add_static('BIGINT', GType.BIGINT)
@@ -287,7 +287,7 @@ statics.add_static('STRING', GType.STRING)
 statics.add_static('TREE', GType.TREE)
 statics.add_static('UUID', GType.UUID)
 statics.add_static('VERTEX', GType.VERTEX)
-statics.add_static('VP', GType.VP)
+statics.add_static('VPROPERTY', GType.VPROPERTY)
 
 
 class P(object):

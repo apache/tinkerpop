@@ -16,21 +16,7 @@
 # under the License.
 
 @StepClassFilter @StepIs
-Feature: Predicate - typeOf()
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_INTXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.INT))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
+Feature: Predicate - typeOf() General
 
   Scenario: g_V_valuesXnameX_isXtypeOfXGType_STRINGXX
     Given the modern graph
@@ -48,44 +34,89 @@ Feature: Predicate - typeOf()
       | ripple |
       | peter |
 
-  Scenario: g_V_isXtypeOfXGType_VERTEXXX_count
+  Scenario: g_V_valuesXnameX_isXtypeOfXjava_lang_StringXX
     Given the modern graph
     And the traversal of
       """
-      g.V().is(P.typeOf(GType.VERTEX)).count()
+      g.V().values("name").is(P.typeOf("String"))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6].l |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
-  Scenario: g_E_isXtypeOfXGType_EDGEXX_count
+  Scenario: g_V_hasXname_typeOfXGType_STRINGXX_valuesXnameX
     Given the modern graph
     And the traversal of
       """
-      g.E().is(P.typeOf(GType.EDGE)).count()
+      g.V().has("name", P.typeOf(GType.STRING)).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6].l |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
-  Scenario: g_V_propertiesXnameX_isXtypeOfXGType_PROPERTYXX_count
+  Scenario: g_V_orXhasXname_typeOfXGType_STRINGXX__hasXage_typeOfXGType_INTXXX_valuesXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().properties("name").is(P.typeOf(GType.PROPERTY)).count()
+      g.V().or(__.has("name", P.typeOf(GType.STRING)), __.has("age", P.typeOf(GType.INT))).values("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[6].l |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_NUMBERXX
+  Scenario: g_V_andXhasXname_typeOfXGType_STRINGXX__hasXage_typeOfXGType_INTXXX_valuesXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.NUMBER))
+      g.V().and(__.has("name", P.typeOf(GType.STRING)), __.has("age", P.typeOf(GType.INT))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | josh |
+      | peter |
+
+  Scenario: g_V_notXhasXage_typeOfXGType_STRINGXXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().not(__.has("age", P.typeOf(GType.STRING))).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_valuesXageX_isXnotXtypeOfXGType_STRINGXXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.not(P.typeOf(GType.STRING)))
       """
     When iterated to list
     Then the result should be unordered
@@ -95,68 +126,75 @@ Feature: Predicate - typeOf()
       | d[32].i |
       | d[35].i |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_BYTEXX
+  Scenario: g_V_valuesXnameX_isXtypeOfXstringStringXX
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.BYTE))
+      g.V().values("name").is(P.typeOf("String"))
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_SHORTXX
+  Scenario: g_V_orXvaluesXageX_isXtypeOfXGType_INTXX__valuesXnameX_isXtypeOfXGType_STRINGXXX_count
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.SHORT))
+      g.V().or(__.values("age").is(P.typeOf(GType.INT)), __.values("name").is(P.typeOf(GType.STRING))).count()
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | d[6].l |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_LONGXX
+  Scenario: g_V_whereXvaluesXnameX_isXtypeOfXGType_STRINGXXX_valuesXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.LONG))
+      g.V().where(__.values("name").is(P.typeOf(GType.STRING))).values("name")
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_FLOATXX
+  Scenario: g_V_whereXvaluesXageX_isXtypeOfXGType_STRINGXXX_count
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.FLOAT))
+      g.V().where(__.values("age").is(P.typeOf(GType.STRING))).count()
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | d[0].l |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_DOUBLEXX
+  Scenario: g_V_whereXnotXvaluesXageX_isXtypeOfXGType_STRINGXXXX_valuesXnameX
     Given the modern graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.DOUBLE))
+      g.V().where(__.not(__.values("age").is(P.typeOf(GType.STRING)))).values("name")
       """
     When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_BIGINTXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.BIGINT))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_BIGDECIMALXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.BIGDECIMAL))
-      """
-    When iterated to list
-    Then the result should be empty
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
 
   Scenario: g_V_valuesXageX_isXtypeOfXGType_BOOLEANXX
     Given the modern graph
@@ -212,419 +250,91 @@ Feature: Predicate - typeOf()
     When iterated to list
     Then the result should be empty
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_LISTXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.LIST))
-      """
-    When iterated to list
-    Then the result should be empty
+#  TODO: with validation moved to P, deserialization will cause early error in GLV, leading to 499 instead, revisit
+#  Scenario: g_V_valuesXageX_isXtypeOfXnon_registered_NameXX
+#    Given the modern graph
+#    And the traversal of
+#    """
+#    g.V().values("age").is(P.typeOf("non-registered-Name"))
+#    """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "non-registered-Name is not a registered type"
 
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_MAPXX
-    Given the modern graph
+  Scenario: g_V_hasLabelXgeneralX_valuesXbooleanX_isXtypeOfXGType_BOOLEANXX
+    Given the sink graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf(GType.MAP))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_SETXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.SET))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_PATHXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.PATH))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_TREEXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.TREE))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_GRAPHXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.GRAPH))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_VPXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.VP))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_NULLXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.NULL))
-      """
-    When iterated to list
-    Then the result should be empty
-
-  Scenario: g_V_valuesXageX_isXtypeOfXjava_lang_IntegerXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf("Integer"))
+      g.V().hasLabel("data").values("boolean").is(P.typeOf(GType.BOOLEAN))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
+      | true |
 
-  Scenario: g_V_valuesXnameX_isXtypeOfXjava_lang_StringXX
-    Given the modern graph
+  Scenario: g_V_hasLabelXgeneralX_valuesXstringX_isXtypeOfXGType_STRINGXX
+    Given the sink graph
     And the traversal of
       """
-      g.V().values("name").is(P.typeOf("String"))
+      g.V().hasLabel("data").values("string").is(P.typeOf(GType.STRING))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
+      | a string |
 
-  Scenario: g_V_valuesXageX_isXtypeOfXinvalid_type_NameXX
-    Given the modern graph
+  Scenario: g_V_hasLabelXgeneralX_valuesXuuidX_isXtypeOfXGType_UUIDXX
+    Given the sink graph
     And the traversal of
       """
-      g.V().values("age").is(P.typeOf("invalid.type.Name"))
-      """
-    When iterated to list
-    Then the traversal will raise an error with message containing text of "invalid.type.Name is not a registered type"
-
-  Scenario: g_V_hasXname_typeOfXGType_STRINGXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().has("name", P.typeOf(GType.STRING)).values("name")
+      g.V().hasLabel("data").values("uuid").is(P.typeOf(GType.UUID))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
+      | uuid[ffffffff-fd49-1e4b-0000-00000d4b8a1d] |
 
-  Scenario: g_V_hasXage_typeOfXGType_NUMBERXX_valuesXnameX
-    Given the modern graph
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_inject_XtimeX_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX
+    Given the empty graph
     And the traversal of
       """
-      g.V().has("age", P.typeOf(GType.NUMBER)).values("name")
+      g.inject(datetime("2023-08-08T00:00:00Z")).is(P.typeOf(GType.DATETIME))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | vadas |
-      | josh |
-      | peter |
+      | dt[2023-08-08T00:00:00Z] |
 
-  Scenario: g_V_orXhasXname_typeOfXGType_STRINGXX__hasXage_typeOfXGType_INTXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().or(__.has("name", P.typeOf(GType.STRING)), __.has("age", P.typeOf(GType.INT))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_V_andXhasXname_typeOfXGType_STRINGXX__hasXage_typeOfXGType_INTXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().and(__.has("name", P.typeOf(GType.STRING)), __.has("age", P.typeOf(GType.INT))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
-      | peter |
-
-  Scenario: g_V_notXhasXage_typeOfXGType_STRINGXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().not(__.has("age", P.typeOf(GType.STRING))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_V_valuesXageX_isXtypeOfXGType_INTX_orXtypeOfXGType_LONGXXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf(GType.INT).or(P.typeOf(GType.LONG)))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
-
-  Scenario: g_V_valuesXageX_isXnotXtypeOfXGType_STRINGXXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.not(P.typeOf(GType.STRING)))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
-
-  Scenario: g_V_whereXvaluesXageX_isXtypeOfXGType_INTXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.values("age").is(P.typeOf(GType.INT))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
-      | peter |
-
-  Scenario: g_V_valuesXageX_isXtypeOfXintegerStringXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("age").is(P.typeOf("Integer"))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[29].i |
-      | d[27].i |
-      | d[32].i |
-      | d[35].i |
-
-  Scenario: g_V_valuesXnameX_isXtypeOfXstringStringXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().values("name").is(P.typeOf("String"))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_V_orXvaluesXageX_isXtypeOfXGType_INTXX__valuesXnameX_isXtypeOfXGType_STRINGXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().or(__.values("age").is(P.typeOf(GType.INT)), __.values("name").is(P.typeOf(GType.STRING))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
-
-  Scenario: g_V_orXvaluesXageX_isXtypeOfXGType_BYTEXX__valuesXageX_isXtypeOfXGType_SHORTXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().or(__.values("age").is(P.typeOf(GType.BYTE)), __.values("age").is(P.typeOf(GType.SHORT))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0].l |
-
-  Scenario: g_V_orXvaluesXageX_isXtypeOfXGType_NUMBERXX__valuesXnameX_isXtypeOfXGType_BOOLEANXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().or(__.values("age").is(P.typeOf(GType.NUMBER)), __.values("name").is(P.typeOf(GType.BOOLEAN))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
-      | peter |
-
-  Scenario: g_E_orXisXtypeOfXGType_EDGEXX__isXtypeOfXGType_VERTEXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.E().or(__.is(P.typeOf(GType.EDGE)), __.is(P.typeOf(GType.VERTEX))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
-
-  Scenario: g_V_whereXvaluesXnameX_isXtypeOfXGType_STRINGXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.values("name").is(P.typeOf(GType.STRING))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_V_whereXvaluesXageX_isXtypeOfXGType_NUMBERXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.values("age").is(P.typeOf(GType.NUMBER))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | josh |
-      | peter |
-
-  Scenario: g_V_whereXvaluesXageX_isXtypeOfXGType_STRINGXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.values("age").is(P.typeOf(GType.STRING))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0].l |
-
-  Scenario: g_V_whereXisXtypeOfXGType_VERTEXXX_andXhasXnameXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.is(P.typeOf(GType.VERTEX)).and(__.has("name"))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_E_whereXisXtypeOfXGType_EDGEXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.E().where(__.is(P.typeOf(GType.EDGE))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[6].l |
-
-  Scenario: g_V_whereXpropertiesXnameX_isXtypeOfXGType_PROPERTYXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.properties("name").is(P.typeOf(GType.PROPERTY))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
-
-  Scenario: g_V_whereXvaluesXageX_isXtypeOfXGType_BYTEXX_orXvaluesXageX_isXtypeOfXGType_SHORTXXXX_count
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.values("age").is(P.typeOf(GType.BYTE)).or(__.values("age").is(P.typeOf(GType.SHORT)))).count()
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | d[0].l |
-
-  Scenario: g_V_whereXnotXvaluesXageX_isXtypeOfXGType_STRINGXXXX_valuesXnameX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().where(__.not(__.values("age").is(P.typeOf(GType.STRING)))).values("name")
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | marko |
-      | vadas |
-      | lop |
-      | josh |
-      | ripple |
-      | peter |
+  # TODO update depends on graph needs
+#  Scenario: g_V_hasLabelXtimeX_valuesXdurationX_isXtypeOfXGType_DURATIONXX
+#    Given the sink graph
+#    And the traversal of
+#      """
+#      g.V().hasLabel("data").values().is(P.typeOf(GType.DURATION)).count()
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | d[1].l |
+#
+#  Scenario: g_V_hasLabelXgeneralX_valuesXbinaryX_isXtypeOfXGType_BINARYXX
+#    Given the sink graph
+#    And the traversal of
+#      """
+#      g.V().hasLabel("data").values().is(P.typeOf(GType.BINARY)).count()
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | d[1].l |
+#
+#  Scenario: g_V_hasLabelXgeneralX_valuesXcharX_isXtypeOfXGType_CHARXX
+#    Given the sink graph
+#    And the traversal of
+#      """
+#      g.V().hasLabel("data").values().is(P.typeOf(GType.CHAR)).count()
+#      """
+#    When iterated to list
+#    Then the result should be unordered
+#      | result |
+#      | d[1].l |

@@ -36,7 +36,26 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Gremlin types
+ * Enumeration of Gremlin data types used for type checking and filtering operations.
+ * <p>
+ * Each {@code GType} constant represents a specific Java type that can be encountered
+ * during graph traversals. This enum is primarily used with the {@code typeOf()} predicate
+ * to filter values based on their runtime type.
+ * 
+ * <h3>Usage Examples:</h3>
+ * <pre>{@code
+ * // Filter vertices by checking property types
+ * g.V().has("age", P.typeOf(GType.INT))
+ * 
+ * // Filter values by string type
+ * g.V().values("name").is(P.typeOf(GType.STRING))
+ * 
+ * // Check for numeric types
+ * g.V().values().is(P.typeOf(GType.NUMBER))
+ * }</pre>
+ * 
+ * @see org.apache.tinkerpop.gremlin.process.traversal.P#typeOf(GType)
+ * @since 3.8.0
  */
 public enum GType {
     BIGDECIMAL(BigDecimal.class),
@@ -65,22 +84,22 @@ public enum GType {
     TREE(Tree.class),
     UUID(UUID.class),
     VERTEX(Vertex.class),
-    VP(VertexProperty.class),;
+    VPROPERTY(VertexProperty.class),;
 
     private final Class<?> javaType;
 
-    GType(Class<?> javaType) {
+    GType(final Class<?> javaType) {
         this.javaType = javaType;
     }
 
     public Class<?> getType() { return javaType; }
 
     public boolean isNumeric() {
-        Class<?> type = getType();
+        final Class<?> type = getType();
         return Number.class.isAssignableFrom(type);
     }
 
-    public static Class<?> getType(String name) {
+    public static Class<?> getType(final String name) {
         return valueOf(name).javaType;
     }
 

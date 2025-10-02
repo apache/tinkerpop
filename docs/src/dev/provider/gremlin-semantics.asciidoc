@@ -776,7 +776,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
 *Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
 
-*Syntax:* `asNumber()` | `asNumber(N numberToken)`
+*Syntax:* `asNumber()` | `asNumber(GType typeToken)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -786,7 +786,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
 *Arguments:*
 
-* `numberToken` - The enum `N` to denote the desired type to parse/cast to.
+* `typeToken` - The enum `GType` to denote the desired type to parse/cast to.
 
 If no type token is provided, the incoming number remains unchanged.
 
@@ -795,6 +795,7 @@ If no type token is provided, the incoming number remains unchanged.
 * If any overflow occurs during narrowing of types, then an `ArithmeticException` will be thrown.
 * If the incoming string cannot be parsed into a valid number format, then a `NumberFormatException` will be thrown.
 * If the incoming traverser is a non-String/Number (including `null`) value then an `IllegalArgumentException` will be thrown.
+* If the supplied type token is not a number type, then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsNumberStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asNumber-step[reference]

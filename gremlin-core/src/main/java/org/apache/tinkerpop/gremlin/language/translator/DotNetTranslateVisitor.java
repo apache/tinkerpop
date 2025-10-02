@@ -1345,7 +1345,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
             TO_CS_MAP.put("bigint", "BigInt");
             TO_CS_MAP.put("datetime", "DateTime");
             TO_CS_MAP.put("uuid", "UUID");
-            TO_CS_MAP.put("vp", "VP");
+            TO_CS_MAP.put("vproperty", "VProperty");
             TO_CS_MAP.forEach((k, v) -> FROM_CS_MAP.put(v, k));
         }
 

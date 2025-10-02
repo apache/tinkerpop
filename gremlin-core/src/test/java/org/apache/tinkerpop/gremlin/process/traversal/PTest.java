@@ -238,6 +238,10 @@ public class PTest {
                     {P.typeOf(GType.STRING), "hello", true},
                     {P.typeOf(Boolean.class), false, true},
                     {P.typeOf(GType.NULL), null, true},
+                    {P.typeOf(GType.NUMBER), "1", false},
+                    {P.typeOf(GType.LIST), "list", false},
+                    {P.typeOf("Number"), 1, true},
+                    {P.typeOf("String"), 1, false},
 
                     // text predicates
                     {TextP.containing("ark"), "marko", true},

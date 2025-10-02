@@ -369,7 +369,7 @@ type gTypes struct {
 	Tree       gType
 	UUID       gType
 	Vertex     gType
-	VP         gType
+	VProperty  gType
 }
 
 // GType is a set of Gremlin types for type checking.
@@ -400,7 +400,7 @@ var GType = gTypes{
 	Tree:       "TREE",
 	UUID:       "UUID",
 	Vertex:     "VERTEX",
-	VP:         "VP",
+	VProperty:  "VPROPERTY",
 }
 
 type merge string

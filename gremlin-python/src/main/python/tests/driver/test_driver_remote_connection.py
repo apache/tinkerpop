@@ -19,6 +19,7 @@
 import os
 
 from gremlin_python import statics
+from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.protocol import GremlinServerError
 from gremlin_python.statics import long, bigint

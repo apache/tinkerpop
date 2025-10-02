@@ -48,11 +48,6 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         this.typeToken = numberToken;
     }
 
-    // TODO potential extension to use class
-    public AsNumberStep(final Traversal.Admin traversal, final Class<?> numberToken) {
-        super(traversal);
-        this.typeToken = GType.valueOf(numberToken.getSimpleName().toUpperCase());
-    }
 
     @Override
     protected Number map(final Traverser.Admin<S> traverser) {

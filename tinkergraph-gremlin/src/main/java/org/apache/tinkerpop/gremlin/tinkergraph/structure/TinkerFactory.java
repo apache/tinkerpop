@@ -26,11 +26,26 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
 import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager;
 import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.INTEGER;
 import static org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph.DefaultIdManager.LONG;
+import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.datetime;
 
 /**
  * Helps create a variety of different toy graphs for testing and learning purposes.
@@ -197,6 +212,22 @@ public final class TinkerFactory {
           addV("message").property(T.id, 2001).property("name", "b").as("b").
           addE("link").from("a").to("b").property(T.id, 2002).
           addE("link").from("a").to("a").property(T.id, 2003).iterate();
+        g.addV("data").property(T.id, 3000).property("name", "number").
+                property("int", 1).
+                property("long", 1l).
+                property("float", 1f).
+                property("double", 1d).
+                iterate();
+        g.addV("data").property(T.id, 3001).property("name", "general").
+                property("boolean", true).
+                property("string", "a string").
+                property("uuid", UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d")).
+                iterate();
+        g.addV("data").property(T.id, 3002).property("name", "collection").
+                property("set", new HashSet<String>(Collections.singleton("set"))).
+                property("list", new ArrayList<String>(Collections.singleton("list"))).
+                property("map", new HashMap<String, String>(Collections.singletonMap("key", "value"))).
+                iterate();
     }
 
     /**
