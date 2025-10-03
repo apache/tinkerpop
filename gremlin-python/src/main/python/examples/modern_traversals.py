@@ -32,6 +32,7 @@ def main():
     # This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
     # For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
     # conf/gremlin-server-modern.yaml.
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
     
     # CI uses port 45940 with gmodern binding, local uses 8182 with g binding

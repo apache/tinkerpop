@@ -18,6 +18,7 @@
 import sys
 import os
 import ssl
+import socket
 
 sys.path.append("..")
 
@@ -43,72 +44,70 @@ def with_remote():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
     rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
-    # drop existing vertices
-    g.V().drop().iterate()
-
     # simple query to verify connection
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v('py-conn-ex').iterate()
+    count = g.V().has_label('py-conn-ex').count().next()
     print("Vertex count: " + str(count))
 
+    # clean added data
+    g.V().has_label('py-conn-ex').drop().iterate()
     # cleanup
     rc.close()
 
 
 # connecting with plain text authentication
 def with_auth():
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'ws://localhost:8182/gremlin').format(45941)
-    # turn off certificate verification for testing purposes only
-    ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    ssl_opts.check_hostname = False
-    ssl_opts.verify_mode = ssl.CERT_NONE
-    rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password',
-                                transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
+    
+    # disable SSL certificate verification for remote hosts in test environments
+    if 'localhost' not in server_url:
+        ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_opts.check_hostname = False
+        ssl_opts.verify_mode = ssl.CERT_NONE
+        rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password',
+                                    transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
+    else:
+        rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password')
+    
     g = traversal().with_remote(rc)
 
-    # drop existing vertices
-    g.V().drop().iterate()
-
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v('py-conn-ex').iterate()
+    count = g.V().has_label('py-conn-ex').count().next()
     print("Vertex count: " + str(count))
 
     # clean added data
-    g.V().drop().iterate()
+    g.V().has_label('py-conn-ex').drop().iterate()
     rc.close()
 
 
 # connecting with Kerberos SASL authentication
 def with_kerberos():
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45942)
-    kerberos_hostname = os.getenv('KRB_HOSTNAME', 'gremlin-server-test')
+    kerberos_hostname = os.getenv('KRB_HOSTNAME', socket.gethostname())
     kerberized_service = f'test-service@{kerberos_hostname}'
     
-    try:
-        rc = DriverRemoteConnection(server_url, 'g', kerberized_service=kerberized_service)
-        g = traversal().with_remote(rc)
+    rc = DriverRemoteConnection(server_url, 'g', kerberized_service=kerberized_service)
+    g = traversal().with_remote(rc)
 
-        # drop existing vertices
-        g.V().drop().iterate()
+    v = g.add_v('py-conn-ex').iterate()
+    count = g.V().has_label('py-conn-ex').count().next()
+    print("Vertex count: " + str(count))
 
-        v = g.add_v().iterate()
-        count = g.V().count().next()
-        print("Vertex count: " + str(count))
-
-        # clean added data
-        g.V().drop().iterate()
-        rc.close()
-    except Exception as e:
-        print(f"Kerberos authentication failed (expected in test environment): {e}")
-        # This is expected to fail in CI without proper Kerberos setup
+    # clean added data
+    g.V().has_label('py-conn-ex').drop().iterate()
+    rc.close()
 
 
 # connecting with customized configurations
 def with_configs():
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
     rc = DriverRemoteConnection(
         server_url, 'g',
@@ -119,12 +118,12 @@ def with_configs():
     )
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v('py-conn-ex').iterate()
+    count = g.V().has_label('py-conn-ex').count().next()
     print("Vertex count: " + str(count))
 
     # clean added data
-    g.V().drop().iterate()
+    g.V().has_label('py-conn-ex').drop().iterate()
 
     rc.close()
 
