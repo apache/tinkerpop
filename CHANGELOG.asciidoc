@@ -73,6 +73,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Fixed issue in `gremlin-go` where `Next()` didn't return the error from the server.
 * Changed type for `ReservedKeysVerificationStrategy.keys` in .NET to take a `Set<string>` rather than `List<string>`.
+* Changed `StandardVerificationStrategy` to prevent the use of `SupplyingBarriers` inside `repeat()`.
 * Fixed bug in `group()` value traversal of the second `by()` where a `CollectingBarrierStep` could produce an unexpected filtering effect when `ReducingBarrierStep` or `SupplyingBarrierStep` instances were not taken into account.
 * Changed `DetachedFactory` to special case the handling of `ComputerAdjacentVertex` which doesn't carry properties but still needs to be detachable for OLAP cases.
 * Deprecated `ProfilingAware.prepareForProfiling` method preferring to simply `resetBarrierFromValueTraversal` from the `Grouping` interface after strategy application.

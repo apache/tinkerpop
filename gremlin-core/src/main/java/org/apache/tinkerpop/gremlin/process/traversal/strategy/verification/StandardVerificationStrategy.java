@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSid
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.RequirementsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -61,8 +62,10 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }
-            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
-                throw new VerificationException("The parent of a reducing barrier can not be repeat()-step: " + step, traversal);
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) &&
+                    step.getTraversal().getParent() instanceof RepeatStep &&
+                    step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
+                throw new VerificationException("The parent of a reducing/supplying barrier can not be repeat()-step: " + step, traversal);
 
             // prevents silly stuff like g.V().emit()
             if (step instanceof RepeatStep && null == ((RepeatStep) step).getRepeatTraversal())

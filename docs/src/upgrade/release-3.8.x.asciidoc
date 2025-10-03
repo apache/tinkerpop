@@ -150,6 +150,14 @@ version, the `none()` step was used to "throw away" all traversers that passed i
 renamed to `discard()`. The `discard()` step with its verb tone arguably makes for a better name for that feature, but
 it also helped make room for `none()` to be repurposed as `none(P)` which is a complement to `any(P)` and `all(P) steps.
 
+==== Prevented using cap() inside repeat()
+
+`cap()` inside `repeat()` is now disallowed by the `StandardVerificationStrategy`. Using `cap()` inside `repeat()` would
+have led to unexpected results since `cap()` isn't "repeat-aware". Because `cap()` is a `SupplyingBarrier` that reduces
+the number of traversers to one, its use inside `repeat()` is limited.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3195[TINKERPOP-3195]
+
 ==== Simplified Comparability Semantics
 
 The previous system of ternary boolean semantics has been replaced with simplified binary semantics. The triggers for
