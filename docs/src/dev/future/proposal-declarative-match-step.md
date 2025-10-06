@@ -1,0 +1,89 @@
+## **Specification for the declarative `match()` step**
+
+This document outlines the specification for a new, declarative `match()` step in Gremlin. This step is designed to replace the existing imperative `match()` step, which has proven difficult for providers to optimize and for users to utilize effectively. The new step leverages familiar declarative graph pattern matching syntax to provide a more powerful, intuitive, and optimizable query experience.
+
+### 1\. Motivation
+
+The current `match()` step in Gremlin is imperative, which requires graph providers to translate complex traversal logic into an optimizable form, a notoriously difficult task. Consequently, its adoption is low, and its performance is often suboptimal.
+
+The proposed solution introduces a new `match()` step that accepts a query string from a standard declarative graph query language. This allows the underlying database to use its native query planner and optimizer to execute the pattern match efficiently, while Gremlin retains its role in composing the declarative query with broader imperative traversals.
+
+---
+
+### 2\. Core Concept
+
+The `match()` step introduces a declarative pattern matching clause into a Gremlin traversal. The variables bound within the pattern are not returned directly but are added to the traversal's path history, making them accessible to subsequent steps like `select()`.
+
+The `match()` step can be used as both a start step on a `GraphTraversalSource` and as a mid-traversal step.
+
+### 3\. Declarative Language
+
+The `match()` step is language-agnostic by design, but it will standardize on a default language to ensure portability.
+
+* **Default Language:** A restricted, read-only subset of **GQL** will be the default language. This subset will primarily support `MATCH` and `WHERE` clauses. The `RETURN` clause will **not** be supported in the default implementation (see Section 6). A provider implementing the default GQL does not need to be specified via a modulator.
+  * Example: `g.match("MATCH (p:Person WHERE p.name = 'Stephen')-[:knows]->(friend)")`
+* **Provider-Specific Languages:** Providers may support other declarative languages (e.g., Cypher, GSQL, SQL++) via the `queryLanguage` modulator.
+  * Example: `g.match("...").with("queryLanguage", "GSQL")`
+
+To aid vendors, the TinkerPop project should consider providing a reference ANTLR4 grammar for the default GQL dialect.
+
+---
+
+### 4\. Parameterization
+
+To prevent query injection and improve performance by enabling query plan caching, parameterized queries are supported. Parameters are supplied using the existing `with()` modulator with a special key convention.
+
+* **Convention:** A key in a `with()` modulator that is prefixed with a dollar sign (`$`) will be treated as a query parameter for the `match()` step. The prefix is removed to derive the parameter name.
+* **Example:**
+
+  ```groovy
+  g.match("MATCH (p:Person WHERE p.name = $personName)")
+   .with("$personName", "Stephen")
+  ```
+
+This approach unifies parameter handling, allowing parameters to be defined locally for a specific `match()` step or globally on the `GraphTraversalSource`. If parameters are not explicitly provided via `with()`, an implicit lookup on remote server bindings may be performed.
+
+---
+
+### 5\. Execution Semantics
+
+The `match()` step behaves similarly to the `V()` and `E()` steps.
+
+* **Start Step:** When used as a start step (`g.match(...)`), it executes the pattern match against the entire graph.
+* **Mid-Traversal Step:** When used mid-traversal (`g.V(1).out().match(...)`), it **does not** operate on the incoming traversers. Instead, like `V()`, it "resets" the traversal and executes its pattern match against the **entire graph for each input parameter**. The incoming traversers are disregarded.
+
+The step is restricted to executing **idempotent (read-only)** queries.
+
+---
+
+### 6\. Return Value and Data Access
+
+A key aspect of this new design is its seamless integration with Gremlin's existing projection and path-management mechanisms.
+
+* **`match()` Step Return Value:** The `match()` step itself does not emit any elements. It produces an `Optional.empty()`.
+* **Accessing Matched Data:** All variables bound in the `MATCH` clause (e.g., `(p)`, `(friend)` in the examples) are automatically bound to the traversal's path history. This data is then accessed using the `select()` step. This design eliminates the need for a `RETURN` clause and allows the user to continue chaining Gremlin steps naturally.
+
+#### **Example Flow**
+
+Consider a query to find a person and then, using Gremlin, calculate the sum of the weights of their outgoing `:knows` edges.
+
+**Query:**
+
+```groovy
+g.match("MATCH (n:Person {name:'Cole'})-[e:knows]->(friend)")
+ .select("e")
+ .values("weight")
+ .sum()
+```
+
+**Execution Breakdown:**
+
+1. `match("...")`: Finds all patterns matching a person named 'Cole' with an outgoing `knows` edge. For each match, it binds the vertex `n`, the edge `e`, and the vertex `friend` to the path history. It returns `Optional.empty()`.
+2. `select("e")`: It projects the element associated with the label `e`. The traversal stream now contains the `knows` edges.
+3. `values("weight").sum()`: Standard Gremlin steps that operate on the stream of edges to calculate the sum of their `weight` properties.
+
+This approach is elegant, highly composable, and allows providers to optimize the declarative query by analyzing subsequent `select()` steps to determine which variables are actually needed.
+
+### 6\. Deprecation of Existing `match()` Step
+
+The existing, imperative `match()` step will be marked as **deprecated** upon the introduction of this new specification and will be removed in a future major release of TinkerPop.
