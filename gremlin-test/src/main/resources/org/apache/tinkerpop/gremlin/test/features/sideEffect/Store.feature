@@ -34,12 +34,43 @@ Feature: Step - store()
       | ripple |
       | peter  |
 
+  Scenario: g_V_localXaggregateXa_nameXX_out_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a").by("name")).out().cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
+
   Scenario: g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
     And the traversal of
       """
       g.V(vid1).store("a").by("name").out().store("a").by("name").values("name").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+
+  Scenario: g_VX1X_storeXaX_byXnameX_out_localXaggregateXaX_byXnameXX_name_capXaX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).store("a").by("name").out().local(aggregate("a").by("name")).values("name").cap("a")
       """
     When iterated next
     Then the result should be unordered
@@ -74,6 +105,28 @@ Feature: Step - store()
              by(__.outE("created").count()).
         out().out().store("a").
                       by(__.inE("created").values("weight").sum()).
+        cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |
+      | d[0].l |
+      | d[0].l |
+      | d[2].l |
+      | d[1.0].d |
+      | d[1.0].d |
+
+  Scenario: g_V_localXaggregateXaX_byXoutEXcreatedX_countX_out_out_localXaggregateXaX_byXinEXcreatedX_weight_sumXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a").
+             by(__.outE("created").count())).
+        out().out().local(aggregate("a").
+                      by(__.inE("created").values("weight").sum())).
         cap("a")
       """
     When iterated next

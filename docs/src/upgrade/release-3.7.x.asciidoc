@@ -30,6 +30,21 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Deprecation of Scopes in aggregate() Step
+
+Scopes are now deprecated inside the `aggregate()` step, and will be removed in the next major upgrade.
+The preferred way to achieve lazy evaluation with `aggregate()`, is using `local()`.
+
+[source,text]
+----
+// 3.7.4
+gremlin> g.V().aggregate(Scope.local, "x").by("age").cap("x")
+==>[29,27,32,35]
+
+// 3.7.5 convention
+gremlin> g.V().local(aggregate("x").by("age")).cap("x")
+==>[29,27,32,35]
+----
 
 === Upgrading for Providers
 

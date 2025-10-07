@@ -124,12 +124,43 @@ Feature: Step - aggregate()
       | d[32].i |
       | d[35].i |
 
+  Scenario: g_V_localXaggregateXxX_byXageXX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("x").by("age")).cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
   @WithProductiveByStrategy
   Scenario: g_withStrategiesXProductiveByStrategyX_V_aggregateXlocal_xX_byXageX_capXxX
     Given the modern graph
     And the traversal of
       """
       g.withStrategies(ProductiveByStrategy).V().aggregate(Scope.local, "x").by("age").cap("x")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+      | null    |
+      | null    |
+
+  @WithProductiveByStrategy
+  Scenario: g_withStrategiesXProductiveByStrategyX_V_localXaggregateXxX_byXageXX_capXxX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(ProductiveByStrategy).V().local(aggregate("x").by("age")).cap("x")
       """
     When iterated next
     Then the result should be unordered
@@ -157,6 +188,22 @@ Feature: Step - aggregate()
     | ripple |
     | peter  |
 
+  Scenario: g_V_localX_aggregateXa_byXnameXX_out_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().local(aggregate("a").by("name")).out().cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
+
   Scenario: g_VX1X_aggregateXlocal_aX_byXnameX_out_aggregateXlocal_aX_byXnameX_name_capXaX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -166,11 +213,26 @@ Feature: Step - aggregate()
     """
     When iterated next
     Then the result should be unordered
-    | result |
-    | marko |
-    | vadas |
-    | lop |
-    | josh |
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+
+  Scenario: g_VX1X_localXaggregateXaX_byXnameXX_out_localXaggregateXaX_byXnameXX_name_capXaX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+    """
+    g.V(vid1).local(aggregate("a").by("name")).out().local(aggregate("a").by("name")).values("name").cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
 
   Scenario: g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX
     Given the modern graph
@@ -181,13 +243,30 @@ Feature: Step - aggregate()
     """
     When iterated next
     Then the result should be unordered
-    | result |
-    | marko |
-    | vadas |
-    | lop |
-    | josh |
-    | ripple |
-    | peter  |
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
+
+  Scenario: g_withSideEffectXa_setX_V_both_name_localXaggregateX_aXX_capXaX
+    Given the modern graph
+    And using the parameter xx1 defined as "s[]"
+    And the traversal of
+    """
+    g.withSideEffect("a", xx1).V().both().values("name").local(aggregate("a")).cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter  |
 
   Scenario: g_V_aggregateXlocal_aX_byXoutEXcreatedX_countX_out_out_aggregateXlocal_aX_byXinEXcreatedX_weight_sumX
     Given the modern graph
@@ -201,15 +280,36 @@ Feature: Step - aggregate()
     """
     When iterated next
     Then the result should be unordered
-    | result |
-    | d[1].l |
-    | d[1].l |
-    | d[0].l |
-    | d[0].l |
-    | d[0].l |
-    | d[2].l |
-    | d[1.0].d |
-    | d[1.0].d |
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |
+      | d[0].l |
+      | d[0].l |
+      | d[2].l |
+      | d[1.0].d |
+      | d[1.0].d |
+
+  Scenario: g_V_localXaggregateXaX_byXoutEXcreatedX_countXX_out_out_localXaggregateXaX_byXinEXcreatedX_weight_sumXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().local(aggregate("a").by(__.outE("created").count())).
+    out().out().
+    local(aggregate("a").by(__.inE("created").values("weight").sum())).
+    cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |
+      | d[0].l |
+      | d[0].l |
+      | d[2].l |
+      | d[1.0].d |
+      | d[1.0].d |
 
   Scenario: g_V_aggregateXxX_byXvaluesXageX_isXgtX29XXX_capXxX
     Given the modern graph
@@ -295,14 +395,25 @@ Feature: Step - aggregate()
     """
     When iterated to list
     Then the result should be unordered
-    | result   |
-    | d[124].i |
+      | result   |
+      | d[124].i |
 
   Scenario: g_withSideEffectXa_1_sumX_V_aggregateXlocal_aX_byXageX_capXaX
     Given the modern graph
     And the traversal of
     """
     g.withSideEffect("a", 1, Operator.sum).V().aggregate(Scope.local, "a").by("age").cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result   |
+      | d[124].i |
+
+  Scenario: g_withSideEffectXa_1_sumX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 1, Operator.sum).V().local(aggregate("a").by("age")).cap("a")
     """
     When iterated to list
     Then the result should be unordered
@@ -333,6 +444,18 @@ Feature: Step - aggregate()
       | result |
       | d[0].i |
 
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_withSideEffectXa_123_minusX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 123, Operator.minus).V().local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[0].i |
+
   Scenario: g_withSideEffectXa_2_multX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
     And the traversal of
@@ -349,6 +472,17 @@ Feature: Step - aggregate()
     And the traversal of
     """
     g.withSideEffect("a", 2, Operator.mult).V().aggregate(Scope.local, "a").by("age").cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1753920].i |
+
+  Scenario: g_withSideEffectXa_2_multX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 2, Operator.mult).V().local(aggregate("a").by("age")).cap("a")
     """
     When iterated to list
     Then the result should be unordered
@@ -379,6 +513,18 @@ Feature: Step - aggregate()
       | result |
       | d[1].i |
 
+  @GraphComputerVerificationStrategyNotSupported
+  Scenario: g_withSideEffectXa_876960_divX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 876960, Operator.div).V().local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
   Scenario: g_withSideEffectXa_1_minX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
     And the traversal of
@@ -395,6 +541,17 @@ Feature: Step - aggregate()
     And the traversal of
     """
     g.withSideEffect("a", 1, Operator.min).V().aggregate(Scope.local, "a").by("age").cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  Scenario: g_withSideEffectXa_1_minX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 1, Operator.min).V().local(aggregate("a").by("age")).cap("a")
     """
     When iterated to list
     Then the result should be unordered
@@ -423,6 +580,17 @@ Feature: Step - aggregate()
       | result |
       | d[27].i |
 
+  Scenario: g_withSideEffectXa_100_minX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 100, Operator.min).V().local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+
   Scenario: g_withSideEffectXa_1_maxX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
     And the traversal of
@@ -439,6 +607,17 @@ Feature: Step - aggregate()
     And the traversal of
     """
     g.withSideEffect("a", 1, Operator.max).V().aggregate(Scope.local, "a").by("age").cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[35].i |
+
+  Scenario: g_withSideEffectXa_1_maxX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 1, Operator.max).V().local(aggregate("a").by("age")).cap("a")
     """
     When iterated to list
     Then the result should be unordered
@@ -467,6 +646,17 @@ Feature: Step - aggregate()
       | result |
       | d[100].i |
 
+  Scenario: g_withSideEffectXa_100_maxX_V_localXaggregateX_aX_byXageX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", 100, Operator.max).V().local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[100].i |
+
   Scenario: g_withSideEffectXa_true_andX_V_constantXfalseX_aggregateXaX_capXaX
     Given the modern graph
     And the traversal of
@@ -489,6 +679,17 @@ Feature: Step - aggregate()
       | result |
       | false |
 
+  Scenario: g_withSideEffectXa_true_andX_V_constantXfalseX_localXaggregateX_aXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", true, Operator.and).V().constant(false).local(aggregate("a")).cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | false |
+
   Scenario: g_withSideEffectXa_true_orX_V_constantXfalseX_aggregateXaX_capXaX
     Given the modern graph
     And the traversal of
@@ -505,6 +706,17 @@ Feature: Step - aggregate()
     And the traversal of
     """
     g.withSideEffect("a", true, Operator.or).V().constant(false).aggregate(Scope.local, "a").cap("a")
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | true |
+
+  Scenario: g_withSideEffectXa_true_orX_V_constantXfalseX_localXaggregateX_aXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", true, Operator.or).V().constant(false).local(aggregate("a")).cap("a")
     """
     When iterated to list
     Then the result should be unordered
@@ -547,6 +759,23 @@ Feature: Step - aggregate()
       | d[32].i |
       | d[35].i |
 
+  Scenario: g_withSideEffectXa_1_2_3_addAllX_V_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    """
+    g.withSideEffect("a", [1i,2i,3i], Operator.addAll).V().local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+      | d[2].i |
+      | d[3].i |
+      | d[29].i |
+      | d[27].i |
+      | d[32].i |
+      | d[35].i |
+
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_withSideEffectXa_xx1_assignX_V_aggregateXaX_byXageX_capXaX
     Given the modern graph
@@ -576,3 +805,316 @@ Feature: Step - aggregate()
     Then the result should be unordered
       | result |
       | d[35].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_withSideEffectXa_1_2_3_assignX_V_order_byXageX_localXaggregateX_aX_byXageXX_capXaX
+    Given the modern graph
+    And the traversal of
+    # add order().by("age") to deterministically assign a vertex with the largest age value at the end
+    """
+    g.withSideEffect("a", [1i,2i,3i], Operator.assign).V().order().by("age").local(aggregate("a").by("age")).cap("a")
+    """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | d[35].i |
+
+  Scenario: g_V_localXaggregateXaXX_outE_inV_localXaggregateXaXX_capXaX_unfold_dedup
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a")).outE().inV().local(aggregate("a")).cap("a").unfold().dedup()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
+
+  Scenario: g_V_aggregateXlocal_aX_outE_inV_aggregateXlocal_aX_capXaX_unfold_dedup
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "a").outE().inV().aggregate(Scope.local, "a").cap("a").unfold().dedup()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |
+
+  Scenario: g_V_hasLabelXpersonX_localXaggregateXaXX_outXcreatedX_localXaggregateXaXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").local(aggregate("a")).out("created").local(aggregate("a")).cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[lop] |
+      | v[lop] |
+      | v[lop] |
+      | v[vadas] |
+      | v[ripple] |
+      | v[josh]  |
+      | v[peter] |
+
+  Scenario: g_V_hasLabelXpersonX_aggregateXlocal_aX_outXcreatedX_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+       g.V().hasLabel("person").aggregate(Scope.local, "a").out("created").aggregate(Scope.local, "a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[lop] |
+      | v[lop] |
+      | v[lop] |
+      | v[vadas] |
+      | v[ripple] |
+      | v[josh]  |
+      | v[peter] |
+
+  Scenario: g_V_localXaggregateXaXX_repeatXout_localXaggregateXaXXX_timesX2X_capXaX_unfold_groupCount
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a")).repeat(__.out().local(aggregate("a"))).times(2).cap("a").unfold().values("name").groupCount()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[1].l","lop":"d[5].l","vadas":"d[2].l","josh":"d[2].l","ripple":"d[3].l","peter":"d[1].l"}] |
+
+  Scenario: g_V_aggregateXlocal_aX_repeatXout_aggregateXlocal_aXX_timesX2X_capXaX_unfold_groupCount
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "a").repeat(__.out().aggregate(Scope.local, "a")).times(2).cap("a").unfold().values("name").groupCount()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"marko":"d[1].l","lop":"d[5].l","vadas":"d[2].l","josh":"d[2].l","ripple":"d[3].l","peter":"d[1].l"}] |
+
+  Scenario: g_V_hasXname_markoX_localXaggregateXaXX_outXknowsX_localXaggregateXaXX_outXcreatedX_localXaggregateXaXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "marko").local(aggregate("a")).out("knows").local(aggregate("a")).out("created").local(aggregate("a")).cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+      | v[ripple] |
+
+  Scenario: g_V_hasXname_markoX_aggregateXlocal_aX_outXknowsX_aggregateXlocal_aX_outXcreatedX_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "marko").aggregate(Scope.local, "a").out("knows").aggregate(Scope.local, "a").out("created").aggregate(Scope.local, "a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+      | v[ripple] |
+
+  Scenario: g_V_hasLabelXsoftwareX_localXaggregateXaXX_inXcreatedX_localXaggregateXaXX_outXknowsX_localXaggregateXaXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").local(aggregate("a")).in("created").local(aggregate("a")).out("knows").local(aggregate("a")).cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+      | v[marko] |
+      | v[josh] |
+      | v[josh] |
+      | v[josh] |
+      | v[peter] |
+      | v[vadas] |
+      | v[ripple] |
+
+  Scenario: g_V_hasLabelXsoftwareX_aggregateXlocal_aX_inXcreatedX_aggregateXlocal_aX_outXknowsX_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("software").aggregate(Scope.local, "a").in("created").aggregate(Scope.local, "a").out("knows").aggregate(Scope.local, "a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+      | v[marko] |
+      | v[josh] |
+      | v[josh] |
+      | v[josh] |
+      | v[peter] |
+      | v[vadas] |
+      | v[ripple] |
+
+  Scenario: g_V_localXaggregateXaXX_outE_hasXweight_lgtX0_5XX_inV_localXaggregateXaXX_capXaX_unfold_path
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a")).outE().has("weight", P.gt(0.5)).inV().local(aggregate("a")).cap("a").unfold().path()
+      """
+    When iterated to list
+    Then the result should have a count of 8
+
+  Scenario: g_V_aggregateXlocal_aX_outE_hasXweight_lgtX0_5XX_inV_aggregateXlocal_aX_capXaX_unfold_path
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "a").outE().has("weight", P.gt(0.5)).inV().aggregate(Scope.local, "a").cap("a").unfold().path()
+      """
+    When iterated to list
+    Then the result should have a count of 8
+
+  Scenario: g_V_localXaggregateXaXX_bothE_sampleX1X_otherV_localXaggregateXaXX_capXaX_unfold_groupCount_byXlabelX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a")).bothE().sample(1).otherV().local(aggregate("a")).cap("a").unfold().groupCount().by(T.label)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+
+  Scenario: g_V_aggregateXlocal_aX_bothE_sampleX1X_otherV_aggregateXlocal_aX_capXaX_unfold_groupCount_byXlabelX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "a").bothE().sample(1).otherV().aggregate(Scope.local, "a").cap("a").unfold().groupCount().by(T.label)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+
+  Scenario: g_V_hasLabelXpersonX_localXaggregateXaXX_outE_inV_simplePath_localXaggregateXaXX_capXaX_unfold_hasLabelXsoftwareX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").local(aggregate("a")).outE().inV().simplePath().local(aggregate("a")).cap("a").unfold().hasLabel("software").count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[4].l |
+
+  Scenario: g_V_hasLabelXpersonX_aggregateXlocal_aX_outE_inV_simplePath_aggregateXlocal_aX_capXaX_unfold_hasLabelXsoftwareX_count
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").aggregate(Scope.local, "a").outE().inV().simplePath().aggregate(Scope.local, "a").cap("a").unfold().hasLabel("software").count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[4].l |
+
+  Scenario: g_V_localXaggregateXaXX_unionXout_inX_localXaggregateXaXX_capXaX_unfold_dedup_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(aggregate("a")).union(__.out(), __.in()).local(aggregate("a")).cap("a").unfold().dedup().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_aggregateXlocal_aX_unionXout_inX_aggregateXlocal_aX_capXaX_unfold_dedup_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate(Scope.local, "a").union(__.out(), __.in()).aggregate(Scope.local, "a").cap("a").unfold().dedup().values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | vadas |
+      | lop |
+      | josh |
+      | ripple |
+      | peter |
+
+  Scenario: g_V_hasXname_joshX_localXaggregateXaXX_outE_hasXweight_ltX1_0XX_inV_localXaggregateXaXX_outE_inV_localXaggregateXaXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "josh").local(aggregate("a")).outE().has("weight", P.lt(1.0)).inV().local(aggregate("a")).outE().inV().local(aggregate("a")).cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_V_hasXname_joshX_aggregateXlocal_aX_outE_hasXweight_ltX1_0XX_inV_aggregateXlocal_aX_outE_inV_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().has("name", "josh").aggregate(Scope.local, "a").outE().has("weight", P.lt(1.0)).inV().aggregate(Scope.local, "a").outE().inV().aggregate(Scope.local, "a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+
+  Scenario: g_V_hasLabelXpersonX_localXaggregateXaXX_outE_order_byXweightX_limitX1X_inV_localXaggregateXaXX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").local(aggregate("a")).outE().order().by("weight").limit(1).inV().local(aggregate("a")).cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+      | v[peter] |
+
+  Scenario: g_V_hasLabelXpersonX_aggregateXlocal_aX_outE_order_byXweightX_limitX1X_inV_aggregateXlocal_aX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").aggregate(Scope.local, "a").outE().order().by("weight").limit(1).inV().aggregate(Scope.local, "a").cap("a")
+      """
+    When iterated next
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[lop] |
+      | v[peter] |

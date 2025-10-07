@@ -39,7 +39,9 @@ import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @deprecated As of release 3.7.5, use local() with aggregate() instead
  */
+@Deprecated
 public final class AggregateLocalStep<S> extends SideEffectStep<S> implements SideEffectCapable<Collection, Collection>, TraversalParent, ByModulating {
 
     private Traversal.Admin<S, Object> storeTraversal = null;
