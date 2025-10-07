@@ -48,7 +48,7 @@ describe('Effect-based Configuration Management', () => {
       process.env.GREMLIN_IDLE_TIMEOUT = '300';
       process.env.GREMLIN_ENUM_DISCOVERY_ENABLED = 'true';
       process.env.GREMLIN_ENUM_CARDINALITY_THRESHOLD = '10';
-      process.env.GREMLIN_ENUM_PROPERTY_BLACKLIST = 'id,pk,name';
+      process.env.GREMLIN_ENUM_PROPERTY_DENYLIST = 'id,pk,name';
       process.env.GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES = 'false';
       process.env.GREMLIN_SCHEMA_MAX_ENUM_VALUES = '10';
       process.env.GREMLIN_SCHEMA_INCLUDE_COUNTS = 'true';
@@ -66,7 +66,7 @@ describe('Effect-based Configuration Management', () => {
         schema: {
           enumDiscoveryEnabled: true,
           enumCardinalityThreshold: 10,
-          enumPropertyBlacklist: ['id', 'pk', 'name'],
+          enumPropertyDenyList: ['id', 'pk', 'name'],
           includeSampleValues: false,
           maxEnumValues: 10,
           includeCounts: true,
@@ -140,13 +140,13 @@ describe('Effect-based Configuration Management', () => {
       expect(result.gremlin.traversalSource).toBe('custom');
     });
 
-    it('should parse comma-separated blacklist', async () => {
+    it('should parse comma-separated denylist', async () => {
       process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.GREMLIN_ENUM_PROPERTY_BLACKLIST = 'id, pk, name, description';
+      process.env.GREMLIN_ENUM_PROPERTY_DENYLIST = 'id, pk, name, description';
 
       const result = await Effect.runPromise(AppConfig);
 
-      expect(result.schema.enumPropertyBlacklist).toEqual(['id', 'pk', 'name', 'description']);
+      expect(result.schema.enumPropertyDenyList).toEqual(['id', 'pk', 'name', 'description']);
     });
 
     it('should validate log level enum', async () => {
@@ -241,7 +241,7 @@ describe('Effect-based Configuration Management', () => {
       expect(result.gremlin.idleTimeout).toBeDefined();
       expect(result.schema.enumDiscoveryEnabled).toBeDefined();
       expect(result.schema.enumCardinalityThreshold).toBeDefined();
-      expect(result.schema.enumPropertyBlacklist).toBeDefined();
+      expect(result.schema.enumPropertyDenyList).toBeDefined();
       expect(result.schema.includeSampleValues).toBeDefined();
       expect(result.schema.maxEnumValues).toBeDefined();
       expect(result.schema.includeCounts).toBeDefined();

@@ -45,10 +45,10 @@ Talk to your graph database naturally:
 Your AI assistant gets access to these powerful tools:
 
 | Tool                        | Purpose          | What It Does                                                 |
-| --------------------------- | ---------------- | ------------------------------------------------------------ |
+|-----------------------------| ---------------- | ------------------------------------------------------------ |
 | 🔍 **get_graph_status**     | Health Check     | Verify database connectivity and server status               |
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
-| ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
+| ⚡ **run_gremlin_query**     | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
 | 📥 **import_graph_data**    | Data Import      | Load data from GraphSON, CSV, or JSON with batch processing  |
 | 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats          |
@@ -239,14 +239,14 @@ GREMLIN_ENUM_DISCOVERY_ENABLED="true"         # Default: true
 GREMLIN_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum (default: 10)
 
 # Exclude specific properties
-GREMLIN_ENUM_PROPERTY_BLACKLIST="id,uuid,timestamp,createdAt,updatedAt"
+GREMLIN_ENUM_PROPERTY_DENYLIST="id,uuid,timestamp,createdAt,updatedAt"
 
 # Schema optimization
 GREMLIN_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
 GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Reduce schema size (default: false)
 ```
 
-### 🚫 Property Blacklist
+### 🚫 Property Denylist
 
 Some properties should never be treated as enums:
 
@@ -261,10 +261,10 @@ Some properties should never be treated as enums:
 
 ```bash
 # Exclude specific properties by name
-GREMLIN_ENUM_PROPERTY_BLACKLIST="userId,sessionId,description,notes,content"
+GREMLIN_ENUM_PROPERTY_DENYLIST="userId,sessionId,description,notes,content"
 ```
 
-**Common Blacklist Patterns:**
+**Common Denylist Patterns:**
 
 - `id,uuid,guid` - Unique identifiers
 - `timestamp,createdAt,updatedAt,lastModified` - Time fields
@@ -331,18 +331,6 @@ GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false" # Minimal schema size
 
 This intelligent enum discovery transforms how AI agents interact with your graph data, making queries more accurate and insights more meaningful! 🎯
 
-## 🗄️ Supported Databases
-
-Works with any Gremlin-compatible graph database:
-
-| Database                | Status        | Notes                            |
-| ----------------------- | ------------- | -------------------------------- |
-| 🟢 **Apache TinkerPop** | ✅ Tested     | Local development and CI testing |
-| 🟡 **Amazon Neptune**   | 🔧 Compatible | Designed for, not yet tested     |
-| 🟡 **JanusGraph**       | 🔧 Compatible | Designed for, not yet tested     |
-| 🟡 **Azure Cosmos DB**  | 🔧 Compatible | With Gremlin API                 |
-| 🟡 **ArcadeDB**         | 🔧 Compatible | With Gremlin support             |
-
 ## ⚙️ Configuration Options
 
 ### Basic Configuration
@@ -365,7 +353,7 @@ LOG_LEVEL="info"                    # Logging level: error, warn, info, debug
 # Schema and performance tuning
 GREMLIN_ENUM_DISCOVERY_ENABLED="true"         # Enable smart enum detection (default: true)
 GREMLIN_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum detection (default: 10)
-GREMLIN_ENUM_PROPERTY_BLACKLIST="id,timestamp" # Exclude specific properties from enum detection
+GREMLIN_ENUM_PROPERTY_DENYLIST="id,timestamp" # Exclude specific properties from enum detection
 GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Include sample values in schema (default: false)
 GREMLIN_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
 GREMLIN_SCHEMA_INCLUDE_COUNTS="true"          # Include vertex/edge counts in schema (default: true)
@@ -505,7 +493,7 @@ The server implements intelligent schema discovery with enumeration detection:
 
 ### Contributing
 
-1. Follow the Apache TinkerPop contribution guidelines
+1. Follow the Apache TinkerPop [contribution guidelines](https://github.com/apache/tinkerpop/blob/master/CONTRIBUTING.asciidoc)
 2. Run `npm run validate` before committing
 3. Add tests for new functionality
 4. Update documentation for user-facing changes
@@ -528,8 +516,9 @@ The server implements intelligent schema discovery with enumeration detection:
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](../../../../../LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) 
+file for details.
 
-This project is part of the Apache TinkerPop project.
+This project is part of the [Apache TinkerPop](https://tinkerpop.apache.org/) project.
 
 ---

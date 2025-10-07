@@ -42,7 +42,7 @@ describe('schema-assembly', () => {
     maxEnumValues: 10,
     includeCounts: true,
     enumCardinalityThreshold: 5,
-    enumPropertyBlacklist: [],
+    enumPropertyDenyList: [],
     timeoutMs: 30000,
     batchSize: 10,
   };
@@ -396,7 +396,7 @@ describe('schema-assembly', () => {
         maxEnumValues: 5,
         includeCounts: false,
         enumCardinalityThreshold: 3,
-        enumPropertyBlacklist: [],
+        enumPropertyDenyList: [],
         // timeoutMs and batchSize are optional
       };
 

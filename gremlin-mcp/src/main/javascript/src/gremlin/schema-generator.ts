@@ -55,7 +55,7 @@ export const DEFAULT_SCHEMA_CONFIG: SchemaConfig = {
   maxEnumValues: 10,
   includeCounts: true,
   enumCardinalityThreshold: 10,
-  enumPropertyBlacklist: ['id', 'label', 'lastUpdatedByUI'],
+  enumPropertyDenyList: ['id', 'timestamp'],
   timeoutMs: DEFAULT_SCHEMA_TIMEOUT_MS,
   batchSize: 10,
 };

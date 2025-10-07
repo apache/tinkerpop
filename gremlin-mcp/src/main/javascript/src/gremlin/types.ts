@@ -49,7 +49,7 @@ export interface SchemaConfig {
   maxEnumValues: number;
   includeCounts: boolean;
   enumCardinalityThreshold: number;
-  enumPropertyBlacklist: string[];
+  enumPropertyDenyList: string[];
   timeoutMs?: number;
   batchSize?: number;
 }
