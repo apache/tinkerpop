@@ -167,14 +167,12 @@ const GremlinEnumCardinalityThresholdConfig = pipe(
 );
 
 /**
- * GREMLIN_ENUM_PROPERTY_BLACKLIST: string, default: id,pk,name,description,...
+ * GREMLIN_ENUM_PROPERTY_DENYLIST: string, default: id,pk,name,description,...
  * Comma-separated list of properties to exclude from enum detection
  */
-const GremlinEnumPropertyBlacklistConfig = pipe(
-  Config.string('GREMLIN_ENUM_PROPERTY_BLACKLIST'),
-  Config.withDefault(
-    'id,pk,name,description,startDate,endDate,arrival,departure,timestamp,createdAt,updatedAt'
-  ),
+const GremlinEnumPropertyDenyListConfig = pipe(
+  Config.string('GREMLIN_ENUM_PROPERTY_DENYLIST'),
+  Config.withDefault('id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt'),
   Config.map(parseCommaSeparatedList)
 );
 
@@ -229,13 +227,13 @@ const GremlinConnectionConfig = pipe(
 
 /**
  * SchemaDiscoveryConfig: Aggregates and validates all schema discovery-related environment variables.
- * Ensures enum discovery, cardinality, blacklist, sample values, max enum values, and counts are present and valid.
+ * Ensures enum discovery, cardinality, denylist, sample values, max enum values, and counts are present and valid.
  * Returns a validated config object or throws ConfigError on failure.
  */
 const SchemaDiscoveryConfig = Config.all({
   enumDiscoveryEnabled: GremlinEnumDiscoveryEnabledConfig,
   enumCardinalityThreshold: GremlinEnumCardinalityThresholdConfig,
-  enumPropertyBlacklist: GremlinEnumPropertyBlacklistConfig,
+  enumPropertyDenyList: GremlinEnumPropertyDenyListConfig,
   includeSampleValues: GremlinSchemaIncludeSampleValuesConfig,
   maxEnumValues: GremlinSchemaMaxEnumValuesConfig,
   includeCounts: GremlinSchemaIncludeCountsConfig,

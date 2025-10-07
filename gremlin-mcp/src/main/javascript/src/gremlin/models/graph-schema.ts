@@ -151,7 +151,7 @@ export const GremlinConfigSchema = z.object({
   /** Cardinality threshold for enum discovery */
   enumCardinalityThreshold: z.number().positive().optional().default(10),
   /** List of property names to exclude from enum discovery */
-  enumPropertyBlacklist: z.array(z.string()).optional().default([]),
+  enumPropertyDenyList: z.array(z.string()).optional().default([]),
   /** Whether to include sample values in schema (for size optimization) */
   includeSampleValues: z.boolean().optional().default(false),
   /** Maximum number of enum values to include (for size optimization) */

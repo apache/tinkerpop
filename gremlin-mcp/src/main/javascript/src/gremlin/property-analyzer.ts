@@ -46,8 +46,8 @@ export const analyzePropertyFromValues = (
   values: unknown[],
   config: SchemaConfig
 ): Property => {
-  // Skip blacklisted properties
-  if (config.enumPropertyBlacklist.includes(propertyKey)) {
+  // Skip denylisted properties
+  if (config.enumPropertyDenyList.includes(propertyKey)) {
     return {
       name: propertyKey,
       type: ['unknown'],
@@ -97,8 +97,8 @@ export const analyzeSingleProperty = (
   isVertex: boolean
 ): Effect.Effect<Property, GremlinQueryError> =>
   Effect.gen(function* () {
-    // Skip blacklisted properties early
-    if (config.enumPropertyBlacklist.includes(propertyKey)) {
+    // Skip denylisted properties early
+    if (config.enumPropertyDenyList.includes(propertyKey)) {
       return {
         name: propertyKey,
         type: ['unknown'],

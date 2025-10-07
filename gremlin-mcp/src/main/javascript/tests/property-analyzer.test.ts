@@ -47,7 +47,7 @@ const mockGetSamplePropertyValues = getSamplePropertyValues as jest.MockedFuncti
 >;
 
 const mockConfig = {
-  enumPropertyBlacklist: [],
+  enumPropertyDenyList: [],
   maxEnumValues: 10,
   includeSampleValues: false,
   includeCounts: false,
@@ -85,9 +85,9 @@ describe('property-analyzer', () => {
       expect(result.enum).toBeUndefined();
     });
 
-    it('should handle blacklisted properties', () => {
-      const blacklistConfig = { ...mockConfig, enumPropertyBlacklist: ['id'] };
-      const result = analyzePropertyFromValues('id', ['a', 'b'], blacklistConfig);
+    it('should handle denylisted properties', () => {
+      const denyListConfig = { ...mockConfig, enumPropertyDenyList: ['id'] };
+      const result = analyzePropertyFromValues('id', ['a', 'b'], denyListConfig);
 
       expect(result.type).toEqual(['unknown']);
     });
