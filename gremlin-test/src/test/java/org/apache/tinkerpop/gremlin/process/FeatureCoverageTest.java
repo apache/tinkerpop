@@ -72,7 +72,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -169,7 +168,6 @@ public class FeatureCoverageTest {
                 SackTest.class,
                 SideEffectCapTest.class,
                 //SideEffectTest.class,
-                StoreTest.class,
                 WriteTest.class);
                 // SubgraphTest.class,
                 // TreeTest.class);

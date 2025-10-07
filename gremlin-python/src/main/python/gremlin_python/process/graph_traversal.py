@@ -914,10 +914,6 @@ class GraphTraversal(Traversal):
         self.bytecode.add_step("split", *args)
         return self
 
-    def store(self, *args):
-        self.bytecode.add_step("store", *args)
-        return self
-
     def subgraph(self, *args):
         self.bytecode.add_step("subgraph", *args)
         return self
@@ -1664,10 +1660,6 @@ class __(object, metaclass=MagicType):
         return cls.graph_traversal(None, None, Bytecode()).split(*args)
 
     @classmethod
-    def store(cls, *args):
-        return cls.graph_traversal(None, None, Bytecode()).store(*args)
-
-    @classmethod
     def subgraph(cls, *args):
         return cls.graph_traversal(None, None, Bytecode()).subgraph(*args)
 
@@ -2333,10 +2325,6 @@ def split(*args):
     return __.split(*args)
 
 
-def store(*args):
-    return __.store(*args)
-
-
 def subgraph(*args):
     return __.subgraph(*args)
 
@@ -2666,8 +2654,6 @@ statics.add_static('simple_path', simple_path)
 statics.add_static('skip', skip)
 
 statics.add_static('split', split)
-
-statics.add_static('store', store)
 
 statics.add_static('subgraph', subgraph)
 

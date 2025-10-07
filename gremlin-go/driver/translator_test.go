@@ -236,12 +236,6 @@ func Test_translator_Translate(t *testing.T) {
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.V("3").Values("runways").Store("x").V("4").Values("runways").Store("x").By(T__.Constant(1)).V("6").Store("x").By(T__.Constant(1)).Select("x").Unfold().Sum()
-			},
-			equals: "g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(constant(1)).V('6').store('x').by(constant(1)).select('x').unfold().sum()",
-		},
-		{
-			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.Inject(3, 4, 5)
 			},
 			equals: "g.inject(3,4,5)",

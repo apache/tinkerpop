@@ -72,7 +72,6 @@ public class ByModulatorOptimizationStrategyTest {
                 __.sample(10),
                 __.select("a"),
                 __.select("a", "b"),
-                __.store("x"),
                 __.tree(),
                 __.tree("x"),
                 __.where(P.eq("a")),

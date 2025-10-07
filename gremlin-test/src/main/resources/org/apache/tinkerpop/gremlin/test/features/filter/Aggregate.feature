@@ -27,11 +27,11 @@ Feature: Step - aggregate()
     When iterated to list
     Then the traversal will raise an error with message containing text of "Aggregate step can only have one by modulator"
 
-  Scenario: g_V_aggregateXScope_local_xX_byXnameX_byXageX_capXxX
+  Scenario: g_V_localXaggregateXxX_byXnameXX_byXageX_capXxX
     Given the modern graph
     And the traversal of
       """
-      g.V().aggregate(Scope.local, "x").by("name").by("age").cap("x")
+      g.V().local(aggregate("x").by("name").by("age")).cap("x")
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Aggregate step can only have one by modulator"

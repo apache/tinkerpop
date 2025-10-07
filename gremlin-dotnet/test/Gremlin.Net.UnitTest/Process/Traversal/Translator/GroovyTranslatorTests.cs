@@ -266,12 +266,6 @@ public class GroovyTranslatorTests
                 _g.WithSack(0).V('3', '5').Sack(Operator.Sum).By("runways").Sack<object>(),
                 "g.withSack(0).V('3', '5').sack(Operator.sum).by('runways').sack()"
             },
-            {
-                _g.V("3").Values<object>("runways").Store("x").V('4').Values<object>("runways").Store("x")
-                    .By(__.Constant(1)).V('6').Store("x").By(__.Constant(1)).Select<object>("x").Unfold<object>()
-                    .Sum<object>(),
-                "g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum()"
-            },
             { _g.Inject(3, 4, 5), "g.inject(3, 4, 5)" },
             { _g.Inject(new List<int> { 3, 4, 5 }), "g.inject([3, 4, 5])" },
             { _g.Inject(3, 4, 5).Count(), "g.inject(3, 4, 5).count()" },

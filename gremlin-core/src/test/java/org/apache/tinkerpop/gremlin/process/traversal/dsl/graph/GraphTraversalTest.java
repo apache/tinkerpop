@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -210,7 +211,7 @@ public class GraphTraversalTest {
                         else if (Traversal[].class.isAssignableFrom(type)) {
                             arguments[i] = new Traversal[random.nextInt(5) + 1];
                             for (int j = 0; j < ((Traversal[]) arguments[i]).length; j++) {
-                                list.add(((Traversal[]) arguments[i])[j] = __.as(randomString(random)).out(randomString(random)).both(randomString(random)).has(randomString(random)).store(randomString(random)));
+                                list.add(((Traversal[]) arguments[i])[j] = __.as(randomString(random)).out(randomString(random)).both(randomString(random)).has(randomString(random)).local(aggregate(randomString(random))));
                             }
                         } else if (P.class.isAssignableFrom(type))
                             list.add(arguments[i] = P.gte(stepMethod.getName().contains("where") ? randomString(random) : random.nextInt()));

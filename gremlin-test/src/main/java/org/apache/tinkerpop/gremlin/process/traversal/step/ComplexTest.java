@@ -51,6 +51,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.Pop.all;
 import static org.apache.tinkerpop.gremlin.process.traversal.Pop.first;
 import static org.apache.tinkerpop.gremlin.process.traversal.Pop.last;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.branch;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
@@ -288,7 +289,7 @@ public abstract class ComplexTest extends AbstractGremlinProcessTest {
                     order().
                     by(select("z"), Order.desc).
                     by(select("y"), Order.asc).
-                    limit(5).store("m").select("x");
+                    limit(5).local(aggregate("m")).select("x");
         }
 
         @Override
