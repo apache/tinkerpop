@@ -36,7 +36,6 @@ Talk to your graph database naturally:
 - 📊 **"Show me all users over 30 and their connections"** - Complex graph queries
 - 🔗 **"Find the shortest path between Alice and Bob"** - Relationship analysis
 - 📈 **"Give me graph statistics and metrics"** - Data insights
-- 📥 **"Import this GraphSON data"** - Data loading
 - 📤 **"Export user data as CSV"** - Data extraction
 - 🧠 **Smart enum discovery** - AI learns your data's valid values automatically
 
@@ -45,12 +44,11 @@ Talk to your graph database naturally:
 Your AI assistant gets access to these powerful tools:
 
 | Tool                        | Purpose          | What It Does                                                 |
-|-----------------------------| ---------------- | ------------------------------------------------------------ |
+| --------------------------- | ---------------- | ------------------------------------------------------------ |
 | 🔍 **get_graph_status**     | Health Check     | Verify database connectivity and server status               |
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
-| ⚡ **run_gremlin_query**     | Query Execution  | Execute any Gremlin traversal query with full syntax support |
+| ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
-| 📥 **import_graph_data**    | Data Import      | Load data from GraphSON, CSV, or JSON with batch processing  |
 | 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats          |
 
 ## 🚀 Quick Setup
@@ -168,12 +166,6 @@ Restart your AI client and try asking:
 **You ask:** _"Give me some statistics about my graph"_
 
 **AI response:** The AI runs multiple queries to count vertices, edges, and analyze the distribution, then presents a summary.
-
-### Data Import
-
-**You ask:** _"Load this GraphSON data into my database"_
-
-**AI response:** The AI uses `import_graph_data` to process your data in batches and reports the import status.
 
 ## 🧠 Automatic Enum Discovery
 
@@ -461,7 +453,7 @@ src/
 │   ├── resources.ts       # Effect-based resource handlers
 │   └── effect-runtime-bridge.ts # ManagedRuntime container for Effect execution
 └── utils/                 # Effect-based utility modules
-    ├── data-operations.ts # Effect-based graph data import/export operations
+    ├── data-operations.ts # Effect-based graph data export operations
     ├── result-parser.ts   # Gremlin result parsing with metadata extraction
     └── type-guards.ts     # Runtime type checking functions
 ```
@@ -481,8 +473,7 @@ src/
 
 The server implements intelligent schema discovery with enumeration detection:
 
-```typescript
-// Property with detected enum values
+```json
 {
   "name": "status",
   "type": ["string"],
@@ -516,7 +507,7 @@ The server implements intelligent schema discovery with enumeration detection:
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) 
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://www.apache.org/licenses/LICENSE-2.0)
 file for details.
 
 This project is part of the [Apache TinkerPop](https://tinkerpop.apache.org/) project.

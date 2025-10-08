@@ -3026,7 +3026,7 @@ input schema, and a result schema. When connected to a Gremlin MCP server, the a
 * Inspect the server’s health and connection to a Gremlin data source
 * Discover the graph’s schema (labels, properties, relationships, counts)
 * Execute Gremlin traversals
-* Import/export graph data in common formats
+* Export graph data in common formats
 
 The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
 the graph via standard Gremlin traversals.
@@ -3057,10 +3057,9 @@ The Gremlin MCP server exposes these tools:
   properties may be surfaced as enums to encourage valid values in queries.
 * `run_gremlin_query` — Executes an arbitrary Gremlin traversal and returns JSON results.
 * `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
-* `import_graph_data` — Loads graph data (for example, GraphSON/JSON/CSV) in batches and reports progress.
 * `export_subgraph` — Exports a selected subgraph to JSON, GraphSON, or CSV.
 
-NOTE: Import and export operate on potentially large portions of the graph. Ensure proper authorization and confirm the
+WARNING: Export operations can involve large portions of the graph. Ensure proper authorization and confirm the
 assistant’s intent in the client before approving such operations.
 
 ==== Schema discovery
@@ -3100,12 +3099,10 @@ For example, the assistant may execute a traversal like the following:
 g.V().hasLabel('person').has('age', gt(30)).out('knows').values('name')
 ----
 
-==== Import and export
+==== Export
 
-* Import — Provide the data format and mapping to labels/properties. The server processes records in batches and
-  reports progress and validation errors.
-* Export — Describe the subgraph or selection criteria (for example, all person vertices and their knows edges) and
-  choose a target format. The server returns the exported data for download by the client.
+Describe the subgraph or selection criteria (for example, "all person vertices and their `knows` edges") and choose a
+target format. The server returns the exported data for download by the client.
 
 ==== Configuring an MCP Client
 

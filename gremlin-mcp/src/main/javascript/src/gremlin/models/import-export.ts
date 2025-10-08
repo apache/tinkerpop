@@ -18,55 +18,10 @@
  */
 
 /**
- * @fileoverview Data import/export operation models.
+ * @fileoverview Data import/export operation models. Note that import operations have been temporarily removed.
  */
 
 import { z } from 'zod';
-
-/**
- * Import operation input schema with validation.
- */
-export const ImportDataInputSchema = z
-  .object({
-    format: z.enum(['graphson', 'csv'], {
-      errorMap: () => ({ message: 'Format must be either "graphson" or "csv"' }),
-    }),
-    data: z
-      .string()
-      .min(1, 'Data cannot be empty')
-      .max(50 * 1024 * 1024, 'Data size cannot exceed 50MB'), // 50MB limit
-    options: z
-      .object({
-        clear_graph: z.boolean().optional(),
-        batch_size: z
-          .number()
-          .positive('Batch size must be positive')
-          .max(10000, 'Batch size cannot exceed 10,000')
-          .optional(),
-        validate_schema: z.boolean().optional(),
-      })
-      .optional(),
-  })
-  .refine(
-    data => {
-      // Additional validation for GraphSON format
-      if (data.format === 'graphson') {
-        try {
-          JSON.parse(data.data);
-          return true;
-        } catch {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: 'GraphSON data must be valid JSON',
-      path: ['data'],
-    }
-  );
-
-export type ImportDataInput = z.infer<typeof ImportDataInputSchema>;
 
 /**
  * Export operation input schema with validation.
