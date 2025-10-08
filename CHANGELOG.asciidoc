@@ -29,6 +29,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added a minimal distribution for `tinkergraph-gremlin` using the `min` classifier that doesn't include the sample datasets.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Renamed `none()` step to `discard()`.
+* Fixed bug where `InlineFilterStrategy` could add an empty `has()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
 * Added `DateTime` ontop of the existing 'datetime' grammar.

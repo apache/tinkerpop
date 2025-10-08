@@ -208,11 +208,16 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
      * a {@link HasStep}.
      */
     private static boolean processOrStep(final OrStep<?> step, final Traversal.Admin<?, ?> traversal) {
-        boolean process = true;
+        boolean process = false;
         String key = null;
         P predicate = null;
         final List<String> labels = new ArrayList<>();
         for (final Traversal.Admin<?, ?> childTraversal : step.getLocalChildren()) {
+            // there is at least one child to the or() so the burden of proof to not process this step is provided
+            // by the code below. if the default to process was true then it ends up adding an empty has() to the
+            // end of the traversal (which can happen when ConnectiveStrategy isn't executed - subtle)
+            process = true;
+            
             InlineFilterStrategy.instance().apply(childTraversal);
             for (final Step<?, ?> childStep : childTraversal.getSteps()) {
                 if (childStep instanceof HasStep) {
