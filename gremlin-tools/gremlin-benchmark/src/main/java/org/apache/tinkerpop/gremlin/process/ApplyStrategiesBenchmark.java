@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -45,9 +45,16 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 @State(Scope.Thread)
 public class ApplyStrategiesBenchmark extends AbstractBenchmarkBase {
 
-    private Graph graph = EmptyGraph.instance();
+    private Graph graph = TinkerGraph.open();
     private GraphTraversalSource g = traversal().withEmbedded(graph);
     private Traversal<?, ?> traversal;
+    
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        // output the strategies that were applied for the benchmark
+        System.out.println();
+        System.out.println("Strategies: " + g.getStrategies().toList());
+    }
 
     /**
      * Setup method that constructs the complex traversal before benchmarking on each invocation of the test.
