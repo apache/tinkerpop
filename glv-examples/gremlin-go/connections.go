@@ -51,8 +51,8 @@ func withRemote() {
     <-prom
 
     // Simple query to verify connection
-    g.AddV().Iterate()
-    count, _ := g.V().Count().Next()
+    g.AddV("connection").Iterate()
+    count, _ := g.V().HasLabel("connection").Count().Next()
     fmt.Println("Vertex count:", *count)
 }
 
@@ -75,7 +75,7 @@ func withConfigs() {
 	defer driverRemoteConnection.Close()
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
-    g.AddV().Iterate()
-    count, _ := g.V().Count().Next()
+    g.AddV("connection").Iterate()
+    count, _ := g.V().HasLabel("connection").Count().Next()
     fmt.Println("Vertex count:", *count)
 }
