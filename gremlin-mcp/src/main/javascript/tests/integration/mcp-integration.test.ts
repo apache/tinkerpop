@@ -126,7 +126,6 @@ describe('MCP Server Integration Tests', () => {
       expect(toolNames).toContain(TOOL_NAMES.GET_GRAPH_SCHEMA);
       expect(toolNames).toContain(TOOL_NAMES.RUN_GREMLIN_QUERY);
       expect(toolNames).toContain(TOOL_NAMES.REFRESH_SCHEMA_CACHE);
-      expect(toolNames).toContain(TOOL_NAMES.IMPORT_GRAPH_DATA);
       expect(toolNames).toContain(TOOL_NAMES.EXPORT_SUBGRAPH);
     },
     30000

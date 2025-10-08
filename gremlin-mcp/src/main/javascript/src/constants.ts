@@ -44,7 +44,6 @@ export const TOOL_NAMES = {
   GET_GRAPH_SCHEMA: 'get_graph_schema',
   RUN_GREMLIN_QUERY: 'run_gremlin_query',
   REFRESH_SCHEMA_CACHE: 'refresh_schema_cache',
-  IMPORT_GRAPH_DATA: 'import_graph_data',
   EXPORT_SUBGRAPH: 'export_subgraph',
 } as const;
 

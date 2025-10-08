@@ -30,7 +30,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { TOOL_NAMES } from '../constants.js';
 import { GremlinService } from '../gremlin/service.js';
-import { importGraphData, exportSubgraph } from '../utils/data-operations.js';
+import { exportSubgraph } from '../utils/data-operations.js';
 import {
   createToolEffect,
   createStringToolEffect,
@@ -41,17 +41,6 @@ import {
 /**
  * Input validation schemas for tool parameters.
  */
-const importInputSchema = z.object({
-  format: z.enum(['graphson', 'csv']),
-  data: z.string(),
-  options: z
-    .object({
-      batch_size: z.number().optional(),
-      clear_graph: z.boolean().optional(),
-      validate_schema: z.boolean().optional(),
-    })
-    .optional(),
-});
 
 const exportInputSchema = z.object({
   traversal_query: z.string(),
@@ -71,7 +60,7 @@ const exportInputSchema = z.object({
  * - Graph status monitoring
  * - Schema introspection and caching
  * - Query execution
- * - Data import/export operations
+ * - Data export operations
  */
 export function registerEffectToolHandlers(
   server: McpServer,
@@ -156,44 +145,6 @@ export function registerEffectToolHandlers(
       const { query } = z.object({ query: z.string() }).parse(args);
       return Effect.runPromise(pipe(createQueryEffect(query), Effect.provide(runtime)));
     }
-  );
-
-  // Import Graph Data
-  server.registerTool(
-    TOOL_NAMES.IMPORT_GRAPH_DATA,
-    {
-      title: 'Import Graph Data',
-      description: 'Import graph data from various formats including GraphSON and CSV',
-      inputSchema: {
-        format: z.enum(['graphson', 'csv']).describe('The format of the data to import'),
-        data: z.string().describe('The data content to import'),
-        options: z
-          .object({
-            batch_size: z.number().optional().describe('Number of operations per batch'),
-            clear_graph: z
-              .boolean()
-              .optional()
-              .describe('Whether to clear the graph before importing'),
-            validate_schema: z
-              .boolean()
-              .optional()
-              .describe('Whether to validate against existing schema'),
-          })
-          .optional()
-          .describe('Import options'),
-      },
-    },
-    (args: unknown) =>
-      Effect.runPromise(
-        pipe(
-          createValidatedToolEffect(
-            importInputSchema,
-            input => Effect.andThen(GremlinService, service => importGraphData(service, input)),
-            'Import Graph Data'
-          )(args),
-          Effect.provide(runtime)
-        )
-      )
   );
 
   // Export Subgraph
