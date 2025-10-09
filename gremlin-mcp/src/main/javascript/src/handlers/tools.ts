@@ -42,12 +42,43 @@ import {
  * Input validation schemas for tool parameters.
  */
 
-const exportInputSchema = z.object({
-  traversal_query: z.string(),
-  format: z.enum(['graphson', 'json', 'csv']),
-  max_depth: z.number().optional(),
-  include_properties: z.array(z.string()).optional(),
-  exclude_properties: z.array(z.string()).optional(),
+const exportInputBase = z.object({
+  traversal_query: z
+    .string()
+    .min(1, 'traversal_query must not be empty')
+    .max(10000, 'traversal_query is too long')
+    .describe(
+      'Gremlin traversal query to define the subgraph that will normally use the subgraph() step to gather data'
+    ),
+  format: z
+    .enum(['graphson', 'json', 'csv'])
+    .default('graphson')
+    .describe('The output format for the exported data'),
+  include_properties: z
+    .array(z.string().min(1))
+    .optional()
+    .describe('Properties to include in the export'),
+  exclude_properties: z
+    .array(z.string().min(1))
+    .optional()
+    .describe('Properties to exclude from the export'),
+});
+
+const exportInputSchema = exportInputBase.refine(
+  ({ include_properties, exclude_properties }) => {
+    if (!include_properties || !exclude_properties) return true;
+    const s = new Set(include_properties);
+    return !exclude_properties.some(p => s.has(p));
+  },
+  { message: 'include_properties and exclude_properties must not overlap' }
+);
+
+// Parameterless tools: strict empty object
+const emptyInputSchema = z.object({}).strict();
+
+// Run Gremlin Query input
+const runQueryInputSchema = z.object({
+  query: z.string().min(1).max(10000).describe('The Gremlin query to execute'),
 });
 
 /**
@@ -72,7 +103,7 @@ export function registerEffectToolHandlers(
     {
       title: 'Get Graph Status',
       description: 'Get the connection status of the Gremlin graph database',
-      inputSchema: {},
+      inputSchema: emptyInputSchema.shape,
     },
     () =>
       Effect.runPromise(
@@ -95,7 +126,7 @@ export function registerEffectToolHandlers(
       title: 'Get Graph Schema',
       description:
         'Get the complete schema of the graph including vertex labels, edge labels, and relationship patterns',
-      inputSchema: {},
+      inputSchema: emptyInputSchema.shape,
     },
     () =>
       Effect.runPromise(
@@ -115,7 +146,7 @@ export function registerEffectToolHandlers(
     {
       title: 'Refresh Schema Cache',
       description: 'Force an immediate refresh of the graph schema cache',
-      inputSchema: {},
+      inputSchema: emptyInputSchema.shape,
     },
     () =>
       Effect.runPromise(
@@ -137,12 +168,10 @@ export function registerEffectToolHandlers(
     {
       title: 'Run Gremlin Query',
       description: 'Execute a Gremlin traversal query against the graph database',
-      inputSchema: {
-        query: z.string().describe('The Gremlin query to execute'),
-      },
+      inputSchema: runQueryInputSchema.shape,
     },
     (args: unknown) => {
-      const { query } = z.object({ query: z.string() }).parse(args);
+      const { query } = runQueryInputSchema.parse(args);
       return Effect.runPromise(pipe(createQueryEffect(query), Effect.provide(runtime)));
     }
   );
@@ -153,28 +182,17 @@ export function registerEffectToolHandlers(
     {
       title: 'Export Subgraph',
       description: 'Export a subgraph based on a traversal query to various formats',
-      inputSchema: {
-        traversal_query: z.string().describe('Gremlin traversal query to define the subgraph'),
-        format: z
-          .enum(['graphson', 'json', 'csv'])
-          .describe('The output format for the exported data'),
-        max_depth: z.number().optional().describe('Maximum traversal depth for the subgraph'),
-        include_properties: z
-          .array(z.string())
-          .optional()
-          .describe('Properties to include in the export'),
-        exclude_properties: z
-          .array(z.string())
-          .optional()
-          .describe('Properties to exclude from the export'),
-      },
+      inputSchema: exportInputBase.shape,
     },
     (args: unknown) =>
       Effect.runPromise(
         pipe(
           createValidatedToolEffect(
             exportInputSchema,
-            input => Effect.andThen(GremlinService, service => exportSubgraph(service, input)),
+            rawInput => {
+              const input = exportInputBase.parse(rawInput);
+              return Effect.andThen(GremlinService, service => exportSubgraph(service, input));
+            },
             'Export Subgraph'
           )(args),
           Effect.provide(runtime)
