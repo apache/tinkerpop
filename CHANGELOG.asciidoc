@@ -16,9 +16,9 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.8.0 (NOT OFFICIALLY NAMED YET)
+== TinkerPop 3.8.0 (Grix Greven)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
 [[release-3-8.0]]
 === TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
