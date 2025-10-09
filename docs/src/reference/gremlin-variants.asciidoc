@@ -525,7 +525,8 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-e
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see
+the <<gremlin-server,Gremlin Server>> documentation for this option).
 
 To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
@@ -1284,7 +1285,8 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-e
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see
+the <<gremlin-server,Gremlin Server>> documentation for this option).
 
 To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
@@ -1751,7 +1753,8 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-e
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see
+the <<gremlin-server,Gremlin Server>> documentation for this option).
 
 To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
@@ -2171,7 +2174,8 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-e
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see
+the <<gremlin-server,Gremlin Server>> documentation for this option).
 
 To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 
@@ -2767,7 +2771,8 @@ can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-e
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
-This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see the <<gremlin-server,Gremlin Server>> documentation for this option).
+This guide assumes Gremlin Server will be executed using Docker. Alternatively, Gremlin Server can run locally (see
+the <<gremlin-server,Gremlin Server>> documentation for this option).
 
 To start Gremlin Server using Docker, first download an image of Gremlin Server from Docker Hub:
 

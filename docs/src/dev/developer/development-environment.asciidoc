@@ -500,7 +500,10 @@ and GLVs will run automatically with integration tests against the TinkerTransac
 [[glv-examples]]
 == GLV Examples
 
-TinkerPop maintains GLV examples in two distinct locations. User-facing examples in the `glv-examples/` directory utilize published driver versions and are referenced in the main documentation. Module-level examples within each GLV directory (e.g., `gremlin-python/src/main/python/examples/`) use local development code to ensure compatibility and prevent regressions.
+TinkerPop maintains GLV examples in two distinct locations. User-facing examples in the `glv-examples/` directory
+utilize published driver versions and are referenced in the main documentation. Module-level examples within each GLV
+directory (e.g., `gremlin-python/src/main/python/examples/`) use local development code to ensure compatibility and
+prevent regressions.
 
 [[building-on-windows]]
 == Building On Windows
