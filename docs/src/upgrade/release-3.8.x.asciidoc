@@ -19,7 +19,7 @@ limitations under the License.
 
 image::gremlin-67.png[width=185]
 
-*Grix GrevenT*
+*Grix Greven*
 
 == TinkerPop 3.8.0
 
