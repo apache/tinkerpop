@@ -46,16 +46,15 @@ def with_remote():
     # variable named "g" as referenced in the following line.
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    vertex_label = os.getenv('VERTEX_LABEL', 'connection')
     rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
     # simple query to verify connection
-    v = g.add_v('py-conn-ex').iterate()
-    count = g.V().has_label('py-conn-ex').count().next()
+    v = g.add_v(vertex_label).iterate()
+    count = g.V().has_label(vertex_label).count().next()
     print("Vertex count: " + str(count))
 
-    # clean added data
-    g.V().has_label('py-conn-ex').drop().iterate()
     # cleanup
     rc.close()
 
@@ -64,6 +63,7 @@ def with_remote():
 def with_auth():
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'ws://localhost:8182/gremlin').format(45941)
+    vertex_label = os.getenv('VERTEX_LABEL', 'connection')
     
     # disable SSL certificate verification for remote hosts in test environments
     if 'localhost' not in server_url:
@@ -77,12 +77,10 @@ def with_auth():
     
     g = traversal().with_remote(rc)
 
-    v = g.add_v('py-conn-ex').iterate()
-    count = g.V().has_label('py-conn-ex').count().next()
+    v = g.add_v(vertex_label).iterate()
+    count = g.V().has_label(vertex_label).count().next()
     print("Vertex count: " + str(count))
 
-    # clean added data
-    g.V().has_label('py-conn-ex').drop().iterate()
     rc.close()
 
 
@@ -90,18 +88,17 @@ def with_auth():
 def with_kerberos():
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45942)
+    vertex_label = os.getenv('VERTEX_LABEL', 'connection')
     kerberos_hostname = os.getenv('KRB_HOSTNAME', socket.gethostname())
     kerberized_service = f'test-service@{kerberos_hostname}'
     
     rc = DriverRemoteConnection(server_url, 'g', kerberized_service=kerberized_service)
     g = traversal().with_remote(rc)
 
-    v = g.add_v('py-conn-ex').iterate()
-    count = g.V().has_label('py-conn-ex').count().next()
+    v = g.add_v(vertex_label).iterate()
+    count = g.V().has_label(vertex_label).count().next()
     print("Vertex count: " + str(count))
 
-    # clean added data
-    g.V().has_label('py-conn-ex').drop().iterate()
     rc.close()
 
 
@@ -109,6 +106,7 @@ def with_kerberos():
 def with_configs():
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
     server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    vertex_label = os.getenv('VERTEX_LABEL', 'connection')
     rc = DriverRemoteConnection(
         server_url, 'g',
         username="", password="", kerberized_service='',
@@ -118,12 +116,9 @@ def with_configs():
     )
     g = traversal().with_remote(rc)
 
-    v = g.add_v('py-conn-ex').iterate()
-    count = g.V().has_label('py-conn-ex').count().next()
+    v = g.add_v(vertex_label).iterate()
+    count = g.V().has_label(vertex_label).count().next()
     print("Vertex count: " + str(count))
-
-    # clean added data
-    g.V().has_label('py-conn-ex').drop().iterate()
 
     rc.close()
 

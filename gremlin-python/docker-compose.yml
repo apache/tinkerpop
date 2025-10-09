@@ -65,6 +65,7 @@ services:
       - VERSION=${VERSION}
       - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-python:{}/gremlin
       - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/python_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
+      - VERTEX_LABEL=python-example
     working_dir: /python_app
     command: >
       bash -c "apt-get update && apt-get -y install libkrb5-dev krb5-user
