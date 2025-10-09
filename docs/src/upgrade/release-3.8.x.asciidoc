@@ -17,9 +17,9 @@ limitations under the License.
 
 = TinkerPop 3.8.0
 
-image::gremlin-running.png[width=185]
+image::gremlin-67.png[width=185]
 
-*NOT OFFICIALLY NAMED YET*
+*Grix GrevenT*
 
 == TinkerPop 3.8.0
 

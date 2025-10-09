@@ -82,9 +82,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
 * Enabled TCP Keep-Alive in GremlinServer.
 
-== TinkerPop 3.8.0 (NOT OFFICIALLY NAMED YET)
+== TinkerPop 3.8.0 (Grix Greven)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
 [[release-3-8.0]]
 === TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
