@@ -3031,8 +3031,7 @@ input schema, and a result schema. When connected to a Gremlin MCP server, the a
 The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
 the graph via standard Gremlin traversals.
 
-IMPORTANT: Gremlin MCP is currently available for experimental use only. It is under active development and its features
-may change.
+IMPORTANT: This MCP server is designed for development and trusted environments.
 
 WARNING: Gremlin MCP can modify the graph to which it is connected. To prevent such changes, ensure that Gremlin MCP is
 configured to work against a read-only instance of the graph. Gremlin Server hosted graphs can configure their graph

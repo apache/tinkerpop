@@ -367,6 +367,7 @@ GREMLIN_SCHEMA_INCLUDE_COUNTS="true"          # Include vertex/edge counts in sc
 - 🔒 Use behind a firewall in production
 - 🔑 Enable strong authentication on your Gremlin server
 - 📊 Monitor query patterns and resource usage
+- 👓 Consider using a read-only graph configuration if you do not expect or desire mutations
 - 🛡️ Consider a query proxy for additional security controls
 - 🔄 Keep dependencies updated
 
@@ -484,11 +485,7 @@ The server implements intelligent schema discovery with enumeration detection:
 
 ### Contributing
 
-1. Follow the Apache TinkerPop [contribution guidelines](https://github.com/apache/tinkerpop/blob/master/CONTRIBUTING.asciidoc)
-2. Run `npm run validate` before committing
-3. Add tests for new functionality
-4. Update documentation for user-facing changes
-5. Ensure all tests pass
+Follow the Apache TinkerPop [contribution guidelines](https://github.com/apache/tinkerpop/blob/master/CONTRIBUTING.asciidoc)
 
 ### Testing Strategy
 
