@@ -184,7 +184,7 @@ public final class StepDefinition {
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
         // expects json so that should port to the Gremlin script form - replace curly json braces with square ones
         // for Gremlin sake.
-        add(Pair.with(Pattern.compile("m\\[(.*)\\]"), s -> {
+        add(Pair.with(Pattern.compile("^m\\[(.*)\\]$"), s -> {
             try {
                 // read tree from JSON - can't parse right to Map as each m[] level needs to be managed individually
                 return convertToObject(mapper.readTree(s));
@@ -193,16 +193,14 @@ public final class StepDefinition {
             }
         }));
 
-        add(Pair.with(Pattern.compile("l\\[\\]"), s -> Collections.emptyList()));
-        add(Pair.with(Pattern.compile("l\\[(.*)\\]"), s -> {
-            final String[] items = s.split(",");
-            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toList());
+        add(Pair.with(Pattern.compile("^l\\[\\]$"), s -> Collections.emptyList()));
+        add(Pair.with(Pattern.compile("^l\\[(.*)\\]$"), s -> {
+            return splitByElement(s).stream().map(x -> convertToObject(x)).collect(Collectors.toList());
         }));
 
-        add(Pair.with(Pattern.compile("s\\[\\]"), s -> Collections.emptySet()));
-        add(Pair.with(Pattern.compile("s\\[(.*)\\]"), s -> {
-            final String[] items = s.split(",");
-            return Stream.of(items).map(String::trim).map(x -> convertToObject(x)).collect(Collectors.toSet());
+        add(Pair.with(Pattern.compile("^s\\[\\]$"), s -> Collections.emptySet()));
+        add(Pair.with(Pattern.compile("^s\\[(.*)\\]$"), s -> {
+            return splitByElement(s).stream().map(x -> convertToObject(x)).collect(Collectors.toSet());
         }));
 
         // return the string values as is, used to wrap results that may contain other regex patterns
@@ -640,6 +638,27 @@ public final class StepDefinition {
         // test too, but i guess the test would fail so perhaps ok to just assume it's raw string value that
         // didn't need a transform by default
         return String.format("\"%s\"", pvalue);
+    }
+
+    private List<String> splitByElement(String s) {
+        if (s.trim().isEmpty()) return Collections.emptyList();
+
+        List<String> items = new ArrayList<>();
+        int depth = 0, start = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '[' || c == '{') depth++;
+            else if (c == ']' || c == '}') depth--;
+            else if (c == ',' && depth == 0) {
+                String item = s.substring(start, i).trim();
+                if (!item.isEmpty()) items.add(item);
+                start = i + 1;
+            }
+        }
+        String lastItem = s.substring(start).trim();
+        if (!lastItem.isEmpty()) items.add(lastItem);
+        return items;
     }
 
     private Object convertToObject(final Object pvalue) {
