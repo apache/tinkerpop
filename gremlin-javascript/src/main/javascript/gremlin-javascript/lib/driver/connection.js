@@ -163,10 +163,11 @@ class Connection extends EventEmitter {
 
     this._ws.addEventListener('open', this.#handleOpen);
     this._ws.addEventListener('error', this.#handleError);
-    this._ws.on('unexpected-response', this.#handleUnexpectedResponse);
+    if (!useGlobalWebSocket) {
+      this._ws.on('unexpected-response', this.#handleUnexpectedResponse);
+    }
     this._ws.addEventListener('message', this.#handleMessage);
     this._ws.addEventListener('close', this.#handleClose);
-
     return await this._openPromise;
   }
 
@@ -415,7 +416,11 @@ class Connection extends EventEmitter {
     });
     this._ws.removeEventListener('open', this.#handleOpen);
     this._ws.removeEventListener('error', this.#handleError);
-    this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
+    // Only remove unexpected-response listener for Node.js WebSocket (ws package)
+    // Browser WebSocket does not have this event and .off() method
+    if (this._ws && 'off' in this._ws) {
+      this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
+    }
     this._ws.removeEventListener('message', this.#handleMessage);
     this._ws.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
