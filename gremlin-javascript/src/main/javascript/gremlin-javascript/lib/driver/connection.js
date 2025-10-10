@@ -172,7 +172,6 @@ class Connection extends EventEmitter {
     }
     this._ws.addEventListener('message', this.#handleMessage);
     this._ws.addEventListener('close', this.#handleClose);
-
     return await this._openPromise;
   }
 

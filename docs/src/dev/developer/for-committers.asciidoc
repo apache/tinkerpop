@@ -142,7 +142,8 @@ TinkerPop has several release branches:
 * `3.5-dev` - 3.5.x (no longer maintained)
 * `3.6-dev` - 3.6.x (no longer maintained)
 * `3.7-dev` - 3.7.x (non-breaking bug fixes and enhancements)
-* `master` - 4.x (current development)
+* `3.8-dev` - 3.8.x (current development)
+* `master` - 4.x (future development)
 
 The branch description above that reads "non-breaking bug fixes and enhancements" simply means that within that release
 line (i.e. patch version) changes should not alter existing behavior, introduce new APIs, change serialization formats,
@@ -151,8 +152,8 @@ can be assured that their upgrades will not introduce potential problems. A good
 client of one version within a release line can interact properly with a server version within that same line. If so,
 it is likely an acceptable change within that branch.
 
-Changes to earlier branches should merge forward toward `master` (e.g. `3.7-dev` should merge to `master`). Please read
-more about this process in the <<pull-requests, Pull Requests>> section.
+Changes to earlier branches should merge forward toward `master` (e.g. `3.7-dev` should merge to `3.8-dev` then
+`master`). Please read more about this process in the <<pull-requests, Pull Requests>> section.
 
 As described in <<versioning,versioning>>, it is possible to do a "partial" release which will utilize a four-digit
 version that starts with a "1" (e.g. `3.6.0.1`). The branching strategy for a partial release requires that a `-dev`
