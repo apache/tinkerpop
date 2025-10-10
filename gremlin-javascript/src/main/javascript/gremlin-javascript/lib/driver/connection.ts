@@ -214,10 +214,15 @@ export default class Connection extends EventEmitter {
     this._ws!.addEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws!.addEventListener('error', this.#handleError);
-    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
-    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
-    // @ts-expect-error
-    this._ws!.on('unexpected-response', this.#handleUnexpectedResponse);
+    // Only attach unexpected-response listener for Node.js WebSocket (ws package)
+    // Browser WebSocket does not have this event and .on() method
+    if (!useGlobalWebSocket) {
+      // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+      // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
+      // @ts-expect-error
+      this._ws!.on('unexpected-response', this.#handleUnexpectedResponse);
+    }
+
     // @ts-expect-error
     this._ws!.addEventListener('message', this.#handleMessage);
     // @ts-expect-error
@@ -465,10 +470,14 @@ export default class Connection extends EventEmitter {
     this._ws?.removeEventListener('open', this.#handleOpen);
     // @ts-expect-error
     this._ws?.removeEventListener('error', this.#handleError);
-    // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
-    // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
-    // @ts-expect-error
-    this._ws?.off('unexpected-response', this.#handleUnexpectedResponse);
+    // Only remove unexpected-response listener for Node.js WebSocket (ws package)
+    // Browser WebSocket does not have this event and .off() method
+    if (this._ws && 'off' in this._ws) {
+      // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
+      // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
+      this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
+    }
+
     // @ts-expect-error
     this._ws?.removeEventListener('message', this.#handleMessage);
     // @ts-expect-error
