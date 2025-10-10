@@ -30,7 +30,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Improved GLV examples reliability and documentation with step-by-step instructions.
 * Added root-level GLV examples in `glv-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
 * Bump netty to 4.1.125.Final
-* Integrated Python driver examples into automated build process to ensure examples remain functional.
 
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (Release Date: August 1, 2025)
