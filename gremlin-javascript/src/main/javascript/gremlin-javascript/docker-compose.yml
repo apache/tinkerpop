@@ -58,6 +58,7 @@ services:
     depends_on:
       gremlin-server-test-js:
         condition: service_healthy
+
   gremlin-socket-server:
     container_name: gremlin-socket-server-js
     image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}

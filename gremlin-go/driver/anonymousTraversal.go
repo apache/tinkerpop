@@ -75,6 +75,12 @@ type AnonymousTraversal interface {
 	Any(args ...interface{}) *GraphTraversal
 	// As adds the as step to the GraphTraversal.
 	As(args ...interface{}) *GraphTraversal
+	// AsBool adds the as step to the GraphTraversal.
+	AsBool(args ...interface{}) *GraphTraversal
+	// AsDate adds the as step to the GraphTraversal.
+	AsDate(args ...interface{}) *GraphTraversal
+	// AsNumber adds the as step to the GraphTraversal.
+	AsNumber(args ...interface{}) *GraphTraversal
 	// AsString adds the asString step to the GraphTraversal.
 	AsString(args ...interface{}) *GraphTraversal
 	// Barrier adds the barrier step to the GraphTraversal.
@@ -113,6 +119,10 @@ type AnonymousTraversal interface {
 	Count(args ...interface{}) *GraphTraversal
 	// CyclicPath adds the cyclicPath step to the GraphTraversal.
 	CyclicPath(args ...interface{}) *GraphTraversal
+	// DateAdd adds the dedup step to the GraphTraversal.
+	DateAdd(args ...interface{}) *GraphTraversal
+	// DateDiff adds the dedup step to the GraphTraversal.
+	DateDiff(args ...interface{}) *GraphTraversal
 	// Dedup adds the dedup step to the GraphTraversal.
 	Dedup(args ...interface{}) *GraphTraversal
 	// Difference adds the difference step to the GraphTraversal.
@@ -385,12 +395,12 @@ func (anonymousTraversal *anonymousTraversal) As(args ...interface{}) *GraphTrav
 
 // AsDate adds the AsDate step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) AsDate(args ...interface{}) *GraphTraversal {
-        return anonymousTraversal.graphTraversal().AsDate(args...)
+	return anonymousTraversal.graphTraversal().AsDate(args...)
 }
 
 // AsBool adds the AsBool step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) AsBool(args ...interface{}) *GraphTraversal {
-        return anonymousTraversal.graphTraversal().AsBool(args...)
+	return anonymousTraversal.graphTraversal().AsBool(args...)
 }
 
 // AsDate adds the AsNumber step to the GraphTraversal.

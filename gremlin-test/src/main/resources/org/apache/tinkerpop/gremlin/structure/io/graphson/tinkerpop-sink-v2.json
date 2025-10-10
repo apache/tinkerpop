@@ -1,6 +1,3 @@
 {"id":2000,"label":"message","inE":{"link":[{"id":2003,"outV":2000}]},"outE":{"link":[{"id":2002,"inV":2001},{"id":2003,"inV":2000}]},"properties":{"name":[{"id":1,"value":"a"}]}}
 {"id":2001,"label":"message","inE":{"link":[{"id":2002,"outV":2000}]},"properties":{"name":[{"id":2,"value":"b"}]}}
 {"id":1000,"label":"loops","inE":{"self":[{"id":1001,"outV":1000}]},"outE":{"self":[{"id":1001,"inV":1000}]},"properties":{"name":[{"id":0,"value":"loop"}]}}
-{"id":3000,"label":"data","properties":{"double":[{"id":3,"value":1.0}],"name":[{"id":4,"value":"number"}],"float":[{"id":5,"value":1.0}],"int":[{"id":6,"value":1}],"long":[{"id":7,"value":1}]}}
-{"id":3001,"label":"data","properties":{"boolean":[{"id":8,"value":true}],"string":[{"id":9,"value":"a string"}],"name":[{"id":10,"value":"general"}],"uuid":[{"id":11,"value":"ffffffff-fd49-1e4b-0000-00000d4b8a1d"}]}}
-{"id":3002,"label":"data","properties":{"set":[{"id":12,"value":["set"]}],"name":[{"id":13,"value":"collection"}],"list":[{"id":14,"value":["list"]}],"map":[{"id":15,"value":{"key":"value"}}]}}
