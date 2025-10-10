@@ -123,9 +123,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <!--
-                            build/package python source distribution and wheel archive. the version is bound to an
-                            environment variable that gets used in setup.py to dynamically construct a module
-                            __version__file
+                            build/package python source distribution and wheel archive.
                              -->
                             <execution>
                                 <id>package-py</id>
@@ -137,7 +135,6 @@ limitations under the License.
                                     <target>
                                         <exec executable="docker" failonerror="true">
                                             <env key="PACKAGE_DIR" value="${project.build.directory}/python-packaged"/>
-                                            <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <arg line="compose up --build --abort-on-container-exit gremlin-python-package"/>
                                         </exec>
@@ -168,7 +165,6 @@ limitations under the License.
                                     <skip>${skipTests}</skip>
                                     <target>
                                         <exec executable="docker" failonerror="true">
-                                            <env key="VERSION" value="${project.version}"/>
                                             <env key="PYTHONPATH" value=""/>
                                             <env key="GREMLIN_SERVER" value="${project.version}"/>
                                             <env key="ABS_PROJECT_HOME" value="${project.basedir}/../"/>
