@@ -283,6 +283,38 @@ The properties file in the above example can either point to a remote configurat
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 
+==== Removal of Scopes in aggregate() Step
+
+The scope parameter has been removed from the `aggregate()` step. The `AggregateStep` is now globally scoped by default.
+Lazy evaluation with `aggregate()` can still be achieved by wrapping the step in `local()`.
+
+[source,text]
+----
+// 3.7.x - scope is still supported (though deprecated starting in 3.7.5+)
+gremlin> g.V().aggregate(Scope.local, "x").by("age").cap("x")
+==>[29,27,32,35]
+
+// 3.8.0 - must use aggregate() within local() to achieve lazy aggregation
+gremlin> g.V().local(aggregate("x").by("age")).cap("x")
+==>[29,27,32,35]
+----
+
+==== Removal of `store()` Step
+
+The `store()` step was a legacy name for `aggregate(local)` that has been deprecated since 3.4.3, and is now removed along
+with `aggregate(local)`. To achieve lazy aggregation, use `aggregate()` within `local()`.
+
+[source,text]
+----
+// 3.7.x - store() is still allowed
+gremlin> g.V().store("x").by("age").cap("x")
+==>[29,27,32,35]
+
+// 3.8.0 - store() removed, use local(aggregate()) to achieve lazy aggregation
+gremlin> g.V().local(aggregate("x").by("age")).cap("x")
+==>[29,27,32,35]
+----
+
 ==== split() on Empty String
 
 The `split()` step will now split a string into a list of its characters if the given separator is an empty string.
