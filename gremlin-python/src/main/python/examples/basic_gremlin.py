@@ -16,6 +16,7 @@
 # under the License.
 
 import sys
+import os
 
 sys.path.append("..")
 
@@ -25,13 +26,16 @@ from gremlin_python.driver.driver_remote_connection import DriverRemoteConnectio
 
 
 def main():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    vertex_label = os.getenv('VERTEX_LABEL', 'person')
+    rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
     # basic Gremlin: adding and retrieving data
-    v1 = g.add_v('person').property('name', 'marko').next()
-    v2 = g.add_v('person').property('name', 'stephen').next()
-    v3 = g.add_v('person').property('name', 'vadas').next()
+    v1 = g.add_v(vertex_label).property('name', 'marko').next()
+    v2 = g.add_v(vertex_label).property('name', 'stephen').next()
+    v3 = g.add_v(vertex_label).property('name', 'vadas').next()
 
     # be sure to use a terminating step like next() or iterate() so that the traversal "executes"
     # iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
@@ -39,11 +43,11 @@ def main():
     g.V(v1).add_e('knows').to(v3).property('weight', 0.75).iterate()
 
     # retrieve the data from the "marko" vertex
-    marko = g.V().has('person', 'name', 'marko').values('name').next()
+    marko = g.V().has(vertex_label, 'name', 'marko').values('name').next()
     print("name: " + marko)
 
     # find the "marko" vertex and then traverse to the people he "knows" and return their data
-    people_marko_knows = g.V().has('person', 'name', 'marko').out('knows').values('name').to_list()
+    people_marko_knows = g.V().has(vertex_label, 'name', 'marko').out('knows').values('name').to_list()
     for person in people_marko_knows:
         print("marko knows " + person)
 
