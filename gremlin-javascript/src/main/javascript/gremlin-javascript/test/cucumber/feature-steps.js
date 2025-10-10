@@ -80,6 +80,7 @@ const ignoredScenarios = {
   // An associative array containing the scenario name as key, for example:
   'g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
+  'g_withSideEffectXa_setX_V_both_name_localXaggregateX_aXX_capXaX': new IgnoreError(ignoreReason.setNotSupported),
   'g_V_out_in_valuesXnameX_fold_dedupXlocalX': new IgnoreError(ignoreReason.setNotSupported),
   'g_V_valuesXnonexistantX_fold_differenceXV_valuesXnameX_foldX': new IgnoreError(ignoreReason.setNotSupported),
   'g_V_valuesXnameX_fold_differenceXV_valuesXnonexistantX_foldX': new IgnoreError(ignoreReason.setNotSupported),

@@ -2920,6 +2920,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link AggregateGlobalStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#aggregate-step" target="_blank">Reference Documentation - Aggregate Step</a>
      * @since 3.4.3
+     * @deprecated As of release 3.7.5, aggregate() is no longer scoped, to achieve lazy evaluation use aggregate() inside of local()
      */
     public default GraphTraversal<S, E> aggregate(final Scope scope, final String sideEffectKey) {
         this.asAdmin().getBytecode().addStep(Symbols.aggregate, scope, sideEffectKey);
