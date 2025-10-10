@@ -277,12 +277,12 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 
 ==== Removal of Scopes in aggregate() Step
 
-Scores are not removed from the `aggregate()` step. The `AggregateStep` is now globally scoped by default.
-The only way to achieve lazy evaluation with `aggregate()` is using `local()`.
+The scope parameter has been removed from the `aggregate()` step. The `AggregateStep` is now globally scoped by default.
+Lazy evaluation with `aggregate()` can still be achieved by wrapping the step in `local()`.
 
 [source,text]
 ----
-// 3.7.x - scopes are still allowed (though deprecated starting in 3.7.5+)
+// 3.7.x - scope is still supported (though deprecated starting in 3.7.5+)
 gremlin> g.V().aggregate(Scope.local, "x").by("age").cap("x")
 ==>[29,27,32,35]
 
