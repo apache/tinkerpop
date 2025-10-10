@@ -5475,11 +5475,8 @@ a comparatively slow script compilation, which makes parameterization essential 
 [[a-note-on-predicates]]
 == A Note on Predicates
 
-A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
-the release of TinkerPop 3.4.0, Gremlin also supports text predicates (`TextP`), which are specialized predicates that
-only work on String values and are of the form `Function<String,Boolean>`. Additionally, type predicate (`P.typeOf`)
-supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and
-are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. Gremlin
+supports text predicates (`TextP`), which are specialized predicates that only work on String values and are of the form `Function<String,Boolean>`. Additionally, type predicate (`P.typeOf`) supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
