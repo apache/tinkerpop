@@ -196,6 +196,15 @@ Feature: Predicate - typeOf() General
       | ripple |
       | peter |
 
+  Scenario: g_V_valuesXageX_isXtypeOfXGType_NULLXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").is(P.typeOf(GType.NULL))
+      """
+    When iterated to list
+    Then the result should be empty
+
   Scenario: g_V_valuesXageX_isXtypeOfXGType_BOOLEANXX
     Given the modern graph
     And the traversal of
@@ -250,91 +259,23 @@ Feature: Predicate - typeOf() General
     When iterated to list
     Then the result should be empty
 
-#  TODO: with validation moved to P, deserialization will cause early error in GLV, leading to 499 instead, revisit
-#  Scenario: g_V_valuesXageX_isXtypeOfXnon_registered_NameXX
-#    Given the modern graph
-#    And the traversal of
-#    """
-#    g.V().values("age").is(P.typeOf("non-registered-Name"))
-#    """
-#    When iterated to list
-#    Then the traversal will raise an error with message containing text of "non-registered-Name is not a registered type"
+  Scenario: g_V_valuesXageX_isXtypeOfXnon_registered_NameXX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().values("age").is(P.typeOf("non-registered-Name"))
+    """
+    When iterated to list
+    Then the traversal will raise an error
 
-  Scenario: g_V_hasLabelXgeneralX_valuesXbooleanX_isXtypeOfXGType_BOOLEANXX
-    Given the sink graph
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXtrueX_isXtypeOfXGType_BOOLEANX
+    Given the empty graph
     And the traversal of
       """
-      g.V().hasLabel("data").values("boolean").is(P.typeOf(GType.BOOLEAN))
+      g.inject(true).is(P.typeOf(GType.BOOLEAN))
       """
     When iterated to list
     Then the result should be unordered
       | result |
       | true |
-
-  Scenario: g_V_hasLabelXgeneralX_valuesXstringX_isXtypeOfXGType_STRINGXX
-    Given the sink graph
-    And the traversal of
-      """
-      g.V().hasLabel("data").values("string").is(P.typeOf(GType.STRING))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | a string |
-
-  Scenario: g_V_hasLabelXgeneralX_valuesXuuidX_isXtypeOfXGType_UUIDXX
-    Given the sink graph
-    And the traversal of
-      """
-      g.V().hasLabel("data").values("uuid").is(P.typeOf(GType.UUID))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | uuid[ffffffff-fd49-1e4b-0000-00000d4b8a1d] |
-
-  @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_inject_XtimeX_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX
-    Given the empty graph
-    And the traversal of
-      """
-      g.inject(datetime("2023-08-08T00:00:00Z")).is(P.typeOf(GType.DATETIME))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | dt[2023-08-08T00:00:00Z] |
-
-  # TODO update depends on graph needs
-#  Scenario: g_V_hasLabelXtimeX_valuesXdurationX_isXtypeOfXGType_DURATIONXX
-#    Given the sink graph
-#    And the traversal of
-#      """
-#      g.V().hasLabel("data").values().is(P.typeOf(GType.DURATION)).count()
-#      """
-#    When iterated to list
-#    Then the result should be unordered
-#      | result |
-#      | d[1].l |
-#
-#  Scenario: g_V_hasLabelXgeneralX_valuesXbinaryX_isXtypeOfXGType_BINARYXX
-#    Given the sink graph
-#    And the traversal of
-#      """
-#      g.V().hasLabel("data").values().is(P.typeOf(GType.BINARY)).count()
-#      """
-#    When iterated to list
-#    Then the result should be unordered
-#      | result |
-#      | d[1].l |
-#
-#  Scenario: g_V_hasLabelXgeneralX_valuesXcharX_isXtypeOfXGType_CHARXX
-#    Given the sink graph
-#    And the traversal of
-#      """
-#      g.V().hasLabel("data").values().is(P.typeOf(GType.CHAR)).count()
-#      """
-#    When iterated to list
-#    Then the result should be unordered
-#      | result |
-#      | d[1].l |

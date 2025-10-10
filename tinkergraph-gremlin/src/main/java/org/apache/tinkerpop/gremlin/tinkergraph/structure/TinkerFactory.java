@@ -212,22 +212,6 @@ public final class TinkerFactory {
           addV("message").property(T.id, 2001).property("name", "b").as("b").
           addE("link").from("a").to("b").property(T.id, 2002).
           addE("link").from("a").to("a").property(T.id, 2003).iterate();
-        g.addV("data").property(T.id, 3000).property("name", "number").
-                property("int", 1).
-                property("long", 1l).
-                property("float", 1f).
-                property("double", 1d).
-                iterate();
-        g.addV("data").property(T.id, 3001).property("name", "general").
-                property("boolean", true).
-                property("string", "a string").
-                property("uuid", UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d")).
-                iterate();
-        g.addV("data").property(T.id, 3002).property("name", "collection").
-                property("set", new HashSet<String>(Collections.singleton("set"))).
-                property("list", new ArrayList<String>(Collections.singleton("list"))).
-                property("map", new HashMap<String, String>(Collections.singletonMap("key", "value"))).
-                iterate();
     }
 
     /**

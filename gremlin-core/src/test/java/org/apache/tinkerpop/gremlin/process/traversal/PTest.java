@@ -30,6 +30,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -242,6 +244,12 @@ public class PTest {
                     {P.typeOf(GType.LIST), "list", false},
                     {P.typeOf("Number"), 1, true},
                     {P.typeOf("String"), 1, false},
+                    {P.typeOf(GType.DURATION), Duration.ofSeconds(30), true},
+                    {P.typeOf(GType.DURATION), "duration", false},
+                    {P.typeOf(GType.CHAR), 'c', true},
+                    {P.typeOf(GType.CHAR), "c", false},
+                    {P.typeOf(GType.BINARY), ByteBuffer.wrap("some bytes for you".getBytes()), true},
+                    {P.typeOf(GType.BINARY), "some non-bytes for you", false},
 
                     // text predicates
                     {TextP.containing("ark"), "marko", true},
