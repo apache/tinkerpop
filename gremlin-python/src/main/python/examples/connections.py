@@ -65,8 +65,8 @@ def with_auth():
     server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'ws://localhost:8182/gremlin').format(45941)
     vertex_label = os.getenv('VERTEX_LABEL', 'connection')
     
-    # disable SSL certificate verification for remote hosts in test environments
-    if 'localhost' not in server_url:
+    # disable SSL certificate verification for CI environments
+    if ':45941' in server_url:
         ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ssl_opts.check_hostname = False
         ssl_opts.verify_mode = ssl.CERT_NONE
