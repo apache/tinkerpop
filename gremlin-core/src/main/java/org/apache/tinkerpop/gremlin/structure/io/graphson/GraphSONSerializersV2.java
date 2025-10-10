@@ -65,6 +65,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -300,14 +301,14 @@ class GraphSONSerializersV2 {
         @Override
         public void serialize(final TraversalExplanation traversalExplanation, final JsonGenerator jsonGenerator,
                               final SerializerProvider serializerProvider) throws IOException {
-            final Map<String, Object> m = new HashMap<>();
+            final Map<String, Object> m = new LinkedHashMap<>();
             m.put(GraphSONTokens.ORIGINAL, getStepsAsList(traversalExplanation.getOriginalTraversal()));
 
             final List<Pair<TraversalStrategy, Traversal.Admin<?, ?>>> strategyTraversals = traversalExplanation.getStrategyTraversals();
 
             final List<Map<String, Object>> intermediates = new ArrayList<>();
             for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : strategyTraversals) {
-                final Map<String, Object> intermediate = new HashMap<>();
+                final Map<String, Object> intermediate = new LinkedHashMap<>();
                 intermediate.put(GraphSONTokens.STRATEGY, pair.getValue0().toString());
                 intermediate.put(GraphSONTokens.CATEGORY, pair.getValue0().getTraversalCategory().getSimpleName());
                 intermediate.put(GraphSONTokens.TRAVERSAL, getStepsAsList(pair.getValue1()));
