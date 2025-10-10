@@ -71,9 +71,9 @@ services:
       && echo 'password' | kinit stephen
       && klist
       && pip install wheel radish-bdd PyHamcrest aenum isodate kerberos
-      && python3 ./setup.py build
-      && python3 ./setup.py test
-      && python3 ./setup.py install
+      && pip install -e .[test]
+      && pytest
+      && pip install .
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0';
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
@@ -90,7 +90,7 @@ services:
     environment:
       - VERSION=${VERSION}
     command: >
-      bash -c "python3 setup.py sdist bdist_wheel;
+      bash -c "pip install build && python -m build;
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
 
   gremlin-socket-server:
