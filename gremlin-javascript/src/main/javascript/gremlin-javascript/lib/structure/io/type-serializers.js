@@ -103,6 +103,13 @@ class DateSerializer extends TypeSerializer {
   }
 }
 
+class OffsetDateTimeSerializer extends TypeSerializer {
+  // only deserialize gx:OffsetDateTime objects
+  deserialize(obj) {
+    return new Date(obj[valueKey]);
+  }
+}
+
 class LongSerializer extends TypeSerializer {
   serialize(item) {
     return {
@@ -480,6 +487,7 @@ module.exports = {
   BulkSetSerializer,
   BytecodeSerializer,
   DateSerializer,
+  OffsetDateTimeSerializer,
   DirectionSerializer,
   EdgeSerializer,
   EnumSerializer,
