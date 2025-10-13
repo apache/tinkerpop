@@ -194,7 +194,7 @@ limitations under the License.
                         <p class="mb-3 mb-md-5 medium black">Apache TinkerPop provides three packaged downloads per release version. The
        <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-console" class="text-blue">Gremlin Console</a> and <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-server"  class="text-blue">Gremlin Server</a>
        downloads are binary distributions, which contain pre-packaged versions of these important TinkerPop applications that are designed to work out-of-the-box
-       when unpackaged. The source distribution is a snapshot of the source code and files used in the building of those  binary distributions.</p>
+       when unpackaged. The source distribution is a snapshot of the source code and files used in the building of those binary distributions.</p>
                     </div>
                     <div class="col-12 mb-3s">
                         <h2 class="ft-25 black bold">Current Releases</h2>
@@ -351,7 +351,7 @@ limitations under the License.
                 </div>
                 <div class="row d-flex align-items-center mt-4 mt-md-5">
                      <h2 class="ft-25 black bold mb-2">Packaged Artifacts</h2>
-                     <p class="mb-4">As a convenience, TinkerPop also deploys packaged artifacts to the following locations</p>
+                     <p class="mb-4">As a convenience, TinkerPop also deploys packaged artifacts to the following locations:</p>
                 </div>
                 <div class="row d-flex justify-content-center">
                    <div class="col-lg-11 col-md-12">
@@ -359,6 +359,7 @@ limitations under the License.
                           <thead>
                             <tr>
                               <th scope="col" class="left-radius">Repository</th>
+                              <th scope="col">Recommended Runtime</th>
                               <th scope="col">Artifacts</th>
                               <th scope="col" class="right-radius info-table-th"></th>
                             </tr>
@@ -366,6 +367,7 @@ limitations under the License.
                           <tbody>
                             <tr>
                               <td data-label="Repository" class="bold">Docker</td>
+                              <td data-label="Recommended Runtime">N/A</td>
                               <td data-label="Artifacts"><a href="https://hub.docker.com/r/tinkerpop/gremlin-server" class="text-blue">Gremlin Server </a> <br> <a href="https://hub.docker.com/r/tinkerpop/gremlin-console" class="text-blue">Gremlin Console </a></td>
                               <td data-label="">
                                   <div class="code-box1">
@@ -376,16 +378,18 @@ limitations under the License.
 
                             <tr>
                                 <td data-label="Repository" class="bold">Go Module</td>
+                                <td data-label="Recommended Runtime">Go 1.24</td>
                                 <td data-label="Artifacts"><a href="https://pkg.go.dev/github.com/apache/tinkerpop/gremlin-go/v3" class="text-blue">gremlin-go</a></td>
                                 <td data-label="">
                                     <div class="code-box1">
-                                        go get github.com/apache/tinkerpop/gremlin-go/v3&#64;v3.7.0
+                                        go get github.com/apache/tinkerpop/gremlin-go/v3&#64;v3.7.4
                                     </div>
                                 </td>
                             </tr>
 
                             <tr>
                               <td data-label="Repository" class="bold">Maven Central</td>
+                              <td data-label="Recommended Runtime">JDK 17</td>
                               <td data-label="Artifacts"><a href="https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.tinkerpop%22" class="text-blue">groupId: org.apache.tinkerpop </a></td>
                               <td data-label="">
                                   <div class="code-box1">
@@ -393,24 +397,15 @@ limitations under the License.
                                         &lt;dependency> <br>
                                            &nbsp;&nbsp; &lt;groupId>org.apache.tinkerpop&lt;/groupId> <br>
                                            &nbsp;&nbsp; &lt;artifactId>gremlin-driver&lt;/artifactId> <br>
-                                          &nbsp;&nbsp;  &lt;version>3.7.0&lt;/version> <br>
+                                          &nbsp;&nbsp;  &lt;version>3.7.4&lt;/version> <br>
                                         &lt;/dependency>
                                   </div>
                               </td>
                             </tr>
 
                             <tr>
-                              <td data-label="Repository" class="bold">PyPI</td>
-                              <td data-label="Artifacts"><a href="https://pypi.python.org/pypi/gremlinpython/" class="text-blue">gremlinpython </a> </td>
-                              <td data-label="">
-                                  <div class="code-box1">
-                                    pip install gremlinpython
-                                  </div>
-                              </td>
-                            </tr>
-
-                            <tr>
                               <td data-label="Repository" class="bold">npm</td>
+                              <td data-label="Recommended Runtime">Node.js 20+</td>
                               <td data-label="Artifacts"><a href="https://www.npmjs.com/package/gremlin" class="text-blue">gremlin  </a> <br> <a href="https://www.npmjs.com/package/gremlint" class="text-blue">gremlint </a></td>
                               <td data-label="">
                                   <div class="code-box1">
@@ -421,17 +416,32 @@ limitations under the License.
 
                             <tr>
                               <td data-label="Repository" class="bold">NuGet</td>
+                              <td data-label="Recommended Runtime">.NET Standard 2.0; .NET 6.0</td>
                               <td data-label="Artifacts"><a href="https://www.nuget.org/packages/Gremlin.Net/" class="text-blue">Gremlin.Net </a> <br> <a href="https://www.nuget.org/packages/Gremlin.Net.Template/" class="text-blue">Gremlin.Net.Template </a></td>
                               <td data-label="">
                                   <div class="code-box1">
-                                   dotnet add package Gremlin.Net --version 3.7.0 <br>dotnet add package Gremlin.Net.template --version 3.7.0
+                                   dotnet add package Gremlin.Net --version 3.7.4 <br>dotnet add package Gremlin.Net.template --version 3.7.4
                                   </div>
                               </td>
+                            </tr>
+
+                            <tr>
+                                <td data-label="Repository" class="bold">PyPI</td>
+                                <td data-label="Recommended Runtime">Python 3.9+</td>
+                                <td data-label="Artifacts"><a href="https://pypi.python.org/pypi/gremlinpython/" class="text-blue">gremlinpython </a> </td>
+                                <td data-label="">
+                                    <div class="code-box1">
+                                        pip install gremlinpython
+                                    </div>
+                                </td>
                             </tr>
                           </tbody>
                         </table>
                    </div>
 
+                </div>
+                <div class="row d-flex align-items-center mt-4 mt-md-5">
+                    <p class="mb-4">The "Recommended Versions" listed above apply to the most recent TinkerPop release. See the Reference Documentation for more specific recommendations on runtimes for older versions for <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-go" class="text-blue">Go</a>, <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-java" class="text-blue">Java</a>, <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-javascript" class="text-blue">Javascript</a>, <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-dotnet" class="text-blue">.NET</a> and <a href="https://tinkerpop.apache.org/docs/current/reference/#gremlin-python" class="text-blue">Python</a>.</p>
                 </div>
                  <div class="row d-flex align-items-center mt-4 mt-md-5">
                      <h2 class="ft-25 black bold mb-2">Verifying Downloads</h2>
