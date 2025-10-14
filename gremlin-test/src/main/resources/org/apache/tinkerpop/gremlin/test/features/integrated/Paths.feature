@@ -38,6 +38,7 @@ Feature: Step - paths
                   by(__.select(Pop.all, "v")).as("t").
                 filter(__.select(Pop.all, "p").count(local).as("l").
                        select(Pop.last, "t").select(Pop.all, "p").dedup(Scope.local).count(Scope.local).where(P.eq("l"))).
+                where("src", P.neq("tgt")).
                 select(Pop.last, "t").
                 not(__.select(Pop.all, "p").as("p").count(local).as("l").
                     select(Pop.all, "x").unfold().filter(select(keys).where(P.eq("t")).by(__.select("src", "tgt"))).
@@ -63,18 +64,12 @@ Feature: Step - paths
       | l[peter,lop,josh]|
       | l[vadas,marko]|
       | l[ripple,josh]|
-      | l[marko]|
-      | l[josh]|
-      | l[ripple]|
       | l[josh,ripple]|
       | l[peter,lop]|
       | l[vadas,marko,josh]|
       | l[lop,josh,ripple]|
       | l[marko,josh]|
       | l[lop,marko,vadas]|
-      | l[lop]|
-      | l[peter]|
-      | l[vadas]|
       | l[marko,josh,ripple]|
       | l[marko,vadas]|
       | l[vadas,marko,lop]|
@@ -103,11 +98,9 @@ Feature: Step - paths
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"song":"TOMORROW IS A LONG TIME","artists":["Bob_Dylan"]}] |
-      | m[{"song":"JOHN BROWN","artists":["Bob_Dylan"]}] |
+      | m[{"song":"I WANT YOU","artists":["Bob_Dylan"]}] |
       | m[{"song":"BABY BLUE","artists":["Unknown"]}] |
       | m[{"song":"CANDYMAN","artists":["Garcia","Hunter"]}] |
       | m[{"song":"BIG RIVER","artists":["Weir","Johnny_Cash"]}] |
       | m[{"song":"TERRAPIN STATION","artists":["Garcia","Hunter"]}] |
       | m[{"song":"DRUMS","artists":["Grateful_Dead"]}] |
-

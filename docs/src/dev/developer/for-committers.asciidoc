@@ -624,6 +624,8 @@ mid-`E()` step is not supported.
 mid-`V()` step is not supported.
 * `@GraphComputerVerificationOneBulk` - The scenario will not work because `withBulk(false)` is configured and that
 is not compatible with `GraphComputer`
+* `@GraphComputerVerificationOrderingNotSupported` - The scenario will not work with `GraphComputer` because ordering
+within `repeat()` is not supported.
 * `@GraphComputerVerificationReferenceOnly` - The scenario itself is not written to support `GraphComputer` because it
 tries to reference inaccessible properties that are on elements only available by "reference" (i.e `T.id` only).
 * `@GraphComputerVerificationStrategyNotSupported` - The scenario uses a traversal strategy that is not supported by
