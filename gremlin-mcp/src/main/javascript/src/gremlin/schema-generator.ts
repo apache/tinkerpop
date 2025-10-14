@@ -97,8 +97,8 @@ const executeSchemaGeneration = (
     );
 
     // Step 4: Add count information
-    const vertices = addElementCounts<Vertex>(rawVertices, vertexCounts, config, 'labels');
-    const edges = addElementCounts<Edge>(rawEdges, edgeCounts, config, 'type');
+    const vertices = addElementCounts<Vertex>(rawVertices, vertexCounts, config);
+    const edges = addElementCounts<Edge>(rawEdges, edgeCounts, config);
 
     // Step 5: Assemble final schema
     return yield* assembleGraphSchema(vertices, edges, patterns, config, startTime);
@@ -124,14 +124,13 @@ const getElementCounts = (
 const addElementCounts = <T extends Vertex | Edge>(
   rawElements: unknown[],
   counts: SchemaCountData,
-  config: SchemaConfig,
-  labelKey: 'labels' | 'type'
+  config: SchemaConfig
 ): T[] => {
   const addCounts = withElementCounts<T>(counts, config);
 
   return rawElements.map(element => {
     const elementData = element as Record<string, unknown>;
-    const label = elementData[labelKey] as string;
+    const label = elementData['label'] as string;
     return addCounts(label, elementData as Omit<T, 'count'>);
   });
 };

@@ -173,7 +173,7 @@ export const validateVertices = (vertices: Vertex[]): Effect.Effect<void, Gremli
     const issues: string[] = [];
 
     vertices.forEach((vertex, index) => {
-      if (!vertex.labels || typeof vertex.labels !== 'string') {
+      if (vertex.label.trim().length === 0) {
         issues.push(`Vertex ${index}: Invalid or missing labels`);
       }
 
@@ -209,7 +209,7 @@ export const validateEdges = (edges: Edge[]): Effect.Effect<void, GremlinQueryEr
     const issues: string[] = [];
 
     edges.forEach((edge, index) => {
-      if (!edge.type || typeof edge.type !== 'string') {
+      if (edge.label.trim().trim().length === 0) {
         issues.push(`Edge ${index}: Invalid or missing type`);
       }
 
@@ -247,13 +247,13 @@ export const validateEdgePatterns = (
     const issues: string[] = [];
 
     patterns.forEach((pattern, index) => {
-      if (!pattern.left_vertex || typeof pattern.left_vertex !== 'string') {
+      if (pattern.left_vertex.trim().length === 0) {
         issues.push(`Pattern ${index}: Invalid or missing left_vertex`);
       }
-      if (!pattern.right_vertex || typeof pattern.right_vertex !== 'string') {
+      if (pattern.right_vertex.trim().length === 0) {
         issues.push(`Pattern ${index}: Invalid or missing right_vertex`);
       }
-      if (!pattern.relation || typeof pattern.relation !== 'string') {
+      if (pattern.relation.trim().trim().length === 0) {
         issues.push(`Pattern ${index}: Invalid or missing relation`);
       }
     });

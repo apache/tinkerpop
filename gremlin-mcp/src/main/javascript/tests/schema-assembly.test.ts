@@ -49,14 +49,14 @@ describe('schema-assembly', () => {
 
   const sampleVertices: Vertex[] = [
     {
-      labels: 'person',
+      label: 'person',
       properties: [
         { name: 'name', type: ['string'] },
         { name: 'age', type: ['number'] },
       ],
     },
     {
-      labels: 'company',
+      label: 'company',
       properties: [
         { name: 'name', type: ['string'] },
         { name: 'founded', type: ['number'] },
@@ -66,14 +66,14 @@ describe('schema-assembly', () => {
 
   const sampleEdges: Edge[] = [
     {
-      type: 'worksAt',
+      label: 'worksAt',
       properties: [
         { name: 'since', type: ['string'] },
         { name: 'position', type: ['string'] },
       ],
     },
     {
-      type: 'knows',
+      label: 'knows',
       properties: [{ name: 'since', type: ['string'] }],
     },
   ];
@@ -174,7 +174,7 @@ describe('schema-assembly', () => {
     it('should detect missing labels', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: '', // Invalid empty label
+          label: '', // Invalid empty label
           properties: [{ name: 'test', type: ['string'] }],
         },
       ];
@@ -187,7 +187,7 @@ describe('schema-assembly', () => {
     it('should detect invalid labels type', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: null as any, // Invalid null label
+          label: null as any, // Invalid null label
           properties: [],
         },
       ];
@@ -200,7 +200,7 @@ describe('schema-assembly', () => {
     it('should detect missing properties', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: 'person',
+          label: 'person',
           properties: undefined as any, // Missing properties
         },
       ];
@@ -213,7 +213,7 @@ describe('schema-assembly', () => {
     it('should detect invalid property structure', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: 'person',
+          label: 'person',
           properties: [
             { name: '', type: ['string'] }, // Empty name
             { name: 'age', type: [] }, // Empty type array
@@ -237,7 +237,7 @@ describe('schema-assembly', () => {
     it('should detect missing labels', async () => {
       const invalidEdges: Edge[] = [
         {
-          type: '', // Invalid empty type
+          label: '', // Invalid empty type
           properties: [],
         },
       ];
@@ -250,7 +250,7 @@ describe('schema-assembly', () => {
     it('should detect invalid properties', async () => {
       const invalidEdges: Edge[] = [
         {
-          type: 'knows',
+          label: 'knows',
           properties: [
             { name: '', type: ['string'] }, // Empty name
           ],
@@ -265,7 +265,7 @@ describe('schema-assembly', () => {
     it('should handle missing properties array', async () => {
       const invalidEdges: Edge[] = [
         {
-          type: 'knows',
+          label: 'knows',
           properties: undefined as any, // Missing properties
         },
       ];
@@ -334,7 +334,7 @@ describe('schema-assembly', () => {
     it('should detect any invalid component', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: '', // Invalid
+          label: '', // Invalid
           properties: [],
         },
       ];
@@ -350,7 +350,7 @@ describe('schema-assembly', () => {
       // Test with valid vertices but invalid edges
       const invalidEdges: Edge[] = [
         {
-          type: '', // Invalid
+          label: '', // Invalid
           properties: [],
         },
       ];
