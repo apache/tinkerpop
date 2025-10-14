@@ -56,13 +56,12 @@ services:
       - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test-python:{}/gremlin
       - IO_TEST_DIRECTORY=/python_app/gremlin-test/graphbinary/
       - IO_TEST_DIRECTORY_GRAPHSON=/python_app/gremlin-test/graphson/
-      - VERSION=${VERSION}
     working_dir: /python_app
     command: >
       bash -c "pip install wheel radish-bdd PyHamcrest aenum isodate
-      && python3 ./setup.py build
-      && python3 ./setup.py test
-      && python3 ./setup.py install
+      && pip install -e .[test]
+      && pytest
+      && pip install .
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
@@ -79,8 +78,6 @@ services:
     volumes:
       - ${PACKAGE_DIR:-./src/main/python}:/python_package
     working_dir: /python_package
-    environment:
-      - VERSION=${VERSION}
     command: >
-      bash -c "python3 setup.py sdist bdist_wheel;
+      bash -c "pip install build && python -m build;
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
