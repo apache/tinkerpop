@@ -230,6 +230,135 @@ gremlin> g.inject([Float.MAX_VALUE, Float.MAX_VALUE], [Double.MAX_VALUE, Double.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP-3115[TINKERPOP-3115]
 
+==== repeat() Step Global Children Semantics Change
+
+The `repeat()` step has been updated to treat the repeat traversal as a global child in all cases. Previously, the
+repeat traversal behaved as a hybrid between local and global semantics, which could lead to unexpected results in
+certain scenarios. The repeat traversal started off as a local child but as traversers were added back per iteration,
+it behaved more like a global child.
+
+With this change, the repeat traversal now consistently operates with global semantics, meaning that all traversers
+are processed together rather than being processed per traverser. This provides more predictable behavior and aligns
+with the semantics of other steps.
+
+[source,text]
+----
+// In 3.7.x and earlier, the order would be local to the first traverser.
+// Notice how the results are grouped by marko, then vadas, then lop
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
+......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+==>[marko,lop,josh]
+==>[marko,josh,lop]
+==>[marko,lop,peter]
+==>[marko,josh,ripple]
+==>[vadas,marko,josh]
+==>[vadas,marko,lop]
+==>[lop,marko,josh]
+==>[lop,josh,marko]
+==>[lop,josh,ripple]
+==>[lop,marko,vadas]
+
+// In 3.8.0, the aggregate now consistently uses global semantics
+// The traversers are now ordered so the traversers from the final iteration are ordered first then by
+// the traversers from previous iterations
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
+......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+==>[marko,lop,josh]
+==>[vadas,marko,josh]
+==>[lop,marko,josh]
+==>[marko,josh,lop]
+==>[vadas,marko,lop]
+==>[lop,josh,marko]
+==>[marko,lop,peter]
+==>[marko,josh,ripple]
+==>[lop,josh,ripple]
+==>[lop,marko,vadas]
+----
+
+This change may affect traversals that relied on the previous hybrid behavior, particularly those using side effects
+or barrier steps within `repeat()`. Review any traversals using `repeat()` with steps like `aggregate()`, `store()`,
+or other barrier steps to ensure they produce the expected results. Note that there is no way to exactly replicate the
+old behavior anymore. The following examples show why:
+
+[source,text]
+----
+// In 3.7.x
+gremlin> g.V().repeat(both().order().by("name")).times(1).path()
+==>[v[1],v[4]]
+==>[v[1],v[3]]
+==>[v[1],v[2]]
+==>[v[2],v[1]]
+==>[v[3],v[4]]
+==>[v[3],v[1]]
+==>[v[3],v[6]]
+==>[v[4],v[3]]
+==>[v[4],v[1]]
+==>[v[4],v[5]]
+==>[v[5],v[4]]
+==>[v[6],v[3]]
+
+// In 3.8.0, if there is a single iteration then adding a local() can give the same result
+gremlin> g.V().repeat(local(both().order().by("name"))).times(1).path()
+==>[v[1],v[4]]
+==>[v[1],v[3]]
+==>[v[1],v[2]]
+==>[v[2],v[1]]
+==>[v[3],v[4]]
+==>[v[3],v[1]]
+==>[v[3],v[6]]
+==>[v[4],v[3]]
+==>[v[4],v[1]]
+==>[v[4],v[5]]
+==>[v[5],v[4]]
+==>[v[6],v[3]]
+
+
+// In 3.7.x
+gremlin> g.V().repeat(local(both().simplePath().order().by("name"))).times(2).path()
+==>[v[1],v[3],v[4]]
+==>[v[1],v[4],v[3]]
+==>[v[1],v[3],v[6]]
+==>[v[1],v[4],v[5]]
+==>[v[2],v[1],v[4]]
+==>[v[2],v[1],v[3]]
+==>[v[3],v[1],v[4]]
+==>[v[3],v[4],v[1]]
+==>[v[3],v[4],v[5]]
+==>[v[3],v[1],v[2]]
+==>[v[4],v[1],v[3]]
+==>[v[4],v[3],v[1]]
+==>[v[4],v[3],v[6]]
+==>[v[4],v[1],v[2]]
+==>[v[5],v[4],v[3]]
+==>[v[5],v[4],v[1]]
+==>[v[6],v[3],v[4]]
+==>[v[6],v[3],v[1]]
+
+// In 3.8.0, if there are multiple iterations then the local() will affect each iteration which gives different results
+// than in 3.7.x (shown above)
+gremlin> g.V().repeat(local(both().simplePath().order().by("name"))).times(2).path()
+==>[v[1],v[4],v[3]]
+==>[v[1],v[4],v[5]]
+==>[v[1],v[3],v[4]]
+==>[v[1],v[3],v[6]]
+==>[v[2],v[1],v[4]]
+==>[v[2],v[1],v[3]]
+==>[v[3],v[4],v[1]]
+==>[v[3],v[4],v[5]]
+==>[v[3],v[1],v[4]]
+==>[v[3],v[1],v[2]]
+==>[v[4],v[3],v[1]]
+==>[v[4],v[3],v[6]]
+==>[v[4],v[1],v[3]]
+==>[v[4],v[1],v[2]]
+==>[v[5],v[4],v[3]]
+==>[v[5],v[4],v[1]]
+==>[v[6],v[3],v[4]]
+==>[v[6],v[3],v[1]]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3200[TINKERPOP-3200]
+
 ==== Prefer OffsetDateTime
 
 The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
@@ -1127,6 +1256,62 @@ The `ChooseStep` now provides a `ChooseSemantics` enum which helps indicate if t
 `IF_THEN` or `SWITCH` semantics which might be helpful in trying to optimize the step.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3178[TINKERPOP-3178]
+
+===== repeat() Step Global Children Semantics Change
+
+The `RepeatStep` has been updated to consistently treat the repeat traversal as a global child rather than using
+hybrid local/global semantics. This change affects how the repeat traversal processes traversers and interacts with
+the parent traversal.
+
+Previously, `RepeatStep` would start with local semantics for the first iteration and then switch to global semantics
+for the subsequent iterations, which created inconsistencies in how side effects and barriers behaved within the repeat
+traversal. The biggest change will be to `Barrier` steps in the repeat traversal as they will now have access to all
+the starting traversers.
+
+[source,text]
+----
+// In 3.7.x and earlier, the order would be local to the first traverser.
+// Notice how the results are grouped by marko, then vadas, then lop
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
+......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+==>[marko,lop,josh]
+==>[marko,josh,lop]
+==>[marko,lop,peter]
+==>[marko,josh,ripple]
+==>[vadas,marko,josh]
+==>[vadas,marko,lop]
+==>[lop,marko,josh]
+==>[lop,josh,marko]
+==>[lop,josh,ripple]
+==>[lop,marko,vadas]
+
+// In 3.8.0, the aggregate now consistently uses global semantics
+// The traversers are now ordered so the traversers from the final iteration are ordered first then by
+// the traversers from previous iterations
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
+......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+==>[marko,lop,josh]
+==>[vadas,marko,josh]
+==>[lop,marko,josh]
+==>[marko,josh,lop]
+==>[vadas,marko,lop]
+==>[lop,josh,marko]
+==>[marko,lop,peter]
+==>[marko,josh,ripple]
+==>[lop,josh,ripple]
+==>[lop,marko,vadas]
+----
+
+Providers implementing custom optimizations or strategies around `RepeatStep` should verify that their
+implementations account for the repeat traversal being a global child. This particularly affects:
+
+- Strategies that analyze or transform repeat traversals
+- Optimizations that depend on the scope semantics of child traversals
+
+The last point about optimizations may be particularly important for providers that have memory constraints as this
+change may bring about higher memory usage due to more traversers needing to be held in memory.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3200[TINKERPOP-3200]
 
 ===== Prefer OffsetDateTime
 

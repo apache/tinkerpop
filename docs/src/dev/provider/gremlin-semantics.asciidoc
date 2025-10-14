@@ -1974,7 +1974,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 [[repeat-step]]
 === repeat()
 
-*Description:* Iteratively applies a traversal (the "loop body") to each incoming traverser until a stopping
+*Description:* Iteratively applies a traversal (the "loop body") to all incoming traversers until a stopping
 condition is met. Optionally, it can emit traversers on each iteration according to an emit predicate. The
 repeat step supports loop naming and a loop counter via `loops()`.
 
@@ -2015,6 +2015,9 @@ predicates are evaluated before the first iteration (pre) or after each iteratio
 `do/while` semantics respectively:
   - Pre-check / pre-emit: when the modulator appears before `repeat(...)`.
   - Post-check / post-emit: when the modulator appears after `repeat(...)`.
+- Global traversal scope: The `repeatTraversal` is a global child. This means all traversers entering the repeat body
+are processed together as a unified stream with global semantics. `Barrier` (`order()`, `sample()`, etc.) steps within
+the repeat traversal operate across all traversers collectively rather than in isolation per traverser.
 - Loop counter semantics:
   - The loop counter for a given named or unnamed repeat is incremented once per completion of the loop body (i.e.,
 after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.
