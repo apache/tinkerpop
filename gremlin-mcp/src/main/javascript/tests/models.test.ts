@@ -57,7 +57,7 @@ describe('Models and Schemas', () => {
   describe('VertexSchema', () => {
     it('should validate a valid vertex', () => {
       const validVertex = {
-        labels: 'person',
+        label: 'person',
         properties: [
           {
             name: 'name',
@@ -75,7 +75,7 @@ describe('Models and Schemas', () => {
   describe('EdgeSchema', () => {
     it('should validate a valid edge', () => {
       const validEdge = {
-        type: 'knows',
+        label: 'knows',
         properties: [],
         count: 50,
       };
@@ -89,7 +89,7 @@ describe('Models and Schemas', () => {
       const validSchema = {
         vertices: [
           {
-            labels: 'person',
+            label: 'person',
             properties: [
               {
                 name: 'name',
@@ -101,7 +101,7 @@ describe('Models and Schemas', () => {
         ],
         edges: [
           {
-            type: 'knows',
+            label: 'knows',
             properties: [],
           },
         ],

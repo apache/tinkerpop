@@ -182,7 +182,7 @@ const analyzePropertiesForLabel = (
 
     // Return the analysis
     return {
-      [isVertex ? 'labels' : 'type']: elementLabel,
+      ['label']: elementLabel,
       properties,
     };
   });

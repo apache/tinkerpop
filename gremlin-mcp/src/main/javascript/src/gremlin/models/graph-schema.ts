@@ -45,8 +45,8 @@ export type Property = z.infer<typeof PropertySchema>;
  * Vertex type in the graph schema.
  */
 export const VertexSchema = z.object({
-  /** The label(s) that categorize this vertex type */
-  labels: z.string(),
+  /** The label that categorize this vertex type */
+  label: z.string(),
   /** List of properties that can be assigned to this vertex type */
   properties: z.array(PropertySchema).default([]),
   /** Count of vertices with this label */
@@ -59,8 +59,8 @@ export type Vertex = z.infer<typeof VertexSchema>;
  * Relationship type in the graph schema.
  */
 export const EdgeSchema = z.object({
-  /** The type/category of the edge */
-  type: z.string(),
+  /** The label of the edge */
+  label: z.string(),
   /** List of properties that can be assigned to this edge type */
   properties: z.array(PropertySchema).default([]),
   /** Count of edges with this label */
