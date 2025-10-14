@@ -2746,64 +2746,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Filters vertices, edges and vertex properties based on their value of {@link T} where only {@link T#id} and
-     * {@link T#label} are supported.
-     *
-     * @param accessor          the {@link T} accessor of the property to filter on
-     * @param propertyTraversal the traversal to filter the accessor value by
-     * @return the traversal with an appended {@link HasStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
-     * @since 3.1.0-incubating
-     */
-    public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
-        if (null == accessor)
-            throw new IllegalArgumentException("The T accessor value of has(T,Object) cannot be null");
-
-        // Groovy can get the overload wrong for has(T, null) which should probably go at has(T,Object). users could
-        // explicit cast but a redirect here makes this a bit more seamless
-        if (null == propertyTraversal)
-            return has(accessor, (Object) null);
-
-        this.asAdmin().getBytecode().addStep(Symbols.has, accessor, propertyTraversal);
-        switch (accessor) {
-            case id:
-                return this.asAdmin().addStep(
-                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                                new IdStep<>(propertyTraversal.asAdmin()))));
-            case label:
-                return this.asAdmin().addStep(
-                    new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                            new LabelStep<>(propertyTraversal.asAdmin()))));
-            default:
-                throw new IllegalArgumentException("has(T,Traversal) can only take id or label as its argument");
-        }
-
-    }
-
-    /**
-     * Filters vertices, edges and vertex properties based on the value of the specified property key.
-     *
-     * @param propertyKey       the key of the property to filter on
-     * @param propertyTraversal the traversal to filter the property value by
-     * @return the traversal with an appended {@link HasStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
-     * @since 3.0.0-incubating
-     */
-    public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        // the translation here of null to has(String, Object) is likely what was intended. a null Traversal doesn't
-        // really make much sense. this should resolve issues with JavaTranslator grabbing this method when bytecode
-        // uses null as the second argument. we've taken this tactic for other overloads of has() as well, so just
-        // continuing with that pattern.
-        if (null == propertyTraversal)
-            return has(propertyKey, (Object) null);
-
-        this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, propertyTraversal);
-        return this.asAdmin().addStep(
-                new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                        new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey))));
-    }
-
-    /**
      * Filters vertices, edges and vertex properties based on the existence of properties.
      *
      * @param propertyKey the key of the property to filter on for existence

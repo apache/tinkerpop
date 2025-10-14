@@ -107,30 +107,6 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  Scenario: g_V_hasXage_isXgt_30XX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().has("age", __.is(P.gt(30)))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[josh] |
-      | v[peter] |
-
-  Scenario: g_V_hasXlabel_isXsoftwareXX
-    Given the modern graph
-    And the traversal of
-      """
-      g.V().has(T.label, __.is('software'))
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | v[lop] |
-      | v[ripple] |
-
   Scenario: g_VX1X_hasXage_gt_30X
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -637,11 +613,11 @@ Feature: Step - has()
       | v[josh] |
       | v[peter] |
 
-  Scenario: g_V_hasXlabel_isXpersonXX
+  Scenario: g_V_whereXlabel_isXpersonXX
     Given the modern graph
     And the traversal of
     """
-    g.V().has(T.label, __.is("person"))
+    g.V().where(label().is("person"))
     """
     When iterated to list
     Then the result should be unordered
