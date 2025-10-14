@@ -26,7 +26,6 @@
  */
 
 import { Effect, pipe } from 'effect';
-import { z } from 'zod';
 import { GremlinService } from '../gremlin/service.js';
 
 /**
@@ -108,20 +107,3 @@ export const createQueryEffect = (
       return Effect.succeed(createSuccessResponse(errorResponse));
     })
   );
-
-/**
- * Validated input tool handler
- */
-export const createValidatedToolEffect =
-  <T, A, E, R>(
-    schema: z.ZodSchema<T>,
-    handler: (input: T) => Effect.Effect<A, E, R>,
-    operationName: string
-  ) =>
-  (args: unknown): Effect.Effect<McpToolResponse, never, R> =>
-    pipe(
-      Effect.try(() => schema.parse(args)),
-      Effect.andThen(handler),
-      Effect.map(createSuccessResponse),
-      Effect.catchAll(error => Effect.succeed(createErrorResponse(`${operationName}: ${error}`)))
-    );

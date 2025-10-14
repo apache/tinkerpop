@@ -120,13 +120,12 @@ describe('MCP Server Integration Tests', () => {
     'should list available tools',
     async () => {
       const response = await client.listTools();
-      expect(response.tools).toHaveLength(6);
+      expect(response.tools).toHaveLength(4);
       const toolNames = response.tools.map(t => t.name);
       expect(toolNames).toContain(TOOL_NAMES.GET_GRAPH_STATUS);
       expect(toolNames).toContain(TOOL_NAMES.GET_GRAPH_SCHEMA);
       expect(toolNames).toContain(TOOL_NAMES.RUN_GREMLIN_QUERY);
       expect(toolNames).toContain(TOOL_NAMES.REFRESH_SCHEMA_CACHE);
-      expect(toolNames).toContain(TOOL_NAMES.EXPORT_SUBGRAPH);
     },
     30000
   );

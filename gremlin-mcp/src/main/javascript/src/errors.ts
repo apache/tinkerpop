@@ -35,7 +35,6 @@ export const ERROR_PREFIXES = {
   QUERY: 'Query failed',
   SCHEMA: 'Schema error',
   RESOURCE: 'Resource error',
-  EXPORT: 'Export failed',
   CONFIG: 'Configuration error',
   TIMEOUT: 'Operation timed out',
   PARSE: 'Parse error',

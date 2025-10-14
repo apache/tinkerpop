@@ -21,8 +21,8 @@
  * @fileoverview MCP tool handlers for Gremlin graph database operations.
  *
  * Registers MCP tools that expose Gremlin functionality including status checks,
- * schema introspection, query execution, and data import/export operations.
- * Uses Effect-based dependency injection for service access.
+ * schema introspection, and query execution. Uses Effect-based dependency injection
+ * for service access.
  */
 
 import { Effect, Runtime, pipe } from 'effect';
@@ -30,48 +30,11 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { TOOL_NAMES } from '../constants.js';
 import { GremlinService } from '../gremlin/service.js';
-import { exportSubgraph } from '../utils/data-operations.js';
-import {
-  createToolEffect,
-  createStringToolEffect,
-  createQueryEffect,
-  createValidatedToolEffect,
-} from './tool-patterns.js';
+import { createToolEffect, createStringToolEffect, createQueryEffect } from './tool-patterns.js';
 
 /**
  * Input validation schemas for tool parameters.
  */
-
-const exportInputBase = z.object({
-  traversal_query: z
-    .string()
-    .min(1, 'traversal_query must not be empty')
-    .max(10000, 'traversal_query is too long')
-    .describe(
-      'Gremlin traversal query to define the subgraph that will normally use the subgraph() step to gather data'
-    ),
-  format: z
-    .enum(['graphson', 'json', 'csv'])
-    .default('graphson')
-    .describe('The output format for the exported data'),
-  include_properties: z
-    .array(z.string().min(1))
-    .optional()
-    .describe('Properties to include in the export'),
-  exclude_properties: z
-    .array(z.string().min(1))
-    .optional()
-    .describe('Properties to exclude from the export'),
-});
-
-const exportInputSchema = exportInputBase.refine(
-  ({ include_properties, exclude_properties }) => {
-    if (!include_properties || !exclude_properties) return true;
-    const s = new Set(include_properties);
-    return !exclude_properties.some(p => s.has(p));
-  },
-  { message: 'include_properties and exclude_properties must not overlap' }
-);
 
 // Parameterless tools: strict empty object
 const emptyInputSchema = z.object({}).strict();
@@ -91,7 +54,6 @@ const runQueryInputSchema = z.object({
  * - Graph status monitoring
  * - Schema introspection and caching
  * - Query execution
- * - Data export operations
  */
 export function registerEffectToolHandlers(
   server: McpServer,
@@ -174,29 +136,5 @@ export function registerEffectToolHandlers(
       const { query } = runQueryInputSchema.parse(args);
       return Effect.runPromise(pipe(createQueryEffect(query), Effect.provide(runtime)));
     }
-  );
-
-  // Export Subgraph
-  server.registerTool(
-    TOOL_NAMES.EXPORT_SUBGRAPH,
-    {
-      title: 'Export Subgraph',
-      description: 'Export a subgraph based on a traversal query to various formats',
-      inputSchema: exportInputBase.shape,
-    },
-    (args: unknown) =>
-      Effect.runPromise(
-        pipe(
-          createValidatedToolEffect(
-            exportInputSchema,
-            rawInput => {
-              const input = exportInputBase.parse(rawInput);
-              return Effect.andThen(GremlinService, service => exportSubgraph(service, input));
-            },
-            'Export Subgraph'
-          )(args),
-          Effect.provide(runtime)
-        )
-      )
   );
 }

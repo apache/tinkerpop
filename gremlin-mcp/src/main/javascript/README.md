@@ -36,7 +36,6 @@ Talk to your graph database naturally:
 - 📊 **"Show me all users over 30 and their connections"** - Complex graph queries
 - 🔗 **"Find the shortest path between Alice and Bob"** - Relationship analysis
 - 📈 **"Give me graph statistics and metrics"** - Data insights
-- 📤 **"Export user data as CSV"** - Data extraction
 - 🧠 **Smart enum discovery** - AI learns your data's valid values automatically
 
 ## 🛠️ Available Tools
@@ -49,7 +48,6 @@ Your AI assistant gets access to these powerful tools:
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
 | ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
-| 📤 **export_subgraph**      | Data Export      | Extract subgraphs to JSON, GraphSON, or CSV formats          |
 
 ## 🚀 Quick Setup
 
@@ -454,7 +452,6 @@ src/
 │   ├── resources.ts       # Effect-based resource handlers
 │   └── effect-runtime-bridge.ts # ManagedRuntime container for Effect execution
 └── utils/                 # Effect-based utility modules
-    ├── data-operations.ts # Effect-based graph data export operations
     ├── result-parser.ts   # Gremlin result parsing with metadata extraction
     └── type-guards.ts     # Runtime type checking functions
 ```
