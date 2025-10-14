@@ -40,6 +40,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailG
     private Deque<Traverser.Admin<S>> tail;
     private long tailBulk = 0L;
     private boolean bypass = false;
+    private boolean consuming = true;
 
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);
@@ -58,9 +59,13 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailG
             // If we are bypassing this step, let everything through.
             return this.starts.next();
         } else {
+            if (this.tail.isEmpty()) {
+                consuming = true;
+            }
             // Pull everything available before we start delivering from the tail buffer.
-            if (this.starts.hasNext()) {
+            if (consuming && this.starts.hasNext()) {
                 this.starts.forEachRemaining(this::addTail);
+                consuming = false;
             }
             // Pull the oldest traverser from the tail buffer.
             final Traverser.Admin<S> oldest = this.tail.pop();

@@ -287,3 +287,109 @@ Feature: Step - tail()
     Then the result should be unordered
       | result |
       | l[d[4].i,d[5].i] |
+
+  # Test tail works in repeat with a single loop
+  Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX2XX_timesX1X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.out().order().by("performances").tail(2)).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | ME AND MY UNCLE |
+      | DRUMS |
+
+  # Test tail runs per iteration in repeat with multiple iterations
+  @GraphComputerVerificationOrderingNotSupported
+  Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX2XX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.out().order().by("performances").tail(2)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | THE OTHER ONE |
+      | SUGAR MAGNOLIA |
+
+  # Test object-local tail works in repeat with a single loop
+  Scenario: g_VX2X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX1X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid2 defined as "v[IM A MAN].id"
+    And the traversal of
+      """
+      g.V(vid2).repeat(__.out().local(order().by("performances").tail(1))).times(1).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | JAM |
+      | JACK STRAW |
+
+  # Test object-local tail runs per iteration in repeat with multiple iterations
+  Scenario: g_VX250X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid250 defined as "v[SIMPLE TWIST OF FATE].id"
+    And the traversal of
+      """
+      g.V(vid250).repeat(__.out().local(__.order().by("performances").tail(1))).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | STUCK INSIDE OF MOBILE |
+      | STUCK INSIDE OF MOBILE |
+      | WICKED MESSENGER |
+      | TANGLED UP IN BLUE |
+      | SHELTER FROM THE STORM |
+      | RAINY DAY WOMAN |
+      | CUMBERLAND BLUES |
+      | WHEN PUSH COMES TO SHOVE |
+      | JOHN BROWN |
+      | SIMPLE TWIST OF FATE |
+      | BABY BLUE |
+
+  # Test tail inside repeat can be followed by other range-based steps
+  Scenario: g_VX3X_repeatXout_order_byXperformancesX_tailX3X_limitX1XX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.out().order().by("performances").tail(3).limit(1)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | THE OTHER ONE |
+
+  # Test tail inside repeat can be preceded by other range-based steps
+  Scenario: g_VX3X_repeatXout_order_byXperformancesX_limitX5X_tailX1XX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.out().order().by("performances").limit(5).tail(1)).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | LET THE GOOD TIMES ROLL |
+
+  # Test order on edge weight with tail in repeat leads to ordered walk
+  Scenario: g_VX3X_repeatXoutE_order_byXweightX_tailX2X_inVX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(outE().order().by("weight").tail(2).inV()).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | SUGAR MAGNOLIA |
+      | AROUND AND AROUND |
