@@ -34,6 +34,7 @@ import { Errors } from '../errors.js';
 import { GremlinClient } from './client.js';
 import type { ConnectionState } from './types.js';
 
+const { PlainTextSaslAuthenticator } = gremlin.driver.auth;
 const { Client, DriverRemoteConnection } = gremlin.driver;
 const { AnonymousTraversalSource } = gremlin.process;
 
@@ -66,16 +67,17 @@ const makeConnection = Effect.gen(function* () {
     (username, password) => ({ username, password: Redacted.value(password) })
   );
 
+  // Build a proper Gremlin authenticator when credentials are provided
+  const authenticator = Option.map(
+    auth,
+    ({ username, password }) => new PlainTextSaslAuthenticator(username, password)
+  );
+
   const connection = yield* Effect.try({
     try: () =>
       new DriverRemoteConnection(url, {
         traversalSource,
-        auth: Option.getOrUndefined(auth),
-        headers: {},
-        log: {
-          level: config.logging.level,
-          stream: process.stderr,
-        },
+        authenticator: Option.getOrUndefined(authenticator),
       }),
     catch: error => Errors.connection('Failed to create remote connection', { error }),
   });
@@ -83,12 +85,7 @@ const makeConnection = Effect.gen(function* () {
   const g = AnonymousTraversalSource.traversal().withRemote(connection);
   const client = new Client(url, {
     traversalSource,
-    auth: Option.getOrUndefined(auth),
-    headers: {},
-    log: {
-      level: config.logging.level,
-      stream: process.stderr,
-    },
+    authenticator: Option.getOrUndefined(authenticator),
   });
 
   // Test the connection
