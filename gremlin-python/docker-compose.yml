@@ -58,10 +58,8 @@ services:
       - IO_TEST_DIRECTORY_GRAPHSON=/python_app/gremlin-test/graphson/
     working_dir: /python_app
     command: >
-      bash -c "pip install wheel radish-bdd PyHamcrest aenum isodate
-      && pip install -e .[test]
+      bash -c "pip install .[test,kerberos]
       && pytest
-      && pip install .
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
