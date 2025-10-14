@@ -56,6 +56,8 @@ public abstract class AbstractBenchmarkBase {
 
         final ChainedOptionsBuilder runnerOptions = new OptionsBuilder()
                 .include(".*" + className + ".*")
+                // fail on error otherwise the benchmark results could be misleading
+                .shouldFailOnError(true)
                 .jvmArgs(getJvmArgs());
 
         if (getWarmupIterations() > 0) {

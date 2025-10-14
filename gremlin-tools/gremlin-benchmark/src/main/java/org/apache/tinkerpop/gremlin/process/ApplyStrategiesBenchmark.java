@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
+import java.util.List;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -46,8 +49,21 @@ import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalS
 public class ApplyStrategiesBenchmark extends AbstractBenchmarkBase {
 
     private Graph graph = EmptyGraph.instance();
-    private GraphTraversalSource g = traversal().withEmbedded(graph);
+    private GraphTraversalSource g = traversal().withEmbedded(graph)
+           .withStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).toList().toArray(new TraversalStrategy[0]));
     private Traversal<?, ?> traversal;
+    
+    @Setup(Level.Trial)
+    public void setUpTrial() {
+        // ensure there are strategies registered
+        List<TraversalStrategy<?>> strategies = g.getStrategies().toList();
+        if (strategies.isEmpty()) {
+            throw new IllegalStateException("No traversal strategies are registered");
+        }
+        // output the strategies that were registered for the benchmark
+        System.out.println();
+        System.out.println("Strategies: " + strategies);
+    }
 
     /**
      * Setup method that constructs the complex traversal before benchmarking on each invocation of the test.
