@@ -18,3 +18,4 @@
 #
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
+__version__ = '3.8.0.dev1'

@@ -147,6 +147,7 @@ deployment.
 . `docker/build.sh -t -i -n`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
+.. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
 .. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
@@ -156,6 +157,7 @@ deployment.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
 . `mvn clean install`
 . `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false` to go back to SNAPSHOT
+.. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py` to a dev version like `xx.yy.zz.dev1`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
 .. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
