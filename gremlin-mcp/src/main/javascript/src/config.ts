@@ -23,15 +23,15 @@
  * Type-safe Application configuration with type-safe environment variable loading.
  *
  * Provides comprehensive configuration management for the Gremlin MCP server using
- * Effect.Config for validation and error handling. All configuration is loaded from
+ * Effect.Config for validation and error handling. All configurations are loaded from
  * environment variables with sensible defaults and detailed validation.
  *
  * @example Environment Variables
  * ```bash
- * GREMLIN_ENDPOINT=localhost:8182
- * GREMLIN_USE_SSL=false
- * LOG_LEVEL=info
- * GREMLIN_ENUM_DISCOVERY_ENABLED=true
+ * GREMLIN_MCP_ENDPOINT=localhost:8182
+ * GREMLIN_MCP_USE_SSL=false
+ * GREMLIN_MCP_LOG_LEVEL=info
+ * GREMLIN_MCP_ENUM_DISCOVERY_ENABLED=true
  * ```
  */
 
@@ -109,36 +109,45 @@ const parseCommaSeparatedList = (value: string): string[] =>
     .map(s => s.trim())
     .filter(s => s.length > 0);
 
-const GremlinEndpointConfig = pipe(
-  Config.string('GREMLIN_ENDPOINT'),
+/**
+ * GREMLIN_MCP_ENDPOINT: string, required. Gremlin Server compatible websocket endpoint.
+ */
+const GremlinMcpEndpointConfig = pipe(
+  Config.string('GREMLIN_MCP_ENDPOINT'),
   Config.mapOrFail(parseEndpoint)
 );
 
-const GremlinUseSslConfig = Config.withDefault(Config.boolean('GREMLIN_USE_SSL'), DEFAULTS.USE_SSL);
+/**
+ * GREMLIN_MCP_USE_SSL: boolean, optional. Enables SSL and defaults to false.
+ */
+const GremlinMcpUseSslConfig = Config.withDefault(
+  Config.boolean('GREMLIN_MCP_USE_SSL'),
+  DEFAULTS.USE_SSL
+);
 
 /**
- * GREMLIN_USERNAME: string, optional. Gremlin DB username
+ * GREMLIN_MCP_USERNAME: string, optional. Gremlin DB username
  */
-const GremlinUsernameConfig = Config.option(Config.string('GREMLIN_USERNAME'));
+const GremlinMcpUsernameConfig = Config.option(Config.string('GREMLIN_MCP_USERNAME'));
 
 /**
- * GREMLIN_PASSWORD: string, optional, redacted. Gremlin DB password
+ * GREMLIN_MCP_PASSWORD: string, optional, redacted. Gremlin DB password
  */
-const GremlinPasswordConfig = Config.option(Config.redacted('GREMLIN_PASSWORD'));
+const GremlinMcpPasswordConfig = Config.option(Config.redacted('GREMLIN_MCP_PASSWORD'));
 
 /**
- * LOG_LEVEL: 'error' | 'warn' | 'info' | 'debug', default: info. Logging verbosity
+ * GREMLIN_MCP_LOG_LEVEL: 'error' | 'warn' | 'info' | 'debug', default: info. Logging verbosity
  */
-const LogLevelConfig = pipe(
-  Config.literal('error', 'warn', 'info', 'debug')('LOG_LEVEL'),
+const GremlinMcpLogLevelConfig = pipe(
+  Config.literal('error', 'warn', 'info', 'debug')('GREMLIN_MCP_LOG_LEVEL'),
   Config.withDefault(DEFAULTS.LOG_LEVEL)
 );
 
 /**
- * GREMLIN_IDLE_TIMEOUT: number, default: 300. Connection idle timeout (seconds)
+ * GREMLIN_MCP_IDLE_TIMEOUT: number, default: 300. Connection idle timeout (seconds)
  */
-const GremlinIdleTimeoutConfig = pipe(
-  Config.integer('GREMLIN_IDLE_TIMEOUT'),
+const GremlinMcpIdleTimeoutConfig = pipe(
+  Config.integer('GREMLIN_MCP_IDLE_TIMEOUT'),
   Config.withDefault(300),
   Config.validate({
     message: 'Idle timeout must be a positive integer',
@@ -147,18 +156,18 @@ const GremlinIdleTimeoutConfig = pipe(
 );
 
 /**
- * GREMLIN_ENUM_DISCOVERY_ENABLED: boolean, default: true. Enable enum property discovery
+ * GREMLIN_MCP_ENUM_DISCOVERY_ENABLED: boolean, default: true. Enable enum property discovery
  */
-const GremlinEnumDiscoveryEnabledConfig = Config.withDefault(
-  Config.boolean('GREMLIN_ENUM_DISCOVERY_ENABLED'),
+const GremlinMcpEnumDiscoveryEnabledConfig = Config.withDefault(
+  Config.boolean('GREMLIN_MCP_ENUM_DISCOVERY_ENABLED'),
   true
 );
 
 /**
- * GREMLIN_ENUM_CARDINALITY_THRESHOLD: number, default: 10. Max cardinality for enum detection
+ * GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD: number, default: 10. Max cardinality for enum detection
  */
-const GremlinEnumCardinalityThresholdConfig = pipe(
-  Config.integer('GREMLIN_ENUM_CARDINALITY_THRESHOLD'),
+const GremlinMcpEnumCardinalityThresholdConfig = pipe(
+  Config.integer('GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD'),
   Config.withDefault(10),
   Config.validate({
     message: 'Enum cardinality threshold must be a positive integer',
@@ -167,28 +176,28 @@ const GremlinEnumCardinalityThresholdConfig = pipe(
 );
 
 /**
- * GREMLIN_ENUM_PROPERTY_DENYLIST: string, default: id,pk,name,description,...
+ * GREMLIN_MCP_ENUM_PROPERTY_DENYLIST: string, default: id,pk,name,description,...
  * Comma-separated list of properties to exclude from enum detection
  */
-const GremlinEnumPropertyDenyListConfig = pipe(
-  Config.string('GREMLIN_ENUM_PROPERTY_DENYLIST'),
+const GremlinMcpEnumPropertyDenyListConfig = pipe(
+  Config.string('GREMLIN_MCP_ENUM_PROPERTY_DENYLIST'),
   Config.withDefault('id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt'),
   Config.map(parseCommaSeparatedList)
 );
 
 /**
- * GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES: boolean, default: false. Include sample values in schema output
+ * GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES: boolean, default: false. Include sample values in schema output
  */
-const GremlinSchemaIncludeSampleValuesConfig = Config.withDefault(
-  Config.boolean('GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES'),
+const GremlinMcpSchemaIncludeSampleValuesConfig = Config.withDefault(
+  Config.boolean('GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES'),
   false
 );
 
 /**
- * GREMLIN_SCHEMA_MAX_ENUM_VALUES: number, default: 10. Max enum values per property (≤ 100)
+ * GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES: number, default: 10. Max enum values per property (≤ 100)
  */
-const GremlinSchemaMaxEnumValuesConfig = pipe(
-  Config.integer('GREMLIN_SCHEMA_MAX_ENUM_VALUES'),
+const GremlinMcpSchemaMaxEnumValuesConfig = pipe(
+  Config.integer('GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES'),
   Config.withDefault(10),
   Config.validate({
     message: 'Max enum values must be a positive integer (≤ 100)',
@@ -197,25 +206,25 @@ const GremlinSchemaMaxEnumValuesConfig = pipe(
 );
 
 /**
- * GREMLIN_SCHEMA_INCLUDE_COUNTS: boolean, default: true. Include property counts in schema output
+ * GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS: boolean, default: true. Include property counts in schema output
  */
-const GremlinSchemaIncludeCountsConfig = Config.withDefault(
-  Config.boolean('GREMLIN_SCHEMA_INCLUDE_COUNTS'),
+const GremlinMcpSchemaIncludeCountsConfig = Config.withDefault(
+  Config.boolean('GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS'),
   true
 );
 
 /**
- * GremlinConnectionConfig: Aggregates and validates all Gremlin connection-related environment variables.
+ * ConnectionConfig: Aggregates and validates all Gremlin connection-related environment variables.
  * Ensures host, port, traversalSource, useSSL, username, password, and idleTimeout are present and valid.
  * Returns a validated config object or throws ConfigError on failure.
  */
-const GremlinConnectionConfig = pipe(
+const ConnectionConfig = pipe(
   Config.all({
-    endpoint: GremlinEndpointConfig,
-    useSSL: GremlinUseSslConfig,
-    username: GremlinUsernameConfig,
-    password: GremlinPasswordConfig,
-    idleTimeout: GremlinIdleTimeoutConfig,
+    endpoint: GremlinMcpEndpointConfig,
+    useSSL: GremlinMcpUseSslConfig,
+    username: GremlinMcpUsernameConfig,
+    password: GremlinMcpPasswordConfig,
+    idleTimeout: GremlinMcpIdleTimeoutConfig,
   }),
   Config.map(({ endpoint, ...rest }) => ({
     host: endpoint.host,
@@ -231,12 +240,12 @@ const GremlinConnectionConfig = pipe(
  * Returns a validated config object or throws ConfigError on failure.
  */
 const SchemaDiscoveryConfig = Config.all({
-  enumDiscoveryEnabled: GremlinEnumDiscoveryEnabledConfig,
-  enumCardinalityThreshold: GremlinEnumCardinalityThresholdConfig,
-  enumPropertyDenyList: GremlinEnumPropertyDenyListConfig,
-  includeSampleValues: GremlinSchemaIncludeSampleValuesConfig,
-  maxEnumValues: GremlinSchemaMaxEnumValuesConfig,
-  includeCounts: GremlinSchemaIncludeCountsConfig,
+  enumDiscoveryEnabled: GremlinMcpEnumDiscoveryEnabledConfig,
+  enumCardinalityThreshold: GremlinMcpEnumCardinalityThresholdConfig,
+  enumPropertyDenyList: GremlinMcpEnumPropertyDenyListConfig,
+  includeSampleValues: GremlinMcpSchemaIncludeSampleValuesConfig,
+  maxEnumValues: GremlinMcpSchemaMaxEnumValuesConfig,
+  includeCounts: GremlinMcpSchemaIncludeCountsConfig,
 });
 
 /**
@@ -253,7 +262,7 @@ const ServerConfig = Config.succeed({
  */
 const LoggingConfig = pipe(
   Config.all({
-    level: LogLevelConfig,
+    level: GremlinMcpLogLevelConfig,
   }),
   Config.map(config => ({
     level: config.level,
@@ -267,7 +276,7 @@ const LoggingConfig = pipe(
  * Throws ConfigError on any validation failure.
  */
 export const AppConfig = Config.all({
-  gremlin: GremlinConnectionConfig,
+  gremlin: ConnectionConfig,
   schema: SchemaDiscoveryConfig,
   server: ServerConfig,
   logging: LoggingConfig,

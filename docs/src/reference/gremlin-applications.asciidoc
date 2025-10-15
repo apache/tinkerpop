@@ -3098,20 +3098,20 @@ endpoint the server should use.
 
 Basic connection settings:
 
-* `GREMLIN_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`)
-* `GREMLIN_USE_SSL` — set to `true` when TLS is required by the endpoint (default: `false`)
-* `GREMLIN_USERNAME` / `GREMLIN_PASSWORD` — credentials when authentication is enabled (optional)
-* `GREMLIN_IDLE_TIMEOUT` — idle connection timeout in seconds (default: `300`)
-* `LOG_LEVEL` — logging verbosity for troubleshooting: `error`, `warn`, `info`, or `debug` (default: `info`)
+* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`)
+* `GREMLIN_MCP_USE_SSL` — set to `true` when TLS is required by the endpoint (default: `false`)
+* `GREMLIN_MCP_USERNAME` / `GREMLIN_PASSWORD` — credentials when authentication is enabled (optional)
+* `GREMLIN_MCP_IDLE_TIMEOUT` — idle connection timeout in seconds (default: `300`)
+* `GREMLIN_MCP_LOG_LEVEL` — logging verbosity for troubleshooting: `error`, `warn`, `info`, or `debug` (default: `info`)
 
 Advanced schema discovery and performance tuning:
 
-* `GREMLIN_ENUM_DISCOVERY_ENABLED` — enable enum property discovery (default: `true`)
-* `GREMLIN_ENUM_CARDINALITY_THRESHOLD` — max distinct values for a property to be considered an enum (default: `10`)
-* `GREMLIN_ENUM_PROPERTY_DENYLIST` — comma-separated property names to exclude from enum detection (default: `id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt`)
-* `GREMLIN_SCHEMA_MAX_ENUM_VALUES` — limit the number of enum values returned per property in the schema (default: `10`)
-* `GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES` — include small example values for properties in the schema (default: `false`)
-* `GREMLIN_SCHEMA_INCLUDE_COUNTS` — include approximate vertex/edge label counts in the schema (default: `true`)
+* `GREMLIN_MCP_ENUM_DISCOVERY_ENABLED` — enable enum property discovery (default: `true`)
+* `GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD` — max distinct values for a property to be considered an enum (default: `10`)
+* `GREMLIN_MCP_ENUM_PROPERTY_DENYLIST` — comma-separated property names to exclude from enum detection (default: `id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt`)
+* `GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES` — limit the number of enum values returned per property in the schema (default: `10`)
+* `GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES` — include small example values for properties in the schema (default: `false`)
+* `GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS` — include approximate vertex/edge label counts in the schema (default: `true`)
 
 The configurations related to enums begs additional explanation as to their importance. Treating only truly categorical
 properties as enums prevents misleading suggestions and sensitive data exposure in assistant‑facing schemas. Without a
