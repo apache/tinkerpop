@@ -1235,6 +1235,7 @@ public class __ {
 
     /**
      * @see GraphTraversal#aggregate(Scope, String)
+     * @deprecated As of release 3.7.5, aggregate() is no longer scoped, to achieve lazy evaluation use local() with aggregate() instead
      */
     public static <A> GraphTraversal<A, A> aggregate(final Scope scope, final String sideEffectKey) {
         return __.<A>start().aggregate(scope, sideEffectKey);
