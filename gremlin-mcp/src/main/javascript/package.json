@@ -14,7 +14,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:it": "GREMLIN_ENDPOINT=localhost:8182/g jest tests/integration --testPathIgnorePatterns=\"/node_modules/|/dist/\" --forceExit --detectOpenHandles",
+    "test:it": "GREMLIN_MCP_ENDPOINT=localhost:8182/g jest tests/integration --testPathIgnorePatterns=\"/node_modules/|/dist/\" --forceExit --detectOpenHandles",
     "lint": "eslint src tests --ext .ts",
     "lint:fix": "eslint src tests --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.{js,json,md}\"",

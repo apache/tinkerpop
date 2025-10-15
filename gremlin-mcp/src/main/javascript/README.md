@@ -63,7 +63,7 @@ Your AI assistant gets access to these powerful tools:
 ```bash
 # Clone and setup
 git clone https://github.com/apache/tinkerpop.git
-cd tinkerpop/gremlin-tools/gremlin-mcp
+cd tinkerpop/gremlin-mcp/src/main/javascript
 npm install
 npm run build
 ```
@@ -81,10 +81,10 @@ Add this to your MCP client configuration:
   "mcpServers": {
     "gremlin": {
       "command": "npx",
-      "args": ["@kpritam/gremlin-mcp"],
+      "args": ["gremlin-mcp"],
       "env": {
-        "GREMLIN_ENDPOINT": "localhost:8182",
-        "LOG_LEVEL": "info"
+        "GREMLIN_MCP_ENDPOINT": "localhost:8182",
+        "GREMLIN_MCP_LOG_LEVEL": "info"
       }
     }
   }
@@ -100,8 +100,8 @@ Add this to your MCP client configuration:
       "command": "node",
       "args": ["/path/to/gremlin-mcp/dist/server.js"],
       "env": {
-        "GREMLIN_ENDPOINT": "localhost:8182",
-        "LOG_LEVEL": "info"
+        "GREMLIN_MCP_ENDPOINT": "localhost:8182",
+        "GREMLIN_MCP_LOG_LEVEL": "info"
       }
     }
   }
@@ -117,10 +117,10 @@ Add this to your MCP client configuration:
       "command": "npx",
       "args": ["@kpritam/gremlin-mcp"],
       "env": {
-        "GREMLIN_ENDPOINT": "your-server.com:8182/g",
-        "GREMLIN_USERNAME": "your-username",
-        "GREMLIN_PASSWORD": "your-password",
-        "GREMLIN_USE_SSL": "true"
+        "GREMLIN_MCP_ENDPOINT": "your-server.com:8182/g",
+        "GREMLIN_MCP_USERNAME": "your-username",
+        "GREMLIN_MCP_PASSWORD": "your-password",
+        "GREMLIN_MCP_USE_SSL": "true"
       }
     }
   }
@@ -223,17 +223,17 @@ Fine-tune enum discovery to match your data:
 
 ```bash
 # Enable/disable enum discovery
-GREMLIN_ENUM_DISCOVERY_ENABLED="true"         # Default: true
+GREMLIN_MCP_ENUM_DISCOVERY_ENABLED="true"         # Default: true
 
 # Control what gets detected as enum
-GREMLIN_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum (default: 10)
+GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum (default: 10)
 
 # Exclude specific properties
-GREMLIN_ENUM_PROPERTY_DENYLIST="id,uuid,timestamp,createdAt,updatedAt"
+GREMLIN_MCP_ENUM_PROPERTY_DENYLIST="id,uuid,timestamp,createdAt,updatedAt"
 
 # Schema optimization
-GREMLIN_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
-GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Reduce schema size (default: false)
+GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
+GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Reduce schema size (default: false)
 ```
 
 ### 🚫 Property Denylist
@@ -251,7 +251,7 @@ Some properties should never be treated as enums:
 
 ```bash
 # Exclude specific properties by name
-GREMLIN_ENUM_PROPERTY_DENYLIST="userId,sessionId,description,notes,content"
+GREMLIN_MCP_ENUM_PROPERTY_DENYLIST="userId,sessionId,description,notes,content"
 ```
 
 **Common Denylist Patterns:**
@@ -301,22 +301,22 @@ GREMLIN_ENUM_PROPERTY_DENYLIST="userId,sessionId,description,notes,content"
 **For Large Datasets:**
 
 ```bash
-GREMLIN_ENUM_CARDINALITY_THRESHOLD="5"     # Stricter enum detection
-GREMLIN_SCHEMA_MAX_ENUM_VALUES="5"         # Fewer values in schema
+GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD="5"     # Stricter enum detection
+GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES="5"         # Fewer values in schema
 ```
 
 **For Rich Categorical Data:**
 
 ```bash
-GREMLIN_ENUM_CARDINALITY_THRESHOLD="25"    # More permissive detection
-GREMLIN_SCHEMA_MAX_ENUM_VALUES="20"        # Show more enum values
+GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD="25"    # More permissive detection
+GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES="20"        # Show more enum values
 ```
 
 **For Performance-Critical Environments:**
 
 ```bash
-GREMLIN_ENUM_DISCOVERY_ENABLED="false"     # Disable for faster schema loading
-GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false" # Minimal schema size
+GREMLIN_MCP_ENUM_DISCOVERY_ENABLED="false"     # Disable for faster schema loading
+GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES="false" # Minimal schema size
 ```
 
 This intelligent enum discovery transforms how AI agents interact with your graph data, making queries more accurate and insights more meaningful! 🎯
@@ -327,26 +327,26 @@ This intelligent enum discovery transforms how AI agents interact with your grap
 
 ```bash
 # Required
-GREMLIN_ENDPOINT="localhost:8182"
+GREMLIN_MCP_ENDPOINT="localhost:8182"
 
 # Optional
-GREMLIN_USE_SSL="true"              # Enable SSL/TLS
-GREMLIN_USERNAME="username"         # Authentication
-GREMLIN_PASSWORD="password"         # Authentication
-GREMLIN_IDLE_TIMEOUT="300"          # Connection timeout in seconds (default: 300)
-LOG_LEVEL="info"                    # Logging level: error, warn, info, debug
+GREMLIN_MCP_USE_SSL="true"              # Enable SSL/TLS
+GREMLIN_MCP_USERNAME="username"         # Authentication
+GREMLIN_MCP_PASSWORD="password"         # Authentication
+GREMLIN_MCP_IDLE_TIMEOUT="300"          # Connection timeout in seconds (default: 300)
+GREMLIN_MCP_LOG_LEVEL="info"                    # Logging level: error, warn, info, debug
 ```
 
 ### Advanced Configuration
 
 ```bash
 # Schema and performance tuning
-GREMLIN_ENUM_DISCOVERY_ENABLED="true"         # Enable smart enum detection (default: true)
-GREMLIN_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum detection (default: 10)
-GREMLIN_ENUM_PROPERTY_DENYLIST="id,timestamp" # Exclude specific properties from enum detection
-GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Include sample values in schema (default: false)
-GREMLIN_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
-GREMLIN_SCHEMA_INCLUDE_COUNTS="true"          # Include vertex/edge counts in schema (default: true)
+GREMLIN_MCP_ENUM_DISCOVERY_ENABLED="true"         # Enable smart enum detection (default: true)
+GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum detection (default: 10)
+GREMLIN_MCP_ENUM_PROPERTY_DENYLIST="id,timestamp" # Exclude specific properties from enum detection
+GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Include sample values in schema (default: false)
+GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
+GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS="false"          # Include vertex/edge counts in schema (default: false)
 ```
 
 ## 🔐 Security Considerations
@@ -376,14 +376,14 @@ GREMLIN_SCHEMA_INCLUDE_COUNTS="true"          # Include vertex/edge counts in sc
 | Problem                 | Solution                                                        |
 | ----------------------- | --------------------------------------------------------------- |
 | "Connection refused"    | Verify Gremlin server is running: `curl http://localhost:8182/` |
-| "Authentication failed" | Check `GREMLIN_USERNAME` and `GREMLIN_PASSWORD`                 |
+| "Authentication failed" | Check `GREMLIN_MCP_USERNAME` and `GREMLIN_MCP_PASSWORD`         |
 | "Invalid endpoint"      | Use format `host:port` or `host:port/g` for traversal source    |
 
 ### Common Error Messages
 
 - **"Schema cache failed"** - Server couldn't discover graph structure (empty database?)
 - **"Invalid query syntax"** - Gremlin query has syntax errors
-- **"Timeout"** - Query took too long, check `GREMLIN_IDLE_TIMEOUT`
+- **"Timeout"** - Query took too long, check `GREMLIN_MCP_IDLE_TIMEOUT`
 
 ### Testing Your Setup
 
@@ -409,7 +409,7 @@ _The following sections are for developers who want to contribute to or modify t
 ```bash
 # Clone and install
 git clone https://github.com/apache/tinkerpop.git
-cd tinkerpop/gremlin-tools/gremlin-mcp
+cd tinkerpop/gremlin-mcp/src/main/javascript
 npm install
 
 # Development with hot reload
@@ -421,7 +421,7 @@ npm run test:coverage
 npm run test:watch
 
 # Integration tests (requires running Gremlin server)
-GREMLIN_ENDPOINT=localhost:8182/g npm run test:it
+GREMLIN_MCP_ENDPOINT=localhost:8182/g npm run test:it
 
 # All tests together (unit + integration)
 npm test && npm run test:it

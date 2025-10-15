@@ -40,18 +40,18 @@ describe('Effect-based Configuration Management', () => {
 
   describe('AppConfig Effect', () => {
     it('should validate a complete configuration', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182/g';
-      process.env.GREMLIN_USE_SSL = 'false';
-      process.env.GREMLIN_USERNAME = 'testuser';
-      process.env.GREMLIN_PASSWORD = 'testpass';
-      process.env.LOG_LEVEL = 'info';
-      process.env.GREMLIN_IDLE_TIMEOUT = '300';
-      process.env.GREMLIN_ENUM_DISCOVERY_ENABLED = 'true';
-      process.env.GREMLIN_ENUM_CARDINALITY_THRESHOLD = '10';
-      process.env.GREMLIN_ENUM_PROPERTY_DENYLIST = 'id,pk,name';
-      process.env.GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES = 'false';
-      process.env.GREMLIN_SCHEMA_MAX_ENUM_VALUES = '10';
-      process.env.GREMLIN_SCHEMA_INCLUDE_COUNTS = 'true';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182/g';
+      process.env.GREMLIN_MCP_USE_SSL = 'false';
+      process.env.GREMLIN_MCP_USERNAME = 'testuser';
+      process.env.GREMLIN_MCP_PASSWORD = 'testpass';
+      process.env.GREMLIN_MCP_LOG_LEVEL = 'info';
+      process.env.GREMLIN_MCP_IDLE_TIMEOUT = '300';
+      process.env.GREMLIN_MCP_ENUM_DISCOVERY_ENABLED = 'true';
+      process.env.GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD = '10';
+      process.env.GREMLIN_MCP_ENUM_PROPERTY_DENYLIST = 'id,pk,name';
+      process.env.GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES = 'false';
+      process.env.GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES = '10';
+      process.env.GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS = 'true';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -84,7 +84,7 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should handle minimal configuration with defaults', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -109,18 +109,18 @@ describe('Effect-based Configuration Management', () => {
       });
     });
 
-    it('should fail when required GREMLIN_ENDPOINT is missing', async () => {
-      delete process.env.GREMLIN_ENDPOINT;
+    it('should fail when required GREMLIN_MCP_ENDPOINT is missing', async () => {
+      delete process.env.GREMLIN_MCP_ENDPOINT;
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow();
     });
 
     it('should parse boolean values correctly', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.GREMLIN_USE_SSL = 'true';
-      process.env.GREMLIN_ENUM_DISCOVERY_ENABLED = 'true';
-      process.env.GREMLIN_SCHEMA_INCLUDE_SAMPLE_VALUES = 'true';
-      process.env.GREMLIN_SCHEMA_INCLUDE_COUNTS = 'false';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_USE_SSL = 'true';
+      process.env.GREMLIN_MCP_ENUM_DISCOVERY_ENABLED = 'true';
+      process.env.GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES = 'true';
+      process.env.GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS = 'false';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -131,7 +131,7 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should parse endpoint with traversal source', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182/custom';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182/custom';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -141,8 +141,8 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should parse comma-separated denylist', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.GREMLIN_ENUM_PROPERTY_DENYLIST = 'id, pk, name, description';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_ENUM_PROPERTY_DENYLIST = 'id, pk, name, description';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -150,8 +150,8 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should validate log level enum', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.LOG_LEVEL = 'debug';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_LOG_LEVEL = 'debug';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -159,17 +159,17 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should fail with invalid log level', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.LOG_LEVEL = 'invalid';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_LOG_LEVEL = 'invalid';
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow();
     });
 
     it('should parse numeric values correctly', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.GREMLIN_IDLE_TIMEOUT = '600';
-      process.env.GREMLIN_ENUM_CARDINALITY_THRESHOLD = '20';
-      process.env.GREMLIN_SCHEMA_MAX_ENUM_VALUES = '15';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_IDLE_TIMEOUT = '600';
+      process.env.GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD = '20';
+      process.env.GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES = '15';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -179,9 +179,9 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should handle optional authentication fields', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      process.env.GREMLIN_USERNAME = 'testuser';
-      process.env.GREMLIN_PASSWORD = 'testpass';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_USERNAME = 'testuser';
+      process.env.GREMLIN_MCP_PASSWORD = 'testpass';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -190,9 +190,9 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should handle missing optional authentication fields', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
-      delete process.env.GREMLIN_USERNAME;
-      delete process.env.GREMLIN_PASSWORD;
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
+      delete process.env.GREMLIN_MCP_USERNAME;
+      delete process.env.GREMLIN_MCP_PASSWORD;
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -203,25 +203,25 @@ describe('Effect-based Configuration Management', () => {
 
   describe('Error Handling', () => {
     it('should provide meaningful error for invalid endpoint format', async () => {
-      process.env.GREMLIN_ENDPOINT = 'invalid-endpoint';
+      process.env.GREMLIN_MCP_ENDPOINT = 'invalid-endpoint';
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow(/Invalid host:port format/);
     });
 
     it('should provide meaningful error for invalid port', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:invalid';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:invalid';
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow(/Port must be a positive integer/);
     });
 
     it('should provide meaningful error for empty endpoint', async () => {
-      process.env.GREMLIN_ENDPOINT = '';
+      process.env.GREMLIN_MCP_ENDPOINT = '';
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow();
     });
 
     it('should handle missing host or port', async () => {
-      process.env.GREMLIN_ENDPOINT = ':8182';
+      process.env.GREMLIN_MCP_ENDPOINT = ':8182';
 
       await expect(Effect.runPromise(AppConfig)).rejects.toThrow(/Host and port are required/);
     });
@@ -229,7 +229,7 @@ describe('Effect-based Configuration Management', () => {
 
   describe('Configuration Validation', () => {
     it('should validate all required configuration fields are present', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182/g';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182/g';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -251,7 +251,7 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should have correct default values', async () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
 
       const result = await Effect.runPromise(AppConfig);
 
@@ -267,7 +267,7 @@ describe('Effect-based Configuration Management', () => {
     });
 
     it('should use Effect for type-safe configuration access', () => {
-      process.env.GREMLIN_ENDPOINT = 'localhost:8182';
+      process.env.GREMLIN_MCP_ENDPOINT = 'localhost:8182';
 
       // Test that AppConfig is an Effect
       expect(Effect.isEffect(AppConfig)).toBe(true);
