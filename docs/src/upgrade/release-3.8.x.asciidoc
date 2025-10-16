@@ -301,9 +301,26 @@ g.inject("Hello").split("")
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
 ==== asString() No Longer Allow Nulls
-The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
+
+The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency
+with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
+
+==== Properties on Element Serialization in Python & Javascript
+
+Element properties handling has been inconsistent across GLVs. Previously, `gremlin-python` deserialized empty properties as `None`, while
+`gremlin-javascript` returned properties as objects or arrays, with empty properties as null or undefined depending on the serializer.
+
+This inconsistency is now resolved. Both GLVs will deserialize Element.properties into lists of property objects, returning empty lists
+instead of null values for missing properties.
+
+This is a breaking change. Applications using gremlin-python and gremlin-javascript must update code to expect properties as lists rather than the
+previous formats.
+
+Note: This change affects only GLV behavior, not underlying IO formats.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3186[TINKERPOP-3186]
 
 ==== Javascript Set Deserialization
 
