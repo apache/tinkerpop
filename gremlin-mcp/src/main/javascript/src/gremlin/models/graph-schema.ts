@@ -89,10 +89,6 @@ export type EdgePattern = z.infer<typeof EdgePatternSchema>;
 export const SchemaMetadataSchema = z.object({
   /** Total size of the schema in bytes */
   schema_size_bytes: z.number().optional(),
-  /** Number of vertex types */
-  vertex_count: z.number(),
-  /** Number of edge types */
-  edge_count: z.number(),
   /** Number of edge patterns */
   pattern_count: z.number(),
   /** Time taken to generate the schema in milliseconds */
@@ -157,7 +153,7 @@ export const GremlinConfigSchema = z.object({
   /** Maximum number of enum values to include (for size optimization) */
   maxEnumValues: z.number().positive().optional().default(10),
   /** Whether to include vertex/edge counts in schema */
-  includeCounts: z.boolean().optional().default(true),
+  includeCounts: z.boolean().optional().default(false),
 });
 
 export type GremlinConfig = z.infer<typeof GremlinConfigSchema>;

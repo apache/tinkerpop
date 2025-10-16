@@ -3111,7 +3111,7 @@ Advanced schema discovery and performance tuning:
 * `GREMLIN_MCP_ENUM_PROPERTY_DENYLIST` — comma-separated property names to exclude from enum detection (default: `id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt`)
 * `GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES` — limit the number of enum values returned per property in the schema (default: `10`)
 * `GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES` — include small example values for properties in the schema (default: `false`)
-* `GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS` — include approximate vertex/edge label counts in the schema (default: `true`)
+* `GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS` — include approximate vertex/edge label counts in the schema (default: `false`)
 
 The configurations related to enums begs additional explanation as to their importance. Treating only truly categorical
 properties as enums prevents misleading suggestions and sensitive data exposure in assistant‑facing schemas. Without a

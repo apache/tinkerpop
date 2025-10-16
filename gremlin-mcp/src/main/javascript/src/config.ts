@@ -206,11 +206,11 @@ const GremlinMcpSchemaMaxEnumValuesConfig = pipe(
 );
 
 /**
- * GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS: boolean, default: true. Include property counts in schema output
+ * GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS: boolean, default: false. Include property counts in schema output
  */
 const GremlinMcpSchemaIncludeCountsConfig = Config.withDefault(
   Config.boolean('GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS'),
-  true
+  false
 );
 
 /**

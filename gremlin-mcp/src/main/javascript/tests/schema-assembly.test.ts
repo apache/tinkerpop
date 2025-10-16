@@ -54,6 +54,7 @@ describe('schema-assembly', () => {
         { name: 'name', type: ['string'] },
         { name: 'age', type: ['number'] },
       ],
+      count: 100,
     },
     {
       label: 'company',
@@ -61,6 +62,7 @@ describe('schema-assembly', () => {
         { name: 'name', type: ['string'] },
         { name: 'founded', type: ['number'] },
       ],
+      count: 101,
     },
   ];
 
@@ -71,10 +73,12 @@ describe('schema-assembly', () => {
         { name: 'since', type: ['string'] },
         { name: 'position', type: ['string'] },
       ],
+      count: 50,
     },
     {
       label: 'knows',
       properties: [{ name: 'since', type: ['string'] }],
+      count: 50,
     },
   ];
 
@@ -102,8 +106,6 @@ describe('schema-assembly', () => {
 
       // Verify metadata
       expect(result.metadata).toBeDefined();
-      expect(result.metadata!.vertex_count).toBe(2);
-      expect(result.metadata!.edge_count).toBe(2);
       expect(result.metadata!.pattern_count).toBe(2);
       expect(result.metadata!.generated_at).toBeDefined();
       expect(result.metadata!.generation_time_ms).toBeGreaterThanOrEqual(0);
@@ -129,8 +131,6 @@ describe('schema-assembly', () => {
       expect(result.vertices).toEqual([]);
       expect(result.edges).toEqual([]);
       expect(result.edge_patterns).toEqual([]);
-      expect(result.metadata!.vertex_count).toBe(0);
-      expect(result.metadata!.edge_count).toBe(0);
       expect(result.metadata!.pattern_count).toBe(0);
     });
 
@@ -148,7 +148,7 @@ describe('schema-assembly', () => {
     it('should handle schema validation failures', async () => {
       const invalidVertices: Vertex[] = [
         {
-          labels: '', // Invalid empty label - but this might pass basic assembly
+          label: '', // Invalid empty label - but this might pass basic assembly
           properties: [],
         },
       ];
@@ -376,8 +376,6 @@ describe('schema-assembly', () => {
       // Check required fields
       expect(metadata.generated_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO format
       expect(metadata.generation_time_ms).toBeGreaterThanOrEqual(500);
-      expect(metadata.vertex_count).toBe(sampleVertices.length);
-      expect(metadata.edge_count).toBe(sampleEdges.length);
       expect(metadata.pattern_count).toBe(samplePatterns.length);
 
       // Check optimization settings

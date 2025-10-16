@@ -97,12 +97,14 @@ describe('Models and Schemas', () => {
                 cardinality: 'single',
               },
             ],
+            count: 100,
           },
         ],
         edges: [
           {
             label: 'knows',
             properties: [],
+            count: 100,
           },
         ],
         edge_patterns: [
@@ -113,8 +115,6 @@ describe('Models and Schemas', () => {
           },
         ],
         metadata: {
-          vertex_count: 1,
-          edge_count: 1,
           pattern_count: 1,
           schema_size_bytes: 1024,
           optimization_settings: {
@@ -176,8 +176,6 @@ describe('Models and Schemas', () => {
   describe('SchemaMetadataSchema', () => {
     it('should validate schema metadata', () => {
       const validMetadata = {
-        vertex_count: 10,
-        edge_count: 5,
         pattern_count: 8,
         schema_size_bytes: 2048,
         optimization_settings: {
