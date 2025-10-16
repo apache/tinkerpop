@@ -21,8 +21,9 @@
  * Tests for Effect-based configuration management and validation.
  */
 
-import { Effect } from 'effect';
-import { GREMLIN_VERSION } from '../src/constants';
+import { Effect, Redacted, Option } from 'effect';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import { GREMLIN_VERSION, SERVER_INFO } from '../src/constants';
 import { AppConfig, type AppConfigType } from '../src/config';
 
 describe('Effect-based Configuration Management', () => {
@@ -75,12 +76,12 @@ describe('Effect-based Configuration Management', () => {
           level: 'info',
         },
         server: {
-          name: 'gremlin-mcp',
+          name: SERVER_INFO.NAME,
           version: GREMLIN_VERSION,
         },
       });
-      expect(result.gremlin.username).toBeDefined();
-      expect(result.gremlin.password).toBeDefined();
+      expect(result.gremlin.username).toEqual(Option.some('testuser'));
+      expect(result.gremlin.password).toEqual(Option.some(Redacted.make('testpass')));
     });
 
     it('should handle minimal configuration with defaults', async () => {
@@ -185,8 +186,8 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
-      expect(result.gremlin.username).toBeDefined();
-      expect(result.gremlin.password).toBeDefined();
+      expect(result.gremlin.username).toEqual(Option.some('testuser'));
+      expect(result.gremlin.password).toEqual(Option.some(Redacted.make('testpass')));
     });
 
     it('should handle missing optional authentication fields', async () => {
@@ -196,8 +197,8 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
-      expect(result.gremlin.username).toBeDefined(); // Should be Option.none()
-      expect(result.gremlin.password).toBeDefined(); // Should be Option.none()
+      expect(result.gremlin.username).toEqual(Option.none<string>());
+      expect(result.gremlin.password).toEqual(Option.none<string>());
     });
   });
 

@@ -35,18 +35,9 @@ export const ERROR_PREFIXES = {
   QUERY: 'Query failed',
   SCHEMA: 'Schema error',
   RESOURCE: 'Resource error',
-  CONFIG: 'Configuration error',
   TIMEOUT: 'Operation timed out',
   PARSE: 'Parse error',
 } as const;
-
-/**
- * Configuration-related errors
- */
-export class ConfigError extends Data.TaggedError('ConfigError')<{
-  readonly message: string;
-  readonly details?: unknown;
-}> {}
 
 /**
  * Gremlin connection errors
@@ -107,7 +98,6 @@ export class ParseError extends Data.TaggedError('ParseError')<{
  * Union type for all possible Gremlin MCP errors
  */
 export type GremlinMcpError =
-  | ConfigError
   | GremlinConnectionError
   | GremlinQueryError
   | SchemaError
@@ -119,12 +109,6 @@ export type GremlinMcpError =
  * Helper functions for creating common errors with standardized messaging
  */
 export const Errors = {
-  config: (message: string, details?: unknown) =>
-    new ConfigError({
-      message: `${ERROR_PREFIXES.CONFIG}: ${message}`,
-      details,
-    }),
-
   connection: (message: string, details?: unknown, host?: string, port?: number) =>
     new GremlinConnectionError({
       message: `${ERROR_PREFIXES.CONNECTION}: ${message}`,

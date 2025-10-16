@@ -190,8 +190,6 @@ export const generateGraphSchema = (
         includeCounts: config.includeCounts,
         includeSampleValues: config.includeSampleValues,
         maxEnumValues: config.maxEnumValues,
-        timeoutMs: config.timeoutMs,
-        batchSize: config.batchSize,
       },
     });
 

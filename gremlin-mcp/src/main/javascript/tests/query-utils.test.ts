@@ -81,11 +81,9 @@ describe('query-utils', () => {
         .fn<() => Promise<string[]>>()
         .mockRejectedValue(new Error('Connection failed'));
 
-      const result = await Effect.runPromiseExit(
-        executeGremlinQuery(mockQuery, 'Test query failed', 'test query')
-      );
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(executeGremlinQuery(mockQuery, 'Test query failed', 'test query'))
+      ).rejects.toThrow();
     });
   });
 

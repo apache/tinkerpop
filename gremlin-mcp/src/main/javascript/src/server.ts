@@ -76,7 +76,7 @@ const makeMcpServerService = Effect.gen(function* () {
   });
 
   yield* Effect.logInfo('✅ MCP Server instance created', {
-    service: 'gremlin-mcp',
+    service: config.server.name,
     name: config.server.name,
     version: config.server.version,
   });
@@ -89,17 +89,19 @@ const makeMcpServerService = Effect.gen(function* () {
   registerEffectResourceHandlers(server, runtime);
 
   yield* Effect.logInfo('✅ Handlers registered successfully', {
-    service: 'gremlin-mcp',
+    service: config.server.name,
   });
 
   return {
     server,
     start: Effect.gen(function* () {
-      yield* Effect.logInfo('🔌 Creating STDIO transport...', { service: 'gremlin-mcp' });
+      yield* Effect.logInfo('🔌 Creating STDIO transport...', { service: config.server.name });
 
       const transport = new StdioServerTransport();
 
-      yield* Effect.logInfo('🔗 Connecting server to transport...', { service: 'gremlin-mcp' });
+      yield* Effect.logInfo('🔗 Connecting server to transport...', {
+        service: config.server.name,
+      });
 
       yield* pipe(
         Effect.tryPromise(() => server.connect(transport)),
@@ -112,13 +114,13 @@ const makeMcpServerService = Effect.gen(function* () {
       );
 
       yield* Effect.logInfo('✅ Gremlin MCP Server started successfully', {
-        service: 'gremlin-mcp',
+        service: config.server.name,
         pid: process.pid,
         ready: true,
       });
     }),
     stop: Effect.gen(function* () {
-      yield* Effect.logInfo('🛑 Stopping MCP Server...', { service: 'gremlin-mcp' });
+      yield* Effect.logInfo('🛑 Stopping Gremlin MCP Server...', { service: config.server.name });
       // Server cleanup would go here if needed
     }),
   };
@@ -145,8 +147,8 @@ const program = Effect.gen(function* () {
   // Get configuration
   const config = yield* AppConfig;
 
-  yield* Effect.logInfo('🚀 Starting Gremlin MCP Server...', {
-    service: 'gremlin-mcp',
+  yield* Effect.logInfo('🚀 Starting Apache TinkerPop Gremlin MCP Server...', {
+    service: config.server.name,
     version: config.server.version,
     gremlinEndpoint: `${config.gremlin.host}:${config.gremlin.port}`,
     logLevel: config.logging.level,
@@ -242,7 +244,7 @@ const createLoggerLayer = (config: AppConfigType) => {
     info: LogLevel.Info,
     debug: LogLevel.Debug,
   } as const;
-  const logLevel = logLevelMap[config.logging.level] ?? LogLevel.Info;
+  const minimumLogLevel = logLevelMap[config.logging.level] ?? LogLevel.Info;
 
   return Layer.mergeAll(
     Logger.replace(
@@ -261,7 +263,7 @@ const createLoggerLayer = (config: AppConfigType) => {
         Effect.runSync(logToStderr(logData));
       })
     ),
-    Logger.minimumLogLevel(logLevel)
+    Logger.minimumLogLevel(minimumLogLevel)
   );
 };
 
@@ -307,7 +309,7 @@ const main = Effect.gen(function* () {
   // Add startup logging before anything else - CRITICAL: Use stderr only
   yield* logToStderr({
     level: 'info',
-    message: 'Gremlin MCP Server executable started',
+    message: 'Apache TinkerPop - Gremlin MCP Server executable started',
     process_info: {
       pid: process.pid,
       node_version: process.versions.node,
