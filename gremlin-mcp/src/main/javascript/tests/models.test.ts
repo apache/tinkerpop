@@ -20,7 +20,7 @@
 /**
  * Tests for Zod schemas and model validation.
  */
-
+import { describe, it, expect } from '@jest/globals';
 import {
   PropertySchema,
   VertexSchema,

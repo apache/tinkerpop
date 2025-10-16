@@ -150,6 +150,8 @@ export const analyzeElementProperties = (
     );
   });
 
+// TODO: https://github.com/apache/tinkerpop/pull/3238#discussion_r2429664697
+
 /**
  * Analyzes properties for a single element label.
  *

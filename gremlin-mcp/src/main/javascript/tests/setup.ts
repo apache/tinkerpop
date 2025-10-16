@@ -20,6 +20,7 @@
 /**
  * Jest setup file for Gremlin MCP Server tests.
  */
+import { jest } from '@jest/globals';
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';

@@ -144,24 +144,6 @@ describe('schema-assembly', () => {
       expect(result.metadata!.generation_time_ms).toBeGreaterThanOrEqual(1000);
       expect(result.metadata!.generation_time_ms).toBeLessThan(2000); // Should be reasonable
     });
-
-    it('should handle schema validation failures', async () => {
-      const invalidVertices: Vertex[] = [
-        {
-          label: '', // Invalid empty label - but this might pass basic assembly
-          properties: [],
-        },
-      ];
-
-      const result = await Effect.runPromiseExit(
-        assembleGraphSchema(invalidVertices, sampleEdges, samplePatterns, mockConfig, Date.now())
-      );
-
-      // The assembly might succeed even with invalid data since validation
-      // happens at the Zod schema level, and empty string might be valid
-      // Let's just verify the function completes
-      expect(['Success', 'Failure']).toContain(result._tag);
-    });
   });
 
   describe('validateVertices', () => {
@@ -179,9 +161,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateVertices(invalidVertices));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateVertices(invalidVertices))
+      ).rejects.toBeDefined();
     });
 
     it('should detect invalid labels type', async () => {
@@ -192,9 +174,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateVertices(invalidVertices));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateVertices(invalidVertices))
+      ).rejects.toBeDefined();
     });
 
     it('should detect missing properties', async () => {
@@ -205,9 +187,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateVertices(invalidVertices));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateVertices(invalidVertices))
+      ).rejects.toBeDefined();
     });
 
     it('should detect invalid property structure', async () => {
@@ -221,9 +203,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateVertices(invalidVertices));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateVertices(invalidVertices))
+      ).rejects.toBeDefined();
     });
   });
 
@@ -242,9 +224,7 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() => Effect.runPromise(validateEdges(invalidEdges))).rejects.toBeDefined();
     });
 
     it('should detect invalid properties', async () => {
@@ -257,9 +237,7 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() => Effect.runPromise(validateEdges(invalidEdges))).rejects.toBeDefined();
     });
 
     it('should handle missing properties array', async () => {
@@ -270,9 +248,7 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateEdges(invalidEdges));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() => Effect.runPromise(validateEdges(invalidEdges))).rejects.toBeDefined();
     });
   });
 
@@ -302,9 +278,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateEdgePatterns(invalidPatterns));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateEdgePatterns(invalidPatterns))
+      ).rejects.toBeDefined();
     });
 
     it('should detect invalid pattern field types', async () => {
@@ -316,9 +292,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(validateEdgePatterns(invalidPatterns));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateEdgePatterns(invalidPatterns))
+      ).rejects.toBeDefined();
     });
   });
 
@@ -339,11 +315,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(
-        validateAllComponents(invalidVertices, sampleEdges, samplePatterns)
-      );
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateAllComponents(invalidVertices, sampleEdges, samplePatterns))
+      ).rejects.toBeDefined();
     });
 
     it('should validate each component type independently', async () => {
@@ -355,11 +329,9 @@ describe('schema-assembly', () => {
         },
       ];
 
-      const result = await Effect.runPromiseExit(
-        validateAllComponents(sampleVertices, invalidEdges, samplePatterns)
-      );
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(validateAllComponents(sampleVertices, invalidEdges, samplePatterns))
+      ).rejects.toBeDefined();
     });
   });
 

@@ -132,9 +132,9 @@ describe('edge-patterns', () => {
       const error = Errors.query('Connection failed', 'pattern query', new Error('Network error'));
       mockExecuteGremlinQuery.mockReturnValue(Effect.fail(error));
 
-      const result = await Effect.runPromiseExit(generateEdgePatterns(mockTraversalSource));
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(generateEdgePatterns(mockTraversalSource))
+      ).rejects.toEqual(error);
     });
 
     it('should handle complex relationship patterns', async () => {
@@ -150,21 +150,13 @@ describe('edge-patterns', () => {
 
       const result = await Effect.runPromise(generateEdgePatterns(mockTraversalSource));
 
-      expect(result).toHaveLength(5);
-
-      // Verify self-referencing patterns
-      const selfReferencingPatterns = result.filter(p => p.left_vertex === p.right_vertex);
-      expect(selfReferencingPatterns).toHaveLength(3);
-
-      // Verify bidirectional potential
-      const personToCompany = result.find(
-        p => p.left_vertex === 'person' && p.right_vertex === 'company'
-      );
-      const companyToPerson = result.find(
-        p => p.left_vertex === 'company' && p.right_vertex === 'person'
-      );
-      expect(personToCompany).toBeDefined();
-      expect(companyToPerson).toBeUndefined(); // Not in this dataset
+      expect(result).toStrictEqual([
+        { left_vertex: 'person', right_vertex: 'company', relation: 'worksAt' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'knows' },
+        { left_vertex: 'person', right_vertex: 'person', relation: 'friendsWith' },
+        { left_vertex: 'company', right_vertex: 'company', relation: 'partnerWith' },
+        { left_vertex: 'project', right_vertex: 'person', relation: 'ownedBy' },
+      ]);
     });
   });
 

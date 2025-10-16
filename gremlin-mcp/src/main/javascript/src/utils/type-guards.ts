@@ -21,26 +21,6 @@
  * Type guard functions for runtime type checking.
  */
 
-import type { driver } from 'gremlin';
-type GremlinResultSet = driver.ResultSet;
-
-/**
- * Type guard to check if an object is a Gremlin ResultSet
- */
-export function isGremlinResultSet(obj: unknown): obj is GremlinResultSet {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-
-  // Check for ResultSet methods
-  return (
-    'toArray' in obj &&
-    typeof (obj as { toArray: unknown }).toArray === 'function' &&
-    'first' in obj &&
-    typeof (obj as { first: unknown }).first === 'function'
-  );
-}
-
 /**
  * Type guard to check if an object is a valid Gremlin result.
  * This can be a ResultSet object, Map-like object, or array.

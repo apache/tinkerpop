@@ -112,11 +112,11 @@ describe('property-analyzer', () => {
       const error = Errors.query('Connection failed', 'test query', new Error('Connection failed'));
       mockGetSamplePropertyValues.mockReturnValue(Effect.fail(error));
 
-      const result = await Effect.runPromiseExit(
-        analyzeSingleProperty(mockTraversalSource, 'person', 'name', mockConfig, true)
-      );
-
-      expect(result._tag).toBe('Failure');
+      await expect(() =>
+        Effect.runPromise(
+          analyzeSingleProperty(mockTraversalSource, 'person', 'name', mockConfig, true)
+        )
+      ).rejects.toEqual(error);
     });
   });
 
