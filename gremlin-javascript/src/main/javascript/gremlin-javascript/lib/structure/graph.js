@@ -46,9 +46,10 @@ class Graph {
 }
 
 class Element {
-  constructor(id, label) {
+  constructor(id, label, properties = undefined) {
     this.id = id;
     this.label = label;
+    this.properties = properties != null ? properties : [];
   }
 
   /**
@@ -62,9 +63,8 @@ class Element {
 }
 
 class Vertex extends Element {
-  constructor(id, label, properties) {
-    super(id, label);
-    this.properties = properties;
+  constructor(id, label, properties = undefined) {
+    super(id, label, properties);
   }
 
   toString() {
@@ -73,20 +73,10 @@ class Vertex extends Element {
 }
 
 class Edge extends Element {
-  constructor(id, outV, label, inV, properties) {
-    super(id, label);
+  constructor(id, outV, label, inV, properties = undefined) {
+    super(id, label, properties);
     this.outV = outV;
     this.inV = inV;
-    this.properties = {};
-    if (properties) {
-      if (Array.isArray(properties)) {
-        // Handle array of Property objects
-        properties.forEach((prop) => (this.properties[prop.key] = prop.value));
-      } else {
-        // Handle object format as before
-        Object.keys(properties).forEach((k) => (this.properties[k] = properties[k].value));
-      }
-    }
   }
 
   toString() {
@@ -98,11 +88,10 @@ class Edge extends Element {
 }
 
 class VertexProperty extends Element {
-  constructor(id, label, value, properties) {
-    super(id, label);
+  constructor(id, label, value, properties = undefined) {
+    super(id, label, properties);
     this.value = value;
     this.key = this.label;
-    this.properties = properties;
   }
 
   toString() {

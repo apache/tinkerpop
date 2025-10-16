@@ -32,6 +32,18 @@ describe('Edge', () => {
       assert.strictEqual(element.toString(), `e[123][?-label1->?]`);
     });
   });
+
+  describe('properties', () => {
+    it('should default to empty array when not provided', () => {
+      const edge = new Edge('123', new Vertex(1), 'knows', new Vertex(2));
+      assert.deepStrictEqual(edge.properties, []);
+    });
+
+    it('should default to empty array when null', () => {
+      const edge = new Edge('123', new Vertex(1), 'knows', new Vertex(2), null);
+      assert.deepStrictEqual(edge.properties, []);
+    });
+  });
 });
 
 describe('Vertex', () => {
@@ -39,6 +51,18 @@ describe('Vertex', () => {
     it('should return the string representation based on the id', () => {
       const element = new Vertex(-200, 'label1', null);
       assert.strictEqual(element.toString(), `v[-200]`);
+    });
+  });
+
+  describe('properties', () => {
+    it('should default to empty array when not provided', () => {
+      const vertex = new Vertex(1, 'person');
+      assert.deepStrictEqual(vertex.properties, []);
+    });
+
+    it('should default to empty array when null', () => {
+      const vertex = new Vertex(1, 'person', null);
+      assert.deepStrictEqual(vertex.properties, []);
     });
   });
 });
@@ -54,6 +78,18 @@ describe('VertexProperty', () => {
       ].forEach(item => {
         assert.strictEqual(item[0].toString(), item[1]);
       });
+    });
+  });
+
+  describe('properties', () => {
+    it('should default to empty array when not provided', () => {
+      const vp = new VertexProperty(24, 'name', 'marko');
+      assert.deepStrictEqual(vp.properties, []);
+    });
+
+    it('should default to empty array when null', () => {
+      const vp = new VertexProperty(24, 'name', 'marko', null);
+      assert.deepStrictEqual(vp.properties, []);
     });
   });
 });
