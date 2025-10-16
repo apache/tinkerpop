@@ -41,7 +41,14 @@ const emptyInputSchema = z.object({}).strict();
 
 // Run Gremlin Query input
 const runQueryInputSchema = z.object({
-  query: z.string().min(1).max(10000).describe('The Gremlin query to execute'),
+  query: z
+    .string()
+    .min(1, "The Gremlin query cannot be empty")
+    .max(10000, "The Gremlin query cannot exceed 10,000 characters")
+    .refine(q => q.trim().startsWith('g.'), {
+      message: 'The Gremlin query must start with "g."',
+    })
+    .describe('The Gremlin query to execute'),
 });
 
 /**

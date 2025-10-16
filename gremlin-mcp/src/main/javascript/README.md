@@ -363,7 +363,7 @@ GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS="false"         # Include vertex/edge counts i
 ### Recommended Security Practices
 
 - 🔒 Use behind a firewall in production
-- 🔑 Enable strong authentication on your Gremlin server
+- 🔑 Enable strong authentication on Gremlin Server
 - 📊 Monitor query patterns and resource usage
 - 👓 Consider using a read-only graph configuration if you do not expect or desire mutations
 - 🛡️ Consider a query proxy for additional security controls
