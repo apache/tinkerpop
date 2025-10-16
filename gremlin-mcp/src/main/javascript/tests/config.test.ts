@@ -101,7 +101,7 @@ describe('Effect-based Configuration Management', () => {
           enumCardinalityThreshold: 10,
           includeSampleValues: false,
           maxEnumValues: 10,
-          includeCounts: true,
+          includeCounts: false,
         },
         logging: {
           level: 'info',
@@ -262,7 +262,7 @@ describe('Effect-based Configuration Management', () => {
       expect(result.schema.enumCardinalityThreshold).toBe(10);
       expect(result.schema.includeSampleValues).toBe(false);
       expect(result.schema.maxEnumValues).toBe(10);
-      expect(result.schema.includeCounts).toBe(true);
+      expect(result.schema.includeCounts).toBe(false);
       expect(result.logging.level).toBe('info');
     });
 

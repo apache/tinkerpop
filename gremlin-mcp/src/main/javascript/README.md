@@ -346,7 +346,7 @@ GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD="10"       # Max distinct values for enum
 GREMLIN_MCP_ENUM_PROPERTY_DENYLIST="id,timestamp" # Exclude specific properties from enum detection
 GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES="false"  # Include sample values in schema (default: false)
 GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES="10"           # Limit enum values shown (default: 10)
-GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS="false"          # Include vertex/edge counts in schema (default: false)
+GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS="false"         # Include vertex/edge counts in schema (default: false)
 ```
 
 ## 🔐 Security Considerations

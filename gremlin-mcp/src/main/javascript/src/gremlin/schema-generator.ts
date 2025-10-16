@@ -32,8 +32,8 @@ import type { ConnectionState, SchemaConfig } from './types.js';
 import {
   getVertexLabels,
   getEdgeLabels,
-  getVertexCounts,
-  getEdgeCounts,
+  getVertexCountsPerLabel,
+  getEdgeCountsPerLabel,
   getVertexPropertyKeys,
   getEdgePropertyKeys,
 } from './query-utils.js';
@@ -53,7 +53,7 @@ const DEFAULT_SCHEMA_TIMEOUT_MS = 30000;
 export const DEFAULT_SCHEMA_CONFIG: SchemaConfig = {
   includeSampleValues: false,
   maxEnumValues: 10,
-  includeCounts: true,
+  includeCounts: false,
   enumCardinalityThreshold: 10,
   enumPropertyDenyList: ['id', 'timestamp'],
   timeoutMs: DEFAULT_SCHEMA_TIMEOUT_MS,
@@ -83,7 +83,7 @@ const executeSchemaGeneration = (
     );
 
     // Step 2: Get counts if enabled
-    const [vertexCounts, edgeCounts] = yield* getElementCounts(g, config);
+    const [vertexCountsPerLabel, edgeCountsPerLabel] = yield* getElementCountsPerLabel(g, config);
 
     // Step 3: Analyze properties and patterns in parallel
     yield* Effect.logInfo('Analyzing properties and relationship patterns');
@@ -97,8 +97,8 @@ const executeSchemaGeneration = (
     );
 
     // Step 4: Add count information
-    const vertices = addElementCounts<Vertex>(rawVertices, vertexCounts, config);
-    const edges = addElementCounts<Edge>(rawEdges, edgeCounts, config);
+    const vertices = addElementCounts<Vertex>(rawVertices, vertexCountsPerLabel, config);
+    const edges = addElementCounts<Edge>(rawEdges, edgeCountsPerLabel, config);
 
     // Step 5: Assemble final schema
     return yield* assembleGraphSchema(vertices, edges, patterns, config, startTime);
@@ -107,7 +107,7 @@ const executeSchemaGeneration = (
 /**
  * Gets vertex and edge counts if enabled in configuration.
  */
-const getElementCounts = (
+const getElementCountsPerLabel = (
   g: GraphTraversalSource,
   config: SchemaConfig
 ): Effect.Effect<[SchemaCountData, SchemaCountData], GremlinQueryError> => {
@@ -115,7 +115,7 @@ const getElementCounts = (
     return Effect.succeed([null, null]);
   }
 
-  return Effect.all([getVertexCounts(g), getEdgeCounts(g)]);
+  return Effect.all([getVertexCountsPerLabel(g), getEdgeCountsPerLabel(g)]);
 };
 
 /**

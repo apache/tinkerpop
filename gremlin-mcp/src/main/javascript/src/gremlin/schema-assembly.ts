@@ -41,8 +41,6 @@ import type { SchemaConfig } from './types.js';
 export interface SchemaMetadata {
   generated_at: string;
   generation_time_ms: number;
-  vertex_count: number;
-  edge_count: number;
   pattern_count: number;
   optimization_settings: {
     sample_values_included: boolean;
@@ -73,7 +71,7 @@ export const assembleGraphSchema = (
 ): Effect.Effect<GraphSchema, GremlinQueryError> =>
   Effect.gen(function* () {
     // Create metadata
-    const metadata = createSchemaMetadata(vertices, edges, patterns, config, startTime);
+    const metadata = createSchemaMetadata(patterns, config, startTime);
 
     // Assemble schema data
     const schemaData = {
@@ -97,7 +95,6 @@ export const assembleGraphSchema = (
 /**
  * Creates schema metadata with generation statistics and configuration.
  *
- * @param vertices - Analyzed vertices
  * @param relationships - Analyzed relationships
  * @param patterns - Relationship patterns
  * @param config - Configuration used for generation
@@ -105,16 +102,12 @@ export const assembleGraphSchema = (
  * @returns Schema metadata object
  */
 const createSchemaMetadata = (
-  vertices: Vertex[],
-  edges: Edge[],
   patterns: EdgePattern[],
   config: SchemaConfig,
   startTime: number
 ): SchemaMetadata => ({
   generated_at: new Date().toISOString(),
   generation_time_ms: Date.now() - startTime,
-  vertex_count: vertices.length,
-  edge_count: edges.length,
   pattern_count: patterns.length,
   optimization_settings: {
     sample_values_included: config.includeSampleValues,
@@ -144,7 +137,11 @@ const validateSchemaData = (schemaData: unknown): Effect.Effect<GraphSchema, Gre
         })
       );
 
-      return Errors.query('Schema validation failed', 'schema-validation', { error });
+      return Errors.query(
+        'Schema validation failed: ' + String(error) + ' ++ ' + safeStringify(schemaData),
+        'schema-validation',
+        { error }
+      );
     },
   });
 

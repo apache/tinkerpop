@@ -29,7 +29,7 @@
  * Built with Effect-ts for functional composition and error handling.
  */
 
-import { Effect, Layer, pipe, LogLevel, Logger, Context, Fiber } from 'effect';
+import { ConfigProvider, Effect, Layer, pipe, LogLevel, Logger, Context, Fiber } from 'effect';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
@@ -150,6 +150,33 @@ const program = Effect.gen(function* () {
     version: config.server.version,
     gremlinEndpoint: `${config.gremlin.host}:${config.gremlin.port}`,
     logLevel: config.logging.level,
+    config: {
+      server: {
+        name: config.server.name,
+        version: config.server.version,
+      },
+      gremlin: {
+        host: config.gremlin.host,
+        port: config.gremlin.port,
+        traversalSource: config.gremlin.traversalSource,
+        useSSL: config.gremlin.useSSL,
+        idleTimeout: config.gremlin.idleTimeout,
+        username: config.gremlin.username ?? null,
+        hasPassword: Boolean(config.gremlin.password),
+      },
+      schema: {
+        enumDiscoveryEnabled: config.schema.enumDiscoveryEnabled,
+        enumCardinalityThreshold: config.schema.enumCardinalityThreshold,
+        enumPropertyDenyList: config.schema.enumPropertyDenyList,
+        includeSampleValues: config.schema.includeSampleValues,
+        maxEnumValues: config.schema.maxEnumValues,
+        includeCounts: config.schema.includeCounts,
+      },
+      logging: {
+        level: config.logging.level,
+        structured: true,
+      },
+    },
   });
 
   // Get server service
@@ -215,7 +242,6 @@ const createLoggerLayer = (config: AppConfigType) => {
     info: LogLevel.Info,
     debug: LogLevel.Debug,
   } as const;
-
   const logLevel = logLevelMap[config.logging.level] ?? LogLevel.Info;
 
   return Layer.mergeAll(
@@ -231,7 +257,8 @@ const createLoggerLayer = (config: AppConfigType) => {
             )
           ),
         };
-        return logToStderr(logData);
+        // IMPORTANT: run the effect synchronously, for the love all that is sane, run it synchronously!!!
+        Effect.runSync(logToStderr(logData));
       })
     ),
     Logger.minimumLogLevel(logLevel)
@@ -322,8 +349,12 @@ const main = Effect.gen(function* () {
 /**
  * Run the application with improved error handling using Effect patterns
  */
+// Ensure environment variables are used for configuration resolution across the app
+const EnvConfigLayer = Layer.setConfigProvider(ConfigProvider.fromEnv());
+
 const runMain = pipe(
   Effect.scoped(main),
+  Effect.provide(EnvConfigLayer),
   Effect.catchAll((error: unknown) =>
     logToStderr({
       level: 'error',

@@ -120,11 +120,16 @@ export const getEdgeLabels = (
  * @param g - Gremlin traversal source
  * @returns Effect with vertex count data
  */
-export const getVertexCounts = (g: GraphTraversalSource) =>
+export const getVertexCountsPerLabel = (g: GraphTraversalSource) =>
   executeGremlinQuery(
     () => g.V().groupCount().by(label()).next(),
     'Failed to get vertex counts',
     'g.V().groupCount().by(label()).next()'
+  ).pipe(
+    Effect.map(result => {
+      const map = (result as any)?.value as Map<string, number> | undefined;
+      return { value: map ? (Object.fromEntries(map) as Record<string, number>) : undefined };
+    })
   );
 
 /**
@@ -133,11 +138,16 @@ export const getVertexCounts = (g: GraphTraversalSource) =>
  * @param g - Gremlin traversal source
  * @returns Effect with edge count data
  */
-export const getEdgeCounts = (g: GraphTraversalSource) =>
+export const getEdgeCountsPerLabel = (g: GraphTraversalSource) =>
   executeGremlinQuery(
     () => g.E().groupCount().by(label()).next(),
     'Failed to get edge counts',
     'g.E().groupCount().by(label()).next()'
+  ).pipe(
+    Effect.map(result => {
+      const map = (result as any)?.value as Map<string, number> | undefined;
+      return { value: map ? (Object.fromEntries(map) as Record<string, number>) : undefined };
+    })
   );
 
 /**

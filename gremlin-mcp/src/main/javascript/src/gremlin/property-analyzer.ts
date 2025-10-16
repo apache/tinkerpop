@@ -200,7 +200,7 @@ export const withElementCounts =
     config: SchemaConfig
   ) =>
   (elementLabel: string, analysis: Omit<T, 'count'>): T => {
-    const count = config.includeCounts && counts?.value?.[elementLabel];
+    const count = config.includeCounts ? counts?.value?.[elementLabel] : undefined;
 
     return {
       ...analysis,

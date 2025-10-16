@@ -29,7 +29,7 @@
  *
  * Usage:
  *   npm run test:it
- *   GREMLIN_ENDPOINT=localhost:8182/g npm run test:it
+ *   GREMLIN_MCP_ENDPOINT=localhost:8182/g npm run test:it
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -47,8 +47,8 @@ describe('MCP Server Integration Tests', () => {
   let schemaCache: any = null; // Cache schema to avoid multiple expensive calls
 
   beforeAll(async () => {
-    if (!process.env.GREMLIN_ENDPOINT) {
-      console.warn('⚠️  GREMLIN_ENDPOINT not set, skipping MCP integration tests');
+    if (!process.env.GREMLIN_MCP_ENDPOINT) {
+      console.warn('⚠️  GREMLIN_MCP_ENDPOINT not set, skipping MCP integration tests');
       return;
     }
 
@@ -75,7 +75,7 @@ describe('MCP Server Integration Tests', () => {
     await client.connect(transport);
 
     // Initialize schema cache once for all tests
-    if (process.env.GREMLIN_ENDPOINT) {
+    if (process.env.GREMLIN_MCP_ENDPOINT) {
       try {
         const result = (await client.callTool({
           name: TOOL_NAMES.GET_GRAPH_SCHEMA,
@@ -116,7 +116,7 @@ describe('MCP Server Integration Tests', () => {
 
   const itif = (condition: any) => (condition ? it : it.skip);
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should list available tools',
     async () => {
       const response = await client.listTools();
@@ -130,7 +130,7 @@ describe('MCP Server Integration Tests', () => {
     30000
   );
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should get graph status',
     async () => {
       const result = (await client.callTool({
@@ -147,7 +147,7 @@ describe('MCP Server Integration Tests', () => {
     30000
   );
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should get graph schema and validate structure',
     async () => {
       // Use cached schema if available, otherwise fetch it
@@ -178,15 +178,13 @@ describe('MCP Server Integration Tests', () => {
 
       // Verify metadata structure
       if (schema.metadata) {
-        expect(schema.metadata.vertex_count).toBeGreaterThanOrEqual(0);
-        expect(schema.metadata.edge_count).toBeGreaterThanOrEqual(0);
         expect(schema.metadata.optimization_settings).toBeDefined();
       }
     },
     60000
   );
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should handle invalid Gremlin query',
     async () => {
       const query = 'g.invalidSyntax()';
@@ -207,7 +205,7 @@ describe('MCP Server Integration Tests', () => {
     30000
   );
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should perform basic graph operations',
     async () => {
       // Generate a unique ID for this test run to avoid data collisions
@@ -260,7 +258,7 @@ describe('MCP Server Integration Tests', () => {
     60000
   );
 
-  itif(process.env.GREMLIN_ENDPOINT)(
+  itif(process.env.GREMLIN_MCP_ENDPOINT)(
     'should refresh schema cache only when needed',
     async () => {
       // This test verifies that schema refresh works but doesn't call it unnecessarily
