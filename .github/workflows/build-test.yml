@@ -4,7 +4,7 @@ env:
   # modules commonly excluded from builds as they have their own independent non-JVM setups and can be run in parallel.
   # take care when modifying this list because GLVs use shell commands to remove themselves from this list and
   # modifications could break patterns of replacement they are searching for.
-  EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-javascript,-:gremlint,-:gremlin-python'
+  EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-javascript,-:gremlint,-:gremlin-mcp,-:gremlin-python'
   EXCLUDE_FOR_GLV: '-:gremlin-annotations,-:gremlin-archetype,-:gremlin-console,-:hadoop-gremlin,-:neo4j-gremlin,-:spark-gremlin,-:sparql-gremlin'
 jobs:
   smoke:
@@ -237,7 +237,7 @@ jobs:
         run: |
           EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
-          mvn verify -pl :gremlin-javascript,:gremlint
+          mvn verify -pl :gremlin-javascript,:gremlint,:gremlin-mcp
   python:
     name: python
     timeout-minutes: 20
