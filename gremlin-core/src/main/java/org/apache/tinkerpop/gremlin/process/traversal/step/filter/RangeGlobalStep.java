@@ -144,9 +144,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        if (hasRepeatStepParent()) {
-            return Set.of(TraverserRequirement.BULK, TraverserRequirement.SINGLE_LOOP, TraverserRequirement.NESTED_LOOP);
-        }
         return Collections.singleton(TraverserRequirement.BULK);
     }
 
