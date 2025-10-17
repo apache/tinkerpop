@@ -986,37 +986,45 @@ g.V().repeat(both()).times(2).dedup()
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
 
-==== Modified limit() and range() Semantics in repeat()
+==== Modified limit() skip() range() Semantics in repeat()
 
-The semantics of `limit()` and `range()` steps inside `repeat()` has been modified to ensure consistent semantics across 
-repeat iterations. Previously, these steps would track global counters, leading to unexpected behavior where subsequent 
-iterations would be filtered out entirely as previous iterations reached the global limits. As of 3.8.0 the counters are
-tracked per iteration.
+The semantics of globally-scoped `limit()`, `skip()`, and `range()` steps inside `repeat()` have been modified to ensure 
+consistent semantics across repeat iterations.Previously, these steps would track global counters, leading to unexpected 
+behavior where subsequent iterations of `limit()` and `range()` would filter all traversers as previous iterations 
+reached the global limits. In the case of `skip()`, traversers would be passed to subsequent iterations when they should 
+have been filtered. As of 3.8.0 the counters are tracked per iteration.
 
 [source,groovy]
 ----
-// 3.7.4 - no results due to global limit counter
+// 3.7.4 - grateful dead graph examples producing no results due to global counters
 gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
 gremlin>
 gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
 gremlin>
+// 3.7.4 - modern graph examples demonstrating too many results with skip in repeat due to global counters
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).repeat(out().skip(1)).times(2).values('name')
+==>ripple
+==>lop
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).out().skip(1).out().skip(1).values('name')
+==>lop
 
-// 3.8.0 - produces results as limit counters tracked per iteration
+// 3.8.0 - grateful dead graph examples producing results as limit counters tracked per iteration
 gremlin> g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
 ==>[name:[vp[name->HURTS ME TOO]]]
 ==>[name:[vp[name->BLACK THROATED WIND]]]
 gremlin> g.V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
 ==>DEAL
 ==>WOMEN ARE SMARTER
+// 3.8.0 - modern graph examples demonstrating consistent skip semantics
+gremlin> g.V(1).repeat(out().skip(1)).times(2).values('name')
+==>lop
+gremlin> g.V(1).out().skip(1).out().skip(1).values('name')
+==>lop
 ----
 
-This fix ensures that `limit()` and `range()` steps inside `repeat()` now use per-iteration counters, making the 
-behavior consistent with manually unrolled traversals. The change affects both global and local variants of these steps 
-when used within repeat contexts.
-
-The implementation introduces per-iteration counter tracking in `RangeGlobalStep` that isolates counters based on the 
-repeat step context and iteration number. This ensures that each repeat iteration starts with fresh counters, providing 
-predictable and consistent behavior.
+This change ensures that globally-scoped `limit()`, `skip()`, and `range()` steps inside `repeat()` now use per-iteration 
+counters, making the behavior consistent with manually unrolled traversals. Locally-scoped variants of these steps are 
+not affected by these changes.
 
 === Upgrading for Providers
 

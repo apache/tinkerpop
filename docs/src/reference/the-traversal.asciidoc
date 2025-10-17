@@ -2524,7 +2524,7 @@ g.V().valueMap().select('location').limit(local, 1).unfold() <4>
 <3> `List<String>` for each vertex containing the first location.
 <4> `String` for each vertex containing the first location (use `unfold()` to extract single elements from singleton collections).
 
-NOTE: When using `limit()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
+NOTE: When using globally-scoped `limit()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
 See the <<repeat-step,repeat step documentation>> for examples and details.
 
 *Additional References*
@@ -4043,7 +4043,7 @@ g.V().valueMap().select('location').range(local, 1, 2).unfold() <3>
 <2> `List<String>` for each vertex containing the second location.
 <3> `String` for each vertex containing the second location (use `unfold()` to extract single elements from singleton collections).
 
-NOTE: When using `range()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
+NOTE: When using globally-scoped `range()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter. 
 See the <<repeat-step,repeat step documentation>> for examples and details.
 
 *Additional References*
@@ -4157,22 +4157,24 @@ In OLAP, where the atomic unit of computing is the vertex and its local "star gr
 anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to
 an adjacent vertex's properties or edges.
 
-==== Using limit() and range() inside repeat()
+==== Using limit(), skip(), range() inside repeat()
 
-When using `limit()` or `range()` steps inside `repeat()`, each iteration of the repeat gets its own counter, ensuring 
-consistent behavior across iterations:
+When using globally-scoped (default scope) `limit()`, `skip()`, or `range()` steps inside `repeat()`, each iteration of 
+the repeat gets its own counter, ensuring consistent behavior across iterations:
 
 [gremlin-groovy,grateful-dead]
 ----
 g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(3) <1>
 g.V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2) <2>
+g.V().has('name','HEY BO DIDDLEY').repeat(out('followedBy').skip(5)).times(2) <3>
 ----
 
 <1> Starting from the song 'JAM' get 2 songs that have followed, repeating 3 times.
 <2> Starting from the song 'DRUMS' get the 2nd and 3rd songs that have preceded, repeating twice.
+<3> Starting from the song 'HEY BO DIDDLEY' get the songs that have followed, skipping the first 5 and repeating twice.
 
-Each repeat iteration maintains separate counters for `limit()` and `range()` steps, ensuring predictable behavior 
-equivalent to manually unrolling the repeat.
+Each repeat iteration maintains separate counters, ensuring predictable behavior equivalent to manually unrolling the 
+repeat.
 
 *Additional References*
 
@@ -4682,6 +4684,9 @@ g.V().hasLabel('person').filter(outE('created')).as('p'). <1>
 <1> For each person who created something...
 <2> ...select the first project (random order) as `primary` and...
 <3> ...select all other projects as `other`.
+
+NOTE: When using globally-scoped `skip()` inside <<repeat-step,`repeat()`>>, each repeat iteration maintains its own counter.
+See the <<repeat-step,repeat step documentation>> for examples and details.
 
 *Additional References*
 
