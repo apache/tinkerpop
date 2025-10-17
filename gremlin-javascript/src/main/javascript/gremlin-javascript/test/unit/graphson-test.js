@@ -92,21 +92,23 @@ describe('GraphSONReader', function () {
   });
   it('should parse vertices from GraphSON', function () {
     const obj = {
-      "@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
-        "properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],
-          "age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}};
+      "@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":"person",
+        "properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},
+              "value":"marko","label":"name"}}],"age":[{
+            "@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},
+              "value":{"@type":"g:Int32","@value":29},"label":"age"}}]}}}
     const reader = new GraphSONReader(obj);
     const result = reader.read(obj);
     assert.ok(result instanceof graph.Vertex);
     assert.strictEqual(result.label, 'person');
     assert.strictEqual(typeof result.id, 'number');
     assert.ok(result.properties);
-    assert.ok(result.properties['name']);
-    assert.strictEqual(result.properties['name'].length, 1);
-    assert.strictEqual(result.properties['name'][0].value, 'marko');
-    assert.ok(result.properties['age']);
-    assert.strictEqual(result.properties['age'].length, 1);
-    assert.strictEqual(result.properties['age'][0].value, 29);
+    assert.ok(result.properties[0]);
+    assert.strictEqual(result.properties[0].key, 'name');
+    assert.strictEqual(result.properties[0].value, 'marko');
+    assert.ok(result.properties[1]);
+    assert.strictEqual(result.properties[1].key, 'age');
+    assert.strictEqual(result.properties[1].value, 29);
   });
   it('should parse paths from GraphSON', function () {
     const obj = {"@type":"g:Path","@value":{"labels":[["a"],["b","c"],[]],"objects":[
@@ -136,19 +138,19 @@ describe('GraphSONReader', function () {
     assert.strictEqual(a.label, 'person');
     assert.strictEqual(bc.label, 'software');
     assert.ok(a.properties);
-    assert.ok(a.properties['name']);
-    assert.strictEqual(a.properties['name'].length, 1);
-    assert.strictEqual(a.properties['name'][0].value, 'marko');
-    assert.ok(a.properties['age']);
-    assert.strictEqual(a.properties['age'].length, 1);
-    assert.strictEqual(a.properties['age'][0].value, 29);
+    assert.ok(a.properties[0]);
+    assert.strictEqual(a.properties[0].key, 'name');
+    assert.strictEqual(a.properties[0].value, 'marko');
+    assert.ok(a.properties[1]);
+    assert.strictEqual(a.properties[1].key, 'age');
+    assert.strictEqual(a.properties[1].value, 29);
     assert.ok(bc.properties);
-    assert.ok(bc.properties['name']);
-    assert.strictEqual(bc.properties['name'].length, 1);
-    assert.strictEqual(bc.properties['name'][0].value, 'lop');
-    assert.ok(bc.properties['lang']);
-    assert.strictEqual(bc.properties['lang'].length, 1);
-    assert.strictEqual(bc.properties['lang'][0].value, 'java');
+    assert.ok(bc.properties[0]);
+    assert.strictEqual(bc.properties[0].key, 'name');
+    assert.strictEqual(bc.properties[0].value, 'lop');
+    assert.ok(bc.properties[1]);
+    assert.strictEqual(bc.properties[1].key, 'lang');
+    assert.strictEqual(bc.properties[1].value, 'java');
   });
   it('should parse paths from GraphSON3 without properties', function () {
     const obj = {
@@ -203,8 +205,34 @@ describe('GraphSONReader', function () {
     assert.ok(bc instanceof graph.Vertex);
     assert.strictEqual(a.label, 'person');
     assert.strictEqual(bc.label, 'software');
-    assert.ok(a.properties === undefined);
-    assert.ok(bc.properties === undefined);
+    assert.deepStrictEqual(a.properties, []);
+    assert.deepStrictEqual(bc.properties, []);
+  });
+
+  it('should deserialize vertices without properties to empty array', function() {
+    const obj = {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":2},"label":"person"}};
+    const reader = new GraphSONReader();
+    const vertex = reader.read(obj);
+    assert.strictEqual(vertex.constructor.name, 'Vertex');
+    assert.strictEqual(vertex.label, 'person');
+    assert.strictEqual(vertex.id, 2);
+    assert.deepStrictEqual(vertex.properties, []);
+  });
+
+  it('should deserialize edges without properties to empty array', function() {
+    const obj = {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":18},"label":"knows","inV":"a","outV":"b","inVLabel":"xLab"}};
+    const reader = new GraphSONReader();
+    const edge = reader.read(obj);
+    assert.strictEqual(edge.constructor.name, 'Edge');
+    assert.deepStrictEqual(edge.properties, []);
+  });
+
+  it('should deserialize vertex properties without meta-properties to empty array', function() {
+    const obj = {"@type":"g:VertexProperty", "@value":{"id":"anId","label":"aKey","value":true,"vertex":{"@type":"g:Int32","@value":9}}};
+    const reader = new GraphSONReader();
+    const vp = reader.read(obj);
+    assert.strictEqual(vp.constructor.name, 'VertexProperty');
+    assert.deepStrictEqual(vp.properties, []);
   });
 });
 describe('GraphSONWriter', function () {

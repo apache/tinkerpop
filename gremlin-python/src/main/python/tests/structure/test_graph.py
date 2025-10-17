@@ -34,6 +34,8 @@ class TestGraph(object):
         assert "vertex" == vertex.label
         assert "person" == Vertex(1, "person").label
         assert vertex == Vertex(1)
+        # properties default to empty list when not provided
+        assert vertex.properties == []
         #
         edge = Edge(2, Vertex(1), "said", Vertex("hello", "phrase"))
         assert "e[2][1-said->hello]" == str(edge)
@@ -42,6 +44,8 @@ class TestGraph(object):
         assert "said" == edge.label
         assert "phrase" == edge.inV.label
         assert edge.inV != edge.outV
+        # properties default to empty list when not provided
+        assert edge.properties == []
         #
         vertex_property = VertexProperty(long(24), "name", "marko", Vertex(1))
         assert "vp[name->marko]" == str(vertex_property)
@@ -52,6 +56,8 @@ class TestGraph(object):
         assert Vertex(1) == vertex_property.vertex
         assert isinstance(vertex_property.id, long)
         assert vertex_property == VertexProperty(long(24), "name", "marko", Vertex(1))
+        # meta-properties default to empty list when not provided
+        assert vertex_property.properties == []
         #
         property = Property("age", 29, Vertex(1))
         assert "p[age->29]" == str(property)
@@ -60,6 +66,23 @@ class TestGraph(object):
         assert Vertex(1) == property.element
         assert isinstance(property.value, int)
         assert property == Property("age", 29, Vertex(1))
+        #
+        # Now create elements with properties explicitly set
+        v2 = Vertex(10, "person", [VertexProperty(100, "name", "marko", Vertex(10))])
+        assert len(v2.properties) == 1
+        assert isinstance(v2.properties[0], VertexProperty)
+        assert v2.properties[0].label == "name"
+        assert v2.properties[0].value == "marko"
+        e2 = Edge(20, Vertex(10), "knows", Vertex(11), [Property("weight", 0.5, None)])
+        assert len(e2.properties) == 1
+        assert isinstance(e2.properties[0], Property)
+        assert e2.properties[0].key == "weight"
+        assert e2.properties[0].value == 0.5
+        vp2 = VertexProperty(30, "name", "marko", Vertex(10), [Property("since", 2006, None)])
+        assert len(vp2.properties) == 1
+        assert isinstance(vp2.properties[0], Property)
+        assert vp2.properties[0].key == "since"
+        assert vp2.properties[0].value == 2006
         #
         for i in [vertex, edge, vertex_property, property]:
             for j in [vertex, edge, vertex_property, property]:
