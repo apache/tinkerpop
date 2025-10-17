@@ -570,7 +570,7 @@ Feature: Step - range()
       | v[ripple] |
       | v[lop] |
 
-  Scenario: g_VXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X
+  Scenario: g_V_hasXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X
     Given the grateful graph
     And the traversal of
       """
@@ -579,7 +579,7 @@ Feature: Step - range()
     When iterated to list
     Then the result should have a count of 2
 
-  Scenario: g_VXnameXJAMXX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X
+  Scenario: g_V_hasXnameXJAMXX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X
     Given the grateful graph
     And the traversal of
       """
@@ -588,7 +588,7 @@ Feature: Step - range()
     When iterated to list
     Then the result should have a count of 2
 
-  Scenario: g_VXnameXDRUMSXX_repeatXinXfollowedByX_rangeX1_4XX_timesX2X
+  Scenario: g_V_hasXnameXDRUMSXX_repeatXinXfollowedByX_rangeX1_4XX_timesX2X
     Given the grateful graph
     And the traversal of
       """
@@ -597,7 +597,7 @@ Feature: Step - range()
     When iterated to list
     Then the result should have a count of 3
 
-  Scenario: g_VXnameXDRUMSXX_inXfollowedByX_rangeX1_4X_inXfollowedByX_rangeX1_4X
+  Scenario: g_V_hasXnameXDRUMSXX_inXfollowedByX_rangeX1_4X_inXfollowedByX_rangeX1_4X
     Given the grateful graph
     And the traversal of
       """
@@ -625,3 +625,25 @@ Feature: Step - range()
       """
     When iterated to list
     Then the result should have a count of 4
+
+  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_unionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XX_unionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XX
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().has('name','HEY BO DIDDLEY').
+                union(out('followedBy').limit(2),
+                      out('sungBy').limit(1)).
+                union(out('followedBy').limit(2),
+                      out('sungBy').limit(1))
+      """
+    When iterated to list
+    Then the result should have a count of 3
+    
+  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_repeatXunionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XXX_timesX2X
+    Given the grateful graph
+    And the traversal of
+      """
+      g.V().has('name','HEY BO DIDDLEY').repeat(union(out('followedBy').limit(2),out('sungBy').limit(1))).times(2)
+      """
+    When iterated to list
+    Then the result should have a count of 3
