@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.Pick.none;
+import static org.junit.Assert.assertThrows;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -47,5 +49,13 @@ public class ChooseStepTest extends StepTest {
                 __.choose(out("knows").is(P.gt(0)), out("knows"), out("created")),
                 __.choose(out("knows").is(P.gt(0)), out("knows"))
         );
+    }
+
+    @Test
+    public void shouldRejectTraversalAsOptionToken() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            __.choose(__.hasLabel("person")).
+                    option(__.values("name"), __.out("knows"));
+        });
     }
 }

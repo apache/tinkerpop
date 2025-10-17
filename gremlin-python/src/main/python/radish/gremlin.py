@@ -77,6 +77,7 @@ world.gremlins = {
     'g_V_chooseXhasXname_vadasX__valuesXnameXX': [(lambda g:g.V().choose(__.has('name', 'vadas'), __.values('name')))], 
     'g_V_hasLabelXpersonX_age_chooseXP_eqX29X_constantXmatchedX_constantXotherXX': [(lambda g:g.V().has_label('person').values('age').choose(P.eq(29), __.constant('matched'), __.constant('other')))], 
     'g_V_hasLabelXpersonX_age_chooseXP_eqX29X_constantXmatchedX': [(lambda g:g.V().has_label('person').values('age').choose(P.eq(29), __.constant('matched')))], 
+    'g_V_hasLabelXpersonX_chooseX_valuesXnameX_option1X_isXmarkoX_valuesXageXX_option2Xnone_valuesXnameXX': [(lambda g:g.V().has_label('person').choose(__.values('name')).option(__.is_('marko'), __.values('age')).option(Pick.none, __.values('name')))], 
     'g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value': [(lambda g:g.V().local(__.properties('location').order().by(T.value, Order.asc).range_(0, 2)).value())], 
     'g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX': [(lambda g:g.V().has(T.label, 'person').as_('a').local(__.out('created').as_('b')).select('a', 'b').by('name').by(T.id_))], 
     'g_V_localXoutE_countX': [(lambda g:g.V().local(__.out_e().count()))], 

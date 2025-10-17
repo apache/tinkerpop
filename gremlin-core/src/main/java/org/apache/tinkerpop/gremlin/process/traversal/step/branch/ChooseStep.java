@@ -62,11 +62,11 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     private boolean hasDefaultNone = true;
 
     private ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, M> choiceTraversal,
-                      final ChooseSemantics chooseSemantics) {
+                       final ChooseSemantics chooseSemantics) {
         super(traversal);
         this.chooseSemantics = chooseSemantics;
         this.setBranchTraversal(choiceTraversal);
-        
+
         // defaults Pick.unproductive/none options are just identity()
         final Traversal.Admin<S,E> unproductivePassthrough = new DefaultGraphTraversal<>();
         unproductivePassthrough.addStep(new IdentityStep<>(traversal));
@@ -120,6 +120,8 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
             } else if (pickToken == Pick.none && !this.traversalPickOptions.containsKey(Pick.none)) {
                 super.addChildOption(pickToken, traversalOption);
             }
+        } else if (pickToken instanceof Traversal) {
+            throw new IllegalArgumentException("Traversal is not allowed as a Pick token for choose().option()");
         } else {
             super.addChildOption(pickToken, traversalOption);
         }
