@@ -100,16 +100,16 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
         return true;
     }
 
-    private String getCounterKey(Traverser.Admin<S> traverser) {
-        List<String> counterKeyParts = new ArrayList<>();
+    private String getCounterKey(final Traverser.Admin<S> traverser) {
+        final List<String> counterKeyParts = new ArrayList<>();
         Traversal.Admin<Object, Object> traversal = this.getTraversal();
         if (traversal.getParent() instanceof RepeatStep) {
             // the range step is inside a loop so we need to track counters per iteration
             // using a counter key that is composed of the parent steps to the root
             while (!traversal.isRoot()) {
-                TraversalParent pt = traversal.getParent();
-                Step<?, ?> ps = pt.asStep();
-                String pid = ps.getId();
+                final TraversalParent pt = traversal.getParent();
+                final Step<?, ?> ps = pt.asStep();
+                final String pid = ps.getId();
                 if (traverser.getLoopNames().contains(pid)) {
                     counterKeyParts.add(pid);
                     counterKeyParts.add(String.valueOf(traverser.loops(pid)));
