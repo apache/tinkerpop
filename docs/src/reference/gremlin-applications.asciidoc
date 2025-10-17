@@ -2250,7 +2250,7 @@ scrubbing, it would be quite simple to do:
 
 [source,java]
 ----
-String lbl = "person"
+String lbl = "person";
 String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
 String query = "g.addV('" + lbl + "').property('identifier','" + nodeId + "')";
 client.submit(query);
@@ -2262,13 +2262,13 @@ part of the "identifier" for the vertex on insertion:
 
 [source,java]
 ----
-String lbl = "person"
+String lbl = "person";
 String nodeId = "mary').next();g.V().drop().iterate();g.V().has('id', 'thomas";
 String query = "g.addV(lbl).property('identifier',nodeId)";
 
 Map<String,Object> params = new HashMap<>();
-params.put("lbl",lbl);
-params.put("nodeId",nodeId);
+params.put("lbl", lbl);
+params.put("nodeId", nodeId);
 client.submit(query, params);
 ----
 
@@ -3009,3 +3009,118 @@ for `HadoopGraph`:
 ----
 describeGraph(HadoopGraph)
 ----
+
+[[gremlin-mcp]]
+=== Gremlin MCP
+
+Gremlin MCP integrates Apache TinkerPop with the Model Context Protocol (MCP) so that MCP‑capable assistants (for
+example, desktop chat clients that support MCP) can discover your graph, run Gremlin traversals and exchange graph data
+through a small set of well‑defined tools. It allows users to “talk to your graph” while keeping full Gremlin power
+available when they or the assistant need it.
+
+MCP is an open protocol that lets assistants call server‑hosted tools in a structured way. Each tool has a name, an
+input schema, and a result schema. When connected to a Gremlin MCP server, the assistant can:
+
+* Inspect the server’s health and connection to a Gremlin data source
+* Discover the graph’s schema (labels, properties, relationships, counts)
+* Execute Gremlin traversals
+
+The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
+the graph via standard Gremlin traversals.
+
+IMPORTANT: This MCP server is designed for development and trusted environments.
+
+WARNING: Gremlin MCP can modify the graph to which it is connected. To prevent such changes, ensure that Gremlin MCP is
+configured to work against a read-only instance of the graph. Gremlin Server hosted graphs can configure their graph
+using `withStrategies(ReadOnlyStrategy)` for that protection.
+
+WARNING: Gremlin MCP executes global graph traversals to help it understand the schema and gather statistics. On a large
+graph these queries will be costly. If you are trying Gremlin MCP, please try it with a smaller subset of your graph for
+experimentation purposes.
+
+MCP defines a simple request/response model for invoking named tools. A tool declares its input and output schema so an
+assistant can construct valid calls and reason about results. The Gremlin MCP server implements several tools and, when
+invoked by an MCP client, translates those calls to Gremlin traversals against a configured Gremlin endpoint. The
+endpoint is typically Gremlin Server, but could be used with any graph system that implements its protocols.
+
+TIP: Gremlin MCP does not replace Gremlin itself. It complements it by helping assistants discover data and propose
+traversals. You can always provide an explicit traversal when you know what you want.
+
+The Gremlin MCP server exposes these tools:
+
+* `get_graph_status` — Returns basic health and connectivity information for the backing Gremlin data source.
+* `get_graph_schema` — Discovers vertex labels, edge labels, property keys, and relationship patterns. Low‑cardinality
+  properties may be surfaced as enums to encourage valid values in queries.
+* `run_gremlin_query` — Executes an arbitrary Gremlin traversal and returns JSON results.
+* `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
+
+==== Schema discovery
+
+Schema discovery is the foundation that lets humans and AI assistants reason about a graph without prior tribal
+knowledge. By automatically mapping the graph’s structure and commonly observed patterns, it produces a concise,
+trustworthy description that accelerates onboarding, improves the quality of suggested traversals, and reduces
+trial‑and‑error against production data. For assistants, a discovered schema becomes the guidance layer for planning
+valid queries, generating meaningful filters, and explaining results in natural language. For operators, it offers safer
+and more efficient interactions by avoiding blind exploratory scans, enabling caching and change detection, and
+providing hooks to steer what should or shouldn’t be surfaced (for example, excluding sensitive or non‑categorical
+fields). In short, schema discovery turns an opaque dataset into an actionable contract between your graph and the tools
+that use it.
+
+Schema discovery uses Gremlin traversals and sampling to uncover the following information about the graph:
+
+* Labels - Vertex and edge labels are collected and de‑duplicated.
+* Properties - For each label, a sample of elements is inspected to list observed property keys.
+* Counts (optional) - Approximate counts can be included per label.
+* Relationship patterns - Connectivity is derived from the labels of edges and their incident vertices.
+* Enums - Properties with a small set of distinct values may be surfaced as enumerations to promote precise filters.
+
+==== Executing traversals
+
+When the assistant needs to answer a question, a common sequence is:
+
+. Optionally, call get_graph_status.
+. Retrieve (or reuse) schema via `get_graph_schema`.
+. Formulate a traversal and call `run_gremlin_query`.
+. Present results and, if required, refine the traversal.
+
+For example, the assistant may execute a traversal like the following:
+
+[source,groovy]
+----
+// list the names of people over 30 and who they know
+g.V().hasLabel('person').has('age', gt(30)).out('knows').values('name')
+----
+
+==== Configuring an MCP Client
+
+The MCP client is responsible for launching the Gremlin MCP server and providing connection details for the Gremlin
+endpoint the server should use.
+
+Basic connection settings:
+
+* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`)
+* `GREMLIN_MCP_USE_SSL` — set to `true` when TLS is required by the endpoint (default: `false`)
+* `GREMLIN_MCP_USERNAME` / `GREMLIN_PASSWORD` — credentials when authentication is enabled (optional)
+* `GREMLIN_MCP_IDLE_TIMEOUT` — idle connection timeout in seconds (default: `300`)
+* `GREMLIN_MCP_LOG_LEVEL` — logging verbosity for troubleshooting: `error`, `warn`, `info`, or `debug` (default: `info`)
+
+Advanced schema discovery and performance tuning:
+
+* `GREMLIN_MCP_ENUM_DISCOVERY_ENABLED` — enable enum property discovery (default: `true`)
+* `GREMLIN_MCP_ENUM_CARDINALITY_THRESHOLD` — max distinct values for a property to be considered an enum (default: `10`)
+* `GREMLIN_MCP_ENUM_PROPERTY_DENYLIST` — comma-separated property names to exclude from enum detection (default: `id,pk,name,description,startDate,endDate,timestamp,createdAt,updatedAt`)
+* `GREMLIN_MCP_SCHEMA_MAX_ENUM_VALUES` — limit the number of enum values returned per property in the schema (default: `10`)
+* `GREMLIN_MCP_SCHEMA_INCLUDE_SAMPLE_VALUES` — include small example values for properties in the schema (default: `false`)
+* `GREMLIN_MCP_SCHEMA_INCLUDE_COUNTS` — include approximate vertex/edge label counts in the schema (default: `false`)
+
+The configurations related to enums begs additional explanation as to their importance. Treating only truly categorical
+properties as enums prevents misleading suggestions and sensitive data exposure in assistant‑facing schemas. Without a
+denylist and related controls, low‑sample snapshots can make non‑categorical fields like IDs, timestamps, or free text
+appear “enum‑like,” degrading query guidance and result explanations. By explicitly excluding such keys, the schema
+remains focused on meaningful categories (e.g., status or type), which improves AI query formulation, reduces noise, and
+avoids surfacing unstable or private values. It also streamlines schema discovery by skipping properties that would
+create large or frequently changing value sets, improving performance and stability.
+
+Consult the MCP client documentation for how environment variables are supplied and how tool calls are approved and
+presented to the user.
+
