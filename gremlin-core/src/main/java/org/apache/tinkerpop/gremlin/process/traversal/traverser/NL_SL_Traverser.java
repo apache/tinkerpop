@@ -33,9 +33,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.traverser.Traverser
 import static org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement.SINGLE_LOOP;
 
 /**
- * Intermediate helper interface for {@link Traverser}s that support single OR nested loops (but not both).
- * Implementations are expected to override either the single or nested loop functions depending on the type of loop
- * they are supporting.
+ * Intermediate helper interface for {@link Traverser}s that support loops. Implementations are expected to override 
+ * either the single or nested loop functions depending on the type of loop {@link TraverserRequirement} they are using.
  * <p>
  * Note: it would be nice to separate the {@link TraverserRequirement#SINGLE_LOOP} vs {@link TraverserRequirement#NESTED_LOOP}
  * logic into different traverser interfaces in the future however the current {@link Traverser} class hierarchy makes
