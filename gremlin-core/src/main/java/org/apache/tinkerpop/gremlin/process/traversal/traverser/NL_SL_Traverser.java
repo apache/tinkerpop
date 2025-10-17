@@ -98,7 +98,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
     /**
      * Override this method to support single loop. Sets the single loop name.
      */
-    default void setSingleLoopName(String loopName) {
+    default void setSingleLoopName(final String loopName) {
         throw new UnsupportedOperationException();
     }
 
@@ -114,7 +114,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
     /**
      * Override this method to support single loop. Sets the single loop step label.
      */
-    default void setSingleLoopStepLabel(String stepLabel) {
+    default void setSingleLoopStepLabel(final String stepLabel) {
         throw new UnsupportedOperationException();
     }
 
@@ -203,7 +203,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         return loopRequirement;
     }
 
-    default void initialiseNestedLoops(String stepLabel, String loopName) {
+    default void initialiseNestedLoops(final String stepLabel, final String loopName) {
         final Stack<LabelledCounter> nestedLoops = getNestedLoops();
         final ReferenceMap loopNames = getNestedLoopNames();
         if (nestedLoops.empty() || !nestedLoops.peek().hasLabel(stepLabel)) {
@@ -216,7 +216,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         }
     }
 
-    default int getNestedLoopCount(String loopName) {
+    default int getNestedLoopCount(final String loopName) {
         if (loopName == null) {
             return getNestedLoops().peek().count();
         } else if (getNestedLoopNames().containsKey(loopName)) {
@@ -226,7 +226,7 @@ public interface NL_SL_Traverser<T> extends Traverser.Admin<T> {
         }
     }
 
-    default void copyNestedLoops(Stack<LabelledCounter> targetNestedLoops, ReferenceMap targetLoopNames) {
+    default void copyNestedLoops(final Stack<LabelledCounter> targetNestedLoops, final ReferenceMap targetLoopNames) {
         final Map<LabelledCounter, LabelledCounter> counterMapping = new HashMap<>();
 
         for (LabelledCounter original : getNestedLoops()) {
