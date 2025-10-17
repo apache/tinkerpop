@@ -558,6 +558,28 @@ Feature: Step - range()
       | v[ripple] |
       | v[lop] |
 
+  Scenario: g_V_repeatXout_skipX1XX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(out().skip(1)).times(2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+
+  Scenario: g_V_out_skipX1X_out_skipX1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().out().skip(1).out().skip(1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+
   Scenario: g_V_out_whereXhasXnameX_limitX1XX_out_whereXhasXnameX_limitX1XX
     Given the modern graph
     And the traversal of
