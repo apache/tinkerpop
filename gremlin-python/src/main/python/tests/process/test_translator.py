@@ -145,10 +145,7 @@ class TestTranslator(object):
         # 36
         tests.append([g.withSack(0).V('3', '5').sack(Operator.sum_).by('runways').sack(),
                       "g.withSack(0).V('3','5').sack(Operator.sum).by('runways').sack()"])
-        # 37
-        tests.append([g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V(
-            '6').store('x').by(__.constant(1)).select('x').unfold().sum_(),
-                      "g.V('3').values('runways').store('x').V('4').values('runways').store('x').by(__.constant(1)).V('6').store('x').by(__.constant(1)).select('x').unfold().sum()"])
+        # 37 - removed as store() was deprecated and removed in 3.8.0
         # 38
         tests.append([g.inject(3, 4, 5),
                       "g.inject(3,4,5)"])

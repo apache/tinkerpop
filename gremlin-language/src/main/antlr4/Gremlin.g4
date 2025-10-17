@@ -270,7 +270,6 @@ traversalMethod
     | traversalMethod_sideEffect
     | traversalMethod_simplePath
     | traversalMethod_skip
-    | traversalMethod_store
     | traversalMethod_subgraph
     | traversalMethod_sum
     | traversalMethod_tail
@@ -332,8 +331,7 @@ traversalMethod_addV
     ;
 
 traversalMethod_aggregate
-    : K_AGGREGATE LPAREN traversalScope COMMA stringLiteral RPAREN #traversalMethod_aggregate_Scope_String
-    | K_AGGREGATE LPAREN stringLiteral RPAREN #traversalMethod_aggregate_String
+    : K_AGGREGATE LPAREN stringLiteral RPAREN #traversalMethod_aggregate_String
     ;
 
 traversalMethod_all
@@ -849,10 +847,6 @@ traversalMethod_skip
 traversalMethod_split
     : K_SPLIT LPAREN stringNullableLiteral RPAREN #traversalMethod_split_String
     | K_SPLIT LPAREN traversalScope COMMA stringNullableLiteral RPAREN #traversalMethod_split_Scope_String
-    ;
-
-traversalMethod_store
-    : K_STORE LPAREN stringLiteral RPAREN
     ;
 
 traversalMethod_subgraph
@@ -1900,7 +1894,6 @@ keyword
     | K_SKIP
     | K_SPLIT
     | K_STARTINGWITH
-    | K_STORE
     | K_SUBGRAPH
     | K_SUBSTRING
     | K_SUM
@@ -2172,7 +2165,6 @@ K_SINGLE: 'single';
 K_SKIP: 'skip';
 K_SPLIT: 'split';
 K_STARTINGWITH: 'startingWith';
-K_STORE: 'store';
 K_SUBGRAPH: 'subgraph';
 K_SUBSTRING: 'substring';
 K_SUM: 'sum';
