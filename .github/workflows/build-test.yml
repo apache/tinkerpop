@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   # modules commonly excluded from builds as they have their own independent non-JVM setups and can be run in parallel.
   # take care when modifying this list because GLVs use shell commands to remove themselves from this list and
-  # modifications could break patterns of replacment they are searching for.
+  # modifications could break patterns of replacement they are searching for.
   EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-javascript,-:gremlint,-:gremlin-python'
   EXCLUDE_FOR_GLV: '-:gremlin-annotations,-:gremlin-archetype,-:gremlin-console,-:hadoop-gremlin,-:neo4j-gremlin,-:spark-gremlin,-:sparql-gremlin'
 jobs:
@@ -135,7 +135,7 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -DskipImageBuild -Dci
+          mvn clean install -pl %EXCLUDE_MODULES% -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
@@ -159,7 +159,7 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -DskipImageBuild -Dci
+          mvn clean install -pl %EXCLUDE_MODULES% -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
