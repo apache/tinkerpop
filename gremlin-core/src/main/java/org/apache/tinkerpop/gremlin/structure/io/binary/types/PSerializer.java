@@ -76,6 +76,10 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
         try {
             return f.apply(args);
         } catch (Exception ex) {
+            if (ex.getCause() instanceof IllegalArgumentException) {
+                // propagates contruction errors for P for visibility
+                throw new IOException(ex.getCause().getMessage(), ex.getCause());
+            }
             throw new IOException(String.format("Can't deserialize value into the predicate: '%s'", predicateName), ex);
         }
     }
@@ -99,7 +103,10 @@ public class PSerializer<T extends P> extends SimpleTypeSerializer<T> {
                 } catch (NoSuchMethodException ex1) {
                     // finally go for the generics
                     try {
-                        m = classOfP.getMethod(predicateName, Object.class);
+                        if ("typeOf".equals(predicateName))
+                            m = classOfP.getMethod(predicateName, Class.class);
+                        else
+                            m = classOfP.getMethod(predicateName, Object.class);
                     } catch (NoSuchMethodException ex2) {
                         // finally go for the generics
                         try {

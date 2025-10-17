@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -701,14 +701,18 @@ public final class NumberHelper {
      * Casts the given number to the specified numeric type if it can fit into it.
      * Otherwise, throw.
      *
-     * @param a the number to be cast
-     * @param numberToken the number token denoting the desired type to cast
+     * @param a         the number to be cast
+     * @param typeToken the number token denoting the desired type to cast
      * @return the number cast to the specified type
      * @throws IllegalArgumentException if the specified numeric type is unsupported
-     * @throws ArithmeticException if the number overflows
+     * @throws ArithmeticException      if the number overflows
      */
-    public static Number castTo(final Number a, final N numberToken) {
-        Class<? extends Number> clazz = numberToken.getType();
+    public static Number castTo(final Number a, final GType typeToken) {
+        Class<? extends Number> clazz = (Class<? extends Number>) typeToken.getType();
+        return performConversion(a, clazz);
+    }
+
+    public static Number castTo(final Number a, final Class<? extends Number> clazz) {
         return performConversion(a, clazz);
     }
 

@@ -148,6 +148,12 @@ namespace Gremlin.Net.Process.Traversal
             var value = args is { Length: 1 } ? args[0] : args;
             return new P("test", value);
         }
+        
+        public static P TypeOf(params object[]? args)
+        {
+            var value = args is { Length: 1 } ? args[0] : args;
+            return new P("typeOf", value);
+        }
 
         public static P Within(params object[]? args)
         {

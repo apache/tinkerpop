@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
@@ -34,17 +34,20 @@ import java.util.Set;
  */
 public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
 
-    private N numberToken;
+    private GType typeToken;
 
     public AsNumberStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.numberToken = null;
+        this.typeToken = null;
     }
 
-    public AsNumberStep(final Traversal.Admin traversal, final N numberToken) {
+    public AsNumberStep(final Traversal.Admin traversal, final GType numberToken) {
         super(traversal);
-        this.numberToken = numberToken;
+        if (!numberToken.isNumeric())
+            throw new IllegalArgumentException("asNumber() requires a numeric type token, got " + numberToken);
+        this.typeToken = numberToken;
     }
+
 
     @Override
     protected Number map(final Traverser.Admin<S> traverser) {
@@ -53,10 +56,10 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         if (object instanceof String) {
             String numberText = (String) object;
             Number number = parseNumber(numberText);
-            return numberToken == null ? number : castNumber(number, numberToken);
+            return typeToken == null ? number : castNumber(number, typeToken);
         } else if (object instanceof Number) {
             Number number = (Number) object;
-            return numberToken == null ? number : castNumber(number, numberToken);
+            return typeToken == null ? number : castNumber(number, typeToken);
         }
         throw new IllegalArgumentException(String.format("Can't parse type %s as number.", object.getClass().getSimpleName()));
     }
@@ -74,14 +77,14 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (numberToken != null ? numberToken.hashCode() : 0);
+        result = 31 * result + (typeToken != null ? typeToken.hashCode() : 0);
         return result;
     }
 
     @Override
     public AsNumberStep<S> clone() {
         final AsNumberStep<S> clone = (AsNumberStep<S>) super.clone();
-        clone.numberToken = this.numberToken;
+        clone.typeToken = this.typeToken;
         return clone;
     }
 
@@ -97,7 +100,7 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
         throw new NumberFormatException(String.format("Can't parse string '%s' as number.", value));
     }
 
-    private static Number castNumber(final Number number, final N numberToken) {
+    private static Number castNumber(final Number number, final GType numberToken) {
         return NumberHelper.castTo(number, numberToken);
     }
 

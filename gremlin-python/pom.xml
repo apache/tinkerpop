@@ -169,7 +169,7 @@ limitations under the License.
                                             <env key="GREMLIN_SERVER" value="${project.version}"/>
                                             <env key="ABS_PROJECT_HOME" value="${project.basedir}/../"/>
                                             <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
-                                            <arg line="compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests"/>
+                                            <arg line="compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests gremlin-socket-server"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">
                                             <env key="PYTHONPATH" value=""/>

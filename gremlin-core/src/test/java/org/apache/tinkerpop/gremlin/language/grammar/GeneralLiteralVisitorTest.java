@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -32,15 +32,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -461,25 +458,44 @@ public class GeneralLiteralVisitorTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class ValidEnumNLiteralTest {
+    public static class ValidEnumGTypeLiteralTest {
 
         @Parameterized.Parameter(value = 0)
         public String script;
 
         @Parameterized.Parameter(value = 1)
-        public N expected;
+        public GType expected;
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> generateTestParameters() {
             return Arrays.asList(new Object[][]{
-                    {"byte", N.byte_},
-                    {"short", N.short_},
-                    {"int", N.int_},
-                    {"long", N.long_},
-                    {"float", N.float_},
-                    {"double", N.double_},
-                    {"bigInt", N.bigInt},
-                    {"bigDecimal", N.bigDecimal},
+                    {"bigDecimal", GType.BIGDECIMAL},
+                    {"bigInt", GType.BIGINT},
+                    {"binary", GType.BINARY},
+                    {"boolean", GType.BOOLEAN},
+                    {"byte", GType.BYTE},
+                    {"char", GType.CHAR},
+                    {"datetime", GType.DATETIME},
+                    {"double", GType.DOUBLE},
+                    {"duration", GType.DURATION},
+                    {"edge", GType.EDGE},
+                    {"float", GType.FLOAT},
+                    {"graph", GType.GRAPH},
+                    {"int", GType.INT},
+                    {"list", GType.LIST},
+                    {"long", GType.LONG},
+                    {"map", GType.MAP},
+                    {"null", GType.NULL},
+                    {"number", GType.NUMBER},
+                    {"path", GType.PATH},
+                    {"property", GType.PROPERTY},
+                    {"set", GType.SET},
+                    {"short", GType.SHORT},
+                    {"string", GType.STRING},
+                    {"tree", GType.TREE},
+                    {"UUID", GType.UUID},
+                    {"vertex", GType.VERTEX},
+                    {"vproperty", GType.VPROPERTY},
             });
         }
 
@@ -487,10 +503,10 @@ public class GeneralLiteralVisitorTest {
         public void shouldParse() {
             final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
-            final GremlinParser.TraversalNContext ctx = parser.traversalN();
+            final GremlinParser.TraversalGTypeContext ctx = parser.traversalGType();
 
-            final N n = (N) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalN(ctx);
-            assertEquals(expected, n);
+            final GType gType = (GType) new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalGType(ctx);
+            assertEquals(expected, gType);
         }
     }
 
