@@ -333,7 +333,6 @@ function deserializeProperties(value, reader) {
 class VertexSerializer extends TypeSerializer {
   deserialize(obj) {
     const value = obj[valueKey];
-    console.log(value);
     return new g.Vertex(this.reader.read(value['id']), value['label'], deserializeProperties(value, this.reader));
   }
 

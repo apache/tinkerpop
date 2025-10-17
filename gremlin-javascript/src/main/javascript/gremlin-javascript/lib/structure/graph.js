@@ -46,7 +46,8 @@ class Graph {
 }
 
 class Element {
-  constructor(id, label, properties = undefined) {
+  // properties are stored as list of property objects
+  constructor(id, label, properties = []) {
     this.id = id;
     this.label = label;
     this.properties = properties != null ? properties : [];
@@ -63,7 +64,7 @@ class Element {
 }
 
 class Vertex extends Element {
-  constructor(id, label, properties = undefined) {
+  constructor(id, label, properties = []) {
     super(id, label, properties);
   }
 
@@ -73,7 +74,7 @@ class Vertex extends Element {
 }
 
 class Edge extends Element {
-  constructor(id, outV, label, inV, properties = undefined) {
+  constructor(id, outV, label, inV, properties = []) {
     super(id, label, properties);
     this.outV = outV;
     this.inV = inV;
@@ -88,7 +89,7 @@ class Edge extends Element {
 }
 
 class VertexProperty extends Element {
-  constructor(id, label, value, properties = undefined) {
+  constructor(id, label, value, properties = []) {
     super(id, label, properties);
     this.value = value;
     this.key = this.label;

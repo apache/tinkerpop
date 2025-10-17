@@ -191,8 +191,6 @@ class TestGraphBinaryWriter(object):
 
     def test_vertexproperty(self):
         x = VertexProperty(123, "name", "stephen", None)
-        print('\n')
-        print(self.graphbinary_writer.write_object(x))
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
         
