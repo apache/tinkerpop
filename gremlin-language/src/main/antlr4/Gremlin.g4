@@ -552,10 +552,8 @@ traversalMethod_has
     | K_HAS LPAREN stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_P
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA genericArgument RPAREN #traversalMethod_has_String_String_Object
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_String_P
-    | K_HAS LPAREN stringNullableLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_Traversal
     | K_HAS LPAREN traversalT COMMA genericArgument RPAREN #traversalMethod_has_T_Object
     | K_HAS LPAREN traversalT COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
-    | K_HAS LPAREN traversalT COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
     ;
 
 traversalMethod_hasId

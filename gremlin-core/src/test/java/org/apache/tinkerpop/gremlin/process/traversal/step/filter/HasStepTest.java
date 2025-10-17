@@ -40,6 +40,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -52,7 +53,6 @@ public class HasStepTest extends GValueStepTest {
         return Arrays.asList(
                 __.has("name"),
                 __.has("name", "marko"),
-                __.has("name", out("knows").values("name")),
                 __.hasId(1),
                 __.hasId(1.0),
                 __.hasKey("name"),
@@ -64,7 +64,6 @@ public class HasStepTest extends GValueStepTest {
                 __.hasValue("marko"),
                 __.hasValue("josh"),
                 __.has("name", GValue.of("name", "marko")),
-                __.has("name", out(GValue.of("label", "knows")).values("name")),
                 __.hasId(GValue.of("idInt", 1)),
                 __.hasId(GValue.of("idDouble", 1.0)),
                 __.hasLabel(GValue.of("label", "person")),
@@ -78,7 +77,6 @@ public class HasStepTest extends GValueStepTest {
     protected List<Pair<Traversal, Set<String>>> getGValueTraversals() {
         return List.of(
                 Pair.of(__.has("name", GValue.of("name", "marko")), Set.of("name")),
-                Pair.of(__.has("name", out(GValue.of("label", "knows")).values("name")), Set.of("label")),
                 Pair.of(__.hasId(GValue.of("id", 1)), Set.of("id")),
                 Pair.of(__.hasId(GValue.of("id", 1.0)), Set.of("id")),
                 Pair.of(__.hasLabel(GValue.of("label", "person")), Set.of("label")),

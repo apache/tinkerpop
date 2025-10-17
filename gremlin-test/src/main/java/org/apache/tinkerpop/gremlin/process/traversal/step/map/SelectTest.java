@@ -79,8 +79,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_ascX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_isXmarkoXX_asXaX_selectXaX();
-
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_label_groupCount_asXxX_selectXxX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX();
@@ -313,14 +311,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
                 "a", 5, "b", "stephen",
                 "a", 5, "b", "daniel");
         checkResults(expected, traversal);
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_hasXname_isXmarkoXX_asXaX_selectXaX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_isXmarkoXX_asXaX_selectXaX();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList(convertToVertex(graph, "marko")), traversal);
     }
 
     @Test
@@ -948,11 +938,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_ascX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX() {
             return g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.asc).as("a").outV().as("b").select("a", "b").by("skill").by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXname_isXmarkoXX_asXaX_selectXaX() {
-            return g.V().has("name", __.is("marko")).as("a").select("a");
         }
 
         @Override

@@ -447,11 +447,6 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
-    public void shouldParseTraversalMethod_has_String_Traversal() throws Exception {
-        compare(g.V().has("age", bothE()), eval("g.V().has('age', bothE())"));
-    }
-
-    @Test
     public void shouldParseTraversalMethod_has_T_Object() throws Exception {
         compare(g.V().has(T.id, 6), eval("g.V().has(id, 6)"));
     }
@@ -459,11 +454,6 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_has_T_P() throws Exception {
         compare(g.V().has(T.id, eq("asd")), eval("g.V().has(id, eq('asd'))"));
-    }
-
-    @Test
-    public void shouldParseTraversalMethod_has_T_Traversal() throws Exception {
-        compare(g.V().has(T.id, bothE()), eval("g.V().has(id, bothE())"));
     }
 
     @Test

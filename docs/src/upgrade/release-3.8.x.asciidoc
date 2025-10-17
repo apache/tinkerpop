@@ -305,6 +305,32 @@ The `asString()` step will no longer allow `null` input. An `IllegalArgumentExce
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
 
+==== Removal of has(key, traversal)
+
+The current `has(key, traversal)` implementation has long caused confusion, as it only checks if the traversal produces
+any result, rather than performing equality comparison with the traversal's output value. While fixing this behavior is
+desirable, it would require extensive changes. Therefore, we are removing the current `has(key, traversal)` API as a
+breaking change in version 3.8.0, with plans to reintroduce a properly implemented version in the next major release.
+
+Users needing to filter with traversals should use the `where()` step instead, which provides the expected traversal-based
+filtering behavior. Existing `has(key, traversal)` traversals should also be easily translated to use the `where()` step.
+
+[source,text]
+----
+// 3.7.x
+g.V().has("age", __.is(P.gt(30)))
+==>v[4]
+==>v[6]
+
+// 3.8.0 - use where() instead
+g.V().where(values("age").is(P.gt(30)))
+==>v[4]
+==>v[6]
+----
+
+See: link:https://lists.apache.org/thread/mtfy1jshb8rwqglp7ooxswwwwj70qy33[DISCUSS] thread
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
+
 ==== Javascript Set Deserialization
 
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,

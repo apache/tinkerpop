@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -108,10 +107,6 @@ public abstract class LambdaStepTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
-
-    ///  has
-
-    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
 
     /// inject
 
@@ -304,15 +299,6 @@ public abstract class LambdaStepTest extends AbstractGremlinProcessTest {
         assertEquals(6, edges.size());
         assertFalse(traversal.hasNext());
     }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("ripple"), traversal);
-    }
-
 
     @Test
     @LoadGraphWith(MODERN)
@@ -702,11 +688,6 @@ public abstract class LambdaStepTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Edge, Edge> get_g_E_filterXtrueX() {
             return g.E().filter(e -> true);
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
-            return g.V().out("created").has("name", __.<String, Integer>map(s -> s.get().length()).is(P.gt(3))).values("name");
         }
 
         @Override
