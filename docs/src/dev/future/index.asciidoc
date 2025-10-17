@@ -161,14 +161,17 @@ story.
 |=========================================================
 |Proposal |Description |Targets |Resolved
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-equality-1.asciidoc[Proposal 1] |Equality, Equivalence, Comparability and Orderability Semantics - Documents existing Gremlin semantics along with clarifications for ambiguous behaviors and recommendations for consistency. |3.6.0 |Y
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2.asciidoc[Proposal 2] |Gremlin Arrow Flight. |Future |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-arrow-flight-2.asciidoc[Proposal 2] |Gremlin Arrow Flight |Future |N/A
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-3-remove-closures.asciidoc[Proposal 3] |Removing the Need for Closures/Lambda in Gremlin |3.7.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-transaction-4.asciidoc[Proposal 4] |TinkerGraph Transaction Support |3.7.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-scoping-5.asciidoc[Proposal 5] |Lazy vs. Eager Evaluation|3.8.0 |N
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asnumber-step-6.asciidoc[Proposal 6] |asNumber() Step|3.8.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asbool-step-7.asciidoc[Proposal 7] |asBool() Step|3.8.0 |Y
-|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-type-predicate-8.asciidoc[Proposal 8] |asBool() Step|3.8.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-type-predicate-8.asciidoc[Proposal 8] |typeof Predicate |3.8.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-declarative-match-step-9.asciidoc[Proposal 9] |match() Step Redesign |4.0.0 |N
 |=========================================================
+
+NOTE: Proposals with "N/A" for a Resolution are no longer under consideration at this time.
 
 = Appendix
 
@@ -334,7 +337,7 @@ Simply `io()` for data ingestion and export in both embedded and remote usage in
 This aims to create an automated testing set up, which helps to ensure compatibility between drivers and server across minor releases,
 and to make sure API contracts are not broken unintentionally.
 
-==== Improved telemetry in driver/server [[telemerty]]
+==== Improved telemetry in driver/server [[telemetry]]
 This is a less well-defined area, aimed at improved metrics collection that can better aid debugging for users and providers.
 Work may include adding the ability to debug queries and traversals, adding OpenTelemetry support, etc.
 
