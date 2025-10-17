@@ -758,15 +758,28 @@ impact.
 
 ===== Examples of Affected Traversals =====
 
-Usage of `limit()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
-returned from the `modern` graph demonstrate the change of semantics if the `limit()` in `repeat()` were to be unrolled:
+Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
+returned from the `modern` graph demonstrate the change of semantics if the `inject()` in `repeat()` were to be unrolled:
 
 [source,text]
 ----
-gremlin> g.V().both().limit(1).both().limit(1)
-==>v[1]
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().repeat(both().limit()).times(2)
-gremlin>
+gremlin> g.V().values('name').inject('foo').inject('foo')
+==>foo
+==>foo
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().values('name').repeat(inject('foo')).times(2)
+==>foo
+==>marko
+==>vadas
+==>lop
+==>josh
+==>ripple
+==>peter
 ----
 
 Another example is the usage of `aggregate()` inside `repeat()`. The following results returned from the `modern` graph 
@@ -829,6 +842,46 @@ g.V().repeat(both()).times(2).dedup()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
+
+==== Modified limit() skip() range() Semantics in repeat()
+
+The semantics of globally-scoped `limit()`, `skip()`, and `range()` steps inside `repeat()` have been modified to ensure 
+consistent semantics across repeat iterations.Previously, these steps would track global counters, leading to unexpected 
+behavior where subsequent iterations of `limit()` and `range()` would filter all traversers as previous iterations 
+reached the global limits. In the case of `skip()`, traversers would be passed to subsequent iterations when they should 
+have been filtered. As of 3.8.0 the counters are tracked per iteration.
+
+[source,groovy]
+----
+// 3.7.4 - grateful dead graph examples producing no results due to global counters
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
+gremlin>
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
+gremlin>
+// 3.7.4 - modern graph examples demonstrating too many results with skip in repeat due to global counters
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).repeat(out().skip(1)).times(2).values('name')
+==>ripple
+==>lop
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).out().skip(1).out().skip(1).values('name')
+==>lop
+
+// 3.8.0 - grateful dead graph examples producing results as limit counters tracked per iteration
+gremlin> g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2).values('name')
+==>[name:[vp[name->HURTS ME TOO]]]
+==>[name:[vp[name->BLACK THROATED WIND]]]
+gremlin> g.V().has('name','DRUMS').repeat(in('followedBy').range(1,3)).times(2).values('name')
+==>DEAL
+==>WOMEN ARE SMARTER
+// 3.8.0 - modern graph examples demonstrating consistent skip semantics
+gremlin> g.V(1).repeat(out().skip(1)).times(2).values('name')
+==>lop
+gremlin> g.V(1).out().skip(1).out().skip(1).values('name')
+==>lop
+----
+
+This change ensures that globally-scoped `limit()`, `skip()`, and `range()` steps inside `repeat()` now use per-iteration 
+counters, making the behavior consistent with manually unrolled traversals. Locally-scoped variants of these steps are 
+not affected by these changes.
 
 === Upgrading for Providers
 

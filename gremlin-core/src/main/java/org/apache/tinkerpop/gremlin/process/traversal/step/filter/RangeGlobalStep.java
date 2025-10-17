@@ -18,18 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BinaryOperator;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BinaryOperator;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
@@ -39,7 +45,10 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     private long low;
     private long high;
-    private AtomicLong counter = new AtomicLong(0l);
+    /**
+     * If this range step is used inside a loop there can be multiple counters, otherwise there should only be one
+     */
+    private Map<String, AtomicLong> counters = new HashMap<>();
     private boolean bypass;
 
     public RangeGlobalStep(final Traversal.Admin traversal, final long low, final long high) {
@@ -55,31 +64,37 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
 
-        if (this.high != -1 && this.counter.get() >= this.high) {
+        final String counterKey = getCounterKey(traverser);
+        final AtomicLong counter = counters.computeIfAbsent(counterKey, k -> new AtomicLong(0L));
+
+        if (this.high != -1 && counter.get() >= this.high) {
+            if (hasRepeatStepParent()) {
+                return false;
+            }
             throw FastNoSuchElementException.instance();
         }
 
         long avail = traverser.bulk();
-        if (this.counter.get() + avail <= this.low) {
+        if (counter.get() + avail <= this.low) {
             // Will not surpass the low w/ this traverser. Skip and filter the whole thing.
-            this.counter.getAndAdd(avail);
+            counter.getAndAdd(avail);
             return false;
         }
 
         // Skip for the low and trim for the high. Both can happen at once.
 
         long toSkip = 0;
-        if (this.counter.get() < this.low) {
-            toSkip = this.low - this.counter.get();
+        if (counter.get() < this.low) {
+            toSkip = this.low - counter.get();
         }
 
         long toTrim = 0;
-        if (this.high != -1 && this.counter.get() + avail >= this.high) {
-            toTrim = this.counter.get() + avail - this.high;
+        if (this.high != -1 && counter.get() + avail >= this.high) {
+            toTrim = counter.get() + avail - this.high;
         }
 
         long toEmit = avail - toSkip - toTrim;
-        this.counter.getAndAdd(toSkip + toEmit);
+        counter.getAndAdd(toSkip + toEmit);
         traverser.setBulk(toEmit);
 
         return true;
@@ -88,7 +103,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     @Override
     public void reset() {
         super.reset();
-        this.counter.set(0l);
+        this.counters.clear();
     }
 
     @Override
@@ -109,7 +124,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     @Override
     public RangeGlobalStep<S> clone() {
         final RangeGlobalStep<S> clone = (RangeGlobalStep<S>) super.clone();
-        clone.counter = new AtomicLong(0l);
+        clone.counters = new HashMap<>();
         return clone;
     }
 
@@ -140,6 +155,43 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     @Override
     public void processAllStarts() {
 
+    }
+
+    private String getCounterKey(final Traverser.Admin<S> traverser) {
+        final List<String> counterKeyParts = new ArrayList<>();
+        Traversal.Admin<Object, Object> traversal = this.getTraversal();
+        if (hasRepeatStepParent()) {
+            // the range step is inside a loop so we need to track counters per iteration
+            // using a counter key that is composed of the parent steps to the root
+            while (!traversal.isRoot()) {
+                final TraversalParent pt = traversal.getParent();
+                final Step<?, ?> ps = pt.asStep();
+                final String pid = ps.getId();
+                if (traverser.getLoopNames().contains(pid)) {
+                    counterKeyParts.add(pid);
+                    counterKeyParts.add(String.valueOf(traverser.loops(pid)));
+                }
+                traversal = ps.getTraversal();
+            }
+        }
+        // reverse added parts so that it starts from root
+        Collections.reverse(counterKeyParts);
+        counterKeyParts.add(this.getId());
+        if (traverser.getLoopNames().contains(this.getId())) {
+            counterKeyParts.add(String.valueOf(traverser.loops(this.getId())));
+        }
+        return String.join(":", counterKeyParts);
+    }
+
+    private boolean hasRepeatStepParent() {
+        Traversal.Admin<?, ?> traversal = this.getTraversal();
+        while (!traversal.isRoot()) {
+            if (traversal.getParent() instanceof RepeatStep) {
+                return true;
+            }
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
     }
 
     ////////////////
