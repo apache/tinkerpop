@@ -1138,9 +1138,8 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#call-step[reference]
 *Modulation:*
 
 * `option(pickToken, traversalOption)` - Adds a traversal option to the `choose` step. The `pickToken` is matched
-against the result of the choice traversal. The `pickToken` may be a literal value, a predicate `P`, a `Traversal`
-(whose first returned value is used for matching) or a `Pick` enum value. If a match is found, the traverser is routed
-to the corresponding `traversalOption`.
+against the result of the choice traversal. The `pickToken` may be a literal value, a predicate `P` or a `Pick` enum
+value. `Traversal` is not allowed as a `pickToken` here and will lead to `IllegalArgumentException`. If a match is found, the traverser is routed to the corresponding `traversalOption`.
 
 *Considerations:*
 

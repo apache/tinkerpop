@@ -105,6 +105,7 @@ const gremlins = {
     g_V_chooseXhasXname_vadasX__valuesXnameXX: [function({g}) { return g.V().choose(__.has("name", "vadas"), __.values("name")) }], 
     g_V_hasLabelXpersonX_age_chooseXP_eqX29X_constantXmatchedX_constantXotherXX: [function({g}) { return g.V().hasLabel("person").values("age").choose(P.eq(29), __.constant("matched"), __.constant("other")) }], 
     g_V_hasLabelXpersonX_age_chooseXP_eqX29X_constantXmatchedX: [function({g}) { return g.V().hasLabel("person").values("age").choose(P.eq(29), __.constant("matched")) }], 
+    g_V_hasLabelXpersonX_chooseX_valuesXnameX_option1X_isXmarkoX_valuesXageXX_option2Xnone_valuesXnameXX: [function({g}) { return g.V().hasLabel("person").choose(__.values("name")).option(__.is("marko"), __.values("age")).option(Pick.none, __.values("name")) }], 
     g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value: [function({g}) { return g.V().local(__.properties("location").order().by(T.value, Order.asc).range(0, 2)).value() }], 
     g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX: [function({g}) { return g.V().has(T.label, "person").as("a").local(__.out("created").as("b")).select("a", "b").by("name").by(T.id) }], 
     g_V_localXoutE_countX: [function({g}) { return g.V().local(__.outE().count()) }], 

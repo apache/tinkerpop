@@ -633,8 +633,45 @@ gremlin> g.V().choose(__.values("age")).
 ==>peter
 ----
 
+*Removal of choose().option(Traversal, v)*
+
+The `choose().option(Traversal, v)` is rarely used in comparison to the other overloads with constants, predicates and Pick
+tokens. It is also not the recommended approach for performance reasons. In addition, the current implementation leads to
+confusion as it only evaluates if the traversal is productive, rather than performing comparison on based on the traversal's
+output value. Fixing this behavior would require extensive changes, as such we are removing this functionality from
+`choose()` in 3.8.0, with plans to reintroduce a properly implemented version in the next major release.
+
+[source,text]
+----
+// 3.7.x
+gremlin> g.V().hasLabel("person").choose(values("name")).
+......1>         option(is("marko"), values("age")).
+......2>         option(none, values("name"))
+==>29
+==>vadas
+==>josh
+==>peter
+
+// 3.8.0 - an IllegalArgumentException will be thrown
+gremlin> g.V().hasLabel("person").choose(values("name")).
+......1>         option(is("marko"), values("age")).
+......2>         option(none, values("name"))
+Traversal is not allowed as a Pick token for choose().option()
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+// use predicates in these cases
+gremlin> g.V().hasLabel("person").choose(values("name")).
+......1>         option(P.eq("marko"), values("age")).
+......2>         option(none, values("name"))
+==>29
+==>vadas
+==>josh
+==>peter
+----
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3178[TINKERPOP-3178],
-link:https://tinkerpop.apache.org/docs/3.8.0/reference/#choose-step[Reference Documentation - choose()]
+link:https://tinkerpop.apache.org/docs/3.8.0/reference/#choose-step[Reference Documentation - choose()],
+linke:https://lists.apache.org/thread/mtfy1jshb8rwqglp7ooxswwwwj70qy33[DISCUSS]
 
 ==== Float Defaults to Double
 
