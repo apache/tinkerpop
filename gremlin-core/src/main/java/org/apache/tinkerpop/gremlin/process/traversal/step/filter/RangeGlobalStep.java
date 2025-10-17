@@ -68,7 +68,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
         final AtomicLong counter = counters.computeIfAbsent(counterKey, k -> new AtomicLong(0L));
 
         if (this.high != -1 && counter.get() >= this.high) {
-            if (this.getTraversal().getParent() instanceof RepeatStep) {
+            if (hasRepeatStepParent()) {
                 return false;
             }
             throw FastNoSuchElementException.instance();
@@ -98,32 +98,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
         traverser.setBulk(toEmit);
 
         return true;
-    }
-
-    private String getCounterKey(final Traverser.Admin<S> traverser) {
-        final List<String> counterKeyParts = new ArrayList<>();
-        Traversal.Admin<Object, Object> traversal = this.getTraversal();
-        if (traversal.getParent() instanceof RepeatStep) {
-            // the range step is inside a loop so we need to track counters per iteration
-            // using a counter key that is composed of the parent steps to the root
-            while (!traversal.isRoot()) {
-                final TraversalParent pt = traversal.getParent();
-                final Step<?, ?> ps = pt.asStep();
-                final String pid = ps.getId();
-                if (traverser.getLoopNames().contains(pid)) {
-                    counterKeyParts.add(pid);
-                    counterKeyParts.add(String.valueOf(traverser.loops(pid)));
-                }
-                traversal = ps.getTraversal();
-            }
-        }
-        // reverse added parts so that it starts from root
-        Collections.reverse(counterKeyParts);
-        counterKeyParts.add(this.getId());
-        if (traverser.getLoopNames().contains(this.getId())) {
-            counterKeyParts.add(String.valueOf(traverser.loops(this.getId())));
-        }
-        return String.join(":", counterKeyParts);
     }
 
     @Override
@@ -170,7 +144,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        if (this.getTraversal().getParent() instanceof RepeatStep) {
+        if (hasRepeatStepParent()) {
             return Set.of(TraverserRequirement.BULK, TraverserRequirement.SINGLE_LOOP, TraverserRequirement.NESTED_LOOP);
         }
         return Collections.singleton(TraverserRequirement.BULK);
@@ -184,6 +158,43 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     @Override
     public void processAllStarts() {
 
+    }
+
+    private String getCounterKey(final Traverser.Admin<S> traverser) {
+        final List<String> counterKeyParts = new ArrayList<>();
+        Traversal.Admin<Object, Object> traversal = this.getTraversal();
+        if (hasRepeatStepParent()) {
+            // the range step is inside a loop so we need to track counters per iteration
+            // using a counter key that is composed of the parent steps to the root
+            while (!traversal.isRoot()) {
+                final TraversalParent pt = traversal.getParent();
+                final Step<?, ?> ps = pt.asStep();
+                final String pid = ps.getId();
+                if (traverser.getLoopNames().contains(pid)) {
+                    counterKeyParts.add(pid);
+                    counterKeyParts.add(String.valueOf(traverser.loops(pid)));
+                }
+                traversal = ps.getTraversal();
+            }
+        }
+        // reverse added parts so that it starts from root
+        Collections.reverse(counterKeyParts);
+        counterKeyParts.add(this.getId());
+        if (traverser.getLoopNames().contains(this.getId())) {
+            counterKeyParts.add(String.valueOf(traverser.loops(this.getId())));
+        }
+        return String.join(":", counterKeyParts);
+    }
+
+    private boolean hasRepeatStepParent() {
+        Traversal.Admin<?, ?> traversal = this.getTraversal();
+        while (!traversal.isRoot()) {
+            if (traversal.getParent() instanceof RepeatStep) {
+                return true;
+            }
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
     }
 
     ////////////////
