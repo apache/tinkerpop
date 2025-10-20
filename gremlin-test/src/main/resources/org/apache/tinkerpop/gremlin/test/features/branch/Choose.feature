@@ -678,3 +678,19 @@ Feature: Step - choose()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Traversal is not allowed as a Pick token"
+
+  Scenario: g_V_hasLabelXpersonX_chooseX_valuesXnameX_option1X_PeqXmarkoX_valuesXageXX_option2Xnone_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").choose(values("name")).
+        option(P.eq("marko"), values("age")).
+        option(Pick.none, values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | vadas |
+      | josh |
+      | peter |
