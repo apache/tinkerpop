@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -38,6 +39,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
 
     private Traversal.Admin<S, E> localTraversal;
     private boolean first = true;
+    private Traverser.Admin<S> currentStart = EmptyTraverser.instance();
 
     public LocalStep(final Traversal.Admin traversal, final Traversal.Admin<S, E> localTraversal) {
         super(traversal);
@@ -58,18 +60,32 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     protected Traverser.Admin<E> processNextStart() throws NoSuchElementException {
         if (this.first) {
             this.first = false;
-            this.localTraversal.addStart(this.starts.next());
+            this.localTraversal.addStart(nextStart());
         }
         while (true) {
             if (this.localTraversal.hasNext())
                 return this.localTraversal.nextTraverser();
-            else if (this.starts.hasNext()) {
+            else if (hasStartRemaining()) {
                 this.localTraversal.reset();
-                this.localTraversal.addStart(this.starts.next());
+                this.localTraversal.addStart(nextStart());
             } else {
                 throw FastNoSuchElementException.instance();
             }
         }
+    }
+
+    private boolean hasStartRemaining() {
+        return (currentStart.bulk() > 0L) || this.starts.hasNext();
+    }
+
+    private Traverser.Admin<S> nextStart() throws NoSuchElementException {
+        if (currentStart.bulk() == 0L) {
+            currentStart = starts.next();
+        }
+        final Traverser.Admin<S> split = currentStart.split();
+        split.setBulk(1L);
+        currentStart.setBulk(currentStart.bulk() - 1L);
+        return split;
     }
 
     @Override
@@ -77,6 +93,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
         super.reset();
         this.first = true;
         this.localTraversal.reset();
+        this.currentStart = EmptyTraverser.instance();
     }
 
     @Override
