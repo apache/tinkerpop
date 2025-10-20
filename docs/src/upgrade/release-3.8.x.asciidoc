@@ -307,28 +307,34 @@ See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCU
 
 ==== Removal of has(key, traversal)
 
-The current `has(key, traversal)` implementation has long caused confusion, as it only checks if the traversal produces
-any result, rather than performing equality comparison with the traversal's output value. While fixing this behavior is
-desirable, it would require extensive changes. Therefore, we are removing the current `has(key, traversal)` API as a
-breaking change in version 3.8.0, with plans to reintroduce a properly implemented version in the next major release.
-
-Users needing to filter with traversals should use the `where()` step instead, which provides the expected traversal-based
-filtering behavior. Existing `has(key, traversal)` traversals should also be easily translated to use the `where()` step.
+The has(key, traversal) API has been removed in version 3.8.0 due to its confusing behavior that differed from other
+has() variants. As well, most has(key, traversal) usage indicates a misunderstanding of the API. Unlike has(key, value)
+which performs equality comparison, has(key, traversal) only checked if the traversal produced any result, creating
+inconsistent semantics.
 
 [source,text]
 ----
-// 3.7.x
-g.V().has("age", __.is(P.gt(30)))
+// 3.7.x - this condition is meaningless but yields result because count() is productive
+gremlin> g.V().has("age", __.count())
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+// simple example
+gremlin> g.V().has("age", __.is(P.gt(30)))
 ==>v[4]
 ==>v[6]
 
-// 3.8.0 - use where() instead
-g.V().where(values("age").is(P.gt(30)))
+// 3.8.0 - traversals no longer yield results, for proper use cases consider using predicate or where() for filtering
+gremlin> g.V().has("age", __.count())
+gremlin> g.V().has("age", __.is(P.gt(30)))
+gremlin> g.V().has("age", P.gt(30))
 ==>v[4]
 ==>v[6]
 ----
 
-See: link:https://lists.apache.org/thread/mtfy1jshb8rwqglp7ooxswwwwj70qy33[DISCUSS] thread
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
 ==== Javascript Set Deserialization

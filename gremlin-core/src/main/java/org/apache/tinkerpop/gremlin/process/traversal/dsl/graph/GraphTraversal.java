@@ -2682,8 +2682,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
         if (value instanceof P)
             return this.has(propertyKey, (P) value);
-        else if (value instanceof Traversal)
-            return this.has(propertyKey, (Traversal) value);
         else {
             this.asAdmin().getBytecode().addStep(Symbols.has, propertyKey, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, P.eq(value)));
@@ -2705,8 +2703,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         if (value instanceof P)
             return this.has(accessor, (P) value);
-        else if (value instanceof Traversal)
-            return this.has(accessor, (Traversal) value);
         else {
             this.asAdmin().getBytecode().addStep(Symbols.has, accessor, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), P.eq(value)));
