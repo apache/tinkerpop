@@ -39,7 +39,7 @@ describe('Edge', () => {
       assert.deepStrictEqual(edge.properties, []);
     });
 
-    it('should default to empty array when null', () => {
+    it('should default to empty array when undefined', () => {
       const edge = new Edge('123', new Vertex(1), 'knows', new Vertex(2), undefined);
       assert.deepStrictEqual(edge.properties, []);
     });
@@ -92,7 +92,7 @@ describe('VertexProperty', () => {
       assert.deepStrictEqual(vp.properties, []);
     });
 
-    it('should default to empty array when null', () => {
+    it('should default to empty array when undefined', () => {
       const vp = new VertexProperty(24, 'name', 'marko', undefined);
       assert.deepStrictEqual(vp.properties, []);
     });
