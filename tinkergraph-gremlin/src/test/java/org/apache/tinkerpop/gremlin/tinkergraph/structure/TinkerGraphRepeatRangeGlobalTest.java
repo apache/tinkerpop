@@ -450,6 +450,16 @@ public class TinkerGraphRepeatRangeGlobalTest {
                         .range(0, 3));
     }
 
+    @Test
+    public void testBasicRepeatSkip() {
+        testTraversals(s -> s.V().has("id", "l1-0")
+                        .repeat(__.out("knows").skip(1))
+                        .times(2),
+                s -> s.V().has("id", "l1-0")
+                        .out("knows").skip(1)
+                        .out("knows").skip(1));
+    }
+
     private void testTraversals(Function<GraphTraversalSource, GraphTraversal<Vertex, Vertex>> repeatFunction,
                                 Function<GraphTraversalSource, GraphTraversal<Vertex, Vertex>> nonRepeatFunction) {
         List<?> repeatTraversal = repeatFunction.apply(gSource).toList();
