@@ -127,6 +127,7 @@ limitations under the License.
         <module>gremlin-core</module>
         <module>gremlin-annotations</module>
         <module>gremlin-test</module>
+        <module>gremlin-util</module>
         <module>gremlin-groovy</module>
         <module>tinkergraph-gremlin</module>
         <module>gremlin-javascript</module>
@@ -142,7 +143,7 @@ limitations under the License.
         <module>gremlin-server</module>
         <module>gremlin-tools</module>
         <module>gremlint</module>
-        <module>gremlin-util</module>
+        <module>gremlin-mcp</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
@@ -222,6 +223,9 @@ limitations under the License.
             --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
             --add-opens=java.base/java.net=ALL-UNNAMED
         </jdk17JvmArgs>
+
+        <runtime.npm.version>10.8.2</runtime.npm.version>
+        <runtime.node.version>v20.19.4</runtime.node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -528,12 +532,14 @@ limitations under the License.
                         <exclude>**/node/**</exclude>
                         <exclude>**/node_modules/**</exclude>
                         <exclude>**/npm-debug.log</exclude>
+                        <exclude>**/dist/**</exclude>
                         <exclude>**/build/**</exclude>
                         <!-- javascript docs/lib -->
                         <exclude>**/doc/**</exclude>
                         <exclude>**/lib/**</exclude>
                         <exclude>**/.env</exclude>
                         <exclude>**/.prettierrc</exclude>
+                        <exclude>**/.prettierignore</exclude>
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
