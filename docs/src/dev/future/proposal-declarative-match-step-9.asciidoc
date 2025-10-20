@@ -73,26 +73,19 @@ reference ANTLR4 grammar for the default GQL dialect.
 
 === 4. Parameterization
 
-To prevent query injection and improve performance by enabling query
-plan caching, parameterized queries are supported. Parameters are
-supplied using the existing `with()` modulator with a special key
-convention.
+Parameterized queries are supported to prevent query injection and improve performance by enabling query
+plan caching. If such exist, parameters are
+supplied using the `Map` argument as part of the match query step.
 
-* *Convention:* A key in a `with()` modulator that is prefixed with a
-dollar sign (`$`) will be treated as a query parameter for the `match()`
-step. The prefix is removed to derive the parameter name.
 * *Example:*
 +
 [source,groovy]
 ----
-g.match("MATCH (p:Person WHERE p.name = $personName)")
- .with("$personName", "Stephen")
+g.match("MATCH (p:Person WHERE p.name = $personName)", Map.of("personName", "Stephen"))
 ----
 
-This approach unifies parameter handling, allowing parameters to be
-defined locally for a specific `match()` step or globally on the
-`GraphTraversalSource`. If parameters are not explicitly provided via
-`with()`, an implicit lookup on remote server bindings may be performed.
+If parameters are not explicitly provided via
+`Map`, an implicit lookup on remote server bindings may be performed.
 
 '''''
 
