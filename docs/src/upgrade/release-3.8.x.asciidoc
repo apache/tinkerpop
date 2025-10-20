@@ -307,27 +307,81 @@ with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
 
-==== Properties on Element Serialization in Python & Javascript
+==== Serialization Changes
 
-Element properties handling has been inconsistent across GLVs. Previously, `gremlin-python` deserialized empty properties as `None`, while
-`gremlin-javascript` returned properties as objects or arrays, with empty properties as null or undefined depending on the serializer.
+*Properties on Element Serialization in Python & Javascript*
 
-This inconsistency is now resolved. Both GLVs will deserialize Element.properties into lists of property objects, returning empty lists
-instead of null values for missing properties.
+Element properties handling has been inconsistent across GLVs. Previously,`gremlin-python` deserialized empty properties
+as None or array depending on the serializer, while `gremlin-javascript` returned properties as objects or arrays, with
+empty properties as empty lists or undefined depending on the serializer.
 
-This is a breaking change. Applications using gremlin-python and gremlin-javascript must update code to expect properties as lists rather than the
-previous formats.
+This inconsistency is now resolved. Both GLVs will deserialize element properties into lists of property objects,
+returning empty lists instead of null values for missing properties.
 
-Note: This change affects only GLV behavior, not underlying IO formats.
+For python, the most notable difference is when no properties are returned.
+
+[source,text]
+----
+# 3.7 and before:
+v = g.with_("materializeProperties", "tokens").V(1).next() # skip properties with token
+# graphson returned v.properties as None, and graphbinary returned v.properties as empty lists
+
+# 3.8.0 and newer:
+v = g.with_("materializeProperties", "tokens").V(1).next() # skip properties with token
+# both graphson and graphbinary will return v.properties as empty lists
+----
+
+For javascript, the change is slightly more extensive, as user should no longer expect javascript objects to be returned.
+All properties are returned as lists of Property or VertexProperty objects.
+
+[source,text]
+----
+// 3.7 and before:
+g.with_("materializeProperties", "tokens").V(1).next() // skip properties with token
+// graphson will return properties as a javascript object, which becomes undefined
+Vertex { id: 1, label: 'person', properties: undefined }
+// graphbinary will return properties as empty lists
+Vertex { id: 1, label: 'person', properties: [] }
+
+g.V(1).next() // properties returned
+// graphson will return properties as a javascript object
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: { name: [Array], age: [Array] }
+}
+// graphbinary will return properties as lists of VertexProperty objects
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: [ [VertexProperty], [VertexProperty] ]
+}
+
+// 3.8.0 and newer - properties are always arrays, empty array [] for missing properties:
+g.with_("materializeProperties", "tokens").V(1).next() // skip properties with token
+// both graphson and graphbinary return
+Vertex { id: 1, label: 'person', properties: [] }
+g.V(1).next()
+// both graphson and graphbinary return
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: [ [VertexProperty], [VertexProperty] ]
+}
+
+----
+
+This change only affects how GLVs deserialize property data in client applications. The underlying graph serialization
+formats and server-side behavior remain unchanged.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3186[TINKERPOP-3186]
 
-==== Javascript Set Deserialization
+*Javascript Set Deserialization*
 
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
-==== .NET Byte Serialization Change
+*.NET Byte Serialization Change*
 
 The Gremlin .NET serializers has been updated to correctly handle byte values as signed integers to align with the IO
 specification, whereas previously it incorrectly serialized and deserialized bytes as unsigned values.

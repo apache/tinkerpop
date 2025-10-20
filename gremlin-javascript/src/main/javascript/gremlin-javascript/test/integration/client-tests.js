@@ -84,16 +84,8 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          let age, name
-          if (vertex.properties instanceof Array) {
-            const ageProps = vertex.properties.filter(p => p.key === 'age');
-            const nameProps = vertex.properties.filter(p => p.key === 'name');
-            age = ageProps[0];
-            name = nameProps[0];
-          } else {
-            age = vertex.properties.age[0]
-            name = vertex.properties.name[0]
-          }
+          const age = vertex.properties.find(p => p.key === 'age');
+          const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
           assert.ok(name);
           assert.strictEqual(age.value, 29);
@@ -119,11 +111,8 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          let age, name
-          const ageProps = vertex.properties.filter(p => p.key === 'age');
-          const nameProps = vertex.properties.filter(p => p.key === 'name');
-          age = ageProps[0];
-          name = nameProps[0];
+          const age = vertex.properties.find(p => p.key === 'age');
+          const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
           assert.ok(name);
           assert.strictEqual(age.value, 29);
