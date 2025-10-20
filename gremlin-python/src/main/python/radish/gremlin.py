@@ -405,8 +405,6 @@ world.gremlins = {
     'g_VX5X_repeatXrangeX0_1X_in_aggregateXxXX_timesX2X_capXxX': [(lambda g, vid5=None:g.V(vid5).repeat(__.range_(0, 1).in_().aggregate('x')).times(2).cap('x'))], 
     'g_withoutStrategiesXEarlyLimitStrategyX_VX5X_repeatXlimitX1X_in_limitX1X_limitX1XX_timesX2X': [(lambda g, vid5=None:g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy')]).V(vid5).repeat(__.limit(1).in_().limit(1).limit(1)).times(2))], 
     'g_V_repeatXout_whereXhasXnameX_limitX1XXX_timesX2X': [(lambda g:g.V().repeat(__.out().where(__.has('name').limit(1))).times(2))], 
-    'g_V_repeatXout_skipX1XX_timesX2X': [(lambda g:g.V().repeat(__.out().skip(1)).times(2))], 
-    'g_V_out_skipX1X_out_skipX1X': [(lambda g:g.V().out().skip(1).out().skip(1))], 
     'g_V_out_whereXhasXnameX_limitX1XX_out_whereXhasXnameX_limitX1XX': [(lambda g:g.V().out().where(__.has('name').limit(1)).out().where(__.has('name').limit(1)))], 
     'g_V_hasXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X': [(lambda g:g.V().has('name', 'JAM').repeat(__.out('followedBy').limit(2)).times(2))], 
     'g_V_hasXnameXJAMXX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X': [(lambda g:g.V().has('name', 'JAM').out('followedBy').limit(2).out('followedBy').limit(2))], 
