@@ -81,8 +81,7 @@ supplied using the `Map` argument as part of the match query step.
 +
 [source,groovy]
 ----
-g.match("MATCH (p:Person WHERE p.name = $personName)")
- .with("$personName", Map.of("personName", "Stephen"))
+g.match("MATCH (p:Person WHERE p.name = $personName)", Map.of("personName", "Stephen"))
 ----
 
 If parameters are not explicitly provided via
