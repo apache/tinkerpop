@@ -432,3 +432,17 @@ Feature: Step - where()
       | result |
       | v[lop] |
       | v[ripple] |
+
+  Scenario: g_V_whereXlabel_isXpersonXX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().where(label().is("person"))
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
