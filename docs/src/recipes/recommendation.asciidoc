@@ -199,7 +199,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(desc).limit(local, 1).as("m").
+        by(desc).limit(local, 1).unfold().as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys)
 ----
@@ -217,7 +217,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(desc).limit(local, 1).as("m").
+        by(desc).limit(local, 1).unfold().as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys).
       out("bought").where(without("self"))
@@ -235,7 +235,7 @@ g.V().has("person","name","alice").as("alice").
       where(within("self")).count()).as("g").
       select(values).
       order(local).
-        by(desc).limit(local, 1).as("m").
+        by(desc).limit(local, 1).unfold().as("m").
       select("g").unfold().
       where(select(values).as("m")).select(keys).
       out("bought").where(without("self")).
