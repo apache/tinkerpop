@@ -43,10 +43,14 @@ export class Graph {
 }
 
 class Element<TLabel extends string = string, TId = any> {
+  // properties are stored as list of property objects
   constructor(
     readonly id: TId,
     readonly label: TLabel,
-  ) {}
+    readonly properties: Property[] = []
+  ) {
+    this.properties = properties != null ? properties : [];
+  }
 
   /**
    * Compares this instance to another and determines if they can be considered as equal.
@@ -67,9 +71,9 @@ export class Vertex<
   constructor(
     id: TId,
     label: TLabel,
-    readonly properties?: TVertexProperties,
+    readonly properties: Property[] = [],
   ) {
-    super(id, label);
+    super(id, label, properties);
   }
 
   toString() {
@@ -86,26 +90,12 @@ export class Edge<
 > extends Element<TLabel, TId> {
   constructor(
     id: TId,
-    readonly outV: TOutVertex,
+    readonly outV: TOutVertex | null,
     readonly label: TLabel,
-    readonly inV: TInVertex,
-    readonly properties: TProperties = {} as TProperties,
+    readonly inV: TInVertex | null,
+    readonly properties: Property[] = [],
   ) {
-    super(id, label);
-    if (properties) {
-      if (Array.isArray(properties)) {
-        // Handle array of Property objects
-        properties.forEach((prop) => {
-            // Use type assertion to inform TypeScript that prop.key is a valid key for TProperties
-            (this.properties as any)[prop.key] = prop.value;
-        });
-      } else {
-        // Handle object format as before
-        Object.keys(properties).forEach((k) => {
-            (this.properties as any)[k] = properties[k].value;
-        });
-      }
-    }
+    super(id, label, properties);
   }
 
   toString() {
@@ -128,12 +118,11 @@ export class VertexProperty<
     id: TId,
     label: TLabel,
     readonly value: TValue,
-    readonly properties?: TProperties,
+    readonly properties: Property[] = [],
   ) {
-    super(id, label);
+    super(id, label, properties);
     this.value = value;
     this.key = this.label;
-    this.properties = properties;
   }
 
   toString() {
@@ -168,7 +157,7 @@ export class Property<T = any> {
  */
 export class Path {
   constructor(
-    readonly labels: string[],
+    readonly labels: string[][],
     readonly objects: any[],
   ) {}
 

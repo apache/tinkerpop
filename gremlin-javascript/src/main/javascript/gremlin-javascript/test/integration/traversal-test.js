@@ -134,7 +134,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 6);
         list.forEach(v => assert.ok(v instanceof Vertex));
-        list.forEach(v => assert.ok(v.properties === undefined || v.properties.length === 0));
+        list.forEach(v => assert.strictEqual(v.properties.length, 0));
       });
     });
     it('should skip edge properties when tokens is set', function () {
@@ -153,7 +153,7 @@ describe('Traversal', function () {
         assert.ok(list);
         assert.strictEqual(list.length, 12);
         list.forEach(vp => assert.ok(vp instanceof VertexProperty));
-        list.forEach(vp => assert.ok(vp.properties === undefined || vp.properties.length === 0));
+        list.forEach(vp => assert.strictEqual(vp.properties.length, 0));
       });
     });
     it('should skip path element properties when tokens is set', function () {
@@ -168,9 +168,9 @@ describe('Traversal', function () {
         assert.ok(a instanceof Vertex);
         assert.ok(b instanceof Edge);
         assert.ok(c instanceof Vertex);
-        assert.ok(a.properties === undefined || a.properties.length === 0);
+        assert.strictEqual(a.properties.length, 0);
         assert.strictEqual(Object.keys(b.properties).length, 0);
-        assert.ok(c.properties === undefined || c.properties.length === 0);
+        assert.strictEqual(c.properties.length, 0);
       });
     });
     it('should materialize path element properties when all is set', function () {
@@ -204,12 +204,7 @@ describe('Traversal', function () {
         assert.strictEqual(aAgeProps.length, 1);
         assert.strictEqual(aAgeProps[0].value, 29);
         assert.ok(b.properties);
-        let bWeight;
-        if (b.properties instanceof Array) {
-          bWeight = b.properties.filter(p => p.key === 'weight');
-        } else {
-          bWeight = b.properties['weight'];
-        }
+        const bWeight = b.properties[0].value
         assert.ok(bWeight !== undefined);
         assert.strictEqual(bWeight, 0.4);
         assert.ok(c.properties);

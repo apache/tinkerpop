@@ -408,3 +408,41 @@ Feature: Step - where()
       | result |
       | v[vadas] |
       | v[josh] |
+
+  Scenario: get_g_V_whereXage_isXgt_30XX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(values("age").is(P.gt(30)))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[peter] |
+
+  Scenario: g_V_whereXlabel_isXsoftwareXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().where(label().is('software'))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[lop] |
+      | v[ripple] |
+
+  Scenario: g_V_whereXlabel_isXpersonXX
+    Given the modern graph
+    And the traversal of
+    """
+    g.V().where(label().is("person"))
+    """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |

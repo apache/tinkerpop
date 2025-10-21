@@ -169,12 +169,16 @@ class TestGraphSONReader:
 
     def test_graph(self):
         vertex = self.graphson_reader.read_object("""
-        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label": ["person"],"outE":{"created":[{"id":{"@type":"g:Int32","@value":9},"inV":{"@type":"g:Int32","@value":3},"properties":{"weight":[{"@type":"g:Property","@value":{"key":"weight","value":{"@type":"g:Double","@value":0.4}}}]}}],"knows":[{"id":{"@type":"g:Int32","@value":7},"inV":{"@type":"g:Int32","@value":2},"properties":{"weight":[{"@type":"g:Property","@value":{"key":"weight","value":{"@type":"g:Double","@value":0.5}}}]}},{"id":{"@type":"g:Int32","@value":8},"inV":{"@type":"g:Int32","@value":4},"properties":{"weight":[{"@type":"g:Property","@value":{"key":"weight","value":{"@type":"g:Double","@value":1.0}}}]}}]},"properties":{"name":[{"id":{"@type":"g:Int64","@value":0},"value":"marko"}],"age":[{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29}}]}}}""")
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":1},"label":["person"],"properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":["name"]}}],"age":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":1},"value":{"@type":"g:Int32","@value":29},"label":["age"]}}]}}}""")
         assert isinstance(vertex, Vertex)
         assert "person" == vertex.label
         assert 1 == vertex.id
         assert isinstance(vertex.id, int)
         assert vertex == Vertex(1)
+        assert 2 == len(vertex.properties)
+        # assert actual property values - Vertex.properties should be VertexProperty objects
+        assert any(vp.label == 'name' and vp.value == 'marko' for vp in vertex.properties)
+        assert any(vp.label == 'age' and vp.value == 29 for vp in vertex.properties)
         ##
         vertex = self.graphson_reader.read_object("""
         {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Float","@value":45.23}}}""")
@@ -183,6 +187,28 @@ class TestGraphSONReader:
         assert isinstance(vertex.id, FloatType)
         assert "vertex" == vertex.label
         assert vertex == Vertex(45.23)
+        # properties key omitted should yield empty list
+        assert vertex.properties == []
+        ##
+        # vertex with explicit label and without properties
+        vertex = self.graphson_reader.read_object(
+            """
+        {"@type":"g:Vertex", "@value":{"id":{"@type":"g:Int32","@value":2},"label":["person"]}}
+            """)
+        assert isinstance(vertex, Vertex)
+        assert vertex.label == 'person'
+        assert vertex.id == 2
+        assert vertex.properties == []
+        ##
+        vertex_property = self.graphson_reader.read_object("""
+        {"@type":"g:VertexProperty", "@value":{"id":"anId","label":["aKey"],"value":true,"vertex":{"@type":"g:Int32","@value":9}}}""")
+        assert isinstance(vertex_property, VertexProperty)
+        assert "anId" == vertex_property.id
+        assert "aKey" == vertex_property.label
+        assert vertex_property.value
+        assert vertex_property.vertex == Vertex(9)
+        # no properties key should yield empty list of meta-properties
+        assert vertex_property.properties == []
         ##
         vertex_property = self.graphson_reader.read_object("""
         {"@type":"g:VertexProperty", "@value":{"id":{"@type":"g:Int32","@value":1},"label":["name"],"value":"marko"}}""")
@@ -191,6 +217,8 @@ class TestGraphSONReader:
         assert "name" == vertex_property.label
         assert "marko" == vertex_property.value
         assert vertex_property.vertex is None
+        # no properties key should yield empty list of meta-properties
+        assert vertex_property.properties == []
         ##
         edge = self.graphson_reader.read_object("""
         {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":17},"label":["knows"],"inV":{"id":"x","label":["xLabel"]},"outV":{"id":"y","label":["vertex"]},"properties":{"aKey":[{"@type":"g:Property","@value":{"key":"aKey","value":"aValue"}}],"bKey":[{"@type":"g:Property","@value":{"key":"bKey","value":true}}]}}}""")
@@ -200,6 +228,12 @@ class TestGraphSONReader:
         assert "knows" == edge.label
         assert edge.inV == Vertex("x", "xLabel")
         assert edge.outV == Vertex("y", "vertex")
+        ##
+        # edge without properties should yield empty properties list
+        edge2 = self.graphson_reader.read_object("""
+        {"@type":"g:Edge", "@value":{"id":{"@type":"g:Int64","@value":18},"label":["knows"],"inV":{"id":"x","label":["xLabel"]},"outV":{"id":"y","label":["vertex"]}}}""")
+        assert isinstance(edge2, Edge)
+        assert edge2.properties == []
         ##
         property = self.graphson_reader.read_object("""
         {"@type":"g:Property", "@value":{"key":"aKey","value":{"@type":"g:Int64","@value":17}}}""")
@@ -218,6 +252,34 @@ class TestGraphSONReader:
         assert Vertex(1) == path["a"]
         assert "lop" == path[2]
         assert 3 == len(path)
+        # ensure element properties were populated from GraphSON
+        assert any(vp.label == 'name' and vp.value == 'marko' for vp in path[0].properties)
+        assert any(vp.label == 'age' and vp.value == 29 for vp in path[0].properties)
+        assert any(vp.label == 'name' and vp.value == 'lop' for vp in path[1].properties)
+        assert any(vp.label == 'lang' and vp.value == 'java' for vp in path[1].properties)
+
+        # path with elements that exclude properties (no "properties" key)
+        path2 = self.graphson_reader.read_object(
+            """{"@type":"g:Path","@value":{"labels":{"@type":"g:List","@value":[{"@type":"g:Set","@value":["x"]},{"@type":"g:Set","@value":["y"]},{"@type":"g:Set","@value":["z"]}]},"objects":{"@type":"g:List","@value":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":11},"label":["person"]}}, {"@type":"g:Edge","@value":{"id":{"@type":"g:Int64","@value":77},"label":["knows"],"outV": {"id":{"@type":"g:Int32","@value":11},"label":["person"]},"inV": {"id":{"@type":"g:Int32","@value":12},"label":["person"]}}},"hello"]}}}"""
+        )
+        assert isinstance(path2, Path)
+        assert 3 == len(path2)
+        assert Vertex(11, 'person') == path2[0]
+        assert path2[0].properties == []
+        assert isinstance(path2[1], Edge)
+        assert path2[1].properties == []
+        assert path2[2] == "hello"
+
+        # mixed path: first vertex with properties, second vertex without
+        path3 = self.graphson_reader.read_object(
+            """{"@type":"g:Path","@value":{"labels":{"@type":"g:List","@value":[{"@type":"g:Set","@value":["a"]},{"@type":"g:Set","@value":["b"]}]},"objects":{"@type":"g:List","@value":[{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":1},"label":["person"],"properties":{"name":[{"@type":"g:VertexProperty","@value":{"id":{"@type":"g:Int64","@value":0},"value":"marko","label":["name"]}}]}}},{"@type":"g:Vertex","@value":{"id":{"@type":"g:Int32","@value":2},"label":["person"]}}]}}}"""
+        )
+        assert isinstance(path3, Path)
+        assert 2 == len(path3)
+        assert Vertex(1) == path3[0]
+        assert any(vp.label == 'name' and vp.value == 'marko' for vp in path3[0].properties)
+        assert Vertex(2) == path3[1]
+        assert path3[1].properties == []
 
     def test_custom_mapping(self):
 

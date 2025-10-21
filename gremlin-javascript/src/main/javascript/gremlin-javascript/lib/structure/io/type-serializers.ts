@@ -306,10 +306,31 @@ export class TraversalStrategySerializer extends TypeSerializer<ts.TraversalStra
   }
 }
 
+/**
+ * Helper function to deserialize properties into arrays of VertexProperty or Property according to graphSONV3.
+ */
+function deserializeProperties(value, reader) {
+  let properties = [];
+  if ('properties' in value) {
+    const props = reader.read(value['properties']);
+    if (props !== null && props !== undefined) {
+      properties = Object.entries(props).flatMap(([key, values]) => {
+        if (Array.isArray(values) && values.length > 0 && values[0] instanceof g.VertexProperty) {
+          return values; // Flatten VertexProperty arrays
+        }
+        return values instanceof g.Property ? values : new g.Property(key, values); // create Property object when needed
+      });
+    }
+  }
+  return properties;
+}
+
+class VertexSerializer extends TypeSerializer {
+  deserialize(obj) {
 export class VertexSerializer extends TypeSerializer<g.Vertex> {
   deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
-    return new g.Vertex(this.reader.read(value['id']), value['label'], this.reader.read(value['properties']));
+    return new g.Vertex(this.reader.read(value['id']), value['label'], deserializeProperties(value, this.reader));
   }
 
   /** @param {Vertex} item */
@@ -335,7 +356,7 @@ export class VertexPropertySerializer extends TypeSerializer<g.VertexProperty> {
       this.reader.read(value['id']),
       value['label'],
       this.reader.read(value['value']),
-      this.reader.read(value['properties']),
+      deserializeProperties(value, this.reader),
     );
   }
 }
@@ -355,7 +376,7 @@ export class EdgeSerializer extends TypeSerializer<g.Edge> {
       new g.Vertex(this.reader.read(value['outV']), this.reader.read(value['outVLabel'])),
       value['label'],
       new g.Vertex(this.reader.read(value['inV']), this.reader.read(value['inVLabel'])),
-      this.reader.read(value['properties']),
+      deserializeProperties(value, this.reader),
     );
   }
 

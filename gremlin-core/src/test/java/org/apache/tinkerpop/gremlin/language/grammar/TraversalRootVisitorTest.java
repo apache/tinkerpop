@@ -525,11 +525,6 @@ public class TraversalRootVisitorTest {
     }
 
     @Test
-    public void shouldParseTraversalMethod_has_String_Traversal() {
-        compare(g.V().map(__.has("age", bothE())), eval("g.V().map(__.has('age', bothE()))"));
-    }
-
-    @Test
     public void shouldParseTraversalMethod_has_T_Object() {
         compare(g.V().map(__.has(T.id, 6)), eval("g.V().map(__.has(id, 6))"));
     }
@@ -537,11 +532,6 @@ public class TraversalRootVisitorTest {
     @Test
     public void shouldParseTraversalMethod_has_T_P() {
         compare(g.V().map(__.has(T.id, eq("asd"))), eval("g.V().map(__.has(id, eq('asd')))"));
-    }
-
-    @Test
-    public void shouldParseTraversalMethod_has_T_Traversal() {
-        compare(g.V().map(__.has(T.id, bothE())), eval("g.V().map(__.has(id, bothE()))"));
     }
 
     @Test

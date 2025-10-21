@@ -1025,15 +1025,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Has (string? propertyKey, ITraversal propertyTraversal)
-        {
-            Bytecode.AddStep("has", propertyKey, propertyTraversal);
-            return Wrap<TStart, TEnd>(this);
-        }
-
-        /// <summary>
-        ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
         public GraphTraversal<TStart, TEnd> Has (T accessor, object? value)
         {
             Bytecode.AddStep("has", accessor, value);
@@ -1046,15 +1037,6 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, TEnd> Has (T accessor, P? predicate)
         {
             Bytecode.AddStep("has", accessor, predicate);
-            return Wrap<TStart, TEnd>(this);
-        }
-
-        /// <summary>
-        ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<TStart, TEnd> Has (T accessor, ITraversal propertyTraversal)
-        {
-            Bytecode.AddStep("has", accessor, propertyTraversal);
             return Wrap<TStart, TEnd>(this);
         }
 

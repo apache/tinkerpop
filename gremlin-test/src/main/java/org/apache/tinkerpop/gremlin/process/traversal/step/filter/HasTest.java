@@ -94,9 +94,9 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_whereXage_isXgt_30XX();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlabel_isXsoftwareXX();
+    public abstract Traversal<Vertex, Vertex> get_g_V_whereXlabel_isXsoftwareXX();
 
     public abstract Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id);
 
@@ -264,7 +264,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXage_isXgt_30XX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXage_isXgt_30XX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_whereXage_isXgt_30XX();
         printTraversalForm(traversal);
         final List<Vertex> list = traversal.toList();
         assertEquals(2, list.size());
@@ -276,7 +276,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXlabel_isXsoftwareXX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlabel_isXsoftwareXX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_whereXlabel_isXsoftwareXX();
         printTraversalForm(traversal);
         final List<Vertex> list = traversal.toList();
         assertEquals(2, list.size());
@@ -1076,13 +1076,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX() {
-            return g.V().has("age", __.is(P.gt(30)));
+        public Traversal<Vertex, Vertex> get_g_V_whereXage_isXgt_30XX() {
+            return g.V().where(__.values("age").is(P.gt(30)));
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_hasXlabel_isXsoftwareXX() {
-            return g.V().has(T.label, __.is("software"));
+        public Traversal<Vertex, Vertex> get_g_V_whereXlabel_isXsoftwareXX() {
+            return g.V().where(__.label().is("software"));
         }
 
         @Override

@@ -1681,7 +1681,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
-        
+
         this.asAdmin().getGremlinLang().addStep(Symbols.to, toVertex);
         ((FromToModulating) prev).addTo(new GValueConstantTraversal<S, Vertex>(toVertex));
         return this;
@@ -1776,7 +1776,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         if (!(prev instanceof FromToModulating))
             throw new IllegalArgumentException(String.format(
                     "The to() step cannot follow %s", prev.getClass().getSimpleName()));
-        
+
         this.asAdmin().getGremlinLang().addStep(Symbols.to, toVertexOrId);
         ((FromToModulating) prev).addTo(toVertexOrId instanceof GValue ?
                 new GValueConstantTraversal<>((GValue<Object>) toVertexOrId) :
@@ -2696,8 +2696,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
         if (value instanceof P)
             return this.has(propertyKey, (P) value);
-        else if (value instanceof Traversal)
-            return this.has(propertyKey, (Traversal) value);
         else {
             this.asAdmin().getGremlinLang().addStep(Symbols.has, propertyKey, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, P.eq(value)));
@@ -2719,8 +2717,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
         if (value instanceof P)
             return this.has(accessor, (P) value);
-        else if (value instanceof Traversal)
-            return this.has(accessor, (Traversal) value);
         else {
             this.asAdmin().getGremlinLang().addStep(Symbols.has, accessor, value);
             return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(accessor.getAccessor(), P.eq(value)));
@@ -2757,57 +2753,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         this.asAdmin().getGremlinLang().addStep(Symbols.has, label, propertyKey, value);
         TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(T.label.getAccessor(), P.eq(label)));
         return TraversalHelper.addHasContainer(this.asAdmin(), new HasContainer(propertyKey, value instanceof P ? (P) value : P.eq(value)));
-    }
-
-    /**
-     * Filters vertices, edges and vertex properties based on their value of {@link T} where only {@link T#id} and
-     * {@link T#label} are supported.
-     *
-     * @param accessor          the {@link T} accessor of the property to filter on
-     * @param propertyTraversal the traversal to filter the accessor value by
-     * @return the traversal with an appended {@link HasStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
-     * @since 3.1.0-incubating
-     */
-    public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
-        if (null == accessor)
-            throw new IllegalArgumentException("The T accessor value of has(T,Object) cannot be null");
-
-        // Groovy can get the overload wrong for has(T, null) which should probably go at has(T,Object). users could
-        // explicit cast but a redirect here makes this a bit more seamless
-        if (null == propertyTraversal)
-            return has(accessor, (Object) null);
-
-        this.asAdmin().getGremlinLang().addStep(Symbols.has, accessor, propertyTraversal);
-        switch (accessor) {
-            case id:
-                return this.asAdmin().addStep(
-                        new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                                new IdStep<>(propertyTraversal.asAdmin()))));
-            case label:
-                return this.asAdmin().addStep(
-                    new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                            new LabelStep<>(propertyTraversal.asAdmin()))));
-            default:
-                throw new IllegalArgumentException("has(T,Traversal) can only take id or label as its argument");
-        }
-
-    }
-
-    /**
-     * Filters vertices, edges and vertex properties based on the value of the specified property key.
-     *
-     * @param propertyKey       the key of the property to filter on
-     * @param propertyTraversal the traversal to filter the property value by
-     * @return the traversal with an appended {@link HasStep}
-     * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
-     * @since 3.0.0-incubating
-     */
-    public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.has, propertyKey, propertyTraversal);
-        return this.asAdmin().addStep(
-                new TraversalFilterStep<>(this.asAdmin(), propertyTraversal.asAdmin().addStep(0,
-                        new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey))));
     }
 
     /**

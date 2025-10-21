@@ -659,19 +659,6 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalMethod_has_String_Traversal(final GremlinParser.TraversalMethod_has_String_TraversalContext ctx) {
-        final String step = ctx.getChild(0).getText();
-        sb.append(convertToPascalCase(step));
-        sb.append("(");
-        tryAppendCastToString(ctx.stringNullableLiteral());
-        visit(ctx.stringNullableLiteral());
-        sb.append(", ");
-        visit(ctx.nestedTraversal());
-        sb.append(")");
-        return null;
-    }
-
-    @Override
     public Void visitTraversalMethod_has_T_Object(final GremlinParser.TraversalMethod_has_T_ObjectContext ctx) {
         final String step = ctx.getChild(0).getText();
         sb.append(convertToPascalCase(step));
@@ -692,18 +679,6 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         visit(ctx.traversalT());
         sb.append(", ");
         visit(ctx.traversalPredicate());
-        sb.append(")");
-        return null;
-    }
-
-    @Override
-    public Void visitTraversalMethod_has_T_Traversal(final GremlinParser.TraversalMethod_has_T_TraversalContext ctx) {
-        final String step = ctx.getChild(0).getText();
-        sb.append(convertToPascalCase(step));
-        sb.append("(");
-        visit(ctx.traversalT());
-        sb.append(", ");
-        visit(ctx.nestedTraversal());
         sb.append(")");
         return null;
     }

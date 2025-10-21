@@ -191,27 +191,27 @@ class TestDriverRemoteConnection(object):
         results = g.V().has('person', 'name', 'marko').both('knows').group_count().by(__.values('name').fold()).next()
         assert {tuple(['vadas']): 1, tuple(['josh']): 1} == results
         # #
-        # test materializeProperties in V - GraphSON will deserialize into None and GraphBinary to []
+        # test materializeProperties in V
         results = g.with_("materializeProperties", "tokens").V().to_list()
         for v in results:
-            assert v.properties is None or len(v.properties) == 0
+            assert len(v.properties) == 0
         # #
-        # test materializeProperties in E - GraphSON will deserialize into None and GraphBinary to []
+        # test materializeProperties in E
         results = g.with_("materializeProperties", "tokens").E().to_list()
         for e in results:
-            assert e.properties is None or len(e.properties) == 0
+            assert len(e.properties) == 0
         # #
-        # test materializeProperties in VP - GraphSON will deserialize into None and GraphBinary to []
+        # test materializeProperties in VP
         results = g.with_("materializeProperties", "tokens").V().properties().to_list()
         for vp in results:
-            assert vp.properties is None or len(vp.properties) == 0
+            assert len(vp.properties) == 0
         # #
-        # test materializeProperties in Path - GraphSON will deserialize into None and GraphBinary to []
-        # p = g.with_("materializeProperties", "tokens").V().has('name', 'marko').outE().inV().has_label('software').path().next()
-        # assert 3 == len(p.objects)
-        # assert p.objects[0].properties is None or len(p.objects[0].properties) == 0
-        # assert p.objects[1].properties is None or len(p.objects[1].properties) == 0
-        # assert p.objects[2].properties is None or len(p.objects[2].properties) == 0
+        # test materializeProperties in Path
+        p = g.with_("materializeProperties", "tokens").V().has('name', 'marko').outE().inV().has_label('software').path().next()
+        assert 3 == len(p.objects)
+        assert len(p.objects[0].properties) == 0
+        assert len(p.objects[1].properties) == 0
+        assert len(p.objects[2].properties) == 0
         # #
         # test materializeProperties in Path - 'all' should materialize properties on each element
         # p = g.with_("materializeProperties", "all").V().has('name', 'marko').outE().inV().has_label('software').path().next()

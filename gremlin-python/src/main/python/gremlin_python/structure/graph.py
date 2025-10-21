@@ -30,7 +30,7 @@ class Element(object):
     def __init__(self, id, label, properties=None):
         self.id = id
         self.label = label
-        self.properties = properties
+        self.properties = [] if properties is None else properties
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.id == other.id
