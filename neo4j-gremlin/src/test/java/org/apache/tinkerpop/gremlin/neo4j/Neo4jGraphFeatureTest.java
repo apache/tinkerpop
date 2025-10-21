@@ -51,6 +51,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData;
 @RunWith(Cucumber.class)
 @CucumberOptions(
         tags = "not @MultiProperties and not @MetaProperties and not @GraphComputerOnly and " +
+               "not @DataDateTime and not @DataList and not @DataMap and not @DataSet and not @DataUUID and " +
                "not @AllowNullPropertyValues and not @UserSuppliedVertexPropertyIds and not @UserSuppliedEdgeIds and " +
                "not @UserSuppliedVertexIds and not @TinkerServiceRegistry and not @InsertionOrderingRequired and not @StepHasId", //TODO:: can we include hasId?
         glue = { "org.apache.tinkerpop.gremlin.features" },

@@ -854,7 +854,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AsNumber Step
 
 The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided,
-or to the desired numerical type, based on the number token (`N`) provided.
+or to the desired numerical type, based on the type token (`GType`) provided. If a type token entered isn't a numerical type, an `IllegalArgumentException` will be thrown.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow during narrowing of types.
@@ -869,9 +869,9 @@ All other input types will result in `IllegalArgumentException`.
 ----
 g.inject(1234).asNumber() <1>
 g.inject(1.76).asNumber() <2>
-g.inject(1.76).asNumber(N.int_) <3>
+g.inject(1.76).asNumber(GType.INT) <3>
 g.inject("1b").asNumber() <4>
-g.inject(33550336).asNumber(N.byte_) <5>
+g.inject(33550336).asNumber(GType.BYTE) <5>
 ----
 
 <1> An int will be passed through.
@@ -5462,12 +5462,8 @@ a comparatively slow script compilation, which makes parameterization essential 
 [[a-note-on-predicates]]
 == A Note on Predicates
 
-A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
-the release of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
-text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
-The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
-<<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc. Two new additional `TextP` predicate members were added in the
-TinkerPop 3.6.0 release that allow working with regular expressions. These are `TextP.regex` and `TextP.notRegex`
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. Gremlin
+supports text predicates (`TextP`), which are specialized predicates that only work on String values and are of the form `Function<String,Boolean>`. Additionally, type predicate (`P.typeOf`) supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
@@ -5483,6 +5479,8 @@ TinkerPop 3.6.0 release that allow working with regular expressions. These are `
 | `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `P.within(objects...)` | Is the incoming object in the array of provided objects?
 | `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `P.typeOf(GType)` | Is the incoming object of the type indicated by the provided `GType` token?
+| `P.typeOf(string)` | Is the incoming object of the type indicated by the provided `String`?
 | `TextP.startingWith(string)` | Does the incoming `String` start with the provided `String`?
 | `TextP.endingWith(string)` | Does the incoming `String` end with the provided `String`?
 | `TextP.containing(string)` | Does the incoming `String` contain the provided `String`?
@@ -5538,6 +5536,36 @@ binding, not to the explicit string value.
 ----
 g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+[[a-note-on-types]]
+== A Note on Types
+
+Gremlin provides type-based filtering capabilities through the `GType` enumeration, which represents the various data 
+types that can be encountered during graph traversals. Each `GType` constant corresponds to a specific Gremlin type and
+is primarily used with the `typeOf()` predicate to filter values based on their runtime type.
+
+The `GType` enumeration includes common data types such as:
+
+* **Numeric types**: `INT`, `LONG`, `DOUBLE`, `FLOAT`, `BYTE`, `SHORT`, `BIGDECIMAL`, `BIGINT`
+* **General types**: `STRING`, `BOOLEAN`, `CHAR`, `UUID`, `BINARY`
+* **Collection types**: `LIST`, `SET`, `MAP`
+* **Graph types**: `VERTEX`, `EDGE`, `PROPERTY`, `VPROPERTY`, `PATH`, `TREE`, `GRAPH`
+* **Temporal types**: `DATETIME`, `DURATION`
+* **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
+
+[gremlin-groovy,modern]
+----
+g.V().values("age").is(P.typeOf(GType.INT))
+g.V().values("name").is(P.typeOf(GType.STRING))
+g.V().has("weight", P.typeOf(GType.DOUBLE))
+----
+
+The `NUMBER` type is particularly useful as it matches any numeric value, allowing for broader type-based filtering:
+
+[gremlin-groovy,modern]
+----
+g.V().values().is(P.typeOf(GType.NUMBER))
 ----
 
 [[a-note-on-maps]]
