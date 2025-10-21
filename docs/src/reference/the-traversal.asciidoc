@@ -4079,10 +4079,23 @@ g.V().until(has('name','ripple')).
 <1> do-while semantics stating to do `out()` 2 times.
 <2> while-do semantics stating to break if the traverser is at a vertex named "ripple".
 
-IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `until()` comes after `repeat()` it is
-do/while looping. If `until()` comes before `repeat()` it is while/do looping. If `emit()` is placed after `repeat()`,
-it is evaluated on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is
-evaluated on the traversers prior to entering the repeat-traversal.
+[gremlin-groovy,grateful-dead]
+----
+g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(3) <1>
+g.V().has('name','DRUMS').repeat(__.in('followedBy').range(1,3)).until(loops().is(2)) <2>
+g.V().has('name','HEY BO DIDDLEY').repeat(out('followedBy').skip(5)).times(2) <3>
+----
+
+<1> Starting from the song 'JAM' get 2 songs that have followed, looping 3 times.
+<2> Starting from the song 'DRUMS' get the 2nd and 3rd songs that have preceded, looping twice.
+<3> Starting from the song 'HEY BO DIDDLEY' get the songs that have followed, skipping the first 5 and looping twice.
+
+IMPORTANT: There are three modulators for `repeat()`: `times()`, `until()`, and `emit()`. The most straightforward is 
+`times()`, which indicates the number of times to execute the loop. Conditional loops can be executed using `until()`. 
+If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. 
+Emission of traversers from the loop are controlled with `emit()`. If `emit()` is placed after `repeat()`, it is evaluated 
+on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the 
+traversers prior to entering the repeat-traversal.
 
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is
 `true` (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code

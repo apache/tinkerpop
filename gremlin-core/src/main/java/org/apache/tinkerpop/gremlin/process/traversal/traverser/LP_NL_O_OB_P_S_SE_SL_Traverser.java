@@ -19,20 +19,17 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import java.util.Objects;
+import java.util.Stack;
 import org.apache.commons.collections4.map.AbstractReferenceMap;
 import org.apache.commons.collections4.map.ReferenceMap;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.LabelledCounter;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
-public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Traverser<T> {
+public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Traverser<T> implements NL_SL_Traverser<T> {
 
     protected Stack<LabelledCounter> nestedLoops;
-    protected ReferenceMap loopNames = null;
+    protected ReferenceMap<String,Object> loopNames = null;
 
     protected LP_NL_O_OB_P_S_SE_SL_Traverser() {
     }
@@ -44,41 +41,19 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
                 AbstractReferenceMap.ReferenceStrength.WEAK);
     }
 
-    /////////////////
-
     @Override
-    public int loops() {
-        return this.nestedLoops.peek().count();
+    public Stack<LabelledCounter> getNestedLoops() {
+        return nestedLoops;
     }
 
     @Override
-    public int loops(final String loopName) {
-        if (loopName == null)
-            return loops();
-        else if (this.loopNames.containsKey(loopName))
-            return ((LabelledCounter) this.loopNames.get(loopName)).count();
-        else
-            throw new IllegalArgumentException("Loop name not defined: " + loopName);
+    public ReferenceMap<String,Object> getNestedLoopNames() {
+        return loopNames;
     }
 
     @Override
-    public void initialiseLoops(final String stepLabel, final String loopName) {
-        if (this.nestedLoops.empty() || !this.nestedLoops.peek().hasLabel(stepLabel)) {
-            final LabelledCounter lc = new LabelledCounter(stepLabel, (short) 0);
-            this.nestedLoops.push(lc);
-            if (loopName != null)
-                this.loopNames.put(loopName, lc);
-        }
-    }
-
-    @Override
-    public void incrLoops() {
-        this.nestedLoops.peek().increment();
-    }
-
-    @Override
-    public void resetLoops() {
-        this.nestedLoops.pop();
+    public TraverserRequirement getLoopRequirement() {
+        return TraverserRequirement.NESTED_LOOP;
     }
 
     /////////////////
@@ -86,59 +61,20 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
     @Override
     public <R> Admin<R> split(final R r, final Step<T, R> step) {
         final LP_NL_O_OB_P_S_SE_SL_Traverser<R> clone = (LP_NL_O_OB_P_S_SE_SL_Traverser<R>) super.split(r, step);
-        clone.nestedLoops = new Stack<>();
-        for(LabelledCounter lc : this.nestedLoops)
-            clone.nestedLoops.push((LabelledCounter) lc.clone());
-
-        if (this.loopNames != null) {
-            clone.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
-                    AbstractReferenceMap.ReferenceStrength.WEAK);
-
-            final Iterator<Map.Entry<String,Object>> loopNamesIterator = this.loopNames.entrySet().iterator();
-            while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry<String,Object> pair = loopNamesIterator.next();
-
-                final int idx = this.nestedLoops.indexOf(pair.getValue());
-                if (idx != -1)
-                    clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
-            }
-        }
-
+        cloneLoopState(clone);
         return clone;
     }
 
     @Override
     public Admin<T> split() {
         final LP_NL_O_OB_P_S_SE_SL_Traverser<T> clone = (LP_NL_O_OB_P_S_SE_SL_Traverser<T>) super.split();
-        clone.nestedLoops = new Stack<>();
-        for(LabelledCounter lc : this.nestedLoops)
-            clone.nestedLoops.push((LabelledCounter) lc.clone());
-
-        if (this.loopNames != null) {
-            clone.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
-                    AbstractReferenceMap.ReferenceStrength.WEAK);
-
-            final Iterator<Map.Entry<String,Object>> loopNamesIterator = this.loopNames.entrySet().iterator();
-            while (loopNamesIterator.hasNext()) {
-                final ReferenceMap.Entry<String,Object> pair = loopNamesIterator.next();
-
-                final int idx = this.nestedLoops.indexOf(pair.getValue());
-                if (idx != -1)
-                    clone.loopNames.put(pair.getKey(), clone.nestedLoops.get(idx));
-            }
-        }
-
+        cloneLoopState(clone);
         return clone;
     }
 
     @Override
     public void merge(final Admin<?> other) {
         super.merge(other);
-    }
-
-    @Override
-    public Set<String> getLoopNames() {
-        return loopNames.keySet();
     }
 
     /////////////////
@@ -152,7 +88,7 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
         final LP_NL_O_OB_P_S_SE_SL_Traverser<?> that = (LP_NL_O_OB_P_S_SE_SL_Traverser<?>) o;
 
         if (!this.nestedLoops.equals(that.nestedLoops)) return false;
-        return this.loopNames != null ? this.loopNames.equals(that.loopNames) : that.loopNames == null;
+        return Objects.equals(this.loopNames, that.loopNames);
     }
 
     @Override
@@ -162,6 +98,13 @@ public class LP_NL_O_OB_P_S_SE_SL_Traverser<T> extends LP_O_OB_P_S_SE_SL_Travers
         result = 31 * result + (this.loopNames != null ? this.loopNames.hashCode() : 0);
 
         return result;
+    }
+
+    private void cloneLoopState(final LP_NL_O_OB_P_S_SE_SL_Traverser<?> clone) {
+        clone.nestedLoops = new Stack<>();
+        clone.loopNames = new ReferenceMap<>(AbstractReferenceMap.ReferenceStrength.HARD,
+                AbstractReferenceMap.ReferenceStrength.WEAK);
+        copyNestedLoops(clone.nestedLoops, clone.loopNames);
     }
 
 }

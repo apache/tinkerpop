@@ -41,6 +41,10 @@ public class LabelledCounter implements Serializable, Cloneable {
         this.count = initialCount;
     }
 
+    public String getLabel() {
+        return this.label;
+    }
+    
     public boolean hasLabel(final String label){
         return this.label.equals(label);
     }
