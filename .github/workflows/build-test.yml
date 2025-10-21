@@ -258,7 +258,7 @@ jobs:
         run: |
           touch gremlin-python/.glv
           EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
-          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE -DskipTests -Dci
           mvn verify -pl gremlin-python
 #  dotnet:
 #    name: .NET
