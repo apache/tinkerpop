@@ -1589,6 +1589,40 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[[local-step]]
+=== local()
+
+*Description:* Executes the provided traversal in an object-local manner.
+
+*Syntax:* `local(Traversal localTraversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `localTraversal` - The traversal that processes each single-object traverser individually.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `local()` step enforces object-local execution. As a branching step with local children, it implements strict lazy
+evaluation by passing a single traverser at a time to the local traversal (bulk of exactly one, if bulking is supported)
+and resetting the traversal to clean state between executions.
+
+Under lazy evaluation, each traverser must complete its full journey through all steps in the local traversal before
+the next traverser begins processing. This creates a sequential, pull-based execution model where each step processes
+one traverser completely before requesting the next.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LocalStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#local-step[reference]
+
 [[intersect-step]]
 === intersect()
 

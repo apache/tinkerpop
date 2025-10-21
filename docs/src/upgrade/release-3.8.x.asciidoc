@@ -554,6 +554,34 @@ compatibility.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3161[TINKERPOP-3161]
 
+==== Split bulked traversers for `local()`
+
+Prior to 3.8.0, the `local()` exhibited "traverser-local" semantics, where the local traversal would independently to
+each individual Traverser. This often led to confusion, especially in the presence of reducing barrier steps as the
+presence of bulked traversers would lead to multiple objects being processed at once. `local()` has been updated to
+automatically split any bulked traversers and thus now exhibits true "object-local" semantics.
+
+[source,groovy]
+----
+// 3.7.4
+gremlin> g.V().out().barrier().local(count())
+==>3
+==>1
+==>1
+==>1
+
+// 3.8.0
+gremlin> g.V().out().barrier().local(count())
+==>1
+==>1
+==>1
+==>1
+==>1
+==>1
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3196[TINKERPOP-3196]
+
 ==== Removal of P.getOriginalValue()
 
 `P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.
