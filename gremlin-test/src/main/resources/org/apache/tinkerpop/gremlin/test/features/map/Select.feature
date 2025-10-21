@@ -149,11 +149,11 @@ Feature: Step - select()
       | m[{"a":"d[5].i", "b": "stephen"}] |
       | m[{"a":"d[5].i", "b": "daniel"}] |
 
-  Scenario: g_V_hasXname_isXmarkoXX_asXaX_selectXaX
+  Scenario: g_V_whereX_valueXnameX_isXmarkoXX_asXaX_selectXaX
     Given the modern graph
     And the traversal of
       """
-      g.V().has("name", __.is("marko")).as("a").select("a")
+      g.V().where(values("name").is("marko")).as("a").select("a")
       """
     When iterated to list
     Then the result should be unordered

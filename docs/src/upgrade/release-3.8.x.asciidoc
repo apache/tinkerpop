@@ -317,6 +317,38 @@ with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
 
+==== Removal of has(key, traversal)
+
+The has(key, traversal) API has been removed in version 3.8.0 due to its confusing behavior that differed from other
+has() variants. As well, most has(key, traversal) usage indicates a misunderstanding of the API. Unlike has(key, value)
+which performs equality comparison, has(key, traversal) only checked if the traversal produced any result, creating
+inconsistent semantics.
+
+[source,text]
+----
+// 3.7.x - this condition is meaningless but yields result because count() is productive
+gremlin> g.V().has("age", __.count())
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+// simple example
+gremlin> g.V().has("age", __.is(P.gt(30)))
+==>v[4]
+==>v[6]
+
+// 3.8.0 - traversals no longer yield results, for proper use cases consider using predicate or where() for filtering
+gremlin> g.V().has("age", __.count())
+gremlin> g.V().has("age", __.is(P.gt(30)))
+gremlin> g.V().has("age", P.gt(30))
+==>v[4]
+==>v[6]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
+
 ==== Serialization Changes
 
 *Properties on Element Serialization in Python & Javascript*
