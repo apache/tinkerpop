@@ -90,9 +90,9 @@ export class Edge<
 > extends Element<TLabel, TId> {
   constructor(
     id: TId,
-    readonly outV: TOutVertex | null,
+    readonly outV: TOutVertex,
     readonly label: TLabel,
-    readonly inV: TInVertex | null,
+    readonly inV: TInVertex,
     readonly properties: Property[] = [],
   ) {
     super(id, label, properties);

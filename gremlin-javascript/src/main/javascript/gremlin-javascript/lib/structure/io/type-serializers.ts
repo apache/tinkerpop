@@ -309,7 +309,7 @@ export class TraversalStrategySerializer extends TypeSerializer<ts.TraversalStra
 /**
  * Helper function to deserialize properties into arrays of VertexProperty or Property according to graphSONV3.
  */
-function deserializeProperties(value, reader) {
+function deserializeProperties(value: { [x: string]: any }, reader: { read: (arg0: any) => any }) {
   let properties = [];
   if ('properties' in value) {
     const props = reader.read(value['properties']);
@@ -325,8 +325,6 @@ function deserializeProperties(value, reader) {
   return properties;
 }
 
-class VertexSerializer extends TypeSerializer {
-  deserialize(obj) {
 export class VertexSerializer extends TypeSerializer<g.Vertex> {
   deserialize(obj: SerializedValue) {
     const value = obj[valueKey];
