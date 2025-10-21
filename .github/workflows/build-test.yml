@@ -1,5 +1,11 @@
 name: build-test
 on: [push, pull_request]
+env:
+  # modules commonly excluded from builds as they have their own independent non-JVM setups and can be run in parallel.
+  # take care when modifying this list because GLVs use shell commands to remove themselves from this list and
+  # modifications could break patterns of replacement they are searching for.
+  EXCLUDE_MODULES: '-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-javascript,-:gremlint,-:gremlin-mcp,-:gremlin-python'
+  EXCLUDE_FOR_GLV: '-:gremlin-annotations,-:gremlin-archetype,-:gremlin-console,-:hadoop-gremlin,-:neo4j-gremlin,-:spark-gremlin,-:sparql-gremlin'
 jobs:
   smoke:
     name: smoke
@@ -27,7 +33,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean install -pl -:gremlin-javascript,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
   java-jdk11:
     name: mvn clean install - jdk11
     timeout-minutes: 45
@@ -41,7 +47,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Build with Maven
-        run: mvn clean install -pl -:gremlin-javascript,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
+        run: mvn clean install -pl $EXCLUDE_MODULES -Dci --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dcoverage
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -60,7 +66,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j
   gremlin-server-unified:
     name: gremlin-server unified
@@ -76,7 +82,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :gremlin-server -DskipTests -DskipIntegrationTests=false -DincludeNeo4j -DtestUnified=true
   cache-gremlin-server-docker-image:
       name: cache gremlin-server docker image
@@ -129,11 +135,11 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -DskipImageBuild -Dci
+          mvn clean install -pl %EXCLUDE_MODULES% -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false '-Dit.test=*IntegrateTest,!SparkGryoSerializerGraphComputerProcessIntegrateTest'
   spark-gryo:
     name: spark gryo
@@ -153,11 +159,11 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -DskipImageBuild -Dci
+          mvn clean install -pl %EXCLUDE_MODULES% -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :spark-gremlin -DskipTests -DskipIntegrationTests=false -Dit.test=SparkGryoSerializerGraphComputerProcessIntegrateTest
   gremlin-console:
     name: gremlin-console
@@ -174,7 +180,7 @@ jobs:
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :gremlin-console -DskipTests -DskipIntegrationTests=false
   gremlin-driver:
     name: gremlin-driver
@@ -190,7 +196,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
-          mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl gremlin-driver -DskipIntegrationTests=false
   javascript:
     name: javascript
@@ -229,8 +235,9 @@ jobs:
         run: docker load --input gremlin-server.tar
       - name: Build with Maven
         run: |
-          mvn clean install -pl -:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
-          mvn verify -pl :gremlin-javascript,:gremlint
+          EXCLUDE="-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlin-go,-:gremlin-python,$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+          mvn verify -pl :gremlin-javascript,:gremlint,:gremlin-mcp
   python:
     name: python
     timeout-minutes: 20
@@ -244,13 +251,14 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
-          mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl gremlin-python
   dotnet:
     name: .NET
@@ -265,7 +273,7 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Set up .NET 8.0.x
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
       - name: Get Cached Server Base Image
@@ -283,7 +291,8 @@ jobs:
         run: |
           touch gremlin-dotnet/src/.glv
           touch gremlin-dotnet/test/.glv
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-:gremlint -q -DskipTests -Dci
+          EXCLUDE="${EXCLUDE_MODULES/-:gremlin-dotnet-source,-:gremlin-dotnet-tests,},$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
   neo4j-gremlin:
     name: neo4j-gremlin
@@ -299,7 +308,7 @@ jobs:
           distribution: 'temurin'
       - name: Build with Maven
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :neo4j-gremlin -DincludeNeo4j
   go:
     name: go
@@ -328,7 +337,8 @@ jobs:
         working-directory: .
         run: |
           touch gremlin-go/.glv
-          mvn clean install -pl -:gremlin-python,-:gremlin-javascript,-:gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests -q -DskipTests -Dci
+          EXCLUDE="${EXCLUDE_MODULES/-:gremlin-go,},$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-go
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5

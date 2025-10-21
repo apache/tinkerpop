@@ -297,3 +297,18 @@ Feature: Step - union()
       | alice |
       | bob |
       | chris |
+
+  Scenario: g_VX_hasLabelXpersonX_unionX_whereX_out_count_isXgtX2XXX_valuesXageX_notX_whereX_bothE_count_isXgt2XXX_valusXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().hasLabel("person").union(where(outE().count().is(P.gt(2))).values("age"),
+                                     __.not(where(outE().count().is(P.gt(2)))).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | vadas |
+      | josh |
+      | peter |

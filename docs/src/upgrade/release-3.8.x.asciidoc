@@ -17,9 +17,9 @@ limitations under the License.
 
 = TinkerPop 3.8.0
 
-image::gremlin-running.png[width=185]
+image::gremlin-67.png[width=185]
 
-*NOT OFFICIALLY NAMED YET*
+*Grix Greven*
 
 == TinkerPop 3.8.0
 
@@ -29,6 +29,16 @@ Please see the link:https://github.com/apache/tinkerpop/blob/3.8.0/CHANGELOG.asc
 complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
+
+==== Gremlin MCP Server
+
+Gremlin MCP Server is an experimental application that implements the link:https://modelcontextprotocol.io/[Model Context Protocol]
+(MCP) to expose Gremlin Server-backed graph operations to MCP-capable clients such as Claude Desktop, Cursor, or
+Windsurf. Through this integration, graph structure can be discovered, and Gremlin traversals can be executed. Basic
+health checks are included to validate connectivity.
+
+A running Gremlin Server that fronts the target TinkerPop graph is required. An MCP client can be configured to connect
+to the Gremlin MCP Server endpoint.
 
 ==== Air Routes Dataset
 
@@ -301,7 +311,9 @@ g.inject("Hello").split("")
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3083[TINKERPOP-3083]
 
 ==== asString() No Longer Allow Nulls
-The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
+
+The `asString()` step will no longer allow `null` input. An `IllegalArgumentException` will be thrown for consistency
+with all other parsing steps (i.e. `asDate()`, `asBool()`, `asNumber()`).
 
 See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCUSS] thread
 
@@ -337,17 +349,79 @@ gremlin> g.V().has("age", P.gt(30))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
-==== Javascript Set Deserialization
+==== Serialization Changes
+
+*Properties on Element Serialization in Python & Javascript*
+
+Element properties handling has been inconsistent across GLVs. Previously,`gremlin-python` deserialized empty properties
+as None or array depending on the serializer, while `gremlin-javascript` returned properties as objects or arrays, with
+empty properties as empty lists or undefined depending on the serializer.
+
+This inconsistency is now resolved, aligning to how properties are handled in Gremlin core and in the Java GLV.
+Both GLVs will deserialize element properties into lists of property objects, returning empty lists instead of null values
+for missing properties.
+
+For python, the most notable difference is in graphSON when "tokens" is turned on for "materializeProperties". The
+properties returned are no longer `None`, but empty lists. Users should update their code accordingly.
+
+For javascript, the change is slightly more extensive, as user should no longer expect javascript objects to be returned.
+All properties are returned as lists of Property or VertexProperty objects.
+
+[source,javascript]
+----
+// 3.7 and before:
+g.with_("materializeProperties", "tokens").V(1).next() // skip properties with token
+// graphson will return properties as a javascript object, which becomes undefined
+Vertex { id: 1, label: 'person', properties: undefined }
+// graphbinary will return properties as empty lists
+Vertex { id: 1, label: 'person', properties: [] }
+
+g.V(1).next() // properties returned
+// graphson will return properties as a javascript object
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: { name: [Array], age: [Array] }
+}
+// graphbinary will return properties as lists of VertexProperty objects
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: [ [VertexProperty], [VertexProperty] ]
+}
+
+// 3.8.0 and newer - properties are always arrays, empty array [] for missing properties:
+g.with_("materializeProperties", "tokens").V(1).next() // skip properties with token
+// both graphson and graphbinary return
+Vertex { id: 1, label: 'person', properties: [] }
+g.V(1).next()
+// both graphson and graphbinary return
+Vertex {
+  id: 1,
+  label: 'person',
+  properties: [ [VertexProperty], [VertexProperty] ]
+}
+
+----
+
+This change only affects how GLVs deserialize property data in client applications. The underlying graph serialization
+formats and server-side behavior remain unchanged.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3186[TINKERPOP-3186]
+
+*Javascript Set Deserialization*
 
 Starting from this version, `gremlin-javascript` will deserialize `Set` data into a ECMAScript 2015 Set. Previously,
 these were deserialized into arrays.
 
-==== .NET Byte Serialization Change
+*.NET Byte Serialization Change*
 
 The Gremlin .NET serializers has been updated to correctly handle byte values as signed integers to align with the IO
 specification, whereas previously it incorrectly serialized and deserialized bytes as unsigned values.
 
-This is a breaking change for .NET applications that rely on byte values. Existing applications using byte values should consider switching to `sbyte` for signed byte operations or `short` for a wider range of values to maintain compatibility.
+This is a breaking change for .NET applications that rely on byte values. Existing applications using byte values
+should consider switching to `sbyte` for signed byte operations or `short` for a wider range of values to maintain
+compatibility.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3161[TINKERPOP-3161]
 
@@ -652,6 +726,43 @@ gremlin> g.V().choose(__.values("age")).
 ==>software
 ==>josh
 ==>software
+==>peter
+----
+
+*Removal of choose().option(Traversal, v)*
+
+The `choose().option(Traversal, v)` was relatively unused in comparison to the other overloads with constants, predicates
+and Pick tokens. The previous implementation often led to confusion as it only evaluated if the traversal was productive,
+rather than performing comparisons based on the traversal's output value. To eliminate this confusion, `Traversal` is no
+longer permitted as an option token for `choose()`. Any usages which are dependent on the Traversal for dynamic case
+matching can be rewritten using `union()`, with filters prepended to each child traversal.
+
+[source,text]
+----
+// 3.7.x
+gremlin> g.V().hasLabel("person").choose(identity()).
+......1>         option(outE().count().is(P.gt(2)), values("age")).
+......2>         option(none, values("name"))
+==>29
+==>vadas
+==>josh
+==>peter
+
+// 3.8.0 - an IllegalArgumentException will be thrown
+gremlin> g.V().hasLabel("person").choose(identity()).
+......1>         option(outE().count().is(P.gt(2)), values("age")).
+......2>         option(none, values("name"))
+Traversal is not allowed as a Pick token for choose().option()
+Type ':help' or ':h' for help.
+Display stack trace? [yN]n
+
+// use union() in these cases
+gremlin> g.V().hasLabel("person").union(
+......1>         where(outE().count().is(P.gt(2))).values("age"),
+......2>         __.not(where(outE().count().is(P.gt(2)))).values("name"))
+==>29
+==>vadas
+==>josh
 ==>peter
 ----
 

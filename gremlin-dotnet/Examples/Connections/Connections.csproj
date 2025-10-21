@@ -25,6 +25,6 @@ limitations under the License.
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Gremlin.Net" Version="3.7.0" />
+    <ProjectReference Include="../../src/Gremlin.Net/Gremlin.Net.csproj" />
   </ItemGroup>
 </Project>

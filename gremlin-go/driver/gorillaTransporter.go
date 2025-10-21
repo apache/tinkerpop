@@ -106,7 +106,9 @@ func (transporter *gorillaTransporter) Write(data []byte) error {
 			return err
 		}
 	}
-	if len(data) > transporter.connSettings.writeBufferSize {
+	// Only validate buffer size if writeBufferSize is explicitly set (> 0)
+	// When writeBufferSize is 0, let Gorilla WebSocket handle it with its own defaults
+	if transporter.connSettings.writeBufferSize > 0 && len(data) > transporter.connSettings.writeBufferSize {
 		return newError(err1201RequestSizeExceedsWriteBufferError)
 	}
 	transporter.writeChannel <- data

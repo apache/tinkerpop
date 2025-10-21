@@ -1,0 +1,14 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "GLV example for JavaScript with Node",
+  "main": "connections.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ryan Tan",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "gremlin": "^3.7.4"
+  }
+}

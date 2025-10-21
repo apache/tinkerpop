@@ -28,8 +28,6 @@ limitations under the License.
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <npm.version>10.8.2</npm.version>
-        <node.version>v20.19.4</node.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -136,8 +134,8 @@ limitations under the License.
                     </execution>
                 </executions>
                 <configuration>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
+                    <nodeVersion>${runtime.node.version}</nodeVersion>
+                    <npmVersion>${runtime.npm.version}</npmVersion>
                 </configuration>
             </plugin>
             <!--
@@ -212,8 +210,8 @@ limitations under the License.
                             activated and that should be good enough given our deployment process.
                             -->
                             <skip>false</skip>
-                            <nodeVersion>${node.version}</nodeVersion>
-                            <npmVersion>${npm.version}</npmVersion>
+                            <nodeVersion>${runtime.node.version}</nodeVersion>
+                            <npmVersion>${runtime.npm.version}</npmVersion>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -16,21 +16,23 @@ limitations under the License.
 ////
 = TinkerPop3 CHANGELOG
 
-== TinkerPop 3.8.0 (NOT OFFICIALLY NAMED YET)
+== TinkerPop 3.8.0 (Grix Greven)
 
-image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-standing.png[width=185]
+image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
 [[release-3-8.0]]
 === TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 
+* Added a Gremln MCP server.
 * Added the Air Routes dataset to the set of available samples packaged with distributions.
 * Added a minimal distribution for `tinkergraph-gremlin` using the `min` classifier that doesn't include the sample datasets.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
-* Renamed `none()` step to `discard()`.
 * Removed `has(key, traversal)` option for `has()` step.
 * Fixed bug where `InlineFilterStrategy` could add an empty `has()`.
+* Normalized python and javascript `Element.properties` to lists.
+* Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
@@ -70,6 +72,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Changed `choose` to only use the first `option` matched.
 * Added `Pick.unproductive` to allow for matches on unproductive predicates.
 * Changed `choose` to pass through traversers of unproductive predicates and unmatched choices.
+* Disallowed `Traversal` as a `Pick` token for `option` in `choose`.
 * Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
 * Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
@@ -126,6 +129,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added getter for `parameterItems` and `valueTraversal` on `DifferenceStep`.
 * Added properties to `Element` objects found in a `Path` for GraphSON v2 and v3 and GraphBinary.
 * Fixed edge properties for GraphBinary which were not deserializing properly.
+* Improved GLV examples reliability and documentation with step-by-step instructions.
+* Added root-level GLV examples in `glv-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
 * Bump netty to 4.1.125.Final
 
 [[release-3-7-4]]

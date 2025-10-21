@@ -147,6 +147,7 @@ deployment.
 . `docker/build.sh -t -i -n`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
 . `mvn versions:set -DnewVersion=xx.yy.zz -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
+.. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
 .. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
@@ -156,6 +157,7 @@ deployment.
 . `git tag -a -m "TinkerPop xx.yy.zz release" xx.yy.zz` and `git push --tags`
 . `mvn clean install`
 . `mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false` to go back to SNAPSHOT
+.. Manually update the `__version__` for `gremlin-python` in `gremlin-python/src/main/python/gremlin_python/__init__.py` to a dev version like `xx.yy.zz.dev1`
 . `mvn clean install -DskipTests` to update GLV versions
 .. Review `Gremlin.Net.csproj`, `Gremlin.Net.Template.csproj` and `Gremlin.Net.Template.nuspec` in `gremlin-dotnet`
 .. Review `package.json` and `package-lock.json` in `gremlin-javascript` and in `gremlint`
@@ -329,6 +331,13 @@ the help of a PMC member for those steps.
 . Consider the changes made to Gremlin and determine if the community needs to organize a PR to [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/gremlin) to keep TypeScript up to date.
 . Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
 .. Make changes as necessary to update the examples.
+. Update root-level GLV examples to use the new release version:
+.. Update version numbers in `glv-examples/gremlin-java/pom.xml` to reference the new release version
+.. Update version numbers in `glv-examples/gremlin-javascript/package.json` to reference the new release version  
+.. Update version numbers in `glv-examples/gremlin-python/requirements.txt` to reference the new release version
+.. Update version numbers in `glv-examples/gremlin-dotnet/*/\*.csproj` to reference the new release version
+.. Update version numbers in `glv-examples/gremlin-go/go.mod` to reference the new release version
+.. Test that all root-level examples work correctly with the new published versions
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Set up the IO tests for the current `SNAPSHOT` as discussed in the <<io,IO Documentation and Testing Section>>
 

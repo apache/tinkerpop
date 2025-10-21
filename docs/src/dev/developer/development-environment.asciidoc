@@ -309,17 +309,25 @@ See the <<release-environment,Release Environment>> section for more information
 [[nodejs-environment]]
 === JavaScript Environment
 
-When building `gremlin-javascript`, mvn command will include a local copy of Node.js runtime and npm inside your project
-using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js runtime will not affect any
-other existing Node.js runtime instances in your machine.
+When building `gremlin-javascript`, `gremlint` and `gremlin-mcp`, the `mvn` command will include a local copy of Node.js
+runtime and npm inside your project using `com.github.eirslett:frontend-maven-plugin` plugin. This copy of the Node.js
+runtime will not affect any other existing Node.js runtime instances in your machine.
 
-To run the development and build scripts of `gremlint` and its corresponding web page `docs/gremlint`, Node.js and npm
-have to be installed. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
+To run the development and build scripts of the web app in `docs/gremlint`, Node.js and npm have to be installed on the
+local system at this time. When generating or publishing the TinkerPop website, the `docs/gremlint` web page has to be
 built. Consequently, the scripts `bin/generate-home.sh` and `bin/publish-home.sh` require that Node.js and npm are
-installed. Version 8.x or newer of npm is required. This is covered in more detail in the <<site,Site>> section.
+installed. Check the root `pom.xml` for the `runtime.node.version` property for the minimum version required. This is
+covered in more detail in the <<site,Site>> section.
 
-As of TinkerPop 3.5.5, `gremlin-javascript` uses Docker for all tests inside of Maven. Please make sure Docker is
-installed and running on your system.
+A fast way to test `grelin-mcp` after doing a build is to use link:https://modelcontextprotocol.io/docs/tools/inspector[@modelcontextprotocol/inspector]
+which will start up the Gremlin MCP server and present a browser-based tool to use the commands. It is most easily
+launched with `npx` as follows:
+
+[source,text]
+----
+# from the root of the repository
+$ npx @modelcontextprotocol/inspector node gremlin-mcp/src/main/javascript/dist/server.js -e GREMLIN_MCP_ENDPOINT=localhost:8182/g -e GREMLIN_MCP_LOG_LEVEL=info
+----
 
 IMPORTANT: Beware of unexpected or unwanted changes on `package-lock.json` files when committing and merging.
 
@@ -494,6 +502,14 @@ and GLVs will run automatically with integration tests against the TinkerTransac
 * `cd site`
 ** Generate web site locally: `bin/generate-home.sh`
 ** Publish web site: `bin/publish-home.sh <username>`
+
+[[glv-examples]]
+== GLV Examples
+
+TinkerPop maintains GLV examples in two distinct locations. User-facing examples in the `glv-examples/` directory
+utilize published driver versions and are referenced in the main documentation. Module-level examples within each GLV
+directory (e.g., `gremlin-python/src/main/python/examples/`) use local development code to ensure compatibility and
+prevent regressions.
 
 [[building-on-windows]]
 == Building On Windows
