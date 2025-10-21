@@ -84,16 +84,8 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          let age, name
-          if (vertex.properties instanceof Array) {
-            const ageProps = vertex.properties.filter(p => p.key === 'age');
-            const nameProps = vertex.properties.filter(p => p.key === 'name');
-            age = ageProps[0];
-            name = nameProps[0];
-          } else {
-            age = vertex.properties.age[0]
-            name = vertex.properties.name[0]
-          }
+          const age = vertex.properties.find(p => p.key === 'age');
+          const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
           assert.ok(name);
           assert.strictEqual(age.value, 29);
@@ -108,7 +100,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+          assert.ok(vertex.properties.length === 0);
         });
     });
 
@@ -119,17 +111,8 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          // if/then until TINKERPOP-3186
-          let age, name
-          if (vertex.properties instanceof Array) {
-            const ageProps = vertex.properties.filter(p => p.key === 'age');
-            const nameProps = vertex.properties.filter(p => p.key === 'name');
-            age = ageProps[0];
-            name = nameProps[0];
-          } else {
-            age = vertex.properties.age[0]
-            name = vertex.properties.name[0]
-          }
+          const age = vertex.properties.find(p => p.key === 'age');
+          const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
           assert.ok(name);
           assert.strictEqual(age.value, 29);
@@ -145,7 +128,7 @@ describe('Client', function () {
           const edge = result.first();
           assert.ok(edge instanceof graphModule.Edge);
           assert.strictEqual(edge.label, 'knows');
-          assert.strictEqual(edge.properties.weight, 0.5);
+          assert.strictEqual(edge.properties[0].value, 0.5);
           assert.ok(edge.inV);
           assert.ok(edge.outV);
         });
@@ -161,18 +144,12 @@ describe('Client', function () {
           assert.strictEqual(prop.key, 'location');
           assert.strictEqual(prop.value, 'centreville');
 
-          // Check meta-properties - TINKERPOP-3186
-          if (prop.properties instanceof Object && !(prop.properties instanceof Array)) {
-            assert.strictEqual(prop.properties.startTime, 1990);
-            assert.strictEqual(prop.properties.endTime, 2000);
-          } else {
-            const startTime = prop.properties.find(p => p.key === 'startTime');
-            const endTime = prop.properties.find(p => p.key === 'endTime');
-            assert.ok(startTime);
-            assert.ok(endTime);
-            assert.strictEqual(startTime.value, 1990);
-            assert.strictEqual(endTime.value, 2000);
-          }
+          const startTime = prop.properties.find(p => p.key === 'startTime');
+          const endTime = prop.properties.find(p => p.key === 'endTime');
+          assert.ok(startTime);
+          assert.ok(endTime);
+          assert.strictEqual(startTime.value, 1990);
+          assert.strictEqual(endTime.value, 2000);
         });
     });
 
@@ -183,7 +160,7 @@ describe('Client', function () {
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
           assert.ok(vertex instanceof graphModule.Vertex);
-          assert.ok(vertex.properties === undefined || vertex.properties.length === 0);
+          assert.ok(vertex.properties.length === 0);
         });
     });
 
@@ -355,15 +332,10 @@ function assertVertexProperties(vertex) {
 
   const vertexProperty = locations[0];
   assert.strictEqual(vertexProperty.value, 'centreville');
-  if (vertexProperty.properties instanceof Array) {
-    const start = vertexProperty.properties.find(p => p.key === 'startTime');
-    const end = vertexProperty.properties.find(p => p.key === 'endTime');
-    assert.ok(start);
-    assert.ok(end);
-    assert.strictEqual(start.value, 1990);
-    assert.strictEqual(end.value, 2000);
-  } else {
-    assert.strictEqual(vertexProperty.properties.startTime, 1990);
-    assert.strictEqual(vertexProperty.properties.endTime, 2000);
-  }
+  const start = vertexProperty.properties.find(p => p.key === 'startTime');
+  const end = vertexProperty.properties.find(p => p.key === 'endTime');
+  assert.ok(start);
+  assert.ok(end);
+  assert.strictEqual(start.value, 1990);
+  assert.strictEqual(end.value, 2000);
 }
