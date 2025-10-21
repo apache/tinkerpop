@@ -196,7 +196,7 @@ Feature: Step - RepeatUnrollStrategy
       g.withStrategies(RepeatUnrollStrategy).V().repeat(both().limit(1)).times(2)
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should have a count of 1
 
   @GraphComputerVerificationStrategyNotSupported
   Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXboth_limitX1XX_timesX2X
@@ -206,7 +206,7 @@ Feature: Step - RepeatUnrollStrategy
       g.withoutStrategies(RepeatUnrollStrategy).V().repeat(both().limit(1)).times(2)
       """
     When iterated to list
-    Then the result should be empty
+    Then the result should have a count of 1
     
   # this traversal is not expected to be unrolled by the strategy but should have consistent semantics compared to traversal without the strategy applied
   @WithRepeatUnrollStrategy

@@ -98,22 +98,7 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     public void set(final T t) {
         this.t = t;
     }
-
-
-    @Override
-    public void initialiseLoops(final String stepLabel, final String loopName) {
-
-    }
-
-    @Override
-    public void incrLoops() {
-
-    }
-
-    @Override
-    public void resetLoops() {
-
-    }
+    
 
     @Override
     public String getStepId() {
@@ -173,16 +158,6 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     @Override
     public Path path() {
         return EmptyPath.instance();
-    }
-
-    @Override
-    public int loops() {
-        throw new UnsupportedOperationException("This traverser does not support loops: " + this.getClass().getCanonicalName());
-    }
-
-    @Override
-    public int loops(final String loopName) {
-        throw new UnsupportedOperationException("This traverser does not support named loops: " + this.getClass().getCanonicalName());
     }
 
     @Override

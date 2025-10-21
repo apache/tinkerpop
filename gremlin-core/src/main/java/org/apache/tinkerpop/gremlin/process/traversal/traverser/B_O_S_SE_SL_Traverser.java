@@ -18,22 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import java.util.Objects;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
+public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> implements NL_SL_Traverser<T> {
 
     protected Object sack = null;
     protected short loops = 0;  // an optimization hack to use a short internally to save bits :)
     protected String loopName = null;
+    protected String stepLabel;
     protected transient TraversalSideEffects sideEffects;
 
     protected B_O_S_SE_SL_Traverser() {
@@ -46,6 +44,41 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
             this.sack = this.sideEffects.getSackInitialValue().get();
     }
 
+    @Override
+    public short getSingleLoopCount() {
+        return this.loops;
+    }
+
+    @Override
+    public void setSingleLoopCount(short loops) {
+        this.loops = loops;
+    }
+
+    @Override
+    public String getSingleLoopName() {
+        return this.loopName;
+    }
+
+    @Override
+    public void setSingleLoopName(String loopName) {
+        this.loopName = loopName;
+    }
+
+    @Override
+    public String getSingleLoopStepLabel() {
+        return this.stepLabel;
+    }
+
+    @Override
+    public void setSingleLoopStepLabel(String stepLabel) {
+        this.stepLabel = stepLabel;
+    }
+
+    @Override
+    public TraverserRequirement getLoopRequirement() {
+        return TraverserRequirement.SINGLE_LOOP;
+    }
+
     /////////////////
 
     @Override
@@ -56,41 +89,6 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     @Override
     public <S> void sack(final S object) {
         this.sack = object;
-    }
-
-    /////////////////
-
-    @Override
-    public int loops() {
-        return this.loops;
-    }
-
-    @Override
-    public int loops(final String loopName) {
-        if (loopName == null || this.loopName != null && this.loopName.equals(loopName))
-            return this.loops;
-        else
-            throw new IllegalArgumentException("Loop name not defined: " + loopName);
-    }
-
-    @Override
-    public Set<String> getLoopNames() {
-        return Collections.singleton(loopName);
-    }
-
-    @Override
-    public void initialiseLoops(final String stepLabel , final String loopName){
-        this.loopName = loopName;
-    }
-
-    @Override
-    public void incrLoops() {
-        this.loops++;
-    }
-
-    @Override
-    public void resetLoops() {
-        this.loops = 0;
     }
 
     /////////////////
@@ -111,6 +109,7 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
         final B_O_S_SE_SL_Traverser<R> clone = (B_O_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
+        cloneLoopState(clone);
         return clone;
     }
 
@@ -118,6 +117,7 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     public Traverser.Admin<T> split() {
         final B_O_S_SE_SL_Traverser<T> clone = (B_O_S_SE_SL_Traverser<T>) super.split();
         clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
+        cloneLoopState(clone);
         return clone;
     }
 
@@ -138,17 +138,31 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     @Override
     public int hashCode() {
-        return carriesUnmergeableSack() ? System.identityHashCode(this) : (super.hashCode() ^ this.loops ^ Objects.hashCode(this.loopName));
+        if (carriesUnmergeableSack()) {
+            return System.identityHashCode(this);
+        }
+        int result = super.hashCode();
+        result = 31 * result + this.loops;
+        result = 31 * result + Objects.hashCode(this.loopName);
+        result = 31 * result + Objects.hashCode(this.stepLabel);
+        return result;
     }
 
     protected final boolean equals(final B_O_S_SE_SL_Traverser other) {
         return super.equals(other) && other.loops == this.loops
                 && Objects.equals(this.loopName, other.loopName)
+                && Objects.equals(this.stepLabel, other.stepLabel)
                 && !carriesUnmergeableSack();
     }
 
     @Override
     public boolean equals(final Object object) {
         return object instanceof B_O_S_SE_SL_Traverser && this.equals((B_O_S_SE_SL_Traverser) object);
+    }
+
+    private <R> void cloneLoopState(B_O_S_SE_SL_Traverser<R> clone) {
+        clone.loops = this.loops;
+        clone.loopName = this.loopName;
+        clone.stepLabel = this.stepLabel;
     }
 }

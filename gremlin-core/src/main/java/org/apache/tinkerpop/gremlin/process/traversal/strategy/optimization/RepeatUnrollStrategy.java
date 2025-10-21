@@ -63,6 +63,10 @@ public final class RepeatUnrollStrategy extends AbstractTraversalStrategy<Traver
 
     private static final RepeatUnrollStrategy INSTANCE = new RepeatUnrollStrategy();
     static final int MAX_BARRIER_SIZE = 2500;
+    /**
+     * When adding more 'allowed' steps, consider if tests are needed that use the step 'withoutStrategies(RepeatUnrollStrategy)' 
+     * to validate the traversal with repeat has the same semantics as the unrolled equivalent
+     */
     private static final Set<Class> ALLOWED_STEP_CLASSES = Set.of(
             VertexStepContract.class,
             EdgeVertexStep.class,
