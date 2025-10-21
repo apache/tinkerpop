@@ -2034,14 +2034,6 @@ message containing: `The repeat()-traversal was not defined`.
 - Nested repeats and loop names:
   - Nested `repeat()` steps maintain separate loop counters. Use `repeat("a", ...)` and `loops("a")` to reference a
     specific counter inside nested loops.
-- Range steps (`limit()`, `skip()`, `range()`) in `repeat()`:
-  - Globally-scoped range steps within `repeat()` maintain per-iteration counters, resetting for each iteration. 
-  - `g.V().repeat(out().limit(2)).times(2)` applies the limit per iteration and thus produces the same number of 
-results as `g.V().out().limit(2).out().limit(2)` (when assuming predictable order).
-  - `g.V().repeat(out().range(1,2)).times(2)` applies the range per iteration and thus produces the same number of 
-results as `g.V().out().range(1,2).out().range(1,2)` (when assuming predictable order).
-  - `g.V().repeat(out().skip(1)).times(2)` skips the first traverser per iteration and thus produces the same number of
-results as `g.V().out().skip(1).out().skip(1)` (when assuming predictable order).
 
 *Exceptions*
 
