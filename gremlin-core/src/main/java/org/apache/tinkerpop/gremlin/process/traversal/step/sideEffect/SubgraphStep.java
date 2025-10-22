@@ -45,7 +45,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffectCapable {
+public final class SubgraphStep extends SideEffectBarrierStep<Edge> implements SideEffectCapable {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.OBJECT,

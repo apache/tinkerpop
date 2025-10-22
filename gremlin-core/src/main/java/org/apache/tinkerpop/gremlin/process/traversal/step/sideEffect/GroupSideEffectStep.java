@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S>
+public final class GroupSideEffectStep<S, K, V> extends SideEffectBarrierStep<S>
         implements SideEffectCapable<Map<K, ?>, Map<K, V>>, TraversalParent, ByModulating, Grouping<S, K, V> {
 
     private char state = 'k';
