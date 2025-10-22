@@ -187,7 +187,7 @@ g.withSideEffect('v', []).                            <1>
   unfold().
   map(unfold().as('v_or_e').
       coalesce(V().where(eq('v_or_e')).aggregate(local,'v'),
-               select('v').tail(local, 1).bothE().where(eq('v_or_e'))).
+               select('v').tail(local, 1).unfold().bothE().where(eq('v_or_e'))).
       values('name','weight').
       fold()).
   group().

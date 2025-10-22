@@ -311,7 +311,7 @@ g.addV('person').property('name','alice').as('alice').
       times(3).emit().
     select(all, "x").
     project("name","score").
-      by(tail(local, 1).select("a").values("name")).
+      by(tail(local, 1).unfold().select("a").values("name")).
       by(unfold().
          sack(assign).by(select("b")).
          sack(mult).by(select("c")).
