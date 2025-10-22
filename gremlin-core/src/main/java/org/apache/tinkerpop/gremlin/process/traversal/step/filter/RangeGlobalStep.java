@@ -129,9 +129,8 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
     @Override
     public RangeGlobalStep<S> clone() {
         final RangeGlobalStep<S> clone = (RangeGlobalStep<S>) super.clone();
-        clone.singleCounter = new AtomicLong(0l);
+        clone.singleCounter = new AtomicLong(0);
         clone.loopCounters = new HashMap<>();
-        clone.insideLoop = this.insideLoop;
         return clone;
     }
 
