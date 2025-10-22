@@ -68,3 +68,20 @@ Feature: Step - subgraph()
       | edges |
     And the result should be a subgraph with the following
       | vertices |
+
+  Scenario: g_E_hasXweight_0_5X_subgraphXaX_selectXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.E().has("weight", 0.4).subgraph("a").select("a")
+      """
+    When iterated next
+    Then the result should be a subgraph with the following
+      | edges |
+      | e[marko-created->lop] |
+      | e[josh-created->lop] |
+    And the result should be a subgraph with the following
+      | vertices |
+      | v[marko] |
+      | v[lop] |
+      | v[josh] |

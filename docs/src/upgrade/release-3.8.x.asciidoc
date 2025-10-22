@@ -795,6 +795,49 @@ g.with_strategies(OptionsStrategy(options=myOptions))
 g.with_strategies(OptionsStrategy(**myOptions))
 ----
 
+==== Add barrier to most SideEffect steps
+
+Prior to 3.8.0, the `group(String)`, `groupCount(String)`, `tree(String)` and `subgraph(String)` steps were non-blocking,
+in that they allowed traversers to pass through without fully iterating the traversal and fully computing the side
+effect. Consider the following example:
+
+[source, groovy]
+----
+// 3.7.4
+gremlin> g.V().groupCount("x").select("x")
+==>[v[1]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[3]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+----
+
+As of 3.8.0, all of these steps now implement `LocalBarrier`, meaning that the traversal is fully iterated before any
+results are passed. This guarantees that a traversal will produce the same results regardless of it is evaluated in a
+lazy (DFS) or eager (BFS) fashion. Any usages which are reliant on the previous "one-at-a-time" accumulation of results
+can still achieve this by embedding the side effect step inside a `local()` step.
+
+[source, groovy]
+----
+// 3.8.0
+gremlin> g.V().groupCount("x").select("x")
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+
+gremlin> g.V().local(groupCount("x")).select("x")
+==>[v[1]:1]
+==>[v[1]:1,v[2]:1]
+==>[v[1]:1,v[2]:1,v[3]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1]
+==>[v[1]:1,v[2]:1,v[3]:1,v[4]:1,v[5]:1,v[6]:1]
+----
+
 ==== choose() Semantics
 
 Several enhancements and clarifications have been made to the `choose()` step in TinkerPop 3.8.0 to improve its behavior
