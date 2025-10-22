@@ -404,7 +404,7 @@ world.gremlins = {
     'g_VX5X_rangeX0_1X_in_rangeX0_1X_in_valuesXnameX': [(lambda g, vid5=None:g.V(vid5).range_(0, 1).in_().range_(0, 1).in_().values('name'))], 
     'g_VX5X_repeatXrangeX0_1X_in_repeatXrangeX0_1X_inX_timesX1XX_timesX1X_valuesXnameX': [(lambda g, vid5=None:g.V(vid5).repeat(__.range_(0, 1).in_().repeat(__.range_(0, 1).in_()).times(1)).times(1).values('name'))], 
     'g_VX5X_repeatXrangeX0_1X_in_aggregateXxXX_timesX2X_capXxX': [(lambda g, vid5=None:g.V(vid5).repeat(__.range_(0, 1).in_().aggregate('x')).times(2).cap('x'))], 
-    'g_withoutStrategiesXEarlyLimitStrategyX_VX5X_repeatXlimitX1X_in_limitX1X_limitX1XX_timesX2X': [(lambda g, vid5=None:g.without_strategies(*[GremlinType('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy')]).V(vid5).repeat(__.limit(1).in_().limit(1).limit(1)).times(2))], 
+    'g_withoutStrategiesXEarlyLimitStrategyX_VX5X_repeatXlimitX1X_in_limitX1X_limitX1XX_timesX2X': [(lambda g, vid5=None:g.without_strategies(EarlyLimitStrategy).V(vid5).repeat(__.limit(1).in_().limit(1).limit(1)).times(2))], 
     'g_V_repeatXout_whereXhasXnameX_limitX1XXX_timesX2X': [(lambda g:g.V().repeat(__.out().where(__.has('name').limit(1))).times(2))], 
     'g_V_out_whereXhasXnameX_limitX1XX_out_whereXhasXnameX_limitX1XX': [(lambda g:g.V().out().where(__.has('name').limit(1)).out().where(__.has('name').limit(1)))], 
     'g_V_hasXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X': [(lambda g:g.V().has('name', 'JAM').repeat(__.out('followedBy').limit(2)).times(2))], 
