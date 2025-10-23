@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 
@@ -115,12 +116,24 @@ public class Model {
         addCoreEntry(new java.sql.Timestamp(1481750076295L), "Timestamp", "");
         addCoreEntry(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786"), "UUID");
 
-        addGraphStructureEntry(graph.edges().next(), "Edge", "");
-        addGraphStructureEntry(g.V().out().out().path().next(), "Path", "");
-        addGraphStructureEntry(graph.edges().next().properties().next(), "Property", "");
+        addGraphStructureEntry(IteratorUtils.list(graph.edges()).stream()
+                .sorted((e1, e2) -> Integer.compare((Integer)e1.id(), (Integer)e2.id()))
+                .iterator().next(), "Edge", "");
+        addGraphStructureEntry(g.V().order().by(T.id).out().out().path().next(), "Path", "");
+        addGraphStructureEntry(IteratorUtils.list(IteratorUtils.list(graph.edges()).stream()
+                .sorted((e1, e2) -> Integer.compare((Integer)e1.id(), (Integer)e2.id()))
+                .iterator().next().properties()).stream()
+                .sorted((p1, p2) -> p1.key().compareTo(p2.key()))
+                .iterator().next(), "Property", "");
         addGraphStructureEntry(graph, "TinkerGraph", "`TinkerGraph` has a custom serializer that is registered as part of the `TinkerIoRegistry`.");
-        addGraphStructureEntry(graph.vertices().next(), "Vertex", "");
-        addGraphStructureEntry(graph.vertices().next().properties().next(), "VertexProperty", "");
+        addGraphStructureEntry(IteratorUtils.list(graph.vertices()).stream()
+                .sorted((v1, v2) -> Integer.compare((Integer)v1.id(), (Integer)v2.id()))
+                .iterator().next(), "Vertex", "");
+        addGraphStructureEntry(IteratorUtils.list(IteratorUtils.list(graph.vertices()).stream()
+                .sorted((v1, v2) -> Integer.compare((Integer)v1.id(), (Integer)v2.id()))
+                .iterator().next().properties()).stream()
+                .sorted((p1, p2) -> Long.compare((Long)p1.id(), (Long)p2.id()))
+                .iterator().next(), "VertexProperty", "");
 
         addGraphProcessEntry(SackFunctions.Barrier.normSack, "Barrier", "");
         addGraphProcessEntry(new Bytecode.Binding("x", 1), "Binding", "A \"Binding\" refers to a `Bytecode.Binding`.");
@@ -153,7 +166,7 @@ public class Model {
         // TextP was only added at 3.4.0 and is not supported with untyped GraphSON of any sort
         addGraphProcessEntry(TextP.containing("ark"), "TextP", "");
         addGraphProcessEntry(createStaticTraversalMetrics(), "TraversalMetrics", "");
-        addGraphProcessEntry(g.V().hasLabel("person").asAdmin().nextTraverser(), "Traverser", "");
+        addGraphProcessEntry(g.V().hasLabel("person").order().by(T.id).asAdmin().nextTraverser(), "Traverser", "");
 
         final Map<String,Object> requestBindings = new HashMap<>();
         requestBindings.put("x", 1);
@@ -192,7 +205,9 @@ public class Model {
         addResponseMessageEntry(responseMessage, "Authentication Challenge", "When authentication is enabled, an initial request to the server will result in an authentication challenge. The typical response message will appear as follows, but handling it could be different depending on the SASL implementation (e.g. multiple challenges maybe requested in some cases, but not in the default provided by Gremlin Server).");
         responseMessage = ResponseMessage.build(UUID.fromString("41d2e28a-20a4-4ab0-b379-d810dede3786")).
                 code(org.apache.tinkerpop.gremlin.util.message.ResponseStatusCode.SUCCESS).
-                result(Collections.singletonList(graph.vertices().next())).create();
+                result(Collections.singletonList(IteratorUtils.list(graph.vertices()).stream()
+                        .sorted((v1, v2) -> Integer.compare((Integer)v1.id(), (Integer)v2.id()))
+                        .iterator().next())).create();
         addResponseMessageEntry(responseMessage, "Standard Result", "The following `ResponseMessage` is a typical example of the typical successful response Gremlin Server will return when returning results from a script.");
         
         addExtendedEntry(new BigDecimal(new BigInteger("123456789987654321123456789987654321")), "BigDecimal", "");
