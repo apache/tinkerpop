@@ -381,7 +381,7 @@ Feature: Step - addE()
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE("knows").from(vid1).to(vid6).property("weight", xx1)
+      g.addE("knows").from(V(vid1)).to(V(vid6)).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -412,7 +412,7 @@ Feature: Step - addE()
     And using the parameter xx2 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE(xx1).from(vid1).to(vid6).property("weight", xx2)
+      g.addE(xx1).from(V(vid1)).to(V(vid6)).property("weight", xx2)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -442,7 +442,7 @@ Feature: Step - addE()
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.V(vid1).addE("knows").to(vid6).property("weight", xx1)
+      g.V(vid1).addE("knows").to(V(vid6)).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1

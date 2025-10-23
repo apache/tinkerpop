@@ -530,7 +530,6 @@ traversalMethod_format
 
 traversalMethod_from
     : K_FROM LPAREN stringLiteral RPAREN #traversalMethod_from_String
-    | K_FROM LPAREN genericArgument RPAREN #traversalMethod_from_GenricArgument
     | K_FROM LPAREN nestedTraversal RPAREN #traversalMethod_from_Traversal
     ;
 
@@ -881,7 +880,6 @@ traversalMethod_times
 traversalMethod_to
     : K_TO LPAREN traversalDirection (COMMA stringNullableArgumentVarargs)? RPAREN #traversalMethod_to_Direction_String
     | K_TO LPAREN stringLiteral RPAREN #traversalMethod_to_String
-    | K_TO LPAREN genericArgument RPAREN #traversalMethod_to_GenricArgument
     | K_TO LPAREN nestedTraversal RPAREN #traversalMethod_to_Traversal
     ;
 
