@@ -45,6 +45,10 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     private long low;
     private long high;
+    /**
+     * Flag to indicate if the step is inside a repeat loop. Can be null if the value has not been initialized yet as 
+     * the traversal has not been finalized.
+     */
     private Boolean insideLoop;
     /**
      * Single counter if this range step is not inside a loop
@@ -172,6 +176,12 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
         }
     }
 
+    /**
+     * This will initialize the insideLoop flag if it hasn't been set by analyzing the traversal up to the root and 
+     * should only be called after the traversal has been finalized.
+     * 
+     * @return if the step is being used inside a repeat loop.
+     */
     private boolean isInsideLoop() {
         if (this.insideLoop == null) {
             this.insideLoop = hasRepeatStepParent();
