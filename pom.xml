@@ -162,7 +162,7 @@ limitations under the License.
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>4.0.25</groovy.version>
-        <guice.version>4.2.3</guice.version>
+        <guice.version>7.0.0</guice.version>
         <hadoop.version>3.4.1</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
