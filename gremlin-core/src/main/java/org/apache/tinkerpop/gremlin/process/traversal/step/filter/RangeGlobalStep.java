@@ -163,9 +163,9 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
 
     }
 
-    private AtomicLong getCounter(Traverser.Admin<S> traverser) {
-        final String counterKey = getCounterKey(traverser);
+    private AtomicLong getCounter(final Traverser.Admin<S> traverser) {
         if (isInsideLoop()) {
+            final String counterKey = getCounterKey(traverser);
             return loopCounters.computeIfAbsent(counterKey, k -> new AtomicLong(0L));
         } else {
             return this.singleCounter;
