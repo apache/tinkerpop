@@ -3315,13 +3315,13 @@ contains additional information that will be applied if an existing vertex is fo
 ----
 g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
   mergeV(select('m').limit(local,1).unfold()). <1>
-  option(Merge.onCreate, select('m').range(local,1,2)). <2>
-  option(Merge.onMatch, select('m').tail(local)) <3>
+  option(Merge.onCreate, select('m').range(local,1,2).unfold()). <2>
+  option(Merge.onMatch, select('m').tail(local).unfold()) <3>
 g.V(400).valueMap().with(WithOptions.tokens)
 g.inject([[(T.id):400],[(T.label):'Dog',name:'Pixel',age:1],[updated:'2022-02-1']]).as('m').
   mergeV(select('m').limit(local,1).unfold()).
-  option(Merge.onCreate, select('m').range(local,1,2)).
-  option(Merge.onMatch, select('m').tail(local))  <4>
+  option(Merge.onCreate, select('m').range(local,1,2).unfold()).
+  option(Merge.onMatch, select('m').tail(local).unfold())  <4>
 g.V(400).valueMap().with(WithOptions.tokens)  <5>
 ----
 
