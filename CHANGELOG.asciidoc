@@ -157,29 +157,29 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
 * Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.
 * Removed lambda oriented Gremlin testing from Gherkin test suite.
-* Removed `P.getOriginalValue()` in favor of `P.getValue()`
+* Removed `P.getOriginalValue()` in favor of `P.getValue()`.
 * Simplified comparability semantics from ternary boolean logic to binary logic.
-* Introduced `NotP` class for negation of `P`
+* Introduced `NotP` class for negation of `P`.
 * Increase minimum Java version from 1.8 to 11 for building and running.
 * Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
 * Added the `asNumber()` step to perform number conversion.
-* Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs"
+* Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs".
 * Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
-* Fixed translation of numeric literals for Go losing type definitions
-* Added `ParseBigInt()` in `gremlin-go` for parsing string into `big.Int`
-* Expanded gherkin syntax to directly configure traversal side effects in feature tests
-* Made `Mutating` interface independent from `Configuring`
-* Removed undocumented `with()` modulation from `addV()`, `addE()`, `mergeV()` and `mergeE()`
-* Updated which steps are able to accept arguments in grammar
-* Introduced `GValue` to represent parameterized values in a `GraphTraversal`
-* Added optional traversal cache to `GremlinLangScriptEngine`
-* Introduced `StepContract` interfaces for all parameterizable steps
-* Decoupled management of id, label, and properties from `Configuring` interface in `addV()`, `addE()` and `property()`
-* Switched `gremlin-net` byte serializers to signed bytes (`sbyte`) to be consistent with IO doc
+* Fixed translation of numeric literals for Go losing type definitions.
+* Added `ParseBigInt()` in `gremlin-go` for parsing string into `big.Int`.
+* Expanded gherkin syntax to directly configure traversal side effects in feature tests.
+* Made `Mutating` interface independent from `Configuring`.
+* Removed undocumented `with()` modulation from `addV()`, `addE()`, `mergeV()` and `mergeE()`.
+* Updated which steps are able to accept arguments in grammar.
+* Introduced `GValue` to represent parameterized values in a `GraphTraversal`.
+* Added optional traversal cache to `GremlinLangScriptEngine`.
+* Introduced `StepContract` interfaces for all parameterizable steps.
+* Decoupled management of id, label, and properties from `Configuring` interface in `addV()`, `addE()` and `property()`.
+* Switched `gremlin-net` byte serializers to signed bytes (`sbyte`) to be consistent with IO doc.
 * Removed auto-unfold of singleton collections from `range()`, `limit()`, and `tail()` local scope steps to improve consistency of output.
-* Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency
+* Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency.
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
 * Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
