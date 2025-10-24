@@ -59,9 +59,9 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verifica
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.IO;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -202,8 +202,8 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Column.class);
         CLASS_IMPORTS.add(Direction.class);
         CLASS_IMPORTS.add(DT.class);
+        CLASS_IMPORTS.add(GType.class);
         CLASS_IMPORTS.add(Merge.class);
-        CLASS_IMPORTS.add(N.class);
         CLASS_IMPORTS.add(Operator.class);
         CLASS_IMPORTS.add(Order.class);
         CLASS_IMPORTS.add(Pop.class);
@@ -360,7 +360,7 @@ public final class CoreImports {
         Collections.addAll(ENUM_IMPORTS, Direction.values());
         Collections.addAll(ENUM_IMPORTS, DT.values());
         Collections.addAll(ENUM_IMPORTS, Merge.values());
-        Collections.addAll(ENUM_IMPORTS, N.values());
+        Collections.addAll(ENUM_IMPORTS, GType.values());
         Collections.addAll(ENUM_IMPORTS, Operator.values());
         Collections.addAll(ENUM_IMPORTS, Order.values());
         Collections.addAll(ENUM_IMPORTS, Pop.values());

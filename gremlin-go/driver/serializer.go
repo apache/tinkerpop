@@ -179,7 +179,7 @@ func initSerializers() {
 		columnType:            enumWriter,
 		directionType:         enumWriter,
 		dtType:                enumWriter,
-		nType:                 enumWriter,
+		gTypeType:             enumWriter,
 		operatorType:          enumWriter,
 		orderType:             enumWriter,
 		pickType:              enumWriter,
@@ -221,10 +221,10 @@ func initDeserializers() {
 		classType:  readClass,
 
 		// Date Time
-		dateType:      		timeReader,
-		timestampType: 		timeReader,
+		dateType:           timeReader,
+		timestampType:      timeReader,
 		offsetDateTimeType: offsetDateTimeReader,
-		durationType:  		durationReader,
+		durationType:       durationReader,
 
 		// Graph
 		traverserType:      traverserReader,
@@ -237,7 +237,7 @@ func initDeserializers() {
 		tType:              enumReader,
 		directionType:      enumReader,
 		dtType:             enumReader,
-		nType:             	enumReader,
+		gTypeType:          enumReader,
 		bindingType:        bindingReader,
 
 		// Metrics

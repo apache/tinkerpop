@@ -21,6 +21,7 @@ import os
 import pytest
 
 from gremlin_python import statics
+from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality

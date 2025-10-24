@@ -175,8 +175,8 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new EnumValue('Merge', 'onMatch'),
         b: [ DataType.MERGE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x07, ...from('onMatch') ]
       },
-      { v: new t.EnumValue('N', 'byte'),
-        b: [ DataType.N,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('byte') ]
+      { v: new EnumValue('GType', 'BYTE'),
+        b: [ DataType.GTYPE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('byte') ]
       },
       { v: new t.EnumValue('Operator', 'addAll'),
         b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
@@ -515,13 +515,13 @@ describe('GraphBinary.AnySerializer', () => {
       { v:null,                                   b:[0x2f,0x01] },
       { v:new EnumValue('DT','minute'),         b:[0x2f,0x00, 0x03,0x00, 0x00,0x00,0x00,0x06, ...from('minute')] },
 
+      // GType
+      { v:null,                                   b:[0x30,0x01] },
+      { v:new EnumValue('GType','BYTE'),        b:[0x30,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('BYTE')] },
+
       // MERGE
       { v:null,                                   b:[0x2e,0x01] },
       { v:new EnumValue('Merge','onCreate'),    b:[0x2e,0x00, 0x03,0x00, 0x00,0x00,0x00,0x08, ...from('onCreate')] },
-
-      // N
-      { v:null,                                   b:[0x30,0x01] },
-      { v:new t.EnumValue('N','byte'),         b:[0x30,0x00, 0x03,0x00, 0x00,0x00,0x00,0x04, ...from('byte')] },
 
       // OPERATOR
       { v:null,                                   b:[0x19,0x01] },

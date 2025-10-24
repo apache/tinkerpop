@@ -57,6 +57,7 @@ export default class EnumSerializer {
       { name: 'Column', code: DT.COLUMN, enum: to_orig_enum(column) },
       { name: 'Direction', code: DT.DIRECTION, enum: to_orig_enum(direction) },
       { name: 'DT', code: DT.DT, enum: to_orig_enum(dt) },
+      { name: 'GType', code: DT.GTYPE, enum: to_orig_enum(gType) },
       { name: 'Merge', code: DT.MERGE, enum: to_orig_enum(merge) },
       { name: 'Operator', code: DT.OPERATOR, enum: to_orig_enum(operator) },
       { name: 'Order', code: DT.ORDER, enum: to_orig_enum(order) },
@@ -64,7 +65,6 @@ export default class EnumSerializer {
       { name: 'Pop', code: DT.POP, enum: to_orig_enum(pop) },
       { name: 'Scope', code: DT.SCOPE, enum: to_orig_enum(scope) },
       { name: 'T', code: DT.T, enum: to_orig_enum(_t) },
-      { name: 'N', code: DT.N, enum: to_orig_enum(_n) },
     ];
     this.byname = {};
     this.bycode = {};

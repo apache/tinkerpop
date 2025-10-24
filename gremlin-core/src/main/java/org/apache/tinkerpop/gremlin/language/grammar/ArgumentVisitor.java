@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import java.util.Map;
 import java.util.Objects;

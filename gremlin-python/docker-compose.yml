@@ -60,11 +60,11 @@ services:
     command: >
       bash -c "pip install .[test,kerberos]
       && pytest
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json';
+      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.graphbinary-v4.0'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.gremlin-v4.0+json';
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-python:

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.language.grammar;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -28,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -2226,9 +2224,9 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalMethod_asNumber_traversalN(final GremlinParser.TraversalMethod_asNumber_traversalNContext ctx) {
+    public GraphTraversal visitTraversalMethod_asNumber_traversalGType(final GremlinParser.TraversalMethod_asNumber_traversalGTypeContext ctx) {
         return graphTraversal.asNumber(
-                TraversalEnumParser.parseTraversalNFromContext(ctx.traversalN()));
+                TraversalEnumParser.parseTraversalGTypeFromContext(ctx.traversalGType()));
     }
 
     public GraphTraversal[] getNestedTraversalList(final GremlinParser.NestedTraversalListContext ctx) {

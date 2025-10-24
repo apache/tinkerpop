@@ -1378,6 +1378,42 @@ java -cp target/run-examples-shaded.jar examples.BasicGremlin
 java -cp target/run-examples-shaded.jar examples.ModernTraversals
 ----
 
+[[gremlin-java-differences]]
+=== Differences
+
+Gremlin-Java provides additional syntactic sugar that leverages Java's type system for the `P.typeOf()` predicate,
+which accepts Java `Class` objects directly, providing a more natural way to perform type checking:
+
+[gremlin-groovy,modern]
+----
+// Java-specific syntax using Class objects
+g.V().values("age").is(P.typeOf(Integer.class))
+g.V().values("name").is(P.typeOf(String.class))
+
+// Further simplification with Groovy sugar syntax
+g.E().has("weight", P.typeOf(Double))
+----
+
+This is equivalent to using `GType` enums. Other Gremlin language variants must use the canonical `GType` enum approach:
+
+[gremlin-groovy,modern]
+----
+// Canonical syntax available in all languages
+g.V().values("age").is(P.typeOf(GType.INT))
+g.V().values("name").is(P.typeOf(GType.STRING))
+----
+
+Any valid Java class accepted in the Console and with embedded Java is also accepted by `P.typeOf()`, as they are not
+restricted by the grammar or serialization.
+[gremlin-groovy,modern]
+----
+// Using java.awt.Color for example
+gremlin> g.inject(java.awt.Color.red)
+==>java.awt.Color[r=255,g=0,b=0]
+gremlin> g.inject(java.awt.Color.red, "hi", 123).is(P.typeOf(java.awt.Color))
+==>java.awt.Color[r=255,g=0,b=0]
+----
+
 [[gremlin-javascript]]
 == Gremlin-JavaScript
 IMPORTANT: 4.0.0-beta.1 Release - Gremlin-JavaScript is not available in this beta, please consider testing with

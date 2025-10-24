@@ -337,6 +337,35 @@ for providers to decide how to handle this in their implementation. The referenc
 equivalent keys to appear in a map (e.g. `1` and `1.0` can both be keys in the same map), but when comparing maps we
 treat pairwise entries with semantically equivalent keys as the same.
 
+==== Comparability of Types
+
+The `P.typeOf()` predicate enables type-based filtering in TinkerPop using inheritance-aware comparison, where a value
+matches if it is the specified type or any of its subtypes.
+
+===== GType Enums
+
+Based on the support type space, we have defined a `GType` enum, which contains a set of enumerations that is used for
+type casting (`asNumber()`) and comparison (`P.typeOf()`) operations.
+
+* **Numeric types**: `INT`, `LONG`, `DOUBLE`, `FLOAT`, `BYTE`, `SHORT`, `BIGDECIMAL`, `BIGINT`
+* **General types**: `STRING`, `BOOLEAN`, `CHAR`, `UUID`, `BINARY`
+* **Collection types**: `LIST`, `SET`, `MAP`
+* **Graph types**: `VERTEX`, `EDGE`, `PROPERTY`, `VPROPERTY`, `PATH`, `TREE`, `GRAPH`
+* **Temporal types**: `DATETIME`, `DURATION`
+* **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
+
+===== GlobalTypeCache
+
+Providers can register custom types outside the TinkerPop type space using the `GlobalTypeCache`, making them available
+for `P.typeOf(String)` filtering. Unregistered string inputs will throw an `IllegalArgumentException`.
+
+The `registerDataType()` method registers the class's simple name by default, or accepts a custom string name. Providers
+should use PascalCase following Java conventions and prefix type names to avoid conflicts
+(e.g., `ProviderPrefix:SimpleTypeName`).
+
+Do note that the type cache only enables type recognition for filtering. Custom types still require separate
+serialization support - clients without custom serializers cannot deserialize these types.
+
 [[gremlin-semantics-orderability]]
 === Orderability
 
@@ -776,7 +805,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
 *Description:* converts the incoming traverser to the nearest parsable type if no argument is provided, or to the desired numerical type, based on the number token (`N`) provided.
 
-*Syntax:* `asNumber()` | `asNumber(N numberToken)`
+*Syntax:* `asNumber()` | `asNumber(GType typeToken)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -786,7 +815,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asDate-step[reference]
 
 *Arguments:*
 
-* `numberToken` - The enum `N` to denote the desired type to parse/cast to.
+* `typeToken` - The enum `GType` to denote the desired type to parse/cast to.
 
 If no type token is provided, the incoming number remains unchanged.
 
@@ -795,6 +824,7 @@ If no type token is provided, the incoming number remains unchanged.
 * If any overflow occurs during narrowing of types, then an `ArithmeticException` will be thrown.
 * If the incoming string cannot be parsed into a valid number format, then a `NumberFormatException` will be thrown.
 * If the incoming traverser is a non-String/Number (including `null`) value then an `IllegalArgumentException` will be thrown.
+* If the supplied type token is not a number type, then an `IllegalArgumentException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/AsNumberStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#asNumber-step[reference]

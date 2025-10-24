@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ProgramV
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ShortestPathVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -2337,9 +2337,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#AsNumberStep-step" target="_blank">Reference Documentation - AsNumberStep Step</a>
      * @since 3.8.0
      */
-    public default GraphTraversal<S, Number> asNumber(final N numberToken) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.asNumber, numberToken);
-        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), numberToken));
+    public default GraphTraversal<S, Number> asNumber(final GType typeToken) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.asNumber, typeToken);
+        return this.asAdmin().addStep(new AsNumberStep<>(this.asAdmin(), typeToken));
     }
 
     /**

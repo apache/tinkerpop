@@ -27,12 +27,12 @@ using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure.IO.GraphSON
 {
-    internal class NDeserializer : IGraphSONDeserializer
+    internal class GTypeDeserializer : IGraphSONDeserializer
     {
         public dynamic Objectify(JsonElement graphsonObject, GraphSONReader reader)
         {
-            return N.GetByValue(graphsonObject.GetString() ??
-                                    throw new IOException($"Read null but expected a {nameof(N)} string representation"));
+            return GType.GetByValue(graphsonObject.GetString() ??
+                                    throw new IOException($"Read null but expected a {nameof(GType)} string representation"));
         }
     }
 }

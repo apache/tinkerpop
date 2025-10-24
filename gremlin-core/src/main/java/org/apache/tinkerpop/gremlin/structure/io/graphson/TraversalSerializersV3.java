@@ -22,7 +22,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.NotP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.TextP;
@@ -98,21 +98,6 @@ final class TraversalSerializersV3 {
         public void serialize(final Enum enumInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
             jsonGenerator.writeString(enumInstance.name());
-        }
-
-    }
-
-    static class NJacksonSerializer extends StdScalarSerializer<N> {
-
-        public NJacksonSerializer() {
-            super(N.class);
-        }
-
-        @Override
-        public void serialize(final N enumInstance, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                throws IOException {
-            String name = enumInstance.name();
-            jsonGenerator.writeString(name.replace("_", ""));
         }
 
     }
@@ -246,24 +231,6 @@ final class TraversalSerializersV3 {
         }
     }
 
-    final static class NJacksonDeserializer extends StdDeserializer<N> {
-
-        public NJacksonDeserializer() {
-            super(N.class);
-        }
-
-        @Override
-        public N deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-            final String enumName = jsonParser.getText();
-            return N.valueOf(enumName.startsWith("big") ? enumName : enumName + "_");
-        }
-
-        @Override
-        public boolean isCachable() {
-            return true;
-        }
-    }
-
     final static class PJacksonDeserializer extends AbstractReflectJacksonDeserializer<P> {
 
         public PJacksonDeserializer() {
@@ -304,6 +271,13 @@ final class TraversalSerializersV3 {
                             return P.without((Collection) value);
                         else
                             return (P) tryFindMethod(P.class, predicate, Collection.class).invoke(null, (Collection) value);
+                    } else if (predicate.equals("typeOf")) {
+                        if (value instanceof GType)
+                            return P.typeOf((GType) value);
+                        else if (value instanceof String)
+                            return P.typeOf((String) value);
+                        else
+                            return P.typeOf((Class<?>) value);
                     } else {
                         try {
                             return (P) tryFindMethod(P.class, predicate, Object.class).invoke(null, value);

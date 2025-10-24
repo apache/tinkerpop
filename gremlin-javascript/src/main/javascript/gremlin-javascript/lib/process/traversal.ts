@@ -348,6 +348,11 @@ export class P<T1 = any, T2 = any> {
   }
 
   /** @param {...Object} args */
+  static typeOf(...args: any[]) {
+    return createP('typeOf', args);
+  }
+
+  /** @param {...Object} args */
   static test(...args: any[]) {
     return createP('test', args);
   }
@@ -491,6 +496,14 @@ function toDirectionEnum(typeName: string, keys: string) {
   return result;
 }
 
+function toGTypeEnum(typeName: string, keys: string) {
+  const result: { [key: string]: any } = {};
+  keys.split(' ').forEach((k) => {
+    result[k] = new EnumValue(typeName, k.toUpperCase());
+  });
+  return result;
+}
+
 export class EnumValue {
   constructor(
     public typeName: string,
@@ -507,6 +520,7 @@ export const cardinality = toEnum('Cardinality', 'list set single');
 export const column = toEnum('Column', 'keys values');
 export const direction = toDirectionEnum('Direction', 'BOTH IN OUT from_ to');
 export const dt = toEnum('DT', 'second minute hour day');
+export const gType = toGTypeEnum('GType', 'bigDecimal bigInt binary boolean byte char datetime double duration edge float graph int list long map null number path property set short string tree uuid vertex vproperty');
 export const graphSONVersion = toEnum('GraphSONVersion', 'V1_0 V2_0 V3_0');
 export const gryoVersion = toEnum('GryoVersion', 'V1_0 V3_0');
 export const merge = toEnum('Merge', 'onCreate onMatch outV inV');

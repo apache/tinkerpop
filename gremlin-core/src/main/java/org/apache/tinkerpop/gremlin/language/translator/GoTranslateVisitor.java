@@ -239,6 +239,16 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         return null;
     }
 
+
+    @Override
+    public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
+        final String[] split = ctx.getText().split("\\.");
+        sb.append(GO_PACKAGE_NAME);
+        sb.append(processGremlinSymbol(split[0])).append(".");
+        sb.append(processGremlinSymbol(split[1].toLowerCase()));
+        return null;
+    }
+
     @Override
     public Void visitTraversalStrategy(final GremlinParser.TraversalStrategyContext ctx) {
         if (ctx.getChildCount() == 1)
@@ -369,6 +379,11 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
             TO_GO_MAP.put("OUT", "Out");
             TO_GO_MAP.put("IN", "In");
             TO_GO_MAP.put("BOTH", "Both");
+            TO_GO_MAP.put("bigdecimal", "BigDecimal");
+            TO_GO_MAP.put("bigint", "BigInt");
+            TO_GO_MAP.put("datetime", "DateTime");
+            TO_GO_MAP.put("uuid", "UUID");
+            TO_GO_MAP.put("vproperty", "VProperty");
             TO_GO_MAP.put("WithOptions", GO_PACKAGE_NAME + "WithOptions");
             TO_GO_MAP.put("IO", GO_PACKAGE_NAME + "IO");
             TO_GO_MAP.put("__", GO_PACKAGE_NAME + "T__");

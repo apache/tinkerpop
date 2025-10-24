@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.DT;
-import org.apache.tinkerpop.gremlin.process.traversal.N;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
@@ -33,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -942,10 +942,10 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#asNumber(N)
+     * @see GraphTraversal#asNumber(GType)
      */
-    public static <A> GraphTraversal<A, Number> asNumber(final N numberToken) {
-        return __.<A>start().asNumber(numberToken);
+    public static <A> GraphTraversal<A, Number> asNumber(final GType typeToken) {
+        return __.<A>start().asNumber(typeToken);
     }
 
     /**

@@ -157,6 +157,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Deprecated `ProcessLimitedStandardSuite` and `ProcessLimitedComputerSuite` in favor of `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` respectively.
 * Deprecated `ProcessStandardSuite` and the `ProcessComputerSuite` in favor of Gherkin testing and the `ProcessEmbeddedStandardSuite` and `ProcessEmbeddedComputerSuite` for testing JVM-specific Gremlin behaviors.
 * Removed lambda oriented Gremlin testing from Gherkin test suite.
+* Implemented `P.typeOf()` predicate.
+* Added `GType` enum to denote types.
 * Removed `P.getOriginalValue()` in favor of `P.getValue()`.
 * Simplified comparability semantics from ternary boolean logic to binary logic.
 * Introduced `NotP` class for negation of `P`.
