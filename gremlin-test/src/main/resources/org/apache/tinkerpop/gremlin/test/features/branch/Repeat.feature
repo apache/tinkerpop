@@ -684,3 +684,13 @@ Feature: Step - repeat()
       | result |
       | v[marko] |
       | v[vadas] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXxX_repeatXinjectXyXX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject('x').repeat(inject('y')).times(2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The parent of inject()-step can not be repeat()-step"
