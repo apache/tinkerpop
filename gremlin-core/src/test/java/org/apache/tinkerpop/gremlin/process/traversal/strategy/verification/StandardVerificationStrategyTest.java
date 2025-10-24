@@ -34,6 +34,8 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.cap;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inject;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.sum;
@@ -60,6 +62,9 @@ public class StandardVerificationStrategyTest {
                 {repeat(sum()).times(2), false},
                 {repeat(out().count()), false},
                 {repeat(cap("x")), false},
+                {repeat(inject("a")), false},
+                {repeat(out().values("age").inject(10)).times(2), false},
+                {repeat(out().choose(constant(true), inject(1), inject(2))).times(5), false},
                 {__.V().profile(), true},
                 {__.V().profile("metrics").cap("metrics"), true}
         });
