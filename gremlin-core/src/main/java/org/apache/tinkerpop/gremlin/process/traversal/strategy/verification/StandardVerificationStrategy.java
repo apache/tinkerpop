@@ -64,11 +64,12 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                     step.removeLabel(label);
             }
             
-            if (step instanceof InjectStep && hasRepeatParent(step)) {
+            if (step instanceof InjectStep && hasRepeatParent(step))
                 throw new VerificationException("The parent of inject()-step can not be repeat()-step: " + step, traversal);
-            }
-            
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && hasRepeatParent(step))
+
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) &&
+                    step.getTraversal().getParent() instanceof RepeatStep &&
+                    step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The parent of a reducing/supplying barrier can not be repeat()-step: " + step, traversal);
 
             // prevents silly stuff like g.V().emit()
