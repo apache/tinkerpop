@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -62,9 +63,12 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) &&
-                    step.getTraversal().getParent() instanceof RepeatStep &&
-                    step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
+            
+            if (step instanceof InjectStep && hasRepeatParent(step)) {
+                throw new VerificationException("The parent of inject()-step can not be repeat()-step: " + step, traversal);
+            }
+            
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && hasRepeatParent(step))
                 throw new VerificationException("The parent of a reducing/supplying barrier can not be repeat()-step: " + step, traversal);
 
             // prevents silly stuff like g.V().emit()
@@ -100,4 +104,16 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
     public Set<Class<? extends VerificationStrategy>> applyPrior() {
         return Collections.singleton(ComputerVerificationStrategy.class);
     }
+
+    private boolean hasRepeatParent(Step<?, ?> step) {
+        Traversal.Admin<?, ?> traversal = step.getTraversal();
+        while (!traversal.isRoot()) {
+            if (traversal.getParent() instanceof RepeatStep) {
+                return true;
+            }
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
+    }
+
 }
