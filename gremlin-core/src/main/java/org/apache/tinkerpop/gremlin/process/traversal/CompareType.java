@@ -36,22 +36,21 @@ public enum CompareType implements PBiPredicate<Object, Object> {
     typeOf {
         @Override
         public boolean test(final Object first, final Object second) {
-            Class<?> valueClass;
             if (first == null) {
-                return second == null;
+                return second == null || (second instanceof GType && ((GType) second).getType() == null);
             }
+
+            Class<?> valueClass;
             if (second instanceof String) {
-                // need to assess the string token at run time on server
-                final Optional<Class<?>> opt = CompareType.GlobalTypeCache.getRegisteredType((String) second);
-                if (opt.isEmpty()) {
-                    throw new IllegalArgumentException(second + " is not a registered type");
-                }
-                else
-                    valueClass = opt.get();
+                valueClass = CompareType.GlobalTypeCache.getRegisteredType((String) second)
+                        .orElseThrow(() -> new IllegalArgumentException(second + " is not a registered type"));
+            } else if (second instanceof GType) {
+                valueClass = ((GType) second).getType();
             } else {
                 valueClass = (Class<?>) second;
             }
-            return second != null && valueClass.isAssignableFrom(first.getClass());
+
+            return valueClass != null && valueClass.isAssignableFrom(first.getClass());
         }
 
     };

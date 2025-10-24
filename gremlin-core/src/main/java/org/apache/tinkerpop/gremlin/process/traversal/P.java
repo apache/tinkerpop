@@ -444,7 +444,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 3.8.0
      */
     public static <V> P<V> typeOf(final GType value) {
-        return new P(CompareType.typeOf, value.getType());
+        return new P(CompareType.typeOf, value);
     }
 
     /**
