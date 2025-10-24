@@ -126,16 +126,8 @@ public abstract class AbstractTinkerGraphGraphSONTranslatorProvider extends Tink
             method = "g_inject_order_with_unknown_type",
             reason = "Remoting serializers only support known Gremlin types")
     @Graph.OptOut(
-            test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest",
-            method = "g_withSideEffectXa_setX_V_both_name_storeXaX_capXaX",
-            reason = "GraphSONv2 does not properly round trip Maps and Sets")
-    @Graph.OptOut(
             test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectTest",
             method = "g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold",
-            reason = "GraphSONv2 does not properly round trip Maps and Sets")
-    @Graph.OptOut(
-            test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest",
-            method = "g_withSideEffectXa_setX_V_both_name_aggregateXlocal_aX_capXaX",
             reason = "GraphSONv2 does not properly round trip Maps and Sets")
     @Graph.OptOut(
             test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeTest",

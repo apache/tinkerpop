@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -77,7 +77,7 @@ public final class TinkerGraphCountStrategy extends AbstractTraversalStrategy<Tr
             if (!(current instanceof IdentityStep ||
                     current instanceof NoOpBarrierStep) ||
                     (current instanceof TraversalParent &&
-                            TraversalHelper.anyStepRecursively(s -> (s instanceof SideEffectStep || s instanceof AggregateGlobalStep), (TraversalParent) current)))
+                            TraversalHelper.anyStepRecursively(s -> (s instanceof SideEffectStep || s instanceof AggregateStep), (TraversalParent) current)))
                 return;
         }
         final Class<? extends Element> elementClass = ((GraphStep<?, ?>) steps.get(0)).getReturnClass();

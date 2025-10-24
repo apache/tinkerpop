@@ -49,13 +49,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gte;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.project;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.store;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 import static org.junit.Assert.assertEquals;
@@ -223,10 +223,10 @@ public class PathRetractionStrategyTest {
                 {__.V().select("a").map(select("b").repeat(select("c"))).select("a"),
                         "[[a, b, c], [[a, c], [[a, c]]], []]", null},
                 {__.V().out("created").project("a", "b").by("name").by(__.in("created").count()).order().by(select("b")).select("a"), "[[[a]], []]", null},
-                {__.order().by("weight", Order.desc).store("w").by("weight").filter(values("weight").as("cw").
+                {__.order().by("weight", Order.desc).local(aggregate("w").by("weight")).filter(values("weight").as("cw").
                         select("w").by(limit(Scope.local, 1)).as("mw").where("cw", eq("mw"))).project("from", "to", "weight").by(__.outV()).by(__.inV()).by("weight"),
                         "[[[cw, mw], []]]", null},
-                {__.V().limit(1).as("z").out().repeat(store("seen").out().where(without("seen"))).until(where(eq("z"))),
+                {__.V().limit(1).as("z").out().repeat(__.local(aggregate("seen")).out().where(without("seen"))).until(where(eq("z"))),
                         "[[[z, seen]], [[z, seen]]]", null},
                 {__.V().as("a").optional(bothE().dedup().as("b")).
                         choose(select("b"), select("a","b"), project("a").by(select("a"))),

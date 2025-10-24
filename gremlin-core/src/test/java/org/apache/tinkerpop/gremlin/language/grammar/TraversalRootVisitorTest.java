@@ -176,12 +176,6 @@ public class TraversalRootVisitorTest {
     }
 
     @Test
-    public void shouldParseTraversalMethod_aggregate_Scope() {
-        compare(g.V().map(__.aggregate(global, "test")), eval("g.V().map(__.aggregate(global, 'test'))"));
-        compare(g.V().map(__.aggregate(Scope.local, "test")), eval("g.V().map(__.aggregate(Scope.local, 'test'))"));
-    }
-
-    @Test
     public void shouldParseTraversalMethod_all_P() {
         compare(g.V().map(__.id().fold().all(gt(1))), eval("g.V().map(__.id().fold().all(gt(1)))"));
     }
@@ -1025,11 +1019,6 @@ public class TraversalRootVisitorTest {
     @Test
     public void shouldParseTraversalMethod_skip_long() {
         compare(g.V().map(__.skip(8)), eval("g.V().map(__.skip(8))"));
-    }
-
-    @Test
-    public void shouldParseTraversalMethod_store() {
-        compare(g.V().map(__.store("asd")), eval("g.V().map(__.store(\"asd\"))"));
     }
 
     @Test
