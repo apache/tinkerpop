@@ -184,3 +184,90 @@ Feature: Step - local()
       | m[{"name":"josh","project":"lop"}]    |
       | m[{"name":"peter","project":"lop"}]   |
       | m[{"name":"josh","project":"ripple"}] |
+
+  # Barrier should show that bulked traversers don't affect local() traversal
+  Scenario: g_V_in_barrier_localXcountX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().in().barrier().local(__.count())
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+
+  # Path of traversers isn't hidden in local
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_localXout_in_simplePathX_path
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.out().in().simplePath()).path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[josh],v[lop],v[marko]] |
+      | p[v[josh],v[lop],v[peter]] |
+      | p[v[marko],v[lop],v[josh]] |
+      | p[v[marko],v[lop],v[peter]] |
+      | p[v[peter],v[lop],v[marko]] |
+      | p[v[peter],v[lop],v[josh]] |
+  
+  # Traverser's sack value should be carried over from local traversal
+  Scenario: g_withSackX0LX_V_in_barrier_localXsackXsumX_byXageXX_sack
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSack(0L).V().in().barrier().local(__.sack(sum).by("age")).sack()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].l |
+      | d[29].l |
+      | d[29].l |
+      | d[32].l |
+      | d[32].l |
+      | d[35].l |
+
+  # Nested local should return proper local count
+  Scenario: g_V_localXout_localXcountXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.out().local(__.count()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+      | d[1].l |
+
+  # Local should be applied to union's global child
+  Scenario: g_V_unionXoutE_count_localXinE_countXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().union(__.outE().count(), __.local(inE().count()))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
+      | d[0].l |
+      | d[1].l |
+      | d[3].l |
+      | d[1].l |
+      | d[1].l |
+      | d[0].l |

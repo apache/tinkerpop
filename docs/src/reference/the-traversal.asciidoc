@@ -2553,29 +2553,14 @@ in an object-local traversal. As such, the `order().by()` and the `limit()` refe
 stream as a whole.
 
 Local Step is quite similar in functionality to <<general-steps,Flat Map Step>> where it can often be confused.
-`local()` propagates the traverser through the internal traversal as is without splitting/cloning it. Thus, its
-a “global traversal” with local processing. Its use is subtle and primarily finds application in compilation
-optimizations (i.e. when writing `TraversalStrategy` implementations. As another example consider:
+The primary distinction between these steps is that while `local()` preserves the path history of traversers as they
+pass through its child traversal, `flatMap()` does not. As another example consider:
 
 [gremlin-groovy,modern]
 ----
-g.V().both().barrier().flatMap(groupCount().by("name"))
-g.V().both().barrier().local(groupCount().by("name"))
+g.V().local(outE().inV()).path()
+g.V().flatMap(outE().inV()).path()
 ----
-
-Use of `local()` is often a mistake. This is especially true when its argument contains a reducing step. For example,
-let's say the requirement was to count the number of properties per `Vertex` in:
-
-[gremlin-groovy,modern]
-----
-g.V().both().local(properties('name','age').count())  <1>
-g.V().both().map(properties('name','age').count()) <2>
-----
-
-<1> The output here seems impossible because no single vertex in the "modern" graph can have more than two properties
-given the "name" and "age" filters, but because the counting is happening object-local the counting is occurring unique
-to each object rather than each global traverser.
-<2> Replacing `local()` with `map()` returns the result desired by the requirement.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit
 of computing is the vertex and its local "star graph," it is important that the anonymous traversal does not leave

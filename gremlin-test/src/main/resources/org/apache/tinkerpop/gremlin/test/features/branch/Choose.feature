@@ -337,10 +337,14 @@ Feature: Step - choose()
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[marko,marko] |
-      | l[vadas,vadas] |
-      | l[josh,josh] |
-      | l[peter,peter] |
+      | l[marko] |
+      | l[marko] |
+      | l[vadas] |
+      | l[vadas] |
+      | l[josh] |
+      | l[josh] |
+      | l[peter] |
+      | l[peter] |
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_unionXV_VXhasLabelXpersonX_barrier_mapXchooseXageX_optionXbetweenX26_30X_name_foldX_optionXnone_name_foldXX

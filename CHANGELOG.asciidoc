@@ -35,6 +35,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
+* Modified `local()` to be "object-local" rather than "traverser-local".
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added `UUID()` and `UUID(value)` to grammar.
 * Deprecated the `UnifiedChannelizer`.
