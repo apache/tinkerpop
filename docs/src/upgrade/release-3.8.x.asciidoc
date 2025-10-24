@@ -1059,28 +1059,23 @@ impact.
 
 ===== Examples of Affected Traversals =====
 
-Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results
-returned from the `modern` graph demonstrate the change of semantics if the `inject()` in `repeat()` were to be unrolled:
+Usage of `dedup()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
+returned from the `grateful-dead` graph demonstrate the change of semantics if the `dedup()` in `repeat()` were to be unrolled:
 
 [source,text]
 ----
-gremlin> g.V().values('name').inject('foo').inject('foo')
-==>foo
-==>foo
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().values('name').repeat(inject('foo')).times(2)
-==>foo
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
+gremlin> g.V(1).repeat(out().dedup()).times(2).order().limit(5)
+==>v[1]
+==>v[9]
+==>v[10]
+==>v[11]
+==>v[12]
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).out().dedup().out().dedup().order().limit(5)
+==>v[1]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[9]
 ----
 
 Other examples of affected traversals include (but are not limited to):
