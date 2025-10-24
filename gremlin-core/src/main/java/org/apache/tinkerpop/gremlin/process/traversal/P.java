@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -435,6 +436,33 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> without(final Collection<V> value) {
         if (null == value) return P.without((V) null);
         return new P(Contains.without, value);
+    }
+
+    /**
+     * Determines if a value is of a type denoted by {@code GType}.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final GType value) {
+        return new P(CompareType.typeOf, value.getType());
+    }
+
+    /**
+     * Determines if a value is of a type denoted by String key of GlobalTypeCache.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final String value) {
+        return new P(CompareType.typeOf, value);
+    }
+
+    /**
+     * Sugar method for Java/Groovy embedded cases only, determines if a value is of a type denoted by class.
+     *
+     * @since 3.8.0
+     */
+    public static <V> P<V> typeOf(final Class<?> value) {
+        return new P(CompareType.typeOf, value);
     }
 
     /**

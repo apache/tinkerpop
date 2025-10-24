@@ -854,7 +854,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 === AsNumber Step
 
 The `asNumber()`-step (*map*) converts the incoming traverser to the nearest parsable type if no argument is provided,
-or to the desired numerical type, based on the number token (`N`) provided.
+or to the desired numerical type, based on the type token (`GType`) provided. If a type token entered isn't a numerical type, an `IllegalArgumentException` will be thrown.
 
 Numerical input will pass through unless a type is specified by the number token. `ArithmeticException` will be thrown
 for any overflow during narrowing of types.
@@ -868,17 +868,13 @@ All other input types will result in `IllegalArgumentException`.
 [gremlin-groovy,modern]
 ----
 g.inject(1234).asNumber() <1>
-g.inject(1.76).asNumber() <2>
-g.inject(1.76).asNumber(N.int_) <3>
-g.inject("1b").asNumber() <4>
-g.inject(33550336).asNumber(N.byte_) <5>
+g.inject(1.76d).asNumber() <2>
+g.inject(1.76d).asNumber(GType.INT) <3>
 ----
 
 <1> An int will be passed through.
 <2> A double will be passed through.
 <3> A double is converted into an int.
-<4> String containing any character other than numerical ones will result in `NumberFormatException`.
-<5> Narrowing of int to byte that overflows will throw `ArithmeticException`.
 
 [NOTE, caption=Java]
 ====
@@ -5477,12 +5473,8 @@ a comparatively slow script compilation, which makes parameterization essential 
 [[a-note-on-predicates]]
 == A Note on Predicates
 
-A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. As of
-the release of TinkerPop 3.4.0, Gremlin also supports simple text predicates, which only work on `String` values. The `TextP`
-text predicates extend the `P` predicates, but are specialized in that they are of the form `Function<String,Boolean>`.
-The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step,
-<<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc. Two new additional `TextP` predicate members were added in the
-TinkerPop 3.6.0 release that allow working with regular expressions. These are `TextP.regex` and `TextP.notRegex`
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. Gremlin
+supports text predicates (`TextP`), which are specialized predicates that only work on String values and are of the form `Function<String,Boolean>`. Additionally, type predicate (`P.typeOf`) supports filtering traversers based on their runtime types. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
 
 [width="100%",cols="3,15",options="header"]
 |=========================================================
@@ -5498,6 +5490,8 @@ TinkerPop 3.6.0 release that allow working with regular expressions. These are `
 | `P.between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
 | `P.within(objects...)` | Is the incoming object in the array of provided objects?
 | `P.without(objects...)` | Is the incoming object not in the array of the provided objects?
+| `P.typeOf(GType)` | Is the incoming object of the type indicated by the provided `GType` token?
+| `P.typeOf(string)` | Is the incoming object of the type indicated by the provided `String`?
 | `TextP.startingWith(string)` | Does the incoming `String` start with the provided `String`?
 | `TextP.endingWith(string)` | Does the incoming `String` end with the provided `String`?
 | `TextP.containing(string)` | Does the incoming `String` contain the provided `String`?
@@ -5553,6 +5547,69 @@ binding, not to the explicit string value.
 ----
 g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+[[a-note-on-types]]
+== A Note on Types
+
+Gremlin steps typically operate over a handful of types that are mostly standard across graph systems. There are the
+common numeric types like `Integer`, `Long`, `Double`, general types like `String`, and `Boolean`, container types like
+`List`, `Set`, and `Map`, and structural types particular to graphs such as `Vertex`, `Edge`, and `Property`. During
+traversal execution, it's common to encounter mixed data types, especially when extracting values from multiple
+properties or when working with heterogeneous data that may have been stored inconsistently over time.
+
+Gremlin identifies these types in the `GType` enumeration, offering a clear presentation of the standard data types one
+might typically encounter with Gremlin. This enumeration is an important part of the Gremlin language in that it acts
+as the argument to the `typeOf()` predicate used for filtering values based on their runtime data type.
+
+[[gtype-enum]]
+=== GType Enums
+
+`GType` consists of the following enumerations:
+
+* **Numeric types**: `INT`, `LONG`, `DOUBLE`, `FLOAT`, `BYTE`, `SHORT`, `BIGDECIMAL`, `BIGINT`
+* **General types**: `STRING`, `BOOLEAN`, `CHAR`, `UUID`, `BINARY`
+* **Collection types**: `LIST`, `SET`, `MAP`
+* **Graph types**: `VERTEX`, `EDGE`, `PROPERTY`, `VPROPERTY`, `PATH`, `TREE`, `GRAPH`
+* **Temporal types**: `DATETIME`, `DURATION`
+* **Special types**: `NULL`, `NUMBER` (supertype for all numeric types)
+
+As mentioned, the `typeOf()` predicate becomes particularly useful when dealing with mixed data scenarios. For example,
+you would like to only return the integer values of a set of properties for further processing:
+
+[gremlin-groovy,modern]
+----
+g.V().values('age','name').is(P.typeOf(GType.INT)).asNumber(GType.SHORT)
+----
+
+The `NUMBER` type allows for broader type-based filtering without needing to specify each individual numeric type:
+
+[gremlin-groovy,modern]
+----
+g.union(V(), E()).values().is(P.typeOf(GType.NUMBER))
+----
+
+Type filtering is also valuable when working with traversals that return mixed graph elements. For example, when a
+traversal might return both vertices and edges, you can add filter or condition based on the elements of interest:
+
+[gremlin-groovy,modern]
+----
+g.V().outE().inV().path().unfold().is(P.typeOf(GType.EDGE))
+g.V().outE().inV().path().unfold().choose(typeOf(VERTEX), values('name'), values('weight'))
+----
+
+[[global-type-cache]]
+=== GlobalTypeCache
+
+The `GlobalTypeCache` stores custom types registered by database providers as string-to-class mappings. These registered
+type names can then be used with `P.typeOf()` for type filtering in the traversal. Consult your provider's documentation
+for the correct type names when using provider-specific types.
+
+By default, `GType` enumerations are registered using their simple class names and can be used as shown below.
+
+[gremlin-groovy,modern]
+----
+gremlin> g.V().values('age','name').is(P.typeOf('Integer'))
 ----
 
 [[a-note-on-maps]]
