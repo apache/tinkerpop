@@ -67,6 +67,7 @@ public class SparkGraphFeatureIntegrateTest {
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
+    private static final String skipReasonOrdering = "GraphComputer doesn't order within repeat.";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
         add(Pair.with("g_V_both_both_count", skipReasonLength));
@@ -82,6 +83,9 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX", skipReasonLength));
         add(Pair.with("g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX", skipReasonLength));
         add(Pair.with("g_V_matchXa_followedBy_count_isXgtX10XX_b__a_0followedBy_count_isXgtX10XX_bX_count", skipReasonLength));
+        add(Pair.with("g_V_repeatXunionXoutXknowsX_order_byXnameX_inXcreatedX_order_byXnameXXX_timesX1X", skipReasonOrdering));
+        add(Pair.with("g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X", skipReasonOrdering));
+        add(Pair.with("g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path", skipReasonOrdering));
     }};
 
     public static final class ServiceModule extends AbstractModule {
