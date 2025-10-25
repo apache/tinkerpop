@@ -38,6 +38,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added `UUID()` and `UUID(value)` to grammar.
 * Deprecated the `UnifiedChannelizer`.
+* Fixed bug that caused incorrect results when `tail()` used inside `repeat()`.
 * Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
 * Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.
 * Added missing strategies to the `TraversalStrategies` global cache as well as `CoreImports` in `gremlin-groovy`.
@@ -101,6 +102,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
 * Added the `asNumber()` step to perform number conversion.
+* Changed `repeat()` to make `repeatTraversal` global rather than a mix of local and global.
 * Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs".
 * Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
 * Fixed translation of numeric literals for Go losing type definitions.
