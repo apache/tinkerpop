@@ -30,6 +30,8 @@ TinkerPop exposes.
 
 include::release-4.x.x.asciidoc[]
 
+include::release-3.8.x.asciidoc[]
+
 include::release-3.7.x.asciidoc[]
 
 include::release-3.6.x.asciidoc[]
