@@ -1099,31 +1099,11 @@ Repeat traversals containing other steps will no longer be unrolled. There may b
 traversals that previously benefited from automatic unrolling but the consistency of semantics outweighs the performance 
 impact.
 
-===== Examples of Affected Traversals =====
-
-Usage of `dedup()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results 
-returned from the `grateful-dead` graph demonstrate the change of semantics if the `dedup()` in `repeat()` were to be unrolled:
-
-[source,text]
-----
-gremlin> g.V(1).repeat(out().dedup()).times(2).order().limit(5)
-==>v[1]
-==>v[9]
-==>v[10]
-==>v[11]
-==>v[12]
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1).out().dedup().out().dedup().order().limit(5)
-==>v[1]
-==>v[3]
-==>v[4]
-==>v[5]
-==>v[9]
-----
-
-Other examples of affected traversals include (but are not limited to):
+Examples of affected traversals include (but are not limited to):
 
 [source,groovy]
 ----
+g.V().repeat(both().aggregate('x')).times(2).limit(10)
 g.V().repeat(out().limit(10)).times(3)
 g.V().repeat(in().order().by("name")).times(2)
 g.V().repeat(both().simplePath()).times(4)
