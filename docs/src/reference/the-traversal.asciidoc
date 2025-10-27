@@ -4071,8 +4071,11 @@ g.V().until(has('name','ripple')).
 <1> do-while semantics stating to do `out()` 2 times.
 <2> while-do semantics stating to break if the traverser is at a vertex named "ripple".
 
-[gremlin-groovy,grateful-dead]
+[gremlin-groovy]
 ----
+graph = TinkerGraph.open()
+g = traversal().with(graph)
+g.io('data/grateful-dead.xml').read().iterate()
 g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(3) <1>
 g.V().has('name','DRUMS').repeat(__.in('followedBy').range(1,3)).until(loops().is(2)) <2>
 g.V().has('name','HEY BO DIDDLEY').repeat(out('followedBy').skip(5)).times(2) <3>
@@ -5609,7 +5612,7 @@ By default, `GType` enumerations are registered using their simple class names a
 
 [gremlin-groovy,modern]
 ----
-gremlin> g.V().values('age','name').is(P.typeOf('Integer'))
+g.V().values('age','name').is(P.typeOf('Integer'))
 ----
 
 [[a-note-on-maps]]

@@ -1399,10 +1399,8 @@ restricted by the grammar or serialization.
 [gremlin-groovy,modern]
 ----
 // Using java.awt.Color for example
-gremlin> g.inject(java.awt.Color.red)
-==>java.awt.Color[r=255,g=0,b=0]
-gremlin> g.inject(java.awt.Color.red, "hi", 123).is(P.typeOf(java.awt.Color))
-==>java.awt.Color[r=255,g=0,b=0]
+g.inject(java.awt.Color.red)
+g.inject(java.awt.Color.red, "hi", 123).is(P.typeOf(java.awt.Color))
 ----
 
 [[gremlin-javascript]]
