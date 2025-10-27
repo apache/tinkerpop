@@ -305,6 +305,21 @@ public abstract class TinkerWorld implements World {
         }
 
         @Override
+        public void beforeEachScenario(Scenario scenario) {
+            this.world.beforeEachScenario(scenario);
+
+            switch (scenario.getName()) {
+                // TINKERPOP-3208
+                case "g_V_repeatXunionXoutXknowsX_order_byXnameX_inXcreatedX_order_byXnameXXX_timesX1X":
+                case "g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X":
+                case "g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path":
+                    throw new AssumptionViolatedException("GraphComputer doesn't order within repeat");
+                default:
+                    // Do nothing
+            }
+        }
+
+        @Override
         public void afterEachScenario() {
             this.world.afterEachScenario();
         }
