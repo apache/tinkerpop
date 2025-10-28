@@ -593,9 +593,9 @@ See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCU
 
 ==== Removal of has(key, traversal)
 
-The has(key, traversal) API has been removed in version 3.8.0 due to its confusing behavior that differed from other
-has() variants. As well, most has(key, traversal) usage indicates a misunderstanding of the API. Unlike has(key, value)
-which performs equality comparison, has(key, traversal) only checked if the traversal produced any result, creating
+The `has(key, traversal)` API has been removed in version 3.8.0 due to its confusing behavior that differed from other
+has() variants. As well, most `has(key, traversal)` usage indicates a misunderstanding of the API. Unlike `has(key, value)`
+which performs equality comparison, `has(key, traversal)` only checked if the traversal produced any result, creating
 inconsistent semantics.
 
 [source,text]
