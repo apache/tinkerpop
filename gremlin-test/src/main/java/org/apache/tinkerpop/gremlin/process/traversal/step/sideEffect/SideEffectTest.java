@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -45,7 +46,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_valuesXnameX_sideEffectXidentity_substringX1XX();
 
-    public abstract Traversal<Vertex, String> get_g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold();
+    public abstract Traversal<Vertex, String> get_g_withSideEffectXx_setX_V_both_both_sideEffectX_localX_aggregateXxX_byXnameXX_capXxX_unfold();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -69,7 +70,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold() {
-        final Traversal<Vertex, String> traversal = get_g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold();
+        final Traversal<Vertex, String> traversal =  get_g_withSideEffectXx_setX_V_both_both_sideEffectX_localX_aggregateXxX_byXnameXX_capXxX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", "peter", "ripple", "marko", "vadas", "lop"), traversal);
         checkSideEffects(traversal.asAdmin().getSideEffects(), "x", HashSet.class);
@@ -88,8 +89,8 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_withSideEffectXx_setX_V_both_both_sideEffectXstoreXxX_byXnameXX_capXxX_unfold() {
-            return g.withSideEffect("x",new HashSet<>()).V().both().both().sideEffect(__.store("x").by("name")).cap("x").unfold();
+        public Traversal<Vertex, String> get_g_withSideEffectXx_setX_V_both_both_sideEffectX_localX_aggregateXxX_byXnameXX_capXxX_unfold() {
+            return g.withSideEffect("x",new HashSet<>()).V().both().both().sideEffect(__.local(aggregate("x").by("name"))).cap("x").unfold();
         }
 
     }

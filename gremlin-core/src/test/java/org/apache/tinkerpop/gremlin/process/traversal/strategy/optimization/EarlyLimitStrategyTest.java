@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -91,10 +92,7 @@ public class EarlyLimitStrategyTest {
                     {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(50, -1), __.out().discard(), Collections.emptyList()},
                     {__.out().map(__.identity()).map(__.identity()).range(50, 100).map(__.identity()).map(__.identity()).range(60, -1), __.out().discard(), Collections.emptyList()},
                     {__.out().map(__.identity()).map(__.identity()).range(50, 100).as("a").map(__.identity()).map(__.identity()).range(60, -1).as("b"), __.out().discard(), Collections.emptyList()},
-                    {__.out().range(50, 100).store("a").range(50, -1), __.out().range(50, 100).store("a").discard(), Collections.emptyList()},
-                    {__.out().range(50, 100).store("a").range(50, -1).cap("a"), ((GraphTraversal) __.out().range(50, 100).store("a").discard()).cap("a"), Collections.emptyList()},
                     {__.out().range(50, 100).map(__.identity()).range(50, -1).profile(), __.out().discard().profile(), Collections.singleton(ProfileStrategy.instance())},
-                    {__.out().store("a").limit(10), __.out().limit(10).store("a"), Collections.emptyList()},
                     {__.out().aggregate("a").limit(10), __.out().aggregate("a").limit(10), Collections.emptyList()},
                     {__.V().branch(__.label()).option("person", __.out("knows").valueMap().limit(1)).option("software", __.out("created").valueMap().limit(2).fold()),
                             __.V().branch(__.label()).option("person", __.out("knows").limit(1).valueMap()).option("software", __.out("created").limit(2).valueMap().fold()), Collections.emptyList()}

@@ -45,6 +45,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.outside;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.without;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.aggregate;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -84,7 +85,7 @@ public class CountStrategyTest {
                     {__.filter(__.outE().count().is(lt(1))), __.not(__.outE())},
                     {__.filter(__.both().count().is(lte(0))), __.not(__.both())},
                     {__.filter(__.out().out().count().is(0)), __.not(__.out().out())},
-                    {__.store("x").count().is(0).as("a"), __.store("x").limit(1).count().is(0).as("a")},
+                    {__.local(aggregate("x")).count().is(0).as("a"), __.local(aggregate("x")).limit(1).count().is(0).as("a")},
                     {__.out().count().as("a").is(0), __.out().limit(1).count().as("a").is(0)},
                     {__.out().count().is(neq(4)), __.out().limit(5).count().is(neq(4))},
                     {__.out().count().is(lte(3)), __.out().limit(4).count().is(lte(3))},
@@ -102,14 +103,14 @@ public class CountStrategyTest {
                     {__.filter(__.count().is(0)), __.not(__.identity())},
                     {__.sideEffect(__.count().is(0)), __.sideEffect(__.not(__.identity()))},
                     {__.branch(__.count().is(0)), __.branch(__.limit(1).count().is(0))},
-                    {__.count().is(0).store("x"), __.limit(1).count().is(0).store("x")},
+                    {__.count().is(0).local(aggregate("x")), __.limit(1).count().is(0).local(aggregate("x"))},
                     {__.repeat(__.out()).until(__.outE().count().is(0)), __.repeat(__.out()).until(__.not(__.outE()))},
                     {__.repeat(__.out()).until(__.out().out().values("name").count().is(0)), __.repeat(__.out()).until(__.out().out().not(__.values("name")))},
                     {__.repeat(__.out()).until(__.out().out().properties("age").has("x").count().is(0)), __.repeat(__.out()).until(__.out().out().not(__.properties("age").has("x")))},
                     {__.repeat(__.out()).emit(__.outE().count().is(0)), __.repeat(__.out()).emit(__.not(__.outE()))},
                     {__.where(__.outE().hasLabel("created").count().is(0)), __.not(__.outE().hasLabel("created"))},
                     {__.where(__.out().outE().hasLabel("created").count().is(0)), __.not(__.out().outE().hasLabel("created"))},
-                    {__.where(__.out().outE().hasLabel("created").count().is(0).store("x")), __.where(__.out().outE().hasLabel("created").limit(1).count().is(0).store("x"))},
+                    {__.where(__.out().outE().hasLabel("created").count().is(0).local(aggregate("x"))), __.where(__.out().outE().hasLabel("created").limit(1).count().is(0).local(aggregate("x")))},
                     {__.where(__.or(__.out("none").out().count().is(0), __.has("none"))), __.where(__.or(__.not(__.out("none").out()), __.has("none"))) },
                     {__.where(__.or(__.out("none").out().count().is(0), __.has("none").count().is(0))), __.where(__.or(__.not(__.out("none").out()), __.not(__.has("none")))) },
                     {__.where(__.or(__.out("none").out(), __.has("none").count().is(0))), __.where(__.or(__.out("none").out(), __.not(__.has("none")))) },
@@ -205,7 +206,7 @@ public class CountStrategyTest {
                     {__.filter(__.outE().count().is(lt(GValue.ofInteger("x", 1))))},
                     {__.filter(__.both().count().is(lte(GValue.ofInteger("x", 0))))},
                     {__.filter(__.out().out().count().is(GValue.of("x", 0)))},
-                    {__.store("x").count().is(GValue.of("x", 0)).as("a")},
+                    {__.local(aggregate("x")).count().is(GValue.of("x", 0)).as("a")},
                     {__.out().count().as("a").is(GValue.of("x", 0))},
                     {__.out().count().is(neq(GValue.ofInteger("x", 4)))},
                     {__.out().count().is(lte(GValue.ofInteger("x", 3)))},
@@ -222,14 +223,14 @@ public class CountStrategyTest {
                     {__.filter(__.count().is(GValue.of("x", 0)))},
                     {__.sideEffect(__.count().is(GValue.of("x", 0)))},
                     {__.branch(__.count().is(GValue.of("x", 0)))},
-                    {__.count().is(GValue.of("x", 0)).store("x")},
+                    {__.count().is(GValue.of("x", 0)).local(aggregate("x"))},
                     {__.repeat(__.out()).until(__.outE().count().is(GValue.of("x", 0)))},
                     {__.repeat(__.out()).until(__.out().out().values("name").count().is(GValue.of("x", 0)))},
                     {__.repeat(__.out()).until(__.out().out().properties("age").has("x").count().is(GValue.of("x", 0)))},
                     {__.repeat(__.out()).emit(__.outE().count().is(GValue.of("x", 0)))},
                     {__.where(__.outE().hasLabel("created").count().is(GValue.of("x", 0)))},
                     {__.where(__.out().outE().hasLabel("created").count().is(GValue.of("x", 0)))},
-                    {__.where(__.out().outE().hasLabel("created").count().is(GValue.of("x", 0)).store("x"))},
+                    {__.where(__.out().outE().hasLabel("created").count().is(GValue.of("x", 0)).local(aggregate("x")))},
                     {__.where(__.or(__.out("none").out().count().is(GValue.of("x", 0)), __.has("none")))},
                     {__.where(__.or(__.out("none").out().count().is(GValue.of("x", 0)), __.has("none").count().is(GValue.of("x", 0))))},
                     {__.where(__.or(__.out("none").out(), __.has("none").count().is(GValue.of("x", 0))))},

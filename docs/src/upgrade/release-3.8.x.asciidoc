@@ -423,6 +423,96 @@ The properties file in the above example can either point to a remote configurat
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3017[TINKERPOP-3017]
 
+==== `aggregate()` with `Scope` Removed
+
+The meaning of `Scope` parameters in `aggregate()` have always been unique compared to all other "scopable" steps.
+`aggregate(global)` is a `Barrier`, which blocks the traversal until all traversers have been aggregated into the side
+effect, where `aggregate(local)` is non-blocking, and will allow traversers to pass before the side effect has been
+fully aggregated. This is inconsistent with the semantics of `Scope` in all other steps. For example `dedup(global)`
+filters duplicates across the entire traversal stream, while `dedup(local)` filters duplicates within individual `List`
+traversers.
+
+The `Scope` parameter is being removed from `aggregate()` to fix inconsistency between the two different use cases: flow
+control vs. per-element application. This change aligns all side effect steps (none of the others have scope arguments)
+and reserves the `Scope` parameter exclusively for "traverser-local" application patterns, eliminating confusion about
+its contextual meanings.
+
+This makes the `AggregateStep` globally scoped by default with eager aggregation. The Lazy evaluation with `aggregate()` is
+achieved by wrapping the step in `local()`.
+
+[source,text]
+----
+// 3.7.x - scope is still supported
+gremlin> g.V().aggregate(local, "x").by("age").select("x")
+==>[29]
+==>[29,27]
+==>[29,27]
+==>[29,27,32]
+==>[29,27,32]
+==>[29,27,32,35]
+
+// 3.8.0 - must use aggregate() within local() to achieve lazy aggregation
+gremlin> g.V().local(aggregate("x").by("age")).select("x")
+==>[29]
+==>[29,27]
+==>[29,27]
+==>[29,27,32]
+==>[29,27,32]
+==>[29,27,32,35]
+----
+
+An slight behavioral difference exists between the removed `aggregate(local)` and its replacement `local(aggregate())`
+with respect to handling of bulked traversers. In 3.8.0, `local()` changed from traverser-local to object-local processing,
+always debulking incoming traversers into individual objects. This causes `local(aggregate())` to show true lazy, 1 object
+at a time aggregation, differing from the original `aggregate(local)`, which always consumed bulked traversers atomically.
+There is no workaround to preserve the old "traverser-local" semantics.
+
+[source,text]
+----
+// 3.7.x - both local() and local scope will preserve bulked traversers
+gremlin> g.V().out().barrier().aggregate(local, "x").select("x")
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3],v[2]]
+==>[v[3],v[3],v[3],v[2],v[4]]
+==>[v[3],v[3],v[3],v[2],v[4],v[5]]
+gremlin> g.V().out().barrier().local(aggregate("x")).select("x")
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3],v[2]]
+==>[v[3],v[3],v[3],v[2],v[4]]
+==>[v[3],v[3],v[3],v[2],v[4],v[5]]
+
+// 3.8.0 - bulked traversers are now split to be processed per-object, this affects local aggregation
+gremlin> g.V().out().barrier().local(aggregate("x")).select("x")
+==>[v[3]]
+==>[v[3],v[3]]
+==>[v[3],v[3],v[3]]
+==>[v[3],v[3],v[3],v[2]]
+==>[v[3],v[3],v[3],v[2],v[4]]
+==>[v[3],v[3],v[3],v[2],v[4],v[5]]
+----
+
+See: link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-scoping-5.asciidoc[Lazy vs. Eager Evaluation]
+
+==== Removal of `store()` Step
+
+The `store()` step was a legacy name for `aggregate(local)` that has been deprecated since 3.4.3, and is now removed along
+with `aggregate(local)`. To achieve lazy aggregation, use `aggregate()` within `local()`.
+
+[source,text]
+----
+// 3.7.x - store() is still allowed
+gremlin> g.V().store("x").by("age").cap("x")
+==>[29,27,32,35]
+
+// 3.8.0 - store() removed, use local(aggregate()) to achieve lazy aggregation
+gremlin> g.V().local(aggregate("x").by("age")).cap("x")
+==>[29,27,32,35]
+----
+
 ==== split() on Empty String
 
 The `split()` step will now split a string into a list of its characters if the given separator is an empty string.

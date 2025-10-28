@@ -616,7 +616,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
 *Description:* Collects all objects in the traversal into a collection.
 
-*Syntax:* `aggregate(String sideEffectKey)` | `aggregate(Scope scope, String sideEffectKey)`
+*Syntax:* `aggregate(String sideEffectKey)`
 
 [width="100%",options="header"]
 |=========================================================
@@ -626,8 +626,6 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#all-step[reference]
 
 *Arguments:*
 
-* `scope` - Determines the scope in which `aggregate` is applied. The `global` scope will collect all objects across the
-traversal. The `local` scope will collect objects within the current object (if it's a collection).
 * `sideEffectKey` - The name of the side-effect key that will hold the aggregated objects.
 
 *Modulation:*
@@ -643,8 +641,7 @@ The aggregated objects can be accessed later using the `cap()` step.
 
 None
 
-See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateGlobalStep.java[source],
-link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateLocalStep.java[source (local)],
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/AggregateStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#aggregate-step[reference]
 
 [[and-step]]

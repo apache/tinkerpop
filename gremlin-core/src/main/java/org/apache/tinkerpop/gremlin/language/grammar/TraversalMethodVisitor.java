@@ -197,16 +197,6 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
      * {@inheritDoc}
      */
     @Override
-    public GraphTraversal visitTraversalMethod_aggregate_Scope_String(final GremlinParser.TraversalMethod_aggregate_Scope_StringContext ctx) {
-        return graphTraversal.aggregate(
-                TraversalEnumParser.parseTraversalEnumFromContext(Scope.class, ctx.traversalScope()),
-                antlr.genericVisitor.parseString(ctx.stringLiteral()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public GraphTraversal visitTraversalMethod_all_P(final GremlinParser.TraversalMethod_all_PContext ctx) {
         return graphTraversal.all(antlr.traversalPredicateVisitor.visitTraversalPredicate(ctx.traversalPredicate()));
     }
@@ -1618,14 +1608,6 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         } else {
             return graphTraversal.skip((Long) literalOrVar);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public GraphTraversal visitTraversalMethod_store(final GremlinParser.TraversalMethod_storeContext ctx) {
-        return graphTraversal.store(antlr.genericVisitor.parseString(ctx.stringLiteral()));
     }
 
     /**

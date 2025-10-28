@@ -285,8 +285,6 @@ type AnonymousTraversal interface {
 	Skip(args ...interface{}) *GraphTraversal
 	// Split adds the split step to the GraphTraversal.
 	Split(args ...interface{}) *GraphTraversal
-	// Store adds the store step to the GraphTraversal.
-	Store(args ...interface{}) *GraphTraversal
 	// Subgraph adds the subgraph step to the GraphTraversal.
 	Subgraph(args ...interface{}) *GraphTraversal
 	// Substring adds the substring step to the GraphTraversal.
@@ -916,11 +914,6 @@ func (anonymousTraversal *anonymousTraversal) Skip(args ...interface{}) *GraphTr
 // Split adds the split step to the GraphTraversal.
 func (anonymousTraversal *anonymousTraversal) Split(args ...interface{}) *GraphTraversal {
 	return anonymousTraversal.graphTraversal().Split(args...)
-}
-
-// Store adds the store step to the GraphTraversal.
-func (anonymousTraversal *anonymousTraversal) Store(args ...interface{}) *GraphTraversal {
-	return anonymousTraversal.graphTraversal().Store(args...)
 }
 
 // Subgraph adds the subgraph step to the GraphTraversal.

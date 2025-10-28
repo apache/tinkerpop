@@ -164,15 +164,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the aggregate step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
-        public GraphTraversal<TStart, TEnd> Aggregate (Scope scope, string sideEffectKey)
-        {
-            Bytecode.AddStep("aggregate", scope, sideEffectKey);
-            return Wrap<TStart, TEnd>(this);
-        }
-
-        /// <summary>
-        ///     Adds the aggregate step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
         public GraphTraversal<TStart, TEnd> Aggregate (string sideEffectKey)
         {
             Bytecode.AddStep("aggregate", sideEffectKey);
@@ -2080,15 +2071,6 @@ namespace Gremlin.Net.Process.Traversal
         {
             Bytecode.AddStep("split", scope, splitChar);
             return Wrap<TStart, List<TNewEnd>?>(this);
-        }
-
-        /// <summary>
-        ///     Adds the store step to this <see cref="GraphTraversal{SType, EType}" />.
-        /// </summary>
-        public GraphTraversal<TStart, TEnd> Store (string sideEffectKey)
-        {
-            Bytecode.AddStep("store", sideEffectKey);
-            return Wrap<TStart, TEnd>(this);
         }
 
         /// <summary>

@@ -896,11 +896,11 @@ Feature: Step - select()
       | m[{"a":["a1","a1","b1"]}] |
       | m[{"a":["b1","a1","a1"]}] |
 
-  Scenario: g_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX
+  Scenario: g_V_asXlabelX_localXaggregateXxX_selectXxX_selectXlabelX
     Given the modern graph
     And the traversal of
       """
-      g.V().as("label").aggregate(local,"x").barrier().select("x").select("label")
+      g.V().as("label").local(aggregate("x")).barrier().select("x").select("label")
       """
     When iterated to list
     Then the result should be unordered

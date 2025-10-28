@@ -1474,13 +1474,6 @@ public class __ {
     }
 
     /**
-     * @see GraphTraversal#aggregate(Scope, String)
-     */
-    public static <A> GraphTraversal<A, A> aggregate(final Scope scope, final String sideEffectKey) {
-        return __.<A>start().aggregate(scope, sideEffectKey);
-    }
-
-    /**
      * @see GraphTraversal#fail()
      */
     public static <A>  GraphTraversal<A, A> fail() {
@@ -1527,15 +1520,6 @@ public class __ {
      */
     public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator) {
         return __.<A>start().sack(sackOperator);
-    }
-
-    /**
-     * @see GraphTraversal#store(String)
-     * @deprecated As of release 3.4.3, replaced by {@link #aggregate(Scope, String)} using {@link Scope#local}.
-     */
-    @Deprecated
-    public static <A> GraphTraversal<A, A> store(final String sideEffectKey) {
-        return __.<A>start().store(sideEffectKey);
     }
 
     /**
