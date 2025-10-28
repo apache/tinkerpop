@@ -27,9 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementExce
 
 import java.util.NoSuchElementException;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
 public abstract class SideEffectBarrierStep<S> extends AbstractStep<S, S> implements LocalBarrier<S> {
     protected TraverserSet<S> barrier;
 
