@@ -73,8 +73,17 @@ public final class TailGlobalStepPlaceholder<S> extends AbstractStep<S, S> imple
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        TailGlobalStepPlaceholder<?> that = (TailGlobalStepPlaceholder<?>) o;
+        return bypass == that.bypass && Objects.equals(limit, that.limit);
+    }
+
+    @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(this.limit);
+        return Objects.hash(super.hashCode(), limit, bypass);
     }
 
     @Override

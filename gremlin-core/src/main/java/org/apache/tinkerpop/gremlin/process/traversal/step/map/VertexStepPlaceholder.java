@@ -117,35 +117,19 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        VertexStepPlaceholder<?> that = (VertexStepPlaceholder<?>) o;
+        return Objects.equals(sortEdgeLabels(edgeLabels), sortEdgeLabels(that.edgeLabels)) &&
+                direction == that.direction &&
+                Objects.equals(returnClass, that.returnClass);
+    }
+
+    @Override
     public int hashCode() {
-        int result = Objects.hash(super.hashCode(), direction, returnClass);
-        // edgeLabel's order does not matter because in("x", "y") and in("y", "x") must be considered equal.
-        if (edgeLabels != null && edgeLabels.length > 0) {
-            final List<GValue<String>> sortedEdgeLabels = Arrays.stream(edgeLabels)
-                    .sorted(Comparator.nullsLast(new Comparator<GValue<String>>() {
-                        @Override
-                        public int compare(GValue<String> o1, GValue<String> o2) {
-                            // variables come before non-variables
-                            if (o1.isVariable() && !o2.isVariable()) {
-                                return -1;
-                            } else if (!o1.isVariable() && o2.isVariable()) {
-                                return 1;
-                            } else if (o1.isVariable()) {
-                                if (!o2.getName().equals(o1.getName())) {
-                                    return o1.getName().compareTo(o2.getName()); // compare by variable name
-                                } else {
-                                    return o1.get().compareTo(o2.get()); // use value as tie-breaker
-                                }
-                            } else {
-                                return o1.get().compareTo(o2.get()); // comparison of 2 non-variables
-                            }
-                        }
-                    })).collect(Collectors.toList());
-            for (final GValue<String> edgeLabel : sortedEdgeLabels) {
-                result = 31 * result + Objects.hashCode(edgeLabel);
-            }
-        }
-        return result;
+        return Objects.hash(super.hashCode(), sortEdgeLabels(edgeLabels), direction, returnClass);
     }
 
     @Override
@@ -195,5 +179,37 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
     @Override
     public void close() throws Exception {
         closeIterator();
+    }
+
+    /**
+     * Helper method for hashCode() and equals() as edgeLabel's order should not influence equality.
+     * in("x", "y") and in("y", "x") must be considered equal.
+     */
+    private List<GValue<String>> sortEdgeLabels(final GValue<String>[] gValues) {
+        if (edgeLabels == null || edgeLabels.length == 0) {
+            return List.of();
+        }
+        final List<GValue<String>> sortedEdgeLabels = Arrays.stream(edgeLabels)
+                .sorted(Comparator.nullsLast(new Comparator<GValue<String>>() {
+                    @Override
+                    public int compare(GValue<String> o1, GValue<String> o2) {
+                        // variables come before non-variables
+                        if (o1.isVariable() && !o2.isVariable()) {
+                            return -1;
+                        } else if (!o1.isVariable() && o2.isVariable()) {
+                            return 1;
+                        } else if (o1.isVariable()) {
+                            if (!o2.getName().equals(o1.getName())) {
+                                return o1.getName().compareTo(o2.getName()); // compare by variable name
+                            } else {
+                                return o1.get().compareTo(o2.get()); // use value as tie-breaker
+                            }
+                        } else {
+                            return o1.get().compareTo(o2.get()); // comparison of 2 non-variables
+                        }
+                    }
+                })).collect(Collectors.toList());
+
+        return sortedEdgeLabels;
     }
 }

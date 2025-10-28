@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Objects;
+
 public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Vertex, Event.VertexAddedEvent>
         implements AddVertexStepContract<S>, GValueHolder<S, Vertex> {
 
@@ -52,6 +54,20 @@ public abstract class AbstractAddVertexStepPlaceholder<S> extends AbstractAddEle
     @Override
     public boolean hasUserProvidedLabel() {
         return userProvidedLabel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AbstractAddVertexStepPlaceholder<?> that = (AbstractAddVertexStepPlaceholder<?>) o;
+        return userProvidedLabel == that.userProvidedLabel;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), userProvidedLabel);
     }
 
     @Override

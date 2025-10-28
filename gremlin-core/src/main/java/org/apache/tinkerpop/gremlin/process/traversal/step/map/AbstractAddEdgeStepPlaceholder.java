@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddElementStepPlaceholder<S, Edge, Event.EdgeAddedEvent> implements AddEdgeStepContract<S> {
     protected Traversal.Admin<?, ?> from;
@@ -71,15 +72,17 @@ public abstract class AbstractAddEdgeStepPlaceholder<S> extends AbstractAddEleme
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AbstractAddEdgeStepPlaceholder<?> that = (AbstractAddEdgeStepPlaceholder<?>) o;
+        return Objects.equals(from, that.from) && Objects.equals(to, that.to);
+    }
+
+    @Override
     public int hashCode() {
-        int hash = super.hashCode();
-        if (from != null) {
-            hash ^= from.hashCode();
-        }
-        if (to != null) {
-            hash ^= to.hashCode();
-        }
-        return hash;
+        return Objects.hash(super.hashCode(), from, to);
     }
 
     @Override
