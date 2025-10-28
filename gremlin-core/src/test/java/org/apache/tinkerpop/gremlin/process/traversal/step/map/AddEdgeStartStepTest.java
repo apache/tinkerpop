@@ -212,7 +212,7 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getGValuesNonShouldReturnEmptyCollection() {
+    public void getGValuesNoneShouldReturnEmptyCollection() {
         GraphTraversal.Admin<Edge, Edge> traversal = g.addE("likes")
                 .from(__.V(1))
                 .to(__.V(2))
