@@ -5015,20 +5015,19 @@ g.V().has('name','josh').out('created').values('name').
 <1> When the `tree()` is created, vertex 3 and 5 are unique and thus, form unique branches in the tree structure.
 <2> When the `tree()` is `by()`-modulated by `label`, then vertex 3 and 5 are both "software" and thus are merged to a single node in the tree.
 
-The `tree()` step can also take a side-effect key as an argument. When using this form, the `Tree` is constructed
-lazily, such that it becomes possible to assess its contents as each traverser passes through.
+The `tree()` step can also take a side-effect key as an argument. When using this form, the `Tree` is is built up in a
+side-effect as each traverser passes through. The `Tree` can later be accessed by either `select()` or `cap()`.
 
 [gremlin-groovy,modern]
 ----
 g.V().has('name','josh').out('created').values('name').tree('x').select('x')
 ----
 
-You can use `cap()` step to force `tree()` to consume the traversal stream eagerly and output results similar to prior
-examples.
+It is possible to force lazy construction of the tree by embedding inside a `local()` step.
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','josh').out('created').values('name').tree('x').cap('x')
+g.V().has('name','josh').out('created').values('name').local(tree('x')).select('x')
 ----
 
 *Additional References*

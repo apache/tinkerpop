@@ -78,7 +78,7 @@ public class SparkInterceptorStrategyTest extends AbstractSparkTest {
         assertTrue(g.getStrategies().getStrategy(SparkInterceptorStrategy.class).isPresent());
         assertTrue(g.V().count().explain().toString().contains(SparkInterceptorStrategy.class.getSimpleName()));
         /// groupCount(m)-test
-        Traversal.Admin<Vertex, Long> traversal = g.V().groupCount("m").by(T.label).count().asAdmin();
+        Traversal.Admin<Vertex, Long> traversal = g.V().local(__.groupCount("m").by(T.label)).count().asAdmin();
         test(SparkStarBarrierInterceptor.class, 6l, traversal);
         assertEquals(1, traversal.getSideEffects().keys().size());
         assertTrue(traversal.getSideEffects().exists("m"));

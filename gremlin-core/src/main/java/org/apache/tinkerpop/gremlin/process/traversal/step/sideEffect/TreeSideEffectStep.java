@@ -41,7 +41,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
+public final class TreeSideEffectStep<S> extends SideEffectBarrierStep<S> implements SideEffectCapable<Tree, Tree>, TraversalParent, ByModulating, PathProcessor {
 
     private TraversalRing<Object, Object> traversalRing;
     private String sideEffectKey;
