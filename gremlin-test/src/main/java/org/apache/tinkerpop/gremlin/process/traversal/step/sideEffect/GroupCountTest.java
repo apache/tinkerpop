@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -74,7 +73,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Long> get_g_V_unionXoutXknowsX__outXcreatedX_inXcreatedXX_groupCount_selectXvaluesX_unfold_sum();
 
-    public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+    public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_localXgroupCountXaXX_out_capXaX_selectXkeysX_unfold_both_localXgroupCountXaXX_capXaX();
 
     public abstract Traversal<Vertex, String> get_g_V_both_groupCountXaX_byXlabelX_asXbX_barrier_whereXselectXaX_selectXsoftwareX_isXgtX2XXX_selectXbX_name();
 
@@ -237,8 +236,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
-        final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX();
+    public void g_V_both_localXgroupCountXaXX_out_capXaX_selectXkeysX_unfold_both_localXgroupCountXaXX_capXaX() {
+        final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_both_localXgroupCountXaXX_out_capXaX_selectXkeysX_unfold_both_localXgroupCountXaXX_capXaX();
         printTraversalForm(traversal);
         //  [{v[1]=6, v[2]=2, v[3]=6, v[4]=6, v[5]=2, v[6]=2}]
         final Map<Vertex, Long> map = traversal.next();
@@ -334,8 +333,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX() {
-            return g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a");
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_both_localXgroupCountXaXX_out_capXaX_selectXkeysX_unfold_both_localXgroupCountXaXX_capXaX() {
+            return g.V().both().local(__.groupCount("a")).out().cap("a").select(Column.keys).unfold().both().local(__.groupCount("a")).cap("a");
         }
 
         @Override

@@ -68,6 +68,7 @@ public class SparkGraphFeatureIntegrateTest {
 
     private static final String skipReasonLength = "Spark-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.";
     private static final String skipReasonOrdering = "GraphComputer doesn't order within repeat.";
+    private static final String skipReasonTINKERPOP3209 = "Selecting side effects inside local() produces inconsistent results in OLAP (See TINKERPOP-3209)";
 
     private static final List<Pair<String, String>> skip = new ArrayList<Pair<String,String>>() {{
         add(Pair.with("g_V_both_both_count", skipReasonLength));
@@ -86,6 +87,9 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_V_repeatXunionXoutXknowsX_order_byXnameX_inXcreatedX_order_byXnameXXX_timesX1X", skipReasonOrdering));
         add(Pair.with("g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X", skipReasonOrdering));
         add(Pair.with("g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path", skipReasonOrdering));
+        add(Pair.with("g_V_localXgroupCountXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
+        add(Pair.with("g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
+        add(Pair.with("g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
     }};
 
     public static final class ServiceModule extends AbstractModule {

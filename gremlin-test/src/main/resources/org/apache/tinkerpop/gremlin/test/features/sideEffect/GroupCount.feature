@@ -205,11 +205,11 @@ Feature: Step - groupCount()
       | result |
       | m[{"d[1].l":"d[3].l","d[3].l":"d[3].l"}] |
 
-  Scenario: g_V_both_groupCountXaX_out_capXaX_selectXkeysX_unfold_both_groupCountXaX_capXaX
+  Scenario: g_V_both_localXgroupCountXaXX_out_capXaX_selectXkeysX_unfold_both_localXgroupCountXaXX_capXaX
     Given the modern graph
     And the traversal of
       """
-      g.V().both().groupCount("a").out().cap("a").select(Column.keys).unfold().both().groupCount("a").cap("a")
+      g.V().both().local(groupCount("a")).out().cap("a").select(Column.keys).unfold().both().local(groupCount("a")).cap("a")
       """
     When iterated to list
     Then the result should be unordered
@@ -244,3 +244,35 @@ Feature: Step - groupCount()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "GroupCount step can only have one by modulator"
+
+  Scenario: g_V_groupCountXaX_selectXaX_countXlocalX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().groupCount("a").select("a").count(local)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[6].l |
+      | d[6].l |
+      | d[6].l |
+      | d[6].l |
+      | d[6].l |
+      | d[6].l |
+
+  Scenario: g_V_localXgroupCountXaX_selectXaX_countXlocalXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(groupCount("a").select("a").count(local))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].l |
+      | d[2].l |
+      | d[3].l |
+      | d[4].l |
+      | d[5].l |
+      | d[6].l |

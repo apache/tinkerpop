@@ -1576,7 +1576,8 @@ key.
 
 The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a `Map` with
 the counted objects as keys and their counts as values. As a side-effect step, it stores the counts in a side-effect and
-passes the traverser to the next step unchanged.
+passes the traverser to the next step unchanged. Note that both the map and side-effect forms of this step are barriers
+must fully iterate the traversal before returning any results.
 
 *Exceptions*
 
