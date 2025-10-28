@@ -761,7 +761,7 @@ gremlin> v1 = g.V(1).next()
 ==>v[1]
 gremlin> v6 = g.V(6).next()
 ==>v[6]
-gremlin> String.format("g.addE('knows').from(new Vertex(%s)).to(new ReferenceVertex(%s))", v1.id(), v6.id())
+gremlin> script = String.format("g.addE('knows').from(new Vertex(%s)).to(new ReferenceVertex(%s))", v1.id(), v6.id())
 ==>g.addE('knows').from(new Vertex(1)).to(new ReferenceVertex(6))
 gremlin> client.submit(script).all().get().get(0).getEdge()
 ==>e[0][1-knows->6]
@@ -771,7 +771,7 @@ gremlin> v1 = g.V(1).next()
 ==>v[1]
 gremlin> v6 = g.V(6).next()
 ==>v[6]
-gremlin> String.format("g.addE('knows').from(__.V(%s)).to(__.constant(%s))", v1.id(), v6.id())
+gremlin> script = String.format("g.addE('knows').from(__.V(%s)).to(__.constant(%s))", v1.id(), v6.id())
 ==>g.addE('knows').from(__.V(1)).to(__.constant(6))
 gremlin> client.submit(script).all().get().get(0).getEdge()
 ==>e[0][1-knows->6]
