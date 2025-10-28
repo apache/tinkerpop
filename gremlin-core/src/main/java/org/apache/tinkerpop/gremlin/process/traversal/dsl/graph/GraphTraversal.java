@@ -2254,6 +2254,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link HasStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.1.0-incubating
+     * @deprecated As of release 3.7.5, not replaced. Consider {@code where()} for complex filtering or
+     * {@code has(T, predicate)} for value comparisons.
      */
     public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
         if (null == accessor)
@@ -2288,6 +2290,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link HasStep}
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#has-step" target="_blank">Reference Documentation - Has Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 3.7.5, not replaced. Consider {@code where()} for complex filtering or
+     * {@code has(key, predicate)} for value comparisons.
      */
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
         // the translation here of null to has(String, Object) is likely what was intended. a null Traversal doesn't

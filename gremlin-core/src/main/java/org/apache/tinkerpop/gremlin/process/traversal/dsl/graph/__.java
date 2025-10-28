@@ -943,6 +943,8 @@ public class __ {
 
     /**
      * @see GraphTraversal#has(T, Traversal)
+     * @deprecated As of release 3.7.5, not replaced. Consider {@code where()} for complex filtering or
+     * {@code has(T, predicate)} for value comparisons.
      */
     public static <A> GraphTraversal<A, A> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
         return __.<A>start().has(accessor, propertyTraversal);
@@ -950,6 +952,8 @@ public class __ {
 
     /**
      * @see GraphTraversal#has(String, Traversal)
+     * @deprecated As of release 3.7.5, not replaced. Consider {@code where()} for complex filtering or
+     * {@code has(key, predicate)} for value comparisons.
      */
     public static <A> GraphTraversal<A, A> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
         return __.<A>start().has(propertyKey, propertyTraversal);

@@ -30,6 +30,35 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Deprecated has(key, traversal)
+
+The `has(key, traversal)` API is deprecated as of 3.7.5, due to its confusing behavior that differed from other
+`has()` variants, and a common misunderstanding of the API. Unlike `has(key, value)`, which performs equality comparison,
+`has(key, traversal)` only checked if the traversal produced any result. This leads to inconsistency in the semantics,
+and this API be removed in the next major version. The recommendation is to consider using `where()` for complex
+filtering or `has(key, predicate)` for value comparisons.
+
+[source,text]
+----
+// 3.7.4 - this condition is meaningless but yields result because count() is productive
+gremlin> g.V().has("age", __.count())
+==>v[1]
+==>v[2]
+==>v[3]
+==>v[4]
+==>v[5]
+==>v[6]
+// 3.7.4 - simple example
+gremlin> g.V().has("age", __.is(P.gt(30)))
+==>v[4]
+==>v[6]
+// 3.7.5+ - for proper use cases consider using predicate or where() for filtering
+gremlin> g.V().has("age", P.gt(30))
+==>v[4]
+==>v[6]
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
 === Upgrading for Providers
 

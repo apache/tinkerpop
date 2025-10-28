@@ -1901,15 +1901,14 @@ the key,value pairs for those vertices.
 <9> Property key is always stored as `String` and therefore an equality check with `null` will produce no result.
 <10> An example of `has()` where the argument is a `Traversal` and does not quite behave the way most expect.
 
-Item 10 in the above set of examples bears some discussion. The behavior is not such that the result of the `Traversal`
-is used as the comparing value for `has()`, but the current `Traverser`, which in this case is the vertex `label`, is
-given to the `Traversal` to behave as a filter itself. In other words, if the `Traversal` (i.e. `is('person')`) returns
-a value then the `has()` is effectively `true`. A common mistake is to try to use `select()` in this context where one
-would do `has('name', select('n'))` to try to inject the value of "n" into the step to get `has('name', <value-of-n>)`,
-but this would instead simply produce an always `true` filter for `has()`.
-
-TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop
-may provide a partial match extension.
+Item 10 in the above set of examples is deprecated as of 3.7.5, and bears some discussion. The behavior is not such that
+the result of the `Traversal` is used as the comparing value for `has()`, but the current `Traverser`, which in this case
+is the vertex `label`, is given to the `Traversal` to behave as a filter itself. In other words, if the `Traversal`
+(i.e. `is('person')`) returns a value then the `has()` is effectively `true`. A common mistake is to try to use
+`select()` in this context where one would do `has('name', select('n'))` to try to inject the value of "n" into the step
+to get `has('name', <value-of-n>)`, but this would instead simply produce an always `true` filter for `has()`. Due to
+this confusing expectation, this option is on the deprecation path for 3.7.5, and will be removed in next major version.
+The recommendation is to consider using `where()` for complex filtering or `has(key, predicate)` for value comparisons.
 
 *Additional References*
 

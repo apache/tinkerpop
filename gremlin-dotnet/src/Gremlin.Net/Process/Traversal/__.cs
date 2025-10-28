@@ -675,6 +675,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
         /// </summary>
+        [Obsolete("Deprecated as of 3.7.5. Not replaced. Consider Where() for complex filtering or Has(key, predicate) for value comparisons", false)]
         public static GraphTraversal<object, object> Has(string? propertyKey, ITraversal propertyTraversal)
         {
             return new GraphTraversal<object, object>().Has(propertyKey, propertyTraversal);            
@@ -699,6 +700,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the has step to that traversal.
         /// </summary>
+        [Obsolete("Deprecated as of 3.7.5. Not replaced. Consider Where() for complex filtering or Has(key, predicate) for value comparisons", false)]
         public static GraphTraversal<object, object> Has(T accessor, ITraversal propertyTraversal)
         {
             return new GraphTraversal<object, object>().Has(accessor, propertyTraversal);            

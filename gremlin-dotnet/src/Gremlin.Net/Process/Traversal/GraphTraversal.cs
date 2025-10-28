@@ -973,6 +973,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        [Obsolete("Deprecated as of 3.7.5. Not replaced. Consider Where() for complex filtering or Has(key, predicate) for value comparisons", false)]
         public GraphTraversal<TStart, TEnd> Has (string? propertyKey, ITraversal propertyTraversal)
         {
             Bytecode.AddStep("has", propertyKey, propertyTraversal);
@@ -1000,6 +1001,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the has step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        [Obsolete("Deprecated as of 3.7.5. Not replaced. Consider Where() for complex filtering or Has(T, predicate) for value comparisons", false)]
         public GraphTraversal<TStart, TEnd> Has (T accessor, ITraversal propertyTraversal)
         {
             Bytecode.AddStep("has", accessor, propertyTraversal);
