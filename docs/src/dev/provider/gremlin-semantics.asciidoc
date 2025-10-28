@@ -1619,6 +1619,36 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LengthLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#length-step[reference]
 
+[[local-step]]
+=== local()
+
+*Description:* Executes the provided traversal in an object-local manner.
+
+*Syntax:* `local(Traversal localTraversal)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `localTraversal` - The traversal that processes each single-object traverser individually.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `local()` step enforces object-local execution. As a branching step with local children, it implements strict lazy
+evaluation by passing a single traverser at a time to the local traversal (bulk of exactly one, if bulking is supported)
+and resetting the traversal to clean state between executions.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/LocalStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#local-step[reference]
+
 [[intersect-step]]
 === intersect()
 
@@ -2003,7 +2033,7 @@ link:https://tinkerpop.apache.org/docs/x.y.z/reference/#project-step[reference]
 [[repeat-step]]
 === repeat()
 
-*Description:* Iteratively applies a traversal (the "loop body") to each incoming traverser until a stopping
+*Description:* Iteratively applies a traversal (the "loop body") to all incoming traversers until a stopping
 condition is met. Optionally, it can emit traversers on each iteration according to an emit predicate. The
 repeat step supports loop naming and a loop counter via `loops()`.
 
@@ -2044,6 +2074,9 @@ predicates are evaluated before the first iteration (pre) or after each iteratio
 `do/while` semantics respectively:
   - Pre-check / pre-emit: when the modulator appears before `repeat(...)`.
   - Post-check / post-emit: when the modulator appears after `repeat(...)`.
+- Global traversal scope: The `repeatTraversal` is a global child. This means all traversers entering the repeat body
+are processed together as a unified stream with global semantics. `Barrier` (`order()`, `sample()`, etc.) steps within
+the repeat traversal operate across all traversers collectively rather than in isolation per traverser.
 - Loop counter semantics:
   - The loop counter for a given named or unnamed repeat is incremented once per completion of the loop body (i.e.,
 after the body finishes), not before. Therefore, `loops()` reflects the number of completed iterations.

@@ -101,6 +101,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
 * Modified mathematical operators to prevent overflows in steps such as `sum()` and 'sack()' to prefer promotion to the next highest number type.
+* Modified `local()` to be "object-local" rather than "traverser-local".
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added `UUID()` and `UUID(value)` to grammar.
 * Deprecated the `UnifiedChannelizer`.
@@ -167,6 +168,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
 * Added the `asNumber()` step to perform number conversion.
+* Changed `repeat()` to make `repeatTraversal` global rather than a mix of local and global.
 * Renamed many types in the grammar for consistent use of terms "Literal", "Argument", and "Varargs".
 * Changed `gremlin-net` so that System.Text.Json is only listed as an explicit dependency when it is not available from the framework.
 * Fixed translation of numeric literals for Go losing type definitions.
