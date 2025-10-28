@@ -240,6 +240,16 @@ gremlin> g.inject('x').repeat(union(constant('a').limit(1),identity())).times(5)
 ==>a
 ==>a
 ==>x
+
+// can also use union() and constant() inside repeat() with multiple values
+gremlin> g.inject('x').repeat(union(constant(['a','b']).limit(1).unfold(),identity())).times(3)
+==>a
+==>b
+==>a
+==>a
+==>b
+==>b
+==>x
 ----
 
 ==== Simplified Comparability Semantics
