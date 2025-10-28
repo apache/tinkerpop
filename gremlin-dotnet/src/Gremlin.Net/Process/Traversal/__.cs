@@ -103,14 +103,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the aggregate step to that traversal.
         /// </summary>
-        public static GraphTraversal<object, object> Aggregate(Scope scope, string sideEffectKey)
-        {
-            return new GraphTraversal<object, object>().Aggregate(scope, sideEffectKey);            
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the aggregate step to that traversal.
-        /// </summary>
         public static GraphTraversal<object, object> Aggregate(string sideEffectKey)
         {
             return new GraphTraversal<object, object>().Aggregate(sideEffectKey);            
@@ -1488,14 +1480,6 @@ namespace Gremlin.Net.Process.Traversal
         public static GraphTraversal<object, List<E2>?> Split<E2>(Scope scope, string? splitChar)
         {
             return new GraphTraversal<object, List<E2>?>().Split<E2>(scope, splitChar);
-        }
-
-        /// <summary>
-        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the store step to that traversal.
-        /// </summary>
-        public static GraphTraversal<object, object> Store(string sideEffectKey)
-        {
-            return new GraphTraversal<object, object>().Store(sideEffectKey);            
         }
 
         /// <summary>

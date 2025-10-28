@@ -113,12 +113,6 @@ public class TraversalMethodVisitorTest {
     }
 
     @Test
-    public void shouldParseTraversalMethod_aggregate_Scope() throws Exception {
-        compare(g.V().aggregate(global, "test"), eval("g.V().aggregate(global, 'test')"));
-        compare(g.V().aggregate(Scope.local, "test"), eval("g.V().aggregate(Scope.local, 'test')"));
-    }
-
-    @Test
     public void shouldParseTraversalMethod_all_P() throws Exception {
         compare(g.V().id().fold().all(gt(1)), eval("g.V().id().fold().all(gt(1))"));
     }
@@ -904,11 +898,6 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_skip_long() throws Exception {
         compare(g.V().skip(8), eval("g.V().skip(8)"));
-    }
-
-    @Test
-    public void shouldParseTraversalMethod_store() throws Exception {
-        compare(g.V().store("asd"), eval("g.V().store(\"asd\")"));
     }
 
     @Test

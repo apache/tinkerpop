@@ -1515,16 +1515,6 @@ export class GraphTraversal extends Traversal {
   }
 
   /**
-   * Graph traversal store method.
-   * @param {...Object} args
-   * @returns {GraphTraversal}
-   */
-  store(...args: any[]): this {
-    this.bytecode.addStep('store', args);
-    return this;
-  }
-
-  /**
    * Graph traversal subgraph method.
    * @param {...Object} args
    * @returns {GraphTraversal}
@@ -1895,7 +1885,6 @@ export const statics = {
   simplePath: (...args: any[]) => callOnEmptyTraversal('simplePath', args),
   skip: (...args: any[]) => callOnEmptyTraversal('skip', args),
   split: (...args: any[]) => callOnEmptyTraversal('split', args),
-  store: (...args: any[]) => callOnEmptyTraversal('store', args),
   subgraph: (...args: any[]) => callOnEmptyTraversal('subgraph', args),
   substring: (...args: any[]) => callOnEmptyTraversal('substring', args),
   sum: (...args: any[]) => callOnEmptyTraversal('sum', args),

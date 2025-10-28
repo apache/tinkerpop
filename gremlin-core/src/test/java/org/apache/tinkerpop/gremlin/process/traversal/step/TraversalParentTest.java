@@ -45,8 +45,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStepCont
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeStepContract;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
@@ -378,38 +377,20 @@ public class TraversalParentTest {
                         List.of(__.constant(Map.of(T.label, "knows")), __.constant(Map.of("weight", 0.5)), __.constant(Map.of("updated", true))),
                         null, null
                 },
-                {AggregateGlobalStep.class,
+                {AggregateStep.class,
                         g.V().aggregate("x"),
                         List.of(),
                         List.of(),
                         null, null
                 },
-                {AggregateGlobalStep.class,
+                {AggregateStep.class,
                         g.V().aggregate("x").by("name"),
                         List.of(),
                         List.of(new ValueTraversal<>("name")),
                         null, null
                 },
-                {AggregateGlobalStep.class,
+                {AggregateStep.class,
                         g.V().aggregate("x").by(__.constant("value")),
-                        List.of(),
-                        List.of(__.constant("value")),
-                        null, null
-                },
-                {AggregateLocalStep.class,
-                        g.V().aggregate(Scope.local, "x"),
-                        List.of(),
-                        List.of(),
-                        null, null
-                },
-                {AggregateLocalStep.class,
-                        g.V().aggregate(Scope.local, "x").by("name"),
-                        List.of(),
-                        List.of(new ValueTraversal<>("name")),
-                        null, null
-                },
-                {AggregateLocalStep.class,
-                        g.V().aggregate(Scope.local, "x").by(__.constant("value")),
                         List.of(),
                         List.of(__.constant("value")),
                         null, null

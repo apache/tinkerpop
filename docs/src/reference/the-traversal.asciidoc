@@ -458,8 +458,8 @@ image:side-effect-lambda.png[width=175,float=right]
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').sideEffect(System.out.&println) <1>
-g.V().sideEffect(outE().count().aggregate(local,"o")).
-      sideEffect(inE().count().aggregate(local,"i")).cap("o","i") <2>
+g.V().sideEffect(outE().count().local(aggregate("o"))).
+      sideEffect(inE().count().local(aggregate("i"))).cap("o","i") <2>
 ----
 
 <1> Whatever enters `sideEffect()` is passed to the next step, but some intervening process can occur.
@@ -600,26 +600,22 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 image::aggregate-step.png[width=800]
 
 The `aggregate()`-step (*sideEffect*) is used to aggregate all the objects at a particular point of traversal into a
-`Collection`. The step is uses `Scope` to help determine the aggregating behavior. For `global` scope this means that
-the step will use link:http://en.wikipedia.org/wiki/Eager_evaluation[eager evaluation] in that no objects continue on
-until all previous objects have been fully aggregated. The eager evaluation model is crucial in situations
-where everything at a particular point is required for future computation. By default, when the overload of
-`aggregate()` is called without a `Scope`, the default is `global`. An example is provided below.
+`Collection`. By default, the step will use link:http://en.wikipedia.org/wiki/Eager_evaluation[eager evaluation] in that
+no objects continue on until all previous objects have been fully aggregated. The eager evaluation model is crucial in situations
+where everything at a particular point is required for future computation.
 
 [gremlin-groovy,modern]
 ----
 g.V(1).out('created') <1>
 g.V(1).out('created').aggregate('x') <2>
-g.V(1).out('created').aggregate(global, 'x') <3>
-g.V(1).out('created').aggregate('x').in('created') <4>
-g.V(1).out('created').aggregate('x').in('created').out('created') <5>
+g.V(1).out('created').aggregate('x').in('created') <3>
+g.V(1).out('created').aggregate('x').in('created').out('created') <4>
 g.V(1).out('created').aggregate('x').in('created').out('created').
-       where(without('x')).values('name') <6>
+       where(without('x')).values('name') <5>
 ----
 
 <1> What has marko created?
 <2> Aggregate all his creations.
-<3> Identical to the previous line.
 <3> Who are marko's collaborators?
 <4> What have marko's collaborators created?
 <5> What have marko's collaborators created that he hasn't created?
@@ -639,31 +635,23 @@ g.V().out('knows').aggregate('x').by('age').cap('x')  <1>
 
 <1> The "age" property is not <<by-step,productive>> for all vertices and therefore those values are not included in the aggregation.
 
-For `local` scope the aggregation will occur in a link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] fashion.
-
-NOTE: Prior to 3.4.3, `local` aggregation (i.e. lazy) evaluation was handled by `store()`-step.
-
-[gremlin-groovy,modern]
-----
-g.V().aggregate(global, 'x').limit(1).cap('x')
-g.V().aggregate(local, 'x').limit(1).cap('x')
-g.withoutStrategies(EarlyLimitStrategy).V().aggregate(local,'x').limit(1).cap('x')
-----
-
-It is important to note that `EarlyLimitStrategy` introduced in 3.3.5 alters the behavior of `aggregate(local)`.
-Without that strategy (which is installed by default), there are two results in the `aggregate()` side-effect even
-though the interval selection is for 1 object. Realize that when the second object is on its way to the `range()`
-filter (i.e. `[0..1]`), it passes through `aggregate()` and thus, stored before filtered.
+Aggregation can be controlled to occur in a link:http://en.wikipedia.org/wiki/Lazy_evaluation[lazy] fashion by using
+the step inside `local()`.
 
 [gremlin-groovy,modern]
 ----
-g.E().aggregate(local,'x').by('weight').cap('x')
+g.V().aggregate('x').limit(1).cap('x')
+g.V().local(aggregate('x')).limit(1).cap('x')
+----
+
+[gremlin-groovy,modern]
+----
+g.E().local(aggregate('x')).by('weight').cap('x')
 ----
 
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(java.lang.String)++[`aggregate(String)`],
-link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#aggregate(org.apache.tinkerpop.gremlin.process.traversal.Scope,java.lang.String)++[`aggregate(Scope,String)`]
 
 [[all-step]]
 === All Step

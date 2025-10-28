@@ -102,9 +102,9 @@ Feature: Data - SHORT
     Given the empty graph
     And the traversal of
       """
-      g.inject(42).asNumber(GType.SHORT).is(P.typeOf(GType.SHORT)).store("a").cap("a")
+      g.inject(42).asNumber(GType.SHORT).is(P.typeOf(GType.SHORT))
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
       | d[42].s |

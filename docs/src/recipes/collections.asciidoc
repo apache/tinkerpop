@@ -39,7 +39,7 @@ appear by way of some side-effect steps like `aggregate()`:
 [gremlin-groovy,modern]
 ----
 g.V().fold()
-g.V().aggregate(local, 'a').cap('a')
+g.V().local(aggregate('a')).cap('a')
 ----
 
 It is worth noting that while a `Path` is not technically a `List` it does present like one and can be manipulated in
@@ -61,7 +61,7 @@ It may seem simple, but the most obvious choice to modifying what is in a list i
 [gremlin-groovy,modern]
 ----
 g.V().fold().unfold().values('name')
-g.V().aggregate(local,'a').cap('a').unfold().values('name')
+g.V().local(aggregate('a')).cap('a').unfold().values('name')
 ----
 
 The above examples show that `unfold()` works quite well when you don't want to preserve the `List` structure of the
@@ -164,8 +164,8 @@ the use of `aggregate()` to aid in construction of this `List`:
 [gremlin-groovy,modern]
 ----
 g.V().has('name','marko').as('v').                             <1>
-  aggregate(local,'a').                                        <2>
-    by('age').
+  local(aggregate('a').                                        <2>
+    by('age')).
   repeat(outE().as('e').inV().as('v')).                        <3>
     until(has('lang','java')).
   aggregate('b').                                              <4>
@@ -173,10 +173,10 @@ g.V().has('name','marko').as('v').                             <1>
   aggregate('c').                                              <5>
     by(select(all,'e').unfold().values('weight').mean()).
   fold().                                                      <6>
-  aggregate(local,'a').                                        <7>
-    by(cap('b')).
-  aggregate(local,'a').                                        <8>
-    by(cap('c')).
+  local(aggregate('a').                                        <7>
+    by(cap('b'))).
+  local(aggregate('a').                                        <8>
+    by(cap('c'))).
   cap('a')
 ----
 
@@ -190,9 +190,9 @@ of "java"). Note however that the `by()` modulator overrides that traverser comp
 the list of vertices in "v". Those vertices are unfolded to retrieve the name property from each and then are reduced
 with `fold()` back into a list to be stored in the side-effected named "b".
 <5> A similar use of `aggregate()` as the previous step, though this one turns "e" into a stream of edges to calculate
-the `mean()` to store in a `List` called "c". Note that `aggregate()` (short form for `aggregate(global)`) was used
-here instead of `aggregate(local)`, as the former is an eager collection of the elements in the stream
-(`aggregate(local)` is lazy) and will force the traversal to be iterated up to that point before moving forward.
+the `mean()` to store in a `List` called "c". Note that `aggregate()` with `local()` was used
+here instead of `aggregate()`, as the latter is an eager collection of the elements in the stream
+(`local(aggregate())` is lazy) and will force the traversal to be iterated up to that point before moving forward.
 Without that eager collection, "v" and "e" would not contain the complete information required for the production of
 "b" and "c".
 <6> Adding `fold()`-step here is a bit of a trick. To see the trick, copy and paste all lines of Gremlin up to but
@@ -203,11 +203,11 @@ when traversing away from "marko"). The `aggregate()`-steps are side-effects and
 through them unchanged. The `fold()` obviously converts those three traversers to a single `List` to make one
 traverser with a `List` inside. That means that the remaining steps following the `fold()` will only be executed one
 time each instead of three, which, as will be shown, is critical to the proper result.
-<7> The single traverser with the `List` of three vertices in it passes to `aggregate(local)`. The `by()` modulator
+<7> The single traverser with the `List` of three vertices in it passes to `local(aggregate())`. The `by()` modulator
 presents an override telling Gremlin to ignore the `List` of three vertices and simply grab the "b" side effect created
 earlier and stick that into "a" as part of the result. The `List` with three vertices passes out unchanged as
-`aggregate(local)` is a side-effect step.
-<8> Again, the single traverser with the `List` of three vertices passes to `aggregate(local)` and again, the `by()`
+`local(aggregate())` is a side-effect step.
+<8> Again, the single traverser with the `List` of three vertices passes to `local(aggregate())` and again, the `by()`
 modulator presents an override to include "c" into the result.
 
 All of the above code and explanation show that `aggregate()` can be used to construct `List` objects as side-effects
@@ -236,11 +236,11 @@ g.V().
               bothE().count()).
         fold())
 g.V().
-  aggregate(local, 'x').
+  local(aggregate('x').
     by(union(select('x').count(local),      <2>
              identity(),
              bothE().count()).
-             fold()).
+             fold())).
   cap('x')
 ----
 

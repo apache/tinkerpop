@@ -77,7 +77,7 @@ A straightforward way to detect the various subgraphs with an OLTP traversal is 
 [gremlin-groovy,existing]
 ----
 g.V().emit(cyclicPath().or().not(both())).                                              <1>
-    repeat(__.where(without('a')).aggregate(local,'a').both()).until(cyclicPath()).     <2>
+    repeat(__.where(without('a')).local(aggregate('a')).both()).until(cyclicPath()).    <2>
     group().by(path().unfold().limit(1)).                                               <3>
     by(path().unfold().dedup().fold()).                                                 <4>
     select(values).unfold()                                                             <5>

@@ -33,7 +33,7 @@ Feature: Step - recommendation
         order().
           by(__.select("z"), Order.desc).
           by(__.select("y"), Order.asc).
-        limit(5).aggregate(Scope.local,"m").select("x")
+        limit(5).local(aggregate("m")).select("x")
       """
     When iterated to list
     Then the result should be unordered
@@ -59,7 +59,7 @@ Feature: Step - recommendation
         order().
           by(__.select("z"), Order.desc).
           by(__.select("y"), Order.asc).
-        limit(5).aggregate(Scope.local,"m")
+        limit(5).local(aggregate("m"))
       """
     When iterated to list
     Then the result should be unordered

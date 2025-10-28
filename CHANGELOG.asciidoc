@@ -94,6 +94,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added a Gremln MCP server.
 * Added the Air Routes dataset to the set of available samples packaged with distributions.
 * Added a minimal distribution for `tinkergraph-gremlin` using the `min` classifier that doesn't include the sample datasets.
+* Removed `AggregateLocalStep` and `aggregate(Scope, String)`, and renamed `AggregateGlobalStep` to `AggregateStep`.
+* Removed `store()` in favor of using `local(aggregate())`.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Removed `has(key, traversal)` option for `has()` step.
 * Fixed bug where `InlineFilterStrategy` could add an empty `has()`.
