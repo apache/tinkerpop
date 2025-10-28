@@ -553,7 +553,7 @@ vMarko = g.V().has('name','marko').next()
 vPeter = g.V().has('name','peter').next()
 g.V(vMarko).addE('knows').to(vPeter) <6>
 g.addE('knows').from(vMarko).to(vPeter) <7>
-g.addE('knows').from(__.V(vMarko.id())).to(__constant(vPeter.id())) <8>
+g.addE('knows').from(__.V(1)).to(__.constant(6)) <8>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
