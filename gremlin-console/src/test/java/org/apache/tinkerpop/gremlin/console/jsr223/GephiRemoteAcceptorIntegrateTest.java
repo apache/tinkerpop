@@ -149,7 +149,7 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         // call iterate() as groovysh isn't rigged to auto-iterate
         acceptor.submit(Arrays.asList(
-                "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
+                "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.start().out()).times(2).iterate()"));
 
         wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace1")));
     }

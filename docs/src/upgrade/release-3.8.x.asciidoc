@@ -192,13 +192,65 @@ version, the `none()` step was used to "throw away" all traversers that passed i
 renamed to `discard()`. The `discard()` step with its verb tone arguably makes for a better name for that feature, but
 it also helped make room for `none()` to be repurposed as `none(P)` which is a complement to `any(P)` and `all(P) steps.
 
-==== Prevented using cap() inside repeat()
+==== Prevented using cap(), inject() inside repeat()
 
 `cap()` inside `repeat()` is now disallowed by the `StandardVerificationStrategy`. Using `cap()` inside `repeat()` would
 have led to unexpected results since `cap()` isn't "repeat-aware". Because `cap()` is a `SupplyingBarrier` that reduces
 the number of traversers to one, its use inside `repeat()` is limited.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3195[TINKERPOP-3195]
+
+`inject()` inside `repeat()` is now also disallowed by the `StandardVerificationStrategy`. The usefulness of `inject()` 
+inside `repeat()` is questionable as the injections are exhausted after one iteration. Consider the following examples, 
+noting that the examples for version 3.7.4 demonstrate the effect of `RepeatUnrollStrategy` on `inject()` semantics, 
+which is problematic as strategies should not affect results. 3.8.0 examples do not disable the `RepeatUnrollStrategy` 
+as the strategy was modified to be more restrictive in this version.
+
+[source,text]
+----
+// 3.7.4 results in data injected for each repeat loop
+gremlin> g.inject('x').repeat(inject('a')).times(5)
+==>a
+==>a
+==>a
+==>a
+==>a
+==>x
+
+// 3.7.4 without RepeatUnrollStrategy injections occur only once
+gremlin> g.withoutStrategies(RepeatUnrollStrategy).inject('x').repeat(inject('a')).times(5)
+==>a
+==>x
+
+// 3.8.0 inject() inside repeat() now produces an error
+gremlin> g.inject('x').repeat(inject('a')).times(5)
+The parent of inject()-step can not be repeat()-step: InjectStep(java.util.ArrayList$Itr@543da15)
+----
+
+Before upgrading, users should look for usages of `inject()` inside `repeat()` and if it is determined that per-loop 
+injections are desired, it is possible to use `union()` and `constant()` instead.
+
+[source,text]
+----
+// 3.8.0 can use union() and constant() inside repeat() instead of inject()
+gremlin> g.inject('x').repeat(union(constant('a').limit(1),identity())).times(5)
+==>a
+==>a
+==>a
+==>a
+==>a
+==>x
+
+// can also use union() and constant() inside repeat() with multiple values
+gremlin> g.inject('x').repeat(union(constant(['a','b']).limit(1).unfold(),identity())).times(3)
+==>a
+==>b
+==>a
+==>a
+==>b
+==>b
+==>x
+----
 
 ==== Simplified Comparability Semantics
 
@@ -1190,36 +1242,11 @@ Repeat traversals containing other steps will no longer be unrolled. There may b
 traversals that previously benefited from automatic unrolling but the consistency of semantics outweighs the performance 
 impact.
 
-===== Examples of Affected Traversals =====
-
-Usage of `inject()` inside `repeat()` is an example of a traversal that will no longer be unrolled. The following results
-returned from the `modern` graph demonstrate the change of semantics if the `inject()` in `repeat()` were to be unrolled:
-
-[source,text]
-----
-gremlin> g.V().values('name').inject('foo').inject('foo')
-==>foo
-==>foo
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V().values('name').repeat(inject('foo')).times(2)
-==>foo
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-----
-
-Other examples of affected traversals include (but are not limited to):
+Examples of affected traversals include (but are not limited to):
 
 [source,groovy]
 ----
+g.V().repeat(both().aggregate('x')).times(2).limit(10)
 g.V().repeat(out().limit(10)).times(3)
 g.V().repeat(in().order().by("name")).times(2)
 g.V().repeat(both().simplePath()).times(4)

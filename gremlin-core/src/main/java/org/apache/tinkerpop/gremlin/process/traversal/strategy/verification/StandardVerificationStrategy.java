@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DiscardStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -62,6 +63,10 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                 if (Graph.Hidden.isHidden(label))
                     step.removeLabel(label);
             }
+            
+            if (step instanceof InjectStep && TraversalHelper.hasRepeatStepParent(step.getTraversal()))
+                throw new VerificationException("The parent of inject()-step can not be repeat()-step: " + step, traversal);
+
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) &&
                     step.getTraversal().getParent() instanceof RepeatStep &&
                     step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))

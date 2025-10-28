@@ -387,7 +387,7 @@ Feature: Step - repeat()
     When iterated to list
     Then the traversal will raise an error with message containing text of "The repeat()-traversal was not defined"
 
-  Scenario: g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name
+  Scenario: g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX1X_name
     Given the modern graph
     And the traversal of
       """
@@ -398,7 +398,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
-  Scenario: g_V_haxXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name
+  Scenario: g_V_hasXperson_name_markoX_repeatXoutXcreatedXX_timesX0X_name
     Given the modern graph
     And the traversal of
       """
@@ -409,7 +409,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
-  Scenario: g_V_haxXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name
+  Scenario: g_V_hasXperson_name_markoX_timesX1X_repeatXoutXcreatedXX_name
     Given the modern graph
     And the traversal of
       """
@@ -420,7 +420,7 @@ Feature: Step - repeat()
       | result |
       | lop |
 
-  Scenario: g_V_haxXperson_name_markoX_timesX0X_repeatXoutXcreatedXX_name
+  Scenario: g_V_hasXperson_name_markoX_timesX0X_repeatXoutXcreatedXX_name
     Given the modern graph
     And the traversal of
       """
@@ -684,3 +684,31 @@ Feature: Step - repeat()
       | result |
       | v[marko] |
       | v[vadas] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_V_repeatXinjectXyXX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(inject('y')).times(2)
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "The parent of inject()-step can not be repeat()-step"
+    
+  Scenario: g_V_repeatXunionXconstantXyX_limitX1X_identityXX_timesX3X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(union(constant('y').limit(1),identity())).times(2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | y |
+      | y |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter] |

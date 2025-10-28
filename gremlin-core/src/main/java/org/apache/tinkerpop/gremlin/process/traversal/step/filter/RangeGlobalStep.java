@@ -31,10 +31,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
@@ -184,7 +184,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
      */
     private boolean isInsideLoop() {
         if (this.insideLoop == null) {
-            this.insideLoop = hasRepeatStepParent();
+            this.insideLoop = TraversalHelper.hasRepeatStepParent(this.getTraversal());
         }
         return this.insideLoop;
     }
@@ -213,17 +213,6 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements RangeGlob
             counterKeyParts.add(String.valueOf(traverser.loops(this.getId())));
         }
         return String.join(":", counterKeyParts);
-    }
-
-    private boolean hasRepeatStepParent() {
-        Traversal.Admin<?, ?> traversal = this.getTraversal();
-        while (!traversal.isRoot()) {
-            if (traversal.getParent() instanceof RepeatStep) {
-                return true;
-            }
-            traversal = traversal.getParent().asStep().getTraversal();
-        }
-        return false;
     }
 
     ////////////////
