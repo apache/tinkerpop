@@ -314,6 +314,7 @@ public abstract class TinkerWorld implements World {
                 case "g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X":
                 case "g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path":
                     throw new AssumptionViolatedException("GraphComputer doesn't order within repeat");
+                // TINKERPOP-3209
                 case "g_V_localXgroupCountXaX_selectXaX_countXlocalXX":
                 case "g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX":
                 case "g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX":
