@@ -58,8 +58,10 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements TailG
             // If we are bypassing this step, let everything through.
             return this.starts.next();
         } else {
-            // Pull everything available before we start delivering from the tail buffer.
-            if (this.starts.hasNext()) {
+            // Pull everything available before we start delivering from the tail buffer. But only if the tail buffer is
+            // already empty, otherwise, there are more traversers to pass on so hold off on modifying the tail buffer.
+            // This is most important when part of a repeat traversal as traversers can be looped back as starts.
+            if (this.tail.isEmpty() && this.starts.hasNext()) {
                 this.starts.forEachRemaining(this::addTail);
             }
             // Pull the oldest traverser from the tail buffer.
