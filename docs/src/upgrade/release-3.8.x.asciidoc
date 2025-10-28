@@ -60,6 +60,8 @@ gremlin> g.V().has('airport','code','IAD').valueMap('code','desc','lon','lat')
 ==>[code:[IAD],lon:[-77.45580292],lat:[38.94449997],desc:[Washington Dulles International Airport]]
 ----
 
+TinkerPop distributes the 1.0 version of the dataset.
+
 ==== Type Predicate
 
 The new `P.typeOf()` predicate allows filtering traversers based on their runtime type. It accepts either a `GType`
