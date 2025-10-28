@@ -28,6 +28,7 @@ import {
   column,
   direction,
   dt,
+  gType,
   merge,
   operator,
   order,
@@ -35,7 +36,6 @@ import {
   pop,
   scope,
   t as _t,
-  n as _n,
   EnumValue,
 } from '../../../../process/traversal.js';
 
