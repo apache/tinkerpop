@@ -553,6 +553,7 @@ vMarko = g.V().has('name','marko').next()
 vPeter = g.V().has('name','peter').next()
 g.V(vMarko).addE('knows').to(vPeter) <6>
 g.addE('knows').from(vMarko).to(vPeter) <7>
+g.addE('knows').from(__.V(vMarko.id())).to(__constant(vPeter.id())) <8>
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
@@ -563,6 +564,7 @@ g.addE('knows').from(vMarko).to(vPeter) <7>
 supports user provided ids.
 <6> Add an edge between marko and peter given the directed (detached) vertex references.
 <7> Add an edge between marko and peter given the directed (detached) vertex references.
+<8> Use child traversals producing either a vertex, or vertex id to add an edge between marko and peter.
 
 *Additional References*
 

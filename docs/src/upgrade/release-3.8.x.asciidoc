@@ -737,41 +737,44 @@ after construction. All usages of `P.getOriginalValue()` should be replaced with
 
 A number of changes have been introduced to the Gremlin grammar to help make it be more consistent and easier to use.
 
-*Removed Vertex References for Grammar*
+*Removed StructureVertex from Grammar*
 
 The grammar allowed the construction of a `Vertex` by way of syntax like `new Vertex(1,'person')` (or with similar
 arguments to `ReferenceVertex`). This syntax has been removed as it served little purpose within the grammar as it
 merely adds more characters to wrap around the identifier, which could simply be used by itself.
 
 The `V()` step, as well as the `from()` and `to()` modulators used with `addE()`, previously accepted `Vertex` as
-arguments in the grammar. In its place, the `from()` and `to()` modulators can now directly accept a vertex id in place
-of a `Vertex` when used with `addE()` (`V()` has always accepted ids in addition to vertices). When using these steps in
-`gremlin-lang` scripts, the vertex id must be used directly.
+arguments in the grammar. The `V()` step has always accepted vertex ids as arguments, and continues to do so. The
+`from()` and `to()` modulators for `addE()` continue to accept `String` arguments (which are a shorthand for
+`__.select(String)`), as well as `Traversal` arguments. As always, these `Traversal` arguments may produce `Vertex`
+objects (such as `__.V(1)`) to directly bind to from/to. Newly added in 3.8.0, the `Traversal` may also produce the id
+of a vertex present in the graph (such as `__.constant(1)`), which will then bind to from/to.
 
-This change has no effect on the `GraphTraversal` API, nor on `gremlin-groovy` scripts. Vertices can continue to be used
-directly in those contexts.
+When using these steps in `gremlin-lang` scripts, a `Traversal` or `String` argument must be used directly. This change
+has no effect on the `GraphTraversal` API, nor on `gremlin-groovy` scripts. Vertices can continue to be used directly in
+those contexts.
 
 [source,text]
 ----
-// 3.7.3
+// 3.7.4
 gremlin> v1 = g.V(1).next()
 ==>v[1]
-gremlin> v2 = g.V(2).next()
-==>v[2]
-gremlin> script = String.format("g.V(new Vertex(%s)).outE().where(inV().is(new Vertex(%s)))", v1.id(), v2.id())
-==>g.V(new Vertex(1)).outE().where(inV().is(new Vertex(2)))
+gremlin> v6 = g.V(6).next()
+==>v[6]
+gremlin> String.format("g.addE('knows').from(new Vertex(%s)).to(new ReferenceVertex(%s))", v1.id(), v6.id())
+==>g.addE('knows').from(new Vertex(1)).to(new ReferenceVertex(6))
 gremlin> client.submit(script).all().get().get(0).getEdge()
-==>e[7][1-knows->2]
+==>e[0][1-knows->6]
 
 // 3.8.0
 gremlin> v1 = g.V(1).next()
 ==>v[1]
-gremlin> v2 = g.V(2).next()
-==>v[2]
-gremlin> script = String.format("g.V(%s).outE().where(inV().id().is(%s))", v1.id(), v2.id())
-==>g.V(1).outE().where(inV().id().is(2))
+gremlin> v6 = g.V(6).next()
+==>v[6]
+gremlin> String.format("g.addE('knows').from(__.V(%s)).to(__.constant(%s))", v1.id(), v6.id())
+==>g.addE('knows').from(__.V(1)).to(__.constant(6))
 gremlin> client.submit(script).all().get().get(0).getEdge()
-==>e[7][1-knows->2]
+==>e[0][1-knows->6]
 ----
 
 *`new` keyword is now optional*
