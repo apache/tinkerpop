@@ -64,7 +64,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
                     step.removeLabel(label);
             }
             
-            if (step instanceof InjectStep && hasRepeatParent(step))
+            if (step instanceof InjectStep && TraversalHelper.hasRepeatStepParent(step.getTraversal()))
                 throw new VerificationException("The parent of inject()-step can not be repeat()-step: " + step, traversal);
 
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) &&
@@ -105,16 +105,4 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
     public Set<Class<? extends VerificationStrategy>> applyPrior() {
         return Collections.singleton(ComputerVerificationStrategy.class);
     }
-
-    private boolean hasRepeatParent(Step<?, ?> step) {
-        Traversal.Admin<?, ?> traversal = step.getTraversal();
-        while (!traversal.isRoot()) {
-            if (traversal.getParent() instanceof RepeatStep) {
-                return true;
-            }
-            traversal = traversal.getParent().asStep().getTraversal();
-        }
-        return false;
-    }
-
 }

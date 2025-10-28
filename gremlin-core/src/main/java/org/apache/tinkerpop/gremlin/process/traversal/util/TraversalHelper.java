@@ -1129,4 +1129,18 @@ public final class TraversalHelper {
         return scopingInfos;
     }
 
+    /**
+     * @param traversal the {@link Traversal.Admin} to check for a {@link RepeatStep} parent
+     * @return true if a {@link RepeatStep} is a direct or indirect parent of the given {@link Traversal.Admin}, false otherwise
+     */
+    public static boolean hasRepeatStepParent(Traversal.Admin<?, ?> traversal) {
+        while (!traversal.isRoot()) {
+            if (traversal.getParent() instanceof RepeatStep) {
+                return true;
+            }
+            traversal = traversal.getParent().asStep().getTraversal();
+        }
+        return false;
+    }
+
 }

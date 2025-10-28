@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -50,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -60,13 +62,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.choose;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.loops;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.path;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.repeat;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.tail;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.union;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.valueMap;
 import static org.hamcrest.CoreMatchers.is;
@@ -646,5 +653,48 @@ public class TraversalHelperTest {
     @Test
     public void hasOnlyShouldReturnFalseForEmptyAllowedClasses() {
         assertThat(TraversalHelper.hasOnlyStepsOfAssignableClassesRecursively(Set.of(), __.V().out().asAdmin()), is(false));
+    }
+    
+    @Test
+    public void shouldReturnTrueForParentRepeatStep() {
+        GraphTraversal.Admin<Vertex, Vertex> child = out().asAdmin();
+        __.V().repeat(child).times(2).asAdmin();
+        assertThat(TraversalHelper.hasRepeatStepParent(child), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForGrandparentRepeatStep() {
+        GraphTraversal<Vertex, Vertex> grandchild1 = limit(1);
+        GraphTraversal<Vertex, Vertex> grandchild2 = tail();
+        GraphTraversal<Object, Vertex> child = choose(constant(true), grandchild1, grandchild2);
+        __.V().repeat(child).until(__.V().has("name", "peter"));
+        assertThat(TraversalHelper.hasRepeatStepParent(grandchild1.asAdmin()), is(true));
+        assertThat(TraversalHelper.hasRepeatStepParent(grandchild2.asAdmin()), is(true));
+    }
+
+    @Test
+    public void shouldReturnTrueForNestedRepeatStep() {
+        GraphTraversal<Vertex, Vertex> nestedChild = in();
+        GraphTraversal<Vertex, Vertex> child = out();
+        GraphTraversal<Vertex, Vertex> repeatChild = child.repeat(nestedChild).times(3);
+        __.V().repeat(repeatChild).until(loops().is(2));
+        assertThat(TraversalHelper.hasRepeatStepParent(nestedChild.asAdmin()), is(true));
+        assertThat(TraversalHelper.hasRepeatStepParent(child.asAdmin()), is(true));
+        assertThat(TraversalHelper.hasRepeatStepParent(repeatChild.asAdmin()), is(true));
+    }
+
+    @Test
+    public void shouldReturnFalseForNonRepeatStepParent() {
+        GraphTraversal<Vertex, Vertex> child = out();
+        __.V().union(child).repeat(in()).times(1);
+        assertThat(TraversalHelper.hasRepeatStepParent(child.asAdmin()), is(false));
+    }
+
+    @Test
+    public void shouldReturnFalseForRootTraversal() {
+        GraphTraversal<Object, Vertex> root = __.V();
+        GraphTraversal<Object, Vertex> repeat = root.repeat(in());
+        assertThat(TraversalHelper.hasRepeatStepParent(root.asAdmin()), is(false));
+        assertThat(TraversalHelper.hasRepeatStepParent(repeat.asAdmin()), is(false));
     }
 }
