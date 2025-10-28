@@ -84,6 +84,7 @@ const ignoredScenarios = {
   'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
+  'g_E_hasXweight_0_5X_subgraphXaX_selectXaX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   // javascript doesn't have tree() step yet
   'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
@@ -95,6 +96,8 @@ const ignoredScenarios = {
   'g_VX1X_out_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_V_out_treeXaX_selectXaX_countXlocalX': new IgnoreError(ignoreReason.treeStepNotSupported),
+  'g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX': new IgnoreError(ignoreReason.treeStepNotSupported),
   // An associative array containing the scenario name as key, for example:
   'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
   'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
