@@ -304,7 +304,7 @@ public class AddEdgeStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getGValuesNonShouldReturnEmptyCollection() {
+    public void getGValuesNoneShouldReturnEmptyCollection() {
         GraphTraversal.Admin<Object, Edge> traversal = __.addE("likes")
                 .from(__.V(1))
                 .to(__.V(2))
