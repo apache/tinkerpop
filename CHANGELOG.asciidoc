@@ -97,7 +97,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed `AggregateLocalStep` and `aggregate(Scope, String)`, and renamed `AggregateGlobalStep` to `AggregateStep`.
 * Removed `store()` in favor of using `local(aggregate())`.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
-* Removed `has(key, traversal)` option for `has()` step.
+* Removed `has(key, traversal)` and `has(T, traversal)` options for `has()` step.
 * Fixed bug where `InlineFilterStrategy` could add an empty `has()`.
 * Normalized python and javascript `Element.properties` to lists.
 * Renamed `none()` step to `discard()`.
@@ -205,6 +205,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added getter for `parameterItems` and `valueTraversal` on `DifferenceStep`.
 * Added properties to `Element` objects found in a `Path` for GraphSON v2 and v3 and GraphBinary.
 * Fixed edge properties for GraphBinary which were not deserializing properly.
+* Deprecated `has(key, traversal)` and `has(T, traversal)` options for `has()` step.
 * Improved GLV examples reliability and documentation with step-by-step instructions.
 * Added root-level GLV examples in `glv-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
 * Bump netty to 4.1.125.Final
