@@ -359,7 +359,7 @@ Feature: Step - addE()
     And the graph should return 1 for count of "g.V(vid2).outE(\"created\")"
     And the graph should return 1 for count of "g.V(vid2).out(\"created\").has(\"name\",\"lop\")"
 
-  Scenario: g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X
+  Scenario: g_addEXknowsX_fromXVXvid1XX_toXVXvid6XX_propertyXweight_0_1X
     Given the empty graph
     And the graph initializer of
       """
@@ -381,7 +381,7 @@ Feature: Step - addE()
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE("knows").from(vid1).to(vid6).property("weight", xx1)
+      g.addE("knows").from(V(vid1)).to(V(vid6)).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -389,7 +389,7 @@ Feature: Step - addE()
     And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
     And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
-  Scenario: g_addEXknowsvarX_fromXaX_toXbX_propertyXweight_0_1X
+  Scenario: g_addEXknowsvarX_fromXVXvid1XX_toXVXvid6XX_propertyXweight_0_1X
     Given the empty graph
     And the graph initializer of
       """
@@ -412,7 +412,7 @@ Feature: Step - addE()
     And using the parameter xx2 defined as "d[0.1].d"
     And the traversal of
       """
-      g.addE(xx1).from(vid1).to(vid6).property("weight", xx2)
+      g.addE(xx1).from(V(vid1)).to(V(vid6)).property("weight", xx2)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -442,7 +442,7 @@ Feature: Step - addE()
     And using the parameter xx1 defined as "d[0.1].d"
     And the traversal of
       """
-      g.V(vid1).addE("knows").to(vid6).property("weight", xx1)
+      g.V(vid1).addE("knows").to(V(vid6)).property("weight", xx1)
       """
     When iterated to list
     Then the result should have a count of 1

@@ -535,6 +535,12 @@ The `addE()` step can be used as both a start step and a mid-traversal step. Whe
 and `to()` must be specified. When used as a mid-traversal step, the current traverser becomes the source vertex and
 only `to()` needs to be specified.
 
+The gremlin-lang grammar only permits `Traversal` and `String` (alias for `__.select(String)`) arguments in `from()` and
+`to()`. The `Traversal` must either produce a `Vertex` which is attachable to the graph, or it must produce the id of an
+existing `Vertex` in the graph. `GraphTraversal` implementations in GLVs may optionally support `from(Vertex)` and
+`to(Vertex)` as syntactic sugar. If translating to gremlin-lang scripts, these sugared modulators must be converted to
+`from(__.V(vertex.id()))` or `from(__.constant(vertex.id()))` (and equivalents for `to()`).
+
 *Exceptions*
 
 * If the edge label is null, an `IllegalArgumentException` will be thrown.

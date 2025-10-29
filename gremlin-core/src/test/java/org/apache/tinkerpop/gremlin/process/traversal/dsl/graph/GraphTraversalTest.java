@@ -165,7 +165,7 @@ public class GraphTraversalTest {
         assertEquals("g.inject(\"foo\").V(1,2)", VMid.asAdmin().getGremlinLang().getGremlin());
 
         GraphTraversal fromTo = g.addE("Edge").from(new ReferenceVertex(1)).to(new ReferenceVertex(2));
-        assertEquals("g.addE(\"Edge\").from(1).to(2)", fromTo.asAdmin().getGremlinLang().getGremlin());
+        assertEquals("g.addE(\"Edge\").from(__.V(1)).to(__.V(2))", fromTo.asAdmin().getGremlinLang().getGremlin());
 
         Map mergeMap = new LinkedHashMap();
         mergeMap.put(T.label, "knows");

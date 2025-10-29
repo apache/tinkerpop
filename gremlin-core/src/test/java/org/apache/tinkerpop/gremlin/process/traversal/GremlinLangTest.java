@@ -93,7 +93,7 @@ public class GremlinLangTest {
                 {g.V(1).out("knows").values("name"), "g.V(1).out(\"knows\").values(\"name\")"},
                 {g.V().has(T.label, "person"), "g.V().has(T.label,\"person\")"},
                 {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
-                        "g.addE(\"knows\").from(1).to(6)"},
+                        "g.addE(\"knows\").from(__.V(1)).to(__.V(6))"},
                 {newG().E(new ReferenceEdge(1, "test label", new ReferenceVertex(1, "v1"), new ReferenceVertex(1, "v1"))),
                         "g.E(_0)"},
                 {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within([])).count()"},
