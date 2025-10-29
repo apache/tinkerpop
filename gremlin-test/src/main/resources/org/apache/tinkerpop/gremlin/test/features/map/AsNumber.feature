@@ -311,3 +311,17 @@ Feature: Step - asNumber()
       | d[127].l |
       | d[132].l |
       | d[135].l |
+
+  Scenario: g_V_valuesXageX_asString_asNumberXGType_DOUBLEX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().values("age").asString().asNumber(GType.DOUBLE)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29.0].d |
+      | d[27.0].d |
+      | d[32.0].d |
+      | d[35.0].d |

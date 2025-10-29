@@ -969,6 +969,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_injectXnullX_asNumberXGType_INTX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(null).AsNumber(GType.Int)}}, 
                {"g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXGType_INTX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().As("a").Out("knows").As("b").Math("a + b").By("age").AsNumber(GType.Int)}}, 
                {"g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXGType_LONGX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithSideEffect("x", 100).V().Values<object>("age").Math("_ + x").AsNumber(GType.Long)}}, 
+               {"g_V_valuesXageX_asString_asNumberXGType_DOUBLEX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Values<object>("age").AsString().AsNumber(GType.Double)}}, 
                {"g_injectX1_2X_asString", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1, 2).AsString()}}, 
                {"g_injectX1_2X_asStringXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(1, 2).AsString<object>(Scope.Local)}}, 
                {"g_injectXlist_1_2X_asStringXlocalX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject<object>(new List<object> { 1, 2 }).AsString<object>(Scope.Local)}}, 

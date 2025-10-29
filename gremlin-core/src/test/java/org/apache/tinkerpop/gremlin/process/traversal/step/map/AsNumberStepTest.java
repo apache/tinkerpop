@@ -51,6 +51,10 @@ public class AsNumberStepTest extends StepTest {
         assertEquals(3.14f, __.__(3.14).asNumber(GType.FLOAT).next());
         assertEquals(3.14, __.__(3.14f).asNumber(GType.DOUBLE).next());
         assertEquals(3.14, __.__(3.14f).asNumber(GType.DOUBLE).next());
+        assertEquals(3, __.__(new BigDecimal("3.14")).asNumber(GType.INT).next());
+        assertEquals(3L, __.__(new BigDecimal("3.14")).asNumber(GType.LONG).next());
+        assertEquals(-3, __.__(new BigDecimal("-3.14")).asNumber(GType.INT).next());
+        assertEquals(-3L, __.__(new BigDecimal("-3.14")).asNumber(GType.LONG).next());
         assertEquals(1, __.__("1").asNumber(GType.INT).next());
         assertEquals(1, __.__("1").asNumber().next());
         assertEquals((byte) 1, __.__("1").asNumber(GType.BYTE).next());
@@ -271,6 +275,11 @@ public class AsNumberStepTest extends StepTest {
     @Test(expected = ArithmeticException.class)
     public void shouldThrowOverflowExceptionWhenBigDecimalToShortOverflows() {
         __.__(new BigDecimal(Long.MAX_VALUE+"1")).asNumber(GType.SHORT).next();
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void shouldThrowOverflowExceptionWhenBigDecimalToLongOverflows() {
+        __.__(new BigDecimal(Long.MAX_VALUE+"1")).asNumber(GType.LONG).next();
     }
 
     @Test(expected = ArithmeticException.class)

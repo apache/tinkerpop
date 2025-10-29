@@ -943,6 +943,7 @@ world.gremlins = {
     'g_injectXnullX_asNumberXGType_INTX': [(lambda g:g.inject(None).as_number(GType.INT))], 
     'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXGType_INTX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age').as_number(GType.INT))], 
     'g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXGType_LONGX': [(lambda g:g.with_side_effect('x', 100).V().values('age').math('_ + x').as_number(GType.LONG))], 
+    'g_V_valuesXageX_asString_asNumberXGType_DOUBLEX': [(lambda g:g.V().values('age').as_string().as_number(GType.DOUBLE))], 
     'g_injectX1_2X_asString': [(lambda g:g.inject(1, 2).as_string())], 
     'g_injectX1_2X_asStringXlocalX': [(lambda g:g.inject(1, 2).as_string(Scope.local))], 
     'g_injectXlist_1_2X_asStringXlocalX': [(lambda g:g.inject([1, 2]).as_string(Scope.local))], 
