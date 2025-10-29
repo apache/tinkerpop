@@ -21,7 +21,7 @@ from datetime import datetime
 import json
 import re
 import uuid
-from gremlin_python.statics import long
+from gremlin_python.statics import long, bigdecimal
 from gremlin_python.structure.graph import Path, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
@@ -260,8 +260,10 @@ def _convert(val, ctx):
         return float("inf")
     elif isinstance(val, str) and re.match(r"^d\[-Infinity\]$", val):  # parse -inf
         return float("-inf")
-    elif isinstance(val, str) and re.match(r"^d\[.*\]\.[bsilfdmn]$", val):  # parse numeric
+    elif isinstance(val, str) and re.match(r"^d\[.*\]\.[bsilfdn]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
+    elif isinstance(val, str) and re.match(r"^d\[.*\]\.m$", val):  # parse bigDecimal
+        return bigdecimal(val[2:-3])
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.id$", val):  # parse vertex id
         return __find_cached_element(ctx, graph_name, val[2:-4], "v").id
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.sid$", val):  # parse vertex id as string

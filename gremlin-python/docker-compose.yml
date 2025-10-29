@@ -71,8 +71,8 @@ services:
       && klist
       && pip install .[test,kerberos]
       && pytest
-      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.gremlin-v3.0+json'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --tags='not DataBigDecimal' --user-data='serializer=application/vnd.graphbinary-v1.0';
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json'
+      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0';
       EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-python:
