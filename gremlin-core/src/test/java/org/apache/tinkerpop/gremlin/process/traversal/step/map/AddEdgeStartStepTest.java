@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueStepTest;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -55,7 +56,7 @@ public class AddEdgeStartStepTest extends GValueStepTest {
                 g.addE("created").property("a", "b"),
                 g.addE("knows").property("a", "b").property("c", "e"),
                 g.addE("knows").property("c", "e"),
-                g.addE("knows").from(1).to(2).property("a", "b"),
+                g.addE("knows").from(__.V(1)).to(__.V(2)).property("a", "b"),
                 g.addE(GValue.of("label", "knows")).property("a", "b"),
                 g.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
                 g.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")),
@@ -211,10 +212,10 @@ public class AddEdgeStartStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getGValuesNonShouldReturnEmptyCollection() {
+    public void getGValuesNoneShouldReturnEmptyCollection() {
         GraphTraversal.Admin<Edge, Edge> traversal = g.addE("likes")
-                .from(1)
-                .to(2)
+                .from(__.V(1))
+                .to(__.V(2))
                 .property(T.id, "1234")
                 .property("rating", "great")
                 .asAdmin();

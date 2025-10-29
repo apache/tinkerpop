@@ -278,45 +278,45 @@ public class TinkerGraphGremlinLangScriptEngineTest {
                     TinkerFactory.createModern()
                 },
                 {
-                    "g.addE(\"knows\").from(v1).to(v2).project(\"from\", \"to\").by(outV()).by(inV())",
+                    "g.addE(\"knows\").from(V(vid1)).to(V(vid2)).project(\"from\", \"to\").by(outV()).by(inV())",
                     Arrays.asList(
-                        Pair.of(createBindings("v1", V_MARKO, "v2", V_PETER), Arrays.asList(
+                        Pair.of(createBindings("vid1", V_MARKO.id(), "vid2", V_PETER.id()), Arrays.asList(
                                 Map.of("from", V_MARKO, "to", V_PETER)
                         )),
-                        Pair.of(createBindings("v1", V_JOSH, "v2", V_MARKO), Arrays.asList(
+                        Pair.of(createBindings("vid1", V_JOSH.id(), "vid2", V_MARKO.id()), Arrays.asList(
                                 Map.of("from", V_JOSH, "to", V_MARKO)
                         )),
-                        Pair.of(createBindings("v1", V_PETER, "v2", V_JOSH), Arrays.asList(
+                        Pair.of(createBindings("vid1", V_PETER.id(), "vid2", V_JOSH.id()), Arrays.asList(
                                 Map.of("from", V_PETER, "to", V_JOSH)
                         ))
                     ),
-                    TinkerGraph.open()
+                    TinkerFactory.createModern()
                 },
                 {
-                    "g.addE(xx1).from(v1).to(v2).property(\"weight\", xx2).project(\"label\", \"from\", \"to\", \"weight\").by(label).by(outV()).by(inV()).by(\"weight\")",
+                    "g.addE(xx1).from(V(vid1)).to(V(vid2)).property(\"weight\", xx2).project(\"label\", \"from\", \"to\", \"weight\").by(label).by(outV()).by(inV()).by(\"weight\")",
                     Arrays.asList(
-                        Pair.of(createBindings("xx1", "knows", "v1", V_MARKO, "v2", V_PETER, "xx2", 0.1d), Arrays.asList(
+                        Pair.of(createBindings("xx1", "knows", "vid1", 1, "vid2", 6, "xx2", 0.1d), Arrays.asList(
                                 Map.of("label", "knows", "from", V_MARKO, "to", V_PETER, "weight", 0.1d)
                         )),
-                        Pair.of(createBindings("xx1", "created", "v1", V_JOSH, "v2", V_MARKO, "xx2", 0.2d), Arrays.asList(
+                        Pair.of(createBindings("xx1", "created", "vid1", V_JOSH.id(), "vid2", V_MARKO.id(), "xx2", 0.2d), Arrays.asList(
                                 Map.of("label", "created", "from", V_JOSH, "to", V_MARKO, "weight", 0.2d)
                         )),
-                        Pair.of(createBindings("xx1", "knows", "v1", V_PETER, "v2", V_JOSH, "xx2", 0.3d), Arrays.asList(
+                        Pair.of(createBindings("xx1", "knows", "vid1", V_PETER.id(), "vid2", V_JOSH.id(), "xx2", 0.3d), Arrays.asList(
                                 Map.of("label", "knows", "from", V_PETER, "to", V_JOSH, "weight", 0.3d)
                         ))
                     ),
-                    TinkerGraph.open()
+                    TinkerFactory.createModern()
                 },
                 {
-                    "g.V(v1).addE(\"knows\").to(v2).project(\"from\", \"to\").by(outV()).by(inV())",
+                    "g.V(v1).addE(\"knows\").to(V(vid2)).project(\"from\", \"to\").by(outV()).by(inV())",
                     Arrays.asList(
-                            Pair.of(createBindings("v1", V_MARKO, "v2", V_PETER), Arrays.asList(
+                            Pair.of(createBindings("v1", V_MARKO, "vid2", V_PETER.id()), Arrays.asList(
                                     Map.of("from", V_MARKO, "to", V_PETER)
                             )),
-                            Pair.of(createBindings("v1", V_JOSH, "v2", V_MARKO), Arrays.asList(
+                            Pair.of(createBindings("v1", V_JOSH, "vid2", V_MARKO.id()), Arrays.asList(
                                     Map.of("from", V_JOSH, "to", V_MARKO)
                             )),
-                            Pair.of(createBindings("v1", V_PETER, "v2", V_JOSH), Arrays.asList(
+                            Pair.of(createBindings("v1", V_PETER, "vid2", V_JOSH.id()), Arrays.asList(
                                     Map.of("from", V_PETER, "to", V_JOSH)
                             ))
                     ),

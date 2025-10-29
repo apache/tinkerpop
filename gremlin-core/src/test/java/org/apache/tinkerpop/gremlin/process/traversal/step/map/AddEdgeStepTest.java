@@ -60,7 +60,7 @@ public class AddEdgeStepTest extends GValueStepTest {
                 __.addE("created").property("a", "b"),
                 __.addE("knows").property("a", "b").property("c", "e"),
                 __.addE("knows").property("c", "e"),
-                __.addE("knows").from(1).to(2).property("a", "b"),
+                __.addE("knows").from(__.V(1)).to(__.V(2)).property("a", "b"),
                 __.addE(GValue.of("label", "knows")).property("a", "b"),
                 __.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
                 __.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")),
@@ -304,10 +304,10 @@ public class AddEdgeStepTest extends GValueStepTest {
     }
 
     @Test
-    public void getGValuesNonShouldReturnEmptyCollection() {
+    public void getGValuesNoneShouldReturnEmptyCollection() {
         GraphTraversal.Admin<Object, Edge> traversal = __.addE("likes")
-                .from(1)
-                .to(2)
+                .from(__.V(1))
+                .to(__.V(2))
                 .property(T.id, "1234")
                 .property("rating", "great")
                 .asAdmin();

@@ -208,12 +208,6 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddEdgeStepContract.class,
-                        g.addE("label").from(1).to(2).property("name", __.constant("cole")),
-                        List.of(),
-                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
-                        null, null
-                },
-                {AddEdgeStepContract.class,
                         g.addE("label").from(__.V(1)).to(__.V(2))
                                 .property("name", __.constant("cole"))
                                 .property(T.id, __.constant(5)),
@@ -234,15 +228,9 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddEdgeStepContract.class,
-                        g.addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
+                        g.addE("label").from(__.V(1)).to(__.V(2)).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
-                        null, null
-                },
-                {AddEdgeStepContract.class,
-                        g.inject(1).addE("label").from(1).to(2).property("name", __.constant("cole")),
-                        List.of(),
-                        List.of(__.constant("cole"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,
@@ -258,9 +246,9 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddEdgeStepContract.class,
-                        g.inject(1).addE("label").from(1).to(2).property(__.constant("name"), __.constant("cole")),
+                        g.inject(1).addE("label").from(__.V(1)).to(__.V(2)).property(__.constant("name"), __.constant("cole")),
                         List.of(),
-                        List.of(__.constant("name"), __.constant("cole"), __.constant(1), __.constant(2)),
+                        List.of(__.constant("name"), __.constant("cole"), __.V(1), __.V(2)),
                         null, null
                 },
                 {CallStepContract.class,
