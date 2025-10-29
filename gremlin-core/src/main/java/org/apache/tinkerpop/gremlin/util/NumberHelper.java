@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 
@@ -793,7 +794,12 @@ public final class NumberHelper {
         }
 
         try {
-            if (num.getClass().equals(BigDecimal.class)) return ((BigDecimal) num).longValueExact();
+            if (num.getClass().equals(BigDecimal.class)) {
+                // need to truncate the decimal places or else longValueExact() will throw
+                BigDecimal truncated = ((BigDecimal) num).setScale(0, RoundingMode.DOWN);
+                return truncated.longValueExact();
+            }
+
             return num.getClass().equals(BigInteger.class) ? ((BigInteger) num).longValueExact() : num.longValue();
         } catch (ArithmeticException ae) {
             throw new ArithmeticException(msgOverflow);

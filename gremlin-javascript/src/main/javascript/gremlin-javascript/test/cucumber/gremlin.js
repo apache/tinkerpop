@@ -970,6 +970,7 @@ const gremlins = {
     g_injectXnullX_asNumberXGType_INTX: [function({g}) { return g.inject(null).asNumber(GType.int) }], 
     g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX_asNumberXGType_INTX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age").asNumber(GType.int) }], 
     g_withSideEffectXx_100X_V_age_mathX__plus_xX_asNumberXGType_LONGX: [function({g}) { return g.withSideEffect("x", 100).V().values("age").math("_ + x").asNumber(GType.long) }], 
+    g_V_valuesXageX_asString_asNumberXGType_DOUBLEX: [function({g}) { return g.V().values("age").asString().asNumber(GType.double) }], 
     g_injectX1_2X_asString: [function({g}) { return g.inject(1, 2).asString() }], 
     g_injectX1_2X_asStringXlocalX: [function({g}) { return g.inject(1, 2).asString(Scope.local) }], 
     g_injectXlist_1_2X_asStringXlocalX: [function({g}) { return g.inject([1, 2]).asString(Scope.local) }], 
