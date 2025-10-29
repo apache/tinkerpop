@@ -203,15 +203,21 @@ public final class CallStepPlaceholder<S, E> extends AbstractStep<S, E> implemen
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        CallStepPlaceholder<?, ?> that = (CallStepPlaceholder<?, ?>) o;
+        return isStart == that.isStart &&
+                Objects.equals(serviceName, that.serviceName) &&
+                Objects.equals(staticParams, that.staticParams) &&
+                Objects.equals(mapTraversal, that.mapTraversal) &&
+                Objects.equals(parameters, that.parameters);
+    }
+
+    @Override
     public int hashCode() {
-        int hashCode = super.hashCode() ^ Objects.hashCode(this.serviceName);
-        if (!staticParams.get().isEmpty())
-            hashCode ^= staticParams.hashCode();
-        if (mapTraversal != null)
-            hashCode ^= mapTraversal.hashCode();
-        if (!parameters.isEmpty())
-            hashCode ^= parameters.hashCode();
-        return hashCode;
+        return Objects.hash(super.hashCode(), isStart, serviceName, staticParams, mapTraversal, parameters);
     }
 
     @Override

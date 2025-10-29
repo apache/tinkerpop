@@ -113,14 +113,20 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        GraphStepPlaceholder<?, ?> that = (GraphStepPlaceholder<?, ?>) o;
+        return isStart == that.isStart &&
+                onGraphComputer == that.onGraphComputer &&
+                Objects.equals(returnClass, that.returnClass) &&
+                Objects.deepEquals(ids, that.ids);
+    }
+
+    @Override
     public int hashCode() {
-        int result = Objects.hash(super.hashCode(), returnClass);
-        if (ids != null) {
-            for (Object id : ids) {
-                result = 31 * result + Objects.hashCode(id);
-            }
-        }
-        return result;
+        return Objects.hash(super.hashCode(), returnClass, Arrays.hashCode(ids), isStart, onGraphComputer);
     }
 
     @Override

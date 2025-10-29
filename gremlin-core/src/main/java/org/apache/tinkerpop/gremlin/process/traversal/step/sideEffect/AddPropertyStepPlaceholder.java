@@ -120,9 +120,21 @@ public class AddPropertyStepPlaceholder<S extends Element> extends SideEffectSte
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AddPropertyStepPlaceholder<?> that = (AddPropertyStepPlaceholder<?>) o;
+        return Objects.equals(key, that.key) &&
+                Objects.equals(value, that.value) &&
+                cardinality == that.cardinality &&
+                Objects.equals(properties, that.properties) &&
+                Objects.equals(withConfiguration, that.withConfiguration);
+    }
+
+    @Override
     public int hashCode() {
-        return super.hashCode() ^ Objects.hashCode(key) ^ Objects.hashCode(value) ^ Objects.hashCode(cardinality) ^
-                Objects.hashCode(properties) ^ Objects.hashCode(withConfiguration);
+        return Objects.hash(super.hashCode(), key, value, cardinality, properties, withConfiguration);
     }
 
     @Override

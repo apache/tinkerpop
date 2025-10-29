@@ -127,22 +127,21 @@ public abstract class AbstractAddElementStepPlaceholder<S, E extends Element, X 
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AbstractAddElementStepPlaceholder<?, ?, ?> that = (AbstractAddElementStepPlaceholder<?, ?, ?>) o;
+        return Objects.equals(label, that.label) &&
+                Objects.equals(properties, that.properties) &&
+                Objects.equals(elementId, that.elementId) &&
+                Objects.equals(scopeKeys, that.scopeKeys) &&
+                Objects.equals(withConfiguration, that.withConfiguration);
+    }
+
+    @Override
     public int hashCode() {
-        int hash = super.hashCode();
-        if (label != null) {
-            hash ^= label.hashCode();
-        }
-        if (elementId != null) {
-            hash ^= elementId.hashCode();
-        }
-        if (properties != null) {
-            for (Map.Entry<Object, List<Object>> entry : properties.entrySet()) {
-                hash ^= Objects.hashCode(entry.getKey());
-                hash ^= Objects.hashCode(entry.getValue());
-            }
-        }
-        hash ^= withConfiguration.hashCode();
-        return hash;
+        return Objects.hash(super.hashCode(), label, properties, elementId, scopeKeys, withConfiguration);
     }
 
     protected void configureConcreteStep(AddElementStepContract<S, E> step) {

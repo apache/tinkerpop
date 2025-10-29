@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 
 public final class IsStepPlaceholder<S> extends FilterStep<S> implements GValueHolder<S, S>, IsStepContract<S> {
@@ -66,8 +67,17 @@ public final class IsStepPlaceholder<S> extends FilterStep<S> implements GValueH
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        IsStepPlaceholder<?> that = (IsStepPlaceholder<?>) o;
+        return Objects.equals(predicate, that.predicate);
+    }
+
+    @Override
     public int hashCode() {
-        return super.hashCode() ^ this.predicate.hashCode();
+        return Objects.hash(super.hashCode(), predicate);
     }
 
     @Override

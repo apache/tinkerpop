@@ -279,6 +279,15 @@ public class Parameters implements Cloneable, Serializable {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Parameters that = (Parameters) o;
+        return Objects.equals(parameters, that.parameters) && Objects.equals(referencedLabels, that.referencedLabels) && Objects.equals(traversals, that.traversals);
+    }
+
+    @Override
     public int hashCode() {
         int result = 1;
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
