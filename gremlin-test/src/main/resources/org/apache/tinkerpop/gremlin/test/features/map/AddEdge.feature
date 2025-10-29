@@ -359,7 +359,7 @@ Feature: Step - addE()
     And the graph should return 1 for count of "g.V(vid2).outE(\"created\")"
     And the graph should return 1 for count of "g.V(vid2).out(\"created\").has(\"name\",\"lop\")"
 
-  Scenario: g_addEXknowsX_fromXaX_toXbX_propertyXweight_0_1X
+  Scenario: g_addEXknowsX_fromXVXvid1XX_toXVXvid6XX_propertyXweight_0_1X
     Given the empty graph
     And the graph initializer of
       """
@@ -389,7 +389,7 @@ Feature: Step - addE()
     And the graph should return 3 for count of "g.V(vid1).outE(\"knows\")"
     And the graph should return 1 for count of "g.V(vid1).out(\"knows\").has(\"name\",\"peter\")"
 
-  Scenario: g_addEXknowsvarX_fromXaX_toXbX_propertyXweight_0_1X
+  Scenario: g_addEXknowsvarX_fromXVXvid1XX_toXVXvid6XX_propertyXweight_0_1X
     Given the empty graph
     And the graph initializer of
       """
