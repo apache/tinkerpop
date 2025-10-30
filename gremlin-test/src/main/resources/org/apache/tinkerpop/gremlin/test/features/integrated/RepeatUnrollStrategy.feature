@@ -211,11 +211,11 @@ Feature: Step - RepeatUnrollStrategy
   # this traversal is not expected to be unrolled by the strategy but should have consistent semantics compared to traversal without the strategy applied
   @WithRepeatUnrollStrategy
   @GraphComputerVerificationStrategyNotSupported
-  Scenario: g_withStrategiesXRepeatUnrollStrategyX_V_repeatXboth_aggregateXxXX_timesX2X_limitX10X
+  Scenario: g_withStrategiesXRepeatUnrollStrategyX_V_order_byXnameX_repeatXboth_aggregateXxXX_timesX2X_limitX10X
     Given the modern graph
     And the traversal of
       """
-      g.withStrategies(RepeatUnrollStrategy).V().order().repeat(both().order().aggregate('x')).times(2).limit(10)
+      g.withStrategies(RepeatUnrollStrategy).V().order().by('name').repeat(both().order().aggregate('x')).times(2).limit(10)
       """
     When iterated to list
     Then the result should be unordered
@@ -232,11 +232,11 @@ Feature: Step - RepeatUnrollStrategy
       | v[vadas] |
 
   @GraphComputerVerificationStrategyNotSupported
-  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_V_repeatXboth_aggregateXxXX_timesX2X_limitX10X
+  Scenario: g_withoutStrategiesXRepeatUnrollStrategyX_V_order_byXnameX_repeatXboth_aggregateXxXX_timesX2X_limitX10X
     Given the modern graph
     And the traversal of
       """
-      g.withoutStrategies(RepeatUnrollStrategy).V().order().repeat(both().order().aggregate('x')).times(2).limit(10)
+      g.withoutStrategies(RepeatUnrollStrategy).V().order().by('name').repeat(both().order().aggregate('x')).times(2).limit(10)
       """
     When iterated to list
     Then the result should be unordered
