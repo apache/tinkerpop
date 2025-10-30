@@ -262,8 +262,9 @@ def _convert(val, ctx):
         return float("-inf")
     elif isinstance(val, str) and re.match(r"^d\[.*\]\.[bsilfdn]$", val):  # parse numeric
         return float(val[2:-3]) if val[2:-3].__contains__(".") else long(val[2:-3])
-    elif isinstance(val, str) and re.match(r"^d\[.*\]\.m$", val):  # parse bigDecimal
-        return bigdecimal(val[2:-3])
+    elif isinstance(val, str) and re.match(r"^d\[.*\]\.m$", val):  # parse BigDecimal (into decimal.Decimal)
+        bd_val = bigdecimal(val[2:-3])
+        return bd_val.value
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.id$", val):  # parse vertex id
         return __find_cached_element(ctx, graph_name, val[2:-4], "v").id
     elif isinstance(val, str) and re.match(r"^v\[.*\]\.sid$", val):  # parse vertex id as string

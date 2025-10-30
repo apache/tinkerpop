@@ -454,12 +454,43 @@ class BigDecimalIO(_NumberIO):
 
     @classmethod
     def dictify(cls, n, writer):
-        print(n)
         return GraphSONUtil.typed_value(cls.graphson_base_type, str(n.value), "gx")
 
     @classmethod
     def objectify(cls, v, _):
-        return bigdecimal(v)
+        bd_v = bigdecimal(v)
+        return bd_v.value
+
+
+class DecimalIO(_NumberIO):
+    python_type = Decimal
+    graphson_type = "gx:BigDecimal"
+    graphson_base_type = "BigDecimal"
+
+    @classmethod
+    def dictify(cls, n, writer):
+        if isinstance(n, bool):  # because isinstance(False, int) and isinstance(True, int)
+            return n
+        elif math.isnan(n):
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "NaN", "gx")
+        elif math.isinf(n) and n > 0:
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "Infinity", "gx")
+        elif math.isinf(n) and n < 0:
+            return GraphSONUtil.typed_value(cls.graphson_base_type, "-Infinity", "gx")
+        else:
+            return GraphSONUtil.typed_value(cls.graphson_base_type, str(n), "gx")
+
+    @classmethod
+    def objectify(cls, v, _):
+        if isinstance(v, str):
+            if v == 'NaN':
+                return Decimal('nan')
+            elif v == "Infinity":
+                return Decimal('inf')
+            elif v == "-Infinity":
+                return Decimal('-inf')
+
+        return Decimal(v)
 
 
 class DoubleIO(FloatIO):

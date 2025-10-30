@@ -25,6 +25,7 @@ import io
 import struct
 from collections import OrderedDict
 import logging
+from decimal import Decimal
 
 from struct import pack, unpack
 from aenum import Enum
@@ -32,7 +33,7 @@ from datetime import timedelta
 from gremlin_python import statics
 from gremlin_python.statics import FloatType, BigDecimal, FunctionType, ShortType, IntType, LongType, BigIntType, \
                                    TypeType, DictType, ListType, SetType, SingleByte, ByteBufferType, GremlinType, \
-                                   SingleChar
+                                   SingleChar, bigdecimal
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Cardinality, Column, Direction, DT, GType, \
                                              Merge,Operator, Order, Pick, Pop, P, Scope, TextP, Traversal, Traverser, \
                                              TraversalStrategy, T
@@ -473,6 +474,30 @@ class BigDecimalIO(_GraphBinaryTypeIO):
         scale = int32_unpack(buff.read(4))
         unscaled_value = BigIntIO.read_bigint(buff)
         return BigDecimal(scale, unscaled_value)
+
+    @classmethod
+    def objectify(cls, buff, reader, nullable=False):
+        return cls.is_null(buff, reader, lambda b, r: cls._read(b), nullable)
+
+
+class DecimalIO(_GraphBinaryTypeIO):
+
+    python_type = Decimal
+    graphbinary_type = DataType.bigdecimal
+
+    @classmethod
+    def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+        bd_obj = bigdecimal(obj)
+        to_extend.extend(int32_pack(bd_obj.scale))
+        return BigIntIO.write_bigint(bd_obj.unscaled_value, to_extend)
+
+    @classmethod
+    def _read(cls, buff):
+        scale = int32_unpack(buff.read(4))
+        unscaled_value = BigIntIO.read_bigint(buff)
+        bg_obj = BigDecimal(scale, unscaled_value)
+        return bg_obj.value
 
     @classmethod
     def objectify(cls, buff, reader, nullable=False):

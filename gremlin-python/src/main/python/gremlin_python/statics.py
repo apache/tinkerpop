@@ -85,7 +85,8 @@ class GremlinType(object):
 
 class BigDecimal(object):
     """
-    Provides a way to represent a BigDecimal for Gremlin.
+    Provides a way to represent a BigDecimal in Gremlin for serialization of decimal.Decimal only. Not round-trippable,
+    use decimal.Decimal for proper representation and for serialization round-tripping.
     """
     def __init__(self, scale, unscaled_value):
         self.scale = scale

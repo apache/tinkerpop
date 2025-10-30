@@ -21,7 +21,9 @@ import uuid
 import math
 
 from datetime import datetime, timedelta, timezone
-from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType, timestamp
+from decimal import Decimal
+
+from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar, ByteBufferType, timestamp, bigdecimal
 from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV1 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Barrier, Binding, Bytecode, Merge, Direction
@@ -79,8 +81,13 @@ class TestGraphBinaryWriter(object):
     def test_bigdecimal(self):
         x = BigDecimal(100, 234)
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
-        assert x.scale == output.scale
-        assert x.unscaled_value == output.unscaled_value
+        assert x.scale == bigdecimal(output).scale
+        assert x.unscaled_value == bigdecimal(output).unscaled_value
+
+    def test_decimal(self):
+        x = Decimal(100)
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
+        assert x == output
 
     def test_date(self):
         x = datetime(2016, 12, 14, 16, 14, 36, 295000)

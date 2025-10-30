@@ -19,6 +19,7 @@ under the License.
 
 import datetime
 import uuid
+from decimal import Decimal
 
 from gremlin_python.driver.serializer import GraphSONSerializersV2d0, GraphBinarySerializersV1
 from gremlin_python.process.anonymous_traversal import traversal
@@ -192,9 +193,8 @@ def test_bigdecimal(remote_connection):
     vid = resp[0].id
     try:
         bigdecimal_prop = g.V(vid).properties('bigdecimal').toList()[0]
-        assert isinstance(bigdecimal_prop.value, BigDecimal)
-        assert bigdecimal_prop.value.scale == bigdecimal.scale
-        assert bigdecimal_prop.value.unscaled_value == bigdecimal.unscaled_value
+        assert isinstance(bigdecimal_prop.value, Decimal)
+        assert bigdecimal_prop.value == bigdecimal.value
     finally:
         g.V(vid).drop().iterate()
 
