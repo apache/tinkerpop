@@ -37,7 +37,9 @@ public final class PureTraversal<S, E> implements Serializable, Cloneable {
 
     public PureTraversal(final Traversal.Admin<S, E> pureTraversal) {
         if (!pureTraversal.isLocked()) {
-            GValueReductionStrategy.instance().apply(pureTraversal);
+            TraversalHelper.applyTraversalRecursively(t -> {
+                GValueReductionStrategy.instance().apply(t);
+            }, pureTraversal);
         }
         this.pureTraversal = pureTraversal;
     }
