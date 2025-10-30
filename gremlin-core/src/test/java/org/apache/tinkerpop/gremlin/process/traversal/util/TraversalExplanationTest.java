@@ -100,7 +100,7 @@ public class TraversalExplanationTest {
         Traversal.Admin<?, ?> traversal = __.out().count().asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
         int found = 0;
-        String[] split1 = traversal.explain().toString().split("\n");
+        final String[] split1 = traversal.explain().toString().split("\n");
         for (final String line : split1) {
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(OUT,edge)"))
                 found++;
@@ -110,7 +110,7 @@ public class TraversalExplanationTest {
         traversal = __.out().group().by(__.in().count()).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
         found = 0;
-        String[] split2 = traversal.explain().toString().split("\n");
+        final String[] split2 = traversal.explain().toString().split("\n");
         for (final String line : split2) {
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(IN,edge)"))
                 found++;
@@ -121,7 +121,7 @@ public class TraversalExplanationTest {
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().removeStrategies(ProductiveByStrategy.class));
         // System.out.println(traversal.explain());
         found = 0;
-        String[] split3 = traversal.explain().toString().split("]\n");
+        final String[] split3 = traversal.explain().toString().split("]\n");
         for (final String line : split3) { // need to split cause of word wrap
             //System.out.println(line + "\n\n");
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
@@ -137,7 +137,7 @@ public class TraversalExplanationTest {
         //
         //System.out.println(traversal.explain().prettyPrint(160));
         found = 0;
-        String[] split4 = traversal.explain().prettyPrint(170).split("]\n");
+        final String[] split4 = traversal.explain().prettyPrint(170).split("]\n");
         for (final String line : split4) { // need to split cause of word wrap
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
                 found++;
