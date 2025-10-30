@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
+import decimal
 from types import FunctionType
 from aenum import Enum
 
@@ -84,9 +84,47 @@ class GremlinType(object):
 
 
 class BigDecimal(object):
+    """
+    Provides a way to represent a BigDecimal for Gremlin.
+    """
     def __init__(self, scale, unscaled_value):
         self.scale = scale
         self.unscaled_value = unscaled_value
+
+    @property
+    def value(self):
+        self._as_decimal = decimal.Decimal(self.unscaled_value)
+        precision = len(self._as_decimal.as_tuple().digits)
+        with decimal.localcontext(decimal.Context(prec=precision)):
+            return self._as_decimal.scaleb(-self.scale)
+
+    def __eq__(self, other):
+        if not isinstance(other, BigDecimal):
+            return False
+        return self.scale == other.scale and self.unscaled_value == other.unscaled_value
+
+    def __hash__(self):
+        return hash((self.scale, self.unscaled_value))
+
+    def __repr__(self):
+        return f"BigDecimal(scale={self.scale}, unscaled_value={self.unscaled_value})"
+
+    def __str__(self):
+        return str(self.value)
+
+"""
+Create a BigDecimal from a number that can be converted to a Decimal. Note precision may be lost during the conversion.
+"""
+def bigdecimal(value):
+    try:
+        decimal_value = value if isinstance(value, decimal.Decimal) else decimal.Decimal(str(value))
+        scale = -decimal_value.as_tuple().exponent
+        unscaled_value = int("".join(map(str, decimal_value.as_tuple().digits)))
+    except TypeError:
+        raise ValueError("BigDecimal does not support NaN, Infinity or -Infinity")
+    except Exception as err:
+        raise ValueError(f'Encountered error: {err}. Value must be able to convert to a Decimal.')
+    return BigDecimal(scale, unscaled_value if decimal_value >= 0 else -unscaled_value)
 
 
 staticMethods = {}

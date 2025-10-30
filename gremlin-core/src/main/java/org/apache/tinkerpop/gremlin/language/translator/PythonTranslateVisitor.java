@@ -246,10 +246,14 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
         final int lastCharIndex = floatLiteral.length() - 1;
         final char lastChar = floatLiteral.charAt(lastCharIndex);
         switch (lastChar) {
-            case 'm':
             case 'f':
             case 'd':
                 sb.append(floatLiteral, 0, lastCharIndex);
+                break;
+            case 'm':
+                sb.append("bigdecimal(");
+                sb.append(floatLiteral, 0, lastCharIndex);
+                sb.append(")");
                 break;
             default:
                 // everything else just goes as specified

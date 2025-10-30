@@ -51,6 +51,8 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Added missing strategies to `strategies.py` in `gremlin-python`.
 * Fixed fully qualified class names for `TraversalStrategy` names in `gremlin-dotnet`.
 * Updated `OptionsStrategy` in `gremlin-python` to take options directly as keyword arguments.
+* Fixed `statics.BigDecimal` implementation in `gremlin-python` to properly calculate `scale` and `unscaled_value`, and added `value` attribute to return a `decimal.Decimal` representation.
+* Updated `GraphSON` in `gremlin-python` to return `statics.BigDecimal` instead of `decimal.Decimal` for consistency with `GraphBinary`.
 * Added static `instance()` method to `ElementIdStrategy` to an instance with the default configuration.
 * Updated `ElementIdStrategy.getConfiguration()` to help with serialization.
 * Added grammar-based `Translator` for all languages including explicit ones for Java and anonymization.
