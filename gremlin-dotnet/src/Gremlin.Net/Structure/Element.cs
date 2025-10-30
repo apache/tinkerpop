@@ -41,7 +41,7 @@ namespace Gremlin.Net.Structure
         {
             Id = id;
             Label = label;
-            Properties = properties;
+            Properties = properties ?? Array.Empty<dynamic>();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Gremlin.Net.Structure
         /// <summary>
         ///     Gets the properties of this <see cref="Element" />.
         /// </summary>
-        public dynamic[]? Properties { get; }
+        public dynamic[] Properties { get; }
 
         /// <inheritdoc />
         public bool Equals(Element? other)

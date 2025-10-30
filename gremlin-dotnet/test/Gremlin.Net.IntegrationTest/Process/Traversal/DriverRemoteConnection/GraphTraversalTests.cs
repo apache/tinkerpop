@@ -293,7 +293,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInV()
+        public void ShouldUseMaterializedPropertiesTokenInV()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -301,13 +301,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var v in vertices)
             {
                 Assert.NotNull(v);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(v.Properties == null || v.Properties.Length == 0);
+                Assert.Empty(v.Properties);
             }
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInE()
+        public void ShouldUseMaterializedPropertiesTokenInE()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -315,13 +314,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var e in edges)
             {
                 Assert.NotNull(e);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(e.Properties == null || e.Properties.Length == 0);
+                Assert.Empty(e.Properties);
             }
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInVP()
+        public void ShouldUseMaterializedPropertiesTokenInVP()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -329,13 +327,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var vp in vps)
             {
                 Assert.NotNull(vp);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(vp.Properties == null || vp.Properties.Length == 0);
+                Assert.Empty(vp.Properties);
             }
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInPath()
+        public void ShouldUseMaterializedPropertiesTokenInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -352,14 +349,13 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.NotNull(b);
             Assert.NotNull(c);
             
-            // GraphSON will deserialize into null and GraphBinary to []
-            Assert.True(a.Properties == null || a.Properties.Length == 0);
-            Assert.True(b.Properties == null || b.Properties.Length == 0);
-            Assert.True(c.Properties == null || c.Properties.Length == 0);
+            Assert.Empty(a.Properties);
+            Assert.Empty(b.Properties);
+            Assert.Empty(c.Properties);
         }
         
         [Fact]
-        public void shouldMaterializePropertiesAllInPath()
+        public void ShouldMaterializePropertiesAllInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);

@@ -33,6 +33,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Removed Vertex/ReferenceVertex from grammar. Use vertex id in traversals now instead.
 * Removed `has(key, traversal)` and `has(T, traversal)` options for `has()` step.
 * Fixed bug where `InlineFilterStrategy` could add an empty `has()`.
+* Normalized dotnet `Element.properties` to lists.
 * Normalized python and javascript `Element.properties` to lists.
 * Renamed `none()` step to `discard()`.
 * Repurposed `none()` step as a list filtering step with the signature `none(P)`.
