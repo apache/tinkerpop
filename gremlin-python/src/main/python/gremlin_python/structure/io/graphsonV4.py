@@ -29,7 +29,7 @@ from aenum import Enum
 from isodate import parse_duration, duration_isoformat
 
 from gremlin_python import statics
-from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar, to_bigdecimal
+from gremlin_python.statics import FloatType, BigDecimal, ShortType, IntType, LongType, TypeType, DictType, ListType, SetType, SingleByte, SingleChar, bigdecimal
 from gremlin_python.process.traversal import Direction, P, TextP, Traversal, Traverser, TraversalStrategy, T
 from gremlin_python.structure.graph import Edge, Property, Vertex, VertexProperty, Path
 from gremlin_python.structure.io.util import HashableDict, SymbolUtil
@@ -354,7 +354,7 @@ class BigDecimalIO(_GraphSONTypeIO):
 
     @classmethod
     def objectify(cls, v, _):
-        return to_bigdecimal(v)
+        return bigdecimal(v)
 
 
 class DoubleIO(FloatIO):

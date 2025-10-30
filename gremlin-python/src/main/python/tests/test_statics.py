@@ -67,17 +67,17 @@ class TestStatics(object):
             pass
 
     def test_bigdecimal(self):
-        assert statics.to_bigdecimal(1.23456).value == statics.BigDecimal(5,123456).value
-        assert statics.to_bigdecimal(-1.23456).value == statics.BigDecimal(5,-123456).value
+        assert statics.bigdecimal(1.23456).value == statics.BigDecimal(5,123456).value
+        assert statics.bigdecimal(-1.23456).value == statics.BigDecimal(5,-123456).value
         # make sure the precision isn't changed globally
         assert Decimal("123456789").scaleb(-5) == Decimal('1234.56789')
         try:
-            statics.to_bigdecimal('NaN')
+            statics.bigdecimal('NaN')
             raise Exception("to_bigdecimal should throw a value error with NaN, Infinity or -Infinity")
         except ValueError:
             pass
         try:
-            statics.to_bigdecimal('abc')
+            statics.bigdecimal('abc')
             raise Exception("to_bigdecimal should throw a value error if input is not a convertable to Decimal")
         except ValueError:
             pass

@@ -37,7 +37,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
                 ? new Vertex(reader.ToObject(vertexProperty))
                 : null;
 
-            Property[]? properties = null;
+            Property[] properties = System.Array.Empty<Property>();
             if (graphsonObject.TryGetProperty("properties", out var propertiesObject)
                 && propertiesObject.ValueKind == JsonValueKind.Object)
             {

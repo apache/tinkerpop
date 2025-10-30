@@ -27,7 +27,7 @@
 from radish import world
 import datetime
 import uuid
-from gremlin_python.statics import long, bigint, GremlinType
+from gremlin_python.statics import long, bigint, bigdecimal, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.process.traversal import TraversalStrategy
@@ -1829,14 +1829,14 @@ world.gremlins = {
     'InjectXInfX_ltXNegInfX': [(lambda g:g.inject(float('inf')).is_(P.lt(float('-inf'))))], 
     'InjectXNegInfX_ltXInfX': [(lambda g:g.inject(float('-inf')).is_(P.lt(float('inf'))))], 
     'InjectXNegInfX_gtXInfX': [(lambda g:g.inject(float('-inf')).is_(P.gt(float('inf'))))], 
-    'Primitives_Number_eqXbyteX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXshortX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXintX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXlongX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXbigintX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXfloatX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXdoubleX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
-    'Primitives_Number_eqXbigdecimalX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, 1, bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXbyteX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXshortX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXintX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXlongX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXbigintX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXfloatX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXdoubleX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
+    'Primitives_Number_eqXbigdecimalX': [(lambda g, xx1=None:g.inject([1, 1, 1, long(1), 1, 1, 1000, bigdecimal(1), bigint(1)]).unfold().where(__.is_(xx1)))], 
     'g_V_values_order': [(lambda g:g.V().values().order())], 
     'g_V_properties_order': [(lambda g:g.V().properties().order())], 
     'g_V_properties_order_id': [(lambda g:g.V().properties().order().id_())], 

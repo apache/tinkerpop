@@ -89,10 +89,24 @@ class BigDecimal(object):
         with decimal.localcontext(decimal.Context(prec=precision)):
             return self._as_decimal.scaleb(-self.scale)
 
+    def __eq__(self, other):
+        if not isinstance(other, BigDecimal):
+            return False
+        return self.scale == other.scale and self.unscaled_value == other.unscaled_value
+
+    def __hash__(self):
+        return hash((self.scale, self.unscaled_value))
+
+    def __repr__(self):
+        return f"BigDecimal(scale={self.scale}, unscaled_value={self.unscaled_value})"
+
+    def __str__(self):
+        return str(self.value)
+
 """
 Create a BigDecimal from a number that can be converted to a Decimal. Note precision may be lost during the conversion.
 """
-def to_bigdecimal(value):
+def bigdecimal(value):
     try:
         decimal_value = value if isinstance(value, decimal.Decimal) else decimal.Decimal(str(value))
         scale = -decimal_value.as_tuple().exponent

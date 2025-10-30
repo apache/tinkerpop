@@ -625,18 +625,19 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
 
 ==== Serialization Changes
 
-*Properties on Element Serialization in Python & Javascript*
+*Properties on Element Serialization in GLVs*
 
 Element properties handling has been inconsistent across GLVs. Previously,`gremlin-python` deserialized empty properties
-as None or array depending on the serializer, while `gremlin-javascript` returned properties as objects or arrays, with
-empty properties as empty lists or undefined depending on the serializer.
+as `None` or array depending on the serializer, while `gremlin-javascript`, and `gremlin-dotnet` returned properties as
+objects or arrays, with empty properties as empty lists or undefined depending on the serializer. (Note that
+`gremlin-go` already returns empty slices for null properties so no changes is needed.)
 
 This inconsistency is now resolved, aligning to how properties are handled in Gremlin core and in the Java GLV.
-Both GLVs will deserialize element properties into lists of property objects, returning empty lists instead of null values
+All GLVs will deserialize element properties into lists of property objects, returning empty lists instead of null values
 for missing properties.
 
-For python, the most notable difference is in graphSON when "tokens" is turned on for "materializeProperties". The
-properties returned are no longer `None`, but empty lists. Users should update their code accordingly.
+For python and dotnet, the most notable difference is in graphSON when "tokens" is turned on for "materializeProperties". The
+properties returned are no longer `None` or `null`, but empty lists. Users should update their code accordingly.
 
 For javascript, the change is slightly more extensive, as user should no longer expect javascript objects to be returned.
 All properties are returned as lists of Property or VertexProperty objects.
