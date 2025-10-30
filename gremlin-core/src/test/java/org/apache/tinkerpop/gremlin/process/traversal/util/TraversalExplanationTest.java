@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.util.Arrays;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -99,26 +100,29 @@ public class TraversalExplanationTest {
         Traversal.Admin<?, ?> traversal = __.out().count().asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
         int found = 0;
-        for (final String line : traversal.explain().toString().split("\n")) {
+        String[] split1 = traversal.explain().toString().split("\n");
+        for (final String line : split1) {
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(OUT,edge)"))
                 found++;
         }
-        assertEquals(1, found);
+        assertEquals(String.format("Explain does not contain AdjacentToIncidentStrategy and [VertexStepPlaceholder(OUT,edge):%n%s", Arrays.toString(split1)), 1, found);
         ///
         traversal = __.out().group().by(__.in().count()).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
         found = 0;
-        for (final String line : traversal.explain().toString().split("\n")) {
+        String[] split2 = traversal.explain().toString().split("\n");
+        for (final String line : split2) {
             if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(IN,edge)"))
                 found++;
         }
-        assertEquals(1, found);
+        assertEquals(String.format("Explain does not contain AdjacentToIncidentStrategy and [VertexStepPlaceholder(IN,edge):%n%s", Arrays.toString(split2)), 1, found);
         ///
         traversal = __.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().removeStrategies(ProductiveByStrategy.class));
         // System.out.println(traversal.explain());
         found = 0;
-        for (final String line : traversal.explain().toString().split("]\n")) { // need to split cause of word wrap
+        String[] split3 = traversal.explain().toString().split("]\n");
+        for (final String line : split3) { // need to split cause of word wrap
             //System.out.println(line + "\n\n");
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
                 found++;
@@ -129,11 +133,12 @@ public class TraversalExplanationTest {
             if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;
         }
-        assertEquals(4, found);
+        assertEquals(String.format("Explain does not contain the expected content:%n%s", Arrays.toString(split3)), 4, found);
         //
         //System.out.println(traversal.explain().prettyPrint(160));
         found = 0;
-        for (final String line : traversal.explain().prettyPrint(170).split("]\n")) { // need to split cause of word wrap
+        String[] split4 = traversal.explain().prettyPrint(170).split("]\n");
+        for (final String line : split4) { // need to split cause of word wrap
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
                 found++;
             if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(OUT,vertex)"))
@@ -143,6 +148,6 @@ public class TraversalExplanationTest {
             if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
                 found++;
         }
-        assertEquals(4, found);
+        assertEquals(String.format("Explain does not contain the expected content:%n%s", Arrays.toString(split4)), 4, found);
     }
 }
