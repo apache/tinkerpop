@@ -293,7 +293,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInV()
+        public void ShouldUseMaterializedPropertiesTokenInV()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -306,7 +306,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInE()
+        public void ShouldUseMaterializedPropertiesTokenInE()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -319,7 +319,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInVP()
+        public void ShouldUseMaterializedPropertiesTokenInVP()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -332,7 +332,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldUseMaterializedPropertiesTokenInPath()
+        public void ShouldUseMaterializedPropertiesTokenInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
@@ -355,7 +355,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
         
         [Fact]
-        public void shouldMaterializePropertiesAllInPath()
+        public void ShouldMaterializePropertiesAllInPath()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
