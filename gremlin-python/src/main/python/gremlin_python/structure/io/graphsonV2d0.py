@@ -454,7 +454,6 @@ class BigDecimalIO(_NumberIO):
 
     @classmethod
     def dictify(cls, n, writer):
-        print(n)
         return GraphSONUtil.typed_value(cls.graphson_base_type, str(n.value), "gx")
 
     @classmethod
