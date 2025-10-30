@@ -19,28 +19,28 @@
 Feature: Step - EarlyLimitStrategy
 
   @WithEarlyLimitStrategy
-  Scenario: g_withStrategiesXEarlyLimitStrategyX_V_out_order_valueMap_limitX3X_selectXnameX
+  Scenario: g_withStrategiesXEarlyLimitStrategyX_V_out_order_byXnameX_valueMap_limitX3X_selectXnameX
     Given the modern graph
     And the traversal of
       """
-      g.withStrategies(EarlyLimitStrategy).V().out().order().valueMap().limit(3).select("name")
+      g.withStrategies(EarlyLimitStrategy).V().out().order().by('name').valueMap().limit(3).select("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[vadas] |
+      | l[josh] |
       | l[lop] |
       | l[lop] |
 
-  Scenario: g_withoutStrategiesXEarlyLimitStrategyX_V_out_order_valueMap_limitX3X_selectXnameX
+  Scenario: g_withoutStrategiesXEarlyLimitStrategyX_V_out_order_byXnameX_valueMap_limitX3X_selectXnameX
     Given the modern graph
     And the traversal of
       """
-      g.withoutStrategies(EarlyLimitStrategy).V().out().order().valueMap().limit(3).select("name")
+      g.withoutStrategies(EarlyLimitStrategy).V().out().order().by('name').valueMap().limit(3).select("name")
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | l[vadas] |
+      | l[josh] |
       | l[lop] |
       | l[lop] |
