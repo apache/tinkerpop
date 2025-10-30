@@ -395,6 +395,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(new Vertex(5L), readPath[0]);
             Assert.Equal(new Vertex(5L), readPath["z"]);
             Assert.Single(readPath);
+            Assert.Empty(readPath[0]!.Properties);
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -459,6 +460,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal("aKey", readVertexProperty.Label);
             Assert.True(readVertexProperty.Value);
             Assert.NotNull(readVertexProperty.Vertex);
+            Assert.Empty(readVertexProperty.Properties);
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -475,6 +477,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal("name", readVertexProperty.Label);
             Assert.Equal("marko", readVertexProperty.Value);
             Assert.Null(readVertexProperty.Vertex);
+            Assert.Empty(readVertexProperty.Properties);
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -488,6 +491,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var deserializedValue = reader.ToObject(jsonElement);
         
             Assert.Equal(new Vertex(45.23f), deserializedValue);
+            Assert.Empty(deserializedValue!.Properties);
         }
         
         [Theory, MemberData(nameof(Versions))]
@@ -501,6 +505,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Vertex deserializedValue = reader.ToObject(jsonElement)!;
         
             Assert.Equal("person", deserializedValue.Label);
+            Assert.Empty(deserializedValue.Properties);
         }
         
         [Theory, MemberData(nameof(Versions))]
