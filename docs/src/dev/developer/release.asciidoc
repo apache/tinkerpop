@@ -132,6 +132,10 @@ during this period.
 ... All tickets not marked "Fixed", "Done", or "Implemented" for their Resolution should not have a Fix Version
 assigned (use common sense when reviewing these tickets before removing the Fix Version as it is possible the incorrect
 Resolution may have been assigned).
+. Determine if Upgrade Documentation requires the addition of a prompt that users can provide to an AI coding agent to
+help them assess their upgrade task. Check the state of `docs/upgrade/prompts` to ensure there is an
+`upgrade-x.y.z-helper.md` for the current version and that it is up to date/tested. When it is determined as valid,
+ensure the prompt is reflected in the Upgrade Documentation itself. **This process needs to be refined.**
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -215,6 +219,10 @@ current release was under development as this new release will have those change
 . `git diff` and review the updated files
 . `mvn clean install` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 .. This step should update the Gremlin.Net project file and Gremlin Javascript package file with the newly bumped version.
+. Determine if Upgrade Documentation requires the addition of a prompt that users can provide to an AI coding agent to
+help them assess their upgrade task. Check the state of `docs/upgrade/prompts` to ensure there is an
+`upgrade-x.y.z-helper.md` for the current version and that it is up to date/tested. When it is determined as valid,
+ensure the prompt is reflected in the Upgrade Documentation itself. **This process needs to be refined.**
 . `bin/process-docs.sh` and validate the generated documentation locally. Don't rely on "BUILD SUCCESS" - scroll up
 through logs to ensure there were no errors and view the HTML directly. Code blocks that did not execute properly have
 a gray background and do not show the results of the commands. In the event of failure, especially with `GraphComputer`
