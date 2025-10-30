@@ -301,8 +301,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var v in vertices)
             {
                 Assert.NotNull(v);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(v.Properties == null || v.Properties.Length == 0);
+                Assert.Empty(v.Properties);
             }
         }
         
@@ -315,8 +314,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var e in edges)
             {
                 Assert.NotNull(e);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(e.Properties == null || e.Properties.Length == 0);
+                Assert.Empty(e.Properties);
             }
         }
         
@@ -329,8 +327,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             foreach (var vp in vps)
             {
                 Assert.NotNull(vp);
-                // GraphSON will deserialize into null and GraphBinary to []
-                Assert.True(vp.Properties.Length == 0);
+                Assert.Empty(vp.Properties);
             }
         }
         
@@ -352,10 +349,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.NotNull(b);
             Assert.NotNull(c);
             
-            // GraphSON will deserialize into null and GraphBinary to []
-            Assert.True(a.Properties.Length == 0);
-            Assert.True(b.Properties.Length == 0);
-            Assert.True(c.Properties.Length == 0);
+            Assert.Empty(a.Properties);
+            Assert.Empty(b.Properties);
+            Assert.Empty(c.Properties);
         }
         
         [Fact]
