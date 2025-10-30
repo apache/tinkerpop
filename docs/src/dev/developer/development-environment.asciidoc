@@ -503,10 +503,10 @@ and GLVs will run automatically with integration tests against the TinkerTransac
 ** Generate web site locally: `bin/generate-home.sh`
 ** Publish web site: `bin/publish-home.sh <username>`
 
-[[glv-examples]]
-== GLV Examples
+[[gremlin-examples]]
+== Gremlin Examples
 
-TinkerPop maintains GLV examples in two distinct locations. User-facing examples in the `glv-examples/` directory
+TinkerPop maintains GLV examples in two distinct locations. User-facing examples in the `gremlin-examples/` directory
 utilize published driver versions and are referenced in the main documentation. Module-level examples within each GLV
 directory (e.g., `gremlin-python/src/main/python/examples/`) use local development code to ensure compatibility and
 prevent regressions.
