@@ -524,7 +524,7 @@ results which contain maps may not preserve original ordering when deserialized 
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Go. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-go/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-go/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -562,7 +562,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-go
+cd gremlin-examples/gremlin-go
 ----
 
 Run the examples:
@@ -1311,7 +1311,7 @@ execute it.
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Java. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-java/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-java/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -1350,7 +1350,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-java
+cd gremlin-examples/gremlin-java
 ----
 
 Build the examples with Maven:
@@ -1836,7 +1836,7 @@ no `Graph` instance to deserialize a result into on the client-side. A workaroun
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-JavaScript. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-javascript/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-javascript/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -1875,7 +1875,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-javascript
+cd gremlin-examples/gremlin-javascript
 ----
 
 Install the dependencies:
@@ -2257,7 +2257,7 @@ dotnet new gremlin -o MyFirstGremlinProject
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Dotnet. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-dotnet/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-dotnet/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -2295,7 +2295,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-dotnet
+cd gremlin-examples/gremlin-dotnet
 ----
 
 Build all projects:
@@ -2854,7 +2854,7 @@ async def run_in_thread():
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Python. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-python/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-python/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -2895,7 +2895,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-python
+cd gremlin-examples/gremlin-python
 ----
 
 Install the requirements:
