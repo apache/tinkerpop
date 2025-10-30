@@ -1968,6 +1968,7 @@ const gremlins = {
     g_V_group_by_byXout_label_tailX10X_foldX_selectXvaluesX_unfold_orderXlocalX: [function({g}) { return g.V().group().by().by(__.out().label().tail(10).fold()).select(Column.values).unfold().order(Scope.local) }], 
     g_V_groupXaX_byXnameX_by_selectXaX_countXlocalX: [function({g}) { return g.V().group("a").by("name").by().select("a").count(Scope.local) }], 
     g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX: [function({g}) { return g.V().local(__.group("a").by("name").by().select("a").count(Scope.local)) }], 
+    g_V_group_byXvaluesXnameXX_byXboth_countX: [function({g}) { return g.V().group().by(__.values("name")).by(__.both().count()) }], 
     g_V_outXcreatedX_groupCount_byXnameX: [function({g}) { return g.V().out("created").groupCount().by("name") }], 
     g_V_groupCount_byXageX: [function({g}) { return g.V().groupCount().by("age") }], 
     g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX: [function({g}) { return g.withStrategies(new ProductiveByStrategy()).V().groupCount().by("age") }], 
