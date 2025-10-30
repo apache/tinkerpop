@@ -29,7 +29,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed edge properties for GraphBinary which were not deserializing properly.
 * Deprecated `has(key, traversal)` and `has(T, traversal)` options for `has()` step.
 * Improved GLV examples reliability and documentation with step-by-step instructions.
-* Added root-level GLV examples in `glv-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
+* Added root-level GLV examples in `gremlin-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
 * Bump netty to 4.1.125.Final
 
 [[release-3-7-4]]

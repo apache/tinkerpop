@@ -332,11 +332,11 @@ the help of a PMC member for those steps.
 . Ensure that the GLV examples compile and run with the latest image and dependencies: `bin/run-examples.sh`.
 .. Make changes as necessary to update the examples.
 . Update root-level GLV examples to use the new release version:
-.. Update version numbers in `glv-examples/gremlin-java/pom.xml` to reference the new release version
-.. Update version numbers in `glv-examples/gremlin-javascript/package.json` to reference the new release version  
-.. Update version numbers in `glv-examples/gremlin-python/requirements.txt` to reference the new release version
-.. Update version numbers in `glv-examples/gremlin-dotnet/*/\*.csproj` to reference the new release version
-.. Update version numbers in `glv-examples/gremlin-go/go.mod` to reference the new release version
+.. Update version numbers in `gremlin-examples/gremlin-java/pom.xml` to reference the new release version
+.. Update version numbers in `gremlin-examples/gremlin-javascript/package.json` to reference the new release version  
+.. Update version numbers in `gremlin-examples/gremlin-python/requirements.txt` to reference the new release version
+.. Update version numbers in `gremlin-examples/gremlin-dotnet/*/\*.csproj` to reference the new release version
+.. Update version numbers in `gremlin-examples/gremlin-go/go.mod` to reference the new release version
 .. Test that all root-level examples work correctly with the new published versions
 . Generate a list of dead branches that will be automatically deleted and post them as a DISCUSS thread for review, then once consensus is reached removed those branches.
 . Set up the IO tests for the current `SNAPSHOT` as discussed in the <<io,IO Documentation and Testing Section>>
