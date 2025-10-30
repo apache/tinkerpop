@@ -1875,8 +1875,16 @@ def aggregate(*args):
     return __.aggregate(*args)
 
 
+def all_(*args):
+    return __.all_(*args)
+
+
 def and_(*args):
     return __.and_(*args)
+
+
+def any_(*args):
+    return __.any_(*args)
 
 
 def as_(*args):
@@ -1947,8 +1955,16 @@ def coin(*args):
     return __.coin(*args)
 
 
+def combine(*args):
+    return __.combine(*args)
+
+
 def concat(*args):
     return __.concat(*args)
+
+
+def conjoin(*args):
+    return __.conjoin(*args)
 
 
 def constant(*args):
@@ -1977,6 +1993,10 @@ def date_diff(*args):
 
 def dedup(*args):
     return __.dedup(*args)
+
+
+def difference(*args):
+    return __.difference(*args)
 
 
 def discard(*args):
@@ -2125,6 +2145,10 @@ def inject(*args):
     return __.inject(*args)
 
 
+def intersect(*args):
+    return __.intersect(*args)
+
+
 def is_(*args):
     return __.is_(*args)
 
@@ -2179,6 +2203,10 @@ def max_(*args):
 
 def mean(*args):
     return __.mean(*args)
+
+
+def merge(*args):
+    return __.merge(*args)
 
 
 def merge_e(*args):
@@ -2243,6 +2271,10 @@ def out_v(*args):
 
 def path(*args):
     return __.path(*args)
+
+
+def product(*args):
+    return __.product(*args)
 
 
 def project(*args):
@@ -2420,6 +2452,7 @@ def values(*args):
 def where(*args):
     return __.where(*args)
 
+statics.add_static('E', E)
 
 statics.add_static('V', V)
 
@@ -2433,7 +2466,11 @@ statics.add_static('add_v', add_v)
 
 statics.add_static('aggregate', aggregate)
 
+statics.add_static('all_', all_)
+
 statics.add_static('and_', and_)
+
+statics.add_static('any_', any_)
 
 statics.add_static('as_', as_)
 
@@ -2469,7 +2506,11 @@ statics.add_static('coalesce', coalesce)
 
 statics.add_static('coin', coin)
 
+statics.add_static('combine', combine)
+
 statics.add_static('concat', concat)
+
+statics.add_static('conjoin', conjoin)
 
 statics.add_static('constant', constant)
 
@@ -2484,6 +2525,8 @@ statics.add_static('date_add', date_add)
 statics.add_static('date_diff', date_diff)
 
 statics.add_static('dedup', dedup)
+
+statics.add_static('difference', difference)
 
 statics.add_static('discard', discard)
 
@@ -2555,6 +2598,8 @@ statics.add_static('index', index)
 
 statics.add_static('inject', inject)
 
+statics.add_static('intersect', intersect)
+
 statics.add_static('is_', is_)
 
 statics.add_static('key', key)
@@ -2582,6 +2627,8 @@ statics.add_static('math', math)
 statics.add_static('max_', max_)
 
 statics.add_static('mean', mean)
+
+statics.add_static('merge', merge)
 
 statics.add_static('merge_e', merge_e)
 
@@ -2614,6 +2661,8 @@ statics.add_static('outV', outV)
 statics.add_static('out_v', out_v)
 
 statics.add_static('path', path)
+
+statics.add_static('product', product)
 
 statics.add_static('project', project)
 
