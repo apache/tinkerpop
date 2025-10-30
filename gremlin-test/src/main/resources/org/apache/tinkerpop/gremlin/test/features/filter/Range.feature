@@ -546,11 +546,11 @@ Feature: Step - range()
       | result |
       | v[marko] |
 
-  Scenario: g_V_repeatXout_whereXhasXnameX_limitX1XXX_timesX2X
+  Scenario: g_V_repeatXout_whereXhasXnameX_order_byXnameX_limitX1XXX_timesX2X
     Given the modern graph
     And the traversal of
       """
-      g.V().repeat(out().where(has("name").limit(1))).times(2)
+      g.V().repeat(out().where(has("name").order().by('name').limit(1))).times(2)
       """
     When iterated to list
     Then the result should be unordered
@@ -558,11 +558,11 @@ Feature: Step - range()
       | v[ripple] |
       | v[lop] |
 
-  Scenario: g_V_out_whereXhasXnameX_limitX1XX_out_whereXhasXnameX_limitX1XX
+  Scenario: g_V_out_whereXhasXnameX_order_byXnameX_limitX1XX_out_whereXhasXnameX_order_byXnameX_limitX1XX
     Given the modern graph
     And the traversal of
       """
-      g.V().out().where(has("name").limit(1)).out().where(has("name").limit(1))
+      g.V().out().where(has("name").order().by('name').limit(1)).out().where(has("name").order().by('name').limit(1))
       """
     When iterated to list
     Then the result should be unordered
@@ -570,80 +570,81 @@ Feature: Step - range()
       | v[ripple] |
       | v[lop] |
 
-  Scenario: g_V_hasXnameXJAMXX_repeatXoutXfollowedByX_limitX2XX_timesX2X
+  Scenario: g_V_hasXnameXJAMXX_repeatXoutXfollowedByX_order_byXnameX_limitX2XX_timesX2X
     Given the grateful graph
     And the traversal of
       """
-      g.V().has('name','JAM').repeat(out('followedBy').limit(2)).times(2)
+      g.V().has('name','JAM').repeat(out('followedBy').order().by('name').limit(2)).times(2)
       """
     When iterated to list
     Then the result should have a count of 2
 
-  Scenario: g_V_hasXnameXJAMXX_outXfollowedByX_limitX2X_outXfollowedByX_limitX2X
+  Scenario: g_V_hasXnameXJAMXX_outXfollowedByX_order_byXnameX_limitX2X_outXfollowedByX_order_byXnameX_limitX2X
     Given the grateful graph
     And the traversal of
       """
-      g.V().has('name','JAM').out('followedBy').limit(2).out('followedBy').limit(2)
+      g.V().has('name','JAM').out('followedBy').order().by('name').limit(2).out('followedBy').order().by('name').limit(2)
       """
     When iterated to list
     Then the result should have a count of 2
 
-  Scenario: g_V_hasXnameXDRUMSXX_repeatXinXfollowedByX_rangeX1_4XX_timesX2X
+  Scenario: g_V_hasXnameXDRUMSXX_repeatXinXfollowedByX_order_byXnameX_rangeX1_4XX_timesX2X
     Given the grateful graph
     And the traversal of
       """
-      g.V().has('name','DRUMS').repeat(in('followedBy').range(1,4)).times(2)
+      g.V().has('name','DRUMS').repeat(in('followedBy').order().by('name').range(1,4)).times(2)
       """
     When iterated to list
     Then the result should have a count of 3
 
-  Scenario: g_V_hasXnameXDRUMSXX_inXfollowedByX_rangeX1_4X_inXfollowedByX_rangeX1_4X
+  Scenario: g_V_hasXnameXDRUMSXX_inXfollowedByX_order_byXnameX_rangeX1_4X_inXfollowedByX_order_byXnameX_rangeX1_4X
     Given the grateful graph
     And the traversal of
       """
-      g.V().has('name','DRUMS').in('followedBy').range(1,4).in('followedBy').range(1,4)
+      g.V().has('name','DRUMS').in('followedBy').order().by('name').range(1,4).in('followedBy').order().by('name').range(1,4)
       """
     When iterated to list
     Then the result should have a count of 3
 
   # global limits in choose
-  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_outX_limitX1X_outX_limitX2XX
+  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_out_order_byXnameX_limitX1X_out_order_byXnameX_limitX2XX
     Given the modern graph
     And the traversal of
       """
-      g.V().choose(values('age').is(lte(30)),out().limit(1),out().limit(2))
+      g.V().choose(values('age').is(lte(30)),out().order().by('name').limit(1),out().order().by('name').limit(2))
       """
     When iterated to list
     Then the result should have a count of 3
 
-  # local limits in choose   
-  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_localXoutX_limitX1XX_localXoutX_limitX2XXX
+  # local limits in choose
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_chooseXvaluesXageX_isXlteX30XX_localXout_order_byXnameX_limitX1XX_localXout_order_byXnameX_limitX2XXX
     Given the modern graph
     And the traversal of
       """
-      g.V().choose(values('age').is(lte(30)),local(out().limit(1)),local(out().limit(2)))
+      g.V().choose(values('age').is(lte(30)),local(out().order().by('name').limit(1)),local(out().order().by('name').limit(2)))
       """
     When iterated to list
     Then the result should have a count of 4
 
-  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_unionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XX_unionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XX
+  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_unionXoutXfollowedByX_order_byXnameX_limitX2X_outXsungByX_order_byXnameX_byXnameX_limitX1XX_unionXoutXfollowedByX_order_limitX2X_outXsungByX_order_byXnameX_limitX1XX
     Given the grateful graph
     And the traversal of
       """
       g.V().has('name','HEY BO DIDDLEY').
-                union(out('followedBy').limit(2),
-                      out('sungBy').limit(1)).
-                union(out('followedBy').limit(2),
-                      out('sungBy').limit(1))
+                union(out('followedBy').order().by('name').limit(2),
+                      out('sungBy').order().by('name').limit(1)).
+                union(out('followedBy').order().by('name').limit(2),
+                      out('sungBy').order().by('name').limit(1))
       """
     When iterated to list
     Then the result should have a count of 3
     
-  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_repeatXunionXoutXfollowedByX_limitX2X_outXsungByX_limitX1XXX_timesX2X
+  Scenario: g_V_hasXnameXHEY_BO_DIDDLEYXX_repeatXunionXoutXfollowedByX_order_byXnameX_limitX2X_outXsungByX_order_byXnameX_limitX1XXX_timesX2X
     Given the grateful graph
     And the traversal of
       """
-      g.V().has('name','HEY BO DIDDLEY').repeat(union(out('followedBy').limit(2),out('sungBy').limit(1))).times(2)
+      g.V().has('name','HEY BO DIDDLEY').repeat(union(out('followedBy').order().by('name').limit(2),out('sungBy').order().by('name').limit(1))).times(2)
       """
     When iterated to list
     Then the result should have a count of 3
