@@ -31,20 +31,20 @@
 def addItUp(int x, int y) { x + y }
 
 // an init script that returns a Map allows explicit setting of global bindings.
-def globals = [:]
+def Map<Object, Object> globals = [:]
 
 // defines a sample LifeCycleHook that prints some output to the Gremlin Server console.
 // note that the name of the key in the "global" map is unimportant. As this script,
 // runs as part of a sandbox configuration, type-checking is enabled and thus the
 // LifeCycleHook type needs to be defined for the "ctx" variable.
-globals << [hook : [
+globals << ([hook : [
   onStartUp: { LifeCycleHook.Context ctx ->
     ctx.logger.info("Executed once at startup of Gremlin Server.")
   },
   onShutDown: { LifeCycleHook.Context ctx ->
     ctx.logger.info("Executed once at shutdown of Gremlin Server.")
   }
-] as LifeCycleHook]
+] as LifeCycleHook] as Map<Object, Object>)
 
 // define the default TraversalSource to bind queries to - this one will be named "g".
 // ReferenceElementStrategy converts all graph elements (vertices/edges/vertex properties)
@@ -55,4 +55,4 @@ globals << [hook : [
 //
 // must use an instance of ReferenceElementStrategy as Groovy shorthands won't work with
 // secure script execution.
-globals << [g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy.instance())]
+globals << ([g : traversal().withEmbedded(graph).withStrategies(ReferenceElementStrategy.instance())] as Map<Object, Object>)
