@@ -19,16 +19,20 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.util.List;
+import java.util.stream.Stream;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
-
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -98,51 +102,38 @@ public class TraversalExplanationTest {
     public void shouldApplyStrategiesCorrectly() {
         Traversal.Admin<?, ?> traversal = __.out().count().asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
-        int found = 0;
-        for (final String line : traversal.explain().toString().split("\n")) {
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(OUT,edge)"))
-                found++;
-        }
-        assertEquals(1, found);
+        checkTraversalExplanation(traversal.explain(), List.of(new ExplainExpectation(AdjacentToIncidentStrategy.class, "[VertexStepPlaceholder(OUT,edge)")));
         ///
         traversal = __.out().group().by(__.in().count()).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone());
-        found = 0;
-        for (final String line : traversal.explain().toString().split("\n")) {
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(IN,edge)"))
-                found++;
-        }
-        assertEquals(1, found);
+        checkTraversalExplanation(traversal.explain(), List.of(new ExplainExpectation(AdjacentToIncidentStrategy.class, "[VertexStepPlaceholder(IN,edge)")));
         ///
         traversal = __.outE().inV().group().by(__.inE().outV().groupCount().by(__.both().count().is(P.gt(2)))).asAdmin();
         traversal.setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().removeStrategies(ProductiveByStrategy.class));
-        // System.out.println(traversal.explain());
-        found = 0;
-        for (final String line : traversal.explain().toString().split("]\n")) { // need to split cause of word wrap
-            //System.out.println(line + "\n\n");
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
-                found++;
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(OUT,vertex)"))
-                found++;
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(BOTH,edge)"))
-                found++;
-            if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
-                found++;
+        checkTraversalExplanation(traversal.explain(), List.of(new ExplainExpectation(IncidentToAdjacentStrategy.class, "[VertexStepPlaceholder(IN,vertex)"),
+                new ExplainExpectation(IncidentToAdjacentStrategy.class, "[VertexStepPlaceholder(OUT,vertex)"),
+                new ExplainExpectation(AdjacentToIncidentStrategy.class, "[VertexStepPlaceholder(BOTH,edge)"),
+                new ExplainExpectation(CountStrategy.class, "RangeGlobalStep(0,3)")));
+    }
+
+    private void checkTraversalExplanation(final TraversalExplanation explanation, final List<ExplainExpectation> expectations) {
+        // explanation string triplet consists of strategy name + strategy category + steps
+        expectations.forEach(expectation -> assertTrue(expectation.toString(), explanation.getIntermediates()
+                .anyMatch(t -> t.getValue0().contains(expectation.strategyClass.getSimpleName()) &&
+                        t.getValue2().contains(expectation.stepSubstring))));
+    }
+
+    private static class ExplainExpectation {
+        final Class<? extends TraversalStrategy<?>> strategyClass;
+        final String stepSubstring;
+
+        ExplainExpectation(final Class<? extends TraversalStrategy<?>> strategyClass, final String stepSubstring) {
+            this.strategyClass = strategyClass;
+            this.stepSubstring = stepSubstring;
         }
-        assertEquals(4, found);
-        //
-        //System.out.println(traversal.explain().prettyPrint(160));
-        found = 0;
-        for (final String line : traversal.explain().prettyPrint(170).split("]\n")) { // need to split cause of word wrap
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(IN,vertex)"))
-                found++;
-            if (line.contains("IncidentToAdjacentStrategy") && line.contains("[VertexStepPlaceholder(OUT,vertex)"))
-                found++;
-            if (line.contains("AdjacentToIncidentStrategy") && line.contains("[VertexStepPlaceholder(BOTH,edge)"))
-                found++;
-            if (line.contains("CountStrategy") && line.contains("RangeGlobalStep(0,3)"))
-                found++;
+
+        public String toString() {
+            return String.format("Expecting strategy %s and steps substring %s", strategyClass.getSimpleName(), stepSubstring);
         }
-        assertEquals(4, found);
     }
 }
