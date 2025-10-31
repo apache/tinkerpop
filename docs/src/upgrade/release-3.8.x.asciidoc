@@ -30,6 +30,58 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Overview of Changes
+
+TinkerPop 3.8.0 introduces significant changes to improve consistency and usability across the Gremlin language. The
+changes primarily focus on standardizing scoping (local vs global) behavior, simplifying grammar syntax, and enhancing
+type safety. You should review the following table that shows the impact level of each change and use that as a guide to
+understand how breaking changes may affect your traversals. Also take note of the new steps added to get a sense of how
+your traversals might be simplified or enhanced.
+
+[cols="1,2,3", options="header"]
+|=========================================================
+|Impact Level |Type of Change |Change Description
+|Breaking |Step Replacement |<<removal-of-aggregate-with-scope-and-store,Removal of `aggregate()` with `Scope` and `store()`>>
+|Breaking |Step Removal |<<removal-of-has-key-traversal,Removal of has(key, traversal)>>
+|Breaking |Step Replacement |<<none-and-discard,none() and discard()>>
+|Breaking |Step Restriction |<<prevented-using-cap-inject-inside-repeat,Prevented using cap(), inject() inside repeat()>>
+|Breaking |Strategy Change |<<stricter-repeatunrollstrategy,Stricter RepeatUnrollStrategy>>
+|Breaking |New Type Default |<<new-default-datetime-type,New Default DateTime Type>>
+|Breaking |New Type Default |<<float-defaults-to-double,Float Defaults to Double>>
+|Breaking |Step Behavior Change |<<repeat-step-global-children-semantics-change,repeat() Step Global Children Semantics Change>>
+|Breaking |Step Behavior Change |<<modified-limit-skip-range-semantics-in-repeat,Modified limit() skip() range() Semantics in repeat()>>
+|Breaking |Step Behavior Change |<<split-on-empty-string,split() on Empty String>>
+|Breaking |Step Behavior Change |<<asstring-no-longer-allow-nulls,asString() No Longer Allow Nulls>>
+|Breaking |Step Behavior Change |<<split-bulked-traversers-for-local,Split bulked traversers for `local()`>>
+|Breaking |Step Behavior Change |<<add-barrier-to-most-sideeffect-steps,Add barrier to most SideEffect steps>>
+|Breaking |Step Behavior Change |<<choose-semantics,choose() Semantics>>
+|Breaking |Step Behavior Change |<<consistent-output-for-range-limit-tail,Consistent Output for range(), limit(), tail()>>
+|Breaking |Step Behavior Change |<<group-value-traversal-semantics,group() Value Traversal Semantics>>
+|Breaking |Step Behavior Change |<<remove-undocumented-with-modulation,Remove Undocumented `with()` modulation>>
+|Breaking |Step Behavior Change |<<by-modulation-semantics,By Modulation Semantics>>
+|Breaking |Grammar Removal |<<removed-structurevertex-from-grammar,Removed StructureVertex from Grammar>>
+|Breaking |Grammar Restriction |<<map-keys-restrictions,`Map` keys restrictions>>
+|Breaking |Grammar Restriction |<<restriction-of-step-arguments,Restriction of Step Arguments>>
+|Breaking |Runtime |<<set-minimum-java-version-to-11,Set minimum Java version to 11>>
+|Breaking |GLV Change |<<seedstrategy-construction,SeedStrategy Construction>>
+|Breaking |GLV Change |<<optionsstrategy-in-python,OptionsStrategy in Python>>
+|Breaking |GLV Change |<<properties-on-element-serialization-in-glvs,Properties on Element Serialization in GLVs>>
+|Breaking |GLV Change |<<javascript-set-deserialization,Javascript Set Deserialization>>
+|Breaking |GLV Change |<<net-byte-serialization-change,.NET Byte Serialization Change>>
+|Breaking |API Removal |<<removal-of-p-getoriginalvalue,Removal of P.getOriginalValue()>>
+|Breaking |Type Semantics |<<simplified-comparability-semantics,Simplified Comparability Semantics>>
+|Breaking |Step Enhancement |<<auto-promotion-of-numbers,Auto-promotion of Numbers>>
+|Breaking |Translator Enhancement |<<improved-translators,Improved Translators>>
+|New |New Step |<<type-predicate,Type Predicate>>
+|New |New Step |<<number-conversion-step,Number Conversion Step>>
+|New |New Step |<<boolean-conversion-step,Boolean Conversion Step>>
+|New |New Tool |<<gremlin-mcp-server,Gremlin MCP Server>>
+|New |New Dataset |<<air-routes-dataset,Air Routes Dataset>>
+|New |Grammar |<<new-keyword-is-now-optional,`new` keyword is now optional>>
+|New |Grammar |<<supports-withoutstrategies,Supports withoutStrategies()>>
+|Deprecation |Deprecation |<<deprecated-unifiedchannelizer,Deprecated UnifiedChannelizer>>
+|=========================================================
+
 ==== Removed and Renamed Steps
 
 ===== Removal of `aggregate()` with `Scope` and `store()`
@@ -148,9 +200,44 @@ version, the `none()` step was used to "throw away" all traversers that passed i
 renamed to `discard()`. The `discard()` step with its verb tone arguably makes for a better name for that feature, but
 it also helped make room for `none()` to be repurposed as `none(P)` which is a complement to `any(P)` and `all(P) steps.
 
-==== Changes to `repeat()`
+==== Type System Changes
 
-===== repeat() Step Global Children Semantics Change
+===== New Default DateTime Type
+
+The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
+`java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`,
+`dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string
+representation will be in ISO 8601 format.
+
+`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for
+compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
+
+If one is using a persisted TinkerGraph that stored `Date` objects inside properties, one may notice `OffsetDateTime`
+being returned after traversal manipulation. The recommended solution is to update all existing `Date` objects into
+`OffsetDateTime`. This can be done by querying for the properties and transforming them using `asDate()`. Note that all
+dates are assumed to be in `UTC` (given epoch time).
+
+For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization
+level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and
+`OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users
+of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a
+database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
+
+For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their
+application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version
+upgrade.
+
+===== Float Defaults to Double
+
+The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
+or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
+`GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
+
+==== Modified Step Behavior
+
+===== Changes to `repeat()`
+
+====== repeat() Step Global Children Semantics Change
 
 The `repeat()` step has been updated to treat the repeat traversal as a global child in all cases. Previously, the
 repeat traversal behaved as a hybrid between local and global semantics, which could lead to unexpected results in
@@ -248,7 +335,7 @@ gremlin> g.V().local(repeat(both().simplePath().order().by("name")).times(2)).pa
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3200[TINKERPOP-3200]
 
-===== Modified limit() skip() range() Semantics in repeat()
+====== Modified limit() skip() range() Semantics in repeat()
 
 The semantics of `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global` inside
 `repeat()` have been modified to ensure consistent semantics across repeat iterations. Previously, these steps would
@@ -293,7 +380,7 @@ traversals use `limit()`, skip()`, or `range()` with default `Scope` or explicit
 is desired that the limit or range should apply across all loops then the `limit()`, `skip()`, or `range()` step should
 be moved out of the `repeat()` step.
 
-===== Prevented using cap(), inject() inside repeat()
+====== Prevented using cap(), inject() inside repeat()
 
 `cap()` inside `repeat()` is now disallowed by the `StandardVerificationStrategy`. Using `cap()` inside `repeat()` would
 have led to unexpected results since `cap()` isn't "repeat-aware". Because `cap()` is a `SupplyingBarrier` that reduces
@@ -353,7 +440,7 @@ gremlin> g.inject('x').repeat(union(constant(['a','b']).limit(1).unfold(),identi
 ==>x
 ----
 
-===== Stricter RepeatUnrollStrategy
+====== Stricter RepeatUnrollStrategy
 
 The `RepeatUnrollStrategy` has been updated to use a more conservative approach for determining which repeat traversals 
 are safe to unroll. Previously, the strategy would attempt to unroll most usages of `repeat()` used with `times()` 
@@ -400,41 +487,6 @@ g.V().repeat(both()).times(2).dedup()
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3192[TINKERPOP-3192]
-
-==== Type System Changes
-
-===== New Default DateTime Type
-
-The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
-`java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`,
-`dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string
-representation will be in ISO 8601 format.
-
-`Date` is still supported as incoming traverser results for these steps, as well as input into `dateDiff()` for
-compatibility purposes. All dates are assumed to be in `UTC` (given epoch time).
-
-If one is using a persisted TinkerGraph that stored `Date` objects inside properties, one may notice `OffsetDateTime`
-being returned after traversal manipulation. The recommended solution is to update all existing `Date` objects into
-`OffsetDateTime`. This can be done by querying for the properties and transforming them using `asDate()`. Note that all
-dates are assumed to be in `UTC` (given epoch time).
-
-For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization
-level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and
-`OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users
-of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a
-database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
-
-For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their
-application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version
-upgrade.
-
-===== Float Defaults to Double
-
-The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
-or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
-`GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
-
-==== Modified Step Behavior
 
 ===== split() on Empty String
 
