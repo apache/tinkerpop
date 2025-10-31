@@ -105,6 +105,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Introduced `NotP` class for negation of `P`.
 * Add barriers to `group(String)`, `groupCount(String)`, `tree(String)` and `subgraph(String)` steps.
 * Increase minimum Java version from 1.8 to 11 for building and running.
+* Upgrade to Go 1.24 and Node 22
 * Moved all lambda oriented Gremlin tests to `LambdaStepTest` in the Java test suite.
 * Removed the `@RemoteOnly` testing tag in Gherkin as lambda tests have all been moved to the Java test suite.
 * Updated gremlin-javascript to use GraphBinary as default instead of GraphSONv3
