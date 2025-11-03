@@ -127,6 +127,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Updated `asString()` step to throw `IllegalArgumentException` with `null` inputs for casting step consistency.
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
+* Fixed referenced log file name for `gremlin-archetype-server`.
 * Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
 * Moved `Traverser` loop logic into new interface `NL_SL_Traverser` and changed loop-supporting `Traverser`s to extend the common interface.
