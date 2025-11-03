@@ -73,20 +73,20 @@ describe('Connection', function () {
         assert.equal(globalWebsocketCalls, 0, 'global WebSocket should be used when no ws specific options are provided');
       });
     });
-    // Given we need to override the user agent and compression setting all the time, we would never fall back into the global WebSocket
-    // it('should use the global WebSocket when options are not provided', function () {
-    //   let globalWebsocketCalls = 0;
-    //   globalThis.WebSocket = function () {
-    //     globalWebsocketCalls++;
-    //   };
-    //   const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
-    //   return connection
-    //     .open()
-    //     .catch(() => {})
-    //     .finally(function () {
-    //       assert.equal(globalWebsocketCalls, 1, 'global WebSocket should be used when no ws specific options are provided');
-    //     });
-    // });
+    it('should use the global WebSocket when options are not provided', function () {
+      let globalWebsocketCalls = 0;
+      globalThis.WebSocket = function () {
+        globalWebsocketCalls++;
+      };
+      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`,
+          {enableCompression: false, enableUserAgentOnConnect: false}); // Global WebSocket is not compatible with customized compression and user agent headers
+      return connection
+        .open()
+        .catch(() => {})
+        .finally(function () {
+          assert.equal(globalWebsocketCalls, 1, 'global WebSocket should be used when no ws specific options are provided');
+        });
+    });
     it('should handle unexpected response errors with body', function () {
       globalThis.WebSocket = http.WebSocket;
       const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
