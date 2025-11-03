@@ -33,21 +33,29 @@ complete list of all the modifications that are part of this release.
 ==== Overview of Changes
 
 TinkerPop 3.8.0 introduces significant changes to improve consistency and usability across the Gremlin language. The
-changes primarily focus on standardizing scoping (local vs global) behavior, simplifying grammar syntax, and enhancing
-type safety. You should review the following table that shows the impact level of each change and use that as a guide to
-understand how breaking changes may affect your traversals. Also take note of the new steps added to get a sense of how
-your traversals might be simplified or enhanced.
+changes primarily focus on standardizing scoping behavior (local vs global), simplifying grammar syntax, and making
+related steps behave more consistently and interoperably with one another.
+
+New steps and predicates have been added for type conversion and type testing, providing better control over graphs with
+mixed-type properties. Additionally, this release adds support for Model Context Protocol (MCP) with the initial version
+of gremlin-mcp server.
+
+You should review the following table that shows the impact level of each change and use that as a guide to understand
+how breaking changes may affect your traversals.
 
 [cols="1,2,3", options="header"]
 |=========================================================
 |Impact Level |Type of Change |Change Description
-|Breaking |Step Replacement |<<removal-of-aggregate-with-scope-and-store,Removal of `aggregate()` with `Scope` and `store()`>>
+|Breaking |Runtime |<<set-minimum-java-version-to-11,Set minimum Java version to 11>>
+|Breaking |API Removal |<<removal-of-p-getoriginalvalue,Removal of P.getOriginalValue()>>
 |Breaking |Step Removal |<<removal-of-has-key-traversal,Removal of has(key, traversal)>>
-|Breaking |Step Replacement |<<none-and-discard,none() and discard()>>
 |Breaking |Step Restriction |<<prevented-using-cap-inject-inside-repeat,Prevented using cap(), inject() inside repeat()>>
-|Breaking |Strategy Change |<<stricter-repeatunrollstrategy,Stricter RepeatUnrollStrategy>>
+|Breaking |Strategy Restriction |<<stricter-repeatunrollstrategy,Stricter RepeatUnrollStrategy>>
+|Breaking |Type Semantics Change |<<simplified-comparability-semantics,Simplified Comparability Semantics>>
 |Breaking |New Type Default |<<new-default-datetime-type,New Default DateTime Type>>
 |Breaking |New Type Default |<<float-defaults-to-double,Float Defaults to Double>>
+|Breaking |Step Replacement |<<removal-of-aggregate-with-scope-and-store,Removal of `aggregate()` with `Scope` and `store()`>>
+|Breaking |Step Replacement |<<none-and-discard,none() and discard()>>
 |Breaking |Step Behavior Change |<<repeat-step-global-children-semantics-change,repeat() Step Global Children Semantics Change>>
 |Breaking |Step Behavior Change |<<modified-limit-skip-range-semantics-in-repeat,Modified limit() skip() range() Semantics in repeat()>>
 |Breaking |Step Behavior Change |<<split-on-empty-string,split() on Empty String>>
@@ -62,14 +70,11 @@ your traversals might be simplified or enhanced.
 |Breaking |Grammar Removal |<<removed-structurevertex-from-grammar,Removed StructureVertex from Grammar>>
 |Breaking |Grammar Restriction |<<map-keys-restrictions,`Map` keys restrictions>>
 |Breaking |Grammar Restriction |<<restriction-of-step-arguments,Restriction of Step Arguments>>
-|Breaking |Runtime |<<set-minimum-java-version-to-11,Set minimum Java version to 11>>
 |Breaking |GLV Change |<<seedstrategy-construction,SeedStrategy Construction>>
 |Breaking |GLV Change |<<optionsstrategy-in-python,OptionsStrategy in Python>>
 |Breaking |GLV Change |<<properties-on-element-serialization-in-glvs,Properties on Element Serialization in GLVs>>
 |Breaking |GLV Change |<<javascript-set-deserialization,Javascript Set Deserialization>>
 |Breaking |GLV Change |<<net-byte-serialization-change,.NET Byte Serialization Change>>
-|Breaking |API Removal |<<removal-of-p-getoriginalvalue,Removal of P.getOriginalValue()>>
-|Breaking |Type Semantics |<<simplified-comparability-semantics,Simplified Comparability Semantics>>
 |Breaking |Step Enhancement |<<auto-promotion-of-numbers,Auto-promotion of Numbers>>
 |Breaking |Translator Enhancement |<<improved-translators,Improved Translators>>
 |New |New Step |<<type-predicate,Type Predicate>>
