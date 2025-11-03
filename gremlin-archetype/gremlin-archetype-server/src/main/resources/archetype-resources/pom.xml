@@ -73,7 +73,7 @@ limitations under the License.
                 <version>2.22.0</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <logback.configurationFile>file:conf/logback-test.properties</logback.configurationFile>
+                        <logback.configurationFile>file:conf/logback-test.xml</logback.configurationFile>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
