@@ -321,7 +321,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.25'
       - name: Get Cached Server Base Image
         uses: actions/cache@v4
         id: gremlin-server-test-docker-image
