@@ -1009,7 +1009,7 @@ world.gremlins = {
     'g_injectXListXa_bXcX_concat_XdX': [(lambda g:g.inject(['a', 'b'], 'c').concat('d'))], 
     'g_injectXnullX_concat_XinjectX': [(lambda g:g.inject(None).concat())], 
     'g_injectXnull_aX_concat_Xnull_bX': [(lambda g:g.inject(None, 'a').concat(None, 'b'))], 
-    'g_injectXhello_hiX_concat_XV_valuesXnameXX': [(lambda g:g.inject('hello', 'hi').concat(__.V().order().by(T.id_).values('name')))], 
+    'g_injectXhello_hiX_concatXV_values_order_byXnameX_valuesXnameXX': [(lambda g:g.inject('hello', 'hi').concat(__.V().order().by('name').values('name')))], 
     'g_V_hasLabel_value_concat_X_X_concat_XpersonX': [(lambda g:g.V().has_label('person').values('name').concat(' ').concat('person'))], 
     'g_hasLabelXpersonX_valuesXnameX_asXaX_constantXMrX_concatXselectXaX': [(lambda g:g.V().has_label('person').values('name').as_('a').constant('Mr.').concat(__.select('a')))], 
     'g_hasLabelXsoftwareX_asXaX_valuesXnameX_concatXunsesX_concatXselectXaXvaluesXlangX': [(lambda g:g.V().has_label('software').as_('a').values('name').concat(' uses ').concat(__.select('a').values('lang')))], 

@@ -1037,7 +1037,7 @@ const gremlins = {
     g_injectXListXa_bXcX_concat_XdX: [function({g}) { return g.inject(["a", "b"], "c").concat("d") }], 
     g_injectXnullX_concat_XinjectX: [function({g}) { return g.inject(null).concat() }], 
     g_injectXnull_aX_concat_Xnull_bX: [function({g}) { return g.inject(null, "a").concat(null, "b") }], 
-    g_injectXhello_hiX_concat_XV_valuesXnameXX: [function({g}) { return g.inject("hello", "hi").concat(__.V().order().by(T.id).values("name")) }], 
+    g_injectXhello_hiX_concatXV_values_order_byXnameX_valuesXnameXX: [function({g}) { return g.inject("hello", "hi").concat(__.V().order().by("name").values("name")) }], 
     g_V_hasLabel_value_concat_X_X_concat_XpersonX: [function({g}) { return g.V().hasLabel("person").values("name").concat(" ").concat("person") }], 
     g_hasLabelXpersonX_valuesXnameX_asXaX_constantXMrX_concatXselectXaX: [function({g}) { return g.V().hasLabel("person").values("name").as("a").constant("Mr.").concat(__.select("a")) }], 
     g_hasLabelXsoftwareX_asXaX_valuesXnameX_concatXunsesX_concatXselectXaXvaluesXlangX: [function({g}) { return g.V().hasLabel("software").as("a").values("name").concat(" uses ").concat(__.select("a").values("lang")) }], 

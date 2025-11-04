@@ -118,17 +118,17 @@ Feature: Step - concat()
       | ab |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXhello_hiX_concat_XV_valuesXnameXX
+  Scenario: g_injectXhello_hiX_concatXV_values_order_byXnameX_valuesXnameXX
     Given the modern graph
     And the traversal of
       """
-      g.inject("hello", "hi").concat(__.V().order().by(id).values("name"))
+      g.inject("hello", "hi").concat(__.V().order().by("name").values("name"))
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | hellomarko |
-      | himarko |
+      | hellojosh |
+      | hijosh |
 
   Scenario: g_V_hasLabel_value_concat_X_X_concat_XpersonX
     Given the modern graph
