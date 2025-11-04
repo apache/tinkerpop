@@ -198,7 +198,7 @@ jobs:
         run: |
           mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl gremlin-driver -DskipIntegrationTests=false
-  -javascript-node20:
+  javascript-node20:
     name: javascript-all-node20
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
