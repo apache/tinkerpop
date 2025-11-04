@@ -84,6 +84,7 @@ how breaking changes may affect your traversals.
 |New |New Dataset |<<air-routes-dataset,Air Routes Dataset>>
 |New |Grammar |<<new-keyword-is-now-optional,`new` keyword is now optional>>
 |New |Grammar |<<supports-withoutstrategies,Supports withoutStrategies()>>
+|New |Runtime |<<runtime-upgrades,Runtime Upgrades>>
 |Deprecation |Deprecation |<<deprecated-unifiedchannelizer,Deprecated UnifiedChannelizer>>
 |=========================================================
 
@@ -984,6 +985,10 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
 
 TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
 
+===== Runtime Upgrades
+
+Gremlin Go has been upgraded to Go version 1.25.
+
 ===== SeedStrategy Construction
 
 The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
@@ -1346,10 +1351,6 @@ reliance on HTTP will help do what the `UnifiedChannelizer` tried to do with its
 to continue to refine this `Channelizer` implementation and it can be deprecated.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
-
-==== Runtime Upgrades
-
-Gremlin Go has been upgraded to Go version 1.25.
 
 === Upgrading for Providers
 
