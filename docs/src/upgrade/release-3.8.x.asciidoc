@@ -1347,6 +1347,10 @@ to continue to refine this `Channelizer` implementation and it can be deprecated
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
 
+==== Runtime Upgrades
+
+Gremlin Go has been upgraded to Go version 1.25.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

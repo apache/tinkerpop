@@ -17,7 +17,7 @@
 
 module github.com/apache/tinkerpop/gremlin-go/v3
 
-go 1.24
+go 1.25
 
 require (
 	github.com/cucumber/godog v0.15.0
