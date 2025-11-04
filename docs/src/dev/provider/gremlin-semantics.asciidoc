@@ -1554,6 +1554,47 @@ None
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/FormatStep.java[source],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#format-step[reference]
 
+[[group-step]]
+=== group()
+
+*Description:* Groups objects in the traversal stream by a key and applies a reducing operation to the grouped values.
+
+*Syntax:* `group()` | `group(String sideEffectKey)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `sideEffectKey` - The name of the side-effect key that will hold the aggregated grouping. When provided, the step
+operates as a side-effect barrier step and passes the traverser to the next step unchanged. If `sideEffectKey` is
+omitted, the step operates as a reducing barrier step, and a single traverser containing the computed map is passed to
+the next step.
+
+*Modulation:*
+
+* `by()` - The first `by()` determines the key for grouping. The second `by()` determines the value to be reduced for
+each group. If no key `by()` is provided, the object itself is used as the key. If no value `by()` is provided, the
+objects are collected into a list.
+
+*Considerations:*
+
+The `group()` step can be used as both a reducing barrier step and a side-effect step. As a reducing barrier step (no
+side-effect key), it returns a `Map<Object, Object>` where keys are the grouping criteria and values are the reduced
+results. As a side-effect step, it stores the grouping in a side-effect and passes the traverser to the next step
+unchanged. In both forms, this step is a barrier and must fully iterate the traversal before returning any results.
+
+*Exceptions*
+
+* If more than 2 `by()` modulators are provided, an `IllegalStateException` will be thrown.
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GroupStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupSideEffectStep.java[source (sideEffect)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#group-step[reference]
+
 [[groupcount-step]]
 === groupCount()
 
@@ -1565,7 +1606,7 @@ object is the key and the value is the count.
 [width="100%",options="header"]
 |=========================================================
 |Start Step |Mid Step |Modulated |Domain |Range
-|N |Y |`by()` |`any` |`Map<Object, Long>`
+|N |Y |`by()` |`any` |`any`
 |=========================================================
 
 *Arguments:*
@@ -1580,14 +1621,14 @@ key.
 
 *Considerations:*
 
-The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a `Map` with
-the counted objects as keys and their counts as values. As a side-effect step, it stores the counts in a side-effect and
-passes the traverser to the next step unchanged. Note that both the map and side-effect forms of this step are barriers
-must fully iterate the traversal before returning any results.
+The `groupCount()` step can be used as both a map step and a side-effect step. As a map step, it returns a
+`Map<Object, Long>` with the counted objects as keys and their counts as values. As a side-effect step, it stores the
+counts in a side-effect and passes the traverser to the next step unchanged. Note that both the map and side-effect
+forms of this step are barriers that must fully iterate the traversal before returning any results.
 
 *Exceptions*
 
-None
+* If multiple `by()` modulators are provided, an `IllegalStateException` will be thrown.
 
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/GroupCountStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/GroupCountSideEffectStep.java[source (sideEffect)],
@@ -2232,6 +2273,40 @@ See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/j
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/SplitLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#split-step[reference]
 
+[[subgraph-step]]
+=== subgraph()
+
+*Description:* Extracts an edge-induced subgraph from the current graph based on the edges encountered during traversal.
+
+*Syntax:* `subgraph(String sideEffectKey)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |N |`Edge` |`Edge`
+|=========================================================
+
+*Arguments:*
+
+* `sideEffectKey` - The name of the side-effect key that will hold the extracted subgraph.
+
+*Modulation:*
+
+None
+
+*Considerations:*
+
+The `subgraph()` step is a side-effect step that extracts edges encountered during traversal and their incident vertices
+into a new subgraph. The step passes traversers through unchanged while building the subgraph as a side-effect. Subgraph
+step is a barrier and must fully iterate the traversal before returning any results.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/SubgraphStep.java[source],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#subgraph-step[reference]
+
 [[substring-step]]
 === substring()
 
@@ -2324,6 +2399,48 @@ Null values from the incoming traverser are not processed and remain as null whe
 See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperGlobalStep.java[source],
 link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/ToUpperLocalStep.java[source (local)],
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#toUpper-step[reference]
+
+[[tree-step]]
+=== tree()
+
+*Description:* Aggregates the paths of the traversal into a tree data structure.
+
+*Syntax:* `tree()` | `tree(String sideEffectKey)`
+
+[width="100%",options="header"]
+|=========================================================
+|Start Step |Mid Step |Modulated |Domain |Range
+|N |Y |`by()` |`any` |`any`
+|=========================================================
+
+*Arguments:*
+
+* `sideEffectKey` - The name of the side-effect key that will hold the aggregated tree. When provided, the step
+operates as a side-effect step and passes the traverser to the next step unchanged. If omitted, the step acts as a
+reducing barrier step, and a single traverser containing the aggregated tree is passed to the next step.
+
+*Modulation:*
+
+* `by()` - Determines how to transform path objects before adding them to the tree. If not specified, the objects
+themselves are used as tree nodes. If multiple `by()` modulators are provided, they will be applied to each level of the
+tree according to a round robin. For example, if 2 `by()` modulators are present, the first `by()` will apply to the
+first, third, fifth... levels of the tree, and the second `by()` will apply to the second, fourth, sixth... levels of
+the tree. An unlimited number of `by()` modulators may be provided.
+
+*Considerations:*
+
+The `tree()` step can be used as both a map step and a side-effect step. As a map step, it returns a `Tree` data
+structure representing the hierarchical paths taken during traversal. As a side-effect step, it stores the tree in a
+side-effect and passes the traverser to the next step unchanged. The tree structure reflects the branching paths of the
+traversal, with each level representing a step in the path.
+
+*Exceptions*
+
+None
+
+See: link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/map/TreeStep.java[source],
+link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-core/src/main/java/org/apache/tinkerpop/gremlin/process/traversal/step/sideEffect/TreeSideEffectStep.java[source (sideEffect)],
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tree-step[reference]
 
 [[trim-step]]
 === trim()
