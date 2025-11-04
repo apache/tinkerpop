@@ -105,3 +105,25 @@ Feature: Step - asDate()
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "Can't parse"
+    
+  #  asDate should be round-trippable with asNumber
+  Scenario: g_V_valuesXbirthdayX_asDate_asNumber_asDate
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").property("birthday", "2020-08-02").
+        addV("person").property("name", "john").property("birthday", "1988-12-10").
+        addV("person").property("name","charlie").property("birthday", "2002-02-01").
+        addV("person").property("name", "suzy").property("birthday", "1965-10-31")
+      """
+    And the traversal of
+      """
+      g.V().values("birthday").asDate().asNumber().asDate()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | dt[2020-08-02T00:00:00Z] |
+      | dt[1988-12-10T00:00:00Z] |
+      | dt[2002-02-01T00:00:00Z] |
+      | dt[1965-10-31T00:00:00Z] |

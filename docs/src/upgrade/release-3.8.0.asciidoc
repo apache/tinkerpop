@@ -49,6 +49,7 @@ upgrade plan.
 |Breaking |New Type Default |<<float-defaults-to-double,Float Defaults to Double>>
 |Breaking |Step Replacement |<<removal-of-aggregate-with-scope-and-store,Removal of `aggregate()` with `Scope` and `store()`>>
 |Breaking |Step Replacement |<<none-and-discard,none() and discard()>>
+|Breaking |Step Behavior Change |<<datediff-step-returns-milliseconds,dateDiff() Step Returns Milliseconds>>
 |Breaking |Step Behavior Change |<<repeat-step-global-children-semantics-change,repeat() Step Global Children Semantics Change>>
 |Breaking |Step Behavior Change |<<modified-limit-skip-range-semantics-in-repeat,Modified limit() skip() range() Semantics in repeat()>>
 |Breaking |Step Behavior Change |<<split-on-empty-string,split() on Empty String>>
@@ -305,6 +306,28 @@ or 'd') as Double by default. Users who need `BigDecimal` precision can still us
 `GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals as is the normal default for Groovy.
 
 ==== Modified Step Behavior
+
+===== dateDiff() Step Returns Milliseconds
+
+The `dateDiff()` step has been changed to return milliseconds instead of seconds for consistency with the `asDate()` 
+step which accepts numbers in milliseconds since epoch (January 1, 1970, 00:00:00 GMT) and the new `asNumber()` step 
+which converts dates to milliseconds since epoch.
+
+[source,text]
+----
+// In 3.7.x seconds are returned
+gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate())
+==>-86400
+
+// In 3.8.0 milliseconds are returned
+gremlin> g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate())
+==>-86400000
+// math() and asNumber() steps can be used to obtain seconds instead of milliseconds
+gremlin> g.withSideEffect("x",1000).inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()).math("_/x").asNumber(GType.LONG)
+==>-86400
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3212[TINKERPOP-3212]
 
 ===== Changes to `repeat()`
 
@@ -1318,7 +1341,7 @@ The new `asNumber()` step provides type casting functionality to Gremlin. It ser
 strings and casts numbers into desired types. For the convenience of remote traversals in GLVs, these available types
 are denoted by a set of number tokens (`GType`).
 
-This new step will allow users to normalize their data by converting string numbers and mixed numeric types to a
+This new step will allow users to normalize their data by converting string numbers, dates, and mixed numeric types to a
 consistent format, making it easier to perform downstream mathematical operations. As an example:
 
 [source,text]
@@ -1365,6 +1388,14 @@ gremlin> g.inject("1,000").asNumber(GType.INT)
 ==> NumberFormatException
 gremlin> g.inject("128").asNumber(GType.BYTE)
 ==> ArithmeticException
+----
+
+Dates will be converted to the number of milliseconds since epoch (January 1, 1970, 00:00:00 GMT):
+
+[source,text]
+----
+gremlin> g.inject("2023-08-02T00:00:00Z").asDate().asNumber()
+==>1690934400000
 ----
 
 All other input types will result in `IllegalArgumentException`:

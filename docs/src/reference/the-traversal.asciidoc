@@ -853,6 +853,8 @@ String inputs are parsed into numeric values. By default, the value will be pars
 whole number, or as a double if it contains a decimal point. A `NumberFormatException` will be thrown if the string
 cannot be parsed into a valid number format.
 
+Date inputs are converted to milliseconds since epoch (January 1, 1970, 00:00:00 GMT).
+
 All other input types will result in `IllegalArgumentException`.
 
 [gremlin-groovy,modern]
@@ -860,11 +862,13 @@ All other input types will result in `IllegalArgumentException`.
 g.inject(1234).asNumber() <1>
 g.inject(1.76d).asNumber() <2>
 g.inject(1.76d).asNumber(GType.INT) <3>
+g.inject("2023-08-02T00:00:00Z").asDate().asNumber() <4>
 ----
 
 <1> An int will be passed through.
 <2> A double will be passed through.
 <3> A double is converted into an int.
+<4> A date is converted into milliseconds since epoch.
 
 [NOTE, caption=Java]
 ====
@@ -1516,7 +1520,7 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 [[dateDiff-step]]
 === DateDiff Step
 
-The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time. 
+The `dateDiff()`-step (*map*) returns the difference between two Dates in epoch time in milliseconds. 
 If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgumentException` will be thrown.
 
 [gremlin-groovy,modern]
@@ -1524,7 +1528,7 @@ If the incoming traverser is not a Date or OffsetDateTime, then an `IllegalArgum
 g.inject("2023-08-02T00:00:00Z").asDate().dateDiff(constant("2023-08-03T00:00:00Z").asDate()) <1>
 ----
 
-<1> Find difference between two dates
+<1> Find difference between two dates in milliseconds
 
 *Additional References*
 
