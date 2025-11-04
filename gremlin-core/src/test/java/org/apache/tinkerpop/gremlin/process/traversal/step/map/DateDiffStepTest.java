@@ -71,14 +71,14 @@ public class DateDiffStepTest extends StepTest {
     public void shouldHandleNullTraversalParam() {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
 
-        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff(__.constant(null)).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test
     public void shouldHandleNullDate() {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
 
-        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff((OffsetDateTime) null).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff((OffsetDateTime) null).next());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -129,14 +129,14 @@ public class DateDiffStepTest extends StepTest {
     public void shouldHandleNullTraversalParamWithDateCompatibility() {
         final Date now = new Date();
 
-        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.constant(null)).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test
     public void shouldHandleNullDateWithDateCompatibility() {
         final Date now = new Date();
 
-        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff((Date) null).next());
     }
 
     @Test(expected = IllegalArgumentException.class)
