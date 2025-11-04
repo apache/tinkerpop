@@ -146,8 +146,8 @@ public class DateDiffStepTest extends StepTest {
 
     @Test
     public void shouldRoundTripWithAsDate() {
-        OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
-        OffsetDateTime epoch = Instant.EPOCH.atOffset(UTC);
+        final OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
+        final OffsetDateTime epoch = Instant.EPOCH.atOffset(UTC);
         assertEquals(date, __.__(date.toInstant().toEpochMilli()).asDate().dateDiff(epoch).asDate().next());
     }
 }

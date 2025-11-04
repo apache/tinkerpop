@@ -66,8 +66,8 @@ public class AsNumberStepTest extends StepTest {
         assertEquals(1L, __.__("1").asNumber(GType.LONG).next());
         assertEquals(3.14, __.__("3.14").asNumber(GType.DOUBLE).next()); //float to double
         // round trip date to number
-        OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
-        long dateEpochMillis = date.toInstant().toEpochMilli();
+        final OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
+        final long dateEpochMillis = date.toInstant().toEpochMilli();
         assertEquals(date, __.__(date).asNumber().asDate().next());
         assertEquals(dateEpochMillis, __.__(dateEpochMillis).asDate().asNumber().next());
         assertEquals(dateEpochMillis, __.__(new Date(dateEpochMillis)).asNumber().next());
