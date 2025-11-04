@@ -72,7 +72,7 @@ def test_should_not_include_user_agent_in_handshake_request_if_disabled(socket_s
 
     # If the gremlin user agent is disabled, the underlying web socket library reverts to sending its default user agent
     # during connection requests.
-    assert re.search("^Python/(\d\.)*\d aiohttp/(\d\.)*\d", user_agent_response)
+    assert re.search("^Python/\d+(\.\d+)* aiohttp/\d+(\.\d+)*", user_agent_response)
 
 
 # Tests that client does not request permessage deflate compression by default
