@@ -77,3 +77,18 @@ Feature: Step - dateDiff()
       | d[1596326400000].l |
       | d[1012521600000].l |
       | d[-131587200000].l |
+
+  Scenario: g_V_hasXname_aliceX_valuesXbirthdayX_asDate_dateDiffXconstantXnullXX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").property("birthday", 1596326400000)
+      """
+    And the traversal of
+      """
+      g.V().has("name", "alice").values("birthday").asDate().dateDiff(__.constant(null))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1596326400000].l |
