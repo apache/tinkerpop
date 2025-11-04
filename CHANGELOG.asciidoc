@@ -194,6 +194,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Renamed `MergeElementStep` to `MergeElementStep` as it is a base class to `mergeV()` and `mergeE()`.
 * Renamed `MergeStep` of `merge()` to `MergeElementStep` for consistency.
 * Fixed referenced log file name for `gremlin-archetype-server`.
+* Changed some feature tests using `order()` to use specific `by()` modulators for better result predictability.
 * Upgraded Go to version 1.25.
 * Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
