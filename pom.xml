@@ -224,8 +224,9 @@ limitations under the License.
             --add-opens=java.base/java.net=ALL-UNNAMED
         </jdk17JvmArgs>
 
-        <runtime.npm.version>10.9.2</runtime.npm.version>
-        <runtime.node.version>v22.15.0</runtime.node.version>
+        <runtime.npm.version>10.8.2</runtime.npm.version>
+        <runtime.node.version>v20.19.4</runtime.node.version>
+        <node.test.version>20</node.test.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>

@@ -1178,10 +1178,6 @@ This change affects all three local collection manipulation steps when operating
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2491[TINKERPOP-2491]
 
-==== Runtime Upgrades
-
-Gremlin Go has been Go 1.24, Gremlin Javascript has been upgraded to Node 22.
-
 ==== group() Value Traversal Semantics
 
 The `group()` step takes two `by()` modulators. The first defines the key for the grouping, and the second acts upon the
