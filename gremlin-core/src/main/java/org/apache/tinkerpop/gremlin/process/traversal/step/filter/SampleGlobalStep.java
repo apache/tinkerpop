@@ -18,6 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.BinaryOperator;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -31,12 +42,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -91,7 +96,9 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     @Override
     public void processAllStarts() {
         while (this.starts.hasNext()) {
-            this.createProjectedTraverser(this.starts.next()).ifPresent(traverserSet::add);
+            Traverser.Admin<S> next = this.starts.next();
+            System.out.println("Adding start: " + next + " to traverserSet: " + this.traverserSet);
+            this.createProjectedTraverser(next).ifPresent(traverserSet::add);
         }
     }
 
@@ -106,6 +113,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             totalWeight = totalWeight + (((ProjectedTraverser<S, Number>) s).getProjections().get(0).doubleValue() * s.bulk());
         }
         ///////
+        System.out.println("Sampling from traverserSet: " + traverserSet);
         final TraverserSet<S> sampledSet = (TraverserSet<S>) this.traversal.getTraverserSetSupplier().get();
         int runningAmountToSample = 0;
         while (runningAmountToSample < this.amountToSample) {
@@ -119,6 +127,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                         if (random.nextDouble() <= ((currentWeight / runningTotalWeight))) {
                             final Traverser.Admin<S> split = s.split();
                             split.setBulk(1L);
+                            System.out.println("Adding sample: " + split);
                             sampledSet.add(split);
                             runningAmountToSample++;
                             reSample = true;
@@ -132,7 +141,35 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
             }
         }
         traverserSet.clear();
+        System.out.println("SampledSet: " + sampledSet);
         traverserSet.addAll(sampledSet);
+        System.out.println("TraverserSet: " + traverserSet);
+    }
+
+    @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), new SampleBiOperator<>(), false, true);
+    }
+
+    public static final class SampleBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
+        @Override
+        public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
+            System.out.println("SampleBiOperator.apply: " + setA + " -> " + setB);
+
+            Map<Integer, TraverserSet> loopMap = new TreeMap<>(Comparator.reverseOrder());
+
+            for (Traverser.Admin<S> traverser : setA) {
+                final int loops = traverser.getLoopNames().isEmpty() ? 0 : traverser.loops();
+                loopMap.computeIfAbsent(loops, integer -> new TraverserSet<>()).add(traverser);
+            }
+            for (Traverser.Admin<S> traverser : setB) {
+                final int loops = traverser.getLoopNames().isEmpty() ? 0 : traverser.loops();
+                loopMap.computeIfAbsent(loops, integer -> new TraverserSet<>()).add(traverser);
+            }
+
+            // only return traversers that have passed through the most loops
+            return loopMap.entrySet().iterator().next().getValue();
+        }
     }
 
 
