@@ -812,7 +812,7 @@ public final class StepDefinition {
     public List<TreeNode> parseTree(final String asciiTree) {
         if (asciiTree.isEmpty()) return Collections.emptyList();
 
-        final List<String> lines = Arrays.asList(asciiTree.split(System.lineSeparator()));
+        final List<String> lines = Arrays.asList(asciiTree.split("\\R"));
 
         final List<TreeNode> roots = new ArrayList<>();
         final Map<Integer, TreeNode> levelMap = new HashMap<>();
