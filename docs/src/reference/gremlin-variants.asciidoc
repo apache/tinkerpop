@@ -1407,7 +1407,7 @@ g.inject(java.awt.Color.red, "hi", 123).is(P.typeOf(java.awt.Color))
 == Gremlin-JavaScript
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
-JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 6 or
+JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 20 or
 above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
 between Gremlin-Java and Gremlin-JavaScript.
 
