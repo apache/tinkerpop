@@ -144,7 +144,7 @@ public class Tree<T> extends HashMap<T, Tree<T>> implements Serializable {
         final StringBuilder builder = new StringBuilder();
         prettyPrint(builder, "");
         final String pretty = builder.toString();
-        return pretty.isEmpty() ? pretty : pretty.substring(0, pretty.length() - 1);
+        return pretty.isEmpty() ? pretty : pretty.substring(0, pretty.length() - System.lineSeparator().length());
     }
 
     private void prettyPrint(final StringBuilder builder, final String prefix) {
