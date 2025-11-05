@@ -94,6 +94,8 @@ language semantics.
 
 Carefully review the official Upgrade Documentation for 3.8.0 here: https://raw.githubusercontent.com/apache/tinkerpop/refs/tags/3.8.0/docs/src/upgrade/release-3.8.0.asciidoc
 
+Ignore upgrade content related to Providers and focus on those related to Users.
+
 Your tasks are:
 1. Thoroughly analyze the entire codebase for usages of APIs, methods, or Gremlin syntax patterns that are impacted by the breaking changes outlined in the 3.8.0 upgrade documentation.
 2. Label each occurrence of an incompatibility or area of risk found with the section header from Upgrade Documentation to which it applies. We will refer to these groupings of occurrences as findings.
@@ -102,10 +104,11 @@ Your tasks are:
   b. For each finding, include a link that references a specific section of the Upgrade Documentation that helped form the basis for the problem found. The format of this link is `https://tinkerpop.apache.org/docs/3.8.0/upgrade/#<anchor>` where "<anchor>" refers to the asciidoc anchor associated with the section header in the Upgrade Documentation.
   c. For each occurrence, provide a confidence level for it as high, medium or low. In assigning this confidence level when Gremlin is involved, determine how well you understand the Gremlin semantics of the code in question while forming the recommendation.
 
-Refer to the 3.8.0 upgrade documentation for all findings and recommendations. Do not provide other advice for upgrade
-that is not specific to Apache TinkerPop or that is related to anything outside of the 3.8.0 upgrade itself. Do not
-include any information about risks or incompatibilities that were not found. A final summary of changes is not
-required.
+Refer to the 3.8.0 upgrade documentation for all findings and recommendations.
+
+* Do not provide other advice for upgrade that is not specific to Apache TinkerPop or that is related to anything outside of the 3.8.0 upgrade itself.
+* Do not include any information about risks or incompatibilities that were not found or where no action is required.
+* Do not add a final summary of changes.
 ----
 
 It is advisable that **codebases be updated to the latest version on the 3.7.x release line** before using this prompt.
@@ -118,10 +121,16 @@ is doing.
 Here are a few additional tips to consider when using this prompt:
 
 * The prompt is written in such a way as to "analyze the entire codebase" which may not be advisable depending on that
-codebase's size. Consider adjusting that text to work within a smaller context (e.g. specific files or modules that use
-Gremlin) if the "entire codebase" is not effective.
+codebase's size and the context supplied to the tool. Consider adjusting that text to work within a smaller context
+(e.g. specific files or modules that use Gremlin) if the "entire codebase" is not effective.
 * The prompt references a link to the full 3.8.0 Upgrade Documentation. Better results may be achieved by providing
 a subset of the documentation at a time to better isolate fixes.
+* It is possible that various models and tools using this prompt will generate slightly different reports.
+* The report includes line numbers denoting the position of issues that need resolution. Unfortunately, given the nature
+of AI models, these may not always be relied on perfectly for every execution of the prompt.
+
+IMPORTANT: As with any AI-powered analysis and recommendation, it is not meant to supplement, not replace, expert human
+review and should always be independently verified.
 
 ==== Removed and Renamed Steps
 
@@ -1039,15 +1048,13 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
 
 ==== Gremlin Language Variant Changes
 
-[[set-minimum-java-version-to-11]]
-===== Set minimum Java version to 11
-
-TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
-
 [[runtime-upgrades]]
 ===== Runtime Upgrades
 
 Gremlin Go has been upgraded to Go version 1.25.
+
+[[set-minimum-java-version-to-11]]
+TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
 
 [[seedstrategy-construction]]
 ===== SeedStrategy Construction
