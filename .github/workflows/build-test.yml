@@ -202,12 +202,7 @@ jobs:
     name: javascript-all-node20
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
-        # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Set up JDK 11
@@ -216,7 +211,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Get Cached Server Base Image
-        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v4
         id: gremlin-server-test-docker-image
         with:
@@ -224,12 +218,6 @@ jobs:
             ./gremlin-server/*
             ~/.m2/repository/org/apache/tinkerpop/*
           key: ${{ github.sha }}
-#      - name: Download Server Base Image
-#        if: matrix.os == 'windows-latest'
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: ${{ github.sha }}
-#          path: ./gremlin-server
       - name: Load Docker Image
         working-directory: ./gremlin-server
         run: docker load --input gremlin-server.tar
@@ -242,12 +230,7 @@ jobs:
     name: javascript-glv-node22
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
-        # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Set up JDK 11
@@ -256,7 +239,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Get Cached Server Base Image
-        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v4
         id: gremlin-server-test-docker-image
         with:
@@ -264,12 +246,6 @@ jobs:
             ./gremlin-server/*
             ~/.m2/repository/org/apache/tinkerpop/*
           key: ${{ github.sha }}
-      #      - name: Download Server Base Image
-      #        if: matrix.os == 'windows-latest'
-      #        uses: actions/download-artifact@v3
-      #        with:
-      #          name: ${{ github.sha }}
-      #          path: ./gremlin-server
       - name: Load Docker Image
         working-directory: ./gremlin-server
         run: docker load --input gremlin-server.tar
@@ -282,12 +258,7 @@ jobs:
     name: javascript-glv-node24
     timeout-minutes: 15
     needs: cache-gremlin-server-docker-image
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # Windows Disabled until Linux containers are supported on Windows runners: https://github.com/actions/virtual-environments/issues/252
-        # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Set up JDK 11
@@ -296,7 +267,6 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
       - name: Get Cached Server Base Image
-        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v4
         id: gremlin-server-test-docker-image
         with:
@@ -304,12 +274,6 @@ jobs:
             ./gremlin-server/*
             ~/.m2/repository/org/apache/tinkerpop/*
           key: ${{ github.sha }}
-      #      - name: Download Server Base Image
-      #        if: matrix.os == 'windows-latest'
-      #        uses: actions/download-artifact@v3
-      #        with:
-      #          name: ${{ github.sha }}
-      #          path: ./gremlin-server
       - name: Load Docker Image
         working-directory: ./gremlin-server
         run: docker load --input gremlin-server.tar

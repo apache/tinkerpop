@@ -96,8 +96,9 @@ describe('Connection', function () {
           assert.fail('invalid status codes should throw');
         })
         .catch(function (err) {
-          // this option falls back to uncidi websocket, which throws an error we can't control, no reason to assert others
           assert.ok(err);
+          assert.ok(err.message.indexOf(401) > 0);
+          assert.ok(err.message.indexOf(testServer401ResponseBody) > 0);
         });
     });
     it('should handle unexpected response errors with no body', function () {
