@@ -30,7 +30,13 @@ TinkerPop exposes.
 
 include::release-4.x.x.asciidoc[]
 
-include::release-3.8.x.asciidoc[]
+= TinkerPop 3.8.0
+
+image::gremlin-67.png[width=185]
+
+*Grix Greven*
+
+include::release-3.8.0.asciidoc[]
 
 include::release-3.7.x.asciidoc[]
 
