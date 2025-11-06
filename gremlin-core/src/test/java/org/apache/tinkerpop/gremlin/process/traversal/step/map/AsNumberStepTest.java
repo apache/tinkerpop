@@ -18,6 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Date;
 import org.apache.tinkerpop.gremlin.process.traversal.GType;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -31,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static java.time.ZoneOffset.UTC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -61,6 +65,13 @@ public class AsNumberStepTest extends StepTest {
         assertEquals((short) 1, __.__("1").asNumber(GType.SHORT).next());
         assertEquals(1L, __.__("1").asNumber(GType.LONG).next());
         assertEquals(3.14, __.__("3.14").asNumber(GType.DOUBLE).next()); //float to double
+        // round trip date to number
+        final OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
+        final long dateEpochMillis = date.toInstant().toEpochMilli();
+        assertEquals(date, __.__(date).asNumber().asDate().next());
+        assertEquals(dateEpochMillis, __.__(dateEpochMillis).asDate().asNumber().next());
+        assertEquals(dateEpochMillis, __.__(new Date(dateEpochMillis)).asNumber().next());
+        assertEquals(date, __.__(new Date(dateEpochMillis)).asNumber().asDate().next());
         // NumberUtils allows additional string processing
         assertEquals(123.0f, __.__("123.").asNumber().next());
         assertEquals(291, __.__("0x123").asNumber().next());
