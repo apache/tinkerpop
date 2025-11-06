@@ -116,7 +116,7 @@ public class GremlinLangTest {
                 {g.withSideEffect("a", 1).V(), "g.withSideEffect(\"a\",1).V()"},
                 {g.withStrategies(ReadOnlyStrategy.instance()).V(), "g.withStrategies(ReadOnlyStrategy).V()"},
                 {g.withoutStrategies(ReadOnlyStrategy.class).V(), "g.withoutStrategies(ReadOnlyStrategy).V()"},
-                {g.withStrategies(new SeedStrategy(999999)).V().order().by("name").coin(0.5),
+                {g.withStrategies(SeedStrategy.build().seed(999999).create()).V().order().by("name").coin(0.5),
                         "g.withStrategies(new SeedStrategy(seed:999999L)).V().order().by(\"name\").coin(0.5D)"},
                 {g.withStrategies(SubgraphStrategy.build().vertices(hasLabel("person")).create()).V(),
                         "g.withStrategies(new SubgraphStrategy(checkAdjacentVertices:true,vertices:__.hasLabel(\"person\"))).V()",},
