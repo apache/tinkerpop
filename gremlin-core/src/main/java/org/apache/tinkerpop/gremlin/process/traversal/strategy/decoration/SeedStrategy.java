@@ -41,11 +41,7 @@ public class SeedStrategy extends AbstractTraversalStrategy<TraversalStrategy.De
 
     private final long seed;
 
-    /**
-     * @deprecated As of release 3.7.3, replaced by {@link #build()#seed}.
-     */
-    @Deprecated
-    public SeedStrategy(final long seed) {
+    private SeedStrategy(final long seed) {
         this.seed = seed;
     }
 
