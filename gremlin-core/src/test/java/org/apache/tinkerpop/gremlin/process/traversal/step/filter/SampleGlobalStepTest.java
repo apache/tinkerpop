@@ -18,26 +18,48 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import java.util.stream.Collectors;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_NL_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class SampleGlobalStepTest extends StepTest {
 
+    @Rule
+    public MockitoRule mockitoRule = MockitoJUnit.rule();
+    @Mock
+    protected Step<String, ?> mockStep;
+
+    @Before
+    public void setup() {
+        when(mockStep.getTraversal()).thenReturn(EmptyTraversal.instance());
+    }
+    
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
@@ -65,4 +87,52 @@ public class SampleGlobalStepTest extends StepTest {
     public void shouldThrowForMultipleByModulators() {
         __.V().sample(1).by("age").by(T.id);
     }
+
+    @Test
+    public void testSampleBiOperatorCombinesTraverserSetsWithLoops() {
+        final SampleGlobalStep.SampleBiOperator<String> operator = new SampleGlobalStep.SampleBiOperator<>();
+
+        final TraverserSet<String> setA = new TraverserSet<>();
+        setA.add(createTraverser("a", 1));
+        setA.add(createTraverser("b", 2));
+
+        final TraverserSet<String> setB = new TraverserSet<>();
+        setB.add(createTraverser("c", 2));
+        setB.add(createTraverser("d", 1));
+        setB.add(createTraverser("e", 2));
+        setB.add(createTraverser("f", 0));
+
+        final TraverserSet<String> result = operator.apply(setA, setB);
+        assertEquals(3, result.size());
+        assertTrue(result.stream().map(Traverser::get).collect(Collectors.toList()).containsAll(List.of("b", "c", "e")));
+    }
+
+    @Test
+    public void testSampleBiOperatorCombinesTraverserSetsWithoutLoops() {
+        final SampleGlobalStep.SampleBiOperator<String> operator = new SampleGlobalStep.SampleBiOperator<>();
+
+        final TraverserSet<String> setA = new TraverserSet<>();
+        setA.add(createTraverser("a", 0));
+        setA.add(createTraverser("b", 0));
+
+        final TraverserSet<String> setB = new TraverserSet<>();
+        setB.add(createTraverser("c", 0));
+
+        final TraverserSet<String> result = operator.apply(setA, setB);
+        assertEquals(3, result.size());
+        assertTrue(result.stream().map(Traverser::get).collect(Collectors.toList()).containsAll(List.of("a", "b", "c")));
+    }
+    
+    private B_O_S_SE_SL_Traverser.Admin<String> createTraverser(final String str, final int loops) {
+        final Traverser.Admin<String> traverser = new B_NL_O_S_SE_SL_Traverser<>(str, mockStep, 1).asAdmin();
+        if (loops > 0) {
+            traverser.initialiseLoops("repeatStep1", null);
+            for (int i = 0; i < loops; i++) {
+                traverser.incrLoops();
+            }
+        }
+        return traverser;
+    }
+    
+    
 }
