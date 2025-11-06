@@ -325,3 +325,25 @@ Feature: Step - asNumber()
       | d[27.0].d |
       | d[32.0].d |
       | d[35.0].d |
+
+  #  asNumber should be round-trippable with asDate
+  Scenario: g_V_valuesXbirthdayX_asNumber_asDate_asNumber
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").property("birthday", 1596326400000).
+        addV("person").property("name", "john").property("birthday", 597715200000).
+        addV("person").property("name","charlie").property("birthday", 1012521600000).
+        addV("person").property("name", "suzy").property("birthday", -131587200000)
+      """
+    And the traversal of
+      """
+      g.V().values("birthday").asNumber().asDate().asNumber()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[597715200000].l |
+      | d[1596326400000].l |
+      | d[1012521600000].l |
+      | d[-131587200000].l |

@@ -61,7 +61,7 @@ Feature: Data - DATETIME
     When iterated to list
     Then the result should be unordered
       | result |
-      | d[-30].l |
+      | d[-30000].l |
 
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_whereXisXgtXdatetimeX2020_01_01XXXX
     Given the empty graph

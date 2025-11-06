@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -46,7 +48,7 @@ public class DateDiffStepTest extends StepTest {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
         final OffsetDateTime other = now.plus(Duration.ofDays(7));
 
-        assertEquals(604800L, (long) __.__(other).dateDiff(now).next());
+        assertEquals(604800000L, (long) __.__(other).dateDiff(now).next());
     }
 
     @Test
@@ -54,7 +56,7 @@ public class DateDiffStepTest extends StepTest {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
         final OffsetDateTime other = now.plus(Duration.ofDays(7));
 
-        assertEquals(-604800L, (long) __.__(now).dateDiff(other).next());
+        assertEquals(-604800000L, (long) __.__(now).dateDiff(other).next());
     }
 
     @Test
@@ -62,21 +64,21 @@ public class DateDiffStepTest extends StepTest {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
         final OffsetDateTime other = now.plus(Duration.ofDays(7));
 
-        assertEquals(-604800L, (long) __.__(now).dateDiff(__.constant(other)).next());
+        assertEquals(-604800000L, (long) __.__(now).dateDiff(__.constant(other)).next());
     }
 
     @Test
     public void shouldHandleNullTraversalParam() {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
 
-        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff(__.constant(null)).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test
     public void shouldHandleNullDate() {
         final OffsetDateTime now = OffsetDateTime.now(UTC);
 
-        assertEquals(now.toEpochSecond(), (long) __.__(now).dateDiff((OffsetDateTime) null).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff((OffsetDateTime) null).next());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -94,7 +96,7 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(604800L, (long) __.__(other).dateDiff(now).next());
+        assertEquals(604800000L, (long) __.__(other).dateDiff(now).next());
     }
 
     @Test
@@ -107,7 +109,7 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(-604800L, (long) __.__(now).dateDiff(other).next());
+        assertEquals(-604800000L, (long) __.__(now).dateDiff(other).next());
     }
 
     @Test
@@ -120,25 +122,32 @@ public class DateDiffStepTest extends StepTest {
         cal.add(Calendar.DAY_OF_MONTH, 7);
         final Date other = cal.getTime();
 
-        assertEquals(-604800L, (long) __.__(now).dateDiff(__.constant(other)).next());
+        assertEquals(-604800000L, (long) __.__(now).dateDiff(__.constant(other)).next());
     }
 
     @Test
     public void shouldHandleNullTraversalParamWithDateCompatibility() {
         final Date now = new Date();
 
-        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff(__.constant(null)).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff(__.constant(null)).next());
     }
 
     @Test
     public void shouldHandleNullDateWithDateCompatibility() {
         final Date now = new Date();
 
-        assertEquals(now.getTime() / 1000, (long) __.__(now).dateDiff((Date) null).next());
+        assertEquals(now.toInstant().toEpochMilli(), (long) __.__(now).dateDiff((Date) null).next());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowWhenInputIsNull() {
         __.__((Object) null).dateDiff(new Date()).next();
+    }
+
+    @Test
+    public void shouldRoundTripWithAsDate() {
+        final OffsetDateTime date = OffsetDateTime.of(LocalDateTime.of(2025, 11, 3, 7, 20, 19, 0), UTC);
+        final OffsetDateTime epoch = Instant.EPOCH.atOffset(UTC);
+        assertEquals(date, __.__(date.toInstant().toEpochMilli()).asDate().dateDiff(epoch).asDate().next());
     }
 }

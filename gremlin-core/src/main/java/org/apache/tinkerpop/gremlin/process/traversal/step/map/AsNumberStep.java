@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import java.time.OffsetDateTime;
+import java.util.Date;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -53,12 +55,17 @@ public class AsNumberStep<S> extends ScalarMapStep<S, Number> {
     protected Number map(final Traverser.Admin<S> traverser) {
         final Object object = traverser.get();
         if (object == null) return null;
+        Number number = null;
         if (object instanceof String) {
-            String numberText = (String) object;
-            Number number = parseNumber(numberText);
-            return typeToken == null ? number : castNumber(number, typeToken);
+            number = parseNumber((String) object);
         } else if (object instanceof Number) {
-            Number number = (Number) object;
+            number = (Number) object;
+        } else if (object instanceof Date) {
+            number = ((Date) object).toInstant().toEpochMilli();
+        } else if (object instanceof OffsetDateTime) {
+            number = ((OffsetDateTime) object).toInstant().toEpochMilli();
+        }
+        if (number != null) {
             return typeToken == null ? number : castNumber(number, typeToken);
         }
         throw new IllegalArgumentException(String.format("Can't parse type %s as number.", object.getClass().getSimpleName()));
