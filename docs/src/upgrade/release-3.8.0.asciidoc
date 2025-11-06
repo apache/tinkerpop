@@ -30,11 +30,11 @@ changes primarily focus on standardizing scoping behavior (local vs global), sim
 related steps behave more consistently and interoperably with one another.
 
 New steps and predicates have been added for type conversion and type testing, providing better control over graphs with
-mixed-type properties. Additionally, this release adds support for Model Context Protocol (MCP) with the initial version
-of gremlin-mcp server.
+mixed-type properties. Additionally, this release adds support for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
+with the initial version of `gremlin-mcp` server.
 
-You should review the following table that shows the impact level of each change and use that as a guide to understand
-how breaking changes may affect your traversals.
+The following table summarizes the impact level of each change, which can help form a guide by which to develop an
+upgrade plan.
 
 [cols="1,2,3", options="header"]
 |=========================================================
@@ -112,11 +112,11 @@ Refer to the 3.8.0 upgrade documentation for all findings and recommendations.
 ----
 
 It is advisable that **codebases be updated to the latest version on the 3.7.x release line** before using this prompt.
-The report produced can be used as a guide to fix problems yourself or potentially as a specification for a coding agent
+The report produced can be used as a guide to fix problems manually or potentially as a specification for a coding agent
 to attempt fixes on your behalf. In either case, it may be helpful to run this prompt after fixes have been put in place
 to see if it can uncover any further problems. This prompt is not a replacement for personal understanding of the 3.8.0
-changes themselves in their entirety as coding agents may not always correctly note subtle aspects of what your Gremlin
-is doing.
+changes themselves in their entirety as coding agents may not always correctly note subtle aspects of what Gremlin
+queries are doing.
 
 Here are a few additional tips to consider when using this prompt:
 
@@ -124,12 +124,12 @@ Here are a few additional tips to consider when using this prompt:
 codebase's size and the context supplied to the tool. Consider adjusting that text to work within a smaller context
 (e.g. specific files or modules that use Gremlin) if the "entire codebase" is not effective.
 * The prompt references a link to the full 3.8.0 Upgrade Documentation. Better results may be achieved by providing
-a subset of the documentation at a time to better isolate fixes.
+a subset of that documentation at a time to better isolate fixes.
 * It is possible that various models and tools using this prompt will generate slightly different reports.
 * The report includes line numbers denoting the position of issues that need resolution. Unfortunately, given the nature
 of AI models, these may not always be relied on perfectly for every execution of the prompt.
 
-IMPORTANT: As with any AI-powered analysis and recommendation, it is not meant to supplement, not replace, expert human
+IMPORTANT: As with any AI-powered analysis and recommendation, it is meant to supplement, not replace, expert human
 review and should always be independently verified.
 
 ==== Removed and Renamed Steps
@@ -137,12 +137,13 @@ review and should always be independently verified.
 [[removal-of-aggregate-with-scope-and-store]]
 ===== Removal of `aggregate()` with `Scope` and `store()`
 
-The meaning of `Scope` parameters in `aggregate()` have always been unique compared to all other "scopable" steps.
-`aggregate(global)` is a `Barrier`, which blocks the traversal until all traversers have been aggregated into the side
-effect, where `aggregate(local)` is non-blocking, and will allow traversers to pass before the side effect has been
-fully aggregated. This is inconsistent with the semantics of `Scope` in all other steps. For example `dedup(global)`
-filters duplicates across the entire traversal stream, while `dedup(local)` filters duplicates within individual `List`
-traversers.
+The meaning of `Scope` parameters in `aggregate()` have always been unique compared to all other steps that take `Scope`
+as an argument. `aggregate(global)` is a `Barrier`, which blocks the traversal until all traversers have been aggregated
+into the side effect, whereas `aggregate(local)` is non-blocking, and will allow traversers to pass before the side
+effect has been fully aggregated. Effectively the `global` form is used to achieve eager operations and the `local` form
+meant for lazy operations. This usage is inconsistent with the semantics of `Scope` in all other steps. For example,
+`dedup(global)` filters duplicates across the entire traversal stream, while `dedup(local)` filters duplicates within
+individual `List` traversers.
 
 The `Scope` parameter is being removed from `aggregate()` to fix inconsistency between the two different use cases: flow
 control vs. per-element application. This change aligns all side effect steps (none of the others have scope arguments)
@@ -152,7 +153,7 @@ its contextual meanings.
 This makes the `AggregateStep` globally scoped by default with eager evaluation. Lazy evaluation with `aggregate()` is
 achieved by wrapping the step in `local()`.
 
-Similarly, `store()` is an eqivalent step to `aggregate(local)` and has been deprecated since 3.4.3. It is also removed
+Similarly, `store()` is an equivalent step to `aggregate(local)` and has been deprecated since 3.4.3. It is also removed
 along with `aggregate(local)`.
 
 [source,text]
@@ -176,11 +177,12 @@ gremlin> g.V().local(aggregate("x").by("age")).select("x")
 ==>[29,27,32,35]
 ----
 
-An slight behavioral difference exists between the removed `aggregate(local)` and its replacement `local(aggregate())`
-with respect to handling of bulked traversers. In 3.8.0, `local()` changed from traverser-local to object-local processing,
-always debulking incoming traversers into individual objects. This causes `local(aggregate())` to show true lazy, 1 object
-at a time aggregation, differing from the original `aggregate(local)`, which always consumed bulked traversers atomically.
-There is no workaround to preserve the old "traverser-local" semantics.
+A slight behavioral difference exists between the removed `aggregate(local)` and its replacement `local(aggregate())`
+with respect to handling of link:https://tinkerpop.apache.org/docs/3.8.0/reference/#a-note-on-barrier-steps[bulked traversers].
+In 3.8.0, `local()` changed from traverser-local to object-local processing, always debulking incoming traversers into
+individual objects. This causes `local(aggregate())` to show true lazy, single object at a time aggregation, differing
+from the original `aggregate(local)`, which always consumed bulked traversers atomically. There is no workaround to
+preserve the old "traverser-local" semantics.
 
 [source,text]
 ----
@@ -215,15 +217,22 @@ See: link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/pr
 [[removal-of-has-key-traversal]]
 ===== Removal of has(key, traversal)
 
-The has(key, traversal) API has been removed in version 3.8.0 due to its confusing behavior that differed from other
-has() variants. As well, most has(key, traversal) usage indicates a misunderstanding of the API. Unlike has(key, value)
-which performs equality comparison, has(key, traversal) only checked if the traversal produced any result, creating
-inconsistent semantics.
+The `has(key, traversal)` API has been removed in version 3.8.0 due to its confusing behavior that differed from other
+`has()` variants. Most `has(key, traversal)` usage has typically indicated a misunderstanding of the API. The
+misunderstanding stems from the intuition that the result of the `Traversal` argument will become the object used in
+the equality comparison, but unlike `has(key, value)` which behaves in that fashion, `has(key, traversal)` only checks
+if the traversal produced any result at all, creating a narrow case for proper usage.
+
+Usually, the pattern to dynamically match the result of a child traversal against a value is accomplished with
+`where()`. Note this demonstration in the example below.
 
 [source,text]
 ----
+gremlin> g.addV('person').property('name','alice').property('age',2)
+==>v[0]
+
 // 3.7.x - this condition is meaningless but yields result because count() is productive
-gremlin> g.V().has("age", __.count())
+gremlin> g.V().has("age", __.properties().count())
 ==>v[1]
 ==>v[2]
 ==>v[3]
@@ -235,12 +244,18 @@ gremlin> g.V().has("age", __.is(P.gt(30)))
 ==>v[4]
 ==>v[6]
 
-// 3.8.0 - traversals no longer yield results, for proper use cases consider using predicate or where() for filtering
-gremlin> g.V().has("age", __.count())
+// 3.8.0 - traversals no longer yield results
+gremlin> g.V().has("age", __.properties().count())
 gremlin> g.V().has("age", __.is(P.gt(30)))
 gremlin> g.V().has("age", P.gt(30))
 ==>v[4]
 ==>v[6]
+
+// the proper way to write this query for 3.7.x and 3.8.0 is with where()
+gremlin> g.V().project('v','p').by().by(properties().count()).
+......1>   where('v', eq('p')).by('age').by().
+......2>   select('v')
+==>v[0]
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
@@ -258,7 +273,7 @@ it also helped make room for `none()` to be repurposed as `none(P)` which is a c
 [[new-default-datetime-type]]
 ===== New Default DateTime Type
 
-The default implementation for date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
+The default implementation for a date type in Gremlin is now changed from the `java.util.Date` to the more encompassing
 `java.time.OffsetDateTime`. This means the reference implementation for all date manipulation steps, `asDate()`,
 `dateAdd()`, and `dateDiff()`, as well as helper methods `datetime()`, will return `OffsetDateTime`, whose string
 representation will be in ISO 8601 format.
@@ -274,10 +289,11 @@ dates are assumed to be in `UTC` (given epoch time).
 For Python, Go, JavaScript, and .NET GLVs, the existing date types are retained. The change is at the serialization
 level, where the exiting date type will be serialized as `OffsetDateTime` to the server, and both `Date` and
 `OffsetDateTime` from the server will be deserialized into the existing date types in the host language. As such, users
-of these GLVs should not notice impact to the application code. The caution remains in cases when client is accessing a
-database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes `UTC` timezone.
+of these GLVs should not notice any impact to the application code. The caution remains in cases when the client is
+accessing a database with `Date` object stored, the `Date` to `OffsetDateTime` transformations on the server assumes
+`UTC` timezone.
 
-For Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their
+For the Java GLV, this change would impact users who are expecting the old `Date` object from a traversal in their
 application, in this case the recommendation is to update code to expect `OffsetDateTime` as part of the version
 upgrade.
 
@@ -286,7 +302,7 @@ upgrade.
 
 The `GremlinLangScriptEngine` has been modified to treat float literals without explicit type suffixes (like 'm', 'f',
 or 'd') as Double by default. Users who need `BigDecimal` precision can still use the 'm' suffix (e.g., 1.0m).
-`GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals.
+`GremlinGroovyScriptEngine` will still default to `BigDecimal` for `float` literals as is the normal default for Groovy.
 
 ==== Modified Step Behavior
 
@@ -297,19 +313,24 @@ or 'd') as Double by default. Users who need `BigDecimal` precision can still us
 
 The `repeat()` step has been updated to treat the repeat traversal as a global child in all cases. Previously, the
 repeat traversal behaved as a hybrid between local and global semantics, which could lead to unexpected results in
-certain scenarios. The repeat traversal started off as a local child but as traversers were added back per iteration,
+certain scenarios. The repeat traversal started off as a local child, but as traversers were added back per iteration,
 it behaved more like a global child.
 
 With this change, the repeat traversal now consistently operates with global semantics, meaning that all traversers
 are processed together rather than being processed per traverser. This provides more predictable behavior and aligns
 with the semantics of other steps.
 
+Consider the following examples which demonstrate the unexpected behavior. Note that the examples for version 3.7.4
+disable the `RepeatUnrollStrategy` so that strategy optimization does not replace the `repeat()` traversal with a
+non-looping equivalent. 3.8.0 examples do not disable the `RepeatUnrollStrategy` as the strategy was modified to be more
+restrictive in this version.
+
 [source,text]
 ----
 // In 3.7.x and earlier, the order would be local to the first traverser.
 // Notice how the results are grouped by marko, then vadas, then lop
 gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
-......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+......1>   repeat(both().simplePath().order().by("name")).times(2).path().by("name")
 ==>[marko,lop,josh]
 ==>[marko,josh,lop]
 ==>[marko,lop,peter]
@@ -323,8 +344,8 @@ gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
 
 // In 3.8.0, the repeat now consistently uses global semantics
 // The traversers from the final iteration are ordered first then by the traversers from previous iterations
-gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
-......1> repeat(both().simplePath().order().by("name")).times(2).path().by("name")
+gremlin> g.V(1, 2, 3).repeat(both().simplePath().order().by("name")).
+......1>                times(2).path().by("name")
 ==>[marko,lop,josh]
 ==>[vadas,marko,josh]
 ==>[lop,marko,josh]
@@ -341,8 +362,8 @@ This change may affect traversals that relied on the previous hybrid behavior, p
 or barrier steps within `repeat()`. Review any traversals using `repeat()` with steps like `aggregate()`, `store()`,
 or other barrier steps to ensure they produce the expected results.
 
-If you would like `repeat()` to behave similarly to how it did in 3.7.x, then you should wrap the repeat inside a
-`local()`. The following example demonstrates this:
+To retain the behavior of `repeat()` as it worked in 3.7.x, wrap the `repeat()` inside a `local()`. The following
+example demonstrates this:
 
 [source,text]
 ----
@@ -433,9 +454,9 @@ gremlin> g.V(1).out().skip(1).out().skip(1).values('name')
 
 This change ensures that `limit()`, `skip()`, and `range()` steps called with default `Scope` or explicit `Scope.global`
 inside `repeat()` are more consistent with manually unrolled traversals. Before upgrading, users should determine if any
-traversals use `limit()`, skip()`, or `range()` with default `Scope` or explicit `Scope.global` inside `repeat()`. If it
-is desired that the limit or range should apply across all loops then the `limit()`, `skip()`, or `range()` step should
-be moved out of the `repeat()` step.
+traversals use `limit()`, `skip()`, or `range()` with default `Scope` or explicit `Scope.global` inside `repeat()`. If
+it is desired that the limit or range should apply across all loops then the `limit()`, `skip()`, or `range()` step
+should be moved out of the `repeat()` step.
 
 [[prevented-using-cap-inject-inside-repeat]]
 ====== Prevented using cap(), inject() inside repeat()
@@ -511,8 +532,8 @@ applies to repeat traversals that contain exclusively safe, well-understood step
 `outV()`, `otherV()`, `has(key, value)`.
 
 Repeat traversals containing other steps will no longer be unrolled. There may be some performance differences for
-traversals that previously benefited from automatic unrolling but the consistency of semantics outweighs the performance
-impact.
+traversals that previously benefited from automatic unrolling, but the consistency of semantics outweighs the
+performance impact.
 
 Examples of affected traversals include (but are not limited to):
 
@@ -520,12 +541,10 @@ Examples of affected traversals include (but are not limited to):
 ----
 g.V().repeat(both().aggregate('x')).times(2).limit(10)
 g.V().repeat(out().limit(10)).times(3)
-g.V().repeat(in().order().by("name")).times(2)
+g.V().repeat(__.in().order().by("name")).times(2)
 g.V().repeat(both().simplePath()).times(4)
 g.V().repeat(both().sample(1)).times(2)
 ----
-
-*Migration Strategies*
 
 Before upgrading, analyze existing traversals which use `repeat()` with any steps other than `out()`, `in()`, `both()`,
 `inV()`, `outV()`, `otherV()`, `has(key, value)` and determine if the semantics of these traversals are as expected when
@@ -576,10 +595,10 @@ See: link:https://lists.apache.org/thread/q76pgrvhprosb4lty63bnsnbw2ljyl7m[DISCU
 [[split-bulked-traversers-for-local]]
 ===== Split bulked traversers for `local()`
 
-Prior to 3.8.0, local() exhibited "traverser-local" semantics, where the local traversal would apply independently to
-each individual bulkable `Traverser`. This often led to confusion, especially in the presence of reducing barrier steps, as
-bulked traversers would cause multiple objects to be processed at once. local() has been updated to automatically split
-any bulked traversers and thus now exhibits true "object-local" semantics.
+Prior to 3.8.0, `local()` exhibited "traverser-local" semantics, where the local traversal would apply independently to
+each individual, bulkable `Traverser`. This often led to confusion, especially in the presence of reducing barrier
+steps, as bulked traversers would cause multiple objects to be processed at once. `local()` has been updated to
+automatically split any bulked traversers and thus now exhibits true "object-local" semantics.
 
 [source,groovy]
 ----
@@ -605,9 +624,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3196[TINKERPOP-3196]
 [[add-barrier-to-most-sideeffect-steps]]
 ===== Add barrier to most SideEffect steps
 
-Prior to 3.8.0, the `group(String)`, `groupCount(String)`, `tree(String)` and `subgraph(String)` steps were non-blocking,
-in that they allowed traversers to pass through without fully iterating the traversal and fully computing the side
-effect. Consider the following example:
+Prior to 3.8.0, the `group(String)`, `groupCount(String)`, `tree(String)` and `subgraph(String)` steps were
+non-blocking, in that they allowed traversers to pass through without fully iterating the traversal and fully computing
+the side effect. Consider the following example:
 
 [source, groovy]
 ----
@@ -622,9 +641,9 @@ gremlin> g.V().groupCount("x").select("x")
 ----
 
 As of 3.8.0, all of these steps now implement `LocalBarrier`, meaning that the traversal is fully iterated before any
-results are passed. This guarantees that a traversal will produce the same results regardless of it is evaluated in a
-lazy (DFS) or eager (BFS) fashion. Any usages which are reliant on the previous "one-at-a-time" accumulation of results
-can still achieve this by embedding the side effect step inside a `local()` step.
+results are passed. This guarantees that a traversal will produce the same results irrespective of whether it is
+evaluated in a lazy (DFS) or eager (BFS) fashion. Any usage which is reliant on the previous "one-at-a-time"
+accumulation of results can still achieve this by embedding the side effect step inside a `local()` step.
 
 [source, groovy]
 ----
@@ -741,11 +760,11 @@ gremlin> g.V().choose(__.values("age")).
 
 *Removal of choose().option(Traversal, v)*
 
-The `choose().option(Traversal, v)` was relatively unused in comparison to the other overloads with constants, predicates
-and Pick tokens. The previous implementation often led to confusion as it only evaluated if the traversal was productive,
-rather than performing comparisons based on the traversal's output value. To eliminate this confusion, `Traversal` is no
-longer permitted as an option token for `choose()`. Any usages which are dependent on the Traversal for dynamic case
-matching can be rewritten using `union()`, with filters prepended to each child traversal.
+The `choose().option(Traversal, v)` was relatively unused in comparison to the other overloads with constants,
+predicates and `Pick` tokens. The previous implementation often led to confusion as it only evaluated if the traversal
+was productive, rather than performing comparisons based on the traversal's output value. To eliminate this confusion,
+`Traversal` is no longer permitted as an option token for `choose()`. Any usage dependent on the `Traversal` for dynamic
+case matching can be rewritten using `union()`, with filters prepended to each child traversal.
 
 [source,text]
 ----
@@ -782,21 +801,18 @@ link:https://tinkerpop.apache.org/docs/3.8.0/reference/#choose-step[Reference Do
 [[consistent-output-for-range-limit-tail]]
 ===== Consistent Output for range(), limit(), tail()
 
-The `range(local)`, `limit(local)`, and `tail(local)` steps now consistently return collections rather than automatically
-unfolding single-element results when operating on iterable collections (List, Set, etc.). Previously, when these steps
-operated on collections and the result contained only one element, the step would return the single element directly
-instead of a collection containing that element.
+The `range(local)`, `limit(local)`, and `tail(local)` steps now consistently return collections rather than
+automatically unfolding single-element results when operating on iterable collections (`List`, `Set`, etc.). Previously,
+when these steps operated on collections and the result contained only one element, the step would return the single
+element directly instead of a collection containing that element.
 
 This change ensures predictable return types based on the input type, making the behavior more consistent and intuitive.
-Note that this change only affects iterable collections - Map objects continue to behave as before.
+Note that this change only affects iterable collections - `Map` objects continue to behave as before.
 
-[WARNING]
-====
-This is a breaking change that may require modifications to existing queries. If your queries relied on the previous
-behavior of receiving single elements directly from `range(local)`, `limit(local)`, or `tail(local)` steps, you will
-need to add `.unfold()` after these steps to maintain the same functionality. Without this update, some existing queries
-may throw a `ClassCastException` while others may return unexpected results.
-====
+Gremlin traversals that relied on the previous behavior of receiving single elements directly from `range(local)`,
+`limit(local)`, or `tail(local)` steps, will need to add `.unfold()` after these steps to maintain the same
+functionality. Without this update, some existing queries may throw a `ClassCastException` while others may return
+unexpected results.
 
 [source,text]
 ----
@@ -819,7 +835,7 @@ gremlin> g.inject([a: 1, b: 2, c: 3]).limit(local, 1)
 ==>[a:1]  // Map entry returned (behavior unchanged)
 ----
 
-If you need the old behavior of extracting single elements from collections, you can add `.unfold()` after the local step:
+Adding `.unfold()` will unpack the single item to provide the original behavior of 3.7.x.
 
 [source,text]
 ----
@@ -828,9 +844,10 @@ gremlin> g.inject([1, 2, 3]).limit(local, 1).unfold()
 ----
 
 This change affects all three local collection manipulation steps when operating on iterable collections:
-- `range(local, low, high)`
-- `limit(local, count)`
-- `tail(local, count)`
+
+* `range(local, low, high)`
+* `limit(local, count)`
+* `tail(local, count)`
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2491[TINKERPOP-2491]
 
@@ -852,7 +869,7 @@ gremlin> g.V().has("person","name",P.within("vadas","peter")).group().by().by(__
 The example above shows that `v[2]` gets filtered away when `order()` is included. This was not expected behavior. The
 problem can be more generally explained as an issue where a `Barrier` like `order()` can return an empty result. If this
 step is followed by another `Barrier` that always produces an output like `sum()`, `count()` or `fold()` then the empty
-result would not feed through to that following step. This issue has now been fixed and the two traversals from the
+result would not feed through to that following step. This issue has now been fixed, and the two traversals from the
 previous example now return the same results.
 
 [source,text]
@@ -868,9 +885,9 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-2971[TINKERPOP-2971]
 [[remove-undocumented-with-modulation]]
 ===== Remove Undocumented `with()` modulation
 
-There has long been a connection between the `with()` modulator, and mutating steps due to the design of
-some of the interfaces in the gremlin traversal engine. This has led to several undocumented usages of the
-`with()` modulator which have never been officially supported but have previously been functional.
+There has long been a connection between the `with()` modulator, and mutating steps due to the design of some interfaces
+in the gremlin traversal engine. This has led to several undocumented usages of the `with()` modulator which have never
+been officially supported but have previously been functional.
 
 As of 3.8.0 `with()` modulation of the following steps will no longer work: `addV()`, `addE()`, `property()`, `drop()`,
 `mergeV()`, and `mergeE()`.
@@ -880,8 +897,8 @@ As of 3.8.0 `with()` modulation of the following steps will no longer work: `add
 
 *valueMap() and propertyMap() Semantics*
 
-The `valueMap()` and `propertyMap()` steps have been changed to throw an error if multiple `by()` modulators are applied.
-The previous behavior attempted to round-robin the `by()` but this wasn't possible for all providers.
+The `valueMap()` and `propertyMap()` steps have been changed to throw an error if multiple `by()` modulators are
+applied. The previous behavior attempted to round-robin the `by()`, but wasn't intended to work that way.
 
 **groupCount(), dedup(), sack(), sample(), aggregate() By Modulation Semantics**
 
@@ -970,7 +987,7 @@ g.V().withoutStrategies(CountStrategy)
 Earlier versions of the grammar allowed a wide range of values for the keys. In many cases, these didn't really make
 sense for Gremlin and were just inherited from the Groovy language since Gremlin tends to follow that language in many
 ways. That said, Gremlin did take some liberties with that syntax and introduced its own shorthand for some cases. Those
-shorthands created unfortunate situations where certain words were being prevented as being able to be used as keys
+shorthands created unfortunate situations where certain words were being prevented from being able to be used as keys,
 which could lead to confusion.
 
 A `Map` is still defined in the same way it always has been, where the following two lines produce an equivalent `Map`:
@@ -992,11 +1009,11 @@ or use its longhand form as shown in the following examples which all produce th
 [(id): 100]
 ----
 
-Note that the first example is a Gremlin convenience that is not compatible in Groovy. This does produce a syntax error
-in Groovy's case. When upgrading to 3.8.0, it will be important to evaluate any code using scripts with `Map` keys that
-match keywords that are not wrapped in parentheses. On upgrade they will begin to be treated as `String` keys rather
-than their `Enum` value. This is particularly relevant for `property(Map)`, `mergeV` and `mergeE` which use a 'Map`
-for their arguments and commonly require that `T` and `Direction` be used as keys.
+Note that the first example is a Gremlin convenience that is not compatible with Groovy. This does produce a syntax
+error in Groovy's case. When upgrading to 3.8.0, it will be important to evaluate any code using scripts with `Map` keys
+that match keywords that are not wrapped in parentheses. On upgrade, they will begin to be treated as `String` keys
+rather than their `Enum` value. This is particularly relevant for `property(Map)`, `mergeV` and `mergeE` which use a
+'Map` for their arguments and commonly require that `T` and `Direction` be used as keys.
 
 The following examples show some `Map` usage from older versions that will work without a need for changes in 3.8.0:
 
@@ -1030,16 +1047,15 @@ g.mergeE([label:'Sibling',created:'2022-02-07',from:1,to:2])
 [[restriction-of-step-arguments]]
 *Restriction of Step Arguments*
 
-Prior to 3.7.0, the grammar did not allow for any parameters in gremlin scripts. In 3.7, the grammar rules
-were loosened to permit variable use almost anywhere in a traversal, in a similar fashion as groovy, however
-immediately resolved upon parsing the script, and did not bring the same performance benefits as
-parameterization in groovy scripts brings. Parameters in gremlin-lang scripts are restricted to a
-link:++https://tinkerpop.apache.org/docs/x.y.z/dev/reference/#traversal-parameterization++[subset of steps]
-in 3.8.0, and scripts which use variables elsewhere will result in parsing exceptions. The implementation
-has been updated to persist query parameters through traversal construction and strategy application.
-Parameter persistence opens the door certain optimizations for repeated query patterns. Consult your
-providers documentation for specific recommendations on using query parameters with gremlin-lang scripts in
-TinkerPop 3.8.
+Prior to 3.7.0, the grammar did not allow for any parameters in gremlin scripts. In 3.7.x, the grammar rules were
+loosened to permit variable use almost anywhere in a traversal. This behavior was analogous to Groovy, however, they
+were immediately resolved upon parsing the script and did not bring the same performance benefits as parameterization in
+Groovy scripts. Parameters in `gremlin-lang` scripts are restricted to a
+link:++https://tinkerpop.apache.org/docs/3.8.0/dev/reference/#traversal-parameterization++[subset of steps]
+in 3.8.0, and scripts which use variables elsewhere will result in parsing exceptions. The implementation has been
+updated to persist query parameters through traversal construction and strategy application. Parameter persistence opens
+the door to optimizations for repeated query patterns. Consult your providers documentation for specific recommendations
+on using query parameters with gremlin-lang scripts in TinkerPop 3.8.0.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2862[TINKERPOP-2862],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3046[TINKERPOP-3046],
@@ -1054,13 +1070,22 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
 Gremlin Go has been upgraded to Go version 1.25.
 
 [[set-minimum-java-version-to-11]]
-TinkerPop 3.8 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
+TinkerPop 3.8.0 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.
 
 [[seedstrategy-construction]]
 ===== SeedStrategy Construction
 
 The `SeedStrategy` public constructor has been removed for Java and has been replaced by the builder pattern common
 to all strategies. This change was made to ensure that the `SeedStrategy` could be constructed consistently.
+
+[source,java]
+----
+// 3.7.x construction
+SeedStrategy strategy = new SeedStrategy(123L);
+
+// 3.8.0 construction with builder pattern
+SeedStrategy strategy = SeedStrategy.build().seed(123L).create();
+----
 
 [[optionsstrategy-in-python]]
 ===== OptionsStrategy in Python
@@ -1093,17 +1118,17 @@ g.with_strategies(OptionsStrategy(**myOptions))
 Element properties handling has been inconsistent across GLVs. Previously,`gremlin-python` deserialized empty properties
 as `None` or array depending on the serializer, while `gremlin-javascript`, and `gremlin-dotnet` returned properties as
 objects or arrays, with empty properties as empty lists or undefined depending on the serializer. (Note that
-`gremlin-go` already returns empty slices for null properties so no changes is needed.)
+`gremlin-go` already returns empty slices for null properties so no change is needed.)
 
-This inconsistency is now resolved, aligning to how properties are handled in Gremlin core and in the Java GLV.
-All GLVs will deserialize element properties into lists of property objects, returning empty lists instead of null values
-for missing properties.
+This inconsistency is now resolved, aligning to how properties are handled in `gremlin-core` and in the Java GLV.
+All GLVs will deserialize element properties into lists of property objects, returning empty lists instead of null
+values for missing properties.
 
-For python and dotnet, the most notable difference is in graphSON when "tokens" is turned on for "materializeProperties". The
-properties returned are no longer `None` or `null`, but empty lists. Users should update their code accordingly.
+For Python and .NET, the most notable difference is in GraphSON when "tokens" is turned on for "materializeProperties".
+The properties returned are no longer `None` or `null`, but empty lists.
 
-For javascript, the change is slightly more extensive, as user should no longer expect javascript objects to be returned.
-All properties are returned as lists of Property or VertexProperty objects.
+For Javascript, the change is slightly more extensive, as users should no longer expect javascript objects to be
+returned. All properties are returned as lists of `Property` or `VertexProperty` objects.
 
 [source,javascript]
 ----
@@ -1168,7 +1193,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3161[TINKERPOP-3161]
 [[removal-of-p-getoriginalvalue]]
 ==== Removal of P.getOriginalValue()
 
-`P.getOriginalValue()` has been removed as it was not offering much value and was often confused with `P.getValue()`.
+`P.getOriginalValue()` has been removed as it was offering little value and was often confused with `P.getValue()`.
 Usage of `P.getOriginalValue()` often leads to unexpected results if called on a predicate which has had its value reset
 after construction. All usages of `P.getOriginalValue()` should be replaced with `P.getValue()`.
 
@@ -1176,7 +1201,7 @@ after construction. All usages of `P.getOriginalValue()` should be replaced with
 ==== Improved Translators
 
 The various Java `Translator` implementations allowing conversion of Gremlin traversals to string forms in various
-languages have been modified considerably. First, they have been moved from to the
+languages have been modified considerably. First, they have been moved to the
 `org.apache.tinkerpop.gremlin.language.translator` package, because they now depend on the ANTLR grammar in
 `gremlin-language` to handled the translation process. Making this change allowed for a more accurate translation of
 Gremlin that doesn't need to rely on reflection and positional arguments to determine which step was intended for use.
@@ -1209,9 +1234,8 @@ produce no results as `!(NaN == 1)` -> `!(ERROR)` -> `ERROR` -> traverser is fil
 traversal will return NaN as the same expression now evaluates as `!(NaN == 1)` -> `!(FALSE)` -> `TRUE` -> traverser is
 not filtered.
 
-See: link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gremlin-semantics-equality-comparability[Comparability semantics docs]
-
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3173[TINKERPOP-3173]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3173[TINKERPOP-3173],
+link:https://tinkerpop.apache.org/docs/3.8.0/dev/provider/#gremlin-semantics-equality-comparability[Comparability semantics docs]
 
 [[gremlin-mcp-server]]
 ==== Gremlin MCP Server
@@ -1223,6 +1247,8 @@ health checks are included to validate connectivity.
 
 A running Gremlin Server that fronts the target TinkerPop graph is required. An MCP client can be configured to connect
 to the Gremlin MCP Server endpoint.
+
+Note that the Gremlin MCP Server is currently released in an alpha form only.
 
 [[air-routes-dataset]]
 ==== Air Routes Dataset
@@ -1354,8 +1380,8 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3166[TINKERPOP-3166]
 [[boolean-conversion-step]]
 ===== Boolean Conversion Step
 
-The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users now have the ability to parse
-strings and numbers into boolean values, both for normalization and to perform boolean logic with numerical values.
+The `asBool()` step bridges another gap in Gremlin's casting functionalities. Users can now parse strings and numbers
+into boolean values, both for normalization and to perform boolean logic with numerical values.
 
 [source,text]
 ----
@@ -1430,7 +1456,7 @@ The `UnifiedChannelizer` was added in 3.5.0 in any attempt to streamline Gremlin
 It was offered as an experimental feature and as releases went on was not further developed, particularly because of the
 major changes to Gremlin Server expected in 4.0.0 when websockets are removed. The removal of websockets with a pure
 reliance on HTTP will help do what the `UnifiedChannelizer` tried to do with its changes. As a result, there is no need
-to continue to refine this `Channelizer` implementation and it can be deprecated.
+to continue to refine this `Channelizer` implementation, and it can be deprecated.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3168[TINKERPOP-3168]
 
@@ -1492,7 +1518,7 @@ Given the modern graph
 And using the side effect x defined as "v[marko].id"
 ----
 
-Our complete Gherkin syntax for feature tests can be found in the link:https://tinkerpop.apache.org/docs/3.8.0/dev/developer/#_given[Developer Documentation].
+The complete Gherkin syntax for feature tests can be found in the link:https://tinkerpop.apache.org/docs/3.8.0/dev/developer/#_given[Developer Documentation].
 
 ===== Auto-promotion of Numbers
 
@@ -1501,9 +1527,9 @@ result to a larger numeric type (e.g., from `int` to `long`) when needed. As a r
 their current type, leading to unexpected behavior. This issue has now been resolved by enabling automatic type
 promotion for results.
 
-Now, any mathematical operations such as `Add`, `Sub`, `Mul`, and Div will now automatically promote to the next numeric type
-if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow exception. For
-floating-point numbers, the sequence is: float → double → infinity.
+Now, any mathematical operations such as `Add`, `Sub`, `Mul`, and Div will now automatically promote to the next numeric
+type if an overflow is detected. For integers, the promotion sequence is: byte → short → int → long → overflow
+exception. For floating-point numbers, the sequence is: float → double → infinity.
 
 As a example, in earlier versions, the following query:
 
@@ -1587,8 +1613,8 @@ gremlin> g.withoutStrategies(RepeatUnrollStrategy).V(1, 2, 3).
 Providers implementing custom optimizations or strategies around `RepeatStep` should verify that their
 implementations account for the repeat traversal being a global child. This particularly affects:
 
-- Strategies that analyze or transform repeat traversals
-- Optimizations that depend on the scope semantics of child traversals
+* Strategies that analyze or transform repeat traversals
+* Optimizations that depend on the scope semantics of child traversals
 
 The last point about optimizations may be particularly important for providers that have memory constraints as this
 change may bring about higher memory usage due to more traversers needing to be held in memory.
@@ -1653,34 +1679,34 @@ Interfaces have been introduced for `AddEdgeStep`, `AddPropertyStep`, `AddVertex
 
 ===== GValue Step Parameterization
 
-This release introduces `GValue` as a new representation of query parameters. GValue is designed to enable query caching
-capabilities by persisting query parameters further in the traversal lifecycle. Parameters in a `gremlin-lang` script
-are constructed into GValues and passed into `GraphTraversal`. The traversal is then populated with special
-`GValueHolder` placeholder steps, which are temporary non-executable steps which implement a corresponding step
+This release introduces `GValue` as a new representation of query parameters. `GValue` is designed to enable query
+caching capabilities by persisting query parameters further in the traversal lifecycle. Parameters in a `gremlin-lang`
+script are constructed into GValues and passed into `GraphTraversal`. The traversal is then populated with special
+`GValueHolder` placeholder steps, which are temporary non-executable steps that implement a corresponding step
 interface. TraversalStrategies are able to operate on these placeholder steps and update the traversal as normal. By
 default, there is a new `OptimizationStrategy`, `GValueReductionStrategy` which cleans up the traversal by reducing all
-`GValueHolder` steps with their corresponding concrete step object. Providers may choose disable this strategy in order
-to store a fully constructed and optimized traversal with parameters into a query cache.
+`GValueHolder` steps with their corresponding concrete step object. Providers may choose to disable this strategy to
+store a fully constructed and optimized traversal with parameters into a query cache.
 
 Some OptimizingStrategies will mutate the traversal based on the current value of a parameter. A simple example is
 `CountStrategy` which will replace `outE("knows").count().is(0)` with `not(outE("knows"))`. This sort
 of optimization presents a challenge for any provider who intends to swap the value of a parameter in the optimized
 traversal. To resolve this issue, each `Traversal` is now bound to a `GValueManager`, whose purpose is to track if a
-variable is "free" or "pinned". A "free" variable is one which can be substituted for any value without restriction. A
-pinned variable is one which must remain bound to the current value. By parameterizing the above example,
+variable is "free" or "pinned". A "free" variable is one that can be substituted for any value without restriction. A
+pinned variable is one that must remain bound to the current value. By parameterizing the above example,
 `outE(GValue.of("edgeLabel", "knows")).count().is(GValue.of(count, 0))` will be optimized to
 `not(outE(GValue.of("edgeLabel", "knows")))`. In this case, the `GValueManager` will report "edgeLabel" as a free
-variable, as it can be substituted in the optimized traversal without any loss of meaning, however the variable "count"
+variable, as it can be substituted in the optimized traversal without any loss of meaning, however, the variable "count"
 will be pinned as the optimized traversal is not valid for other values of "count".
 
-===== Decouple internal step state from `Configuring`/`Parameterizing` interfaces
+===== Decoupling in Step Interfaces
 
 Previously `AddVertexStep`, `AddVertexStartStep`, `AddEdgeStep`, `AddEdgeStartStep`, and `AddPropertyStep` stored their
 internal state (id, label, properties, from/to vertices...) in a `Parameters` object which was exposed via the
 `Configuring` and `Parameterizing` interfaces. These interfaces are primarily intended to support with()-modulation, and
-thus these steps had weird unintended behaviors when combined with with()-modulation. The following example shows how in
-3.7.4 TinkerGraph, with()-modulation can be used to append properties to an `addV()` step, which has never been an
-intended or documented behavior.
+thus these steps had unintended behaviors when combined with with()-modulation. The following example shows how in 3.7.4
+TinkerGraph, with()-modulation can be used to append properties to an `addV()` step, which has never been an intended or
+documented behavior.
 
 [source,text]
 ----
@@ -1689,10 +1715,10 @@ gremlin> g.addV().with("name", "cole").valueMap()
 ----
 
 This internal step state has now been decoupled from the `Configuring` and `Parameterizing` interfaces, which are now
-exclusively used for the purposes of with()-modulation. This change affects `AddVertexStep`, `AddVertexStartStep`,
-`AddEdgeStep`, `AddEdgeStartStep`, and `AddPropertyStep`. For all of these steps, `configure()` and `getParameters()`
-are now exclusively used for with()-modulation and cannot be used to read and write ids, labels, or properties. All
-accesses of these steps' internal data must now go through methods defined in the new `StepContract` interfaces:
+exclusively used for with()-modulation. This change affects `AddVertexStep`, `AddVertexStartStep`, `AddEdgeStep`,
+`AddEdgeStartStep`, and `AddPropertyStep`. For all of these steps, `configure()` and `getParameters()` are now
+exclusively used for with()-modulation and cannot be used to read and write ids, labels, or properties. All access to
+internal step data for these implementation must now go through methods defined in the new `StepContract` interfaces:
 `AddVertexStepContract`, `AddEdgeStepContract`, and `AddPropertyStepContract`.
 
 [source,text]
