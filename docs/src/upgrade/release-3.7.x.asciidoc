@@ -40,32 +40,37 @@ filtering or `has(key, predicate)` for value comparisons.
 
 [source,text]
 ----
-// 3.7.4 - this condition is meaningless but yields result because count() is productive
-gremlin> g.V().has("age", __.count())
+gremlin> g.addV('person').property('name','alice').property('age',2)
+==>v[0]
+
+// 3.7.x - this condition is meaningless but yields result because count() is productive
+gremlin> g.V().has("age", __.properties().count())
 ==>v[1]
 ==>v[2]
 ==>v[3]
 ==>v[4]
 ==>v[5]
 ==>v[6]
-// 3.7.4 - simple example
+// simple example
 gremlin> g.V().has("age", __.is(P.gt(30)))
 ==>v[4]
 ==>v[6]
-// 3.7.5+ - for proper use cases consider using predicate or where() for filtering
+
+// 3.8.0 - traversals no longer yield results
+gremlin> g.V().has("age", __.properties().count())
+gremlin> g.V().has("age", __.is(P.gt(30)))
 gremlin> g.V().has("age", P.gt(30))
 ==>v[4]
 ==>v[6]
+
+// the proper way to write this query for 3.7.x and 3.8.0 is with where()
+gremlin> g.V().project('v','p').by().by(properties().count()).
+......1>   where('v', eq('p')).by('age').by().
+......2>   select('v')
+==>v[0]
 ----
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1463[TINKERPOP-1463]
-
-=== Upgrading for Providers
-
-==== Graph System Providers
-
-==== Graph Driver Providers
-
 
 == TinkerPop 3.7.4
 
