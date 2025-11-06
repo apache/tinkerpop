@@ -479,7 +479,7 @@ public class GraphSONMapperEmbeddedTypeTest extends AbstractGraphSONTest {
     public void shouldHandleSeedStrategy() throws Exception {
         assumeThat(version,  either(startsWith("v2")).or(startsWith("v3")));
 
-        final SeedStrategy o = new SeedStrategy(999);
+        final SeedStrategy o = SeedStrategy.build().seed(999).create();
         final TraversalStrategyProxy strategyProxy = serializeDeserialize(mapper, o, TraversalStrategyProxy.class);
         assertThat(strategyProxy, instanceOf(TraversalStrategyProxy.class));
         assertEquals(SeedStrategy.class, strategyProxy.getStrategyClass());
