@@ -132,6 +132,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Fixed referenced log file name for `gremlin-archetype-server`.
 * Changed some feature tests using `order()` to use specific `by()` modulators for better result predictability.
 * Upgraded Go to version 1.25.
+* Upgraded Python to version 3.10.
 * Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
 * Moved `Traverser` loop logic into new interface `NL_SL_Traverser` and changed loop-supporting `Traverser`s to extend the common interface.

@@ -46,7 +46,7 @@ services:
 
   gremlin-python-integration-tests:
     container_name: gremlin-python-integration-tests
-    image: python:3.9
+    image: python:3.10
     volumes:
       - ${BUILD_DIR:-./src/main/python}:/python_app
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/python_app/gremlin-test/features
@@ -80,7 +80,7 @@ services:
 
   gremlin-python-package:
     container_name: gremlin-python-package
-    image: python:3.9
+    image: python:3.10
     volumes:
       - ${PACKAGE_DIR:-./src/main/python}:/python_package
     working_dir: /python_package

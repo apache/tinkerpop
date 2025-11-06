@@ -381,12 +381,12 @@ limitations under the License.
                                     <target>
                                         <exec executable="docker" failonerror="true">
                                             <!-- This build command relies on Docker's caching mechanism to reduce the amount of times it is run. -->
-                                            <arg line="build -t gremlin-console-test:py3.9jre11 ./src/test/python/docker"/>
+                                            <arg line="build -t gremlin-console-test:py3.10jre11 ./src/test/python/docker"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">
                                             <arg line="run --rm --mount type=bind,src=${project.basedir}/src/test/python,dst=/console_app
                                             --mount type=bind,src=${project.basedir}/target/apache-tinkerpop-gremlin-console-${project.version}-standalone,dst=/console_app/gremlin-console
-                                            gremlin-console-test:py3.9jre11"/>
+                                            gremlin-console-test:py3.10jre11"/>
                                         </exec>
                                     </target>
                                 </configuration>
