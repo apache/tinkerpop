@@ -1091,6 +1091,7 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-3023[TINKERPOP-3023]
 ===== Runtime Upgrades
 
 Gremlin Go has been upgraded to Go version 1.25.
+Gremlin Python has been upgraded to Python version 3.10.
 
 [[set-minimum-java-version-to-11]]
 TinkerPop 3.8.0 requires a minimum of Java 11 for building and running. Support for Java 1.8 has been dropped.

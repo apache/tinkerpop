@@ -30,7 +30,7 @@ setup(
         'importlib-metadata<5.0.0'
     ],
     tests_require=[
-        'pytest>=4.6.4,<7.2.0',
+        'pytest>=6.2.5,<8.0.0',
         'mock>=3.0.5,<5.1.0',
         'pexpect==4.9.0',
         'iniconfig<2.0.0'
