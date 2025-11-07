@@ -49,6 +49,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);;
     private final int amountToSample;
     private final Random random = new Random();
+    private final SampleGlobalStep.SampleBiOperator<S> traverserReducer = new SampleBiOperator<>();
 
     public SampleGlobalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
@@ -139,7 +140,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
-        return MemoryComputeKey.of(this.getId(), new SampleBiOperator<>(), false, true);
+        return MemoryComputeKey.of(this.getId(), traverserReducer, false, true);
     }
     
     public static final class SampleBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
