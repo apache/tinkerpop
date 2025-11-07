@@ -107,3 +107,41 @@ Feature: Step - sample()
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  Scenario: g_V_repeatXsampleX2XX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(sample(2)).times(2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+
+  Scenario: g_V_sampleX2X_sampleX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().sample(2).sample(2)
+      """
+    When iterated to list
+    Then the result should have a count of 2
+
+  Scenario: g_V3_repeatXout_order_byXperformancesX_sampleX2X_aggregateXxXX_untilXloops_isX2XX_capXxX_unfold
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.out().order().by("performances").sample(2).aggregate('x')).until(__.loops().is(2)).cap('x').unfold()
+      """
+    When iterated to list
+    Then the result should have a count of 4
+
+  Scenario: g_V3_out_order_byXperformancesX_sampleX2X_aggregateXxX_out_order_byXperformancesX_sampleX2X_aggregateXxX_capXxX_unfold
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).out().order().by("performances").sample(2).aggregate('x').out().order().by("performances").sample(2).aggregate('x').cap('x').unfold()
+      """
+    When iterated to list
+    Then the result should have a count of 4

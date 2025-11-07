@@ -18,6 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.BinaryOperator;
+import org.apache.tinkerpop.gremlin.process.computer.MemoryComputeKey;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
@@ -32,12 +40,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -47,6 +49,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     private Traversal.Admin<S, Number> probabilityTraversal = new ConstantTraversal<>(1.0d);;
     private final int amountToSample;
     private final Random random = new Random();
+    private final SampleGlobalStep.SampleBiOperator<S> traverserReducer = new SampleBiOperator<>();
 
     public SampleGlobalStep(final Traversal.Admin traversal, final int amountToSample) {
         super(traversal);
@@ -135,7 +138,39 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         traverserSet.addAll(sampledSet);
     }
 
+    @Override
+    public MemoryComputeKey<TraverserSet<S>> getMemoryComputeKey() {
+        return MemoryComputeKey.of(this.getId(), traverserReducer, false, true);
+    }
+    
+    public static final class SampleBiOperator<S> implements BinaryOperator<TraverserSet<S>>, Serializable {
+        @Override
+        public TraverserSet<S> apply(final TraverserSet<S> setA, final TraverserSet<S> setB) {
+            int maxLoops = -1;
+            // if the traversers have gone through loops, only retain the ones that have passed through the most loops
+            // if there are no loops, all traversers are retained
+            final TraverserSet<S> result = new TraverserSet<>();
+            maxLoops = processTraverserSet(setA, maxLoops, result);
+            processTraverserSet(setB, maxLoops, result);
+            return result;
+        }
 
+        private static <S> int processTraverserSet(final TraverserSet<S> traverserSet, final int currentMaxLoops, final TraverserSet<S> result) {
+            int max = currentMaxLoops;
+            for (final Traverser.Admin<S> traverser : traverserSet) {
+                final int loops = traverser.getLoopNames().isEmpty() ? 0 : traverser.loops();
+                if (loops > max) {
+                    max = loops;
+                    result.clear();
+                    result.add(traverser);
+                } else if (loops == max) {
+                    result.add(traverser);
+                }
+            }
+            return max;
+        }
+    }
+    
     private Optional<ProjectedTraverser<S, Number>> createProjectedTraverser(final Traverser.Admin<S> traverser) {
         final TraversalProduct product = TraversalUtil.produce(traverser, this.probabilityTraversal);
         if (product.isProductive()) {
