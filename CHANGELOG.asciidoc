@@ -202,6 +202,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Modified `RepeatUnrollStrategy` to use a more conservative approach, only unrolling repeat loops containing safe navigation and filtering steps.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
 * Moved `Traverser` loop logic into new interface `NL_SL_Traverser` and changed loop-supporting `Traverser`s to extend the common interface.
+* Fixed `sample()` in `repeat()` computer algorithm to retain the configured sample size per loop
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 

@@ -177,6 +177,11 @@ public final class ProjectedTraverser<T, P> implements Traverser.Admin<T> {
     }
 
     @Override
+    public Set<String> getLoopNames() {
+        return this.baseTraverser.getLoopNames();
+    }
+
+    @Override
     public long bulk() {
         return this.baseTraverser.bulk();
     }
