@@ -59,7 +59,7 @@ describe('Client', function () {
             let result = await noUserAgentClient.submit('1', null,
                 {requestId: settings.USER_AGENT_REQUEST_ID});
 
-            assert.strictEqual(result.first(), "");
+            assert.ok(result.first() === "" || result.first() === "node"); // The default node websocket library may use a default user-agent of "node" if none is specified
 
             await noUserAgentClient.close();
         });

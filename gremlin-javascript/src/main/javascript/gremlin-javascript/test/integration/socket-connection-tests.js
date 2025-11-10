@@ -78,7 +78,8 @@ describe('Connection', function () {
       globalThis.WebSocket = function () {
         globalWebsocketCalls++;
       };
-      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
+      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`,
+          {enableCompression: false, enableUserAgentOnConnect: false}); // Global WebSocket is not compatible with customized compression and user agent headers
       return connection
         .open()
         .catch(() => {})
