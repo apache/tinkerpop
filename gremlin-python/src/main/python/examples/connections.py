@@ -14,22 +14,26 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import ssl
 import sys
+import os
 
 sys.path.append("..")
 
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.driver.serializer import GraphBinarySerializersV1
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+from gremlin_python.driver.auth import basic, sigv4
 
+VERTEX_LABEL = os.getenv('VERTEX_LABEL', 'connection')
 
 def main():
     with_remote()
     with_auth()
-    with_kerberos()
-    with_configs()
+    with_sigv4()
+    with_sigv4_session_token()
 
 
 def with_remote():
@@ -40,15 +44,14 @@ def with_remote():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
+    rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
-    # drop existing vertices
-    g.V().drop().iterate()
-
     # simple query to verify connection
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     # cleanup
@@ -57,41 +60,62 @@ def with_remote():
 
 # connecting with plain text authentication
 def with_auth():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
+    server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'http://localhost:8182/gremlin').format(45941)
+    
+    # disable SSL certificate verification for CI environments
+    if ':45941' in server_url:
+        ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_opts.check_hostname = False
+        ssl_opts.verify_mode = ssl.CERT_NONE
+        rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'),
+                                    transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
+    else:
+        rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'))
+    
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
 
 
-# connecting with Kerberos SASL authentication
-def with_kerberos():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
+# connecting with AWS SigV4 authentication
+def with_sigv4():
+    # Only set mock credentials if not already present
+    os.environ.setdefault('AWS_ACCESS_KEY_ID', 'MOCK_ID')
+    os.environ.setdefault('AWS_SECRET_ACCESS_KEY', 'MOCK_KEY')
+
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
+
+    rc = DriverRemoteConnection(server_url, 'g', auth=sigv4('gremlin-east-1', 'tinkerpop-sigv4'))
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
 
 
-# connecting with customized configurations
-def with_configs():
-    rc = DriverRemoteConnection(
-        'ws://localhost:8182/gremlin', 'g',
-        username="", password="", kerberized_service='',
-        message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
-        graphson_writer=None, headers=None, session=None,
-        enable_user_agent_on_connect=True
-    )
+# connecting with AWS SigV4 authentication with session token
+def with_sigv4_session_token():
+    # Only set mock credentials if not already present
+    os.environ.setdefault('AWS_ACCESS_KEY_ID', 'MOCK_ID')
+    os.environ.setdefault('AWS_SECRET_ACCESS_KEY', 'MOCK_KEY')
+    os.environ.setdefault('AWS_SESSION_TOKEN', 'MOCK_TOKEN')
+
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
+
+    rc = DriverRemoteConnection(server_url, 'g', auth=sigv4('gremlin-east-1', 'tinkerpop-sigv4'))
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
