@@ -261,6 +261,7 @@ limitations under the License.
                                         <ABS_PROJECT_HOME>${project.basedir}/../</ABS_PROJECT_HOME>
                                         <!-- setting this env variable is needed to be cross-platform compatible -->
                                         <HOME>${user.home}</HOME>
+                                        <NODE_VERSION>${node.test.version}</NODE_VERSION>
                                     </environmentVariables>
                                     <executable>docker</executable>
                                     <arguments>

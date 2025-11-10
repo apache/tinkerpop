@@ -226,6 +226,7 @@ limitations under the License.
 
         <runtime.npm.version>10.8.2</runtime.npm.version>
         <runtime.node.version>v20.19.4</runtime.node.version>
+        <node.test.version>20</node.test.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
