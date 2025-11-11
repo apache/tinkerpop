@@ -61,6 +61,7 @@ upgrade plan.
 |Breaking |Step Behavior Change |<<group-value-traversal-semantics,group() Value Traversal Semantics>>
 |Breaking |Step Behavior Change |<<remove-undocumented-with-modulation,Remove Undocumented `with()` modulation>>
 |Breaking |Step Behavior Change |<<by-modulation-semantics,By Modulation Semantics>>
+|Breaking |Step Behavior change |<<element-promoted-for-mergeV>>,Element Promoted for `mergeV()` and `mergeE()`>>
 |Breaking |Grammar Removal |<<removed-structurevertex-from-grammar,Removed StructureVertex from Grammar>>
 |Breaking |Grammar Restriction |<<map-keys-restrictions,`Map` keys restrictions>>
 |Breaking |Grammar Restriction |<<restriction-of-step-arguments,Restriction of Step Arguments>>
@@ -931,6 +932,62 @@ last one, which was not intuitive.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
+
+[[element-promoted-for-mergeV]]
+===== Element Promoted for `mergeV()` and `mergeE()
+
+Mid-traversal usage of `mergeV()` and `mergeE()` had different behavior from their start step counterparts. Used
+mid-traversal, it would pass through the current traverser. On the other hand, the start forms would pass through the
+newly created or matched `Element`. This was never the intended behavior. As of 3.8.0, the mid-traversal forms now have
+the same behavior as start steps. Expect the created or matched `Element` to be provided to the child traversal for
+`onCreate` and `onMatch`.
+
+[source,text]
+----
+// 3.7.x allowed the following syntax, where each Map is being given to the child
+// traversals in option() steps
+gremlin> m = [[search: [code: 'IAD', (T.label): 'airport'], create: [desc: 'Washington Dulles International Airport', country: 'US'], match: [elev: 313]],
+......1>      [search: [code: 'LTA',(T.label): 'airport'], create: [country: 'US',desc: 'Little Tiny Airport'], match: [elev: 555]],
+......2>      [search: [code: 'DCA', (T.label): 'airport'], create: [country: 'US',desc: 'Ronald Reagan Washington National Airport'], match: [elev: 14]]]
+==>[search:[code:IAD,label:airport],create:[desc:Washington Dulles International Airport,country:US],match:[elev:313]]
+==>[search:[code:LTA,label:airport],create:[country:US,desc:Little Tiny Airport],match:[elev:555]]
+==>[search:[code:DCA,label:airport],create:[country:US,desc:Ronald Reagan Washington National Airport],match:[elev:14]]
+gremlin> g.inject(m).unfold().
+......1>   mergeV(select('search')).
+......2>     option(onCreate, select('create')).
+......3>     option(onMatch, select('match'))
+==>v[0]
+==>v[4]
+==>v[8]
+
+// 3.8.x will produce an error because the traverser given to select() steps is
+// no longer a Map, but is instead the created or matched Vertex and select()
+// will not work on that
+gremlin> g.inject(m).unfold().
+......1>   mergeV(select('search')).
+......2>     option(onCreate, select('create')).
+......3>     option(onMatch, select('match')).
+......4>   elementMap('code','country','desc','elev')
+The provided traverser does not map to a value: v[10][TinkerVertex]->[SelectOneStep(last,match,null)][DefaultGraphTraversal] parent[[InjectStep([[{search={code=IAD, label=airport}, create={desc=Washington Dulles International Airport, country=US}, match={elev=313}}, {search={code=LTA, label=airport}, create={country=US, desc=Little Tiny Airport}, match={elev=555}}, {search={code=DCA, label=airport}, create={country=US, desc=Ronald Reagan Washington National Airport}, match={elev=14}}]]), UnfoldStep, MergeVertexStep([SelectOneStep(last,search,null)],[SelectOneStep(last,create,null)],[SelectOneStep(last,match,null)]), NoOpBarrierStep(2500), ElementMapStep([code, country, desc, elev])]]
+
+// in 3.8.0, there are multiple ways to fix this problem and in this case, one
+// might access the Map via step label "m":
+gremlin> g.inject(m).unfold().as('m').
+......1>   mergeV(select('m').select('search')).
+......2>     option(onCreate, select('m').select('create')).
+......3>     option(onMatch, select('m').select('match')).
+......4>   elementMap('code','country','desc','elev')
+==>[id:10,label:airport,country:US,code:IAD,elev:313,desc:Washington Dulles International Airport]
+==>[id:61394,label:airport,country:US,code:LTA,desc:Little Tiny Airport]
+==>[id:7,label:airport,country:US,code:DCA,elev:14,desc:Ronald Reagan Washington National Airport]
+----
+
+Users should carefully search their code for any use of mid-traversal `mergeV()` or `mergeE()` to consider the nature of
+their `onCreate` and `onMatch` child traversals. Determine if they are written in a way that expects the traverser to
+pass through unchanged to those children. If they are being used in that fashion, it will be necessary to restructure
+the traversal around the expectation that the `Element` will be handed to the child.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP-3056[TINKERPOP-3056]
 
 ==== Gremlin Grammar Changes
 
