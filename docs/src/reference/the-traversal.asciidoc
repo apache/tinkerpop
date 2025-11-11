@@ -1281,6 +1281,19 @@ g.V(1).property('nickname', 'okram')
 g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
 ----
 
+Be aware that the current traverser behavior where the traverser appears to be unaffected by state modifying steps or
+account as a single bulk to side effects inside the `coalesce()` traversal is subject to change. The following are
+examples of some traversals on the "modern" graph whose output may change:
+
+[source,text]
+----
+gremlin> g.V(1, 1).barrier().coalesce(aggregate("x"), groupCount("x")).cap("x")
+==>[v[1]]
+
+gremlin> g.withSack(1.0f).V(1).barrier().coalesce(sack(mult).by("age"), constant(2)).sack()
+==>1.0
+----
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#coalesce(org.apache.tinkerpop.gremlin.process.traversal.Traversal...)++[`coalesce(Traversal...)`]
@@ -1865,6 +1878,19 @@ link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gre
 
 The `flatMap()` step maps the traverser from the current object to an `Iterator` of objects for the next step in the
 process. Please see the <<general-steps, General Steps>> section for more information.
+
+Be aware that the current traverser behavior where the traverser appears to be unaffected by state modifying steps or
+account as a single bulk to side effects inside the `flatMap()` traversal is subject to change. The following are
+examples of some traversals on the "modern" graph whose output may change:
+
+[source,text]
+----
+gremlin> g.V(1, 1).barrier().flatMap(aggregate("x")).cap("x")
+==>[v[1]]
+
+gremlin> g.withSack(1.0f).V(1).barrier().flatMap(sack(mult).by("age")).sack()
+==>1.0
+----
 
 *Additional References*
 

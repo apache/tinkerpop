@@ -53,4 +53,16 @@ Feature: Step - flatMap()
       | ripple |
       | peter |
 
-
+  # Objects from flatMap traversal should be hidden from path()
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_flatMapXout_outX_path
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().flatMap(out().out()).path()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | p[v[marko],v[ripple]] |
+      | p[v[marko],v[lop]] |
