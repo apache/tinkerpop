@@ -101,6 +101,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.7.0 |≥1.20
 |3.7.2 |≥1.21
 |3.7.3 |≥1.22
+|3.8.0 |≥1.25
 |===
 
 [[gremlin-go-connecting]]
@@ -1468,6 +1469,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.7 |≥18 |9.6.7
 |3.7.0 |≥18 |9.6.7
 |3.7.4 |≥20 |10.8.2
+|3.8.0 |≥20 |10.8.2
 |===
 
 [[gremlin-javascript-connecting]]
@@ -1966,6 +1968,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.5.3 |.NET Standard 2.0; .NET 6.0
 |3.6.0 |.NET Standard 2.0; .NET 6.0
 |3.7.0 |.NET Standard 2.0; .NET6.0
+|3.8.0 |.NET Standard 2.0; .NET6.0
 |===
 
 [[gremlin-dotnet-connecting]]
@@ -2395,6 +2398,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.6.8 |≥3.9 |aiohttp
 |3.7.0 |≥3.8 |aiohttp
 |3.7.3 |≥3.9 |aiohttp
+|3.8.0 |≥3.10 |aiohttp
 |===
 
 [[gremlin-python-connecting]]
