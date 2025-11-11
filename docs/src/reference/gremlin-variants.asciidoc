@@ -683,6 +683,7 @@ The following table outlines recommended runtime versions by the release in whic
 |3.5.0 | Java 8, 11
 |3.6.0 | Java 8, 11
 |3.7.0 | Java 8, 11, 17
+|3.8.0 | Java 11, 17
 |===
 
 [[gremlin-java-connecting]]
