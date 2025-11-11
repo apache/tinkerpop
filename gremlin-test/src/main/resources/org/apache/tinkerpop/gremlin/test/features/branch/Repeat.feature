@@ -817,3 +817,17 @@ Feature: Step - repeat()
       | result |
       | SUGAR MAGNOLIA |
       | AROUND AND AROUND |
+
+  # Test order on edge weight with limit in repeat leads to limited, ordered walk
+  Scenario: g_VX3X_repeatXoutE_order_byXweight_descX_limitX2X_inVX_timesX2X_valuesXnameX
+    Given the grateful graph
+    And using the parameter vid3 defined as "v[NOT FADE AWAY].id"
+    And the traversal of
+      """
+      g.V(vid3).repeat(__.outE().order().by("weight", Order.desc).limit(2).inV()).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | SUGAR MAGNOLIA |
+      | AROUND AND AROUND |

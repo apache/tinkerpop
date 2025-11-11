@@ -314,6 +314,7 @@ public abstract class TinkerWorld implements World {
                 case "g_V_repeatXboth_repeatXorder_byXnameXX_timesX1XX_timesX1X":
                 case "g_V_order_byXname_descX_repeatXboth_simplePath_order_byXname_descXX_timesX2X_path":
                 case "g_VX3X_repeatXoutE_order_byXweightX_tailX2X_inVX_timesX2X_valuesXnameX":
+                case "g_VX3X_repeatXoutE_order_byXweight_descX_limitX2X_inVX_timesX2X_valuesXnameX":
                 case "g_VX3X_repeatXout_order_byXperformances_descX_limitX5X_tailX1XX_timesX2X_valuesXnameX":
                 case "g_VX3X_repeatXout_order_byXperformancesX_tailX3X_limitX1XX_timesX2X_valuesXnameX":
                 case "g_VX250X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX2X_valuesXnameX":
