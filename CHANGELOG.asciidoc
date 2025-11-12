@@ -210,7 +210,7 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
 
 [[release-3-7-5]]
-=== TinkerPop 3.7.5 (Release Date: NOT OFFICIALLY RELEASED YET)
+=== TinkerPop 3.7.5 (Release Date: November 12, 2025)
 
 * Improved Java driver host availability on connection pool initialization.
 * Added getter for `parameterItems` and `valueTraversal` on `DifferenceStep`.
@@ -221,6 +221,11 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added root-level GLV examples in `gremlin-examples/` directory that use published driver versions for easy out-of-the-box usage, separate from module-level examples that use local development code.
 * Bump netty to 4.1.125.Final
 * Fixed `empty-sample-secure.groovy` to work with `Compilation.COMPILE_STATIC`
+
+==== Bugs
+
+* TINKERPOP-3181 Allow Client initialization to succeed even if minPoolSize is not met
+* TINKERPOP-3182 Consistent serialization of Path for untyped GraphSON
 
 [[release-3-7-4]]
 === TinkerPop 3.7.4 (Release Date: August 1, 2025)

@@ -23,7 +23,7 @@ image::gremlin-zamfir.png[width=185]
 
 == TinkerPop 3.7.5
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: November 12, 2025*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.5/CHANGELOG.asciidoc#release-3-7-5[changelog] for a
 complete list of all the modifications that are part of this release.
