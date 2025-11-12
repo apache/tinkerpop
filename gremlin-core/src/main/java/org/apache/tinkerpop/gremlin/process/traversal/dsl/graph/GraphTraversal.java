@@ -4595,7 +4595,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         // do explicit cardinality for every single pair in the map
         for (Object k : m.keySet()) {
             final Object o = m.get(k);
-            if (!(o instanceof CardinalityValueTraversal))
+
+            // don't override any explicit settings and can't set cardinality on T
+            if (!(o instanceof CardinalityValueTraversal) && !(k instanceof T))
                 m.put(k, new CardinalityValueTraversal(cardinality, o));
         }
         ((TraversalOptionParent<M, E, E2>) lastStep).addChildOption((M) merge, (Traversal.Admin<E, E2>) new ConstantTraversal<>(m).asAdmin());

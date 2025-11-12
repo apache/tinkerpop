@@ -903,12 +903,26 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
 
   @MultiProperties
-  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_singleX81X_age_81_setX
+  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_81_setX
     Given the empty graph
     And the traversal of
       """
       g.mergeV([name: "alice", (T.label): "person"]).
           option(Merge.onCreate, [age: 81], Cardinality.set)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\", 81)"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").has(\"age\")"
+    And the graph should return 1 for count of "g.V().has(\"person\",\"name\",\"alice\").properties(\"age\")"
+
+  @MultiProperties
+  Scenario: g_mergeVXname_aliceX_optionXonCreate_age_81_label_person_setX
+    Given the empty graph
+    And the traversal of
+      """
+      g.mergeV([name: "alice"]).
+          option(Merge.onCreate, [age: 81, (T.label): "person"], Cardinality.set)
       """
     When iterated to list
     Then the result should have a count of 1
