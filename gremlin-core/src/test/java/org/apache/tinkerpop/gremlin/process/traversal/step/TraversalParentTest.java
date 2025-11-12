@@ -222,12 +222,6 @@ public class TraversalParentTest {
                         null, null
                 },
                 {AddEdgeStepContract.class,
-                        g.addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
-                        List.of(),
-                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
-                        null, null
-                },
-                {AddEdgeStepContract.class,
                         g.addE("label").from(__.V(1)).to(__.V(2)).property(__.constant("name"), __.constant("cole")),
                         List.of(),
                         List.of(__.constant("name"), __.constant("cole"), __.V(1), __.V(2)),
@@ -237,12 +231,6 @@ public class TraversalParentTest {
                         g.inject(1).addE("label").from(__.V(1)).to(__.V(2)).property("name", __.constant("cole")),
                         List.of(),
                         List.of(__.constant("cole"), __.V(1), __.V(2)),
-                        null, null
-                },
-                {AddEdgeStepContract.class,
-                        g.inject(1).addE(GValue.of("l", "label")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("name", GValue.of("name", "cole")),
-                        List.of(),
-                        List.of(new ConstantTraversal<>(1), new ConstantTraversal<>(2)),
                         null, null
                 },
                 {AddEdgeStepContract.class,

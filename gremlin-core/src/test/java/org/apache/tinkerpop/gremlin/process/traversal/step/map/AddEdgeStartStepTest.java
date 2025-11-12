@@ -59,8 +59,7 @@ public class AddEdgeStartStepTest extends GValueStepTest {
                 g.addE("knows").from(__.V(1)).to(__.V(2)).property("a", "b"),
                 g.addE(GValue.of("label", "knows")).property("a", "b"),
                 g.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")),
-                g.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")),
-                g.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a", GValue.of("prop", "b"))
+                g.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e"))
         );
     }
 
@@ -69,9 +68,7 @@ public class AddEdgeStartStepTest extends GValueStepTest {
         return List.of(
                 Pair.of(g.addE(GValue.of("label", "knows")).property("a", "b"), Set.of("label")),
                 Pair.of(g.addE(GValue.of("label", "created")).property("a", GValue.of("prop", "b")), Set.of("label", "prop")),
-                Pair.of(g.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2")),
-                Pair.of(g.addE(GValue.of("label", "knows")).from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a", GValue.of("prop", "b")), Set.of("label", "from", "to", "prop")),
-                Pair.of(g.addE("knows").from(GValue.of("from", 1)).to(GValue.of("to", 2)).property("a", GValue.of("prop", "b")), Set.of("from", "to", "prop"))
+                Pair.of(g.addE(GValue.of("label", "knows")).property("a", GValue.of("prop1", "b")).property("c", GValue.of("prop2", "e")), Set.of("label", "prop1", "prop2"))
         );
     }
 
@@ -233,8 +230,8 @@ public class AddEdgeStartStepTest extends GValueStepTest {
 
     private GraphTraversal.Admin<Edge, Edge> getAddEdgeGValueTraversal() {
         return g.addE(GValue.of("label", "likes"))
-                .from(GValue.of("from", 1))
-                .to(GValue.of("to", 2))
+                .from(__.V(1))
+                .to(__.V(2))
                 .property(T.id, GValue.of("id", "1234"))
                 .property("rating", GValue.of("r", "great"))
                 .asAdmin();
