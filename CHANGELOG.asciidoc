@@ -20,10 +20,10 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
-[[release-3-8.0]]
-=== TinkerPop 3.8.0 (Release Date: NOT OFFICIALLY RELEASED YET)
+[[release-3-8-0]]
+=== TinkerPop 3.8.0 (Release Date: November 12, 2025)
 
-This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
+This release also includes changes from <<release-3-7-5, 3.7.5>>.
 
 * Added a Gremln MCP server.
 * Added the Air Routes 1.0 dataset to the set of available samples packaged with distributions.
@@ -138,6 +138,50 @@ This release also includes changes from <<release-3-7-XXX, 3.7.XXX>>.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
 * Moved `Traverser` loop logic into new interface `NL_SL_Traverser` and changed loop-supporting `Traverser`s to extend the common interface.
 * Fixed `sample()` in `repeat()` computer algorithm to retain the configured sample size per loop
+
+==== Bugs
+
+* TINKERPOP-2971 having order() before fold() omits an empty list in GroupStep's value traversal
+* TINKERPOP-3047 Grammar does not parse keywords into Map keys
+* TINKERPOP-3067 gremlin-shaded incomplete shading due to Jackson multi-release classes
+* TINKERPOP-3100 Traversal.Admin.lock() has excessive recursion
+* TINKERPOP-3135 Gremlin Console complains about missing plugins field
+* TINKERPOP-3181 Allow Client initialization to succeed even if minPoolSize is not met
+* TINKERPOP-3201 Fix tail inside repeat
+* TINKERPOP-3211 Server does not start when using gremlin-server-secure.yaml sample config
+
+==== Improvements
+
+* TINKERPOP-3175 Add boolean conversion step asBool()
+* TINKERPOP-2491 Improve consistency of the output of range() oriented steps *(breaking)*
+* TINKERPOP-2821 Examine use of Tokens.ARGS_HOST as part of a RequestMessage
+* TINKERPOP-2940 Strategy Dependent Behavior of Ternary Boolean Logic *(breaking)*
+* TINKERPOP-2974 `valueMap` step returns properties in random order
+* TINKERPOP-3017 Simplify TraversalSource creation from AnonymousTraversalSource *(breaking)*
+* TINKERPOP-3046 Make new keyword optional in Gremlin grammar
+* TINKERPOP-3055 withoutStrategies() mechanism in programming languages for providers
+* TINKERPOP-3083 The split() step should provide a way to split an entire string *(breaking)*
+* TINKERPOP-3115 Better handle overflows with sum() *(breaking)*
+* TINKERPOP-3121 Multiple by() modulators lead to unexpected behavior *(breaking)*
+* TINKERPOP-3143 gremlin-javascript should default to GraphBinary
+* TINKERPOP-3147 Prevent aggregate step from having multiple by modulators *(breaking)*
+* TINKERPOP-3148 Prevent dedup step from having multiple by modulators *(breaking)*
+* TINKERPOP-3149 Prevent sack step from having multiple by modulators *(breaking)*
+* TINKERPOP-3150 Prevent sample step from having multiple by modulators *(breaking)*
+* TINKERPOP-3161 Switched to signed bytes in .net *(breaking)*
+* TINKERPOP-3168 Deprecate UnifiedChannelizer and related infrastructure
+* TINKERPOP-3172 Raise Java Language Version to 11 *(breaking)*
+* TINKERPOP-3173 Simplify Comparability Semantics *(breaking)*
+* TINKERPOP-3186 Inconsistency of properties data type on Element *(breaking)*
+* TINKERPOP-3192 RepeatUnrollStrategy can modify traversal semantics *(breaking)*
+* TINKERPOP-3193 Decouple non with()-related configs from Configuring/Parameterizing interfaces *(breaking)*
+* TINKERPOP-3195 Disallow SupplyingBarriers inside RepeatStep *(breaking)*
+* TINKERPOP-3196 Implement proposal 5 regarding changes to local *(breaking)*
+* TINKERPOP-3198 Add tests to ensure behavior of traversers in flatmaps
+* TINKERPOP-3200 Make repeat traversals completely global *(breaking)*
+* TINKERPOP-3202 Limit and range semantics change when used inside repeat *(breaking)*
+* TINKERPOP-3207 Add Barriers to GroupSideEffect, GroupCountSideEffect, TreeSideEffect, and Subgraph Steps *(breaking)*
+* TINKERPOP-3212 Date step consistency *(breaking)*
 
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
