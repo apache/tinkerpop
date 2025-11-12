@@ -79,6 +79,7 @@ const ignoreReason = {
   needsFurtherInvestigation: '',
 };
 
+// An associative array for ignored feature tests containing the scenario name as key
 const ignoredScenarios = {
   // javascript doesn't have subgraph() step yet
   'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
@@ -97,12 +98,8 @@ const ignoredScenarios = {
   'g_VX1X_outE_inV_bothE_otherV_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_VX1X_outE_inV_bothE_otherV_tree_byXnameX_byXlabelX': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_V_out_treeXaX_selectXaX_countXlocalX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  'g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX': new IgnoreError(ignoreReason.treeStepNotSupported),
-  // An associative array containing the scenario name as key, for example:
-  'g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX': new IgnoreError(ignoreReason.nullKeysInMapNotSupportedWell),
-  'g_V_shortestPath_edgesIncluded': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_shortestPath_edgesIncluded_edgesXoutEX': new IgnoreError(ignoreReason.needsFurtherInvestigation),
-  'g_V_shortestpath': new IgnoreError(ignoreReason.needsFurtherInvestigation),
+  'g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX': new IgnoreError(ignoreReason.treeStepNotSupported), 
+   // floating point issues
   'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': new IgnoreError(ignoreReason.floatingPointIssues),
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
 };
