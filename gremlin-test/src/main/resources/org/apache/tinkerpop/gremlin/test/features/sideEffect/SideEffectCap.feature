@@ -161,8 +161,8 @@ Feature: Step - cap()
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"a":"m[{\"d[32].i\":\"d[1].l\",\"d[35].i\":\"d[1].l\",\"d[27].i\":\"d[1].l\",\"d[29].i\":\"d[1].l\"}]"}] |
-      | m[{"b":"m[{\"ripple\":\"d[1].l\",\"lop\":\"d[1].l\"}]"}] |
+      | m[{"a":"m[{\\"d[32].i\\":\\"d[1].l\\",\\"d[35].i\\":\\"d[1].l\\",\\"d[27].i\\":\\"d[1].l\\",\\"d[29].i\\":\\"d[1].l\\"}]"}] |
+      | m[{"b":"m[{\\"ripple\\":\\"d[1].l\\",\\"lop\\":\\"d[1].l\\"}]"}] |
 
   # validates that a collecting barrier produces a filtering effect if it is unproductive.
   Scenario: g_V_hasXperson_name_withinXvadas_peterXX_groupXaX_by_byXout_orderX_capXaX

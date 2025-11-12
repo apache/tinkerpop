@@ -53,10 +53,6 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_groupCount_byXageX", IgnoreReason.NullKeysInMapNotSupported},
                 {"g_withStrategiesXProductiveByStrategyX_V_group_byXageX_byXnameX", IgnoreReason.NullKeysInMapNotSupported},
-                {"g_withoutStrategiesXCountStrategyX_V_count", IgnoreReason.NoReason}, // needs investigation
-                {"g_withoutStrategiesXLazyBarrierStrategyX_V_asXlabelX_aggregateXlocal_xX_selectXxX_selectXlabelX", IgnoreReason.NoReason},
-                // error from P.typeOf() construction causes request deserialization errors that hangs in .NET, solution TBD
-                {"g_V_valuesXageX_isXtypeOfXnon_registered_NameXX", IgnoreReason.NoReason},
             };
 
         private static class Keywords
