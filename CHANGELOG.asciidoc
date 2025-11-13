@@ -138,6 +138,7 @@ This release also includes changes from <<release-3-7-5, 3.7.5>>.
 * Modified `limit()`, `skip()`, range()` in `repeat()` to track per-iteration counters.
 * Moved `Traverser` loop logic into new interface `NL_SL_Traverser` and changed loop-supporting `Traverser`s to extend the common interface.
 * Fixed `sample()` in `repeat()` computer algorithm to retain the configured sample size per loop
+* Fixed `JavaTranslator` to handle scenarios where the last argument to `has()` is null which previously could cause an exception.
 
 ==== Bugs
 
