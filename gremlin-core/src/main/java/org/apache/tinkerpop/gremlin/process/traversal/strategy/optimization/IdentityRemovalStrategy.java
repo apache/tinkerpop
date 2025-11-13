@@ -47,7 +47,7 @@ import java.util.List;
  * @example <pre>
  * __.out().identity().count()            // is replaced by __.out().count()
  * __.in().identity().as("a")             // is replaced by __.in().as("a")
- * __.identity().as("a").out()            // is replaced by __.identity().as("a").out()
+ * __.identity().as("a").out()            // is replaced by __.as("a").out()
  * </pre>
  */
 public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {

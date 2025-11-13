@@ -6051,7 +6051,6 @@ they need to work with `GValue` objects or concrete step implementations. As thi
 Any providers who wish to leverage `GValue` in a `ProviderOptimizationStrategy` should first remove
 `GValueReductionStrategy`, and take ownership over ensuring all placeholder steps are reduced to concrete steps
 afterward. `ProviderGValueReductionStrategy` is offered for such purposes.
-----
 
 === EdgeLabelVerificationStrategy
 

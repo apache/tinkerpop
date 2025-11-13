@@ -24,7 +24,7 @@
  * including server metadata, MCP protocol identifiers, and configuration defaults.
  */
 
-export const GREMLIN_VERSION = '3.8.0-SNAPSHOT'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+export const GREMLIN_VERSION = '3.8.0'; // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 // Server Information
 export const SERVER_INFO = {
