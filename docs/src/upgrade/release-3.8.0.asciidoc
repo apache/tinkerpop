@@ -30,7 +30,7 @@ changes primarily focus on standardizing scoping behavior (local vs global), sim
 related steps behave more consistently and interoperably with one another.
 
 New steps and predicates have been added for type conversion and type testing, providing better control over graphs with
-mixed-type properties. Additionally, this release adds support for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
+mixed-type properties. Additionally, this release adds support for link:https://modelcontextprotocol.io[Model Context Protocol (MCP)]
 with the initial version of `gremlin-mcp` server.
 
 The following table summarizes the impact level of each change, which can help form a guide by which to develop an
@@ -308,6 +308,7 @@ or 'd') as Double by default. Users who need `BigDecimal` precision can still us
 
 ==== Modified Step Behavior
 
+[[datediff-step-returns-milliseconds]]
 ===== dateDiff() Step Returns Milliseconds
 
 The `dateDiff()` step has been changed to return milliseconds instead of seconds for consistency with the `asDate()` 
@@ -489,8 +490,6 @@ should be moved out of the `repeat()` step.
 have led to unexpected results since `cap()` isn't "repeat-aware". Because `cap()` is a `SupplyingBarrier` that reduces
 the number of traversers to one, its use inside `repeat()` is limited.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-3195[TINKERPOP-3195]
-
 `inject()` inside `repeat()` is now also disallowed by the `StandardVerificationStrategy`. The usefulness of `inject()`
 inside `repeat()` is questionable as the injections are exhausted after one iteration. Consider the following examples,
 noting that the examples for version 3.7.4 demonstrate the effect of `RepeatUnrollStrategy` on `inject()` semantics,
@@ -542,6 +541,8 @@ gremlin> g.inject('x').repeat(union(constant(['a','b']).limit(1).unfold(),identi
 ==>b
 ==>x
 ----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3195[TINKERPOP-3195]
 
 [[stricter-repeatunrollstrategy]]
 ====== Stricter RepeatUnrollStrategy
