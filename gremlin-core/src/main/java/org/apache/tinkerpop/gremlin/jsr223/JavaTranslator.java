@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Translator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -301,8 +301,8 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                             }
                         }
 
-                        // special case has() where the first arg is null - sometimes this can end up with the T being
-                        // null and in 3.5.x that generates an exception which raises badly in the translator. it is
+                        // special cases of has() where the first or last arg is null - sometimes this can end up with the T or P being
+                        // null which generates an exception which raises badly in the translator. it is
                         // safer to force this to the String form by letting this "found" version pass. In java this
                         // form of GraphTraversal can't be produced because of validations for has(T, ...) but in
                         // other language it might be allowed which means that has((T) null, ...) from something like
@@ -312,9 +312,17 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                         // badly bytecode should either change to use gremlin-language and go away or bytecode should
                         // get a safer way to be translated to a traversal with more explicit calls that don't rely
                         // on reflection.
-                        if (methodName.equals(GraphTraversal.Symbols.has) && newArguments.length > 0 && null == newArguments[0] &&
-                            method.getParameterTypes()[0].isAssignableFrom(org.apache.tinkerpop.gremlin.structure.T.class)) {
-                            found = false;
+                        Class<?>[] parametersTypes = method.getParameterTypes();
+                        if (methodName.equals(GraphTraversal.Symbols.has) && newArguments.length > 0) {
+                            //first case has((T)null, ...) instead of has((String)null, ...)
+                            if (null == newArguments[0] &&
+                                    parametersTypes[0].isAssignableFrom(org.apache.tinkerpop.gremlin.structure.T.class)) {
+                                found = false;
+                            } else if (newArguments[newArguments.length - 1] == null && parametersTypes[newArguments.length - 1] == P.class) {
+                                //the second case has(String, String, (P)(null)) instead of has(String,String, (Object)null)
+                                //or has(String, (P)(null)) instead of has(String, (Object)null)
+                                found = false;
+                            }
                         }
 
                         if (found) {
