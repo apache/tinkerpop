@@ -16,7 +16,7 @@ limitations under the License.
 ////
 == TinkerPop 3.8.0
 
-*Release Date: NOT OFFICIALLY RELEASED YET*
+*Release Date: November 12, 2025*
 
 Please see the link:https://github.com/apache/tinkerpop/blob/3.8.0/CHANGELOG.asciidoc#release-3-8-0[changelog] for a
 complete list of all the modifications that are part of this release.
