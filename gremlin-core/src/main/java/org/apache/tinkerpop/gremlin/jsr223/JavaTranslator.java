@@ -22,10 +22,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
-import org.apache.tinkerpop.gremlin.process.traversal.Bytecode;
-import org.apache.tinkerpop.gremlin.process.traversal.Translator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.*;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
@@ -60,7 +57,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
     private final S traversalSource;
     private final Class<?> anonymousTraversal;
     private static final Map<Class<?>, Map<String, List<ReflectedMethod>>> GLOBAL_METHOD_CACHE = new ConcurrentHashMap<>();
-    private final Map<Class<?>, Map<String,Method>> localMethodCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Map<String, Method>> localMethodCache = new ConcurrentHashMap<>();
     private final Method anonymousTraversalStart;
 
     private JavaTranslator(final S traversalSource) {
@@ -109,7 +106,7 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
         return StringFactory.translatorString(this);
     }
 
-    ////
+    /// /
 
     private Object translateObject(final Object object) {
         if (object instanceof Bytecode.Binding)
@@ -287,12 +284,12 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                                 // do something far more drastic that doesn't involve reflection.
                                 if (i < argumentsCopy.length && (null == argumentsCopy[i] ||
                                         (argumentsCopy[i] != null && (
-                                        parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
-                                                (parameters[i].getType().isPrimitive() &&
-                                                        (Number.class.isAssignableFrom(argumentsCopy[i].getClass()) ||
-                                                                argumentsCopy[i].getClass().equals(Boolean.class) ||
-                                                                argumentsCopy[i].getClass().equals(Byte.class) ||
-                                                                argumentsCopy[i].getClass().equals(Character.class))))))) {
+                                                parameters[i].getType().isAssignableFrom(argumentsCopy[i].getClass()) ||
+                                                        (parameters[i].getType().isPrimitive() &&
+                                                                (Number.class.isAssignableFrom(argumentsCopy[i].getClass()) ||
+                                                                        argumentsCopy[i].getClass().equals(Boolean.class) ||
+                                                                        argumentsCopy[i].getClass().equals(Byte.class) ||
+                                                                        argumentsCopy[i].getClass().equals(Character.class))))))) {
                                     newArguments[i] = argumentsCopy[i];
                                 } else {
                                     found = false;
@@ -301,20 +298,30 @@ public final class JavaTranslator<S extends TraversalSource, T extends Traversal
                             }
                         }
 
-                        // special case has() where the first arg is null - sometimes this can end up with the T being
-                        // null and in 3.5.x that generates an exception which raises badly in the translator. it is
-                        // safer to force this to the String form by letting this "found" version pass. In java this
-                        // form of GraphTraversal can't be produced because of validations for has(T, ...) but in
-                        // other language it might be allowed which means that has((T) null, ...) from something like
+                        // special cases of has() where the first arg is null or third arg is null - sometimes this can end up with the T being
+                        // null or in the second case calling has that accepts predicate instead of string as parameter in the last argument.
+                        // That generates an exception which raises badly in the translator. it is
+                        // safer to force this to the String form by letting this "found" version pass. In Java
+                        // form of GraphTraversal generated in the first case  can't be produced because of validations
+                        // for has(T, ...) but in other language it might be allowed which means that has((T) null, ...) from something like
                         // python will end up as has((String) null, ...) which filters rather than generates an
                         // exception. calling the T version even in a non-JVM language seems odd and more likely the
                         // caller was shooting for the String one, but ugh who knows. this issue showcases again how
                         // badly bytecode should either change to use gremlin-language and go away or bytecode should
                         // get a safer way to be translated to a traversal with more explicit calls that don't rely
                         // on reflection.
-                        if (methodName.equals(GraphTraversal.Symbols.has) && newArguments.length > 0 && null == newArguments[0] &&
-                            method.getParameterTypes()[0].isAssignableFrom(org.apache.tinkerpop.gremlin.structure.T.class)) {
-                            found = false;
+                        var parametersTypes = method.getParameterTypes();
+                        if (methodName.equals(GraphTraversal.Symbols.has) && newArguments.length > 0) {
+                            //first case has((T)null, ...) instead of has((String)null, ...)
+                            if (null == newArguments[0] &&
+                                    parametersTypes[0].isAssignableFrom(org.apache.tinkerpop.gremlin.structure.T.class)) {
+                                found = false;
+                            } else if (newArguments.length == 3 && newArguments[2] == null && parametersTypes[0] == String.class &&
+                                    parametersTypes[1] == String.class &&
+                                    parametersTypes[2] == P.class) {
+                                //the second case has(String, String, (P)(null)) instead of has(String,String, (Object)null)
+                                found = false;
+                            }
                         }
 
                         if (found) {
