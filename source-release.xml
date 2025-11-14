@@ -102,6 +102,7 @@
                 <exclude>gremlin-python/src/main/python/venv/**</exclude>
                 <exclude>gremlin-python/src/main/python/.pytest_cache/**</exclude>
                 <exclude>gremlin-python/src/main/python/.idea/**</exclude>
+                <exclude>gremlin-python/src/main/python/.eggs/**</exclude>
                 <exclude>gremlin-python/src/main/python/**/__pycache__/**</exclude>
                 <exclude>gremlin-javascript/.glv</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/.idea/**</exclude>
@@ -110,9 +111,13 @@
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/etc/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node/**</exclude>
                 <exclude>gremlin-javascript/src/main/javascript/gremlin-javascript/node_modules/**</exclude>
+                <exclude>gremlin-javascript/examples/node/node_modules/**</exclude>
                 <exclude>gremlin-go/.glv</exclude>
                 <exclude>gremlin-go/gremlin-*/**</exclude>
                 <exclude>gremlin-go/coverage.out</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/node_modules/**</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/node/**</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/dist/**</exclude>
             </excludes>
         </fileSet>
         <!-- license, readme, etc. calculated at build time -->
