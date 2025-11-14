@@ -115,6 +115,9 @@
                 <exclude>gremlin-go/.glv</exclude>
                 <exclude>gremlin-go/gremlin-*/**</exclude>
                 <exclude>gremlin-go/coverage.out</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/node_modules/**</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/node/**</exclude>
+                <exclude>gremlin-mcp/src/main/javascript/dist/**</exclude>
             </excludes>
         </fileSet>
         <!-- license, readme, etc. calculated at build time -->
