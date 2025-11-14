@@ -24,6 +24,7 @@ from gremlin_python.process.strategies import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.serializer import GraphBinarySerializersV1
 
+VERTEX_LABEL = 'connection'
 
 def main():
     with_remote()
@@ -40,15 +41,13 @@ def with_remote():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    server_url = 'ws://localhost:8182/gremlin'
+    rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
-    # drop existing vertices
-    g.V().drop().iterate()
-
     # simple query to verify connection
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     # cleanup
@@ -57,11 +56,12 @@ def with_remote():
 
 # connecting with plain text authentication
 def with_auth():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
+    server_url = 'ws://localhost:8182/gremlin'
+    rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password')
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
@@ -69,11 +69,12 @@ def with_auth():
 
 # connecting with Kerberos SASL authentication
 def with_kerberos():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
+    server_url = 'ws://localhost:8182/gremlin'
+    rc = DriverRemoteConnection(server_url, 'g', kerberized_service='gremlin@hostname.your.org')
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
@@ -81,8 +82,9 @@ def with_kerberos():
 
 # connecting with customized configurations
 def with_configs():
+    server_url = 'ws://localhost:8182/gremlin'
     rc = DriverRemoteConnection(
-        'ws://localhost:8182/gremlin', 'g',
+        server_url, 'g',
         username="", password="", kerberized_service='',
         message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
         graphson_writer=None, headers=None, session=None,
@@ -90,8 +92,8 @@ def with_configs():
     )
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
