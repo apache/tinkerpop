@@ -21,9 +21,7 @@ import os
 sys.path.append("..")
 
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.process.strategies import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.auth import basic, sigv4
 
