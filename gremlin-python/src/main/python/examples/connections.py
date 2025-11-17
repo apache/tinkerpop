@@ -23,15 +23,13 @@ sys.path.append("..")
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
-from gremlin_python.driver.auth import basic, sigv4
+from gremlin_python.driver.auth import basic
 
 VERTEX_LABEL = os.getenv('VERTEX_LABEL', 'connection')
 
 def main():
     with_remote()
     with_auth()
-    with_sigv4()
-    with_sigv4_session_token()
 
 
 def with_remote():
@@ -78,46 +76,6 @@ def with_auth():
     print("Vertex count: " + str(count))
 
     rc.close()
-
-
-# connecting with AWS SigV4 authentication
-def with_sigv4():
-    # Only set mock credentials if not already present
-    os.environ.setdefault('AWS_ACCESS_KEY_ID', 'MOCK_ID')
-    os.environ.setdefault('AWS_SECRET_ACCESS_KEY', 'MOCK_KEY')
-
-    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
-    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
-
-    rc = DriverRemoteConnection(server_url, 'g', auth=sigv4('gremlin-east-1', 'tinkerpop-sigv4'))
-    g = traversal().with_remote(rc)
-
-    v = g.add_v(VERTEX_LABEL).iterate()
-    count = g.V().has_label(VERTEX_LABEL).count().next()
-    print("Vertex count: " + str(count))
-
-    rc.close()
-
-
-# connecting with AWS SigV4 authentication with session token
-def with_sigv4_session_token():
-    # Only set mock credentials if not already present
-    os.environ.setdefault('AWS_ACCESS_KEY_ID', 'MOCK_ID')
-    os.environ.setdefault('AWS_SECRET_ACCESS_KEY', 'MOCK_KEY')
-    os.environ.setdefault('AWS_SESSION_TOKEN', 'MOCK_TOKEN')
-
-    # if there is a port placeholder in the env var then we are running with docker so set appropriate port
-    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
-
-    rc = DriverRemoteConnection(server_url, 'g', auth=sigv4('gremlin-east-1', 'tinkerpop-sigv4'))
-    g = traversal().with_remote(rc)
-
-    v = g.add_v(VERTEX_LABEL).iterate()
-    count = g.V().has_label(VERTEX_LABEL).count().next()
-    print("Vertex count: " + str(count))
-
-    rc.close()
-
 
 if __name__ == "__main__":
     main()
