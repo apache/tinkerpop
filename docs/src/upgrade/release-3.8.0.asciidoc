@@ -61,7 +61,7 @@ upgrade plan.
 |Breaking |Step Behavior Change |<<group-value-traversal-semantics,group() Value Traversal Semantics>>
 |Breaking |Step Behavior Change |<<remove-undocumented-with-modulation,Remove Undocumented `with()` modulation>>
 |Breaking |Step Behavior Change |<<by-modulation-semantics,By Modulation Semantics>>
-|Breaking |Step Behavior change |<<element-promoted-for-mergeV>>,Element Promoted for `mergeV()` and `mergeE()`>>
+|Breaking |Step Behavior change |<<element-promoted-for-mergeV,Element Promoted for `mergeV()` and `mergeE()`>>
 |Breaking |Grammar Removal |<<removed-structurevertex-from-grammar,Removed StructureVertex from Grammar>>
 |Breaking |Grammar Restriction |<<map-keys-restrictions,`Map` keys restrictions>>
 |Breaking |Grammar Restriction |<<restriction-of-step-arguments,Restriction of Step Arguments>>
@@ -935,7 +935,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3121[TINKERPOP-3121],
 link:https://issues.apache.org/jira/browse/TINKERPOP-2974[TINKERPOP-2974]
 
 [[element-promoted-for-mergeV]]
-===== Element Promoted for `mergeV()` and `mergeE()
+===== Element Promoted for `mergeV()` and `mergeE()`
 
 Mid-traversal usage of `mergeV()` and `mergeE()` had different behavior from their start step counterparts. Used
 mid-traversal, it would pass through the current traverser. On the other hand, the start forms would pass through the
