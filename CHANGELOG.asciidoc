@@ -81,6 +81,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `minSize` setting for Gremlin Driver connection pool since connections are now short-lived HTTP connections
 * Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
 * Enabled TCP Keep-Alive in GremlinServer.
+* Updated Python GLV examples to use HTTP and to run as part of the integration tests.
 
 == TinkerPop 3.8.0 (Grix Greven)
 
