@@ -86,6 +86,12 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
+[[release-3-8-1]]
+=== TinkerPop 3.8.1 (NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-7-6, 3.7.6>>.
+
+
 [[release-3-8-0]]
 === TinkerPop 3.8.0 (Release Date: November 12, 2025)
 
@@ -253,6 +259,9 @@ This release also includes changes from <<release-3-7-5, 3.7.5>>.
 == TinkerPop 3.7.0 (Gremfir Master of the Pan Flute)
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-zamfir.png[width=185]
+
+[[release-3-7-6]]
+=== TinkerPop 3.7.6 (NOT OFFICIALLY RELEASED YET)
 
 [[release-3-7-5]]
 === TinkerPop 3.7.5 (Release Date: November 12, 2025)
