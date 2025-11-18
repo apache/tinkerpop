@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "customize-cra": "^1.0.0",
-    "gremlint": "^3.7.4",
+    "gremlint": "^3.8.0",
     "react": "^17.0.2",
     "react-app-rewired": "^2.2.1",
     "react-dom": "^17.0.2",
@@ -58,6 +58,6 @@
     "tslint-config-prettier": "^1.18.0"
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   }
 }
