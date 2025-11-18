@@ -24,12 +24,14 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.auth import basic
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
 VERTEX_LABEL = os.getenv('VERTEX_LABEL', 'connection')
 
 def main():
     with_remote()
     with_auth()
+    with_configs()
 
 
 def with_remote():
@@ -69,6 +71,22 @@ def with_auth():
     else:
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'))
     
+    g = traversal().with_remote(rc)
+
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
+    print("Vertex count: " + str(count))
+
+    rc.close()
+
+# connecting with customized configurations
+def with_configs():
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
+    rc = DriverRemoteConnection(
+        server_url, 'g',
+        request_serializer=GraphBinarySerializersV4(),
+        headers=None,
+    )
     g = traversal().with_remote(rc)
 
     v = g.add_v(VERTEX_LABEL).iterate()
