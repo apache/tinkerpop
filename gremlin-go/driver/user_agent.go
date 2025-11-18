@@ -37,7 +37,7 @@ var userAgent string
 
 const userAgentHeader = "User-Agent"
 
-const gremlinVersion = "3.8.0" // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
+const gremlinVersion = "3.8.1-SNAPSHOT" // DO NOT MODIFY - Configured automatically by Maven Replacer Plugin
 
 func init() {
 	applicationName := "NotAvailable"

@@ -20,6 +20,12 @@ limitations under the License.
 
 image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/images/gremlin-67.png[width=185]
 
+[[release-3-8-1]]
+=== TinkerPop 3.8.1 (NOT OFFICIALLY RELEASED YET)
+
+This release also includes changes from <<release-3-7-6, 3.7.6>>.
+
+
 [[release-3-8-0]]
 === TinkerPop 3.8.0 (Release Date: November 12, 2025)
 
