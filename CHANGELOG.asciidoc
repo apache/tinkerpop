@@ -196,6 +196,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (NOT OFFICIALLY RELEASED YET)
+* Integrated Python driver examples into automated build process to ensure examples remain functional.
 
 [[release-3-7-5]]
 === TinkerPop 3.7.5 (Release Date: November 12, 2025)
