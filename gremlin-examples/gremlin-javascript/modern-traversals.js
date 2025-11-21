@@ -24,13 +24,15 @@ const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const p = gremlin.process.P;
 const t = gremlin.process.t;
 
+const serverUrl = 'ws://localhost:8182/gremlin';
+
 async function main() {
     /*
     This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
     For details, see https://tinkerpop.apache.org/docs/current/reference/#gremlin-server-docker-image and use
     conf/gremlin-server-modern.yaml.
     */
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const dc = new DriverRemoteConnection(serverUrl);
     const g = traversal().withRemote(dc);
 
     const e1 = await g.V(1).bothE().toList(); // (1)
