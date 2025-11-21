@@ -25,8 +25,11 @@ import (
 	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
 
+var serverURL = "ws://localhost:8182/gremlin"
+var vertexLabel = "person"
+
 func main() {
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -35,9 +38,9 @@ func main() {
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
 	// Basic Gremlin: adding and retrieving data
-	v1, err := g.AddV("person").Property("name", "marko").Next()
-	v2, err := g.AddV("person").Property("name", "stephen").Next()
-	v3, err := g.AddV("person").Property("name", "vadas").Next()
+	v1, err := g.AddV(vertexLabel).Property("name", "marko").Next()
+	v2, err := g.AddV(vertexLabel).Property("name", "stephen").Next()
+	v3, err := g.AddV(vertexLabel).Property("name", "vadas").Next()
 	v1Vertex, err := v1.GetVertex()
 	v2Vertex, err := v2.GetVertex()
 	v3Vertex, err := v3.GetVertex()
@@ -58,11 +61,11 @@ func main() {
 	}
 
 	// Retrieve the data from the "marko" vertex
-	marko, err := g.V().Has("person", "name", "marko").Values("name").Next()
+	marko, err := g.V().Has(vertexLabel, "name", "marko").Values("name").Next()
 	fmt.Println("name:", marko.GetString())
 
 	// Find the "marko" vertex and then traverse to the people he "knows" and return their data
-	peopleMarkoKnows, err := g.V().Has("person", "name", "marko").Out("knows").Values("name").ToList()
+	peopleMarkoKnows, err := g.V().Has(vertexLabel, "name", "marko").Out("knows").Values("name").ToList()
 	for _, person := range peopleMarkoKnows {
 		fmt.Println("marko knows", person.GetString())
 	}
