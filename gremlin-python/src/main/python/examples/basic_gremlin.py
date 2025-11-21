@@ -40,8 +40,8 @@ def main():
 
     # be sure to use a terminating step like next() or iterate() so that the traversal "executes"
     # iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-    g.V(v1).add_e('knows').to(__.V(v2)).property('weight', 0.75).iterate()
-    g.V(v1).add_e('knows').to(__.V(v3)).property('weight', 0.75).iterate()
+    g.V(v1).add_e('knows').to(v2).property('weight', 0.75).iterate()
+    g.V(v1).add_e('knows').to(v3).property('weight', 0.75).iterate()
 
     # retrieve the data from the "marko" vertex
     marko = g.V().has(VERTEX_LABEL, 'name', 'marko').values('name').next()

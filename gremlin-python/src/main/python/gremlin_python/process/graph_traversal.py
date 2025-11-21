@@ -28,6 +28,7 @@ from .traversal import GremlinLang
 from ..driver.remote_connection import RemoteStrategy
 from .. import statics
 from ..statics import long
+from ..structure.graph import Vertex
 
 log = logging.getLogger("gremlinpython")
 
@@ -506,7 +507,10 @@ class GraphTraversal(Traversal):
         return self
 
     def from_(self, *args):
-        self.gremlin_lang.add_step("from", *args)
+        if len(args) == 1 and isinstance(args[0], Vertex):
+            self.gremlin_lang.add_step("from", __.V(args[0].id))
+        else:
+            self.gremlin_lang.add_step("from", *args)
         return self
 
     def group(self, *args):
@@ -943,7 +947,10 @@ class GraphTraversal(Traversal):
         return self
 
     def to(self, *args):
-        self.gremlin_lang.add_step("to", *args)
+        if len(args) == 1 and isinstance(args[0], Vertex):
+            self.gremlin_lang.add_step("to", __.V(args[0].id))
+        else:
+            self.gremlin_lang.add_step("to", *args)
         return self
 
     def toE(self, *args):

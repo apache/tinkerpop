@@ -370,7 +370,7 @@ class TestTraversal(object):
 
         # Test edge creation with from/to vertices
         from_to = g.add_e("Edge").from_(Vertex(1)).to(Vertex(2))
-        assert "g.addE('Edge').from(1).to(2)" == from_to.gremlin_lang.get_gremlin()
+        assert "g.addE('Edge').from(__.V(1)).to(__.V(2))" == from_to.gremlin_lang.get_gremlin()
 
         # Test mergeE() with Vertex in dictionary
         merge_map = {

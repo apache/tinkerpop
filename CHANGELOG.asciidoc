@@ -82,6 +82,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `idleConnectionTimeout` setting for Gremlin Driver and automatic closing of idle connections
 * Enabled TCP Keep-Alive in GremlinServer.
 * Updated Python GLV examples to use HTTP and to run as part of the integration tests.
+* Fixed `gremlin-python` `to()` and `from_()` methods to wrap Vertex objects with `__.V()` for proper edge creation.
 
 == TinkerPop 3.8.0 (Grix Greven)
 
