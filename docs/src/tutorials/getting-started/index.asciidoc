@@ -45,7 +45,7 @@ your trainer is in order. Meet Gremlin!
 image:gremlin-standing.png[width=125]
 
 Gremlin helps you navigate the vertices and edges of a graph. He is essentially your query language to graph
-databases, as link:http://sql2gremlin.com/[SQL] is the query language to relational databases. To tell Gremlin how
+databases, as link:https://github.com/dkuppitz/sql2gremlin[SQL] is the query language to relational databases. To tell Gremlin how
 he should "traverse" the graph (i.e., what you want your query to do) you need a way to provide him commands in the
 language he understands — and, of course, that language is called "Gremlin". For this task, you need one of
 TinkerPop's most important tools: link:https://tinkerpop.apache.org/docs/x.y.z/reference/#gremlin-console[The Gremlin Console].

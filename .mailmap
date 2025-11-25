@@ -2,25 +2,31 @@
 # maps log commit email addresses to user names so that they properly report
 # for release notes with: git shortlog -sn
 # --------------------------------------------------------------------------
+Andrea Child                     <andrea.child@improving.com>
+Andrea Child                     <alchild@proton.me>
 Bob Briody                       <bob@thinkaurelius.com>
 Bob Briody                       <bob.briody@datastax.com>
 Bryn Cooke                       <bryncooke@gmail.com>
+Cole Greer                       <Cole.Greer@improving.com>
+Cole Greer                       <112986082+Cole-Greer@users.noreply.github.com>
+Cole Greer                       <coleg@bitquilltech.com>
+Dave Bechberger                  <bechbd@users.noreply.github.com>
 Florian Hockmann                 <fh@florian-hockmann.de>
-Harsh Thakkar                    <harsh9t@gmail.com>
 HadoopMarc                       <vtslab@xs4all.nl>
+Harsh Thakkar                    <harsh9t@gmail.com>
 Jason Plurad                     <pluradj@us.ibm.com>
+Jorge Bay-Gondra                 <jorgebaygondra@gmail.com>
+Jorge Bay-Gondra                 <jorgebaygondra@gmail.com>
+Ken Hu                           <106191785+kenhuuu@users.noreply.github.com>
 Marko A. Rodriguez               <okram@apache.org>
 Matt Frantz                      <mfrantz@redsealnetworks.com>
 Mike Personick                   <mike@supersonick.io>
 Otavio Santana                   <otaviopolianasantana@gmail.com>
 Øyvind Sæbø                      <oyvind.sabo@gmail.com>
-Dave Bechberger                  <bechbd@users.noreply.github.com>
 Stephen Mallette                 <spmallette@users.noreply.github.com>
 Stephen Mallette                 <spmva@genoprime.com>
 Stephen Mallette                 <spmva@genprime.com>
 Valentyn Kahamlyk                <vkagamlyk@users.noreply.github.com>
 Valentyn Kahamlyk                <valentynk@bitquilltech.com>
-Jorge Bay-Gondra                 <jorgebaygondra@gmail.com>
-Jorge Bay-Gondra                 <jorgebaygondra@gmail.com>
-
-
+Yang Xia                         <55853655+xiazcy@users.noreply.github.com>
+Yang Xia                         <xiazcy@gmail.com>

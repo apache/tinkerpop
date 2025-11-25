@@ -65,11 +65,8 @@ Provides a detailed look at The Gremlin Console and how it can be used when work
 Identifies and explains the component parts of a Gremlin traversal.
 ^|image:gremlin-chef.png[width=125] |link:https://tinkerpop.apache.org/docs/x.y.z/recipes/[Gremlin Recipes] +
 A collection of best practices and common traversal patterns for Gremlin.
-|image:gremlin-lab-coat.png[width=200] |link:http://sql2gremlin.com/[Sql2Gremlin] +
+|image:gremlin-lab-coat.png[width=200] |link:https://github.com/dkuppitz/sql2gremlin[Sql2Gremlin] +
 Learn Gremlin using typical patterns found when querying data with SQL. (*external*)
-^|image:gremlin-standing.png[width=125] |link:https://academy.datastax.com/resources/getting-started-graph-databases[Getting Started with Graph Databases] +
-A brief overview of RDBMS architecture in comparison to graph, basic graph terminology, a real-world use case for graph,
-and an overview of Gremlin. (*external*)
 ^|image:gremlin-compendium.png[width=200] |link:http://www.doanduyhai.com/blog/?p=13460[The Gremlin Compendium, minimum survival kit for any Gremlin user] +
 A series of blog posts that examine the Gremlin language in the context of various graph traversal patterns. (*external*)
 ^|image:practical-gremlin.png[width=200] |link:http://kelvinlawrence.net/book/Gremlin-Graph-Guide.html[Practical Gremlin: An Apache TinkerPop Tutorial] +
