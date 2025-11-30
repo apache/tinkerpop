@@ -147,8 +147,15 @@ public class ImportGremlinPluginTest {
                 .fieldsImports(Collections.singletonList(Math.class.getCanonicalName() + "#*")).create();
 
         final DefaultImportCustomizer customizer = (DefaultImportCustomizer) module.getCustomizers().get()[0];
-        assertThat(customizer.getFieldImports(), is(new HashSet<>(
-                Arrays.asList(Math.class.getField("PI"), Math.class.getField("E")))));
+        // Math.TAU was added in Java 19
+        final HashSet<Field> expectedFields = new HashSet<>(Arrays.asList(
+                Math.class.getField("PI"), Math.class.getField("E")));
+        try {
+            expectedFields.add(Math.class.getField("TAU"));
+        } catch (NoSuchFieldException ignored) {
+            // TAU not available in Java < 19
+        }
+        assertThat(customizer.getFieldImports(), is(expectedFields));
     }
 
     @Test
