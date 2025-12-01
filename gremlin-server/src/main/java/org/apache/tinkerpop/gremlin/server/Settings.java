@@ -190,6 +190,14 @@ public class Settings {
     public boolean strictTransactionManagement = false;
 
     /**
+     * If set to {@code true} the Gremlin Server will close the session when a GraphOp (commit or rollback) is
+     * successfully completed on that session.
+     *
+     * NOTE: Defaults to false in 3.7.x/3.8.x to prevent breaking change.
+     */
+    public boolean closeSessionPostGraphOp = false;
+
+    /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
     public String channelizer = WebSocketChannelizer.class.getName();
