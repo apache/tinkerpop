@@ -119,7 +119,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
                 toVertex = ((Attachable<Vertex>) toVertex)
                         .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).to() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
         }
@@ -129,7 +129,7 @@ public class AddEdgeStep<S> extends ScalarMapStep<S, Edge> implements AddEdgeSte
                 fromVertex = ((Attachable<Vertex>) fromVertex)
                         .attach(Attachable.Method.get(this.getTraversal().getGraph().orElse(EmptyGraph.instance())));
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             throw new IllegalStateException(String.format(
                     "The value given to addE(%s).from() must resolve to a Vertex or the ID of a Vertex present in the graph. The provided value does not match any vertices in the graph", edgeLabel));
         }
