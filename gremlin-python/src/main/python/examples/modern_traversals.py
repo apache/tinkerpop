@@ -34,13 +34,13 @@ def main():
     # conf/gremlin-server-modern.yaml.
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port
     server_url = os.getenv('GREMLIN_SERVER_URL', 'http://localhost:8182/gremlin').format(45940)
-    
+
     # CI uses port 45940 with gmodern binding, local uses 8182 with g binding
     if ':45940' in server_url:
         graph_binding = 'gmodern'  # CI environment
     else:
         graph_binding = 'g'        # Local environment
-    
+
     rc = DriverRemoteConnection(server_url, graph_binding)
     g = traversal().with_remote(rc)
 

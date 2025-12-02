@@ -65,6 +65,7 @@ services:
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true'
       && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json'
+      && pip install .
       && echo 'Running examples...'
       && python3 examples/basic_gremlin.py
       && python3 examples/connections.py

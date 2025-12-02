@@ -60,7 +60,7 @@ def with_remote():
 def with_auth():
     # if there is a port placeholder in the env var then we are running with docker so set appropriate port
     server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'http://localhost:8182/gremlin').format(45941)
-    
+
     # disable SSL certificate verification for CI environments
     if ':45941' in server_url:
         ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -70,7 +70,7 @@ def with_auth():
                                     transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
     else:
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'))
-    
+
     g = traversal().with_remote(rc)
 
     v = g.add_v(VERTEX_LABEL).iterate()
