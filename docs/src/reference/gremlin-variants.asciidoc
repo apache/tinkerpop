@@ -1520,6 +1520,56 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
 |=========================================================
 
+[[gremlin-javascript-logging]]
+=== Logging
+
+The Gremlin-JavaScript driver emits connection events for logging and monitoring, but these events are silently ignored unless a listener is attached. Use the `addListener()` method to subscribe to events after creating a `DriverRemoteConnection` or `Client`:
+
+[source,javascript]
+----
+// Using DriverRemoteConnection
+const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+
+dc.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+dc.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+dc.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+const g = traversal().withRemote(dc);
+
+// Using Client
+const client = new Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+client.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+client.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+client.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+await client.open();
+----
+
+Available events:
+
+* `log` - General connection logs (open, ping, pong, close, errors)
+* `socketError` - WebSocket errors
+* `close` - Connection close with status code and message
+
+To remove a listener, use `removeListener(event, handler)` with the same handler reference.
+
 [[gremlin-javascript-transactions]]
 === Transactions
 
