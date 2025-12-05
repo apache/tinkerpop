@@ -141,8 +141,8 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         }};
     }
 
-    // Determines whether to destroy the session after a successful COMMIT/ROLLBACK. Set during init().
-    private boolean destroySessionPostGraphOp;
+    // Determines whether to close the session after a successful COMMIT/ROLLBACK. Set during init().
+    private boolean closeSessionPostGraphOp;
 
     public SessionOpProcessor() {
         super(false);
@@ -157,7 +157,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     public void init(final Settings settings) {
         this.maxParameters = (int) settings.optionalProcessor(SessionOpProcessor.class).orElse(DEFAULT_SETTINGS).config.
                 getOrDefault(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
-        this.destroySessionPostGraphOp = settings.destroySessionPostGraphOp;
+        this.closeSessionPostGraphOp = settings.closeSessionPostGraphOp;
     }
 
     /**
@@ -550,7 +550,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                 .statusAttributes(attributes)
                                 .create());
 
-                        if (destroySessionPostGraphOp) {
+                        if (closeSessionPostGraphOp) {
                             // Setting force to true prevents deadlock when this thread attempts to destroy the session.
                             // This should be safe since either a commit or rollback just finished so the transaction
                             // shouldn't be open.
@@ -583,7 +583,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                     .statusAttributeException(t).create());
                         }
 
-                        if (destroySessionPostGraphOp) {
+                        if (closeSessionPostGraphOp) {
                             // Destroy the session after a successful rollback due to error. Placed here rather than
                             // in a finally block since we don't want to end the session if no commit/rollback succeeded.
                             session.manualKill(true);

@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,10 +45,12 @@ import static org.junit.Assert.fail;
  * Integration tests for gremlin-driver and bytecode sessions.
  *
  * NOTE: this is effectively a copy of GremlinSessionTxIntegrateTest but the expectation is that the gremlin-driver
- * will be configured in a way that allows connection re-use as the server allows it via the "destroySessionPostGraphOp"
- * setting.
+ * will be configured in a way that allows connection re-use as the server is configured with "closeSessionPostGraphOp"
+ * set to True.
  */
 public class GremlinSessionReuseTxIntegrateTest extends AbstractGremlinServerIntegrationTest {
+
+    public static Long DEFAULT_TEST_SESSION_TIMEOUT = 3000L;
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -61,11 +62,9 @@ public class GremlinSessionReuseTxIntegrateTest extends AbstractGremlinServerInt
         settings.graphs.put("graph", "conf/tinkertransactiongraph-empty.properties");
 
         // Set this as it is what allows connection re-use on the server side.
-        settings.destroySessionPostGraphOp = true;
+        settings.closeSessionPostGraphOp = true;
 
         switch (nameOfTest) {
-            case "shouldExecuteBytecodeInSession":
-                break;
             case "shouldTimeoutTxBytecode":
                 settings.processors.clear();
 
@@ -73,11 +72,11 @@ public class GremlinSessionReuseTxIntegrateTest extends AbstractGremlinServerInt
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
                 processorSettings.className = SessionOpProcessor.class.getCanonicalName();
                 processorSettings.config = new HashMap<>();
-                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000L);
+                processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, DEFAULT_TEST_SESSION_TIMEOUT);
                 settings.processors.add(processorSettings);
 
                 // Unified setting
-                settings.sessionLifetimeTimeout = 3000L;
+                settings.sessionLifetimeTimeout = DEFAULT_TEST_SESSION_TIMEOUT;
                 break;
         }
 
@@ -109,7 +108,7 @@ public class GremlinSessionReuseTxIntegrateTest extends AbstractGremlinServerInt
 
             // the following should fail with a dead session
             gtx.V().count().iterate();
-            fail("Session is dead - a new one should not reopen to server this request");
+            fail("Session is dead - a new one should not reopen to serve this request");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -700,7 +700,7 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                             .statusAttributes(attributes)
                             .create());
 
-                if (sessionTask.getSettings().destroySessionPostGraphOp) {
+                if (sessionTask.getSettings().closeSessionPostGraphOp) {
                     close();
                 }
             } else {
