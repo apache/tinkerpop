@@ -25,6 +25,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+==== Improvements
+
+* Added public serialization API in `gremlin-go` to enable custom transport implementations (gRPC, HTTP/2, etc.).
 
 [[release-3-8-0]]
 === TinkerPop 3.8.0 (Release Date: November 12, 2025)
