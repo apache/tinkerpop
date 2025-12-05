@@ -583,7 +583,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                     .statusAttributeException(t).create());
                         }
 
-                        if (closeSessionPostGraphOp) {
+                        if (closeSessionPostGraphOp && shouldManageTransactionsForRequest(context)) {
                             // Destroy the session after a successful rollback due to error. Placed here rather than
                             // in a finally block since we don't want to end the session if no commit/rollback succeeded.
                             session.manualKill(true);
@@ -607,20 +607,17 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onError(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
