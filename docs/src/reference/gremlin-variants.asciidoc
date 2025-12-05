@@ -536,7 +536,7 @@ type implementation. To input a set into Gremlin-Go, a custom struct which imple
 will be serialized as a set. `gremlingo.NewSimpleSet` is a basic implementation of a set that is provided by Gremlin-Go
 that can be used to fulfill the `gremlingo.Set` interface if desired.
 
-* Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal 
+* Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
 
 [[gremlin-go-examples]]
@@ -1586,6 +1586,56 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.pingInterval |Number |Ping request interval in ms if ping enabled. |60000
 |options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
 |=========================================================
+
+[[gremlin-javascript-logging]]
+=== Logging
+
+The Gremlin-JavaScript driver emits connection events for logging and monitoring, but these events are silently ignored unless a listener is attached. Use the `addListener()` method to subscribe to events after creating a `DriverRemoteConnection` or `Client`:
+
+[source,javascript]
+----
+// Using DriverRemoteConnection
+const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+
+dc.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+dc.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+dc.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+const g = traversal().withRemote(dc);
+
+// Using Client
+const client = new Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+client.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+client.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+client.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+await client.open();
+----
+
+Available events:
+
+* `log` - General connection logs (open, ping, pong, close, errors)
+* `socketError` - WebSocket errors
+* `close` - Connection close with status code and message
+
+To remove a listener, use `removeListener(event, handler)` with the same handler reference.
 
 [[gremlin-javascript-strategies]]
 === Traversal Strategies
