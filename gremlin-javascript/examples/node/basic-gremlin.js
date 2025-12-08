@@ -21,14 +21,17 @@ const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 
+const serverUrl = process.env.GREMLIN_SERVER_URL || 'ws://localhost:8182/gremlin';
+const vertexLabel = process.env.VERTEX_LABEL || 'person';
+
 async function main() {
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const dc = new DriverRemoteConnection(serverUrl);
     const g = traversal().withRemote(dc);
 
     // Basic Gremlin: adding and retrieving data
-    const v1 = await g.addV('person').property('name','marko').next();
-    const v2 = await g.addV('person').property('name','stephen').next();
-    const v3 = await g.addV('person').property('name','vadas').next();
+    const v1 = await g.addV(vertexLabel).property('name','marko').next();
+    const v2 = await g.addV(vertexLabel).property('name','stephen').next();
+    const v3 = await g.addV(vertexLabel).property('name','vadas').next();
 
     // Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
     // Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
@@ -36,11 +39,11 @@ async function main() {
     await g.V(v1.value).addE('knows').to(v3.value).property('weight',0.75).iterate();
 
     // Retrieve the data from the "marko" vertex
-    const marko = await g.V().has('person','name','marko').values('name').toList();
+    const marko = await g.V().has(vertexLabel,'name','marko').values('name').toList();
     console.log("name: " + marko[0]);
 
     // Find the "marko" vertex and then traverse to the people he "knows" and return their data
-    const peopleMarkoKnows = await g.V().has('person','name','marko').out('knows').values('name').toList();
+    const peopleMarkoKnows = await g.V().has(vertexLabel,'name','marko').out('knows').values('name').toList();
     peopleMarkoKnows.forEach((person) => {
         console.log("marko knows " + person);
     });
