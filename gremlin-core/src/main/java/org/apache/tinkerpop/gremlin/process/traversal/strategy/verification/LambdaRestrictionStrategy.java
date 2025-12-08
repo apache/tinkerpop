@@ -51,7 +51,7 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof LambdaHolder || step instanceof ComparatorHolder) && step.toString().contains("lambda"))
+            if ((step instanceof LambdaHolder || step instanceof ComparatorHolder) && step.toString().toLowerCase().contains("lambda"))
                 throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
         }
     }
