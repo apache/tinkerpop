@@ -141,6 +141,9 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         }};
     }
 
+    // Determines whether to close the session after a successful COMMIT/ROLLBACK. Set during init().
+    private boolean closeSessionPostGraphOp;
+
     public SessionOpProcessor() {
         super(false);
     }
@@ -154,6 +157,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     public void init(final Settings settings) {
         this.maxParameters = (int) settings.optionalProcessor(SessionOpProcessor.class).orElse(DEFAULT_SETTINGS).config.
                 getOrDefault(CONFIG_MAX_PARAMETERS, DEFAULT_MAX_PARAMETERS);
+        this.closeSessionPostGraphOp = settings.closeSessionPostGraphOp;
     }
 
     /**
@@ -546,6 +550,13 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                 .statusAttributes(attributes)
                                 .create());
 
+                        if (closeSessionPostGraphOp) {
+                            // Setting force to true prevents deadlock when this thread attempts to destroy the session.
+                            // This should be safe since either a commit or rollback just finished so the transaction
+                            // shouldn't be open.
+                            session.manualKill(true);
+                        }
+
                     } catch (Throwable t) {
                         onError(graph, context);
                         // if any exception in the chain is TemporaryException or Failure then we should respond with the
@@ -571,6 +582,13 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                                     .statusMessage(t.getMessage())
                                     .statusAttributeException(t).create());
                         }
+
+                        if (closeSessionPostGraphOp && shouldManageTransactionsForRequest(context)) {
+                            // Destroy the session after a successful rollback due to error. Placed here rather than
+                            // in a finally block since we don't want to end the session if no commit/rollback succeeded.
+                            session.manualKill(true);
+                        }
+
                         if (t instanceof Error) {
                             //Re-throw any errors to be handled by and set as the result the FutureTask
                             throw t;
@@ -589,20 +607,17 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     protected void beforeProcessing(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onError(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().rollback();
     }
 
     protected void onTraversalSuccess(final Graph graph, final Context ctx) {
-        final boolean managedTransactionsForRequest = manageTransactions ?
-                true : (Boolean) ctx.getRequestMessage().getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION, false);
+        final boolean managedTransactionsForRequest = shouldManageTransactionsForRequest(ctx);
         if (managedTransactionsForRequest && graph.features().graph().supportsTransactions() && graph.tx().isOpen()) graph.tx().commit();
     }
 
