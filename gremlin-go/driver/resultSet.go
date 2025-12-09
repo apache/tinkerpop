@@ -211,3 +211,48 @@ func newChannelResultSetCapacity(requestID string, container *synchronizedMap, c
 func newChannelResultSet(requestID string, container *synchronizedMap) ResultSet {
 	return newChannelResultSetCapacity(requestID, container, defaultCapacity)
 }
+
+// NewResultSet creates a new ResultSet from a slice of Result objects.
+// This function enables custom transport implementations to create ResultSets from
+// results collected via alternative protocols.
+//
+// The function creates a channel-based ResultSet, pre-populates it with the provided results,
+// and closes the channel to indicate completion.
+//
+// Parameters:
+//   - results: A slice of Result objects to include in the ResultSet
+//
+// Returns:
+//   - ResultSet: A ResultSet containing all the provided results
+//
+// Example usage:
+//
+//	var results []*Result
+//	// Collect results from custom transport
+//	for _, responseBytes := range responses {
+//	    result, _ := DeserializeResult(responseBytes)
+//	    results = append(results, result)
+//	}
+//	resultSet := NewResultSet(results)
+//	allResults, _ := resultSet.All()
+func NewResultSet(results []*Result) ResultSet {
+	// Create a channel-based result set with capacity for all results
+	channelSize := len(results)
+	if channelSize == 0 {
+		channelSize = 1 // Ensure at least size 1
+	}
+	rs := newChannelResultSetCapacity("", &synchronizedMap{make(map[string]ResultSet), sync.Mutex{}}, channelSize).(*channelResultSet)
+
+	// Add all results to the channel
+	for _, result := range results {
+		rs.channel <- result
+	}
+
+	// Close the channel to indicate no more results
+	rs.channelMutex.Lock()
+	rs.closed = true
+	close(rs.channel)
+	rs.channelMutex.Unlock()
+
+	return rs
+}

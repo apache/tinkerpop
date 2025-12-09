@@ -44,7 +44,7 @@ type protocolBase struct {
 type gremlinServerWSProtocol struct {
 	*protocolBase
 
-	serializer serializer
+	serializer Serializer
 	logHandler *logHandler
 	closed     bool
 	mutex      sync.Mutex
@@ -72,7 +72,7 @@ func (protocol *gremlinServerWSProtocol) readLoop(resultSets *synchronizedMap, e
 		}
 
 		// Deserialize message and unpack.
-		resp, err := protocol.serializer.deserializeMessage(msg)
+		resp, err := protocol.serializer.DeserializeMessage(msg)
 		if err != nil {
 			protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.readLoop()", err.Error())
 			readErrorHandler(resultSets, errorCallback, err, protocol.logHandler)
@@ -94,9 +94,9 @@ func readErrorHandler(resultSets *synchronizedMap, errorCallback func(), err err
 	errorCallback()
 }
 
-func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronizedMap, response response) error {
-	responseID, statusCode, metadata, data := response.responseID, response.responseStatus.code,
-		response.responseResult.meta, response.responseResult.data
+func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronizedMap, response Response) error {
+	responseID, statusCode, metadata, data := response.ResponseID, response.ResponseStatus.code,
+		response.ResponseResult.Meta, response.ResponseResult.Data
 	responseIDString := responseID.String()
 	if resultSets.load(responseIDString) == nil {
 		return newError(err0501ResponseHandlerResultSetNotCreatedError)
@@ -113,7 +113,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 	} else if statusCode == http.StatusOK {
 		// Add data and status attributes to the ResultSet.
 		resultSets.load(responseIDString).addResult(&Result{data})
-		resultSets.load(responseIDString).setStatusAttributes(response.responseStatus.attributes)
+		resultSets.load(responseIDString).setStatusAttributes(response.ResponseStatus.attributes)
 		resultSets.load(responseIDString).Close()
 		protocol.logHandler.logf(Debug, readComplete, responseIDString)
 	} else if statusCode == http.StatusPartialContent {
@@ -137,10 +137,10 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 			}
 		} else {
 			resultSets.load(responseIDString).Close()
-			return newError(err0503ResponseHandlerAuthError, response.responseStatus, response.responseResult)
+			return newError(err0503ResponseHandlerAuthError, response.ResponseStatus, response.ResponseResult)
 		}
 	} else {
-		newError := newError(err0502ResponseHandlerReadLoopError, response.responseStatus, statusCode)
+		newError := newError(err0502ResponseHandlerReadLoopError, response.ResponseStatus, statusCode)
 		resultSets.load(responseIDString).setError(newError)
 		resultSets.load(responseIDString).Close()
 		protocol.logHandler.logf(Error, logErrorGeneric, "gremlinServerWSProtocol.responseHandler()", newError.Error())
@@ -149,7 +149,7 @@ func (protocol *gremlinServerWSProtocol) responseHandler(resultSets *synchronize
 }
 
 func (protocol *gremlinServerWSProtocol) write(request *request) error {
-	bytes, err := protocol.serializer.serializeMessage(request)
+	bytes, err := protocol.serializer.SerializeMessage(request)
 	if err != nil {
 		return err
 	}
