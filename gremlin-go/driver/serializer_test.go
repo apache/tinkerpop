@@ -42,7 +42,7 @@ func TestSerializer(t *testing.T) {
 			args:      map[string]interface{}{"gremlin": "g.V().count()", "aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		serialized, _ := serializer.serializeMessage(&testRequest)
+		serialized, _ := serializer.SerializeMessage(&testRequest)
 		stringified := fmt.Sprintf("%v", serialized)
 		if stringified != mapDataOrder1 && stringified != mapDataOrder2 {
 			assert.Fail(t, "Error, expected serialized map data to match one of the provided binary arrays. Can vary based on ordering of keyset, but must map to one of two.")
@@ -52,14 +52,14 @@ func TestSerializer(t *testing.T) {
 	t.Run("test serialized response message", func(t *testing.T) {
 		responseByteArray := []byte{129, 0, 251, 37, 42, 74, 117, 221, 71, 191, 183, 78, 86, 53, 0, 12, 132, 100, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 4, 104, 111, 115, 116, 3, 0, 0, 0, 0, 16, 47, 49, 50, 55, 46, 48, 46, 48, 46, 49, 58, 54, 50, 48, 51, 53, 0, 0, 0, 0, 9, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		response, err := serializer.deserializeMessage(responseByteArray)
+		response, err := serializer.DeserializeMessage(responseByteArray)
 		assert.Nil(t, err)
-		assert.Equal(t, "fb252a4a-75dd-47bf-b74e-5635000c8464", response.responseID.String())
-		assert.Equal(t, uint16(200), response.responseStatus.code)
-		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{"host": "/127.0.0.1:62035"}, response.responseStatus.attributes)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
-		assert.Equal(t, []interface{}{int64(0)}, response.responseResult.data)
+		assert.Equal(t, "fb252a4a-75dd-47bf-b74e-5635000c8464", response.ResponseID.String())
+		assert.Equal(t, uint16(200), response.ResponseStatus.code)
+		assert.Equal(t, "", response.ResponseStatus.message)
+		assert.Equal(t, map[string]interface{}{"host": "/127.0.0.1:62035"}, response.ResponseStatus.attributes)
+		assert.Equal(t, map[string]interface{}{}, response.ResponseResult.Meta)
+		assert.Equal(t, []interface{}{int64(0)}, response.ResponseResult.Data)
 	})
 
 	t.Run("test serialized response message w/ custom type", func(t *testing.T) {
@@ -69,14 +69,14 @@ func TestSerializer(t *testing.T) {
 		}()
 		responseByteArray := []byte{129, 0, 69, 222, 40, 55, 95, 62, 75, 249, 134, 133, 155, 133, 43, 151, 221, 68, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 4, 104, 111, 115, 116, 3, 0, 0, 0, 0, 18, 47, 49, 48, 46, 50, 52, 52, 46, 48, 46, 51, 51, 58, 53, 49, 52, 55, 48, 0, 0, 0, 0, 9, 0, 0, 0, 0, 1, 33, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 29, 106, 97, 110, 117, 115, 103, 114, 97, 112, 104, 46, 82, 101, 108, 97, 116, 105, 111, 110, 73, 100, 101, 110, 116, 105, 102, 105, 101, 114, 0, 0, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 16, 240, 0, 0, 0, 0, 0, 0, 100, 21, 0, 0, 0, 0, 0, 0, 24, 30, 0, 0, 0, 0, 0, 0, 0, 32, 56}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		response, err := serializer.deserializeMessage(responseByteArray)
+		response, err := serializer.DeserializeMessage(responseByteArray)
 		assert.Nil(t, err)
-		assert.Equal(t, "45de2837-5f3e-4bf9-8685-9b852b97dd44", response.responseID.String())
-		assert.Equal(t, uint16(200), response.responseStatus.code)
-		assert.Equal(t, "", response.responseStatus.message)
-		assert.Equal(t, map[string]interface{}{"host": "/10.244.0.33:51470"}, response.responseStatus.attributes)
-		assert.Equal(t, map[string]interface{}{}, response.responseResult.meta)
-		assert.NotNil(t, response.responseResult.data)
+		assert.Equal(t, "45de2837-5f3e-4bf9-8685-9b852b97dd44", response.ResponseID.String())
+		assert.Equal(t, uint16(200), response.ResponseStatus.code)
+		assert.Equal(t, "", response.ResponseStatus.message)
+		assert.Equal(t, map[string]interface{}{"host": "/10.244.0.33:51470"}, response.ResponseStatus.attributes)
+		assert.Equal(t, map[string]interface{}{}, response.ResponseResult.Meta)
+		assert.NotNil(t, response.ResponseResult.Data)
 	})
 }
 
@@ -91,7 +91,7 @@ func TestSerializerFailures(t *testing.T) {
 			args: map[string]interface{}{"invalidInput": "invalidInput", "aliases": map[string]interface{}{"g": "g"}},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		resp, err := serializer.serializeMessage(&testRequest)
+		resp, err := serializer.SerializeMessage(&testRequest)
 		assert.Nil(t, resp)
 		assert.NotNil(t, err)
 		assert.True(t, isSameErrorCode(newError(err0704ConvertArgsNoSerializerError), err))
@@ -100,7 +100,7 @@ func TestSerializerFailures(t *testing.T) {
 	t.Run("test unkownCustomType failure", func(t *testing.T) {
 		responseByteArray := []byte{129, 0, 69, 222, 40, 55, 95, 62, 75, 249, 134, 133, 155, 133, 43, 151, 221, 68, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 4, 104, 111, 115, 116, 3, 0, 0, 0, 0, 18, 47, 49, 48, 46, 50, 52, 52, 46, 48, 46, 51, 51, 58, 53, 49, 52, 55, 48, 0, 0, 0, 0, 9, 0, 0, 0, 0, 1, 33, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 29, 106, 97, 110, 117, 115, 103, 114, 97, 112, 104, 46, 82, 101, 108, 97, 116, 105, 111, 110, 73, 100, 101, 110, 116, 105, 102, 105, 101, 114, 0, 0, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 16, 240, 0, 0, 0, 0, 0, 0, 100, 21, 0, 0, 0, 0, 0, 0, 24, 30, 0, 0, 0, 0, 0, 0, 0, 32, 56}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
-		resp, err := serializer.deserializeMessage(responseByteArray)
+		resp, err := serializer.DeserializeMessage(responseByteArray)
 		// a partial message will still be returned
 		assert.NotNil(t, resp)
 		assert.NotNil(t, err)
