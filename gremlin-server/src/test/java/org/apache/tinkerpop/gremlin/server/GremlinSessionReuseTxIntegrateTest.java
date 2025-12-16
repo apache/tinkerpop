@@ -21,14 +21,26 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 
 /**
- * Integration tests for gremlin-driver and bytecode sessions.
- *
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * Integration tests for gremlin-driver and bytecode sessions where the underlying connection can be re-used for
+ * multiple sessions. The server is configured with "closeSessionPostGraphOp" set to True.
  */
-public class GremlinSessionTxIntegrateTest extends AbstractSessionTxIntegrateTest {
+public class GremlinSessionReuseTxIntegrateTest extends AbstractSessionTxIntegrateTest {
 
     @Override
     protected Cluster createCluster() {
         return TestClientFactory.build().create();
+    }
+
+    /**
+     * Configure specific Gremlin Server settings for specific tests.
+     */
+    @Override
+    public Settings overrideSettings(final Settings settings) {
+        super.overrideSettings(settings);
+
+        // This setting allows connection re-use on the server side.
+        settings.closeSessionPostGraphOp = true;
+
+        return settings;
     }
 }
