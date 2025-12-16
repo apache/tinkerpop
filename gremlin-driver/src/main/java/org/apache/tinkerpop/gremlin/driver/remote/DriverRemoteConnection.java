@@ -263,13 +263,21 @@ public class DriverRemoteConnection implements RemoteConnection {
         if (client.getCluster().getChannelizer().equalsIgnoreCase(Channelizer.HttpChannelizer.class.getName())) {
             throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", Channelizer.HttpChannelizer.class.getSimpleName()));
         }
-        client.init();
-        final Client.SessionedChildClient childSessionClient = new Client.SessionedChildClient(
-                this.client, // parent client with existing connection pool
-                UUID.randomUUID().toString());
 
-        return new DriverRemoteTransaction(
-                new DriverRemoteConnection(childSessionClient, remoteTraversalSourceName, true));
+        final boolean reuseConnections = client.getCluster().isReuseConnectionsForSessions();
+        final String sessionId = UUID.randomUUID().toString();
+        final DriverRemoteConnection connection;
+
+        if (reuseConnections) {
+            client.init();
+            final Client.SessionedChildClient childClient = new Client.SessionedChildClient(client, sessionId);
+            connection =  new DriverRemoteConnection(
+                    childClient, remoteTraversalSourceName, true);
+        } else {
+            connection = new DriverRemoteConnection(
+                    client.getCluster().connect(sessionId), remoteTraversalSourceName, true);
+        }
+        return new DriverRemoteTransaction(connection);
     }
 
     @Override
