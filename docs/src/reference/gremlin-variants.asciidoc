@@ -83,6 +83,24 @@ To install the Gremlin-Go as a dependency for your project, run the following in
 go get github.com/apache/tinkerpop/gremlin-go/v3[optionally append @<version>, such as @v3.5.3]
 ----
 
+The following table outlines recommended runtime versions by the release in which their support began:
+
+[cols="1,1",options="header"]
+|===
+|Version |Recommended Go Version
+|3.4.0 |N/A
+|3.4.13 |N/A
+|3.5.0 |N/A
+|3.5.4 |≥1.17
+|3.5.8 |≥1.20
+|3.6.0 |≥1.17
+|3.6.7 |≥1.21
+|3.6.8 |≥1.22
+|3.7.0 |≥1.20
+|3.7.2 |≥1.21
+|3.7.3 |≥1.22
+|===
+
 [[gremlin-go-connecting]]
 === Connecting
 
@@ -521,7 +539,7 @@ that can be used to fulfill the `gremlingo.Set` interface if desired.
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Go. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-go/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-go/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -559,7 +577,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-go
+cd gremlin-examples/gremlin-go
 ----
 
 Run the examples:
@@ -652,6 +670,17 @@ tinkergraph-gremlin which are not shaded.
    </exclusions>
 </dependency>
 ----
+
+The following table outlines recommended runtime versions by the release in which their support began:
+
+[cols="1,2",options="header"]
+|===
+|Version |Supported Java Versions
+|3.4.0 | Java 8
+|3.5.0 | Java 8, 11
+|3.6.0 | Java 8, 11
+|3.7.0 | Java 8, 11, 17
+|===
 
 [[gremlin-java-connecting]]
 === Connecting
@@ -1281,7 +1310,7 @@ execute it.
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Java. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-java/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-java/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -1320,7 +1349,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-java
+cd gremlin-examples/gremlin-java
 ----
 
 Build the examples with Maven:
@@ -1349,6 +1378,21 @@ between Gremlin-Java and Gremlin-JavaScript.
 
 [source,bash]
 npm install gremlin
+
+The following table outlines recommended runtime versions by the release in which their support began:
+
+[cols="1,1,1",options="header"]
+|===
+|Version |Min Node.js |npm Version
+|3.4.0 |≥6 |N/A
+|3.5.0 |≥10 |6.14.16
+|3.5.7 |≥16 |8.19.4
+|3.6.0 |≥10 |8.1.2
+|3.6.5 |≥16 |8.19.4
+|3.6.7 |≥18 |9.6.7
+|3.7.0 |≥18 |9.6.7
+|3.7.4 |≥20 |10.8.2
+|===
 
 [[gremlin-javascript-connecting]]
 === Connecting
@@ -1475,6 +1519,56 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.pingInterval |Number |Ping request interval in ms if ping enabled. |60000
 |options.pongTimeout |Number |Timeout of pong response in ms after sending a ping. |30000
 |=========================================================
+
+[[gremlin-javascript-logging]]
+=== Logging
+
+The Gremlin-JavaScript driver emits connection events for logging and monitoring, but these events are silently ignored unless a listener is attached. Use the `addListener()` method to subscribe to events after creating a `DriverRemoteConnection` or `Client`:
+
+[source,javascript]
+----
+// Using DriverRemoteConnection
+const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+
+dc.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+dc.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+dc.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+const g = traversal().withRemote(dc);
+
+// Using Client
+const client = new Client('ws://localhost:8182/gremlin', { traversalSource: 'g' });
+
+client.addListener('log', (message) => {
+  console.log('[Gremlin Log]', message);
+});
+
+client.addListener('socketError', (err) => {
+  console.error('[Gremlin Error]', err);
+});
+
+client.addListener('close', (code, message) => {
+  console.warn('[Gremlin Close]', code, message);
+});
+
+await client.open();
+----
+
+Available events:
+
+* `log` - General connection logs (open, ping, pong, close, errors)
+* `socketError` - WebSocket errors
+* `close` - Connection close with status code and message
+
+To remove a listener, use `removeListener(event, handler)` with the same handler reference.
 
 [[gremlin-javascript-transactions]]
 === Transactions
@@ -1749,7 +1843,7 @@ no `Graph` instance to deserialize a result into on the client-side. A workaroun
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-JavaScript. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-javascript/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-javascript/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -1788,7 +1882,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-javascript
+cd gremlin-examples/gremlin-javascript
 ----
 
 Install the dependencies:
@@ -1820,6 +1914,18 @@ to comply with .NET conventions.
 
 [source,powershell]
 nuget install Gremlin.Net
+
+The following table outlines recommended runtime versions by the release in which their support began:
+
+[cols="1,2",options="header"]
+|===
+|Version |Target Frameworks
+|3.4.0 |.NET Standard 1.3; .NET Standard 2.0
+|3.5.0 |.NET Standard 2.0
+|3.5.3 |.NET Standard 2.0; .NET 6.0
+|3.6.0 |.NET Standard 2.0; .NET 6.0
+|3.7.0 |.NET Standard 2.0; .NET6.0
+|===
 
 [[gremlin-dotnet-connecting]]
 === Connecting
@@ -2170,7 +2276,7 @@ dotnet new gremlin -o MyFirstGremlinProject
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Dotnet. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-dotnet/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-dotnet/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -2208,7 +2314,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-dotnet
+cd gremlin-examples/gremlin-dotnet
 ----
 
 Build all projects:
@@ -2245,6 +2351,19 @@ To install Gremlin-Python, use Python's link:https://en.wikipedia.org/wiki/Pip_(
 pip install gremlinpython
 pip install gremlinpython[kerberos]     # Optional, not available on Microsoft Windows
 ----
+
+The following table outlines recommended runtime versions by the release in which their support began:
+
+[cols="1,1,1",options="header"]
+|===
+|Version |Min Python |Key Dependencies
+|3.4.0 |2.7 |tornado
+|3.5.0 |≥3.0 |aiohttp
+|3.6.0 |≥3.8 |aiohttp
+|3.6.8 |≥3.9 |aiohttp
+|3.7.0 |≥3.8 |aiohttp
+|3.7.3 |≥3.9 |aiohttp
+|===
 
 [[gremlin-python-connecting]]
 === Connecting
@@ -2767,7 +2886,7 @@ async def run_in_thread():
 === Application Examples
 
 The TinkerPop source code contains some sample applications that demonstrate the basics of Gremlin-Python. They
-can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/glv-examples/gremlin-python/[here]
+can be found in GitHub link:https://github.com/apache/tinkerpop/tree/x.y.z/gremlin-examples/gremlin-python/[here]
 and are designed to connect to a running <<gremlin-server,Gremlin Server>> configured with the
 `conf/gremlin-server.yaml` and `conf/gremlin-server-modern.yaml` files as included with the standard release packaging.
 
@@ -2808,7 +2927,7 @@ Navigate to the examples directory:
 
 [source,shell]
 ----
-cd glv-examples/gremlin-python
+cd gremlin-examples/gremlin-python
 ----
 
 Install the requirements:

@@ -16,6 +16,9 @@
 # under the License.
 
 import sys
+import os
+import ssl
+import socket
 
 sys.path.append("..")
 
@@ -23,7 +26,9 @@ from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from gremlin_python.driver.serializer import GraphBinarySerializersV1
+from gremlin_python.driver.aiohttp.transport import AiohttpTransport
 
+VERTEX_LABEL = os.getenv('VERTEX_LABEL', 'connection')
 
 def main():
     with_remote()
@@ -40,15 +45,14 @@ def with_remote():
     #
     # which starts it in "console" mode with an empty in-memory TinkerGraph ready to go bound to a
     # variable named "g" as referenced in the following line.
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
+    rc = DriverRemoteConnection(server_url, 'g')
     g = traversal().with_remote(rc)
 
-    # drop existing vertices
-    g.V().drop().iterate()
-
     # simple query to verify connection
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     # cleanup
@@ -57,11 +61,23 @@ def with_remote():
 
 # connecting with plain text authentication
 def with_auth():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', username='stephen', password='password')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
+    server_url = os.getenv('GREMLIN_SERVER_BASIC_AUTH_URL', 'ws://localhost:8182/gremlin').format(45941)
+    
+    # disable SSL certificate verification for CI environments
+    if ':45941' in server_url:
+        ssl_opts = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ssl_opts.check_hostname = False
+        ssl_opts.verify_mode = ssl.CERT_NONE
+        rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password',
+                                    transport_factory=lambda: AiohttpTransport(ssl_options=ssl_opts))
+    else:
+        rc = DriverRemoteConnection(server_url, 'g', username='stephen', password='password')
+    
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
@@ -69,11 +85,16 @@ def with_auth():
 
 # connecting with Kerberos SASL authentication
 def with_kerberos():
-    rc = DriverRemoteConnection('ws://localhost:8182/gremlin', 'g', kerberized_service='gremlin@hostname.your.org')
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45942)
+    kerberos_hostname = os.getenv('KRB_HOSTNAME', socket.gethostname())
+    kerberized_service = f'test-service@{kerberos_hostname}'
+    
+    rc = DriverRemoteConnection(server_url, 'g', kerberized_service=kerberized_service)
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
@@ -81,8 +102,10 @@ def with_kerberos():
 
 # connecting with customized configurations
 def with_configs():
+    # if there is a port placeholder in the env var then we are running with docker so set appropriate port 
+    server_url = os.getenv('GREMLIN_SERVER_URL', 'ws://localhost:8182/gremlin').format(45940)
     rc = DriverRemoteConnection(
-        'ws://localhost:8182/gremlin', 'g',
+        server_url, 'g',
         username="", password="", kerberized_service='',
         message_serializer=GraphBinarySerializersV1(), graphson_reader=None,
         graphson_writer=None, headers=None, session=None,
@@ -90,8 +113,8 @@ def with_configs():
     )
     g = traversal().with_remote(rc)
 
-    v = g.add_v().iterate()
-    count = g.V().count().next()
+    v = g.add_v(VERTEX_LABEL).iterate()
+    count = g.V().has_label(VERTEX_LABEL).count().next()
     print("Vertex count: " + str(count))
 
     rc.close()
