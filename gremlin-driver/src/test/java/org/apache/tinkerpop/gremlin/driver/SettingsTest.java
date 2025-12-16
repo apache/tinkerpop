@@ -48,6 +48,7 @@ public class SettingsTest {
         conf.setProperty("serializer.config.any", "thing");
         conf.setProperty("enableUserAgentOnConnect", false);
         conf.setProperty("enableCompression", false);
+        conf.setProperty("reuseConnectionsForSessions", true);
         conf.setProperty("connectionPool.enableSsl", true);
         conf.setProperty("connectionPool.keyStore", "server.jks");
         conf.setProperty("connectionPool.keyStorePassword", "password2");
@@ -87,6 +88,7 @@ public class SettingsTest {
         assertEquals(false, settings.enableUserAgentOnConnect);
         assertEquals(false, settings.enableCompression);
         assertThat(settings.connectionPool.enableSsl, is(true));
+        assertEquals(true, settings.reuseConnectionsForSessions);
         assertEquals("server.jks", settings.connectionPool.keyStore);
         assertEquals("password2", settings.connectionPool.keyStorePassword);
         assertEquals("pkcs12", settings.connectionPool.keyStoreType);

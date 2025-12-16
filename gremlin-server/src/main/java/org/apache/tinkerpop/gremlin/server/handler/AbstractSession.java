@@ -702,6 +702,10 @@ public abstract class AbstractSession implements Session, AutoCloseable {
                             .code(ResponseStatusCode.NO_CONTENT)
                             .statusAttributes(attributes)
                             .create());
+
+                if (sessionTask.getSettings().closeSessionPostGraphOp) {
+                    close();
+                }
             } else {
                 throw new IllegalStateException(String.format(
                         "Bytecode in request is not a recognized graph operation: %s", bytecode.toString()));

@@ -196,7 +196,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (NOT OFFICIALLY RELEASED YET)
+
 * Integrated Python driver examples into automated build process to ensure examples remain functional.
+* Added `closeSessionPostGraphOp` to the Gremlin Server settings to indicate that the `Session` should be closed on either a successful commit or rollback.
 
 [[release-3-7-5]]
 === TinkerPop 3.7.5 (Release Date: November 12, 2025)

@@ -111,6 +111,13 @@ final class Settings {
     public boolean enableCompression = true;
 
     /**
+     * Determines whether to use SessionedChildClient (true) or SessionedClient (false) for transactions.
+     * SessionedChildClient reuses the existing connections whereas SessoinedClient creates a new one for every transaction.
+     * Defaults to false for backward compatibility.
+     */
+    public boolean reuseConnectionsForSessions = false;
+
+    /**
      * Read configuration from a file into a new {@link Settings} object.
      *
      * @param stream an input stream containing a Gremlin Server YAML configuration
@@ -161,6 +168,9 @@ final class Settings {
 
         if (conf.containsKey("enableCompression"))
             settings.enableCompression = conf.getBoolean("enableCompression");
+
+        if (conf.containsKey("reuseConnectionsForSessions"))
+            settings.reuseConnectionsForSessions = conf.getBoolean("reuseConnectionsForSessions");
 
         if (conf.containsKey("hosts"))
             settings.hosts = conf.getList("hosts").stream().map(Object::toString).collect(Collectors.toList());
