@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.remote;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.process.remote.RemoteConnection;
@@ -259,9 +260,24 @@ public class DriverRemoteConnection implements RemoteConnection {
      */
     @Override
     public Transaction tx() {
-        final DriverRemoteConnection session = new DriverRemoteConnection(
-                client.getCluster().connect(UUID.randomUUID().toString()), remoteTraversalSourceName, true);
-        return new DriverRemoteTransaction(session);
+        if (client.getCluster().getChannelizer().equalsIgnoreCase(Channelizer.HttpChannelizer.class.getName())) {
+            throw new IllegalStateException(String.format("Cannot use sessions or tx() with %s", Channelizer.HttpChannelizer.class.getSimpleName()));
+        }
+
+        final boolean reuseConnections = client.getCluster().isReuseConnectionsForSessions();
+        final String sessionId = UUID.randomUUID().toString();
+        final DriverRemoteConnection connection;
+
+        if (reuseConnections) {
+            client.init();
+            final Client.SessionedChildClient childClient = new Client.SessionedChildClient(client, sessionId);
+            connection =  new DriverRemoteConnection(
+                    childClient, remoteTraversalSourceName, true);
+        } else {
+            connection = new DriverRemoteConnection(
+                    client.getCluster().connect(sessionId), remoteTraversalSourceName, true);
+        }
+        return new DriverRemoteTransaction(connection);
     }
 
     @Override

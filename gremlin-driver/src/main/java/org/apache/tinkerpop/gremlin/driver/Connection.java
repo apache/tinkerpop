@@ -267,7 +267,7 @@ final class Connection {
         return requestPromise;
     }
 
-    private void returnToPool() {
+    public void returnToPool() {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
