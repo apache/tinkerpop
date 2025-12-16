@@ -220,6 +220,7 @@ func newChannelResultSet(requestID string, container *synchronizedMap) ResultSet
 // and closes the channel to indicate completion.
 //
 // Parameters:
+//   - requestID: The request identifier for this ResultSet
 //   - results: A slice of Result objects to include in the ResultSet
 //
 // Returns:
@@ -233,15 +234,15 @@ func newChannelResultSet(requestID string, container *synchronizedMap) ResultSet
 //	    result, _ := DeserializeResult(responseBytes)
 //	    results = append(results, result)
 //	}
-//	resultSet := NewResultSet(results)
+//	resultSet := NewResultSet("request-123", results)
 //	allResults, _ := resultSet.All()
-func NewResultSet(results []*Result) ResultSet {
+func NewResultSet(requestID string, results []*Result) ResultSet {
 	// Create a channel-based result set with capacity for all results
 	channelSize := len(results)
 	if channelSize == 0 {
 		channelSize = 1 // Ensure at least size 1
 	}
-	rs := newChannelResultSetCapacity("", &synchronizedMap{make(map[string]ResultSet), sync.Mutex{}}, channelSize).(*channelResultSet)
+	rs := newChannelResultSetCapacity(requestID, &synchronizedMap{make(map[string]ResultSet), sync.Mutex{}}, channelSize).(*channelResultSet)
 
 	// Add all results to the channel
 	for _, result := range results {
