@@ -209,8 +209,8 @@ public abstract class AbstractRemoteGraphProvider extends AbstractGraphProvider 
     }
 
     public static void startServer() throws Exception {
-        final InputStream stream = GremlinServer.class.getResourceAsStream("gremlin-server-integration.yaml");
-        final Settings settings = Settings.read(stream);
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
 
         settings.maxContentLength = 1024000;

@@ -1,0 +1,2 @@
+includes: [ '../base1.yaml', 'base2.yaml' ]
+host: localhost1
