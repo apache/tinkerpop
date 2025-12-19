@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -219,11 +220,20 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
                     // repeatTraversal before it is iterated so that RepeatStep always has "global" children.
                     if (!this.starts.hasNext())
                         throw FastNoSuchElementException.instance();
+
+                    final List<Traverser.Admin<S>> traversers = new ArrayList<>();
                     while (this.starts.hasNext()) {
-                        processTraverser(this.starts.next());
+                        final Traverser.Admin<S> processedTraverser = processTraverser(this.starts.next());
+                        if (!processedTraverser.equals(EmptyTraverser.instance())) {
+                            traversers.add(processedTraverser);
+                        }
                     }
+                    if (!traversers.isEmpty()) return traversers.iterator();
                 } else {
-                    return processTraverser(this.starts.next());
+                    final Traverser.Admin<S> processedTraverser = processTraverser(this.starts.next());
+                    if (!processedTraverser.equals(EmptyTraverser.instance())) {
+                        return IteratorUtils.of(processedTraverser);
+                    }
                 }
             }
         }
@@ -253,19 +263,19 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         }
     }
 
-    private Iterator<Traverser.Admin<S>> processTraverser(final Traverser.Admin<S> start) {
+    private Traverser.Admin<S> processTraverser(final Traverser.Admin<S> start) {
         start.initialiseLoops(this.getId(), this.loopName);
         if (doUntil(start, true)) {
             start.resetLoops();
-            return IteratorUtils.of(start);
+            return start;
         }
         this.repeatTraversal.addStart(start);
         if (doEmit(start, true)) {
             final Traverser.Admin<S> emitSplit = start.split();
             emitSplit.resetLoops();
-            return IteratorUtils.of(emitSplit);
+            return emitSplit;
         }
-        return Collections.emptyIterator();
+        return EmptyTraverser.instance();
     }
 
     /////////////////////////
