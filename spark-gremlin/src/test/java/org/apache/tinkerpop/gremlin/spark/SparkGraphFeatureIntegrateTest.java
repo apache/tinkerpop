@@ -93,6 +93,9 @@ public class SparkGraphFeatureIntegrateTest {
         add(Pair.with("g_VX3X_repeatXout_order_byXperformancesX_tailX3X_limitX1XX_timesX2X_valuesXnameX", skipReasonOrdering));
         add(Pair.with("g_VX250X_repeatXout_localXorder_byXperformancesX_tailX1XXX_timesX2X_valuesXnameX", skipReasonOrdering));
         add(Pair.with("g_VX3X_repeatXout_order_byXperformancesX_tailX2XX_timesX2X_valuesXnameX", skipReasonOrdering));
+        add(Pair.with("g_V_emit_repeatXout_order_byXnameXX_timesX2X_valuesXnameX", skipReasonOrdering));
+        add(Pair.with("g_V_emitXhasLabelXpersonXX_repeatXout_order_byXnameXX_timesX2X_valuesXnameX", skipReasonOrdering));
+        add(Pair.with("g_V_untilXloops_isX2XX_repeatXout_order_byXnameXX_valuesXnameX", skipReasonOrdering));
         add(Pair.with("g_V_localXgroupCountXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
         add(Pair.with("g_V_localXgroupXaX_byXnameX_by_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
         add(Pair.with("g_V_out_order_byXnameX_localXtreeXaX_selectXaX_countXlocalXX", skipReasonTINKERPOP3209));
