@@ -23,6 +23,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (NOT OFFICIALLY RELEASED YET)
 
+* Fixed bug in pre-repeat() `emit()/until()` where `emit()` and `until()` traversers weren't added to the results.
+
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
 
