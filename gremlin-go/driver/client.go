@@ -149,7 +149,7 @@ func (client *Client) Close() {
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, client.session, requestOptions)
+	request := MakeStringRequest(traversalString, client.traversalSource, client.session, requestOptions)
 	result, err := client.connections.write(&request)
 	if err != nil {
 		client.logHandler.logf(Error, logErrorGeneric, "Client.Submit()", err.Error())
@@ -171,7 +171,7 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 // submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource, client.session)
+	request := MakeBytecodeRequest(bytecode, client.traversalSource, client.session)
 	return client.connections.write(&request)
 }
 

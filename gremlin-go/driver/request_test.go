@@ -20,8 +20,9 @@ under the License.
 package gremlingo
 
 import (
-	"github.com/google/uuid"
 	"testing"
+
+	"github.com/google/uuid"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,19 +30,19 @@ import (
 func TestRequest(t *testing.T) {
 	t.Run("Test makeStringRequest() with custom requestID", func(t *testing.T) {
 		requestId := uuid.New()
-		r := makeStringRequest("g.V()", "g", "",
+		r := MakeStringRequest("g.V()", "g", "",
 			new(RequestOptionsBuilder).SetRequestId(requestId).Create())
 		assert.Equal(t, requestId, r.requestID)
 	})
 
 	t.Run("Test makeStringRequest() with no bindings", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "", *new(RequestOptions))
+		r := MakeStringRequest("g.V()", "g", "", *new(RequestOptions))
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
 	})
 
 	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := MakeStringRequest("g.V()", "g", "",
 			new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create())
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
@@ -49,7 +50,7 @@ func TestRequest(t *testing.T) {
 	})
 
 	t.Run("Test makeStringRequest() with custom batchSize", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := MakeStringRequest("g.V()", "g", "",
 			new(RequestOptionsBuilder).SetBatchSize(123).Create())
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
@@ -57,7 +58,7 @@ func TestRequest(t *testing.T) {
 	})
 
 	t.Run("Test makeStringRequest() with custom userAgent", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", "",
+		r := MakeStringRequest("g.V()", "g", "",
 			new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create())
 		assert.NotNil(t, r.requestID)
 		assert.NotEqual(t, uuid.Nil, r.requestID)
