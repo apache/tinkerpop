@@ -28,9 +28,10 @@ import (
 var __ = gremlingo.T__
 var T = gremlingo.T
 var P = gremlingo.P
+var serverURL = "ws://localhost:8182/gremlin"
 
 func main() {
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL)
 	if err != nil {
 		fmt.Println(err)
 		return
