@@ -22,6 +22,9 @@ const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const serializer = gremlin.structure.io.graphserializer;
 
+const serverUrl = 'ws://localhost:8182/gremlin';
+const vertexLabel = 'connection';
+
 async function main() {
     await withRemote();
     await withConfigs();
@@ -29,15 +32,12 @@ async function main() {
 
 async function withRemote() {
     // Connecting to the server
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin');
+    const dc = new DriverRemoteConnection(serverUrl);
     const g = traversal().withRemote(dc);
 
-    // Drop existing vertices
-    await g.V().drop().iterate();
-
     // Simple query to verify connection
-    const v = await g.addV().iterate();
-    const count = await g.V().count().next();
+    const v = await g.addV(vertexLabel).iterate();
+    const count = await g.V().hasLabel(vertexLabel).count().next();
     console.log("Vertex count: " + count.value);
 
     // Cleanup
@@ -46,7 +46,7 @@ async function withRemote() {
 
 async function withConfigs() {
     // Connecting and customizing configurations
-    const dc = new DriverRemoteConnection('ws://localhost:8182/gremlin', {
+    const dc = new DriverRemoteConnection(serverUrl, {
         mimeType: 'application/vnd.gremlin-v3.0+json',
         reader: serializer,
         writer: serializer,
@@ -55,8 +55,8 @@ async function withConfigs() {
     });
     const g = traversal().withRemote(dc);
 
-    const v = await g.addV().iterate();
-    const count = await g.V().count().next();
+    const v = await g.addV(vertexLabel).iterate();
+    const count = await g.V().hasLabel(vertexLabel).count().next();
     console.log("Vertex count: " + count.value);
 
     await dc.close();
