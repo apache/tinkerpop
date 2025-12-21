@@ -109,6 +109,19 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
         
         [Theory, MemberData(nameof(Versions))]
+        public void ShouldDeserializeOffsetDateTimeToDateTimeOffset(int version)
+        {
+            const string graphSon = "{\"@type\":\"gx:OffsetDateTime\",\"@value\":\"2016-10-04T12:17:22.5520000+00:00\"}";
+            var reader = CreateStandardGraphSONReader(version);
+        
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(graphSon);
+            var deserializedValue = reader.ToObject(jsonElement);
+        
+            var expectedDateTimeOffset = TestUtils.FromJavaTime(1475583442552);
+            Assert.Equal(expectedDateTimeOffset, deserializedValue);
+        }
+        
+        [Theory, MemberData(nameof(Versions))]
         public void ShouldDeserializeDictionary(int version)
         {
             const string serializedDict = "{\"age\":[{\"@type\":\"g:Int32\", \"@value\":29}], \"name\":[\"marko\"], " +

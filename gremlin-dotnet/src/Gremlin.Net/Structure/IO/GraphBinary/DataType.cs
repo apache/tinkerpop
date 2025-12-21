@@ -78,6 +78,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         // TODO: Support metrics and traversal metrics
         public static readonly DataType Char = new DataType(0x80);
         public static readonly DataType Duration = new DataType(0x81);
+        public static readonly DataType OffsetDateTime = new DataType(0x88);
 #pragma warning restore 1591
 
         /// <summary>

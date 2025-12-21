@@ -253,6 +253,7 @@ const graphSON2Deserializers = {
   'g:Float': typeSerializers.NumberSerializer,
   'g:Double': typeSerializers.NumberSerializer,
   'g:Date': typeSerializers.DateSerializer,
+  'gx:OffsetDateTime': typeSerializers.OffsetDateTimeSerializer,
   'g:Direction': typeSerializers.DirectionSerializer,
   'g:Vertex': typeSerializers.VertexSerializer,
   'g:Edge': typeSerializers.EdgeSerializer,
