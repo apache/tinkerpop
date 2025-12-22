@@ -79,11 +79,10 @@ by{ it.get().value('sell_price') -
     ),
   ).toBe(
     `g.V().
-  filter(
-    out('Sells').
-    map{ it.get('sell_price') -
-         it.get('buy_price') }.
-    where(gt(50)))`,
+  filter(out('Sells').
+         map{ it.get('sell_price') -
+              it.get('buy_price') }.
+         where(gt(50)))`,
   );
 
   expect(
@@ -115,10 +114,9 @@ by{ it.get().value('sell_price') -
       { indentation: 0, maxLineLength: 22, shouldPlaceDotsAfterLineBreaks: false },
     ),
   ).toBe(`g.V().
-  filter(
-    map{ one   = 1
-         two   = 2
-         three = 3 }))`);
+  filter(map{ one   = 1
+              two   = 2
+              three = 3 }))`);
 
   expect(
     formatQuery(
@@ -149,10 +147,10 @@ by{ it.get().value('sell_price') -
       { indentation: 0, maxLineLength: 45, shouldPlaceDotsAfterLineBreaks: false },
     ),
   ).toBe(`g.V().
-  where(
-    map{ buyPrice  = it.get().value('buy_price');
-         sellPrice = it.get().value('sell_price');
-         sellPrice - buyPrice; }.is(gt(50)))`);
+  where(map{ buyPrice  = it.get().value('buy_price');
+             sellPrice = it.get().value('sell_price');
+             sellPrice - buyPrice; }.
+        is(gt(50)))`);
 
   expect(
     formatQuery(
@@ -183,10 +181,11 @@ by{ it.get().value('sell_price') -
       { indentation: 0, maxLineLength: 50, shouldPlaceDotsAfterLineBreaks: false },
     ),
   ).toBe(`g.V().
-  where(
-    out().map{ buyPrice  = it.get().value('buy_price');
-               sellPrice = it.get().value('sell_price');
-               sellPrice - buyPrice; }.is(gt(50)))`);
+  where(out().
+        map{ buyPrice  = it.get().value('buy_price');
+             sellPrice = it.get().value('sell_price');
+             sellPrice - buyPrice; }.
+        is(gt(50)))`);
   expect(
     formatQuery(
       `g.V().where(out().map{ buyPrice  = it.get().value('buy_price');
@@ -195,12 +194,11 @@ by{ it.get().value('sell_price') -
       { indentation: 0, maxLineLength: 45, shouldPlaceDotsAfterLineBreaks: false },
     ),
   ).toBe(`g.V().
-  where(
-    out().
-    map{ buyPrice  = it.get().value('buy_price');
-         sellPrice = it.get().value('sell_price');
-         sellPrice - buyPrice; }.
-    is(gt(50)))`);
+  where(out().
+        map{ buyPrice  = it.get().value('buy_price');
+             sellPrice = it.get().value('sell_price');
+             sellPrice - buyPrice; }.
+        is(gt(50)))`);
 
   // Test that relative indentation is preserved between all the lines within a closure when not all tokens in a stepGroup are methods (for instance, g in g.V() adds to the width of the stepGroup even if it is not a method)
   expect(
@@ -246,15 +244,12 @@ by{ it.get().value('sell_price') -
   ).toBe(`g.V(ids).
   has('factor_a').
   has('factor_b').
-  project(
-    'Factor A',
-    'Factor B',
-    'Product').
+  project('Factor A', 'Factor B',
+          'Product').
     by(values('factor_a')).
     by(values('factor_b')).
-    by(
-      map{ it.get().value('factor_a') *
-           it.get().value('factor_b') })`);
+    by(map{ it.get().value('factor_a') *
+            it.get().value('factor_b') })`);
 
   // Test that relative indentation is preserved between all lines within a closure when dots are placed after line breaks
   // When the whole query is long enough to wrap
@@ -300,12 +295,11 @@ by{ it.get().value('sell_price') -
       { indentation: 0, maxLineLength: 45, shouldPlaceDotsAfterLineBreaks: true },
     ),
   ).toBe(`g.V()
-  .where(
-    out()
-    .map{ buyPrice  = it.get().value('buy_price');
-          sellPrice = it.get().value('sell_price');
-          sellPrice - buyPrice; }
-    .is(gt(50)))`);
+  .where(out()
+         .map{ buyPrice  = it.get().value('buy_price');
+               sellPrice = it.get().value('sell_price');
+               sellPrice - buyPrice; }
+         .is(gt(50)))`);
 
   // When the query is long enough to wrap, but the traversal containing the closure is the first step in its traversal and not long enough to wrap
   expect(
@@ -323,15 +317,12 @@ by{ it.get().value('sell_price') -
   ).toBe(`g.V(ids)
   .has('factor_a')
   .has('factor_b')
-  .project(
-    'Factor A',
-    'Factor B',
-    'Product')
+  .project('Factor A', 'Factor B',
+           'Product')
     .by(values('factor_a'))
     .by(values('factor_b'))
-    .by(
-      map{ it.get().value('factor_a') *
-           it.get().value('factor_b') })`);
+    .by(map{ it.get().value('factor_a') *
+             it.get().value('factor_b') })`);
 
   // When the whole query is short enough to not wrap
   expect(

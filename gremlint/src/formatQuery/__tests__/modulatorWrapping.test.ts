@@ -105,8 +105,9 @@ test("Modulators should not be line-wrapped if they can fit on the line of the s
   hasLabel('person').
   group().by(values('name', 'age').fold()).
   unfold().
-  filter(
-    select(values).count(local).is(gt(1)))`);
+  filter(select(values).
+         count(local).
+         is(gt(1)))`);
   expect(
     formatQuery(
       "g.V().hasLabel('person').group().by(values('name', 'age').fold()).unfold().filter(select(values).count(local).is(gt(1)))",
@@ -121,8 +122,7 @@ test("Modulators should not be line-wrapped if they can fit on the line of the s
   group().
     by(values('name', 'age').fold()).
   unfold().
-  filter(
-    select(values).
-    count(local).
-    is(gt(1)))`);
+  filter(select(values).
+         count(local).
+         is(gt(1)))`);
 });

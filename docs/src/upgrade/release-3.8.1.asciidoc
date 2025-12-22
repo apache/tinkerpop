@@ -23,6 +23,91 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlint Improvements
+
+Gremlint's approach to newlines often produced formatting that didn't generally follow the espoused best practices.
+Specifically, if Gremlint found that arguments to a step would exceed the line length, it would instantly apply a
+newline and then do an indent. This formatting rule made certain Gremlin appear stretched out vertically in many cases.
+
+The following example demonstrates this stretching. The following bit of Gremlin is manually formatted according to
+common norms and best practices:
+
+[source,groovy]
+----
+g.V().as("v").
+  repeat(both().simplePath().as("v")).emit().
+  filter(project("x","y","z").by(select(first, "v")).
+                              by(select(last, "v")).
+                              by(select(all, "v").count(local)).as("triple").
+         coalesce(select("x","y").as("a").
+                    select("triples").unfold().as("t").
+                    select("x","y").where(eq("a")).
+                    select("t"),
+                  local(aggregate("triples"))).
+         select("z").as("length").
+         select("triple").select("z").where(eq("length"))).
+  select(all, "v").unfold().
+  groupCount()
+----
+
+In earlier versions of Gremlint, it would format that query to:
+
+[source,groovy]
+----
+g.V().as("v").
+  repeat(both().simplePath().as("v")).emit().
+  filter(
+    project("x", "y", "z").
+      by(select(first, "v")).
+      by(select(last, "v")).
+      by(select(all, "v").count(local)).
+      as("triple").
+    coalesce(
+      select("x", "y").as("a").
+      select("triples").
+      unfold().as("t").
+      select("x", "y").
+      where(eq("a")).
+      select("t"),
+      local(aggregate("triples"))).
+    select("z").as("length").
+    select("triple").
+    select("z").
+    where(eq("length"))).
+  select(all, "v").
+  unfold().
+  groupCount()
+----
+
+In this version, after the improvements mentioned above, Gremlint now produces:
+
+[source,groovy]
+----
+g.V().as("v").
+  repeat(both().simplePath().as("v")).emit().
+  filter(project("x", "y", "z").
+           by(select(first, "v")).
+           by(select(last, "v")).
+           by(select(all, "v").count(local)).
+           as("triple").
+         coalesce(select("x", "y").as("a").
+                  select("triples").
+                  unfold().as("t").
+                  select("x", "y").
+                  where(eq("a")).
+                  select("t"), local(aggregate("triples"))).
+         select("z").as("length").
+         select("triple").
+         select("z").
+         where(eq("length"))).
+  select(all, "v").
+  unfold().
+  groupCount()
+----
+
+This more compact representation presents a form much more in line with the manually formatted one. While there is still
+room to improve, Gremlint now produces a format that is more likely to be usable without additional manual formatting
+intervention
 
 === Upgrading for Providers
 

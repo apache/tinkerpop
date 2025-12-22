@@ -27,6 +27,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+* Improved Gremlint formatting to keep the first argument for a step on the same line if line breaks were required to meet max line length.
+* Improved Gremlint formatting to do greedy argument packing when possible so that more arguments can appear on a single line.
 
 [[release-3-8-0]]
 === TinkerPop 3.8.0 (Release Date: November 12, 2025)

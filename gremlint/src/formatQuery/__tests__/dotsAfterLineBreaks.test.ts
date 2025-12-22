@@ -34,10 +34,9 @@ test('If dots are configured to be placed after line breaks, make sure they are 
   group().
     by(values('name', 'age').fold()).
   unfold().
-  filter(
-    select(values).
-    count(local).
-    is(gt(1)))`);
+  filter(select(values).
+         count(local).
+         is(gt(1)))`);
 
   expect(
     formatQuery(
@@ -51,11 +50,10 @@ test('If dots are configured to be placed after line breaks, make sure they are 
   ).toBe(`g.V()
   .hasLabel('person')
   .group()
-    .by(
-      values('name', 'age').fold())
+    .by(values('name', 'age')
+        .fold())
   .unfold()
-  .filter(
-    select(values)
-    .count(local)
-    .is(gt(1)))`);
+  .filter(select(values)
+          .count(local)
+          .is(gt(1)))`);
 });

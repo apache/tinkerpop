@@ -25,6 +25,7 @@ import {
   UnformattedStringSyntaxTree,
   UnformattedTraversalSyntaxTree,
   UnformattedWordSyntaxTree,
+  GremlintInternalConfig,
 } from './types';
 import { last, spaces } from './utils';
 
@@ -36,27 +37,31 @@ type GremlinOnelinerSyntaxTree =
   | Pick<UnformattedStringSyntaxTree, 'type' | 'string'>
   | Pick<UnformattedWordSyntaxTree, 'type' | 'word'>;
 
-const recreateQueryOnelinerFromSyntaxTree = (localIndentation: number = 0) => (
+const recreateQueryOnelinerFromSyntaxTree = (config: Pick<GremlintInternalConfig, 'globalIndentation'>, localIndentation: number = 0) => (
   syntaxTree: GremlinOnelinerSyntaxTree,
 ): string => {
+  const indentation = spaces(config.globalIndentation + localIndentation);
   switch (syntaxTree.type) {
     // This case will never occur
     case TokenType.NonGremlinCode:
       return syntaxTree.code;
     case TokenType.Traversal:
-      return spaces(localIndentation) + syntaxTree.steps.map(recreateQueryOnelinerFromSyntaxTree()).join('.');
+      return (
+        indentation +
+        syntaxTree.steps.map(recreateQueryOnelinerFromSyntaxTree({ globalIndentation: 0 })).join('.')
+      );
     case TokenType.Method:
       return (
-        spaces(localIndentation) +
-        recreateQueryOnelinerFromSyntaxTree()(syntaxTree.method) +
+        indentation +
+        recreateQueryOnelinerFromSyntaxTree({ globalIndentation: 0 })(syntaxTree.method) +
         '(' +
-        syntaxTree.arguments.map(recreateQueryOnelinerFromSyntaxTree()).join(', ') +
+        syntaxTree.arguments.map(recreateQueryOnelinerFromSyntaxTree({ globalIndentation: 0 })).join(', ') +
         ')'
       );
     case TokenType.Closure:
       return (
-        spaces(localIndentation) +
-        recreateQueryOnelinerFromSyntaxTree()(syntaxTree.method) +
+        indentation +
+        recreateQueryOnelinerFromSyntaxTree({ globalIndentation: 0 })(syntaxTree.method) +
         '{' +
         last(
           syntaxTree.closureCodeBlock.map(
@@ -66,9 +71,9 @@ const recreateQueryOnelinerFromSyntaxTree = (localIndentation: number = 0) => (
         '}'
       );
     case TokenType.String:
-      return spaces(localIndentation) + syntaxTree.string;
+      return indentation + syntaxTree.string;
     case TokenType.Word:
-      return spaces(localIndentation) + syntaxTree.word;
+      return indentation + syntaxTree.word;
   }
 };
 
