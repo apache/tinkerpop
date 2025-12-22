@@ -320,7 +320,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue(e.InV.Label, buffer, false)
+	_, err = typeSerializer.writeValue([1]string{e.InV.Label}, buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +331,7 @@ func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBi
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue(e.OutV.Label, buffer, false)
+	_, err = typeSerializer.writeValue([1]string{e.OutV.Label}, buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +405,7 @@ func setWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBin
 	return listWriter(slice, buffer, typeSerializer)
 }
 
-func timeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func dateTimeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
 	t := value.(time.Time)
 	err := binary.Write(buffer, binary.BigEndian, int32(t.Year()))
 	if err != nil {
@@ -758,8 +758,8 @@ func readList(data *[]byte, i *int, flag byte) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			bulk := readIntSafe(data, i)
-			for k := int32(0); k < bulk; k++ {
+			bulk := readLongSafe(data, i)
+			for k := int64(0); k < bulk; k++ {
 				valList = append(valList, val)
 			}
 		}
@@ -850,7 +850,7 @@ func readUuid(data *[]byte, i *int) (interface{}, error) {
 	return id, nil
 }
 
-func timeReader(data *[]byte, i *int) (interface{}, error) {
+func dateTimeReader(data *[]byte, i *int) (interface{}, error) {
 	year := readIntSafe(data, i)
 	month := readByteSafe(data, i)
 	day := readByteSafe(data, i)
@@ -933,7 +933,7 @@ func edgeReader(data *[]byte, i *int) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	label, err := readUnqualified(data, i, listType, false)
+	label, err := readList(data, i, 0)
 	if err != nil {
 		return nil, err
 	}

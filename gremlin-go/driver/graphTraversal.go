@@ -116,7 +116,7 @@ func (g *GraphTraversal) As(args ...interface{}) *GraphTraversal {
 
 // AsBool adds the asBool step to the GraphTraversal.
 func (g *GraphTraversal) AsBool(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("asBool", args...)
+	g.GremlinLang.AddStep("asBool", args...)
 	return g
 }
 
@@ -128,7 +128,7 @@ func (g *GraphTraversal) AsDate(args ...interface{}) *GraphTraversal {
 
 // AsNumber adds the asNumber step to the GraphTraversal.
 func (g *GraphTraversal) AsNumber(args ...interface{}) *GraphTraversal {
-	g.Bytecode.AddStep("asNumber", args...)
+	g.GremlinLang.AddStep("asNumber", args...)
 	return g
 }
 
@@ -947,8 +947,8 @@ func (t *Transaction) Begin() (*GraphTraversalSource, error) {
 	}
 
 	gts := &GraphTraversalSource{
-		graph:            t.g.graph,
-		gremlinLang:      t.g.gremlinLang}
+		graph:       t.g.graph,
+		gremlinLang: t.g.gremlinLang}
 	return gts, nil
 }
 

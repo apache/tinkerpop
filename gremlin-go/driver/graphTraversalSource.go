@@ -51,9 +51,9 @@ func NewDefaultGraphTraversalSource() *GraphTraversalSource {
 
 // GetBytecode gets the traversal Bytecode associated with this graph traversal source.
 // TODO remove
-func (gts *GraphTraversalSource) GetBytecode() *Bytecode {
-	return nil
-}
+//func (gts *GraphTraversalSource) GetBytecode() *Bytecode {
+//	return nil
+//}
 
 // GetGraphTraversal gets the graph traversal associated with this graph traversal source.
 func (gts *GraphTraversalSource) GetGraphTraversal() *GraphTraversal {

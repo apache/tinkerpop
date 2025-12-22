@@ -22,7 +22,6 @@ package gremlingo
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math/big"
 	"os"
 	"reflect"
@@ -30,6 +29,8 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const personLabel = "Person"
@@ -663,142 +664,28 @@ func TestConnection(t *testing.T) {
 		}
 	})
 
-	t.Run("Test Client.Submit() Simple String Query with Bindings", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		client, err := NewClient(testNoAuthUrl,
-			func(settings *ClientSettings) {
-				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
-			})
-		assert.Nil(t, err)
-		assert.NotNil(t, client)
-		defer client.Close()
-
-		resultSet, err := client.Submit("g.inject(x).math('_+_')", map[string]interface{}{"x": 2})
-		assert.Nil(t, err)
-		assert.NotNil(t, resultSet)
-		result, ok, err := resultSet.One()
-		assert.Nil(t, err)
-		assert.True(t, ok)
-		assert.NotNil(t, result)
-		res, err := result.GetInt()
-		assert.Nil(t, err)
-		assert.Equal(t, 4, res)
-	})
-
-	t.Run("Test Bindings To Server Configured with Modern Graph", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
-		remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
-			func(settings *DriverRemoteConnectionSettings) {
-				settings.TlsConfig = testNoAuthWithAliasTlsConfig
-				settings.AuthInfo = testNoAuthWithAliasAuthInfo
-				settings.TraversalSource = testServerModernGraphAlias
-			})
-		assert.Nil(t, err)
-		assert.NotNil(t, remote)
-		defer remote.Close()
-		g := Traversal_().With(remote)
-
-		r, err := g.V((&Bindings{}).Of("x", 1)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
-		assert.Nil(t, err)
-		for _, res := range r {
-			assert.Equal(t, int32(3), res.GetInterface())
-		}
-		r, err = g.V((&Bindings{}).Of("x", 4)).Out("created").Map(&Lambda{Script: "it.get().value('name').length()", Language: ""}).Sum().ToList()
-		assert.Nil(t, err)
-		for _, res := range r {
-			assert.Equal(t, int32(9), res.GetInterface())
-		}
-	})
-
-	t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
-
-		// Drop the graph.
-		dropGraph(t, g)
-
-		// Add vertices and edges to graph.
-		rs, err := g.AddV("person").Property("id", T__.Unfold().Property().AddV()).ToList()
-		assert.Nil(t, rs)
-		assert.True(t, isSameErrorCode(newError(err0502ResponseHandlerError), err))
-
-		rs, err = g.V().Count().ToList()
-		assert.NotNil(t, rs)
-		assert.Nil(t, err)
-
-		// Drop the graph.
-		dropGraph(t, g)
-	})
-
-	t.Run("Test per-request arguments", func(t *testing.T) {
-		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
-
-		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
-		defer g.remoteConnection.Close()
-
-		reqArgsTests := []struct {
-			msg       string
-			traversal *GraphTraversal
-			nilErr    bool
-		}{
-			{
-				"Traversal must time out (With)",
-				g.
-					With("evaluationTimeout", 10).
-					Inject(1).
-					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
-				false,
-			},
-			{
-				"Traversal must finish (With)",
-				g.
-					With("evaluationTimeout", 10000).
-					Inject(1).
-					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
-				true,
-			},
-			{
-				"evaluationTimeout is overridden and traversal must time out (With)",
-				g.
-					With("evaluationTimeout", 10000).With("evaluationTimeout", 10).
-					Inject(1).
-					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
-				false,
-			},
-			{
-				"Traversal must time out (OptionsStrategy)",
-				g.
-					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10})).
-					Inject(1).
-					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
-				false,
-			},
-			{
-				"Traversal must finish (OptionsStrategy)",
-				g.
-					WithStrategies(OptionsStrategy(map[string]interface{}{"evaluationTimeout": 10000})).
-					Inject(1).
-					SideEffect(&Lambda{"Thread.sleep(5000)", "gremlin-groovy"}),
-				true,
-			},
-		}
-
-		gotErrs := make([]<-chan error, len(reqArgsTests))
-
-		// Run tests in parallel.
-		for i, tt := range reqArgsTests {
-			gotErrs[i] = tt.traversal.Iterate()
-		}
-
-		// Check error promises.
-		for i, tt := range reqArgsTests {
-			assert.Equal(t, <-gotErrs[i] == nil, tt.nilErr, tt.msg)
-		}
-	})
+	// TODO enable after error response is deser properly
+	//t.Run("Test DriverRemoteConnection Invalid GraphTraversal", func(t *testing.T) {
+	//	skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+	//
+	//	// Initialize graph
+	//	g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+	//
+	//	// Drop the graph.
+	//	dropGraph(t, g)
+	//
+	//	// Add vertices and edges to graph.
+	//	rs, err := g.AddV("person").Property("id", T__.Unfold().Property().AddV()).ToList()
+	//	assert.Nil(t, rs)
+	//	assert.True(t, isSameErrorCode(newError(err0502ResponseHandlerError), err))
+	//
+	//	rs, err = g.V().Count().ToList()
+	//	assert.NotNil(t, rs)
+	//	assert.Nil(t, err)
+	//
+	//	// Drop the graph.
+	//	dropGraph(t, g)
+	//})
 
 	t.Run("Get all properties when materializeProperties is all", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)

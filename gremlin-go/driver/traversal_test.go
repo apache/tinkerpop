@@ -36,16 +36,16 @@ func TestTraversal(t *testing.T) {
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
 
-		assert.Equal(t, 2, len(original.Bytecode.stepInstructions))
-		assert.Equal(t, 3, len(clone.Bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
+		assert.Equal(t, "g.V().out(\"created\")", original.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\")", clone.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin())
 
 		original.Has("person", "name", "marko")
 		clone.V().Out()
 
-		assert.Equal(t, 3, len(original.Bytecode.stepInstructions))
-		assert.Equal(t, 5, len(clone.Bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
+		assert.Equal(t, "g.V().out(\"created\").has(\"person\",\"name\",\"marko\")", original.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").V().out()", clone.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin())
 	})
 
 	t.Run("Test Iterate with empty removeConnection", func(t *testing.T) {
@@ -524,7 +524,7 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test should extract ID from Vertex", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewGremlinLang(nil), nil)
 
 		// Test basic V() step with mixed ID types
 		vStart := g.V(1, &Vertex{Element: Element{Id: 2}})

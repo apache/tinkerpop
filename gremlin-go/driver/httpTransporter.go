@@ -22,12 +22,10 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -101,8 +99,9 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 		return err
 	}
 
-	str := hex.EncodeToString(all)
-	_, _ = fmt.Fprintf(os.Stdout, "Received response data : %s\n", str)
+	// TODO for debug, remove later, and check response handling
+	//str := hex.EncodeToString(all)
+	//_, _ = fmt.Fprintf(os.Stdout, "Received response data : %s\n", str)
 
 	fmt.Println("Sending response to responseChannel")
 	transporter.responseChannel <- all

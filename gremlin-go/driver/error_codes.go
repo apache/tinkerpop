@@ -58,6 +58,7 @@ const (
 
 	// response handling errors
 	err0501ResponseHandlerResultSetNotCreatedError errorCode = "E0501_PROTOCOL_RESPONSEHANDLER_NO_RESULTSET_ON_DATA_RECEIVE"
+	err0502ResponseHandlerReadLoopError            errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_READ_LOOP_ERROR"
 	err0502ResponseHandlerError                    errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_ERROR"
 	err0503ResponseHandlerAuthError                errorCode = "E0503_PROTOCOL_RESPONSEHANDLER_AUTH_ERROR"
 

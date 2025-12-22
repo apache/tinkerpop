@@ -74,7 +74,7 @@ func OptionsStrategy(options ...map[string]interface{}) TraversalStrategy {
 	if len(options) > 0 {
 		optsMap = options[0]
 	}
-	return &traversalStrategy{name: "OptionsStrategy", configuration: options}
+	return &traversalStrategy{name: "OptionsStrategy", configuration: optsMap}
 }
 
 // PartitionStrategy partitions the Vertices, Edges and Vertex properties of a Graph into String named
@@ -210,21 +210,37 @@ type MatchAlgorithmStrategyConfig struct {
 }
 
 func ReferenceElementStrategy(options ...map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: "ReferenceElementStrategy", configuration: options[0]}
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ReferenceElementStrategy", configuration: config}
 }
 
 func ComputerFinalizationStrategy(options ...map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: "ComputerFinalizationStrategy", configuration: options[0]}
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ComputerFinalizationStrategy", configuration: config}
 }
 
 func ProfileStrategy(options ...map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: "ProfileStrategy", configuration: options[0]}
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ProfileStrategy", configuration: config}
 }
 
 // Verification strategies
 
 func ComputerVerificationStrategy(options ...map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: "ComputerVerificationStrategy", configuration: options[0]}
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "ComputerVerificationStrategy", configuration: config}
 }
 
 // EdgeLabelVerificationStrategy does not allow Edge traversal steps to have no label specified.
@@ -280,14 +296,6 @@ type ReservedKeysVerificationStrategyConfig struct {
 	LogWarning     bool
 	ThrowException bool
 	Keys           Set
-}
-
-func StandardVerificationStrategy() TraversalStrategy {
-	return &traversalStrategy{name: "StandardVerificationStrategy"}
-}
-
-func VertexProgramRestrictionStrategy() TraversalStrategy {
-	return &traversalStrategy{name: "VertexProgramRestrictionStrategy"}
 }
 
 func StandardVerificationStrategy() TraversalStrategy {
@@ -387,7 +395,11 @@ func MatchPredicateStrategy() TraversalStrategy {
 }
 
 func MessagePassingReductionStrategy(options ...map[string]interface{}) TraversalStrategy {
-	return &traversalStrategy{name: "MessagePassingReductionStrategy", configuration: options[0]}
+	config := make(map[string]interface{})
+	if len(options) > 0 {
+		config = options[0]
+	}
+	return &traversalStrategy{name: "MessagePassingReductionStrategy", configuration: config}
 }
 
 // OrderLimitStrategy is an OLAP strategy that folds a RangeGlobalStep into a preceding

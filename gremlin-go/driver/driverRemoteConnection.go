@@ -144,22 +144,23 @@ func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang
 	return driver.client.submitGremlinLang(gremlinLang)
 }
 
+// TODO remove
 // submitBytecode sends a Bytecode traversal to the server.
-func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
-	if driver.isClosed {
-		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
-	}
-	return driver.client.submitBytecode(bytecode)
-}
-
-func (driver *DriverRemoteConnection) commit() (ResultSet, error) {
-	bc := &Bytecode{}
-	bc.AddSource("tx", "commit")
-	return driver.submitBytecode(bc)
-}
-
-func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
-	bc := &Bytecode{}
-	bc.AddSource("tx", "rollback")
-	return driver.submitBytecode(bc)
-}
+//func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
+//	if driver.isClosed {
+//		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
+//	}
+//	return driver.client.submitBytecode(bytecode)
+//}
+//
+//func (driver *DriverRemoteConnection) commit() (ResultSet, error) {
+//	bc := &Bytecode{}
+//	bc.AddSource("tx", "commit")
+//	return driver.submitBytecode(bc)
+//}
+//
+//func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
+//	bc := &Bytecode{}
+//	bc.AddSource("tx", "rollback")
+//	return driver.submitBytecode(bc)
+//}

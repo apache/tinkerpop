@@ -22,8 +22,6 @@ package gremlingo
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
-	"os"
 	"sync"
 )
 
@@ -111,13 +109,16 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 		if err != nil {
 			return msg, err
 		}
-		_, _ = fmt.Fprintf(os.Stdout, "Deserializing data : %v\n", n)
+		// TODO for debug, remove later
+		//_, _ = fmt.Fprintf(os.Stdout, "Deserializing data : %v\n", n)
 		if n == EndOfStream() {
 			break
 		}
 		results = append(results, n)
 	}
-	_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
+
+	// TODO for debug, remove later
+	//_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
 	msg.responseResult.data = results
 	code := readUint32Safe(&message, &i)
 	msg.responseStatus.code = code
@@ -173,7 +174,7 @@ func initSerializers() {
 		propertyType:       propertyWriter,
 		vertexPropertyType: vertexPropertyWriter,
 		pathType:           pathWriter,
-		datetimeType:       timeWriter,
+		datetimeType:       dateTimeWriter,
 		durationType:       durationWriter,
 		directionType:      enumWriter,
 		gTypeType:          enumWriter,
@@ -209,7 +210,7 @@ func initDeserializers() {
 		byteBuffer: readByteBuffer,
 
 		// Date Time
-		datetimeType: timeReader,
+		datetimeType: dateTimeReader,
 		durationType: durationReader,
 
 		// Graph

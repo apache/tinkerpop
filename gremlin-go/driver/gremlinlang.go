@@ -29,6 +29,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type GremlinLang struct {
@@ -46,9 +48,17 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 	optionsStrategies := make([]*traversalStrategy, 0)
 	paramCount := atomic.Uint64{}
 	if gl != nil {
-		gremlin = gl.gremlin
-		parameters = gl.parameters
-		optionsStrategies = gl.optionsStrategies
+		gremlin = make([]string, len(gl.gremlin))
+		copy(gremlin, gl.gremlin)
+
+		parameters = make(map[string]interface{})
+		for k, v := range gl.parameters {
+			parameters[k] = v
+		}
+
+		optionsStrategies = make([]*traversalStrategy, len(gl.optionsStrategies))
+		copy(optionsStrategies, gl.optionsStrategies)
+
 		paramCount.Store(gl.paramCount.Load())
 	}
 
@@ -63,7 +73,6 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 	flattenedArgs := gl.flattenArguments(args...)
 	if name == "CardinalityValueTraversal" {
-		gl.gremlin = append(gl.gremlin, "Cardinality.")
 		str0, err := gl.argAsString(flattenedArgs[0])
 		if err != nil {
 			return err
@@ -76,6 +85,7 @@ func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 		gl.gremlin = append(gl.gremlin, "(")
 		gl.gremlin = append(gl.gremlin, str1)
 		gl.gremlin = append(gl.gremlin, ")")
+		return nil
 	}
 
 	gl.gremlin = append(gl.gremlin, ".")
@@ -112,9 +122,9 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("\"%s\"", escapeQuotes.Replace(v)), nil
 	case bool:
 		return strconv.FormatBool(v), nil
-	case uint8:
+	case int8, uint8:
 		return fmt.Sprintf("%dB", v), nil
-	case int8, int16:
+	case int16:
 		return fmt.Sprintf("%dS", v), nil
 	case int32, uint16:
 		return fmt.Sprintf("%d", v), nil
@@ -130,7 +140,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("%dN", v), nil
 	case float32:
 		if math.IsNaN(float64(v)) {
-			return "Nan", nil
+			return "NaN", nil
 		}
 		if math.IsInf(float64(v), 1) {
 			return "Infinity", nil
@@ -141,7 +151,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return fmt.Sprintf("%vF", v), nil
 	case float64:
 		if math.IsNaN(v) {
-			return "Nan", nil
+			return "NaN", nil
 		}
 		if math.IsInf(v, 1) {
 			return "Infinity", nil
@@ -151,14 +161,19 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		}
 		return fmt.Sprintf("%vD", v), nil
 	case *SimpleSet:
-		return gl.translateSlice(v.ToSlice())
-	case *BigDecimal, BigDecimal:
-		return fmt.Sprintf("%vM", v), nil
+		return gl.translateSet(v.ToSlice())
+	case BigDecimal:
+		return fmt.Sprintf("%vM", v.Value()), nil
+	case *BigDecimal:
+		return fmt.Sprintf("%vM", v.Value()), nil
 	case time.Time:
 		return fmt.Sprintf("datetime(\"%v\")", v.Format(time.RFC3339)), nil
-	case cardinality, column, direction, operator, order, pick, pop, barrier, scope, t, merge:
+	case cardinality, column, direction, operator, order, pick, pop, barrier, scope, t, merge, gType:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name[:1])+name[1:], v), nil
+	case dt:
+		name := reflect.ValueOf(v).Type().Name()
+		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
 	case *Vertex:
 		id, _ := gl.argAsString(v.Id)
 		return fmt.Sprintf("new ReferenceVertex(%s,\"%s\")", escapeQuotes.Replace(id), escapeQuotes.Replace(v.Label)), nil
@@ -223,6 +238,8 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			gl.parameters[key] = v.Value()
 		}
 		return key, nil
+	case uuid.UUID:
+		return fmt.Sprintf("UUID(\"%v\")", v.String()), nil
 	default:
 		switch reflect.TypeOf(arg).Kind() {
 		case reflect.Map:
@@ -269,8 +286,16 @@ func (gl *GremlinLang) translateMap(arg interface{}) (string, error) {
 }
 
 func (gl *GremlinLang) translateSlice(arg interface{}) (string, error) {
+	return gl.translateCollection(arg, "[", "]")
+}
+
+func (gl *GremlinLang) translateSet(arg interface{}) (string, error) {
+	return gl.translateCollection(arg, "{", "}")
+}
+
+func (gl *GremlinLang) translateCollection(arg interface{}, open, close string) (string, error) {
 	sb := strings.Builder{}
-	sb.WriteString("[")
+	sb.WriteString(open)
 	list := reflect.ValueOf(arg)
 
 	for i := 0; i < list.Len(); i++ {
@@ -283,82 +308,84 @@ func (gl *GremlinLang) translateSlice(arg interface{}) (string, error) {
 		}
 		sb.WriteString(vString)
 	}
-	sb.WriteString("]")
+	sb.WriteString(close)
 	return sb.String(), nil
 }
 
 func (gl *GremlinLang) translateTextPredicate(v *textP) (string, error) {
-	if v.operator == "" || len(v.values) == 0 {
+	if v.operator == "" && len(v.values) == 0 {
 		return "", nil
 	}
 
-	instructionString := ""
-	instructionString += v.operator
-	instructionString += "("
-	if len(v.values) == 1 {
-		argString, err := gl.argAsString(v.values[0])
-		if err != nil {
-			return "", err
-		}
-		instructionString += argString
-	} else if len(v.values) > 1 {
-		for index, arg := range v.values {
-			argString, err := gl.argAsString(arg)
-			if err != nil {
-				return "", err
-			}
-
-			instructionString += argString
-			if index < len(v.values)-1 && argString != "" {
-				instructionString += ","
-			}
-		}
+	if v.operator == "or" || v.operator == "and" {
+		return gl.translateConnPOp(v.operator, v.values, gl.getPredicateString)
 	}
-
-	instructionString += ")"
-
-	return instructionString, nil
+	return gl.translatePValue(v.operator, v.values)
 }
 
 func (gl *GremlinLang) translatePredicate(v *p) (string, error) {
-
-	if v.operator == "" || len(v.values) == 0 {
+	if v.operator == "" && len(v.values) == 0 {
 		return "", nil
 	}
 
-	instructionString := ""
-	instructionString += v.operator
-	instructionString += "("
-	if len(v.values) == 1 {
-		argString, err := gl.argAsString(v.values[0])
+	if v.operator == "or" || v.operator == "and" {
+		return gl.translateConnPOp(v.operator, v.values, gl.getPredicateString)
+	}
+	return gl.translatePValue(v.operator, v.values)
+}
+
+func (gl *GremlinLang) translateConnPOp(operator string, values []interface{}, translator func(interface{}) (string, error)) (string, error) {
+	arg1, err := translator(values[0])
+	if err != nil {
+		return "", err
+	}
+	arg2, err := translator(values[1])
+	if err != nil {
+		return "", err
+	}
+	return arg1 + "." + operator + "(" + arg2 + ")", nil
+}
+
+func (gl *GremlinLang) getPredicateString(v interface{}) (string, error) {
+	if val, ok := v.(textP); ok {
+		return gl.translateTextPredicate(&val)
+	}
+	if val, ok := v.(*textP); ok {
+		return gl.translateTextPredicate(val)
+	}
+	if val, ok := v.(p); ok {
+		return gl.translatePredicate(&val)
+	}
+	return gl.translatePredicate(v.(*p))
+}
+
+func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (string, error) {
+	sb := strings.Builder{}
+	sb.WriteString(operator + "(")
+
+	if len(values) > 1 && operator != "between" && operator != "inside" {
+		sb.WriteString("[")
+	}
+
+	for i, arg := range values {
+		argString, err := gl.argAsString(arg)
 		if err != nil {
 			return "", err
 		}
-		instructionString += argString
-	} else if len(v.values) > 1 {
-		if v.operator != "between" && v.operator != "inside" {
-			instructionString += "["
-		}
-		for index, arg := range v.values {
-			argString, err := gl.argAsString(arg)
-			if err != nil {
-				return "", err
-			}
-
-			instructionString += argString
-			if index < len(v.values)-1 && argString != "" {
-				instructionString += ","
-			}
-		}
-		if v.operator != "between" && v.operator != "inside" {
-			instructionString += "]"
+		sb.WriteString(argString)
+		if i < len(values)-1 && argString != "" {
+			sb.WriteString(",")
 		}
 	}
 
-	instructionString += ")"
+	if len(values) > 1 && operator != "between" && operator != "inside" {
+		sb.WriteString("]")
+	}
+	sb.WriteString(")")
 
-	return instructionString, nil
+	return sb.String(), nil
 }
+
 func (gl *GremlinLang) asParameter(arg interface{}) string {
 	paramName := fmt.Sprintf("_%d", gl.paramCount.Load())
 	gl.paramCount.Add(1)
@@ -394,11 +421,15 @@ func (gl *GremlinLang) Reset() {
 }
 
 func (gl *GremlinLang) AddSource(name string, arguments ...interface{}) {
-	if name == "withStrategies" && len(arguments) != 0 {
+	if (name == "withStrategies" || name == "withoutStrategies") && len(arguments) != 0 {
 		args := gl.buildStrategyArgs(arguments...)
 		// possible to have empty strategies list to send
 		if len(args) != 0 {
-			gl.gremlin = append(gl.gremlin, ".withStrategies(")
+			if name == "withoutStrategies" {
+				gl.gremlin = append(gl.gremlin, ".withoutStrategies(")
+			} else {
+				gl.gremlin = append(gl.gremlin, ".withStrategies(")
+			}
 			gl.gremlin = append(gl.gremlin, args)
 			gl.gremlin = append(gl.gremlin, ")")
 		}
@@ -476,8 +507,13 @@ func (gl *GremlinLang) flattenArguments(arguments ...interface{}) []interface{} 
 		arg, ok := argument.([]interface{})
 		if ok {
 			for _, nestedArg := range arg {
-				converted, _ := gl.convertArgument(nestedArg)
-				flatArgs = append(flatArgs, converted)
+				_, isUUID := nestedArg.(uuid.UUID)
+				if isUUID {
+					flatArgs = append(flatArgs, nestedArg)
+				} else {
+					converted, _ := gl.convertArgument(nestedArg)
+					flatArgs = append(flatArgs, converted)
+				}
 			}
 		} else {
 			converted, _ := gl.convertArgument(argument)
@@ -510,6 +546,10 @@ func (gl *GremlinLang) convertArgument(arg interface{}) (interface{}, error) {
 			}
 			return newMap, nil
 		case reflect.Array, reflect.Slice:
+			_, isUUID := arg.(uuid.UUID)
+			if isUUID {
+				return arg, nil
+			}
 			argList := reflect.ValueOf(arg)
 			newList := make([]interface{}, argList.Len())
 			for i := 0; i < argList.Len(); i++ {

@@ -107,7 +107,6 @@ const (
 	creatingRequest              errorKey = "CREATING_REQUEST"
 	readComplete                 errorKey = "READ_COMPLETE"
 	submitStartedString          errorKey = "SUBMIT_STARTED_STRING"
-	submitStartedBytecode        errorKey = "SUBMIT_STARTED_BYTECODE"
 	failedToCloseInErrorCallback errorKey = "FAILED_TO_CLOSE_IN_ERROR_CALLBACK"
 	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
 	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"

@@ -20,9 +20,12 @@ under the License.
 package gremlingo
 
 import (
+	"math"
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func Test_GremlinLang(t *testing.T) {
@@ -233,12 +236,6 @@ func Test_GremlinLang(t *testing.T) {
 				return g.WithSack(0).V("3", "5").Sack(Operator.Sum).By("runways").Sack()
 			},
 			equals: "g.withSack(0).V(\"3\",\"5\").sack(Operator.sum).by(\"runways\").sack()",
-		},
-		{
-			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.V("3").Values("runways").Store("x").V("4").Values("runways").Store("x").By(T__.Constant(1)).V("6").Store("x").By(T__.Constant(1)).Select("x").Unfold().Sum()
-			},
-			equals: "g.V(\"3\").values(\"runways\").store(\"x\").V(\"4\").values(\"runways\").store(\"x\").by(__.constant(1)).V(\"6\").store(\"x\").by(__.constant(1)).select(\"x\").unfold().sum()",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -640,6 +637,42 @@ func Test_GremlinLang(t *testing.T) {
 				return g.V().Has("p1", nil)
 			},
 			equals: "g.V().has(\"p1\",null)",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().HasLabel("person").Values("age").Is(P.Between(26, 30).Or(P.Gt(34)))
+			},
+			equals: "g.V().hasLabel(\"person\").values(\"age\").is(between(26,30).or(gt(34)))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(1).AsNumber(GType.Double)
+			},
+			equals: "g.inject(1).asNumber(GType.DOUBLE)",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(uuid.MustParse("f47af10b-58cc-4372-a567-0f02b2f3d479"))
+			},
+			equals: "g.inject(UUID(\"f47af10b-58cc-4372-a567-0f02b2f3d479\"))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Filter(T__.Has("name", TextP.StartingWith("m").Or(TextP.StartingWith("p"))))
+			},
+			equals: "g.V().filter(__.has(\"name\",startingWith(\"m\").or(startingWith(\"p\"))))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("person", "age", P.Within())
+			},
+			equals: "g.V().has(\"person\",\"age\",within([]))",
+		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject(math.NaN()).Is(P.Eq(math.NaN()))
+			},
+			equals: "g.inject(NaN).is(eq(NaN))",
 		},
 	}
 

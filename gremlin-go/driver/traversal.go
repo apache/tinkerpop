@@ -33,7 +33,7 @@ type Traverser struct {
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
 	graph       *Graph
-	Bytecode    *Bytecode
+	Bytecode    *Bytecode //TODO remove
 	GremlinLang *GremlinLang
 	remote      *DriverRemoteConnection
 	results     ResultSet
@@ -162,33 +162,33 @@ var Cardinality = cardinalities{
 }
 
 type cv struct {
-	Bytecode *Bytecode
+	GremlinLang *GremlinLang
 }
 
 type CardValue interface {
-	Single(val interface{}) Bytecode
-	Set(val interface{}) Bytecode
-	List(val interface{}) Bytecode
+	Single(val interface{}) GremlinLang
+	Set(val interface{}) GremlinLang
+	List(val interface{}) GremlinLang
 }
 
 var CardinalityValue CardValue = &cv{}
 
-func (*cv) Single(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
-	return bc
+func (*cv) Single(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
+	return gl
 }
 
-func (*cv) Set(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
-	return bc
+func (*cv) Set(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
+	return gl
 }
 
-func (*cv) List(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.List, val)
-	return bc
+func (*cv) List(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.List, val)
+	return gl
 }
 
 type column string
@@ -518,7 +518,7 @@ func newP(operator string, args ...interface{}) Predicate {
 	return &p{operator: operator, values: values}
 }
 
-func newPWithP(operator string, pp p, args ...interface{}) Predicate {
+func newPWithP(operator string, pp *p, args ...interface{}) Predicate {
 	values := make([]interface{}, 1)
 	values[0] = pp
 	values = append(values, args...)
@@ -606,12 +606,12 @@ func (*p) Without(args ...interface{}) Predicate {
 
 // And Predicate returns a Predicate composed of two predicates (logical AND of them).
 func (pp *p) And(args ...interface{}) Predicate {
-	return newPWithP("and", *pp, args...)
+	return newPWithP("and", pp, args...)
 }
 
 // Or Predicate returns a Predicate composed of two predicates (logical OR of them).
 func (pp *p) Or(args ...interface{}) Predicate {
-	return newPWithP("or", *pp, args...)
+	return newPWithP("or", pp, args...)
 }
 
 type TextPredicate interface {
@@ -782,6 +782,18 @@ var IO = ioconfig{
 type BigDecimal struct {
 	Scale         int32
 	UnscaledValue *big.Int
+}
+
+func (bd *BigDecimal) Value() *big.Float {
+	// Create the divisor: 10^scale
+	divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(bd.Scale)), nil)
+
+	// Convert unscaled value and divisor to big.Float
+	unscaled := new(big.Float).SetInt(bd.UnscaledValue)
+	div := new(big.Float).SetInt(divisor)
+
+	// Divide: unscaledValue / 10^scale
+	return new(big.Float).Quo(unscaled, div)
 }
 
 // ParseBigDecimal creates a BigDecimal from a string value.

@@ -23,15 +23,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/text/language"
 	"math/big"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
-func TestGraphBinaryV1(t *testing.T) {
+func TestGraphBinaryV4(t *testing.T) {
 	t.Run("graphBinaryTypeSerializer tests", func(t *testing.T) {
 		serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
 
@@ -296,9 +297,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := timeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := timeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -307,9 +308,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -318,9 +319,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.UTC)
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
@@ -329,9 +330,9 @@ func TestGraphBinaryV1(t *testing.T) {
 			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 34, 123456789, GetTimezoneFromOffset(-36000))
-			buf, err := offsetDateTimeWriter(source, &buffer, nil)
+			buf, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := offsetDateTimeReader(&buf, &pos)
+			res, err := dateTimeReader(&buf, &pos)
 			assert.Nil(t, err)
 			// ISO format
 			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))

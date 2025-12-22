@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -134,7 +135,7 @@ func (client *Client) SubmitWithOptions(traversalString string, requestOptions R
 	request := makeStringRequest(traversalString, client.traversalSource, requestOptions)
 
 	// TODO interceptors (ie. auth)
-	
+
 	rs, err := client.httpProtocol.send(&request)
 	return rs, err
 }
@@ -156,13 +157,47 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
 	// TODO placeholder
 	requestOptionsBuilder := new(RequestOptionsBuilder)
+	if len(gremlinLang.GetParameters()) > 0 {
+		requestOptionsBuilder.SetBindings(gremlinLang.GetParameters())
+	}
+	if len(gremlinLang.optionsStrategies) > 0 {
+		requestOptionsBuilder = applyOptionsConfig(requestOptionsBuilder, gremlinLang.optionsStrategies[0].configuration)
+	}
+
 	request := makeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
 	return client.httpProtocol.send(&request)
 }
 
-// submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
-func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
-	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource)
-	return client.httpProtocol.send(&request)
+func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interface{}) *RequestOptionsBuilder {
+	builderValue := reflect.ValueOf(builder)
+
+	// Map configuration keys to setter method names
+	setterMap := map[string]string{
+		"requestId":             "SetRequestId",
+		"evaluationTimeout":     "SetEvaluationTimeout",
+		"batchSize":             "SetBatchSize",
+		"userAgent":             "SetUserAgent",
+		"bindings":              "SetBindings",
+		"materializeProperties": "SetMaterializeProperties",
+	}
+
+	for key, value := range config {
+		if methodName, exists := setterMap[key]; exists {
+			method := builderValue.MethodByName(methodName)
+			if method.IsValid() {
+				args := []reflect.Value{reflect.ValueOf(value)}
+				method.Call(args)
+			}
+		}
+	}
+
+	return builder
 }
+
+// submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
+// TODO remove
+//func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
+//	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
+//	request := makeBytecodeRequest(bytecode, client.traversalSource)
+//	return client.httpProtocol.send(&request)
+//}
