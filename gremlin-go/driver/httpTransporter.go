@@ -71,6 +71,21 @@ func (transporter *HttpTransporter) Write(data []byte) error {
 	if transporter.connSettings.enableCompression {
 		req.Header.Set("accept-encoding", "deflate")
 	}
+	if transporter.connSettings.authInfo != nil {
+		// Add custom headers
+		if headers := transporter.connSettings.authInfo.GetHeader(); headers != nil {
+			for key, values := range headers {
+				for _, value := range values {
+					req.Header.Add(key, value)
+				}
+			}
+		}
+
+		// Add basic auth
+		if ok, username, password := transporter.connSettings.authInfo.GetBasicAuth(); ok {
+			req.SetBasicAuth(username, password)
+		}
+	}
 
 	fmt.Println("Sending request")
 	resp, err := transporter.httpClient.Do(req)

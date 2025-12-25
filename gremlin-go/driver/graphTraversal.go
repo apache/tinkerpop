@@ -342,7 +342,7 @@ func (g *GraphTraversal) Format(args ...interface{}) *GraphTraversal {
 func (g *GraphTraversal) From(args ...interface{}) *GraphTraversal {
 	for i := 0; i < len(args); i++ {
 		if v, ok := args[i].(*Vertex); ok {
-			args[i] = v.Id
+			args[i] = T__.V(v.Id)
 		}
 	}
 	g.GremlinLang.AddStep("from", args...)
@@ -805,7 +805,7 @@ func (g *GraphTraversal) Times(args ...interface{}) *GraphTraversal {
 func (g *GraphTraversal) To(args ...interface{}) *GraphTraversal {
 	for i := 0; i < len(args); i++ {
 		if v, ok := args[i].(*Vertex); ok {
-			args[i] = v.Id
+			args[i] = T__.V(v.Id)
 		}
 	}
 	g.GremlinLang.AddStep("to", args...)

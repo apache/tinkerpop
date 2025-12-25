@@ -33,7 +33,6 @@ type Traverser struct {
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
 	graph       *Graph
-	Bytecode    *Bytecode //TODO remove
 	GremlinLang *GremlinLang
 	remote      *DriverRemoteConnection
 	results     ResultSet

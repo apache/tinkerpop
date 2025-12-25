@@ -95,7 +95,10 @@ func (protocol *httpProtocol) send(request *request) (ResultSet, error) {
 		transport.Close()
 	}()
 
-	return rs, err
+	// Wait for both async operations to complete
+	transport.wg.Wait()
+
+	return rs, rs.GetError()
 }
 
 // receives a binary response message, deserializes, and adds results to the ResultSet

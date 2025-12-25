@@ -49,7 +49,7 @@ const nonRoutableIPForConnectionTimeout = "http://10.255.255.1/"
 // transaction is enabled on the same port as no auth url
 const noAuthUrl = "http://localhost:45940/gremlin"
 const noAuthSslUrl = "https://localhost:45941/gremlin"
-const basicAuthWithSsl = "wss://localhost:45941/gremlin"
+const basicAuthWithSsl = "https://localhost:45941/gremlin"
 
 var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valentyn"}
 

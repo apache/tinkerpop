@@ -666,7 +666,7 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("person", "age", P.Within())
 			},
-			equals: "g.V().has(\"person\",\"age\",within([]))",
+			equals: "g.V().has(\"person\",\"age\",within())",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
