@@ -23,6 +23,23 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlint MCP
+
+The Gremlin MCP server now exposes Gremlint formatting for Gremlin traversals, which can be a convenient way to make
+a long string of Gremlin easier to read directly from an AI assistant. Provide a simple prompt like the following to
+an AI coding agent:
+
+[source,text]
+----
+Format this Gremlin query:
+```
+g.V().union(limit(3).fold(),tail(3).fold()).local(
+  unfold().order().by(bothE().count(),desc).limit(1).fold())
+```
+----
+
+It will trigger a call to Gremlint within the Gremlin MCP Server to format it with better indentation and spacing.
+
 ==== Gremlint Improvements
 
 Gremlint's approach to newlines often produced formatting that didn't generally follow the espoused best practices.
