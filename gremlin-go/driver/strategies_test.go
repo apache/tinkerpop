@@ -421,7 +421,6 @@ func TestStrategy(t *testing.T) {
 		assert.Equal(t, int32(6), val)
 	})
 
-
 	t.Run("Test GremlinLang generation for simple custom strategies", func(t *testing.T) {
 		g := NewGraphTraversalSource(nil, nil)
 
@@ -436,7 +435,14 @@ func TestStrategy(t *testing.T) {
 		customStrategy := NewTraversalStrategy("CustomConfigurableStrategy",
 			map[string]interface{}{"stringKey": "string value", "intKey": 5, "booleanKey": true})
 		gl := g.WithStrategies(customStrategy).gremlinLang
+		// Note that config map doesn't guarantee order, so assert individually
 		assert.True(t, strings.Contains(gl.GetGremlin(),
-			"withStrategies(new CustomConfigurableStrategy(stringKey:\"string value\",intKey:5,booleanKey:true))"))
+			"withStrategies(new CustomConfigurableStrategy("))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"stringKey:\"string value\""))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"intKey:5"))
+		assert.True(t, strings.Contains(gl.GetGremlin(),
+			"booleanKey:true"))
 	})
 }
