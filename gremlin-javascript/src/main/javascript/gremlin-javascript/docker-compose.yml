@@ -49,12 +49,22 @@ services:
       - ../../../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test
       - ../../../../../docker/gremlin-test-server:/js_app/gremlin-test-server
       - ../../../../../gremlin-tools/gremlin-socket-server/conf:/js_app/gremlin-socket-server/conf/
+      - ../../../..:/gremlin-javascript
     environment:
       - DOCKER_ENVIRONMENT=true
+      - GREMLIN_SERVER_URL=ws://gremlin-server-test-js:45940/gremlin
+      - VERTEX_LABEL=javascript-example
     working_dir: /js_app
     command: >
       bash -c "npm config set cache /tmp --global
-      && npm ci && npm run test && npm run features-docker"
+      && npm ci && npm run test && npm run features-docker 
+      && echo 'Running examples'
+      && cd /gremlin-javascript/src/main/javascript/gremlin-javascript && npm ci
+      && cd /gremlin-javascript/examples/node && npm ci
+      && node basic-gremlin.js
+      && node connections.js
+      && node modern-traversals.js
+      && echo 'All examples completed successfully'"
     depends_on:
       gremlin-server-test-js:
         condition: service_healthy
