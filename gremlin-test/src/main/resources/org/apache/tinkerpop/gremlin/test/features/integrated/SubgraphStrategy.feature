@@ -944,3 +944,18 @@ Feature: Step - SubgraphStrategy
       """
     When iterated to list
     Then the result should be empty
+
+  @WithSubgraphStrategy @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_withStrategiesXSubgraphStrategyXuseMapStepsInFilterX_E
+    Given the modern graph
+    And the traversal of
+      """
+      g.withStrategies(new SubgraphStrategy(edges: __.label().is(P.eq("created")),
+                                            vertices: __.values("name").is(P.within("lop","josh")),
+                                            checkAdjacentVertices: true)).
+        E()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[josh-created->lop] |

@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
@@ -285,7 +286,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), vertexPredicate);
             return Optional.of(vertexPredicate);
         } else {
-            final Traversal.Admin<Edge, ?> ec = edgeCriterion.clone();
+            final Traversal.Admin<Edge, ?> ec = new DefaultGraphTraversal<>();
+            ec.addStep(new TraversalFilterStep<>(ec, edgeCriterion.clone()));
             ec.addStep(new TraversalFilterStep<>(ec, vertexPredicate));
             TraversalHelper.applyTraversalRecursively(t -> t.getStartStep().addLabel(MARKER), ec);
             return Optional.of(ec);
