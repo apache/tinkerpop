@@ -856,6 +856,81 @@ Feature: Step - repeat()
       | peter |
       | lop |
 
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_localXemit_repeatXout_order_byXnameXX_timesX2X_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.emit().repeat(__.out().order().by("name")).times(2).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_emit_repeatXlocalXout_order_byXnameXXX_timesX2X_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(__.local(__.out().order().by("name"))).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_localXemit_repeatXlocalXout_order_byXnameXXX_timesX2X_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.emit().repeat(__.local(__.out().order().by("name"))).times(2).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
   Scenario: g_V_emitXhasLabelXpersonXX_repeatXout_order_byXnameXX_timesX2X_valuesXnameX
     Given the modern graph
     And the traversal of
