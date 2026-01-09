@@ -6058,6 +6058,9 @@ g.V().outE().inV().
     by('name')
 ----
 
+WARNING: It is not advisable to provide filtering traversals that do more than just filter (e.g. mutation steps,
+side-effects, etc.) - prefer use of the standard `has()` step variations for best results.
+
 === VertexProgramDenyStrategy
 
 Like the `ReadOnlyStrategy`, the `VertexProgramDenyStrategy` denies the execution of specific traversals. A `Traversal`
