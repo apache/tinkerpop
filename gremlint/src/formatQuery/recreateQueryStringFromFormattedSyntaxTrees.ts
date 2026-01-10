@@ -26,20 +26,26 @@ const recreateQueryStringFromFormattedSyntaxTree = (syntaxTree: FormattedSyntaxT
   }
   if (syntaxTree.type === TokenType.Traversal) {
     return syntaxTree.stepGroups
-      .map((stepGroup) => stepGroup.steps.map(recreateQueryStringFromFormattedSyntaxTree).join('.'))
+      .map((stepGroup, index) => {
+        const firstStep = stepGroup.steps[0];
+        const indentationAmount =
+          index === 0 || firstStep.type === TokenType.NonGremlinCode ? 0 : firstStep.localIndentation;
+        const indentation = spaces(indentationAmount);
+        return indentation + stepGroup.steps.map(recreateQueryStringFromFormattedSyntaxTree).join('.');
+      })
       .join('\n');
   }
   if (syntaxTree.type === TokenType.Method) {
+    const methodOpeningParenthesis =
+      (syntaxTree.shouldStartWithDot ? '.' : '') + recreateQueryStringFromFormattedSyntaxTree(syntaxTree.method) + '(';
+    const indentation = spaces(syntaxTree.horizontalPosition + methodOpeningParenthesis.length);
     return (
-      (syntaxTree.shouldStartWithDot ? '.' : '') +
-      [
-        recreateQueryStringFromFormattedSyntaxTree(syntaxTree.method) + '(',
-        syntaxTree.argumentGroups
-          .map((args) => args.map(recreateQueryStringFromFormattedSyntaxTree).join(', '))
-          .join(',\n') +
-          ')' +
-          (syntaxTree.shouldEndWithDot ? '.' : ''),
-      ].join(syntaxTree.argumentsShouldStartOnNewLine ? '\n' : '')
+      methodOpeningParenthesis +
+      syntaxTree.argumentGroups
+        .map((args) => args.map(recreateQueryStringFromFormattedSyntaxTree).join(', '))
+        .join(',\n' + indentation) +
+      ')' +
+      (syntaxTree.shouldEndWithDot ? '.' : '')
     );
   }
   if (syntaxTree.type === TokenType.Closure) {
@@ -55,15 +61,10 @@ const recreateQueryStringFromFormattedSyntaxTree = (syntaxTree: FormattedSyntaxT
     );
   }
   if (syntaxTree.type === TokenType.String) {
-    return spaces(syntaxTree.localIndentation) + syntaxTree.string;
+    return syntaxTree.string;
   }
   if (syntaxTree.type === TokenType.Word) {
-    return (
-      spaces(syntaxTree.localIndentation) +
-      (syntaxTree.shouldStartWithDot ? '.' : '') +
-      syntaxTree.word +
-      (syntaxTree.shouldEndWithDot ? '.' : '')
-    );
+    return (syntaxTree.shouldStartWithDot ? '.' : '') + syntaxTree.word + (syntaxTree.shouldEndWithDot ? '.' : '');
   }
   // The following line is just here to convince TypeScript that the return type
   // is string and not string | undefined.

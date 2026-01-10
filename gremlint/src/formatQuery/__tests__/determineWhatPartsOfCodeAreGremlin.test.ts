@@ -38,9 +38,8 @@ g.V().filter(values('name').filter(contains('Gremlint')))`,
 }
 
 g.V().
-  filter(
-    values('name').
-    filter(contains('Gremlint')))`);
+  filter(values('name').
+         filter(contains('Gremlint')))`);
 
   expect(
     formatQuery(

@@ -48,6 +48,7 @@ Your AI assistant gets access to these powerful tools:
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
 | ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
+| 👌 **format_gremlin_query** | Query Formatting | Format a Gremlin query string using gremlint                 |
 
 ## 🚀 Quick Setup
 
@@ -170,6 +171,12 @@ Restart your AI client and try asking:
 > **Why this matters:** AI agents work best when they know the exact valid values for properties. Instead of guessing or making invalid queries, they can use precise, real values from your data.
 
 One of the most powerful features of this MCP server is **Automatic Enum Discovery** - it intelligently analyzes your graph data to discover valid property values and provides them as enums to AI agents.
+
+### Query Formatting
+
+**You ask:** _"Format this Gremlin query \`g.V().out('both').project('name','age').by('name').by('age')\`."_
+
+**AI response:** The AI calls the `format_gremlin_query` tool and returns a formatted Gremlin string (or a structured error if parsing fails). Optional formatting options include `indentation`, `maxLineLength`, and `shouldPlaceDotsAfterLineBreaks`.
 
 ### 🤔 The Problem It Solves
 

@@ -49,9 +49,8 @@ test('It should be possible ot use formatQuery with a config, with a partial con
   ).toBe(`        g.V()
           .has('person', 'name', 'marko')
           .shortestPath()
-            .with(
-              ShortestPath.target,
-              __.has('name', 'josh'))
+            .with(ShortestPath.target,
+                  __.has('name', 'josh'))
             .with(ShortestPath.distance, 'weight')`);
 
   // Test using formatQuery with an empty config

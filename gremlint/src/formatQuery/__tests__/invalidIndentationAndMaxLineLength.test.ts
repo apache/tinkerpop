@@ -26,6 +26,5 @@ test('The formatter should not crash when indentation is equal to maxLineLength'
       maxLineLength: 0,
       shouldPlaceDotsAfterLineBreaks: false,
     }),
-  ).toBe(`g.V(
-)`);
+  ).toBe(`g.V()`);
 });

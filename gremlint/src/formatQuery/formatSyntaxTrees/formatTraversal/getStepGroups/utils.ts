@@ -25,6 +25,7 @@ import {
   UnformattedSyntaxTree,
 } from '../../../types';
 import { STEP_MODULATORS } from '../../../consts';
+import { willFitOnLine } from '../../../layoutUtils';
 import recreateQueryOnelinerFromSyntaxTree from '../../../recreateQueryOnelinerFromSyntaxTree';
 
 export const isTraversalSource = (step: UnformattedSyntaxTree | FormattedSyntaxTree): boolean => {
@@ -78,15 +79,14 @@ const isLineTooLongWithSubsequentModulators = (config: GremlintInternalConfig) =
     return indentationIncrease;
   })();
 
-  const recreatedQueryWithSubsequentModulators = recreateQueryOnelinerFromSyntaxTree(
-    config.localIndentation + stepGroupIndentationIncrease,
-  )({
-    type: TokenType.Traversal,
-    steps: stepsWithSubsequentModulators,
-  });
-
-  const lineIsTooLongWithSubsequentModulators = recreatedQueryWithSubsequentModulators.length > config.maxLineLength;
-  return lineIsTooLongWithSubsequentModulators;
+  return !willFitOnLine(
+    {
+      type: TokenType.Traversal,
+      steps: stepsWithSubsequentModulators,
+    },
+    config,
+    config.horizontalPosition + stepGroupIndentationIncrease,
+  );
 };
 
 // If the first step in a group is a modulator, then it must also be the last step in the group
