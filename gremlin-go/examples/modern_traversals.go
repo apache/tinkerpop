@@ -21,6 +21,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
@@ -28,9 +29,20 @@ import (
 var __ = gremlingo.T__
 var T = gremlingo.T
 var P = gremlingo.P
+var serverURL = getEnv("GREMLIN_SERVER_URL", "ws://localhost:8182/gremlin")
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
 
 func main() {
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("ws://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL,
+		func(settings *gremlingo.DriverRemoteConnectionSettings) {
+			settings.TraversalSource = "gmodern"
+		})
 	if err != nil {
 		fmt.Println(err)
 		return
