@@ -27,14 +27,14 @@ import (
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
-// serializer interface for serializers.
-type serializer interface {
-	serializeMessage(request *request) ([]byte, error)
-	deserializeMessage(message []byte) (response, error)
+// Serializer interface for serializers.
+type Serializer interface {
+	SerializeMessage(request *request) ([]byte, error)
+	DeserializeMessage(message []byte) (Response, error)
 }
 
-// graphBinarySerializer serializes/deserializes message to/from GraphBinary.
-type graphBinarySerializer struct {
+// GraphBinarySerializer serializes/deserializes message to/from GraphBinary.
+type GraphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
 
@@ -56,15 +56,37 @@ func init() {
 	initDeserializers()
 }
 
-func newGraphBinarySerializer(handler *logHandler) serializer {
+func newGraphBinarySerializer(handler *logHandler) Serializer {
 	serializer := graphBinaryTypeSerializer{handler}
-	return graphBinarySerializer{&serializer}
+	return GraphBinarySerializer{&serializer}
 }
 
 const versionByte byte = 0x81
 
+// SerializeMessage serializes a request message into GraphBinary format.
+//
+// This method is part of the serializer interface and is used internally by the WebSocket driver.
+// It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
+// serialize requests created with MakeBytecodeRequest() or MakeStringRequest().
+//
+// The serialized bytes can be transmitted over any transport protocol that supports binary data.
+//
+// Parameters:
+//   - request: The request to serialize (created via MakeBytecodeRequest or MakeStringRequest)
+//
+// Returns:
+//   - []byte: The GraphBinary-encoded request ready for transmission
+//   - error: Any serialization error encountered
+//
+// Example for alternative transports:
+//
+//	req := MakeBytecodeRequest(bytecode, "g", "")
+//	serializer := newGraphBinarySerializer(nil)
+//	bytes, err := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	// Send bytes over custom transport
+//
 // serializeMessage serializes a request message into GraphBinary.
-func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, error) {
+func (gs GraphBinarySerializer) SerializeMessage(request *request) ([]byte, error) {
 	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
 	if err != nil {
 		return nil, err
@@ -72,7 +94,7 @@ func (gs graphBinarySerializer) serializeMessage(request *request) ([]byte, erro
 	return finalMessage, nil
 }
 
-func (gs *graphBinarySerializer) buildMessage(gremlin string, args map[string]interface{}) ([]byte, error) {
+func (gs *GraphBinarySerializer) buildMessage(gremlin string, args map[string]interface{}) ([]byte, error) {
 	buffer := bytes.Buffer{}
 
 	// Version
@@ -90,9 +112,27 @@ func (gs *graphBinarySerializer) buildMessage(gremlin string, args map[string]in
 	return buffer.Bytes(), nil
 }
 
-// deserializeMessage deserializes a response message.
-func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, error) {
-	var msg response
+// DeserializeMessage deserializes a GraphBinary-encoded response message.
+//
+// This method is part of the serializer interface and is used internally by the WebSocket driver.
+// It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
+// deserialize responses received from a Gremlin server.
+//
+// Parameters:
+//   - message: The GraphBinary-encoded response bytes
+//
+// Returns:
+//   - response: The deserialized Response containing results and metadata
+//   - error: Any deserialization error encountered
+//
+// Example for alternative transports:
+//
+//	// Receive bytes from custom transport
+//	serializer := newGraphBinarySerializer(nil)
+//	resp, err := serializer.(graphBinarySerializer).DeserializeMessage(responseBytes)
+//	results := resp.responseResult.data
+func (gs GraphBinarySerializer) DeserializeMessage(message []byte) (Response, error) {
+	var msg Response
 
 	if message == nil || len(message) == 0 {
 		gs.ser.logHandler.log(Error, nullInput)
@@ -112,25 +152,25 @@ func (gs graphBinarySerializer) deserializeMessage(message []byte) (response, er
 	}
 	if len(results) == 1 {
 		// unwrap single results
-		msg.responseResult.data = results[0]
+		msg.ResponseResult.Data = results[0]
 	} else {
-		msg.responseResult.data = results
+		msg.ResponseResult.Data = results
 	}
 	code := readUint32Safe(&message, &i)
-	msg.responseStatus.code = code
+	msg.ResponseStatus.code = code
 	statusMsg, err := readUnqualified(&message, &i, stringType, true)
 	if err != nil {
 		return msg, err
 	}
 	if statusMsg != nil {
-		msg.responseStatus.message = statusMsg.(string)
+		msg.ResponseStatus.message = statusMsg.(string)
 	}
 	exception, err := readUnqualified(&message, &i, stringType, true)
 	if err != nil {
 		return msg, err
 	}
 	if exception != nil {
-		msg.responseStatus.exception = exception.(string)
+		msg.ResponseStatus.exception = exception.(string)
 	}
 	return msg, nil
 }

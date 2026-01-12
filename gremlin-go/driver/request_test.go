@@ -27,7 +27,7 @@ import (
 
 func TestRequest(t *testing.T) {
 	t.Run("Test makeStringRequest() with no bindings", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g", *new(RequestOptions))
+		r := MakeStringRequest("g.V()", "g", *new(RequestOptions))
 		assert.Equal(t, "g.V()", r.gremlin)
 		assert.Equal(t, "g", r.fields["g"])
 		assert.Equal(t, "gremlin-lang", r.fields["language"])
@@ -35,19 +35,19 @@ func TestRequest(t *testing.T) {
 	})
 
 	t.Run("Test makeStringRequest() with custom evaluationTimeout", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g",
+		r := MakeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create())
 		assert.Equal(t, 1234, r.fields["evaluationTimeout"])
 	})
 
 	t.Run("Test makeStringRequest() with custom batchSize", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g",
+		r := MakeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetBatchSize(123).Create())
 		assert.Equal(t, 123, r.fields["batchSize"])
 	})
 
 	t.Run("Test makeStringRequest() with custom userAgent", func(t *testing.T) {
-		r := makeStringRequest("g.V()", "g",
+		r := MakeStringRequest("g.V()", "g",
 			new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create())
 		assert.Equal(t, "TestUserAgent", r.fields["userAgent"])
 	})

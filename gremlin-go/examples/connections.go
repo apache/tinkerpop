@@ -21,7 +21,20 @@ package main
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/apache/tinkerpop/gremlin-go/v3/driver"
 )
+
+var serverURL = getEnv("GREMLIN_SERVER_URL", "http://localhost:8182/gremlin")
+var vertexLabel = getEnv("VERTEX_LABEL", "connection")
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
 
 func main() {
 	withRemote()
@@ -30,7 +43,7 @@ func main() {
 
 func withRemote() {
 	// Creating the connection to the server
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin")
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL)
 
 	// Error handling
 	if err != nil {
@@ -44,19 +57,15 @@ func withRemote() {
 	// Creating graph traversal
 	g := gremlingo.Traversal_().With(driverRemoteConnection)
 
-	// Drop existing vertices
-	prom := g.V().Drop().Iterate()
-	<-prom
-
 	// Simple query to verify connection
-	g.AddV().Iterate()
-	count, _ := g.V().Count().Next()
+	g.AddV(vertexLabel).Iterate()
+	count, _ := g.V().HasLabel(vertexLabel).Count().Next()
 	fmt.Println("Vertex count:", *count)
 }
 
 func withConfigs() {
 	// Connecting to the server with customized configurations
-	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection("http://localhost:8182/gremlin",
+	driverRemoteConnection, err := gremlingo.NewDriverRemoteConnection(serverURL,
 		func(settings *gremlingo.DriverRemoteConnectionSettings) {
 			settings.TraversalSource = "g"
 			settings.NewConnectionThreshold = 4
@@ -73,7 +82,7 @@ func withConfigs() {
 	defer driverRemoteConnection.Close()
 	g := gremlingo.Traversal_().WithRemote(driverRemoteConnection)
 
-	g.AddV().Iterate()
-	count, _ := g.V().Count().Next()
+	g.AddV(vertexLabel).Iterate()
+	count, _ := g.V().HasLabel(vertexLabel).Count().Next()
 	fmt.Println("Vertex count:", *count)
 }

@@ -127,7 +127,7 @@ func (client *Client) Close() {
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
-	request := makeStringRequest(traversalString, client.traversalSource, requestOptions)
+	request := MakeStringRequest(traversalString, client.traversalSource, requestOptions)
 
 	// TODO interceptors (ie. auth)
 
@@ -149,6 +149,6 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 // submitBytecode submits Bytecode to the server to execute and returns a ResultSet.
 func (client *Client) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedBytecode, *bytecode)
-	request := makeBytecodeRequest(bytecode, client.traversalSource)
+	request := MakeBytecodeRequest(bytecode, client.traversalSource)
 	return client.gremlinClient.send(&request)
 }

@@ -25,7 +25,27 @@ type request struct {
 	fields  map[string]interface{}
 }
 
-func makeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
+// MakeStringRequest creates a request from a Gremlin string query for submission to a Gremlin server.
+//
+// This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
+// to construct properly formatted requests outside the standard WebSocket client. The returned
+// request can then be serialized using SerializeMessage().
+//
+// Parameters:
+//   - stringGremlin: The Gremlin query string to execute
+//   - traversalSource: The name of the traversal source (typically "g")
+//   - requestOptions: Options such as bindings, timeout, batch size, etc.
+//
+// Returns:
+//   - request: A request structure ready for serialization
+//
+// Example for alternative transports:
+//
+//	req := MakeStringRequest("g.V().count()", "g", RequestOptions{})
+//	serializer := newGraphBinarySerializer(nil)
+//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	// Send bytes over gRPC, HTTP/2, etc.
+func MakeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
 	newFields := map[string]interface{}{
 		"language": "gremlin-lang",
 		"g":        traversalSource,
@@ -57,7 +77,27 @@ func makeStringRequest(stringGremlin string, traversalSource string, requestOpti
 	}
 }
 
-func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
+// MakeBytecodeRequest creates a request from Gremlin bytecode for submission to a Gremlin server.
+//
+// This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
+// to construct properly formatted requests outside the standard WebSocket client. The returned
+// request can then be serialized using SerializeMessage().
+//
+// Parameters:
+//   - bytecodeGremlin: The Gremlin bytecode to execute
+//   - traversalSource: The name of the traversal source (typically "g")
+//
+// Returns:
+//   - request: A request structure ready for serialization
+//
+// Example for alternative transports:
+//
+//	bytecode := g.V().HasLabel("person").Bytecode
+//	req := MakeBytecodeRequest(bytecode, "g")
+//	serializer := newGraphBinarySerializer(nil)
+//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	// Send bytes over gRPC, HTTP/2, etc.
+func MakeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string) (req request) {
 	newFields := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
 		"aliases": map[string]interface{}{
