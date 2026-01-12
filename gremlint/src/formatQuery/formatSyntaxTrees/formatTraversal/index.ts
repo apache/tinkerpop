@@ -27,6 +27,7 @@ import {
   UnformattedTraversalSyntaxTree,
 } from '../../types';
 import { last, pipe, sum } from '../../utils';
+import { willFitOnLine } from '../../layoutUtils';
 import { withIncreasedHorizontalPosition, withZeroIndentation } from '../utils';
 import { getStepGroups } from './getStepGroups';
 import { isTraversalSource } from './getStepGroups/utils';
@@ -37,10 +38,17 @@ export const formatTraversal = (formatSyntaxTree: GremlinSyntaxTreeFormatter) =>
 ): FormattedTraversalSyntaxTree => {
   const initialHorizontalPositionIndentationIncrease =
     syntaxTree.steps[0] && isTraversalSource(syntaxTree.steps[0]) ? syntaxTree.initialHorizontalPosition : 0;
-  const recreatedQuery = recreateQueryOnelinerFromSyntaxTree(
-    config.localIndentation + initialHorizontalPositionIndentationIncrease,
-  )(syntaxTree);
-  if (recreatedQuery.length <= config.maxLineLength) {
+  if (
+    willFitOnLine(
+      syntaxTree,
+      config,
+      config.horizontalPosition + initialHorizontalPositionIndentationIncrease,
+    )
+  ) {
+    const recreatedQuery = recreateQueryOnelinerFromSyntaxTree(
+      config,
+      config.horizontalPosition + initialHorizontalPositionIndentationIncrease,
+    )(syntaxTree);
     return {
       type: TokenType.Traversal,
       steps: syntaxTree.steps,

@@ -9,7 +9,7 @@
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
+ *  Unless required by applicable law or agreed in writing,
  *  software distributed under the License is distributed on an
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
@@ -30,7 +30,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { TOOL_NAMES } from '../constants.js';
 import { GremlinService } from '../gremlin/service.js';
-import { createToolEffect, createStringToolEffect, createQueryEffect } from './tool-patterns.js';
+import {
+  createToolEffect,
+  createStringToolEffect,
+  createQueryEffect,
+  createSuccessResponse,
+} from './tool-patterns.js';
+import { formatQuery } from 'gremlint';
 
 /**
  * Input validation schemas for tool parameters.
@@ -50,6 +56,17 @@ const runQueryInputSchema = z.object({
     })
     .describe('The Gremlin query to execute'),
 });
+
+// Format Gremlin Query input - allow any string and expose gremlint options as top-level optional fields
+const formatQueryInputSchema = z
+  .object({
+    query: z.string().describe('The Gremlin query (or any string) to format'),
+    // Expose gremlint options as optional top-level fields
+    indentation: z.number().int().nonnegative().optional(),
+    maxLineLength: z.number().int().positive().optional(),
+    shouldPlaceDotsAfterLineBreaks: z.boolean().optional(),
+  })
+  .strict();
 
 /**
  * Registers all MCP tool handlers with the server.
@@ -142,6 +159,54 @@ export function registerEffectToolHandlers(
     (args: unknown) => {
       const { query } = runQueryInputSchema.parse(args);
       return Effect.runPromise(pipe(createQueryEffect(query), Effect.provide(runtime)));
+    }
+  );
+
+  // Format Gremlin Query (uses local gremlint)
+  server.registerTool(
+    TOOL_NAMES.FORMAT_GREMLIN_QUERY,
+    {
+      title: 'Format Gremlin Query',
+      description: 'Format a Gremlin query using Gremlint and return a structured result',
+      inputSchema: formatQueryInputSchema.shape,
+    },
+    (args: unknown) => {
+      const parsed = formatQueryInputSchema.parse(args);
+      const { query, indentation, maxLineLength, shouldPlaceDotsAfterLineBreaks } = parsed;
+
+      // Build options only with fields provided (undefineds will be ignored by gremlint defaults)
+      const options =
+        indentation !== undefined ||
+        maxLineLength !== undefined ||
+        shouldPlaceDotsAfterLineBreaks !== undefined
+          ? { indentation, maxLineLength, shouldPlaceDotsAfterLineBreaks }
+          : undefined;
+
+      const effect = Effect.try(() => formatQuery(query, options));
+
+      // Map success to structured JSON and errors to structured error object (still returned as success response)
+      const responseEffect = pipe(
+        effect,
+        Effect.map(formatted =>
+          createSuccessResponse({ success: true, formattedQuery: formatted })
+        ),
+        Effect.catchAll(error =>
+          Effect.succeed(
+            createSuccessResponse({
+              success: false,
+              error: {
+                message: String(error),
+                // include common error fields when present to make it structured
+                name: (error && (error as any).name) || undefined,
+                stack: (error && (error as any).stack) || undefined,
+                details: (error && (error as any).details) || undefined,
+              },
+            })
+          )
+        )
+      );
+
+      return Effect.runPromise(pipe(responseEffect, Effect.provide(runtime)));
     }
   );
 }

@@ -117,6 +117,7 @@ export type FormattedMethodSyntaxTree = {
   argumentGroups: FormattedSyntaxTree[][];
   argumentsShouldStartOnNewLine: boolean;
   localIndentation: number;
+  horizontalPosition: number;
   width: number;
   shouldStartWithDot: boolean;
   shouldEndWithDot: boolean;
