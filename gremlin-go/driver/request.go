@@ -36,7 +36,28 @@ const sessionProcessor = "session"
 const stringOp = "eval"
 const stringProcessor = ""
 
-func makeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
+// MakeStringRequest creates a request from a Gremlin string query for submission to a Gremlin server.
+//
+// This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
+// to construct properly formatted requests outside the standard WebSocket client. The returned
+// request can then be serialized using SerializeMessage().
+//
+// Parameters:
+//   - stringGremlin: The Gremlin query string to execute
+//   - traversalSource: The name of the traversal source (typically "g")
+//   - sessionId: Optional session ID for stateful requests (use "" for stateless)
+//   - requestOptions: Options such as bindings, timeout, batch size, etc.
+//
+// Returns:
+//   - request: A request structure ready for serialization
+//
+// Example for alternative transports:
+//
+//	req := MakeStringRequest("g.V().count()", "g", "", RequestOptions{})
+//	serializer := newGraphBinarySerializer(nil)
+//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	// Send bytes over gRPC, HTTP/2, etc.
+func MakeStringRequest(stringGremlin string, traversalSource string, sessionId string, requestOptions RequestOptions) (req request) {
 	newProcessor := stringProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": stringGremlin,
@@ -88,7 +109,28 @@ const bytecodeProcessor = "traversal"
 const authOp = "authentication"
 const authProcessor = "traversal"
 
-func makeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sessionId string) (req request) {
+// MakeBytecodeRequest creates a request from Gremlin bytecode for submission to a Gremlin server.
+//
+// This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
+// to construct properly formatted requests outside the standard WebSocket client. The returned
+// request can then be serialized using SerializeMessage().
+//
+// Parameters:
+//   - bytecodeGremlin: The Gremlin bytecode to execute
+//   - traversalSource: The name of the traversal source (typically "g")
+//   - sessionId: Optional session ID for stateful requests (use "" for stateless)
+//
+// Returns:
+//   - request: A request structure ready for serialization
+//
+// Example for alternative transports:
+//
+//	bytecode := g.V().HasLabel("person").Bytecode
+//	req := MakeBytecodeRequest(bytecode, "g", "")
+//	serializer := newGraphBinarySerializer(nil)
+//	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
+//	// Send bytes over gRPC, HTTP/2, etc.
+func MakeBytecodeRequest(bytecodeGremlin *Bytecode, traversalSource string, sessionId string) (req request) {
 	newProcessor := bytecodeProcessor
 	newArgs := map[string]interface{}{
 		"gremlin": *bytecodeGremlin,
