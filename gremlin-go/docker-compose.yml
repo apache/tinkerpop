@@ -60,10 +60,16 @@ services:
       - RUN_BASIC_AUTH_INTEGRATION_TESTS=true
       - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-go
       - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/go_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
+      - VERTEX_LABEL=go-example
     working_dir: /go_app
     command: >
       bash -c "go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
-      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt"
+      && go test -v -json ./... -race -covermode=atomic -coverprofile=\"coverage.out\" -coverpkg=./... | gotestfmt
+      && echo 'Running examples...'
+      && go run examples/basic_gremlin.go
+      && go run examples/connections.go
+      && go run examples/modern_traversals.go
+      && echo 'All examples completed successfully'"
     depends_on:
       gremlin-server-test:
         condition: service_healthy
