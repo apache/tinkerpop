@@ -762,6 +762,80 @@ public abstract class Client {
     }
 
     /**
+     * A {@code Client} implementation that operates in the context of a session. {@code ChildSessionClient} is tied to
+     * another client as a child, it borrows the connection from the parent client's pool for the transaction. Requests are
+     * sent to a single server, where each request is bound to the same thread and same connection with the same set of
+     * bindings across requests.
+     * Transaction are not automatically committed. It is up the client to issue commit/rollback commands.
+     */
+    public final static class SessionedChildClient extends Client {
+        private final String sessionId;
+        private final boolean manageTransactions;
+        private final boolean maintainStateAfterException;
+        private final Client parentClient;
+        private Connection borrowedConnection;
+        private boolean closed;
+
+        public SessionedChildClient(final Client parentClient, String sessionId) {
+            super(parentClient.cluster, parentClient.settings);
+            this.parentClient = parentClient;
+            this.sessionId = sessionId;
+            this.closed = false;
+            this.manageTransactions = parentClient.settings.getSession().map(s -> s.manageTransactions).orElse(false);
+            this.maintainStateAfterException = parentClient.settings.getSession().map(s -> s.maintainStateAfterException).orElse(false);
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        @Override
+        public RequestMessage.Builder buildMessage(final RequestMessage.Builder builder) {
+            builder.processor("session");
+            builder.addArg(Tokens.ARGS_SESSION, sessionId);
+            builder.addArg(Tokens.ARGS_MANAGE_TRANSACTION, manageTransactions);
+            builder.addArg(Tokens.ARGS_MAINTAIN_STATE_AFTER_EXCEPTION, maintainStateAfterException);
+            return builder;
+        }
+
+        @Override
+        protected void initializeImplementation() {
+            // do nothing, parentClient is already initialized
+        }
+
+        @Override
+        protected synchronized Connection chooseConnection(RequestMessage msg) throws TimeoutException, ConnectionException {
+            if (borrowedConnection == null) {
+                //Borrow from parentClient's pool instead of creating new connection
+                borrowedConnection = parentClient.chooseConnection(msg);
+            }
+            //Increment everytime, the connection is chosen, all these will be decremented when transaction is commited/rolledback
+            borrowedConnection.borrowed.incrementAndGet();
+            return borrowedConnection;
+        }
+
+        @Override
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (borrowedConnection != null && !borrowedConnection.isDead()) {
+
+                //Decrement borrowed one last time which was incremented by parentClient when the connection is borrowed initially
+                //returnToPool() does this
+                borrowedConnection.returnToPool();
+
+                borrowedConnection = null;
+            }
+            closed = true;
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public boolean isClosing() {
+            return parentClient.isClosing() || closed;
+        }
+    }
+
+
+    /**
      * A {@code Client} implementation that operates in the context of a session.  Requests are sent to a single
      * server, where each request is bound to the same thread with the same set of bindings across requests.
      * Transaction are not automatically committed. It is up the client to issue commit/rollback commands.

@@ -25,8 +25,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+* Fixed bug in pre-repeat() `emit()/until()` where `emit()` and `until()` traversers weren't added to the results.
 * Expose serialization functions for alternative transport protocols in gremlin-go
-
+* Improved Gremlint formatting to keep the first argument for a step on the same line if line breaks were required to meet max line length.
+* Improved Gremlint formatting to do greedy argument packing when possible so that more arguments can appear on a single line.
 
 [[release-3-8-0]]
 === TinkerPop 3.8.0 (Release Date: November 12, 2025)
@@ -198,7 +200,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (NOT OFFICIALLY RELEASED YET)
+
 * Integrated Python driver examples into automated build process to ensure examples remain functional.
+* Fixed bug in `SubgraphStrategy` where specifying `edges` and `vertices` filters that had `map`-type steps could generate an error.
+* Added `closeSessionPostGraphOp` to the Gremlin Server settings to indicate that the `Session` should be closed on either a successful commit or rollback.
 
 [[release-3-7-5]]
 === TinkerPop 3.7.5 (Release Date: November 12, 2025)

@@ -1014,6 +1014,7 @@ The following table describes the various YAML configuration options that Gremli
 |authorization.authorizer |The fully qualified classname of an `Authorizer` implementation to use. |_none_
 |authorization.config |A `Map` of configuration settings to be passed to the `Authorizer` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. WebSocket). |`WebSocketChannelizer`
+|closeSessionPostGraphOp |Controls whether a `Session` will be closed by the server after a successful TX_COMMIT or TX_ROLLBACK bytecode request. |_false_
 |enableAuditLog |The `AuthenticationHandler`, `AuthorizationHandler` and processors can issue audit logging messages with the authenticated user, remote socket address and requests with a gremlin query. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the `logback.xml` file. |_false_
 |graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
@@ -3013,7 +3014,7 @@ describeGraph(HadoopGraph)
 [[gremlin-mcp]]
 === Gremlin MCP
 
-Gremlin MCP integrates Apache TinkerPop with the Model Context Protocol (MCP) so that MCP‑capable assistants (for
+Gremlin MCP integrates Apache TinkerPop with the Model Context Protocol (MCP) so that MCP‑capable assistants, (for
 example, desktop chat clients that support MCP) can discover your graph, run Gremlin traversals and exchange graph data
 through a small set of well‑defined tools. It allows users to “talk to your graph” while keeping full Gremlin power
 available when they or the assistant need it.
@@ -3053,6 +3054,7 @@ The Gremlin MCP server exposes these tools:
   properties may be surfaced as enums to encourage valid values in queries.
 * `run_gremlin_query` — Executes an arbitrary Gremlin traversal and returns JSON results.
 * `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
+* `format_gremlin_query` — Formats a Gremlin query using gremlint.
 
 ==== Schema discovery
 
@@ -3073,6 +3075,41 @@ Schema discovery uses Gremlin traversals and sampling to uncover the following i
 * Counts (optional) - Approximate counts can be included per label.
 * Relationship patterns - Connectivity is derived from the labels of edges and their incident vertices.
 * Enums - Properties with a small set of distinct values may be surfaced as enumerations to promote precise filters.
+
+==== Formatting traversals
+
+Gremlin is much easier to understand when it is properly formatted with appropriate line breaks and indents. An AI
+assistant can format Gremlin using Gremlint via `format_gremlin_query` MCP tool which accepts any string input and
+returns either a `formatted` Gremlin string or an `error` object with diagnostics.
+
+The formatter exposes three optional options (defaults shown):
+
+* `indentation` — number of spaces used for indentation (default: 0)
+* `maxLineLength` — soft wrap column for lines (default: 80)
+* `shouldPlaceDotsAfterLineBreaks` — when true, places method dots at the start of wrapped lines (default: false)
+
+For example, a user could supply this prompt to the assistant:
+
+[source,text]
+----
+Format this Gremlin query:
+```
+g.V().union(limit(3).fold(),tail(3).fold()).local(
+  unfold().order().by(bothE().count(),desc).limit(1).fold())
+```
+----
+
+And get back:
+
+[source,groovy]
+----
+g.V().
+  union(limit(3).fold(),
+        tail(3).fold()).
+  local(unfold().
+        order().by(bothE().count(), desc).
+        limit(1).fold())
+----
 
 ==== Executing traversals
 

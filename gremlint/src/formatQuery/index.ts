@@ -37,7 +37,7 @@ const getInternalGremlintConfig = ({
 }: GremlintUserConfig): GremlintInternalConfig => ({
   globalIndentation: indentation,
   localIndentation: 0,
-  maxLineLength: maxLineLength - indentation,
+  maxLineLength: maxLineLength,
   shouldPlaceDotsAfterLineBreaks,
   shouldStartWithDot: false,
   shouldEndWithDot: false,

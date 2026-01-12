@@ -831,3 +831,176 @@ Feature: Step - repeat()
       | result |
       | SUGAR MAGNOLIA |
       | AROUND AND AROUND |
+
+  Scenario: g_V_emit_repeatXout_order_byXnameXX_timesX2X_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(__.out().order().by("name")).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_localXemit_repeatXout_order_byXnameXX_timesX2X_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.emit().repeat(__.out().order().by("name")).times(2).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_emit_repeatXlocalXout_order_byXnameXXX_timesX2X_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(__.local(__.out().order().by("name"))).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  @GraphComputerVerificationStarGraphExceeded
+  Scenario: g_V_localXemit_repeatXlocalXout_order_byXnameXXX_timesX2X_valuesXnameXX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().local(__.emit().repeat(__.local(__.out().order().by("name"))).times(2).values("name"))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | lop |
+      | vadas |
+      | vadas |
+      | lop |
+      | josh |
+      | lop |
+      | ripple |
+      | ripple |
+      | peter |
+      | lop |
+
+  Scenario: g_V_emitXhasLabelXpersonXX_repeatXout_order_byXnameXX_timesX2X_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit(__.hasLabel("person")).repeat(__.out().order().by("name")).times(2).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko |
+      | josh |
+      | lop |
+      | ripple |
+      | vadas |
+      | vadas |
+      | josh |
+      | peter |
+
+  Scenario: g_V_untilXloops_isX2XX_repeatXout_order_byXnameXX_valuesXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().until(__.loops().is(2)).repeat(__.out().order().by("name")).values("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop |
+      | ripple |
+
+  Scenario: g_V_emit_repeatXdedupX_timesX1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(__.dedup()).times(1)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[lop] |
+      | v[lop] |
+      | v[josh] |
+      | v[josh] |
+      | v[ripple] |
+      | v[ripple] |
+      | v[peter] |
+      | v[peter] |
+
+  Scenario: g_V_emit_repeatXdedupX_timesX2X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().emit().repeat(__.dedup()).times(2)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[lop] |
+      | v[lop] |
+      | v[josh] |
+      | v[josh] |
+      | v[ripple] |
+      | v[ripple] |
+      | v[peter] |
+      | v[peter] |
