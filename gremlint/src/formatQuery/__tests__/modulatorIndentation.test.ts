@@ -71,10 +71,9 @@ test('Wrapped modulators should be indented with two spaces', () => {
   group().
     by(values('name', 'age').fold()).
   unfold().
-  filter(
-    select(values).
-    count(local).
-    is(gt(1)))`);
+  filter(select(values).
+         count(local).
+         is(gt(1)))`);
   expect(
     formatQuery(
       "g.V().hasLabel('person').groupCount().by(values('age').choose(is(lt(28)),constant('young'),choose(is(lt(30)), constant('old'), constant('very old'))))",
@@ -87,12 +86,9 @@ test('Wrapped modulators should be indented with two spaces', () => {
   ).toBe(`g.V().
   hasLabel('person').
   groupCount().
-    by(
-      values('age').
-      choose(
-        is(lt(28)),
-        constant('young'),
-        choose(is(lt(30)), constant('old'), constant('very old'))))`);
+    by(values('age').
+       choose(is(lt(28)), constant('young'),
+              choose(is(lt(30)), constant('old'), constant('very old'))))`);
 
   // Test emit()-modulator indentation
   expect(
@@ -161,10 +157,9 @@ test('Wrapped modulators should be indented with two spaces', () => {
     ),
   ).toBe(
     `g.V().
-  has(
-    'person',
-    'name',
-    'vadas').
+  has('person',
+      'name',
+      'vadas').
     as('e').
   in('knows').
     as('m').
@@ -187,10 +182,9 @@ test('Wrapped modulators should be indented with two spaces', () => {
     ),
   ).toBe(
     `g.V().
-  has(
-    'person',
-    'name',
-    'vadas').
+  has('person',
+      'name',
+      'vadas').
     as_('e').
   in('knows').
     as_('m').
@@ -260,9 +254,8 @@ test('Wrapped modulators should be indented with two spaces', () => {
     `g.V(v1).
   addE('knows').
     to(v2).
-  property(
-    'weight',
-    0.75).
+  property('weight',
+           0.75).
   iterate()`,
   );
 
@@ -279,12 +272,10 @@ test('Wrapped modulators should be indented with two spaces', () => {
   ).toBe(
     `g.V(6).
   repeat('a', both('created').simplePath()).
-    emit(
-      repeat('b', both('knows')).
-        until(
-          loops('b').as('b').
-          where(loops('a').as('b'))).
-      hasId(2)).
+    emit(repeat('b', both('knows')).
+           until(loops('b').as('b').
+                 where(loops('a').as('b'))).
+         hasId(2)).
   dedup()`,
   );
 
@@ -501,15 +492,14 @@ test('Wrapped modulators should be indented with two spaces', () => {
       },
     ),
   ).toBe(
-    `g.inject(
-  g.withComputer().
-    V().
-    shortestPath().
-      with(ShortestPath.distance, 'weight').
-      with(ShortestPath.includeEdges, true).
-      with(ShortestPath.maxDistance, 1).
-    toList().
-    toArray()).
+    `g.inject(g.withComputer().
+           V().
+           shortestPath().
+             with(ShortestPath.distance, 'weight').
+             with(ShortestPath.includeEdges, true).
+             with(ShortestPath.maxDistance, 1).
+           toList().
+           toArray()).
   map(unfold().values('name', 'weight').fold())`,
   );
   expect(
@@ -534,9 +524,8 @@ test('Wrapped modulators should be indented with two spaces', () => {
     `g.V().
   hasLabel('person').
   valueMap('name').
-    with(
-      WithOptions.tokens,
-      WithOptions.labels)`,
+    with(WithOptions.tokens,
+         WithOptions.labels)`,
   );
   expect(
     formatQuery(
@@ -552,9 +541,8 @@ test('Wrapped modulators should be indented with two spaces', () => {
   hasLabel('person').
   properties('location').
   valueMap().
-    with(
-      WithOptions.tokens,
-      WithOptions.values)`,
+    with(WithOptions.tokens,
+         WithOptions.values)`,
   );
 
   // Test with_()-modulator indentation
@@ -765,20 +753,40 @@ test('Wrapped modulators should be indented with two spaces', () => {
       "g.inject(g.withComputer().V().shortestPath().with_(ShortestPath.distance, 'weight').with_(ShortestPath.includeEdges, true).with_(ShortestPath.maxDistance, 1).toList().toArray()).map(unfold().values('name','weight').fold())",
       {
         indentation: 0,
+        maxLineLength: 52,
+        shouldPlaceDotsAfterLineBreaks: false,
+      },
+    ),
+  ).toBe(
+    `g.inject(g.withComputer().
+           V().
+           shortestPath().
+             with_(ShortestPath.distance, 'weight').
+             with_(ShortestPath.includeEdges, true).
+             with_(ShortestPath.maxDistance, 1).
+           toList().
+           toArray()).
+  map(unfold().values('name', 'weight').fold())`,
+  );
+  expect(
+    formatQuery(
+      "g.inject(g.withComputer().V().shortestPath().with_(ShortestPath.distance, 'weight').with_(ShortestPath.includeEdges, true).with_(ShortestPath.maxDistance, 1).toList().toArray()).map(unfold().values('name','weight').fold())",
+      {
+        indentation: 0,
         maxLineLength: 50,
         shouldPlaceDotsAfterLineBreaks: false,
       },
     ),
   ).toBe(
-    `g.inject(
-  g.withComputer().
-    V().
-    shortestPath().
-      with_(ShortestPath.distance, 'weight').
-      with_(ShortestPath.includeEdges, true).
-      with_(ShortestPath.maxDistance, 1).
-    toList().
-    toArray()).
+    `g.inject(g.withComputer().
+           V().
+           shortestPath().
+             with_(ShortestPath.distance,
+                   'weight').
+             with_(ShortestPath.includeEdges, true).
+             with_(ShortestPath.maxDistance, 1).
+           toList().
+           toArray()).
   map(unfold().values('name', 'weight').fold())`,
   );
   expect(
@@ -803,9 +811,8 @@ test('Wrapped modulators should be indented with two spaces', () => {
     `g.V().
   hasLabel('person').
   valueMap('name').
-    with_(
-      WithOptions.tokens,
-      WithOptions.labels)`,
+    with_(WithOptions.tokens,
+          WithOptions.labels)`,
   );
   expect(
     formatQuery(
@@ -821,9 +828,8 @@ test('Wrapped modulators should be indented with two spaces', () => {
   hasLabel('person').
   properties('location').
   valueMap().
-    with_(
-      WithOptions.tokens,
-      WithOptions.values)`,
+    with_(WithOptions.tokens,
+          WithOptions.values)`,
   );
 
   // Test write()-modulator indentation
@@ -838,4 +844,24 @@ test('Wrapped modulators should be indented with two spaces', () => {
     write().
   iterate()`,
   );
+
+
+  expect(
+    formatQuery(
+      `g.V(ids).
+  has('factor_a').
+  has('factor_b').
+  project('Factor A', 'Factor B', 'Product').
+    by(values('factor_a')).
+    by(values('factor_b')).
+    by(__.out('knows').in('created').has('product','code','xXz-343-94985AD'))`,
+      { indentation: 0, maxLineLength: 79, shouldPlaceDotsAfterLineBreaks: false },
+    ),
+  ).toBe(`g.V(ids).
+  has('factor_a').
+  has('factor_b').
+  project('Factor A', 'Factor B', 'Product').
+    by(values('factor_a')).
+    by(values('factor_b')).
+    by(__.out('knows').in('created').has('product', 'code', 'xXz-343-94985AD'))`);
 });
