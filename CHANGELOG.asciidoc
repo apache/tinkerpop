@@ -203,6 +203,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Integrated Python driver examples into automated build process to ensure examples remain functional.
 * Fixed bug in `SubgraphStrategy` where specifying `edges` and `vertices` filters that had `map`-type steps could generate an error.
+* Fixed bug in `ReservedKeysVerificationStrategy` where `AddPropertyStep` was not triggering proper validations.
 * Added `closeSessionPostGraphOp` to the Gremlin Server settings to indicate that the `Session` should be closed on either a successful commit or rollback.
 
 [[release-3-7-5]]

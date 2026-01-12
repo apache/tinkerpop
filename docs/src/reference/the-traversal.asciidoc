@@ -6343,6 +6343,9 @@ g.withStrategies(ReservedKeysVerificationStrategy(throwException=true))
      .addV('person').property("id",123).iterate()
 ----
 
+WARNING: This strategy does not work for `MergeV` or `MergeE` as they may determine the keys used for mutations at
+runtime and strategy application happens prior to that.
+
 === SeedStrategy
 
 There are number of components of the Gremlin language that, by design, can produce non-deterministic results:

@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PropertiesHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepPlaceholder;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -57,7 +58,21 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
                 final PropertiesHolder propertySettingStep = (PropertiesHolder) step;
                 final Map<Object, List<Object>> properties = propertySettingStep.getProperties();
                 for (String key : reservedKeys) {
-                    if (properties.containsKey(key)) {
+                    boolean allowed = true;
+
+                    // need special handling for property() when not folded back to addV/E
+                    if (step instanceof AddPropertyStepPlaceholder) {
+                        allowed = !((AddPropertyStepPlaceholder) step).getKey().equals(key);
+                    }
+
+                    // if still allowed the prior test did not apply or was simply allowed, so we either
+                    // need to execute a check for the first time or we seek a check on meta-properties
+                    // with property()
+                    if (allowed) {
+                        allowed = !properties.containsKey(key);
+                    }
+
+                    if (!allowed) {
                         final String msg = String.format(
                                 "The provided traversal contains a %s that is setting a property key to a reserved" +
                                         " word: %s", propertySettingStep.getClass().getSimpleName(), key);
