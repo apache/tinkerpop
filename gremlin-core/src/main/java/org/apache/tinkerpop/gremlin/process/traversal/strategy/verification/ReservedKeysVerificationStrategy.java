@@ -26,8 +26,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +40,8 @@ import java.util.stream.Collectors;
 
 /**
  * This verification strategy detects property keys that should not be used by the traversal. A term may be reserved
- * by a particular graph implementation or as a convention given best practices.
+ * by a particular graph implementation or as a convention given best practices. This strategy is not effective for
+ * the {@link MergeVertexStep} or {@link MergeEdgeStep} which can dynamically set their property keys at runtime.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  *  * @example <pre>
@@ -65,7 +69,24 @@ public class ReservedKeysVerificationStrategy extends AbstractWarningVerificatio
                 final Parameterizing propertySettingStep = (Parameterizing) step;
                 final Parameters params = propertySettingStep.getParameters();
                 for (String key : reservedKeys) {
-                    if (params.contains(key)) {
+                    // AddPropertyStep has slightly different handling. it stores the key as T.key in the
+                    // parameters while the other steps just use the key of the Map itself
+                    final boolean isAddPropertyStep = step instanceof AddPropertyStep;
+                    boolean allowed = true;
+                    if (isAddPropertyStep && params.contains(T.key)) {
+                        // bit of a weird syntax but we check for contains(key) so it must exist...the supplier
+                        // won't get called, but we have no other overloads we can use here.
+                        allowed = !params.get(T.key, () -> "").get(0).equals(key);
+                    }
+
+                    // we let it fall through because if its not set above via AddPropertyStep and T.key then
+                    // it might get set via multi-properties in the standard way. if it is still true after the
+                    // above we might yet have a problem with multi-properties, so this next test should catch it
+                    if (allowed) {
+                        allowed = !params.contains(key);
+                    }
+
+                    if (!allowed) {
                         final String msg = String.format(
                                 "The provided traversal contains a %s that is setting a property key to a reserved" +
                                         " word: %s", propertySettingStep.getClass().getSimpleName(), key);

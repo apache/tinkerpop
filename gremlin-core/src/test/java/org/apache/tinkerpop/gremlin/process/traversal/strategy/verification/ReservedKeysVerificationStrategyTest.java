@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.translator.GroovyTranslator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.CollectionUtil;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,9 +36,14 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Merge.onCreate;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.identity;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.property;
+import static org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.single;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -74,6 +80,7 @@ public class ReservedKeysVerificationStrategyTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {__.addV().property("id", 123), false},
+                {__.addV().sideEffect(property("id", 123)), false},
                 {__.addE("knows").property("id", 123), false},
                 {__.addV().property(T.id, 123), true},
                 {__.addE("knows").property(T.label, "blah"), true},
@@ -82,6 +89,7 @@ public class ReservedKeysVerificationStrategyTest {
                 {__.addV().property("x", "xyz", "label", "xxx"), false},
                 {__.addV().property("x", "xyz", "not-label", "xxx"), true},
                 {__.addV().property("x", "xyz", "not-allowed", "xxx"), false},
+                {__.addV().property(single,"label", "xyz"), false},
         });
     }
 
