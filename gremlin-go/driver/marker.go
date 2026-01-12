@@ -19,22 +19,28 @@ under the License.
 
 package gremlingo
 
-import "time"
+import "fmt"
 
-type transporter interface {
-	Connect() error
-	Write(data []byte) error
-	Read() ([]byte, error)
-	Close() error
-	IsClosed() bool
-	getAuthInfo() AuthInfoProvider
+// Marker is used in response
+type Marker interface {
+	GetValue() byte
 }
 
-type websocketConn interface {
-	WriteMessage(int, []byte) error
-	ReadMessage() (int, []byte, error)
-	SetPongHandler(h func(appData string) error)
-	Close() error
-	SetReadDeadline(t time.Time) error
-	SetWriteDeadline(t time.Time) error
+type marker struct {
+	value byte
+}
+
+func EndOfStream() Marker {
+	return marker{byte(0)}
+}
+
+func (m marker) GetValue() byte {
+	return m.value
+}
+
+func Of(value byte) (Marker, error) {
+	if value != 0 {
+		return nil, fmt.Errorf("marker value erorr")
+	}
+	return EndOfStream(), nil
 }
