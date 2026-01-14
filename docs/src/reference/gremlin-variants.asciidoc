@@ -869,6 +869,7 @@ The following table describes the various configuration options for the Gremlin 
 |path |The URL path to the Gremlin Server. |_/gremlin_
 |port |The port of the Gremlin Server to connect to. The same port will be applied for all hosts. |8192
 |protocol |Sets the `AuthProperties.Property.PROTOCOL` properties for authentication to Gremlin Server. |_none_
+|reuseConnectionsForSessions |Uses a `Client` that will attempt to reuse `Connections` when managing remote transactions with a `DriverRemoteConnection`. |false
 |serializer.className |The fully qualified class name of the `MessageSerializer` that will be used to communicate with the server. Note that the serializer configured on the client should be supported by the server configuration. |_none_
 |serializer.config |A `Map` of configuration settings for the serializer. |_none_
 |username |The username to submit on requests that require authentication. |_none_

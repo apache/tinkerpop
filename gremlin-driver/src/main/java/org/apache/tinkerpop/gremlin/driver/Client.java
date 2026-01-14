@@ -808,6 +808,7 @@ public abstract class Client {
             if (borrowedConnection == null) {
                 //Borrow from parentClient's pool instead of creating new connection
                 borrowedConnection = parentClient.chooseConnection(msg);
+                logger.debug("SessionedChildClient choosing {}", borrowedConnection);
             }
             //Increment everytime, the connection is chosen, all these will be decremented when transaction is commited/rolledback
             borrowedConnection.borrowed.incrementAndGet();
@@ -821,6 +822,7 @@ public abstract class Client {
                 //Decrement borrowed one last time which was incremented by parentClient when the connection is borrowed initially
                 //returnToPool() does this
                 borrowedConnection.returnToPool();
+                logger.debug("Session closed for {} with count {}", borrowedConnection, borrowedConnection.borrowed.get());
 
                 borrowedConnection = null;
             }
