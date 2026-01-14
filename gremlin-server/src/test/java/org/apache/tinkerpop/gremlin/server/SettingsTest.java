@@ -286,6 +286,24 @@ public class SettingsTest {
         assertNotNull(settings);
     }
 
+
+    @Test
+    public void testIncludeBranches() throws IOException {
+        //root.yaml ____ branch1.yaml ____ base1.yaml
+        //          \___ branch2.yaml ____ base1.yaml
+        //                            \___ base2.yaml
+
+        createFile("root.yaml", "includes:\n  - branch1.yaml\n  - branch2.yaml");
+        createFile("branch1.yaml", "includes:\n  - base1.yaml");
+        createFile("branch2.yaml", "includes:\n  - base1.yaml\n  - base2.yaml");
+        createFile("base1.yaml", "");
+        createFile("base2.yaml", "");
+
+        Settings settings = Settings.read(tempDir.resolve("root.yaml").toString());
+        assertNotNull(settings);
+    }
+
+
     private void createFile(String fileName, String content) throws IOException {
         Path file = tempDir.resolve(fileName);
         Files.createDirectories(file.getParent());
