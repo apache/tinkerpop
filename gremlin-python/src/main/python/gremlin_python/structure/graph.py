@@ -21,6 +21,9 @@ __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
 
 class Graph(object):
+    def __init__(self):
+        self.vertices = {}
+        self.edges = {}
 
     def __repr__(self):
         return "graph[]"
@@ -31,6 +34,18 @@ class Element(object):
         self.id = id
         self.label = label
         self.properties = [] if properties is None else properties
+
+    def __getitem__(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return p.value
+        raise KeyError(key)
+
+    def values(self, *property_keys):
+        if len(property_keys) == 0:
+            return [p.value for p in self.properties]
+        else:
+            return [p.value for p in self.properties if p.key in property_keys]
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.id == other.id

@@ -219,14 +219,10 @@ Feature: Step - repeat()
       """
       g.V().has("name", "marko").repeat(__.outE().inV().simplePath()).until(__.has("name", "ripple")).path().by("name").by(T.label)
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | knows |
-      | josh  |
-      | created |
-      | ripple  |
+      | p[marko,knows,josh,created,ripple]  |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_hasXloop_name_loopX_repeatXinX_timesX5X_path_by_name
@@ -235,15 +231,10 @@ Feature: Step - repeat()
       """
       g.V().has("loops","name","loop").repeat(__.in()).times(5).path().by("name")
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
-      | loop |
-      | loop |
-      | loop  |
-      | loop |
-      | loop  |
-      | loop  |
+      | p[loop,loop,loop,loop,loop,loop] |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXout_repeatXout_order_byXname_descXX_timesX1XX_timesX1X_limitX1X_path_byXnameX
@@ -252,12 +243,10 @@ Feature: Step - repeat()
           """
           g.V().repeat(__.out().repeat(__.out().order().by("name",desc)).times(1)).times(1).limit(1).path().by("name")
           """
-      When iterated next
+      When iterated to list
       Then the result should be unordered
           | result |
-          | marko |
-          | josh |
-          | ripple |
+          | p[marko,josh,ripple] |
 
   @GraphComputerVerificationReferenceOnly
   Scenario: g_V_repeatXoutXknowsXX_untilXrepeatXoutXcreatedXX_emitXhasXname_lopXXX_path_byXnameX
@@ -266,11 +255,10 @@ Feature: Step - repeat()
       """
       g.V().repeat(__.out("knows")).until(__.repeat(__.out("created")).emit(__.has("name", "lop"))).path().by("name")
       """
-    When iterated next
+    When iterated to list
     Then the result should be unordered
       | result |
-      | marko |
-      | josh |
+      | p[marko,josh] |
 
   Scenario: g_V_repeatXrepeatXout_createdXX_untilXhasXname_rippleXXXemit_lang
     Given the modern graph

@@ -27,7 +27,7 @@ def create_lookup_v(remote):
     g = traversal().with_(remote)
 
     # hold a map of name/vertex for use in asserting results
-    return g.V().group().by('name').by(__.tail()).next()
+    return g.with_("materializeProperties", "all").V().group().by('name').by(__.tail()).next()
 
 
 @pick
@@ -37,7 +37,7 @@ def create_lookup_e(remote):
     # hold a map of the "name"/edge for use in asserting results - "name" in this context is in the form of
     # outgoingV-label->incomingV
     edges = {}
-    edge_map = g.E().group(). \
+    edge_map = g.with_("materializeProperties", "all").E().group(). \
         by(__.project('o', 'l', 'i').by(__.out_v().values('name')).by(__.label()).by(__.in_v().values('name'))). \
         by(__.tail()).next()
 
