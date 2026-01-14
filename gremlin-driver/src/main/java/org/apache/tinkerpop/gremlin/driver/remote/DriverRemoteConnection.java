@@ -235,7 +235,10 @@ public class DriverRemoteConnection implements RemoteConnection {
      */
     Optional<String> getSessionId() {
         if (client instanceof Client.SessionedClient) {
-            Client.SessionedClient c = (Client.SessionedClient) client;
+            final Client.SessionedClient c = (Client.SessionedClient) client;
+            return Optional.of(c.getSessionId());
+        } else if (client instanceof Client.SessionedChildClient) {
+            final Client.SessionedChildClient c = (Client.SessionedChildClient) client;
             return Optional.of(c.getSessionId());
         }
 

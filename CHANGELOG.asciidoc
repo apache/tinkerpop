@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Integrated Python driver examples into automated build process to ensure examples remain functional.
 * Added `closeSessionPostGraphOp` to the Gremlin Server settings to indicate that the `Session` should be closed on either a successful commit or rollback.
+* Added `SessionedChildClient` that borrows connections from a different `Client` for use with `Sessions`.
+* Added `reuseConnectionsForSessions` to Java GLV settings to decide whether to use `SessionedChildClient` for remote transactions.
 
 [[release-3-7-5]]
 === TinkerPop 3.7.5 (Release Date: November 12, 2025)
