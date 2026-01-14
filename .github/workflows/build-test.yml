@@ -202,10 +202,34 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
+      - name: Get Cached Server Base Image
+        uses: actions/cache@v4
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
       - name: Build with Maven
         run: |
           mvn clean install -pl -:gremlin-javascript,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
           mvn verify -pl gremlin-driver -DskipIntegrationTests=false
+      - name: Start Gremlin Server
+        working-directory: ./gremlin-server
+        run: |
+          docker run -d --rm -p 8182:8182 --name gremlin-driver-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+          until docker inspect --format '{{.State.Health.Status}}' gremlin-driver-examples | grep -q "healthy"; do sleep 1; done
+      - name: Run Examples
+        run: |
+          java -cp gremlin-driver/target/gremlin-driver-examples-shaded.jar examples.ModernTraversals
+          java -cp gremlin-driver/target/gremlin-driver-examples-shaded.jar examples.BasicGremlin
+          java -cp gremlin-driver/target/gremlin-driver-examples-shaded.jar examples.Connections
+      - name: Stop Gremlin Server
+        if: always()
+        run: docker stop gremlin-driver-examples
   javascript:
     name: javascript
     timeout-minutes: 15
