@@ -53,10 +53,19 @@ services:
       - ../gremlin-tools/gremlin-socket-server/conf:/gremlin-dotnet/gremlin-socket-server/conf/
     environment:
       - DOCKER_ENVIRONMENT=true
+      - GREMLIN_SERVER_HOST=gremlin-server-test-dotnet
+      - GREMLIN_SERVER_PORT=45940
+      - VERTEX_LABEL=dotnet-example
     working_dir: /gremlin-dotnet
     command: >
       bash -c "dotnet tool update -g dotnet-trx; dotnet test ./Gremlin.Net.sln -c Release --logger trx; /root/.dotnet/tools/trx;
-      EXIT_CODE=$$?; chown -R `stat -c "%u:%g" .` .; exit $$EXIT_CODE"
+      EXIT_CODE=$$?;
+      echo 'Running examples...';
+      dotnet run --project Examples/BasicGremlin/BasicGremlin.csproj;
+      dotnet run --project Examples/Connections/Connections.csproj;
+      dotnet run --project Examples/ModernTraversals/ModernTraversals.csproj;
+      echo 'All examples completed successfully';
+      chown -R `stat -c \"%u:%g\" .` .; exit $$EXIT_CODE"
     depends_on:
       gremlin-server-test-dotnet:
         condition: service_healthy
