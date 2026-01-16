@@ -19,11 +19,11 @@ under the License.
 
 package examples;
 
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 
 import java.util.List;
 
@@ -33,10 +33,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.apache.tinkerpop.gremlin.structure.T.id;
 
 public class ModernTraversals {
-    public static void main(String[] args) {
-        // Performs basic traversals on the Modern toy graph which can be created using TinkerFactory
-        Graph modern = TinkerFactory.createModern();
-        GraphTraversalSource g = traversal().withEmbedded(modern);
+    static final String SERVER_HOST = "localhost";
+    static final int SERVER_PORT = 8182;
+
+    public static void main(String[] args) throws Exception {
+        // Performs basic traversals on the Modern toy graph loaded on the server
+        Cluster cluster = Cluster.build(SERVER_HOST).port(SERVER_PORT).create();
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
         List<Edge> e1 = g.V(1).bothE().toList(); // (1)
         List<Edge> e2 = g.V(1).bothE().where(otherV().hasId(2)).toList(); // (2)
@@ -53,6 +56,10 @@ public class ModernTraversals {
         System.out.println("4: " + e4.toString());
         System.out.println("5: " + e5.toString());
         System.out.println("6: " + e6.toString());
+
+        // Cleanup
+        cluster.close();
+        g.close();
 
         /*
         1. There are three edges from the vertex with the identifier of "1".

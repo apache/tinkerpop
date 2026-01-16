@@ -241,6 +241,28 @@ limitations under the License.
                             </transformers>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>shade-examples</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/gremlin-driver-examples-shaded.jar</outputFile>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -264,15 +286,6 @@ limitations under the License.
                         <id>verify-performance-test</id>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>examples/**</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

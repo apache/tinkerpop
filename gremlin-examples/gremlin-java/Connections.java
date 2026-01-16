@@ -35,6 +35,10 @@ import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV1;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class Connections {
+    static final String SERVER_HOST = "localhost";
+    static final int SERVER_PORT = 8182;
+    static final String VERTEX_LABEL = "connection";
+
     public static void main(String[] args) throws Exception {
         withEmbedded();
         withRemote();
@@ -56,15 +60,12 @@ public class Connections {
 
     // Connecting to the server
     private static void withRemote() throws Exception {
-        Cluster cluster = Cluster.build("localhost").port(8182).create();
+        Cluster cluster = Cluster.build(SERVER_HOST).port(SERVER_PORT).create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
 
-        // Drop existing vertices
-        g.V().drop().iterate();
-
         // Simple query to verify connection
-        g.addV().iterate();
-        long count = g.V().count().next();
+        g.addV(VERTEX_LABEL).iterate();
+        long count = g.V().hasLabel(VERTEX_LABEL).count().next();
         System.out.println("Vertex count: " + count);
 
         // Cleanup
@@ -75,12 +76,12 @@ public class Connections {
     // Connecting and customizing configurations with a cluster
     // See reference/#gremlin-java-configuration for full list of configurations
     private static void withCluster() throws Exception {
-        Cluster cluster = Cluster.build("localhost").
+        Cluster cluster = Cluster.build(SERVER_HOST).
             channelizer(Channelizer.WebSocketChannelizer.class).
             keepAliveInterval(180000).
             maxConnectionPoolSize(8).
             path("/gremlin").
-            port(8182).
+            port(SERVER_PORT).
             serializer(new GraphBinaryMessageSerializerV1()).
             create();
         GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
@@ -98,7 +99,8 @@ public class Connections {
         IoRegistry registry = new FakeIoRegistry(); // an IoRegistry instance exposed by a specific graph provider
         TypeSerializerRegistry typeSerializerRegistry = TypeSerializerRegistry.build().addRegistry(registry).create();
         MessageSerializer serializer = new GraphBinaryMessageSerializerV1(typeSerializerRegistry);
-        Cluster cluster = Cluster.build("localhost").
+        Cluster cluster = Cluster.build(SERVER_HOST).
+            port(SERVER_PORT).
             serializer(serializer).
             create();
         Client client = cluster.connect();
