@@ -220,7 +220,8 @@ jobs:
       - name: Start Gremlin Server
         working-directory: ./gremlin-server
         run: |
-          docker run -d --rm -p 8182:8182 --name gremlin-driver-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server conf/gremlin-server-modern.yaml
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          docker run -d --rm -p 8182:8182 --name gremlin-driver-examples --health-cmd="curl -f http://localhost:8182/ || exit 1" --health-interval=5s --health-timeout=3s tinkerpop/gremlin-server:${VERSION} conf/gremlin-server-modern.yaml
           until docker inspect --format '{{.State.Health.Status}}' gremlin-driver-examples | grep -q "healthy"; do sleep 1; done
       - name: Run Examples
         run: |
