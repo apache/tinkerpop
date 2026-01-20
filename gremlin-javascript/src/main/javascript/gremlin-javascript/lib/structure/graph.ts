@@ -49,7 +49,7 @@ class Element<TLabel extends string = string, TId = any> {
     readonly label: TLabel,
     readonly properties: Property[] = []
   ) {
-    this.properties = properties != null ? properties : [];
+    this.properties = properties ?? [];
   }
 
   /**
@@ -71,9 +71,9 @@ export class Vertex<
   constructor(
     id: TId,
     label: TLabel,
-    readonly properties: Property[] = [],
+    properties: Property[] | null = [],
   ) {
-    super(id, label, properties);
+    super(id, label, properties ?? []);
   }
 
   toString() {
@@ -93,9 +93,9 @@ export class Edge<
     readonly outV: TOutVertex,
     readonly label: TLabel,
     readonly inV: TInVertex,
-    readonly properties: Property[] = [],
+    properties: Property[] | null = [],
   ) {
-    super(id, label, properties);
+    super(id, label, properties ?? []);
   }
 
   toString() {
@@ -118,9 +118,9 @@ export class VertexProperty<
     id: TId,
     label: TLabel,
     readonly value: TValue,
-    readonly properties: Property[] = [],
+    properties: Property[] | null = [],
   ) {
-    super(id, label, properties);
+    super(id, label, properties ?? []);
     this.value = value;
     this.key = this.label;
   }

@@ -31,17 +31,16 @@ const { from, concat } = Buffer;
 describe('GraphBinary.EnumSerializer', () => {
 
   const types = [
-    { name: 'Barrier',     code: from([0x13]), enum: t.barrier },
-    { name: 'Cardinality', code: from([0x16]), enum: t.cardinality },
-    { name: 'Column',      code: from([0x17]), enum: t.column },
-    { name: 'Direction',   code: from([0x18]), enum: t.direction },
-    { name: 'GType',       code: from([0x30]), enum: t.gType },
-    { name: 'Operator',    code: from([0x19]), enum: t.operator },
-    { name: 'Order',       code: from([0x1A]), enum: t.order },
-    { name: 'Pick',        code: from([0x1B]), enum: t.pick },
-    { name: 'Pop',         code: from([0x1C]), enum: t.pop },
-    { name: 'Scope',       code: from([0x1F]), enum: t.scope },
-    { name: 'T',           code: from([0x20]), enum: t.t },
+    { name: 'Barrier',     code: from([0x13]), enum: barrier },
+    { name: 'Cardinality', code: from([0x16]), enum: cardinality },
+    { name: 'Column',      code: from([0x17]), enum: column },
+    { name: 'Direction',   code: from([0x18]), enum: direction },
+    { name: 'Operator',    code: from([0x19]), enum: operator },
+    { name: 'Order',       code: from([0x1A]), enum: order },
+    { name: 'Pick',        code: from([0x1B]), enum: pick },
+    { name: 'Pop',         code: from([0x1C]), enum: pop },
+    { name: 'Scope',       code: from([0x1F]), enum: scope },
+    { name: 'T',           code: from([0x20]), enum: t },
   ];
   const value_flag = from([0x00]);
 

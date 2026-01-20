@@ -17,9 +17,9 @@
  *  under the License.
  */
 
-const { Buffer } = require('buffer');
+import { Buffer } from 'buffer';
 
-module.exports = class OffsetDateTimeSerializer {
+export default class OffsetDateTimeSerializer {
   constructor(ioc, ID) {
     this.ioc = ioc;
     this.ID = ID;
@@ -146,4 +146,4 @@ module.exports = class OffsetDateTimeSerializer {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
   }
-};
+}

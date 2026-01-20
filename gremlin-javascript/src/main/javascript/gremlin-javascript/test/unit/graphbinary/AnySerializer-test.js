@@ -178,7 +178,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v: new EnumValue('GType', 'BYTE'),
         b: [ DataType.GTYPE,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x04, ...from('byte') ]
       },
-      { v: new t.EnumValue('Operator', 'addAll'),
+      { v: new EnumValue('Operator', 'addAll'),
         b: [ DataType.OPERATOR,0x00, DataType.STRING,0x00, 0x00,0x00,0x00,0x06, ...from('addAll') ]
       },
       { v: new EnumValue('Order', 'desc'),

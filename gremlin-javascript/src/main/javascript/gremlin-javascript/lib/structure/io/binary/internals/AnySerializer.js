@@ -48,8 +48,8 @@ export default class AnySerializer {
       ioc.propertySerializer,
       ioc.vertexSerializer,
       ioc.vertexPropertySerializer,
-      ioc.classSerializer,
       ioc.stringSerializer,
+      ioc.classSerializer,
       ioc.textPSerializer,
       ioc.traversalStrategySerializer,
 

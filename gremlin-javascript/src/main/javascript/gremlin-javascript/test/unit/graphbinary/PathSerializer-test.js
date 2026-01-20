@@ -26,6 +26,7 @@ import assert from 'assert';
 import { pathSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 import { Traverser, P } from '../../../lib/process/traversal.js';
 import { Path } from '../../../lib/structure/graph.js';
+import * as g from "../../../lib/structure/graph.js";
 
 const { from, concat } = Buffer;
 

@@ -318,7 +318,6 @@ const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
 
 const graphSON2Serializers = [
   NumberSerializer,
-  DateSerializer,
   OffsetDateTimeSerializer,
   BytecodeSerializer,
   TraverserSerializer,
