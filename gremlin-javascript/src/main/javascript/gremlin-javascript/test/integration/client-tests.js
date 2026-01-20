@@ -19,7 +19,7 @@
 
 import assert from 'assert';
 import Bytecode from '../../lib/process/bytecode.js';
-import { Vertex } from '../../lib/structure/graph.js';
+import { Vertex, Edge, VertexProperty } from '../../lib/structure/graph.js';
 import { getClient } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
 
@@ -28,7 +28,7 @@ let client, clientCrew;
 describe('Client', function () {
   before(function () {
     client = getClient('gmodern');
-    clientCrew = helper.getClient('gcrew')
+    clientCrew = getClient('gcrew')
     return client.open();
   });
   after(function () {
@@ -81,7 +81,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           const age = vertex.properties.find(p => p.key === 'age');
           const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
@@ -97,7 +97,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first().object;
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           assert.ok(vertex.properties.length === 0);
         });
     });
@@ -108,7 +108,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           const age = vertex.properties.find(p => p.key === 'age');
           const name = vertex.properties.find(p => p.key === 'name');
           assert.ok(age);
@@ -124,7 +124,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const edge = result.first();
-          assert.ok(edge instanceof graphModule.Edge);
+          assert.ok(edge instanceof Edge);
           assert.strictEqual(edge.label, 'knows');
           assert.strictEqual(edge.properties[0].value, 0.5);
           assert.ok(edge.inV);
@@ -138,7 +138,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const prop = result.first();
-          assert.ok(prop instanceof graphModule.VertexProperty);
+          assert.ok(prop instanceof VertexProperty);
           assert.strictEqual(prop.key, 'location');
           assert.strictEqual(prop.value, 'centreville');
 
@@ -157,7 +157,7 @@ describe('Client', function () {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
           const vertex = result.first();
-          assert.ok(vertex instanceof graphModule.Vertex);
+          assert.ok(vertex instanceof Vertex);
           assert.ok(vertex.properties.length === 0);
         });
     });

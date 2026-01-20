@@ -64,6 +64,10 @@ export function getDriverRemoteConnection(url, options) {
   return new DriverRemoteConnection(url, { ...options, mimeType: process.env.CLIENT_MIMETYPE });
 }
 
+export function getDriverRemoteConnectionGraphSON(traversalSource) {
+  return new DriverRemoteConnection(serverUrl, { traversalSource, mimeType: 'application/vnd.gremlin-v3.0+json' });
+}
+
 export function getClient(traversalSource) {
   return new Client(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
 }

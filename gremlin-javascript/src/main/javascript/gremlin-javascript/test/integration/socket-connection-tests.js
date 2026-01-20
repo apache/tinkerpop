@@ -22,10 +22,10 @@
  */
 'use strict';
 
-const assert = require('assert');
-const http = require('http');
-const url = require('url');
-const helper = require('../helper');
+import assert from "assert";
+import http from "http";
+import url from "url";
+import * as helper from "../helper.js";
 
 const testServerPort = 45944;
 const testServer401ResponseBody = 'Invalid credentials provided';
