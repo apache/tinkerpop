@@ -82,6 +82,8 @@ def choose_graph(step, graph_name):
         step.context.ignore = "StepSubgraph" in tagset
     if not step.context.ignore:
         step.context.ignore = "StepTree" in tagset
+    if not step.context.ignore:
+        step.context.ignore = "StepWrite" in tagset
 
     # TINKERPOP-3055
     if not step.context.ignore:
@@ -264,6 +266,12 @@ def assert_count(step, count):
 
 @then("nothing should happen because")
 def nothing_happening(step):
+    return
+
+
+@then("the file {file:QuotedString} should exist")
+def unsupported_scenario(step, file):
+    # this is a do nothing step as the test can't be supported in remote cases
     return
 
 
