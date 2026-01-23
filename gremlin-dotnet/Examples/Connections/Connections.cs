@@ -24,6 +24,10 @@ using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 public class ConnectionExample
 {
+    static readonly string ServerHost = Environment.GetEnvironmentVariable("GREMLIN_SERVER_HOST") ?? "localhost";
+    static readonly int ServerPort = int.Parse(Environment.GetEnvironmentVariable("GREMLIN_SERVER_PORT") ?? "8182");
+    static readonly string VertexLabel = Environment.GetEnvironmentVariable("VERTEX_LABEL") ?? "connection";
+
     static void Main()
     {
         WithRemote();
@@ -34,16 +38,13 @@ public class ConnectionExample
     // Connecting to the server
     static void WithRemote()
     {
-        var server = new GremlinServer("localhost", 8182);
+        var server = new GremlinServer(ServerHost, ServerPort);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
         var g = Traversal().WithRemote(remoteConnection);
 
-        // Drop existing vertices
-        g.V().Drop().Iterate();
-
         // Simple query to verify connection
-        var v = g.AddV().Iterate();
-        var count = g.V().Count().Next();
+        var v = g.AddV(VertexLabel).Iterate();
+        var count = g.V().HasLabel(VertexLabel).Count().Next();
         Console.WriteLine("Vertex count: " + count);
     }
 
@@ -51,24 +52,24 @@ public class ConnectionExample
     static void WithConf()
     {
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
-        new GremlinServer(hostname: "localhost", port: 8182, enableSsl: false, username: "", password: "")), "g");
+        new GremlinServer(hostname: ServerHost, port: ServerPort, enableSsl: false, username: "", password: "")), "g");
         var g = Traversal().WithRemote(remoteConnection);
 
-        var v = g.AddV().Iterate();
-        var count = g.V().Count().Next();
+        var v = g.AddV(VertexLabel).Iterate();
+        var count = g.V().HasLabel(VertexLabel).Count().Next();
         Console.WriteLine("Vertex count: " + count);
     }
 
     // Specifying a serializer
     static void WithSerializer()
     {
-        var server = new GremlinServer("localhost", 8182);
+        var server = new GremlinServer(ServerHost, ServerPort);
         var client = new GremlinClient(server, new GraphSON3MessageSerializer());
         using var remoteConnection = new DriverRemoteConnection(client, "g");
         var g = Traversal().WithRemote(remoteConnection);
 
-        var v = g.AddV().Iterate();
-        var count = g.V().Count().Next();
+        var v = g.AddV(VertexLabel).Iterate();
+        var count = g.V().HasLabel(VertexLabel).Count().Next();
         Console.WriteLine("Vertex count: " + count);
     }
 }

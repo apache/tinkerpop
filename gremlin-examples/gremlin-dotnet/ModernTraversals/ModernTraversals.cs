@@ -26,9 +26,12 @@ using static Gremlin.Net.Process.Traversal.P;
 
 public class ModernTraversalExample
 {
+    static readonly string ServerHost = "localhost";
+    static readonly int ServerPort = 8182;
+
     static void Main()
     {
-        var server = new GremlinServer("localhost", 8182);
+        var server = new GremlinServer(ServerHost, ServerPort);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
         var g = Traversal().WithRemote(remoteConnection);
 

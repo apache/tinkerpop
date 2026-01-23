@@ -26,10 +26,16 @@ using static Gremlin.Net.Process.Traversal.P;
 
 public class ModernTraversalExample
 {
+    static readonly string ServerHost = Environment.GetEnvironmentVariable("GREMLIN_SERVER_HOST") ?? "localhost";
+    static readonly int ServerPort = int.Parse(Environment.GetEnvironmentVariable("GREMLIN_SERVER_PORT") ?? "8182");
+    static readonly bool IsDocker = Environment.GetEnvironmentVariable("DOCKER_ENVIRONMENT") == "true";
+
     static void Main()
     {
-        var server = new GremlinServer("localhost", 8182);
-        using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
+        var server = new GremlinServer(ServerHost, ServerPort);
+        // Use gmodern in CI environment, default connection locally
+        var traversalSource = IsDocker ? "gmodern" : "g";
+        using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), traversalSource);
         var g = Traversal().WithRemote(remoteConnection);
 
         /*
