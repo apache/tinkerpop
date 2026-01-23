@@ -127,23 +127,13 @@ limitations under the License.
         <module>gremlin-core</module>
         <module>gremlin-annotations</module>
         <module>gremlin-test</module>
-        <module>gremlin-util</module>
         <module>gremlin-groovy</module>
         <module>tinkergraph-gremlin</module>
-        <module>gremlin-javascript</module>
-        <module>gremlin-python</module>
-        <module>gremlin-dotnet</module>
-        <module>gremlin-go</module>
-        <module>hadoop-gremlin</module>
-        <module>spark-gremlin</module>
-        <module>neo4j-gremlin</module>
-        <module>sparql-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
         <module>gremlin-tools</module>
-        <module>gremlint</module>
-        <module>gremlin-mcp</module>
+        <module>gremlin-util</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:apache/tinkerpop.git</connection>
