@@ -152,7 +152,7 @@ limitations under the License.
     </scm>
     <properties>
         <antlr4.version>4.9.1</antlr4.version>
-        <caffeine.version>2.3.1</caffeine.version>
+        <caffeine.version>3.2.3</caffeine.version>
         <commons.collections.version>4.4</commons.collections.version>
         <commons.configuration.version>2.11.0</commons.configuration.version>
         <commons.lang.version>2.6</commons.lang.version>
@@ -162,7 +162,16 @@ limitations under the License.
         <cucumber.version>7.21.1</cucumber.version>
         <exp4j.version>0.4.8</exp4j.version>
         <groovy.version>4.0.25</groovy.version>
-        <guice.version>4.2.3</guice.version>
+        <!--
+          don't really use guava directly, but there are a lot of jar conflicts around it,
+          so centralizing that dependency version here
+        -->
+        <guava.version>31.0.1-jre</guava.version>
+        <!--
+          don't think we need guice 7 at the moment - the only difference with 6 is that
+          it supports the jakarta.inject namespace which tinkerpop doesn't fuss with
+        -->
+        <guice.version>6.0.0</guice.version>
         <hadoop.version>3.4.1</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
@@ -546,6 +555,7 @@ limitations under the License.
                         <exclude>**/_site/**</exclude>
                         <exclude>**/.pytest_cache/**</exclude>
                         <exclude>**/venv/**</exclude>
+                        <exclude>**/.venv/**</exclude>
                         <exclude>**/.eggs/**</exclude>
                         <exclude>**/gremlinpython.egg-info/**</exclude>
                         <exclude>**/docfx/**</exclude>
@@ -772,6 +782,45 @@ limitations under the License.
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.testing.compile</groupId>
+                <artifactId>compile-testing</artifactId>
+                <version>0.23.0</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.errorprone</groupId>
+                        <artifactId>error_prone_annotations</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- start - resolve self-conflict within compile-testing -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.errorprone</groupId>
+                        <artifactId>error_prone_annotations</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.43.0</version>
+            </dependency>
+            <!-- end - resolve self-conflict within compile-testing -->
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

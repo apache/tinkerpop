@@ -23,11 +23,13 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
-* Bumped SLF4j to 2.0.16.
 * Modified grammar to make `discard()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
-* Bumped GMavenPlus to 4.1.1
 * Removed `Meta` field from `ResponseResult` struct in `gremlin-go`
 * Replace `Bytecode` with `GremlinLang` & update serialization to GraphBinary 4 for `gremlin-go`
+* Bumped SLF4j to 2.0.16.
+* Bumped GMavenPlus to 4.1.1.
+* Bumped to Guice 6.0.0.
+* Bumped Caffeine to 3.2.3.
 
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)
