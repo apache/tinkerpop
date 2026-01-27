@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,23 +21,20 @@
 
 #endregion
 
-namespace Gremlin.Net.Process.Traversal.Strategy.Decoration
+namespace Gremlin.Net.Process.Traversal.Strategy.Finalization
 {
-#pragma warning disable 1591
-    public class HaltedTraverserStrategy : AbstractTraversalStrategy
+    /// <summary>
+    ///      A strategy that detaches traversers with graph elements as references.
+    /// </summary>
+    public class ReferenceElementStrategy : AbstractTraversalStrategy
     {
-        private const string JavaFqcn = DecorationNamespace + nameof(HaltedTraverserStrategy);
+        private const string JavaFqcn = FinalizationNamespace + nameof(ReferenceElementStrategy);
         
-        public HaltedTraverserStrategy() : base(JavaFqcn)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReferenceElementStrategy" /> class.
+        /// </summary>
+        public ReferenceElementStrategy() : base(JavaFqcn)
         {
-        }
-
-        public HaltedTraverserStrategy(string? haltedTraverserFactory = null)
-            : this()
-        {
-            if (haltedTraverserFactory != null)
-                Configuration["haltedTraverserFactory"] = haltedTraverserFactory;
         }
     }
-#pragma warning restore 1591
 }
