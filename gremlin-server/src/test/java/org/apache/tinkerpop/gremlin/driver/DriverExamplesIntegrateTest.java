@@ -42,7 +42,7 @@ public class DriverExamplesIntegrateTest extends AbstractGremlinServerIntegratio
     }
 
     @AfterClass
-    public static void tearDownAfterClass() {
+    public static void tearDownEnvironment() {
         // Clean up system properties
         System.clearProperty("GREMLIN_SERVER_HOST");
         System.clearProperty("GREMLIN_SERVER_PORT");
