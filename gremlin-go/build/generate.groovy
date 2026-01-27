@@ -121,9 +121,6 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     '           traversalFn := traversalFns[0]\n' +
     '           translationMap[scenarioName] = traversalFns[1:]\n' +
     '           traversal := traversalFn(g, parameters)\n' +
-    '           for key, value := range sideEffects {\n' +
-    '               traversal.Bytecode.AddSource("withSideEffect", key, value)\n' +
-    '           }\n' +
     '           return traversal, nil\n' +
     '       } else {\n' +
     '           return nil, errors.New("scenario for traversal not recognized")\n' +

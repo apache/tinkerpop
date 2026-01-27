@@ -31,363 +31,345 @@ import (
 func TestTraversal(t *testing.T) {
 
 	t.Run("Test clone traversal", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewGremlinLang(nil), nil)
 		original := g.V().Out("created")
 		clone := original.Clone().Out("knows")
 		cloneClone := clone.Clone().Out("created")
 
-		assert.Equal(t, 2, len(original.Bytecode.stepInstructions))
-		assert.Equal(t, 3, len(clone.Bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
+		assert.Equal(t, "g.V().out(\"created\")", original.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\")", clone.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin())
 
 		original.Has("person", "name", "marko")
 		clone.V().Out()
 
-		assert.Equal(t, 3, len(original.Bytecode.stepInstructions))
-		assert.Equal(t, 5, len(clone.Bytecode.stepInstructions))
-		assert.Equal(t, 4, len(cloneClone.Bytecode.stepInstructions))
+		assert.Equal(t, "g.V().out(\"created\").has(\"person\",\"name\",\"marko\")", original.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").V().out()", clone.GremlinLang.GetGremlin())
+		assert.Equal(t, "g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin())
 	})
 
 	t.Run("Test Iterate with empty removeConnection", func(t *testing.T) {
-		g := NewGraphTraversalSource(&Graph{}, nil, NewBytecode(nil))
+		g := NewGraphTraversalSource(&Graph{}, nil, NewGremlinLang(nil))
 
 		promise := g.V().Count().Iterate()
 		assert.NotNil(t, <-promise)
 	})
 
-	t.Run("Test traversal with bindings", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
-		bytecode := g.V((&Bindings{}).Of("a", []int32{1, 2, 3})).
-			Out((&Bindings{}).Of("b", "created")).
-			Where(T__.In((&Bindings{}).Of("c", "created"), (&Bindings{}).Of("d", "knows")).
-				Count().Is((&Bindings{}).Of("e", P.Gt(2)))).Bytecode
-		assert.Equal(t, 5, len(bytecode.bindings))
-		assert.Equal(t, []int32{1, 2, 3}, bytecode.bindings["a"])
-		assert.Equal(t, "created", bytecode.bindings["b"])
-		assert.Equal(t, "created", bytecode.bindings["c"])
-		assert.Equal(t, "knows", bytecode.bindings["d"])
-		assert.Equal(t, P.Gt(2), bytecode.bindings["e"])
-		assert.Equal(t, &Binding{
-			Key:   "b",
-			Value: "created",
-		}, bytecode.stepInstructions[1].arguments[0])
-		assert.Equal(t, "binding[b=created]", bytecode.stepInstructions[1].arguments[0].(*Binding).String())
-	})
-
-	t.Run("Test Transaction commit", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		startCount := getCount(t, g)
-		tx := g.Tx()
-
-		// Except transaction to not be open until begin is called.
-		assert.False(t, tx.IsOpen())
-		gtx, _ := tx.Begin()
-		assert.True(t, tx.IsOpen())
-
-		addV(t, gtx, "lyndon")
-		addV(t, gtx, "valentyn")
-		assert.Equal(t, startCount, getCount(t, g))
-		assert.Equal(t, startCount+2, getCount(t, gtx))
-
-		// Commit the transaction, this should close it.
-		// Our vertex count outside the transaction should be 2 + the start count.
-		err := tx.Commit()
-		assert.Nil(t, err)
-
-		assert.False(t, tx.IsOpen())
-		assert.Equal(t, startCount+2, getCount(t, g))
-
-		dropGraphCheckCount(t, g)
-		verifyGtxClosed(t, gtx)
-	})
-
-	t.Run("Test Transaction rollback", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		startCount := getCount(t, g)
-		tx := g.Tx()
-
-		// Except transaction to not be open until begin is called.
-		assert.False(t, tx.IsOpen())
-		gtx, _ := tx.Begin()
-		assert.True(t, tx.IsOpen())
-
-		addV(t, gtx, "lyndon")
-		addV(t, gtx, "valentyn")
-		assert.Equal(t, startCount, getCount(t, g))
-		assert.Equal(t, startCount+2, getCount(t, gtx))
-
-		// Rollback the transaction, this should close it.
-		// Our vertex count outside the transaction should be the start count.
-		err := tx.Rollback()
-		assert.Nil(t, err)
-
-		assert.False(t, tx.IsOpen())
-		assert.Equal(t, startCount, getCount(t, g))
-
-		dropGraphCheckCount(t, g)
-		verifyGtxClosed(t, gtx)
-	})
-
-	t.Run("Test Transaction flows", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		tx := g.Tx()
-		assert.False(t, tx.IsOpen())
-
-		// Commit should return error when transaction not started
-		err := tx.Commit()
-		assert.NotNil(t, err)
-
-		// Rollback should return error when transaction not started
-		err = tx.Rollback()
-		assert.NotNil(t, err)
-
-		// Create transaction and verify it is open.
-		gtx, err := tx.Begin()
-		assert.Nil(t, err)
-		assert.NotNil(t, gtx)
-		assert.True(t, tx.IsOpen())
-
-		// Can't open inner transaction.
-		innerTx, err := gtx.Tx().Begin()
-		assert.Nil(t, innerTx)
-		assert.NotNil(t, err)
-
-		// Commit this unused transaction and verify it is no longer open.
-		err = tx.Commit()
-		assert.Nil(t, err)
-		assert.False(t, tx.IsOpen())
-
-		// Create another transaction and verify it is open.
-		gtx, err = tx.Begin()
-		assert.Nil(t, err)
-		assert.NotNil(t, gtx)
-		assert.True(t, tx.IsOpen())
-
-		// Rollback this unused transaction and verify it is no longer open.
-		err = tx.Rollback()
-		assert.Nil(t, err)
-		assert.False(t, tx.IsOpen())
-	})
-
-	t.Run("Test multi commit Transaction", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		startCount := getCount(t, g)
-
-		// Create two transactions.
-		tx1 := g.Tx()
-		tx2 := g.Tx()
-
-		// Generate two GraphTraversalSource's for each transaction with begin.
-		gtx1, _ := tx1.Begin()
-		gtx2, _ := tx2.Begin()
-		verifyTxState(t, true, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx2, which should be visible to gtx2, not gtx1
-		addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-
-		tx1.Commit()
-		verifyTxState(t, false, tx1)
-		verifyTxState(t, true, tx2)
-		assert.Equal(t, startCount+2, getCount(t, g))
-
-		tx2.Commit()
-		verifyTxState(t, false, tx1, tx2)
-		assert.Equal(t, startCount+3, getCount(t, g))
-	})
-
-	t.Run("Test multi rollback Transaction", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		startCount := getCount(t, g)
-
-		// Create two transactions.
-		tx1 := g.Tx()
-		tx2 := g.Tx()
-
-		// Generate two GraphTraversalSource's for each transaction with begin.
-		gtx1, _ := tx1.Begin()
-		gtx2, _ := tx2.Begin()
-		verifyTxState(t, true, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx2, which should be visible to gtx2, not gtx1
-		addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-
-		tx1.Rollback()
-		verifyTxState(t, false, tx1)
-		verifyTxState(t, true, tx2)
-		assert.Equal(t, startCount, getCount(t, g))
-
-		tx2.Rollback()
-		verifyTxState(t, false, tx1, tx2)
-		assert.Equal(t, startCount, getCount(t, g))
-	})
-
-	t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		startCount := getCount(t, g)
-
-		// Create two transactions.
-		tx1 := g.Tx()
-		tx2 := g.Tx()
-
-		// Generate two GraphTraversalSource's for each transaction with begin.
-		gtx1, _ := tx1.Begin()
-		gtx2, _ := tx2.Begin()
-		verifyTxState(t, true, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx2, which should be visible to gtx2, not gtx1
-		addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
-
-		// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
-		addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
-
-		tx1.Commit()
-		verifyTxState(t, false, tx1)
-		verifyTxState(t, true, tx2)
-		assert.Equal(t, startCount+2, getCount(t, g))
-
-		tx2.Rollback()
-		verifyTxState(t, false, tx1, tx2)
-		assert.Equal(t, startCount+2, getCount(t, g))
-	})
-
-	t.Run("Test Transaction close", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		dropGraphCheckCount(t, g)
-
-		// Create two transactions.
-		tx1 := g.Tx()
-		tx2 := g.Tx()
-
-		// Generate two GraphTraversalSource's for each transaction with begin.
-		gtx1, _ := tx1.Begin()
-		gtx2, _ := tx2.Begin()
-		verifyTxState(t, true, tx1, tx2)
-
-		// Add stuff to both gtx.
-		addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
-
-		// someone gets lazy and doesn't commit/rollback and just calls close() - the graph
-		// will decide how to treat the transaction, but for neo4j/gremlin server in this
-		// test configuration it should rollback
-		tx1.Close()
-		tx2.Close()
-
-		verifyGtxClosed(t, gtx1)
-		verifyGtxClosed(t, gtx2)
-
-		remote = newConnection(t)
-		g = Traversal_().With(remote)
-		assert.Equal(t, int32(0), getCount(t, g))
-	})
-
-	t.Run("Test Transaction close tx from parent", func(t *testing.T) {
-		// Start a transaction traversal.
-		remote := newConnection(t)
-		g := Traversal_().With(remote)
-		dropGraphCheckCount(t, g)
-
-		// Create two transactions.
-		tx1 := g.Tx()
-		tx2 := g.Tx()
-
-		// Generate two GraphTraversalSource's for each transaction with begin.
-		gtx1, _ := tx1.Begin()
-		gtx2, _ := tx2.Begin()
-		verifyTxState(t, true, tx1, tx2)
-
-		// Add stuff to both gtx.
-		addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
-		addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
-
-		// someone gets lazy and doesn't commit/rollback and just calls Close() but on the parent
-		// DriverRemoteConnection for all the session that were created via Tx() - the graph
-		// will decide how to treat the transaction, but for neo4j/gremlin server in this
-		// test configuration it should rollback.
-		remote.Close()
-
-		assert.False(t, tx1.IsOpen())
-		assert.False(t, tx2.IsOpen())
-		verifyGtxClosed(t, gtx1)
-		verifyGtxClosed(t, gtx2)
-
-		remote = newConnection(t)
-		g = Traversal_().With(remote)
-		assert.Equal(t, int32(0), getCount(t, g))
-	})
-
-	t.Run("Test commit if no transaction started", func(t *testing.T) {
-		// Start a traversal.
-		g := newWithOptionsConnection(t)
-
-		// Create transactions
-		tx := g.Tx()
-
-		// try to commit
-		err := tx.Commit()
-		assert.Equal(t, "E1103: cannot commit a transaction that is not started", err.Error())
-	})
-
-	t.Run("Test rollback if no transaction started", func(t *testing.T) {
-		// Start a traversal.
-		g := newWithOptionsConnection(t)
-
-		// Create transactions
-		tx := g.Tx()
-
-		// try to rollback
-		err := tx.Rollback()
-		assert.Equal(t, "E1102: cannot rollback a transaction that is not started", err.Error())
-	})
-
-	t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
-		// Start a traversal.
-		g := newWithOptionsConnection(t)
-
-		// Create transactions
-		tx := g.Tx()
-
-		_, err := tx.Begin()
-		assert.Nil(t, err)
-
-		// try to commit
-		err = tx.Commit()
-		assert.True(t, strings.HasPrefix(err.Error(),
-			"E0502: error in read loop, error message '{code:244 message:Graph does not support transactions"))
-	})
+	// TODO enable when transaction is implemented
+	//t.Run("Test Transaction commit", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	startCount := getCount(t, g)
+	//	tx := g.Tx()
+	//
+	//	// Except transaction to not be open until begin is called.
+	//	assert.False(t, tx.IsOpen())
+	//	gtx, _ := tx.Begin()
+	//	assert.True(t, tx.IsOpen())
+	//
+	//	addV(t, gtx, "lyndon")
+	//	addV(t, gtx, "valentyn")
+	//	assert.Equal(t, startCount, getCount(t, g))
+	//	assert.Equal(t, startCount+2, getCount(t, gtx))
+	//
+	//	// Commit the transaction, this should close it.
+	//	// Our vertex count outside the transaction should be 2 + the start count.
+	//	err := tx.Commit()
+	//	assert.Nil(t, err)
+	//
+	//	assert.False(t, tx.IsOpen())
+	//	assert.Equal(t, startCount+2, getCount(t, g))
+	//
+	//	dropGraphCheckCount(t, g)
+	//	verifyGtxClosed(t, gtx)
+	//})
+	//
+	//t.Run("Test Transaction rollback", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	startCount := getCount(t, g)
+	//	tx := g.Tx()
+	//
+	//	// Except transaction to not be open until begin is called.
+	//	assert.False(t, tx.IsOpen())
+	//	gtx, _ := tx.Begin()
+	//	assert.True(t, tx.IsOpen())
+	//
+	//	addV(t, gtx, "lyndon")
+	//	addV(t, gtx, "valentyn")
+	//	assert.Equal(t, startCount, getCount(t, g))
+	//	assert.Equal(t, startCount+2, getCount(t, gtx))
+	//
+	//	// Rollback the transaction, this should close it.
+	//	// Our vertex count outside the transaction should be the start count.
+	//	err := tx.Rollback()
+	//	assert.Nil(t, err)
+	//
+	//	assert.False(t, tx.IsOpen())
+	//	assert.Equal(t, startCount, getCount(t, g))
+	//
+	//	dropGraphCheckCount(t, g)
+	//	verifyGtxClosed(t, gtx)
+	//})
+	//
+	//t.Run("Test Transaction flows", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	tx := g.Tx()
+	//	assert.False(t, tx.IsOpen())
+	//
+	//	// Commit should return error when transaction not started
+	//	err := tx.Commit()
+	//	assert.NotNil(t, err)
+	//
+	//	// Rollback should return error when transaction not started
+	//	err = tx.Rollback()
+	//	assert.NotNil(t, err)
+	//
+	//	// Create transaction and verify it is open.
+	//	gtx, err := tx.Begin()
+	//	assert.Nil(t, err)
+	//	assert.NotNil(t, gtx)
+	//	assert.True(t, tx.IsOpen())
+	//
+	//	// Can't open inner transaction.
+	//	innerTx, err := gtx.Tx().Begin()
+	//	assert.Nil(t, innerTx)
+	//	assert.NotNil(t, err)
+	//
+	//	// Commit this unused transaction and verify it is no longer open.
+	//	err = tx.Commit()
+	//	assert.Nil(t, err)
+	//	assert.False(t, tx.IsOpen())
+	//
+	//	// Create another transaction and verify it is open.
+	//	gtx, err = tx.Begin()
+	//	assert.Nil(t, err)
+	//	assert.NotNil(t, gtx)
+	//	assert.True(t, tx.IsOpen())
+	//
+	//	// Rollback this unused transaction and verify it is no longer open.
+	//	err = tx.Rollback()
+	//	assert.Nil(t, err)
+	//	assert.False(t, tx.IsOpen())
+	//})
+	//
+	//t.Run("Test multi commit Transaction", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	startCount := getCount(t, g)
+	//
+	//	// Create two transactions.
+	//	tx1 := g.Tx()
+	//	tx2 := g.Tx()
+	//
+	//	// Generate two GraphTraversalSource's for each transaction with begin.
+	//	gtx1, _ := tx1.Begin()
+	//	gtx2, _ := tx2.Begin()
+	//	verifyTxState(t, true, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
+	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
+	//
+	//	tx1.Commit()
+	//	verifyTxState(t, false, tx1)
+	//	verifyTxState(t, true, tx2)
+	//	assert.Equal(t, startCount+2, getCount(t, g))
+	//
+	//	tx2.Commit()
+	//	verifyTxState(t, false, tx1, tx2)
+	//	assert.Equal(t, startCount+3, getCount(t, g))
+	//})
+	//
+	//t.Run("Test multi rollback Transaction", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	startCount := getCount(t, g)
+	//
+	//	// Create two transactions.
+	//	tx1 := g.Tx()
+	//	tx2 := g.Tx()
+	//
+	//	// Generate two GraphTraversalSource's for each transaction with begin.
+	//	gtx1, _ := tx1.Begin()
+	//	gtx2, _ := tx2.Begin()
+	//	verifyTxState(t, true, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
+	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
+	//
+	//	tx1.Rollback()
+	//	verifyTxState(t, false, tx1)
+	//	verifyTxState(t, true, tx2)
+	//	assert.Equal(t, startCount, getCount(t, g))
+	//
+	//	tx2.Rollback()
+	//	verifyTxState(t, false, tx1, tx2)
+	//	assert.Equal(t, startCount, getCount(t, g))
+	//})
+	//
+	//t.Run("Test multi commit and rollback Transaction", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	startCount := getCount(t, g)
+	//
+	//	// Create two transactions.
+	//	tx1 := g.Tx()
+	//	tx2 := g.Tx()
+	//
+	//	// Generate two GraphTraversalSource's for each transaction with begin.
+	//	gtx1, _ := tx1.Begin()
+	//	gtx2, _ := tx2.Begin()
+	//	verifyTxState(t, true, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx2, which should be visible to gtx2, not gtx1
+	//	addNodeValidateTransactionState(t, g, gtx2, startCount, startCount, tx1, tx2)
+	//
+	//	// Add node to gtx1, which should be visible to gtx1, not gtx2. Note previous node also added.
+	//	addNodeValidateTransactionState(t, g, gtx1, startCount, startCount+1, tx1, tx2)
+	//
+	//	tx1.Commit()
+	//	verifyTxState(t, false, tx1)
+	//	verifyTxState(t, true, tx2)
+	//	assert.Equal(t, startCount+2, getCount(t, g))
+	//
+	//	tx2.Rollback()
+	//	verifyTxState(t, false, tx1, tx2)
+	//	assert.Equal(t, startCount+2, getCount(t, g))
+	//})
+	//
+	//t.Run("Test Transaction close", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	dropGraphCheckCount(t, g)
+	//
+	//	// Create two transactions.
+	//	tx1 := g.Tx()
+	//	tx2 := g.Tx()
+	//
+	//	// Generate two GraphTraversalSource's for each transaction with begin.
+	//	gtx1, _ := tx1.Begin()
+	//	gtx2, _ := tx2.Begin()
+	//	verifyTxState(t, true, tx1, tx2)
+	//
+	//	// Add stuff to both gtx.
+	//	addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
+	//
+	//	// someone gets lazy and doesn't commit/rollback and just calls close() - the graph
+	//	// will decide how to treat the transaction, but for neo4j/gremlin server in this
+	//	// test configuration it should rollback
+	//	tx1.Close()
+	//	tx2.Close()
+	//
+	//	verifyGtxClosed(t, gtx1)
+	//	verifyGtxClosed(t, gtx2)
+	//
+	//	remote = newConnection(t)
+	//	g = Traversal_().With(remote)
+	//	assert.Equal(t, int32(0), getCount(t, g))
+	//})
+	//
+	//t.Run("Test Transaction close tx from parent", func(t *testing.T) {
+	//	// Start a transaction traversal.
+	//	remote := newConnection(t)
+	//	g := Traversal_().With(remote)
+	//	dropGraphCheckCount(t, g)
+	//
+	//	// Create two transactions.
+	//	tx1 := g.Tx()
+	//	tx2 := g.Tx()
+	//
+	//	// Generate two GraphTraversalSource's for each transaction with begin.
+	//	gtx1, _ := tx1.Begin()
+	//	gtx2, _ := tx2.Begin()
+	//	verifyTxState(t, true, tx1, tx2)
+	//
+	//	// Add stuff to both gtx.
+	//	addNodeValidateTransactionState(t, g, gtx1, 0, 0, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 0, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 1, tx1, tx2)
+	//	addNodeValidateTransactionState(t, g, gtx2, 0, 2, tx1, tx2)
+	//
+	//	// someone gets lazy and doesn't commit/rollback and just calls Close() but on the parent
+	//	// DriverRemoteConnection for all the session that were created via Tx() - the graph
+	//	// will decide how to treat the transaction, but for neo4j/gremlin server in this
+	//	// test configuration it should rollback.
+	//	remote.Close()
+	//
+	//	assert.False(t, tx1.IsOpen())
+	//	assert.False(t, tx2.IsOpen())
+	//	verifyGtxClosed(t, gtx1)
+	//	verifyGtxClosed(t, gtx2)
+	//
+	//	remote = newConnection(t)
+	//	g = Traversal_().With(remote)
+	//	assert.Equal(t, int32(0), getCount(t, g))
+	//})
+	//
+	//t.Run("Test commit if no transaction started", func(t *testing.T) {
+	//	// Start a traversal.
+	//	g := newWithOptionsConnection(t)
+	//
+	//	// Create transactions
+	//	tx := g.Tx()
+	//
+	//	// try to commit
+	//	err := tx.Commit()
+	//	assert.Equal(t, "E1103: cannot commit a transaction that is not started", err.Error())
+	//})
+	//
+	//t.Run("Test rollback if no transaction started", func(t *testing.T) {
+	//	// Start a traversal.
+	//	g := newWithOptionsConnection(t)
+	//
+	//	// Create transactions
+	//	tx := g.Tx()
+	//
+	//	// try to rollback
+	//	err := tx.Rollback()
+	//	assert.Equal(t, "E1102: cannot rollback a transaction that is not started", err.Error())
+	//})
+	//
+	//t.Run("Test commit if no transaction support for Graph", func(t *testing.T) {
+	//	// Start a traversal.
+	//	g := newWithOptionsConnection(t)
+	//
+	//	// Create transactions
+	//	tx := g.Tx()
+	//
+	//	_, err := tx.Begin()
+	//	assert.Nil(t, err)
+	//
+	//	// try to commit
+	//	err = tx.Commit()
+	//	assert.True(t, strings.HasPrefix(err.Error(),
+	//		"E0502: error in read loop, error message '{code:244 message:Graph does not support transactions"))
+	//})
 
 	t.Run("Test WithOptions.Tokens WithOptions.None", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true))
@@ -524,36 +506,19 @@ func TestTraversal(t *testing.T) {
 	})
 
 	t.Run("Test should extract ID from Vertex", func(t *testing.T) {
-		g := cloneGraphTraversalSource(&Graph{}, NewBytecode(nil), nil)
+		g := cloneGraphTraversalSource(&Graph{}, NewGremlinLang(nil), nil)
 
 		// Test basic V() step with mixed ID types
 		vStart := g.V(1, &Vertex{Element: Element{Id: 2}})
-		vStartBytecode := vStart.Bytecode
-		assert.Equal(t, 1, len(vStartBytecode.stepInstructions))
-		assert.Equal(t, "V", vStartBytecode.stepInstructions[0].operator)
-		assert.Equal(t, 1, vStartBytecode.stepInstructions[0].arguments[0])
-		assert.Equal(t, 2, vStartBytecode.stepInstructions[0].arguments[1]) // ID should be extracted from Vertex
+		assert.Equal(t, "g.V(1,2)", vStart.GremlinLang.GetGremlin())
 
 		// Test V() step in the middle of a traversal
 		vMid := g.Inject("foo").V(1, &Vertex{Element: Element{Id: 2}})
-		vMidBytecode := vMid.Bytecode
-		assert.Equal(t, 2, len(vMidBytecode.stepInstructions))
-		assert.Equal(t, "inject", vMidBytecode.stepInstructions[0].operator)
-		assert.Equal(t, "foo", vMidBytecode.stepInstructions[0].arguments[0])
-		assert.Equal(t, "V", vMidBytecode.stepInstructions[1].operator)
-		assert.Equal(t, 1, vMidBytecode.stepInstructions[1].arguments[0])
-		assert.Equal(t, 2, vMidBytecode.stepInstructions[1].arguments[1]) // ID should be extracted from Vertex
+		assert.Equal(t, "g.inject(\"foo\").V(1,2)", vMid.GremlinLang.GetGremlin())
 
 		// Test edge creation with from/to vertices
 		fromTo := g.AddE("Edge").From(&Vertex{Element: Element{Id: 1}}).To(&Vertex{Element: Element{Id: 2}})
-		fromToBytecode := fromTo.Bytecode
-		assert.Equal(t, 3, len(fromToBytecode.stepInstructions))
-		assert.Equal(t, "addE", fromToBytecode.stepInstructions[0].operator)
-		assert.Equal(t, "Edge", fromToBytecode.stepInstructions[0].arguments[0])
-		assert.Equal(t, "from", fromToBytecode.stepInstructions[1].operator)
-		assert.Equal(t, 1, fromToBytecode.stepInstructions[1].arguments[0]) // ID should be extracted from Vertex
-		assert.Equal(t, "to", fromToBytecode.stepInstructions[2].operator)
-		assert.Equal(t, 2, fromToBytecode.stepInstructions[2].arguments[0]) // ID should be extracted from Vertex
+		assert.Equal(t, "g.addE(\"Edge\").from(__.V(1)).to(__.V(2))", fromTo.GremlinLang.GetGremlin())
 
 		// Test mergeE() with Vertex in map
 		mergeMap := map[interface{}]interface{}{
@@ -563,29 +528,19 @@ func TestTraversal(t *testing.T) {
 		}
 
 		mergeEStart := g.MergeE(mergeMap)
-		mergeEStartBytecode := mergeEStart.Bytecode
-		assert.Equal(t, 1, len(mergeEStartBytecode.stepInstructions))
-		assert.Equal(t, "mergeE", mergeEStartBytecode.stepInstructions[0].operator)
-
-		// Check that the map contains extracted IDs
-		mergeMapArg := mergeEStartBytecode.stepInstructions[0].arguments[0].(map[interface{}]interface{})
-		assert.Equal(t, "knows", mergeMapArg[T.Label])
-		assert.Equal(t, 1, mergeMapArg[Direction.Out]) // ID should be extracted from Vertex
-		assert.Equal(t, 2, mergeMapArg[Direction.In])  // ID should be extracted from Vertex
+		// No order guarantee in map arguments when creating GremlinLang, assert individually
+		assert.True(t, strings.HasPrefix(mergeEStart.GremlinLang.GetGremlin(), "g.mergeE("))
+		assert.Contains(t, mergeEStart.GremlinLang.GetGremlin(), "label:\"knows\"")
+		assert.Contains(t, mergeEStart.GremlinLang.GetGremlin(), "Direction.OUT:1")
+		assert.Contains(t, mergeEStart.GremlinLang.GetGremlin(), "Direction.IN:2")
 
 		// Test mergeE() in the middle of a traversal
 		mergeEMid := g.Inject("foo").MergeE(mergeMap)
-		mergeEMidBytecode := mergeEMid.Bytecode
-		assert.Equal(t, 2, len(mergeEMidBytecode.stepInstructions))
-		assert.Equal(t, "inject", mergeEMidBytecode.stepInstructions[0].operator)
-		assert.Equal(t, "foo", mergeEMidBytecode.stepInstructions[0].arguments[0])
-		assert.Equal(t, "mergeE", mergeEMidBytecode.stepInstructions[1].operator)
-
-		// Check that the map contains extracted IDs
-		mergeMapArg2 := mergeEMidBytecode.stepInstructions[1].arguments[0].(map[interface{}]interface{})
-		assert.Equal(t, "knows", mergeMapArg2[T.Label])
-		assert.Equal(t, 1, mergeMapArg2[Direction.Out]) // ID should be extracted from Vertex
-		assert.Equal(t, 2, mergeMapArg2[Direction.In])  // ID should be extracted from Vertex
+		// No order guarantee in map arguments when creating GremlinLang, assert individually
+		assert.True(t, strings.HasPrefix(mergeEMid.GremlinLang.GetGremlin(), "g.inject(\"foo\").mergeE("))
+		assert.Contains(t, mergeEMid.GremlinLang.GetGremlin(), "label:\"knows\"")
+		assert.Contains(t, mergeEMid.GremlinLang.GetGremlin(), "Direction.OUT:1")
+		assert.Contains(t, mergeEMid.GremlinLang.GetGremlin(), "Direction.IN:2")
 	})
 }
 

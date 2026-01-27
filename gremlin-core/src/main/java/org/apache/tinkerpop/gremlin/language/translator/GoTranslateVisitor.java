@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -41,7 +42,8 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     private final static List<String> STRATEGY_WITH_MAP_OPTS = Collections.unmodifiableList(Arrays.asList(
             "OptionsStrategy",
             "ReferenceElementStrategy", "ComputerFinalizationStrategy", "ProfileStrategy",
-            "ComputerVerificationStrategy", "StandardVerificationStrategy", "VertexProgramRestrictionStrategy"));
+            "ComputerVerificationStrategy", "StandardVerificationStrategy", "VertexProgramRestrictionStrategy",
+            "MessagePassingReductionStrategy"));
     private final static List<String> STRATEGY_WITH_STRING_SLICE = Collections.unmodifiableList(Arrays.asList(
             "ReservedKeysVerificationStrategy", "ProductiveByStrategy"));
 

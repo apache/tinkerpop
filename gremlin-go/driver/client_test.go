@@ -62,7 +62,7 @@ func TestClient(t *testing.T) {
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
-		resultSet, err := client.Submit("2+2")
+		resultSet, err := client.Submit("g.inject(2)")
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -104,9 +104,9 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 2}
+		bindings := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.Submit("x + x", bindings)
+		resultSet, err := client.Submit("g.V(x).values(\"name\")", bindings)
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -114,7 +114,7 @@ func TestClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, ok)
 
-		assert.Equal(t, int64(4), result.Data)
+		assert.Equal(t, "marko", result.Data)
 	})
 
 	t.Run("Test client.SubmitWithOptions() with bindings", func(t *testing.T) {
@@ -129,9 +129,9 @@ func TestClient(t *testing.T) {
 		assert.NotNil(t, client)
 		defer client.Close()
 
-		bindings := map[string]interface{}{"x": 2}
+		bindings := map[string]interface{}{"x": 1}
 
-		resultSet, err := client.SubmitWithOptions("x + x", new(RequestOptionsBuilder).SetBindings(bindings).Create())
+		resultSet, err := client.SubmitWithOptions("g.V(x).values(\"name\")", new(RequestOptionsBuilder).SetBindings(bindings).Create())
 		assert.NoError(t, err)
 		assert.NotNil(t, resultSet)
 
@@ -139,7 +139,7 @@ func TestClient(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, ok)
 
-		assert.Equal(t, int64(4), result.Data)
+		assert.Equal(t, "marko", result.Data)
 	})
 
 	t.Run("Test client.submit() with materializeProperties", func(t *testing.T) {

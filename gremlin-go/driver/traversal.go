@@ -32,10 +32,10 @@ type Traverser struct {
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph    *Graph
-	Bytecode *Bytecode
-	remote   *DriverRemoteConnection
-	results  ResultSet
+	graph       *Graph
+	GremlinLang *GremlinLang
+	remote      *DriverRemoteConnection
+	results     ResultSet
 }
 
 // ToList returns the result in a list.
@@ -44,7 +44,8 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
-	results, err := t.remote.submitBytecode(t.Bytecode)
+	// TODO update and test when connection is set up
+	results, err := t.remote.submitGremlinLang(t.GremlinLang)
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +78,10 @@ func (t *Traversal) Iterate() <-chan error {
 			return
 		}
 
-		if err := t.Bytecode.AddStep("discard"); err != nil {
-			r <- err
-			return
-		}
+		t.GremlinLang.AddStep("discard")
 
-		res, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		res, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			r <- err
 			return
@@ -125,7 +124,8 @@ func (t *Traversal) Next() (*Result, error) {
 // GetResultSet submits the traversal and returns the ResultSet.
 func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
-		results, err := t.remote.submitBytecode(t.Bytecode)
+		// TODO update and test when connection is set up
+		results, err := t.remote.submitGremlinLang(t.GremlinLang)
 		if err != nil {
 			return nil, err
 		}
@@ -161,33 +161,33 @@ var Cardinality = cardinalities{
 }
 
 type cv struct {
-	Bytecode *Bytecode
+	GremlinLang *GremlinLang
 }
 
 type CardValue interface {
-	Single(val interface{}) Bytecode
-	Set(val interface{}) Bytecode
-	List(val interface{}) Bytecode
+	Single(val interface{}) GremlinLang
+	Set(val interface{}) GremlinLang
+	List(val interface{}) GremlinLang
 }
 
 var CardinalityValue CardValue = &cv{}
 
-func (*cv) Single(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
-	return bc
+func (*cv) Single(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.Single, val)
+	return gl
 }
 
-func (*cv) Set(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
-	return bc
+func (*cv) Set(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.Set, val)
+	return gl
 }
 
-func (*cv) List(val interface{}) Bytecode {
-	bc := Bytecode{}
-	bc.AddSource("CardinalityValueTraversal", Cardinality.List, val)
-	return bc
+func (*cv) List(val interface{}) GremlinLang {
+	gl := GremlinLang{}
+	gl.AddSource("CardinalityValueTraversal", Cardinality.List, val)
+	return gl
 }
 
 type column string
@@ -517,7 +517,7 @@ func newP(operator string, args ...interface{}) Predicate {
 	return &p{operator: operator, values: values}
 }
 
-func newPWithP(operator string, pp p, args ...interface{}) Predicate {
+func newPWithP(operator string, pp *p, args ...interface{}) Predicate {
 	values := make([]interface{}, 1)
 	values[0] = pp
 	values = append(values, args...)
@@ -605,12 +605,12 @@ func (*p) Without(args ...interface{}) Predicate {
 
 // And Predicate returns a Predicate composed of two predicates (logical AND of them).
 func (pp *p) And(args ...interface{}) Predicate {
-	return newPWithP("and", *pp, args...)
+	return newPWithP("and", pp, args...)
 }
 
 // Or Predicate returns a Predicate composed of two predicates (logical OR of them).
 func (pp *p) Or(args ...interface{}) Predicate {
-	return newPWithP("or", *pp, args...)
+	return newPWithP("or", pp, args...)
 }
 
 type TextPredicate interface {
@@ -749,37 +749,50 @@ var IO = ioconfig{
 	Registry: "~tinkerpop.ioconfig.registry",
 }
 
+// TODO pending update/removal
 // Metrics holds metrics data; typically for .profile()-step analysis. Metrics may be nested. Nesting enables
 // the ability to capture explicit metrics for multiple distinct operations. Annotations are used to store
 // miscellaneous notes that might be useful to a developer when examining results, such as index coverage
 // for Steps in a Traversal.
-type Metrics struct {
-	Id   string
-	Name string
-	// the duration in nanoseconds.
-	Duration      int64
-	Counts        map[string]int64
-	Annotations   map[string]interface{}
-	NestedMetrics []Metrics
-}
+//type Metrics struct {
+//	Id   string
+//	Name string
+//	// the duration in nanoseconds.
+//	Duration      int64
+//	Counts        map[string]int64
+//	Annotations   map[string]interface{}
+//	NestedMetrics []Metrics
+//}
 
 // TraversalMetrics contains the Metrics gathered for a Traversal as the result of the .profile()-step.
-type TraversalMetrics struct {
-	// the duration in nanoseconds.
-	Duration int64
-	Metrics  []Metrics
-}
+//type TraversalMetrics struct {
+//	// the duration in nanoseconds.
+//	Duration int64
+//	Metrics  []Metrics
+//}
 
 // GremlinType represents the GraphBinary type Class which can be used to serialize a class.
-type GremlinType struct {
-	Fqcn string
-}
+//type GremlinType struct {
+//	Fqcn string
+//}
 
 // BigDecimal represents an arbitrary-precision signed decimal number, consisting of an arbitrary precision integer
 // unscaled value and a 32-bit integer scale.
 type BigDecimal struct {
 	Scale         int32
 	UnscaledValue *big.Int
+}
+
+func (bd *BigDecimal) Value() *big.Float {
+	// Create the divisor: 10^scale
+	divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(bd.Scale)), nil)
+
+	// Convert unscaled value and divisor to big.Float
+	unscaled := new(big.Float).SetInt(bd.UnscaledValue)
+	div := new(big.Float).SetInt(divisor)
+
+	// Divide: unscaledValue / 10^scale
+	return new(big.Float).Quo(unscaled, div)
 }
 
 // ParseBigDecimal creates a BigDecimal from a string value.

@@ -61,6 +61,7 @@ func newGraphBinarySerializer(handler *logHandler) Serializer {
 	return GraphBinarySerializer{&serializer}
 }
 
+// TODO change for graph binary 4.0 version is finalized
 const versionByte byte = 0x81
 
 // SerializeMessage serializes a request message into GraphBinary format.
@@ -148,16 +149,21 @@ func (gs GraphBinarySerializer) DeserializeMessage(message []byte) (Response, er
 		if err != nil {
 			return msg, err
 		}
+		// TODO for debug, remove later
+		//_, _ = fmt.Fprintf(os.Stdout, "Deserializing data : %v\n", n)
+		if n == EndOfStream() {
+			break
+		}
 		results = append(results, n)
 	}
-	if len(results) == 1 {
-		// unwrap single results
-		msg.ResponseResult.Data = results[0]
-	} else {
-		msg.ResponseResult.Data = results
-	}
+
+	// TODO for debug, remove later
+	//_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
+	msg.ResponseResult.Data = results
 	code := readUint32Safe(&message, &i)
 	msg.ResponseStatus.code = code
+	// TODO read status message
+	msg.ResponseStatus.message = "OK"
 	statusMsg, err := readUnqualified(&message, &i, stringType, true)
 	if err != nil {
 		return msg, err
@@ -177,7 +183,6 @@ func (gs GraphBinarySerializer) DeserializeMessage(message []byte) (Response, er
 
 func initSerializers() {
 	serializers = map[dataType]writer{
-		bytecodeType:   bytecodeWriter,
 		stringType:     stringWriter,
 		bigDecimalType: bigDecimalWriter,
 		bigIntegerType: bigIntWriter,
@@ -204,37 +209,22 @@ func initSerializers() {
 			err := binary.Write(buffer, binary.BigEndian, value)
 			return buffer.Bytes(), err
 		},
-		vertexType:            vertexWriter,
-		edgeType:              edgeWriter,
-		propertyType:          propertyWriter,
-		vertexPropertyType:    vertexPropertyWriter,
-		lambdaType:            lambdaWriter,
-		traversalStrategyType: traversalStrategyWriter,
-		pathType:              pathWriter,
-		setType:               setWriter,
-		dateType:              timeWriter,
-		durationType:          durationWriter,
-		offsetDateTimeType:    offsetDateTimeWriter,
-		cardinalityType:       enumWriter,
-		columnType:            enumWriter,
-		directionType:         enumWriter,
-		dtType:                enumWriter,
-		gTypeType:             enumWriter,
-		operatorType:          enumWriter,
-		orderType:             enumWriter,
-		pickType:              enumWriter,
-		popType:               enumWriter,
-		tType:                 enumWriter,
-		barrierType:           enumWriter,
-		scopeType:             enumWriter,
-		mergeType:             enumWriter,
-		pType:                 pWriter,
-		textPType:             textPWriter,
-		bindingType:           bindingWriter,
-		mapType:               mapWriter,
-		listType:              listWriter,
-		byteBuffer:            byteBufferWriter,
-		classType:             classWriter,
+		vertexType:         vertexWriter,
+		edgeType:           edgeWriter,
+		propertyType:       propertyWriter,
+		vertexPropertyType: vertexPropertyWriter,
+		pathType:           pathWriter,
+		datetimeType:       dateTimeWriter,
+		durationType:       durationWriter,
+		directionType:      enumWriter,
+		gTypeType:          enumWriter,
+		tType:              enumWriter,
+		mergeType:          enumWriter,
+		mapType:            mapWriter,
+		listType:           listWriter,
+		setType:            setWriter,
+		byteBuffer:         byteBufferWriter,
+		markerType:         markerWriter,
 	}
 }
 
@@ -253,39 +243,30 @@ func initDeserializers() {
 		stringType:     readString,
 
 		// Composite
-		listType:   readList,
+		//listType:   readList,
+		//setType:    readSet,
 		mapType:    readMap,
-		setType:    readSet,
 		uuidType:   readUuid,
 		byteBuffer: readByteBuffer,
-		classType:  readClass,
 
 		// Date Time
-		dateType:           timeReader,
-		timestampType:      timeReader,
-		offsetDateTimeType: offsetDateTimeReader,
-		durationType:       durationReader,
+		datetimeType: dateTimeReader,
+		durationType: durationReader,
 
 		// Graph
-		traverserType:      traverserReader,
 		vertexType:         vertexReader,
 		edgeType:           edgeReader,
 		propertyType:       propertyReader,
 		vertexPropertyType: vertexPropertyReader,
 		pathType:           pathReader,
-		bulkSetType:        bulkSetReader,
 		tType:              enumReader,
 		directionType:      enumReader,
-		dtType:             enumReader,
 		gTypeType:          enumReader,
-		bindingType:        bindingReader,
-
-		// Metrics
-		metricsType:          metricsReader,
-		traversalMetricsType: traversalMetricsReader,
 
 		// Customer
 		customType: customTypeReader,
+
+		markerType: markerReader,
 	}
 	customDeserializers = map[string]CustomTypeReader{}
 }

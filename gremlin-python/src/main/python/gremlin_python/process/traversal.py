@@ -522,7 +522,7 @@ class TextP(P):
     def startingWith(*args):
         warnings.warn(
             "gremlin_python.process.TextP.startingWith will be replaced by "
-            "gremlin_python.process.TextP.startingWith.",
+            "gremlin_python.process.TextP.starting_with.",
             DeprecationWarning)
         return TextP("startingWith", *args)
 

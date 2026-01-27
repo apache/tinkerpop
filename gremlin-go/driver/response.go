@@ -19,8 +19,6 @@ under the License.
 
 package gremlingo
 
-import "github.com/google/uuid"
-
 // ResponseStatus contains the status info of the response.
 type ResponseStatus struct {
 	code      uint32
@@ -35,7 +33,6 @@ type ResponseResult struct {
 
 // Response represents a Response from the server.
 type Response struct {
-	ResponseID     uuid.UUID
 	ResponseStatus ResponseStatus
 	ResponseResult ResponseResult
 }

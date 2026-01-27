@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Modified grammar to make `discard()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
 * Bumped GMavenPlus to 4.1.1
 * Removed `Meta` field from `ResponseResult` struct in `gremlin-go`
+* Replace `Bytecode` with `GremlinLang` & update serialization to GraphBinary 4 for `gremlin-go`
 
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)

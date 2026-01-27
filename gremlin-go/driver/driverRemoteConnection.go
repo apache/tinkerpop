@@ -100,14 +100,14 @@ func NewDriverRemoteConnection(
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt := newGremlinClient(logHandler, url, connSettings)
+	httpProt := newHttpProtocol(logHandler, url, connSettings)
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		gremlinClient:      httpProt,
+		httpProtocol:       httpProt,
 	}
 
 	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
@@ -135,22 +135,11 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 	return driver.SubmitWithOptions(traversalString, *new(RequestOptions))
 }
 
-// submitBytecode sends a Bytecode traversal to the server.
-func (driver *DriverRemoteConnection) submitBytecode(bytecode *Bytecode) (ResultSet, error) {
+// submitGremlinLang sends a GremlinLang traversal to the server.
+// TODO test and update when connection is set up
+func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
 	if driver.isClosed {
-		return nil, newError(err0203SubmitBytecodeToClosedConnectionError)
+		return nil, newError(err0203SubmitGremlinLangToClosedConnectionError)
 	}
-	return driver.client.submitBytecode(bytecode)
-}
-
-func (driver *DriverRemoteConnection) commit() (ResultSet, error) {
-	bc := &Bytecode{}
-	bc.AddSource("tx", "commit")
-	return driver.submitBytecode(bc)
-}
-
-func (driver *DriverRemoteConnection) rollback() (ResultSet, error) {
-	bc := &Bytecode{}
-	bc.AddSource("tx", "rollback")
-	return driver.submitBytecode(bc)
+	return driver.client.submitGremlinLang(gremlinLang)
 }
