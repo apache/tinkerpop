@@ -52,6 +52,14 @@ limitations under the License.
             <version>${hadoop.version}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.jline</groupId>
                     <artifactId>jline</artifactId>
                 </exclusion>
@@ -108,6 +116,15 @@ limitations under the License.
             </exclusions>
         </dependency>
         <!-- hadoop-client conflict resolution -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.16</version>
+        </dependency>
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
