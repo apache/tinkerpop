@@ -48,6 +48,10 @@ public final class ProductStep<S, E> extends ScalarMapStep<S, List<List<?>>> imp
         }
     }
 
+    public Object getParameterItems() {
+        return parameterItems;
+    }
+
     @Override
     public String getStepName() { return "product"; }
 
