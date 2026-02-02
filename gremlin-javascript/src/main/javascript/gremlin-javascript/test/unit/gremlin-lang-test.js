@@ -78,5 +78,52 @@ describe('GremlinLang', function () {
       const gremlinLang = new GremlinLang();
       assert.strictEqual(gremlinLang.addStep('has', ['x', 'a\\b']).getGremlin(), "g.has('x', 'a\\\\b')");
     });
+
+    it('should handle array arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [[1, 2, 3]]).getGremlin(), 'g.V([1, 2, 3])');
+    });
+
+    it('should handle empty array', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [[]]).getGremlin(), 'g.V([])');
+    });
+
+    it('should handle nested arrays', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [[[1, 2], [3, 4]]]).getGremlin(), 'g.inject([[1, 2], [3, 4]])');
+    });
+
+    it('should handle array with mixed types', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [['a', 1, true, null]]).getGremlin(), "g.inject(['a', 1, true, null])");
+    });
+  });
+
+  describe('clone support', function () {
+    it('should create independent copy', function () {
+      const original = new GremlinLang();
+      original.addStep('V').addStep('count');
+      const clone = new GremlinLang(original);
+      assert.strictEqual(clone.getGremlin(), original.getGremlin());
+    });
+
+    it('should not affect original when modifying clone', function () {
+      const original = new GremlinLang();
+      original.addStep('V');
+      const clone = new GremlinLang(original);
+      clone.addStep('count');
+      assert.strictEqual(original.getGremlin(), 'g.V()');
+      assert.strictEqual(clone.getGremlin(), 'g.V().count()');
+    });
+
+    it('should not affect clone when modifying original', function () {
+      const original = new GremlinLang();
+      original.addStep('V');
+      const clone = new GremlinLang(original);
+      original.addStep('count');
+      assert.strictEqual(clone.getGremlin(), 'g.V()');
+      assert.strictEqual(original.getGremlin(), 'g.V().count()');
+    });
   });
 });

@@ -32,6 +32,9 @@ export default class GremlinLang {
       const escaped = arg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       return `'${escaped}'`;
     }
+    if (Array.isArray(arg)) {
+      return '[' + arg.map(a => this._argAsString(a)).join(', ') + ']';
+    }
     return String(arg);
   }
   
