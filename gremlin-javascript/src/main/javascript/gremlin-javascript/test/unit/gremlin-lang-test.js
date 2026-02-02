@@ -32,4 +32,51 @@ describe('GremlinLang', function () {
       assert.strictEqual(gremlinLang.getGremlin('__'), '__');
     });
   });
+
+  describe('#addStep()', function () {
+    it('should add single step', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V').getGremlin(), 'g.V()');
+    });
+
+    it('should chain multiple steps', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V').addStep('count').getGremlin(), 'g.V().count()');
+    });
+
+    it('should handle number arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [1]).getGremlin(), 'g.V(1)');
+    });
+
+    it('should handle boolean arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['active', true]).getGremlin(), "g.has('active', true)");
+    });
+
+    it('should handle null arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('property', ['x', null]).getGremlin(), "g.property('x', null)");
+    });
+
+    it('should handle multiple number arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['count', 42]).getGremlin(), "g.has('count', 42)");
+    });
+
+    it('should handle string arguments', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['name', 'josh']).getGremlin(), "g.has('name', 'josh')");
+    });
+
+    it('should escape single quotes in strings', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['x', "it's"]).getGremlin(), "g.has('x', 'it\\'s')");
+    });
+
+    it('should escape backslashes in strings', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['x', 'a\\b']).getGremlin(), "g.has('x', 'a\\\\b')");
+    });
+  });
 });

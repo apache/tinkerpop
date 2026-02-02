@@ -24,6 +24,23 @@ export default class GremlinLang {
     if (toClone) this.gremlin = toClone.gremlin;
   }
   
+  private _argAsString(arg: any): string {
+    if (arg === null || arg === undefined) return 'null';
+    if (typeof arg === 'boolean') return arg ? 'true' : 'false';
+    if (typeof arg === 'number') return String(arg);
+    if (typeof arg === 'string') {
+      const escaped = arg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `'${escaped}'`;
+    }
+    return String(arg);
+  }
+  
+  addStep(name: string, args?: any[]): GremlinLang {
+    const argsStr = args?.length ? args.map(a => this._argAsString(a)).join(', ') : '';
+    this.gremlin += `.${name}(${argsStr})`;
+    return this;
+  }
+  
   getGremlin(prefix: string = 'g'): string {
     return prefix + this.gremlin;
   }
