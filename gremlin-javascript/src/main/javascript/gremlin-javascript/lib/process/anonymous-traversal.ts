@@ -19,9 +19,9 @@
 
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
 import { Graph } from '../structure/graph.js';
-import Bytecode from './bytecode.js';
 import { GraphTraversalSource, GraphTraversal } from './graph-traversal.js';
 import { TraversalStrategies } from './traversal-strategy.js';
+import GremlinLang from './gremlin-lang.js';
 
 /**
  * Provides a unified way to construct a <code>TraversalSource</code> from the perspective of the traversal. In this
@@ -62,7 +62,7 @@ export default class AnonymousTraversalSource {
     return new this.traversalSourceClass!(
       new Graph(),
       traversalStrategies,
-      new Bytecode(),
+      new GremlinLang(),
       this.traversalSourceClass,
       this.traversalClass,
     );

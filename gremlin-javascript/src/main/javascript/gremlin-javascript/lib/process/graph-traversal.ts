@@ -23,10 +23,10 @@
 
 import { EnumValue, Traversal, cardinality, direction } from './traversal.js';
 import { Transaction } from './transaction.js';
-import Bytecode from './bytecode.js';
 import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
 import {Graph, Vertex} from '../structure/graph.js';
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import GremlinLang from './gremlin-lang.js';
 
 /**
  * Represents the primary DSL of the Gremlin traversal machine.
@@ -38,14 +38,14 @@ export class GraphTraversalSource {
    * Creates a new instance of {@link GraphTraversalSource}.
    * @param {Graph} graph
    * @param {TraversalStrategies} traversalStrategies
-   * @param {Bytecode} [bytecode]
+   * @param {GremlinLang} [gremlinLang] Optional GremlinLang instance.
    * @param {Function} [graphTraversalSourceClass] Optional {@link GraphTraversalSource} constructor.
    * @param {Function} [graphTraversalClass] Optional {@link GraphTraversal} constructor.
    */
   constructor(
     public graph: Graph,
     public traversalStrategies: TraversalStrategies,
-    public bytecode: Bytecode = new Bytecode(),
+    public gremlinLang: GremlinLang = new GremlinLang(),
     public graphTraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource,
     public graphTraversalClass: typeof GraphTraversal = GraphTraversal,
   ) {
@@ -118,18 +118,16 @@ export class GraphTraversalSource {
    */
   with_(key: string, value: object | undefined = undefined): GraphTraversalSource {
     const val = value === undefined ? true : value;
-    let optionsStrategy = this.bytecode.sourceInstructions.find(
-      (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
-    );
-    if (optionsStrategy === undefined) {
-      optionsStrategy = new OptionsStrategy({ [key]: val });
-      return this.withStrategies(optionsStrategy);
+    const glStrategies = this.gremlinLang.getOptionsStrategies();
+    if (glStrategies.length === 0) {
+      return this.withStrategies(new OptionsStrategy({ [key]: val }));
     }
-    optionsStrategy[1].configuration[key] = val;
+    glStrategies[glStrategies.length - 1].configuration[key] = val;
+    const gl = new GremlinLang(this.gremlinLang);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      this.bytecode,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -149,11 +147,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withBulk(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withBulk', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withBulk', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -165,11 +163,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withPath(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withPath', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withPath', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -181,11 +179,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withSack(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withSack', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withSack', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -197,11 +195,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withSideEffect(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withSideEffect', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withSideEffect', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -213,11 +211,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withStrategies(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withStrategies', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withStrategies', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -229,11 +227,11 @@ export class GraphTraversalSource {
    * @returns {GraphTraversalSource}
    */
   withoutStrategies(...args: any[]): GraphTraversalSource {
-    const b = new Bytecode(this.bytecode).addSource('withoutStrategies', args);
+    const gl = new GremlinLang(this.gremlinLang).addSource('withoutStrategies', args);
     return new this.graphTraversalSourceClass(
       this.graph,
       new TraversalStrategies(this.traversalStrategies),
-      b,
+      gl,
       this.graphTraversalSourceClass,
       this.graphTraversalClass,
     );
@@ -245,8 +243,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   E(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('E', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('E', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -260,8 +258,8 @@ export class GraphTraversalSource {
         args[i] = args[i].id
       }
     }
-    const b = new Bytecode(this.bytecode).addStep('V', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('V', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -270,8 +268,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   addE(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('addE', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('addE', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -288,8 +286,8 @@ export class GraphTraversalSource {
         args[0].set(direction.in, args[0].get(direction.in).id);
       }
     }
-    const b = new Bytecode(this.bytecode).addStep('mergeE', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('mergeE', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -298,8 +296,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   addV(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('addV', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('addV', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -308,8 +306,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   mergeV(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('mergeV', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('mergeV', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -318,8 +316,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   inject(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('inject', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('inject', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -328,8 +326,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   io(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('io', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('io', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -338,8 +336,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   call(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('call', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('call', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 
   /**
@@ -348,8 +346,8 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   union(...args: any[]): GraphTraversal {
-    const b = new Bytecode(this.bytecode).addStep('union', args);
-    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), b);
+    const gl = new GremlinLang(this.gremlinLang).addStep('union', args);
+    return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
 }
 
@@ -357,15 +355,15 @@ export class GraphTraversalSource {
  * Represents a graph traversal.
  */
 export class GraphTraversal extends Traversal {
-  constructor(graph: Graph | null, traversalStrategies: TraversalStrategies | null, bytecode: Bytecode) {
-    super(graph, traversalStrategies, bytecode);
+  constructor(graph: Graph | null, traversalStrategies: TraversalStrategies | null, gremlinLang?: GremlinLang) {
+    super(graph, traversalStrategies, gremlinLang);
   }
 
   /**
    * Copy a traversal so as to reset and re-use it.
    */
   clone() {
-    return new GraphTraversal(this.graph, this.traversalStrategies, this.getBytecode());
+    return new GraphTraversal(this.graph, this.traversalStrategies, new GremlinLang(this.gremlinLang));
   }
 
   /**
@@ -379,7 +377,7 @@ export class GraphTraversal extends Traversal {
         args[i] = args[i].id
       }
     }
-    this.bytecode.addStep('V', args);
+    this.gremlinLang.addStep('V', args);
     return this;
   }
 
@@ -389,7 +387,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   E(...args: any[]): this {
-    this.bytecode.addStep('E', args);
+    this.gremlinLang.addStep('E', args);
     return this;
   }
 
@@ -399,7 +397,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   addE(...args: any[]): this {
-    this.bytecode.addStep('addE', args);
+    this.gremlinLang.addStep('addE', args);
     return this;
   }
 
@@ -409,7 +407,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   addV(...args: any[]): this {
-    this.bytecode.addStep('addV', args);
+    this.gremlinLang.addStep('addV', args);
     return this;
   }
 
@@ -419,7 +417,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   aggregate(...args: any[]): this {
-    this.bytecode.addStep('aggregate', args);
+    this.gremlinLang.addStep('aggregate', args);
     return this;
   }
 
@@ -429,7 +427,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   all(...args: any[]): this {
-    this.bytecode.addStep('all', args);
+    this.gremlinLang.addStep('all', args);
     return this;
   }
 
@@ -439,7 +437,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   and(...args: any[]): this {
-    this.bytecode.addStep('and', args);
+    this.gremlinLang.addStep('and', args);
     return this;
   }
 
@@ -449,7 +447,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   any(...args: any[]): this {
-    this.bytecode.addStep('any', args);
+    this.gremlinLang.addStep('any', args);
     return this;
   }
 
@@ -459,7 +457,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   as(...args: any[]): this {
-    this.bytecode.addStep('as', args);
+    this.gremlinLang.addStep('as', args);
     return this;
   }
 
@@ -469,7 +467,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   asDate(...args: any[]): this {
-    this.bytecode.addStep('asDate', args);
+    this.gremlinLang.addStep('asDate', args);
     return this;
   }
 
@@ -478,8 +476,8 @@ export class GraphTraversal extends Traversal {
    * @param {...Object} args
    * @returns {GraphTraversal}
    */
-  asNumber(...args: any[]) {
-    this.bytecode.addStep('asNumber', args);
+  asNumber(...args: any[]): this {
+    this.gremlinLang.addStep('asNumber', args);
     return this;
   }
 
@@ -489,7 +487,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   asString(...args: any[]): this {
-    this.bytecode.addStep('asString', args);
+    this.gremlinLang.addStep('asString', args);
     return this;
   }
 
@@ -499,7 +497,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   barrier(...args: any[]): this {
-    this.bytecode.addStep('barrier', args);
+    this.gremlinLang.addStep('barrier', args);
     return this;
   }
 
@@ -509,7 +507,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   both(...args: any[]): this {
-    this.bytecode.addStep('both', args);
+    this.gremlinLang.addStep('both', args);
     return this;
   }
 
@@ -519,7 +517,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   bothE(...args: any[]): this {
-    this.bytecode.addStep('bothE', args);
+    this.gremlinLang.addStep('bothE', args);
     return this;
   }
 
@@ -529,7 +527,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   bothV(...args: any[]): this {
-    this.bytecode.addStep('bothV', args);
+    this.gremlinLang.addStep('bothV', args);
     return this;
   }
 
@@ -539,7 +537,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   branch(...args: any[]): this {
-    this.bytecode.addStep('branch', args);
+    this.gremlinLang.addStep('branch', args);
     return this;
   }
 
@@ -549,7 +547,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   by(...args: any[]): this {
-    this.bytecode.addStep('by', args);
+    this.gremlinLang.addStep('by', args);
     return this;
   }
 
@@ -559,7 +557,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   call(...args: any[]): this {
-    this.bytecode.addStep('call', args);
+    this.gremlinLang.addStep('call', args);
     return this;
   }
   /**
@@ -568,7 +566,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   cap(...args: any[]): this {
-    this.bytecode.addStep('cap', args);
+    this.gremlinLang.addStep('cap', args);
     return this;
   }
 
@@ -578,7 +576,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   choose(...args: any[]): this {
-    this.bytecode.addStep('choose', args);
+    this.gremlinLang.addStep('choose', args);
     return this;
   }
 
@@ -588,7 +586,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   coalesce(...args: any[]): this {
-    this.bytecode.addStep('coalesce', args);
+    this.gremlinLang.addStep('coalesce', args);
     return this;
   }
 
@@ -598,7 +596,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   coin(...args: any[]): this {
-    this.bytecode.addStep('coin', args);
+    this.gremlinLang.addStep('coin', args);
     return this;
   }
 
@@ -608,7 +606,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   combine(...args: any[]): this {
-    this.bytecode.addStep('combine', args);
+    this.gremlinLang.addStep('combine', args);
     return this;
   }
 
@@ -618,7 +616,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   concat(...args: any[]): this {
-    this.bytecode.addStep('concat', args);
+    this.gremlinLang.addStep('concat', args);
     return this;
   }
 
@@ -628,7 +626,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   conjoin(...args: any[]): this {
-    this.bytecode.addStep('conjoin', args);
+    this.gremlinLang.addStep('conjoin', args);
     return this;
   }
 
@@ -638,7 +636,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   connectedComponent(...args: any[]): this {
-    this.bytecode.addStep('connectedComponent', args);
+    this.gremlinLang.addStep('connectedComponent', args);
     return this;
   }
 
@@ -648,7 +646,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   constant(...args: any[]): this {
-    this.bytecode.addStep('constant', args);
+    this.gremlinLang.addStep('constant', args);
     return this;
   }
 
@@ -658,7 +656,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   count(...args: any[]): this {
-    this.bytecode.addStep('count', args);
+    this.gremlinLang.addStep('count', args);
     return this;
   }
 
@@ -668,7 +666,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   cyclicPath(...args: any[]): this {
-    this.bytecode.addStep('cyclicPath', args);
+    this.gremlinLang.addStep('cyclicPath', args);
     return this;
   }
 
@@ -678,7 +676,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   dateAdd(...args: any[]): this {
-    this.bytecode.addStep('dateAdd', args);
+    this.gremlinLang.addStep('dateAdd', args);
     return this;
   }
 
@@ -688,7 +686,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   dateDiff(...args: any[]): this {
-    this.bytecode.addStep('dateDiff', args);
+    this.gremlinLang.addStep('dateDiff', args);
     return this;
   }
 
@@ -698,7 +696,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   dedup(...args: any[]): this {
-    this.bytecode.addStep('dedup', args);
+    this.gremlinLang.addStep('dedup', args);
     return this;
   }
 
@@ -708,7 +706,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   difference(...args: any[]): this {
-    this.bytecode.addStep('difference', args);
+    this.gremlinLang.addStep('difference', args);
     return this;
   }
 
@@ -718,7 +716,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   discard(...args: any[]): this {
-    this.bytecode.addStep('discard', args);
+    this.gremlinLang.addStep('discard', args);
     return this;
   }
 
@@ -728,7 +726,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   disjunct(...args: any[]): this {
-    this.bytecode.addStep('disjunct', args);
+    this.gremlinLang.addStep('disjunct', args);
     return this;
   }
 
@@ -738,7 +736,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   drop(...args: any[]): this {
-    this.bytecode.addStep('drop', args);
+    this.gremlinLang.addStep('drop', args);
     return this;
   }
 
@@ -748,7 +746,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   element(...args: any[]): this {
-    this.bytecode.addStep('element', args);
+    this.gremlinLang.addStep('element', args);
     return this;
   }
   /**
@@ -757,7 +755,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   elementMap(...args: any[]): this {
-    this.bytecode.addStep('elementMap', args);
+    this.gremlinLang.addStep('elementMap', args);
     return this;
   }
 
@@ -767,7 +765,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   emit(...args: any[]): this {
-    this.bytecode.addStep('emit', args);
+    this.gremlinLang.addStep('emit', args);
     return this;
   }
 
@@ -777,7 +775,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   fail(...args: any[]): this {
-    this.bytecode.addStep('fail', args);
+    this.gremlinLang.addStep('fail', args);
     return this;
   }
 
@@ -787,7 +785,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   filter(...args: any[]): this {
-    this.bytecode.addStep('filter', args);
+    this.gremlinLang.addStep('filter', args);
     return this;
   }
 
@@ -797,7 +795,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   flatMap(...args: any[]): this {
-    this.bytecode.addStep('flatMap', args);
+    this.gremlinLang.addStep('flatMap', args);
     return this;
   }
 
@@ -807,7 +805,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   fold(...args: any[]): this {
-    this.bytecode.addStep('fold', args);
+    this.gremlinLang.addStep('fold', args);
     return this;
   }
 
@@ -817,7 +815,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   format(...args: any[]): this {
-    this.bytecode.addStep('format', args);
+    this.gremlinLang.addStep('format', args);
     return this;
   }
 
@@ -832,7 +830,7 @@ export class GraphTraversal extends Traversal {
         args[i] = args[i].id
       }
     }
-    this.bytecode.addStep('from', args);
+    this.gremlinLang.addStep('from', args);
     return this;
   }
 
@@ -842,7 +840,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   group(...args: any[]): this {
-    this.bytecode.addStep('group', args);
+    this.gremlinLang.addStep('group', args);
     return this;
   }
 
@@ -852,7 +850,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   groupCount(...args: any[]): this {
-    this.bytecode.addStep('groupCount', args);
+    this.gremlinLang.addStep('groupCount', args);
     return this;
   }
 
@@ -862,7 +860,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   has(...args: any[]): this {
-    this.bytecode.addStep('has', args);
+    this.gremlinLang.addStep('has', args);
     return this;
   }
 
@@ -872,7 +870,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   hasId(...args: any[]): this {
-    this.bytecode.addStep('hasId', args);
+    this.gremlinLang.addStep('hasId', args);
     return this;
   }
 
@@ -882,7 +880,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   hasKey(...args: any[]): this {
-    this.bytecode.addStep('hasKey', args);
+    this.gremlinLang.addStep('hasKey', args);
     return this;
   }
 
@@ -892,7 +890,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   hasLabel(...args: any[]): this {
-    this.bytecode.addStep('hasLabel', args);
+    this.gremlinLang.addStep('hasLabel', args);
     return this;
   }
 
@@ -902,7 +900,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   hasNot(...args: any[]): this {
-    this.bytecode.addStep('hasNot', args);
+    this.gremlinLang.addStep('hasNot', args);
     return this;
   }
 
@@ -912,7 +910,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   hasValue(...args: any[]): this {
-    this.bytecode.addStep('hasValue', args);
+    this.gremlinLang.addStep('hasValue', args);
     return this;
   }
 
@@ -922,7 +920,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   id(...args: any[]): this {
-    this.bytecode.addStep('id', args);
+    this.gremlinLang.addStep('id', args);
     return this;
   }
 
@@ -932,7 +930,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   identity(...args: any[]): this {
-    this.bytecode.addStep('identity', args);
+    this.gremlinLang.addStep('identity', args);
     return this;
   }
 
@@ -942,7 +940,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   in_(...args: any[]): this {
-    this.bytecode.addStep('in', args);
+    this.gremlinLang.addStep('in', args);
     return this;
   }
 
@@ -952,7 +950,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   inE(...args: any[]): this {
-    this.bytecode.addStep('inE', args);
+    this.gremlinLang.addStep('inE', args);
     return this;
   }
 
@@ -962,7 +960,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   inV(...args: any[]): this {
-    this.bytecode.addStep('inV', args);
+    this.gremlinLang.addStep('inV', args);
     return this;
   }
 
@@ -972,7 +970,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   index(...args: any[]): this {
-    this.bytecode.addStep('index', args);
+    this.gremlinLang.addStep('index', args);
     return this;
   }
 
@@ -982,7 +980,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   inject(...args: any[]): this {
-    this.bytecode.addStep('inject', args);
+    this.gremlinLang.addStep('inject', args);
     return this;
   }
 
@@ -992,7 +990,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   intersect(...args: any[]): this {
-    this.bytecode.addStep('intersect', args);
+    this.gremlinLang.addStep('intersect', args);
     return this;
   }
 
@@ -1002,7 +1000,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   is(...args: any[]): this {
-    this.bytecode.addStep('is', args);
+    this.gremlinLang.addStep('is', args);
     return this;
   }
 
@@ -1012,7 +1010,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   key(...args: any[]): this {
-    this.bytecode.addStep('key', args);
+    this.gremlinLang.addStep('key', args);
     return this;
   }
 
@@ -1022,7 +1020,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   label(...args: any[]): this {
-    this.bytecode.addStep('label', args);
+    this.gremlinLang.addStep('label', args);
     return this;
   }
 
@@ -1032,7 +1030,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   length(...args: any[]): this {
-    this.bytecode.addStep('length', args);
+    this.gremlinLang.addStep('length', args);
     return this;
   }
 
@@ -1042,7 +1040,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   limit(...args: any[]): this {
-    this.bytecode.addStep('limit', args);
+    this.gremlinLang.addStep('limit', args);
     return this;
   }
 
@@ -1052,7 +1050,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   local(...args: any[]): this {
-    this.bytecode.addStep('local', args);
+    this.gremlinLang.addStep('local', args);
     return this;
   }
 
@@ -1062,7 +1060,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   loops(...args: any[]): this {
-    this.bytecode.addStep('loops', args);
+    this.gremlinLang.addStep('loops', args);
     return this;
   }
 
@@ -1072,7 +1070,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   lTrim(...args: any[]): this {
-    this.bytecode.addStep('lTrim', args);
+    this.gremlinLang.addStep('lTrim', args);
     return this;
   }
 
@@ -1082,7 +1080,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   map(...args: any[]): this {
-    this.bytecode.addStep('map', args);
+    this.gremlinLang.addStep('map', args);
     return this;
   }
 
@@ -1092,7 +1090,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   match(...args: any[]): this {
-    this.bytecode.addStep('match', args);
+    this.gremlinLang.addStep('match', args);
     return this;
   }
 
@@ -1102,7 +1100,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   math(...args: any[]): this {
-    this.bytecode.addStep('math', args);
+    this.gremlinLang.addStep('math', args);
     return this;
   }
 
@@ -1112,7 +1110,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   max(...args: any[]): this {
-    this.bytecode.addStep('max', args);
+    this.gremlinLang.addStep('max', args);
     return this;
   }
 
@@ -1122,7 +1120,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   mean(...args: any[]): this {
-    this.bytecode.addStep('mean', args);
+    this.gremlinLang.addStep('mean', args);
     return this;
   }
 
@@ -1132,7 +1130,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   merge(...args: any[]): this {
-    this.bytecode.addStep('merge', args);
+    this.gremlinLang.addStep('merge', args);
     return this;
   }
 
@@ -1143,14 +1141,14 @@ export class GraphTraversal extends Traversal {
    */
   mergeE(...args: any[]): this {
     if (args && args[0]) {
-      if (args[0].get(direction.OUT) instanceof Vertex) {
-        args[0].set(direction.OUT, args[0].get(direction.OUT).id);
+      if (args[0].get(direction.out) instanceof Vertex) {
+        args[0].set(direction.out, args[0].get(direction.out).id);
       }
-      if (args[0].get(direction.IN) instanceof Vertex) {
-        args[0].set(direction.IN, args[0].get(direction.IN).id);
+      if (args[0].get(direction.in) instanceof Vertex) {
+        args[0].set(direction.in, args[0].get(direction.in).id);
       }
     }
-    this.bytecode.addStep('mergeE', args);
+    this.gremlinLang.addStep('mergeE', args);
     return this;
   }
 
@@ -1160,7 +1158,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   mergeV(...args: any[]): this {
-    this.bytecode.addStep('mergeV', args);
+    this.gremlinLang.addStep('mergeV', args);
     return this;
   }
 
@@ -1170,7 +1168,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   min(...args: any[]): this {
-    this.bytecode.addStep('min', args);
+    this.gremlinLang.addStep('min', args);
     return this;
   }
 
@@ -1180,7 +1178,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   none(...args: any[]): this {
-    this.bytecode.addStep('none', args);
+    this.gremlinLang.addStep('none', args);
     return this;
   }
 
@@ -1190,7 +1188,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   not(...args: any[]): this {
-    this.bytecode.addStep('not', args);
+    this.gremlinLang.addStep('not', args);
     return this;
   }
 
@@ -1200,7 +1198,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   option(...args: any[]): this {
-    this.bytecode.addStep('option', args);
+    this.gremlinLang.addStep('option', args);
     return this;
   }
 
@@ -1210,7 +1208,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   optional(...args: any[]): this {
-    this.bytecode.addStep('optional', args);
+    this.gremlinLang.addStep('optional', args);
     return this;
   }
 
@@ -1220,7 +1218,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   or(...args: any[]): this {
-    this.bytecode.addStep('or', args);
+    this.gremlinLang.addStep('or', args);
     return this;
   }
 
@@ -1230,7 +1228,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   order(...args: any[]): this {
-    this.bytecode.addStep('order', args);
+    this.gremlinLang.addStep('order', args);
     return this;
   }
 
@@ -1240,7 +1238,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   otherV(...args: any[]): this {
-    this.bytecode.addStep('otherV', args);
+    this.gremlinLang.addStep('otherV', args);
     return this;
   }
 
@@ -1250,7 +1248,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   out(...args: any[]): this {
-    this.bytecode.addStep('out', args);
+    this.gremlinLang.addStep('out', args);
     return this;
   }
 
@@ -1260,7 +1258,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   outE(...args: any[]): this {
-    this.bytecode.addStep('outE', args);
+    this.gremlinLang.addStep('outE', args);
     return this;
   }
 
@@ -1270,7 +1268,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   outV(...args: any[]): this {
-    this.bytecode.addStep('outV', args);
+    this.gremlinLang.addStep('outV', args);
     return this;
   }
 
@@ -1280,7 +1278,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   pageRank(...args: any[]): this {
-    this.bytecode.addStep('pageRank', args);
+    this.gremlinLang.addStep('pageRank', args);
     return this;
   }
 
@@ -1290,7 +1288,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   path(...args: any[]): this {
-    this.bytecode.addStep('path', args);
+    this.gremlinLang.addStep('path', args);
     return this;
   }
 
@@ -1300,7 +1298,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   peerPressure(...args: any[]): this {
-    this.bytecode.addStep('peerPressure', args);
+    this.gremlinLang.addStep('peerPressure', args);
     return this;
   }
 
@@ -1310,7 +1308,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   product(...args: any[]): this {
-    this.bytecode.addStep('product', args);
+    this.gremlinLang.addStep('product', args);
     return this;
   }
 
@@ -1320,7 +1318,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   profile(...args: any[]): this {
-    this.bytecode.addStep('profile', args);
+    this.gremlinLang.addStep('profile', args);
     return this;
   }
 
@@ -1330,7 +1328,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   program(...args: any[]): this {
-    this.bytecode.addStep('program', args);
+    this.gremlinLang.addStep('program', args);
     return this;
   }
 
@@ -1340,7 +1338,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   project(...args: any[]): this {
-    this.bytecode.addStep('project', args);
+    this.gremlinLang.addStep('project', args);
     return this;
   }
 
@@ -1350,7 +1348,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   properties(...args: any[]): this {
-    this.bytecode.addStep('properties', args);
+    this.gremlinLang.addStep('properties', args);
     return this;
   }
 
@@ -1360,7 +1358,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   property(...args: any[]): this {
-    this.bytecode.addStep('property', args);
+    this.gremlinLang.addStep('property', args);
     return this;
   }
 
@@ -1370,7 +1368,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   propertyMap(...args: any[]): this {
-    this.bytecode.addStep('propertyMap', args);
+    this.gremlinLang.addStep('propertyMap', args);
     return this;
   }
 
@@ -1380,7 +1378,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   range(...args: any[]): this {
-    this.bytecode.addStep('range', args);
+    this.gremlinLang.addStep('range', args);
     return this;
   }
 
@@ -1390,7 +1388,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   read(...args: any[]): this {
-    this.bytecode.addStep('read', args);
+    this.gremlinLang.addStep('read', args);
     return this;
   }
 
@@ -1400,7 +1398,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   repeat(...args: any[]): this {
-    this.bytecode.addStep('repeat', args);
+    this.gremlinLang.addStep('repeat', args);
     return this;
   }
 
@@ -1410,7 +1408,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   replace(...args: any[]): this {
-    this.bytecode.addStep('replace', args);
+    this.gremlinLang.addStep('replace', args);
     return this;
   }
 
@@ -1420,7 +1418,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   reverse(...args: any[]): this {
-    this.bytecode.addStep('reverse', args);
+    this.gremlinLang.addStep('reverse', args);
     return this;
   }
 
@@ -1430,7 +1428,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   rTrim(...args: any[]): this {
-    this.bytecode.addStep('rTrim', args);
+    this.gremlinLang.addStep('rTrim', args);
     return this;
   }
 
@@ -1440,7 +1438,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   sack(...args: any[]): this {
-    this.bytecode.addStep('sack', args);
+    this.gremlinLang.addStep('sack', args);
     return this;
   }
 
@@ -1450,7 +1448,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   sample(...args: any[]): this {
-    this.bytecode.addStep('sample', args);
+    this.gremlinLang.addStep('sample', args);
     return this;
   }
 
@@ -1460,7 +1458,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   select(...args: any[]): this {
-    this.bytecode.addStep('select', args);
+    this.gremlinLang.addStep('select', args);
     return this;
   }
 
@@ -1470,7 +1468,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   shortestPath(...args: any[]): this {
-    this.bytecode.addStep('shortestPath', args);
+    this.gremlinLang.addStep('shortestPath', args);
     return this;
   }
 
@@ -1480,7 +1478,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   sideEffect(...args: any[]): this {
-    this.bytecode.addStep('sideEffect', args);
+    this.gremlinLang.addStep('sideEffect', args);
     return this;
   }
 
@@ -1490,7 +1488,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   simplePath(...args: any[]): this {
-    this.bytecode.addStep('simplePath', args);
+    this.gremlinLang.addStep('simplePath', args);
     return this;
   }
 
@@ -1500,7 +1498,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   skip(...args: any[]): this {
-    this.bytecode.addStep('skip', args);
+    this.gremlinLang.addStep('skip', args);
     return this;
   }
 
@@ -1510,7 +1508,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   split(...args: any[]): this {
-    this.bytecode.addStep('split', args);
+    this.gremlinLang.addStep('split', args);
     return this;
   }
 
@@ -1520,7 +1518,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   subgraph(...args: any[]): this {
-    this.bytecode.addStep('subgraph', args);
+    this.gremlinLang.addStep('subgraph', args);
     return this;
   }
 
@@ -1530,7 +1528,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   substring(...args: any[]): this {
-    this.bytecode.addStep('substring', args);
+    this.gremlinLang.addStep('substring', args);
     return this;
   }
 
@@ -1540,7 +1538,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   sum(...args: any[]): this {
-    this.bytecode.addStep('sum', args);
+    this.gremlinLang.addStep('sum', args);
     return this;
   }
 
@@ -1550,7 +1548,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   tail(...args: any[]): this {
-    this.bytecode.addStep('tail', args);
+    this.gremlinLang.addStep('tail', args);
     return this;
   }
 
@@ -1560,7 +1558,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   timeLimit(...args: any[]): this {
-    this.bytecode.addStep('timeLimit', args);
+    this.gremlinLang.addStep('timeLimit', args);
     return this;
   }
 
@@ -1570,7 +1568,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   times(...args: any[]): this {
-    this.bytecode.addStep('times', args);
+    this.gremlinLang.addStep('times', args);
     return this;
   }
 
@@ -1585,7 +1583,7 @@ export class GraphTraversal extends Traversal {
         args[i] = args[i].id
       }
     }
-    this.bytecode.addStep('to', args);
+    this.gremlinLang.addStep('to', args);
     return this;
   }
 
@@ -1595,7 +1593,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   toE(...args: any[]): this {
-    this.bytecode.addStep('toE', args);
+    this.gremlinLang.addStep('toE', args);
     return this;
   }
 
@@ -1605,7 +1603,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   toLower(...args: any[]): this {
-    this.bytecode.addStep('toLower', args);
+    this.gremlinLang.addStep('toLower', args);
     return this;
   }
 
@@ -1615,7 +1613,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   toUpper(...args: any[]): this {
-    this.bytecode.addStep('toUpper', args);
+    this.gremlinLang.addStep('toUpper', args);
     return this;
   }
 
@@ -1625,7 +1623,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   toV(...args: any[]): this {
-    this.bytecode.addStep('toV', args);
+    this.gremlinLang.addStep('toV', args);
     return this;
   }
 
@@ -1635,7 +1633,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   tree(...args: any[]): this {
-    this.bytecode.addStep('tree', args);
+    this.gremlinLang.addStep('tree', args);
     return this;
   }
 
@@ -1645,7 +1643,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   trim(...args: any[]): this {
-    this.bytecode.addStep('trim', args);
+    this.gremlinLang.addStep('trim', args);
     return this;
   }
 
@@ -1655,7 +1653,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   unfold(...args: any[]): this {
-    this.bytecode.addStep('unfold', args);
+    this.gremlinLang.addStep('unfold', args);
     return this;
   }
 
@@ -1665,7 +1663,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   union(...args: any[]): this {
-    this.bytecode.addStep('union', args);
+    this.gremlinLang.addStep('union', args);
     return this;
   }
 
@@ -1675,7 +1673,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   until(...args: any[]): this {
-    this.bytecode.addStep('until', args);
+    this.gremlinLang.addStep('until', args);
     return this;
   }
 
@@ -1685,7 +1683,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   value(...args: any[]): this {
-    this.bytecode.addStep('value', args);
+    this.gremlinLang.addStep('value', args);
     return this;
   }
 
@@ -1695,7 +1693,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   valueMap(...args: any[]): this {
-    this.bytecode.addStep('valueMap', args);
+    this.gremlinLang.addStep('valueMap', args);
     return this;
   }
 
@@ -1705,7 +1703,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   values(...args: any[]): this {
-    this.bytecode.addStep('values', args);
+    this.gremlinLang.addStep('values', args);
     return this;
   }
 
@@ -1715,7 +1713,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   where(...args: any[]): this {
-    this.bytecode.addStep('where', args);
+    this.gremlinLang.addStep('where', args);
     return this;
   }
 
@@ -1725,7 +1723,7 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   with_(...args: any[]): this {
-    this.bytecode.addStep('with', args);
+    this.gremlinLang.addStep('with', args);
     return this;
   }
 
@@ -1735,12 +1733,12 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   write(...args: any[]): this {
-    this.bytecode.addStep('write', args);
+    this.gremlinLang.addStep('write', args);
     return this;
   }
 }
 
-export class CardinalityValue extends Bytecode {
+export class CardinalityValue extends GremlinLang {
   /**
    * Creates a new instance of {@link CardinalityValue}.
    * @param {String} card
@@ -1780,7 +1778,7 @@ export class CardinalityValue extends Bytecode {
 }
 
 function callOnEmptyTraversal(fnName: string, args: any[]) {
-  const g = new GraphTraversal(null, null, new Bytecode());
+  const g = new GraphTraversal(null, null);
   return g[fnName as keyof typeof g].apply(g, args);
 }
 

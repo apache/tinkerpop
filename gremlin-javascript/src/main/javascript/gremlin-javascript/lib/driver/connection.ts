@@ -253,7 +253,7 @@ export default class Connection extends EventEmitter {
 
           const request = {
             requestId: rid,
-            op: op || 'bytecode',
+            op: op || 'eval',
             // if using op eval need to ensure processor stays unset if caller didn't set it.
             processor: !processor && op !== 'eval' ? 'traversal' : processor,
             args: args || {},
@@ -288,7 +288,7 @@ export default class Connection extends EventEmitter {
       .then(() => {
         const request = {
           requestId: rid,
-          op: op || 'bytecode',
+          op: op || 'eval',
           // if using op eval need to ensure processor stays unset if caller didn't set it.
           processor: !processor && op !== 'eval' ? 'traversal' : processor,
           args: args || {},

@@ -78,7 +78,6 @@ import PathSerializer from './internals/PathSerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
-import BytecodeSerializer from './internals/BytecodeSerializer.js';
 import PSerializer from './internals/PSerializer.js';
 import TraverserSerializer from './internals/TraverserSerializer.js';
 import EnumSerializer from './internals/EnumSerializer.js';
@@ -123,7 +122,6 @@ ioc.pathSerializer = new PathSerializer(ioc);
 ioc.propertySerializer = new PropertySerializer(ioc);
 ioc.vertexSerializer = new VertexSerializer(ioc);
 ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
-ioc.bytecodeSerializer = new BytecodeSerializer(ioc);
 ioc.pSerializer = new PSerializer(ioc);
 ioc.traverserSerializer = new TraverserSerializer(ioc);
 ioc.enumSerializer = new EnumSerializer(ioc);
@@ -167,7 +165,6 @@ export const {
   propertySerializer,
   vertexSerializer,
   vertexPropertySerializer,
-  bytecodeSerializer,
   pSerializer,
   traverserSerializer,
   enumSerializer,
