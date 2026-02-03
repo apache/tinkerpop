@@ -17,6 +17,8 @@
  *  under the License.
  */
 
+import { P, TextP } from './traversal.js';
+
 export default class GremlinLang {
   private gremlin: string = '';
   
@@ -31,6 +33,9 @@ export default class GremlinLang {
     if (typeof arg === 'string') {
       const escaped = arg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       return `'${escaped}'`;
+    }
+    if (arg instanceof P || arg instanceof TextP) {
+      return arg.toString();
     }
     if (Array.isArray(arg)) {
       return '[' + arg.map(a => this._argAsString(a)).join(', ') + ']';

@@ -19,6 +19,7 @@
 
 import assert from 'assert';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
+import { P, TextP } from '../../lib/process/traversal.js';
 
 describe('GremlinLang', function () {
   describe('#getGremlin()', function () {
@@ -124,6 +125,33 @@ describe('GremlinLang', function () {
       original.addStep('count');
       assert.strictEqual(clone.getGremlin(), 'g.V()');
       assert.strictEqual(original.getGremlin(), 'g.V().count()');
+    });
+  });
+
+  describe('P and TextP predicates', function () {
+    it('should handle P.gt predicate', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['age', P.gt(5)]).getGremlin(), "g.has('age', gt(5))");
+    });
+
+    it('should handle P.within with array', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [P.within([1, 2, 3])]).getGremlin(), "g.V(within([1, 2, 3]))");
+    });
+
+    it('should handle P.within with empty array', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [P.within([])]).getGremlin(), "g.V(within([]))");
+    });
+
+    it('should handle TextP.containing predicate', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['name', TextP.containing('foo')]).getGremlin(), "g.has('name', containing('foo'))");
+    });
+
+    it('should handle chained P predicates', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.has('age', and(gt(5), lt(10)))");
     });
   });
 });

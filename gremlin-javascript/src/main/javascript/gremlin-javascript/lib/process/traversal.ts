@@ -255,18 +255,18 @@ export class P<T1 = any, T2 = any> {
    * @returns {string}
    */
   toString() {
-    function formatValue(value: T1 | T2): any {
+    function formatValue(value: T1 | T2): string {
       if (Array.isArray(value)) {
         const acc = [];
         for (const item of value) {
           acc.push(formatValue(item));
         }
-        return acc;
+        return '[' + acc.join(', ') + ']';
       }
       if (value && typeof value === 'string') {
         return `'${value}'`;
       }
-      return value;
+      return String(value);
     }
 
     if (this.other === undefined || this.other === null) {
