@@ -2010,6 +2010,7 @@ const gremlins = {
     g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX: [function({g}) { return g.V().hasLabel("song").group().by("name").by(__.properties().groupCount().by(T.label)) }], 
     g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX: [function({g}) { return g.V().out("followedBy").group().by("songType").by(__.bothE().group().by(T.label).by(__.values("weight").sum())) }], 
     g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX: [function({g}) { return g.V().group().by(T.label).by(__.bothE().group("a").by(T.label).by(__.values("weight").sum()).values("weight").sum()) }], 
+    g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX: [function({g}) { return g.withSideEffect("a", new Map([["marko", ["666"]], ["noone", ["blah"]]])).V().group("a").by("name").by(__.outE().label().fold()).cap("a").unfold().group().by(Column.keys).by(__.select(Column.values).order(Scope.local).by(Order.asc)) }], 
     g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX: [function({g}) { return g.V().hasLabel("person").as("p").out("created").group().by("name").by(__.select("p").values("age").sum()) }], 
     g_V_group_byXlabelX_byXlabel_countX: [function({g}) { return g.V().group().by(__.label()).by(__.label().count()) }], 
     g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX: [function({g}) { return g.V().has("person", "name", P.within("vadas", "peter")).group().by().by(__.out().order().fold()) }], 

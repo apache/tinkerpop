@@ -1982,6 +1982,7 @@ world.gremlins = {
     'g_V_hasLabelXsongX_group_byXnameX_byXproperties_groupCount_byXlabelXX': [(lambda g:g.V().has_label('song').group().by('name').by(__.properties().group_count().by(T.label)))], 
     'g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX': [(lambda g:g.V().out('followedBy').group().by('songType').by(__.both_e().group().by(T.label).by(__.values('weight').sum_())))], 
     'g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX': [(lambda g:g.V().group().by(T.label).by(__.both_e().group('a').by(T.label).by(__.values('weight').sum_()).values('weight').sum_()))], 
+    'g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX': [(lambda g:g.with_side_effect('a', { 'marko': ['666'], 'noone': ['blah'] }).V().group('a').by('name').by(__.out_e().label().fold()).cap('a').unfold().group().by(Column.keys).by(__.select(Column.values).order(Scope.local).by(Order.asc)))], 
     'g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX': [(lambda g:g.V().has_label('person').as_('p').out('created').group().by('name').by(__.select('p').values('age').sum_()))], 
     'g_V_group_byXlabelX_byXlabel_countX': [(lambda g:g.V().group().by(__.label()).by(__.label().count()))], 
     'g_V_hasXperson_name_withinXvadas_peterXX_group_by_byXout_order_foldX': [(lambda g:g.V().has('person', 'name', P.within('vadas', 'peter')).group().by().by(__.out().order().fold()))], 
