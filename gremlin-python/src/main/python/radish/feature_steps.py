@@ -17,12 +17,13 @@
 # under the License.
 #
 
+from collections.abc import Iterable
 from datetime import datetime
 import json
 import re
 import uuid
 from gremlin_python.statics import long, bigdecimal
-from gremlin_python.structure.graph import Path, Vertex
+from gremlin_python.structure.graph import Path, Vertex, Graph, Edge, VertexProperty, Property
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.traversal import Barrier, Cardinality, P, TextP, Pop, Scope, Column, Order, Direction, T, \
@@ -78,8 +79,12 @@ def choose_graph(step, graph_name):
     tagset = [tag.name for tag in step.all_tags]
     if not step.context.ignore:
         step.context.ignore = "AllowNullPropertyValues" in tagset
-    if not step.context.ignore:
+
+    # ignore if we're not using graphbinary - graphson isn't implemented since that support was
+    # meant to be temporary only. remove this entire check once that removal happens.
+    if not step.context.ignore and not world.config.user_data["serializer"] == "application/vnd.graphbinary-v4.0":
         step.context.ignore = "StepSubgraph" in tagset
+
     if not step.context.ignore:
         step.context.ignore = "StepTree" in tagset
     if not step.context.ignore:
@@ -188,7 +193,9 @@ def next_the_traversal(step):
         return
 
     try:
-        step.context.result = list(map(lambda x: _convert_results(x), step.context.traversal.next()))
+        res = step.context.traversal.next()
+        res_iter = [res] if (not isinstance(res, Iterable) or isinstance(res, (str, bytes))) else res
+        step.context.result = [ _convert_results(x) for x in res_iter ]
         step.context.failed = False
         step.context.failed_message = ''
     except Exception as e:
@@ -238,6 +245,48 @@ def assert_result(step, characterized_as):
         _any_assertion(step.table, step.context.result, step.context)
     else:
         raise ValueError("unknown data characterization of " + characterized_as)
+
+
+@then("the result should be a subgraph with the following")
+def assert_subgraph(step):
+    if step.context.ignore:
+        return
+
+    assert_that(step.context.failed, equal_to(False), step.context.failed_message)
+
+    # result should be a graph
+    sg = step.context.result[0]
+    assert_that(sg, instance_of(Graph))
+
+    # the first item in the datatable tells us what we are asserting
+    if not getattr(step, "table", None):
+        return
+    column_name = next(iter(step.table[0].keys()))
+    asserting_vertices = column_name == "vertices"
+
+    if asserting_vertices:
+        expected_vertices = [_convert(line[column_name], step.context) for line in step.table]
+        assert_that(len(sg.vertices), equal_to(len(expected_vertices)))
+
+        for expected in expected_vertices:
+            assert_that(expected.id, is_in(sg.vertices))
+            actual = sg.vertices[expected.id]
+            assert_that(actual.label, equal_to(expected.label))
+
+            variable_key = "age" if actual.label == "person" else "lang"
+            assert_that(actual["name"], equal_to(expected["name"]))
+            assert_that(actual[variable_key], equal_to(expected[variable_key]))
+    else:
+        expected_edges = [_convert(line[column_name], step.context) for line in step.table]
+        assert_that(len(sg.edges), equal_to(len(expected_edges)))
+
+        for expected in expected_edges:
+            assert_that(expected.id, is_in(sg.edges))
+            actual = sg.edges[expected.id]
+            assert_that(actual.label, equal_to(expected.label))
+            assert_that(actual["weight"], equal_to(expected["weight"]))
+            assert_that(actual.outV.id, equal_to(expected.outV.id))
+            assert_that(actual.inV.id, equal_to(expected.inV.id))
 
 
 @then("the graph should return {count:d} for count of {traversal_string:QuotedString}")
