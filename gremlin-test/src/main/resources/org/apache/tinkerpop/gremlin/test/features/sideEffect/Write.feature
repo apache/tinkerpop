@@ -19,43 +19,55 @@
 Feature: Step - write()
 
   Scenario: g_io_writeXkryoX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern-v3.kryo").write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern-v3.kryo" should exist
 
   Scenario: g_io_write_withXwriter_gryoX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern-v3.kryo").with(IO.writer, IO.gryo).write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern-v3.kryo" should exist
 
   Scenario: g_io_writeXgraphsonX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern-v3.json").write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern-v3.json" should exist
 
   Scenario: g_io_write_withXwriter_graphsonX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern-v3.json").with(IO.writer, IO.graphson).write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern-v3.json" should exist
 
   Scenario: g_io_writeXgraphmlX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern.xml").write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern.xml" should exist
 
   Scenario: g_io_write_withXwriter_graphmlX
-    Given an unsupported test
-    Then nothing should happen because
+    Given the modern graph
+    And the traversal of
       """
-      We don't have a nice way to assert the remotely written file with this framework - just testing compilation.
+      g.io("tinkerpop-modern.xml").with(IO.writer, IO.graphml).write()
       """
+    When iterated next
+    Then the file "tinkerpop-modern.xml" should exist

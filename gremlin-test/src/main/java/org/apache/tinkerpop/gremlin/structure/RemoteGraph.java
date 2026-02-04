@@ -40,16 +40,8 @@ import java.util.Iterator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ShortestPathTest",
-        method = "*",
-        reason = "https://issues.apache.org/jira/browse/TINKERPOP-1976")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ConnectedComponentTest",
-        method = "*",
-        reason = "https://issues.apache.org/jira/browse/TINKERPOP-1976")
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest",
         method = "*",
@@ -66,10 +58,6 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest",
         method = "*",
         reason = "RemoteGraph does not support EventStrategy at this time - some of its members are not serializable")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest",
-        method = "*",
-        reason = "RemoteGraph does not support PartitionStrategy at this time")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgramTest",
         method = "*",
@@ -94,14 +82,6 @@ import java.util.Iterator;
         test = "org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionComputerTest",
         method = "*",
         reason = "The interruption model in the test can't guarantee interruption at the right time with RemoteGraph.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.ComplexTest",
-        method = "classicRecommendation",
-        reason = "Test asserts traversal side-effects which are not supported by remote traversals.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method = "g_V_group_byXlabelX_byXbothE_groupXaX_byXlabelX_byXweight_sumX_weight_sumX",
-        reason = "Test asserts traversal side-effects which are not supported by remote traversals.")
 public class RemoteGraph implements Graph {
 
     private final RemoteConnection connection;

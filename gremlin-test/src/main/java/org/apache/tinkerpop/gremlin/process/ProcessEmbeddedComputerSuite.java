@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProgramTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ExplainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategyProcessTest;
@@ -38,9 +37,9 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
 /**
- * The {@code ProcessLimitedComputerSuite} is a set of tests that providers may implement in addition to the standard
- *  * Gherkin feature tests. These tests are only relevant for embedded use cases covering features like lambdas or other
- *  * capabilities that can only work when running Gremlin in the same JVM as the {@link Graph} instance.
+ * The {@code ProcessEmbeddedComputerSuite} is a set of tests that providers may implement in addition to the standard
+ * Gherkin feature tests. These tests are only relevant for embedded use cases covering features like lambdas or other
+ * capabilities that can only work when running Gremlin in the same JVM as the {@link Graph} instance.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -55,7 +54,6 @@ public class ProcessEmbeddedComputerSuite extends AbstractGremlinSuite {
             MatchTest.GreedyMatchTraversals.class,
             ProfileTest.Traversals.class,
             ProgramTest.Traversals.class,
-            WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
             LambdaStepTest.Traversals.class,
 

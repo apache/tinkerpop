@@ -122,6 +122,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
+                    if (scenario.Tags.Any(t => t.Name == "@StepWrite"))
+                    {
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));
+                        continue;
+                    }
+
                     if (scenario.Tags.Any(t => t.Name == "@StepSubgraph"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.SubgraphStepNotSupported));

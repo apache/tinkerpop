@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalInterruptionTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaStepTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ComparabilitySemanticsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ExplainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
@@ -54,7 +52,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             MatchTest.CountMatchTraversals.class,
             MatchTest.GreedyMatchTraversals.class,
             ProfileTest.Traversals.class,
-            WriteTest.Traversals.class,
             ExplainTest.Traversals.class,
 
             // compliance
@@ -68,9 +65,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
             EarlyLimitStrategyProcessTest.class,
-
-            // semantics
-            ComparabilitySemanticsTest.class,
     };
 
     /**

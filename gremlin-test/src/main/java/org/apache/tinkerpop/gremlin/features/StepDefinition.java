@@ -66,6 +66,7 @@ import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.junit.AssumptionViolatedException;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -108,6 +109,7 @@ public final class StepDefinition {
 
     private World world;
     private GraphTraversalSource g;
+    private File tempWorkingDir;
     private final Map<String, Object> stringParameters = new HashMap<>();
     private final Map<String, String> sideEffects = new HashMap<>();
     private Traversal traversal;
@@ -310,12 +312,32 @@ public final class StepDefinition {
 
         if (result != null) result = null;
         if (error != null) error = null;
+
+        tempWorkingDir = org.apache.tinkerpop.gremlin.TestHelper.makeTestDataPath(StepDefinition.class, "temp", UUID.randomUUID().toString());
+        if (!tempWorkingDir.exists()) tempWorkingDir.mkdirs();
     }
 
     @After
     public void afterEachScenario() throws Exception {
         world.afterEachScenario();
         if (g != null) g.close();
+
+        if (tempWorkingDir != null && tempWorkingDir.exists()) {
+            deleteDirectory(tempWorkingDir);
+        }
+    }
+
+    private static void deleteDirectory(final File directory) {
+        if (directory.exists()) {
+            for (File file : directory.listFiles()) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+            directory.delete();
+        }
     }
 
     @Given("the {word} graph")
@@ -578,6 +600,13 @@ public final class StepDefinition {
         error = null;
     }
 
+    @Then("the file {string} should exist")
+    public void theFileXShouldExist(final String fileName) {
+        final File file = new File(tempWorkingDir, fileName);
+        assertThat(file.exists(), CoreMatchers.is(true));
+        assertThat(file.length() > 0, CoreMatchers.is(true));
+    }
+
     //////////////////////////////////////////////
 
     @Given("an unsupported test")
@@ -755,8 +784,17 @@ public final class StepDefinition {
         final Matcher matcher = ioPattern.matcher(docString);
         if (! matcher.matches()) { return docString; }
         final String relPath = matcher.group(1);
-        final String absPath = world.changePathToDataFile(relPath);
-        return docString.replace(relPath, escapeJava(absPath));
+
+        final String absPath;
+        if (new File("data/" + relPath).exists()) {
+            absPath = world.changePathToDataFile(relPath);
+        } else if (new File(tempWorkingDir, relPath).exists() || docString.contains(".write()")) {
+            absPath = new File(tempWorkingDir, relPath).getAbsolutePath();
+        } else {
+            absPath = world.changePathToDataFile(relPath);
+        }
+
+        return docString.replace(relPath, escapeJava(absPath.replace('\\', '/')));
     }
 
     private static Direction getDirection(final String direction) {

@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.neo4j.process;
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.neo4j.Neo4jGraphProvider;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessEmbeddedStandardSuite;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessLimitedStandardSuite.class)
+@RunWith(ProcessEmbeddedStandardSuite.class)
 @GraphProviderClass(provider = Neo4jGraphProvider.class, graph = Neo4jGraph.class)
 public class Neo4jGraphProcessStandardTest {
 }
