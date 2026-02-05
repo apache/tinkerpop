@@ -19,7 +19,7 @@
 
 import assert from 'assert';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
-import { P, TextP } from '../../lib/process/traversal.js';
+import { P, TextP, order, t } from '../../lib/process/traversal.js';
 
 describe('GremlinLang', function () {
   describe('#getGremlin()', function () {
@@ -152,6 +152,50 @@ describe('GremlinLang', function () {
     it('should handle chained P predicates', function () {
       const gremlinLang = new GremlinLang();
       assert.strictEqual(gremlinLang.addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.has('age', and(gt(5), lt(10)))");
+    });
+  });
+
+  describe('EnumValue support', function () {
+    it('should handle order.shuffle enum', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('order', [order.shuffle]).getGremlin(), 'g.order(shuffle)');
+    });
+
+    it('should handle t.label enum', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('values', [t.label]).getGremlin(), 'g.values(label)');
+    });
+
+    it('should handle enum in complex step', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V').addStep('order').addStep('by', ['name', order.desc]).getGremlin(), "g.V().order().by('name', desc)");
+    });
+  });
+
+  describe('Object/Map support', function () {
+    it('should handle empty object', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [{}]).getGremlin(), 'g.inject([:])');
+    });
+
+    it('should handle simple object', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [{name: 'josh'}]).getGremlin(), "g.inject(['name':'josh'])");
+    });
+
+    it('should handle object with multiple entries', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [{name: 'josh', age: 32}]).getGremlin(), "g.inject(['name':'josh', 'age':32])");
+    });
+
+    it('should handle nested object', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [{outer: {inner: 'value'}}]).getGremlin(), "g.inject(['outer':['inner':'value']])");
+    });
+
+    it('should handle object with mixed value types', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [{str: 'a', num: 1, bool: true}]).getGremlin(), "g.inject(['str':'a', 'num':1, 'bool':true])");
     });
   });
 });

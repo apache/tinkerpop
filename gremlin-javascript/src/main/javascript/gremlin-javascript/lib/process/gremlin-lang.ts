@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-import { P, TextP } from './traversal.js';
+import { P, TextP, EnumValue } from './traversal.js';
 
 export default class GremlinLang {
   private gremlin: string = '';
@@ -37,8 +37,16 @@ export default class GremlinLang {
     if (arg instanceof P || arg instanceof TextP) {
       return arg.toString();
     }
+    if (arg instanceof EnumValue) {
+      return arg.toString();
+    }
     if (Array.isArray(arg)) {
       return '[' + arg.map(a => this._argAsString(a)).join(', ') + ']';
+    }
+    if (typeof arg === 'object' && arg !== null && arg.constructor === Object) {
+      const entries = Object.entries(arg);
+      if (entries.length === 0) return '[:]';
+      return '[' + entries.map(([k, v]) => `${this._argAsString(k)}:${this._argAsString(v)}`).join(', ') + ']';
     }
     return String(arg);
   }
