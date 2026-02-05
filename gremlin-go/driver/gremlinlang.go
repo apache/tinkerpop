@@ -567,17 +567,3 @@ func (gl *GremlinLang) convertArgument(arg interface{}) (interface{}, error) {
 		}
 	}
 }
-
-// TODO revisit and remove if necessary
-//var withOptionsMap map[any]string = map[any]string{
-//	WithOptions.Tokens:  "WithOptions.tokens",
-//	WithOptions.None:    "WithOptions.none",
-//	WithOptions.Ids:     "WithOptions.ids",
-//	WithOptions.Labels:  "WithOptions.labels",
-//	WithOptions.Keys:    "WithOptions.keys",
-//	WithOptions.Values:  "WithOptions.values",
-//	WithOptions.All:     "WithOptions.all",
-//	WithOptions.Indexer: "WithOptions.indexer",
-//	WithOptions.List:    "WithOptions.list",
-//	WithOptions.Map:     "WithOptions.map",
-//}

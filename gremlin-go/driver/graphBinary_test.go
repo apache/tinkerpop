@@ -75,151 +75,156 @@ func TestGraphBinaryV4(t *testing.T) {
 
 	t.Run("read-write tests", func(t *testing.T) {
 		t.Run("read-write string", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			str := "test string"
-			buf, err := stringWriter(str, &buffer, nil)
+			_, err := stringWriter(str, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readString(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readString()
 			assert.Nil(t, err)
 			assert.Equal(t, str, res)
 		})
 		t.Run("read-write bool", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			f := func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
 				err := binary.Write(buffer, binary.BigEndian, value.(bool))
 				return buffer.Bytes(), err
 			}
-			data, err := f(false, &buffer, nil)
+			_, err := f(false, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readBoolean(&data, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			b, err := d.readByte()
 			assert.Nil(t, err)
-			assert.False(t, res.(bool))
+			assert.False(t, b != 0)
 
-			data, err = f(true, &buffer, nil)
+			buffer.Reset()
+			_, err = f(true, &buffer, nil)
 			assert.Nil(t, err)
-			res, err = readBoolean(&data, &pos)
+			d = NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			b, err = d.readByte()
 			assert.Nil(t, err)
-			assert.True(t, res.(bool))
+			assert.True(t, b != 0)
 		})
 		t.Run("read-write BigDecimal", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := &BigDecimal{11, big.NewInt(int64(22))}
-			buf, err := bigDecimalWriter(source, &buffer, nil)
+			_, err := bigDecimalWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readBigDecimal(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigDecimal()
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write int", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := int32(123)
-			buf, err := intWriter(source, &buffer, nil)
+			_, err := intWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readInt(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readInt32()
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write short", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := int16(123)
-			buf, err := shortWriter(source, &buffer, nil)
+			_, err := shortWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readShort(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			buf, err := d.readBytes(2)
 			assert.Nil(t, err)
+			res := int16(binary.BigEndian.Uint16(buf))
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write short int8", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := int8(123)
-			buf, err := shortWriter(source, &buffer, nil)
+			_, err := shortWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readShort(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			buf, err := d.readBytes(2)
 			assert.Nil(t, err)
+			res := int16(binary.BigEndian.Uint16(buf))
 			assert.Equal(t, int16(source), res)
 		})
 		t.Run("read-write long", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := 123
-			buf, err := longWriter(source, &buffer, nil)
+			_, err := longWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readLong(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readInt64()
 			assert.Nil(t, err)
 			assert.Equal(t, int64(source), res)
 		})
 		t.Run("read-write bigInt", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := big.NewInt(123)
-			buf, err := bigIntWriter(*source, &buffer, nil)
+			_, err := bigIntWriter(*source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readBigInt(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigInt()
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write bigInt uint64", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := uint64(123)
-			buf, err := bigIntWriter(source, &buffer, nil)
+			_, err := bigIntWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readBigInt(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigInt()
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(source), res)
 		})
-		t.Run("read-write bigInt uint64", func(t *testing.T) {
-			pos := 0
+		t.Run("read-write bigInt uint", func(t *testing.T) {
 			var buffer bytes.Buffer
 			source := uint(123)
-			buf, err := bigIntWriter(source, &buffer, nil)
+			_, err := bigIntWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readBigInt(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readBigInt()
 			assert.Nil(t, err)
 			assert.Equal(t, new(big.Int).SetUint64(uint64(source)), res)
 		})
 		t.Run("read-write list", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := []interface{}{int32(111), "str"}
-			buf, err := listWriter(source, &buffer, nil)
+			_, err := listWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readList(&buf, &pos, 0x00)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readList(false)
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write byteBuffer", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := &ByteBuffer{[]byte{byte(127), byte(255)}}
-			buf, err := byteBufferWriter(source, &buffer, nil)
+			_, err := byteBufferWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readByteBuffer(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readByteBuffer()
 			assert.Nil(t, err)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write set", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := NewSimpleSet(int32(111), "str")
-			buf, err := setWriter(source, &buffer, nil)
+			_, err := setWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readSet(&buf, &pos, 0x00)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			list, err := d.readList(false)
 			assert.Nil(t, err)
+			res := NewSimpleSet(list.([]interface{})...)
 			assert.Equal(t, source, res)
 		})
 		t.Run("read-write map", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
-			source := map[interface{}]interface{}{1: "s1", "s2": 2, nil: nil}
-			buf, err := mapWriter(source, &buffer, nil)
+			source := map[interface{}]interface{}{int32(1): "s1", "s2": int32(2), nil: nil}
+			_, err := mapWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := readMap(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readMap()
 			assert.Nil(t, err)
 			assert.Equal(t, fmt.Sprintf("%v", source), fmt.Sprintf("%v", res))
 		})
@@ -244,9 +249,8 @@ func TestGraphBinaryV4(t *testing.T) {
 				t.Fatalf("Failed to encode data: %v", err)
 			}
 
-			data := buf.Bytes()
-			i := 0
-			result, err := readMap(&data, &i)
+			d := NewStreamingDeserializer(bytes.NewReader(buf.Bytes()))
+			result, err := d.readMap()
 			if err != nil {
 				t.Fatalf("readMap failed: %v", err)
 			}
@@ -280,9 +284,8 @@ func TestGraphBinaryV4(t *testing.T) {
 				t.Fatalf("Failed to encode data: %v", err)
 			}
 
-			data := buf.Bytes()
-			i := 0
-			result, err := readMap(&data, &i)
+			d := NewStreamingDeserializer(bytes.NewReader(buf.Bytes()))
+			result, err := d.readMap()
 			if err != nil {
 				t.Fatalf("readMap failed: %v", err)
 			}
@@ -294,68 +297,60 @@ func TestGraphBinaryV4(t *testing.T) {
 			}
 		})
 		t.Run("read-write time", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := dateTimeWriter(source, &buffer, nil)
+			_, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := dateTimeReader(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readDateTime()
 			assert.Nil(t, err)
 			// ISO format
-			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.Format(time.RFC3339Nano))
 		})
 		t.Run("read-write local datetime", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.Local)
-			buf, err := dateTimeWriter(source, &buffer, nil)
+			_, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := dateTimeReader(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readDateTime()
 			assert.Nil(t, err)
 			// ISO format
-			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.Format(time.RFC3339Nano))
 		})
 		t.Run("read-write UTC datetime", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 0, 0, time.UTC)
-			buf, err := dateTimeWriter(source, &buffer, nil)
+			_, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := dateTimeReader(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readDateTime()
 			assert.Nil(t, err)
 			// ISO format
-			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.Format(time.RFC3339Nano))
 		})
 		t.Run("read-write HST datetime", func(t *testing.T) {
-			pos := 0
 			var buffer bytes.Buffer
 			source := time.Date(2022, 5, 10, 9, 51, 34, 123456789, GetTimezoneFromOffset(-36000))
-			buf, err := dateTimeWriter(source, &buffer, nil)
+			_, err := dateTimeWriter(source, &buffer, nil)
 			assert.Nil(t, err)
-			res, err := dateTimeReader(&buf, &pos)
+			d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+			res, err := d.readDateTime()
 			assert.Nil(t, err)
 			// ISO format
-			assert.Equal(t, source.Format(time.RFC3339Nano), res.(time.Time).Format(time.RFC3339Nano))
-		})
-	})
-
-	t.Run("error handle tests", func(t *testing.T) {
-		t.Run("test map key not string failure", func(t *testing.T) {
-			i := 0
-			buff := []byte{0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01}
-			m, err := readMapUnqualified(&buff, &i)
-			assert.Nil(t, m)
-			assert.Equal(t, newError(err0703ReadMapNonStringKeyError, intType), err)
+			assert.Equal(t, source.Format(time.RFC3339Nano), res.Format(time.RFC3339Nano))
 		})
 	})
 
 	t.Run("read-write marker", func(t *testing.T) {
-		pos := 0
 		var buffer bytes.Buffer
 		source := EndOfStream()
-		buf, err := markerWriter(source, &buffer, nil)
+		_, err := markerWriter(source, &buffer, nil)
 		assert.Nil(t, err)
-		res, err := markerReader(&buf, &pos)
+		d := NewStreamingDeserializer(bytes.NewReader(buffer.Bytes()))
+		b, err := d.readByte()
+		assert.Nil(t, err)
+		res, err := Of(b)
 		assert.Nil(t, err)
 		assert.Equal(t, source, res)
 	})

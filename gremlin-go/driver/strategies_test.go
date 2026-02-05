@@ -27,11 +27,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getModernGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
+func getModernGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
-			settings.AuthInfo = auth
 			settings.TraversalSource = testServerModernGraphAlias
 		})
 	assert.Nil(t, err)
@@ -45,7 +44,7 @@ func TestStrategy(t *testing.T) {
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 
 	t.Run("Test read with ConnectiveStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ConnectiveStrategy()).V().Count().ToList()
@@ -58,7 +57,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with OptionsStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(OptionsStrategy(map[string]interface{}{"a": "b"})).V().Count().ToList()
@@ -71,7 +70,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with PartitionStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		config := PartitionStrategyConfig{
@@ -90,7 +89,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with SeedStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		config := SeedStrategyConfig{Seed: 1}
@@ -104,7 +103,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with SubgraphStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 		config := SubgraphStrategyConfig{
 			Vertices:              T__.HasLabel(testLabel),
@@ -130,7 +129,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with AdjacentToIncidentStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(AdjacentToIncidentStrategy()).V().Count().ToList()
@@ -143,7 +142,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with ByModulatorOptimizationStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ByModulatorOptimizationStrategy()).V().Count().ToList()
@@ -156,7 +155,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with CountStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(CountStrategy()).V().Count().ToList()
@@ -169,7 +168,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with EarlyLimitStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(EarlyLimitStrategy()).V().Count().ToList()
@@ -182,7 +181,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with FilterRankingStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(FilterRankingStrategy()).V().Count().ToList()
@@ -195,7 +194,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with IdentityRemovalStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(IdentityRemovalStrategy()).V().Count().ToList()
@@ -208,7 +207,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with IncidentToAdjacentStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(IncidentToAdjacentStrategy()).V().Count().ToList()
@@ -221,7 +220,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with InlineFilterStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(InlineFilterStrategy()).V().Count().ToList()
@@ -234,7 +233,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with LazyBarrierStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(LazyBarrierStrategy()).V().Count().ToList()
@@ -247,7 +246,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with MatchPredicateStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(MatchPredicateStrategy()).V().Count().ToList()
@@ -260,7 +259,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with OrderLimitStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(OrderLimitStrategy()).V().Count().ToList()
@@ -273,7 +272,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with PathProcessorStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(PathProcessorStrategy()).V().Count().ToList()
@@ -286,7 +285,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with PathRetractionStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(PathRetractionStrategy()).V().Count().ToList()
@@ -299,7 +298,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with ProductiveByStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		config := ProductiveByStrategyConfig{ProductiveKeys: []string{"a", "b"}}
@@ -313,7 +312,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
@@ -326,7 +325,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with EdgeLabelVerificationStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		config := EdgeLabelVerificationStrategyConfig{
@@ -343,7 +342,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with LambdaRestrictionStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(LambdaRestrictionStrategy()).V().Count().ToList()
@@ -356,7 +355,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with TestReadOnlyStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(ReadOnlyStrategy()).V().Count().ToList()
@@ -369,7 +368,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test write with TestReadOnlyStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		promise := g.WithStrategies(ReadOnlyStrategy()).AddV("person").Property("name", "foo").Iterate()
@@ -377,7 +376,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with ReservedKeysVerificationStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		config := ReservedKeysVerificationStrategyConfig{
@@ -396,7 +395,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test read with RepeatUnrollStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithStrategies(RepeatUnrollStrategy()).V().Count().ToList()
@@ -409,7 +408,7 @@ func TestStrategy(t *testing.T) {
 	})
 
 	t.Run("Test without strategies MessagePassingReductionStrategy", func(t *testing.T) {
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		count, err := g.WithoutStrategies(MessagePassingReductionStrategy()).V().Count().ToList()

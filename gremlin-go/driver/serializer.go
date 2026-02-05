@@ -39,26 +39,28 @@ type GraphBinarySerializer struct {
 }
 
 // CustomTypeReader user provided function to deserialize custom types
+// Deprecated: Custom type deserialization is handled by StreamingDeserializer
 type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
 
 type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
-type reader func(data *[]byte, i *int) (interface{}, error)
 
-var deserializers map[dataType]reader
 var serializers map[dataType]writer
 
 // customTypeReaderLock used to synchronize access to the customDeserializers map
+// Deprecated: Custom type deserialization is handled by StreamingDeserializer
 var customTypeReaderLock = sync.RWMutex{}
 var customDeserializers map[string]CustomTypeReader
 
 func init() {
 	initSerializers()
-	initDeserializers()
+	customDeserializers = map[string]CustomTypeReader{}
 }
 
-func newGraphBinarySerializer(handler *logHandler) Serializer {
+func newGraphBinarySerializer(handler *logHandler) *GraphBinarySerializer {
 	serializer := graphBinaryTypeSerializer{handler}
-	return GraphBinarySerializer{&serializer}
+	return &GraphBinarySerializer{
+		ser: &serializer,
+	}
 }
 
 // TODO change for graph binary 4.0 version is finalized
@@ -66,7 +68,7 @@ const versionByte byte = 0x81
 
 // SerializeMessage serializes a request message into GraphBinary format.
 //
-// This method is part of the serializer interface and is used internally by the WebSocket driver.
+// This method is part of the serializer interface and is used internally by the HTTP driver.
 // It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
 // serialize requests created with MakeBytecodeRequest() or MakeStringRequest().
 //
@@ -86,8 +88,8 @@ const versionByte byte = 0x81
 //	bytes, err := serializer.(graphBinarySerializer).SerializeMessage(&req)
 //	// Send bytes over custom transport
 //
-// serializeMessage serializes a request message into GraphBinary.
-func (gs GraphBinarySerializer) SerializeMessage(request *request) ([]byte, error) {
+// SerializeMessage serializes a request message into GraphBinary.
+func (gs *GraphBinarySerializer) SerializeMessage(request *request) ([]byte, error) {
 	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
 	if err != nil {
 		return nil, err
@@ -115,7 +117,7 @@ func (gs *GraphBinarySerializer) buildMessage(gremlin string, args map[string]in
 
 // DeserializeMessage deserializes a GraphBinary-encoded response message.
 //
-// This method is part of the serializer interface and is used internally by the WebSocket driver.
+// This method is part of the serializer interface and is used internally by the HTTP driver.
 // It is also exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.) to
 // deserialize responses received from a Gremlin server.
 //
@@ -132,52 +134,48 @@ func (gs *GraphBinarySerializer) buildMessage(gremlin string, args map[string]in
 //	serializer := newGraphBinarySerializer(nil)
 //	resp, err := serializer.(graphBinarySerializer).DeserializeMessage(responseBytes)
 //	results := resp.responseResult.data
-func (gs GraphBinarySerializer) DeserializeMessage(message []byte) (Response, error) {
+func (gs *GraphBinarySerializer) DeserializeMessage(message []byte) (Response, error) {
 	var msg Response
 
 	if message == nil || len(message) == 0 {
 		gs.ser.logHandler.log(Error, nullInput)
 		return msg, newError(err0405ReadValueInvalidNullInputError)
 	}
-	results := make([]interface{}, 0)
 
-	//Skip version and nullable byte.
-	i := 2
-	// TODO temp serialization before fully streaming set-up
-	for len(message) > 0 {
-		n, err := readFullyQualifiedNullable(&message, &i, true)
+	d := NewStreamingDeserializer(bytes.NewReader(message))
+
+	// Read header
+	if err := d.ReadHeader(); err != nil {
+		return msg, err
+	}
+
+	results := make([]interface{}, 0)
+	for {
+		n, err := d.ReadFullyQualified()
 		if err != nil {
 			return msg, err
 		}
-		// TODO for debug, remove later
-		//_, _ = fmt.Fprintf(os.Stdout, "Deserializing data : %v\n", n)
 		if n == EndOfStream() {
 			break
 		}
 		results = append(results, n)
 	}
 
-	// TODO for debug, remove later
-	//_, _ = fmt.Fprintf(os.Stdout, "Deserialized results : %s\n", results)
 	msg.ResponseResult.Data = results
-	code := readUint32Safe(&message, &i)
+
+	code, statusMsg, exception, err := d.ReadStatus()
+	if err != nil {
+		return msg, err
+	}
 	msg.ResponseStatus.code = code
-	// TODO read status message
 	msg.ResponseStatus.message = "OK"
-	statusMsg, err := readUnqualified(&message, &i, stringType, true)
-	if err != nil {
-		return msg, err
+	if statusMsg != "" {
+		msg.ResponseStatus.message = statusMsg
 	}
-	if statusMsg != nil {
-		msg.ResponseStatus.message = statusMsg.(string)
+	if exception != "" {
+		msg.ResponseStatus.exception = exception
 	}
-	exception, err := readUnqualified(&message, &i, stringType, true)
-	if err != nil {
-		return msg, err
-	}
-	if exception != nil {
-		msg.ResponseStatus.exception = exception.(string)
-	}
+
 	return msg, nil
 }
 
@@ -228,50 +226,8 @@ func initSerializers() {
 	}
 }
 
-func initDeserializers() {
-	deserializers = map[dataType]reader{
-		// Primitive
-		booleanType:    readBoolean,
-		byteType:       readByte,
-		shortType:      readShort,
-		intType:        readInt,
-		longType:       readLong,
-		bigDecimalType: readBigDecimal,
-		bigIntegerType: readBigInt,
-		floatType:      readFloat,
-		doubleType:     readDouble,
-		stringType:     readString,
-
-		// Composite
-		//listType:   readList,
-		//setType:    readSet,
-		mapType:    readMap,
-		uuidType:   readUuid,
-		byteBuffer: readByteBuffer,
-
-		// Date Time
-		datetimeType: dateTimeReader,
-		durationType: durationReader,
-
-		// Graph
-		vertexType:         vertexReader,
-		edgeType:           edgeReader,
-		propertyType:       propertyReader,
-		vertexPropertyType: vertexPropertyReader,
-		pathType:           pathReader,
-		tType:              enumReader,
-		directionType:      enumReader,
-		gTypeType:          enumReader,
-
-		// Customer
-		customType: customTypeReader,
-
-		markerType: markerReader,
-	}
-	customDeserializers = map[string]CustomTypeReader{}
-}
-
 // RegisterCustomTypeReader register a reader (deserializer) for a custom type
+// Deprecated: Custom type deserialization should be handled by extending StreamingDeserializer
 func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
 	customTypeReaderLock.Lock()
 	defer customTypeReaderLock.Unlock()
@@ -279,6 +235,7 @@ func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
 }
 
 // UnregisterCustomTypeReader unregister a reader (deserializer) for a custom type
+// Deprecated: Custom type deserialization should be handled by extending StreamingDeserializer
 func UnregisterCustomTypeReader(customTypeName string) {
 	customTypeReaderLock.Lock()
 	defer customTypeReaderLock.Unlock()

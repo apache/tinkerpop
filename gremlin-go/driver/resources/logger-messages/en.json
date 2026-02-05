@@ -20,5 +20,7 @@
   "POOL_NEW_CONNECTION_ERROR": "Falling back to least-used connection. Creating new connection due to least-used connection exceeding concurrent usage threshold failed: %s",
   "POOL_INITIAL_EXCEEDS_MAXIMUM": "InitialConcurrentConnections setting %d exceeded MaximumConcurrentConnections setting %d - limiting InitialConcurrentConnections to %d.",
   "FAILED_TO_RECEIVE_RESPONSE": "Failed to receive response: %s",
-  "FAILED_TO_SEND_REQUEST": "Failed to send request: %s"
+  "FAILED_TO_SEND_REQUEST": "Failed to send request: %s",
+  "FAILED_TO_CLOSE_RESPONSE_BODY": "Error closing response body: %s",
+  "FAILED_TO_CLOSE_DECOMPRESSION_READER": "Error closing decompression reader: %s"
 }

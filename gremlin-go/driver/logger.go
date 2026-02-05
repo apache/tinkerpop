@@ -109,10 +109,11 @@ const (
 	submitStartedString          errorKey = "SUBMIT_STARTED_STRING"
 	failedToCloseInErrorCallback errorKey = "FAILED_TO_CLOSE_IN_ERROR_CALLBACK"
 	failedToWriteMessage         errorKey = "FAILED_TO_WRITE_MESSAGE"
-	failedToSetWriteDeadline     errorKey = "FAILED_TO_SET_WRITE_DEADLINE"
 	failedToReceiveResponse      errorKey = "FAILED_TO_RECEIVE_RESPONSE"
 	failedToSendRequest          errorKey = "FAILED_TO_SEND_REQUEST"
 	logErrorGeneric              errorKey = "LOG_ERROR_GENERIC"
 	closeDriverRemoteConnection  errorKey = "CLOSE_DRIVER_REMOTE_CONNECTION"
 	closeClient                  errorKey = "CLOSE_CLIENT"
+	failedToCloseResponseBody    errorKey = "FAILED_TO_CLOSE_RESPONSE_BODY"
+	failedToCloseDecompReader    errorKey = "FAILED_TO_CLOSE_DECOMPRESSION_READER"
 )
