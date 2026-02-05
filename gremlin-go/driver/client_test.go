@@ -30,7 +30,6 @@ func TestClient(t *testing.T) {
 	// Integration test variables.
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
-	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
 	t.Run("Test client.SubmitWithOptions()", func(t *testing.T) {
@@ -38,7 +37,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -58,7 +56,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 			})
 		assert.NoError(t, err)
 		assert.NotNil(t, client)
@@ -74,7 +71,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -97,7 +93,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -122,7 +117,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.NoError(t, err)
@@ -147,7 +141,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 
@@ -170,7 +163,6 @@ func TestClient(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
 				settings.TraversalSource = testServerCrewGraphAlias
 			})
 

@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"runtime"
 	"time"
 
 	"golang.org/x/text/language"
@@ -33,22 +32,33 @@ type DriverRemoteConnectionSettings struct {
 	LogVerbosity             LogVerbosity
 	Logger                   Logger
 	Language                 language.Tag
-	AuthInfo                 AuthInfoProvider
 	TlsConfig                *tls.Config
-	KeepAliveInterval        time.Duration
-	WriteDeadline            time.Duration
 	ConnectionTimeout        time.Duration
 	EnableCompression        bool
 	EnableUserAgentOnConnect bool
-	ReadBufferSize           int
-	WriteBufferSize          int
 
-	// Minimum amount of concurrent active traversals on a connection to trigger creation of a new connection
-	NewConnectionThreshold int
-	// Maximum number of concurrent connections. Default: number of runtime processors
+	// MaximumConcurrentConnections is the maximum number of concurrent TCP connections
+	// to the Gremlin server. This limits how many requests can be in-flight simultaneously.
+	// Default: 128. Set to 0 to use the default.
 	MaximumConcurrentConnections int
-	// Initial amount of instantiated connections. Default: 1
-	InitialConcurrentConnections int
+
+	// MaxIdleConnections is the maximum number of idle (keep-alive) connections to retain
+	// in the connection pool. Idle connections are reused for subsequent requests.
+	// Default: 8. Set to 0 to use the default.
+	MaxIdleConnections int
+
+	// IdleConnectionTimeout is how long an idle connection remains in the pool before
+	// being closed. Set this to match your server's idle timeout if needed.
+	// Default: 180 seconds (3 minutes). Set to 0 to use the default.
+	IdleConnectionTimeout time.Duration
+
+	// KeepAliveInterval is the interval between TCP keep-alive probes on idle connections.
+	// This helps detect dead connections and keeps connections alive through firewalls.
+	// Default: 30 seconds. Set to 0 to use the default.
+	KeepAliveInterval time.Duration
+
+	// RequestInterceptors are functions that modify HTTP requests before sending.
+	RequestInterceptors []RequestInterceptor
 }
 
 // DriverRemoteConnection is a remote connection.
@@ -70,44 +80,46 @@ func NewDriverRemoteConnection(
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
-		AuthInfo:                 &AuthInfo{},
 		TlsConfig:                &tls.Config{},
-		KeepAliveInterval:        keepAliveIntervalDefault,
-		WriteDeadline:            writeDeadlineDefault,
 		ConnectionTimeout:        connectionTimeoutDefault,
 		EnableCompression:        false,
 		EnableUserAgentOnConnect: true,
-		ReadBufferSize:           readBufferSizeDefault,
-		WriteBufferSize:          writeBufferSizeDefault,
 
-		MaximumConcurrentConnections: runtime.NumCPU(),
+		MaximumConcurrentConnections: 0, // Use default (128)
+		MaxIdleConnections:           0, // Use default (8)
+		IdleConnectionTimeout:        0, // Use default (180s)
+		KeepAliveInterval:            0, // Use default (30s)
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	connSettings := &connectionSettings{
-		authInfo:                 settings.AuthInfo,
 		tlsConfig:                settings.TlsConfig,
-		keepAliveInterval:        settings.KeepAliveInterval,
-		writeDeadline:            settings.WriteDeadline,
 		connectionTimeout:        settings.ConnectionTimeout,
+		maxConnsPerHost:          settings.MaximumConcurrentConnections,
+		maxIdleConnsPerHost:      settings.MaxIdleConnections,
+		idleConnTimeout:          settings.IdleConnectionTimeout,
+		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
-		readBufferSize:           settings.ReadBufferSize,
-		writeBufferSize:          settings.WriteBufferSize,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt := newHttpProtocol(logHandler, url, connSettings)
+	conn := newConnection(logHandler, url, connSettings)
+
+	// Add user-provided interceptors
+	for _, interceptor := range settings.RequestInterceptors {
+		conn.AddInterceptor(interceptor)
+	}
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		httpProtocol:       httpProt,
+		conn:               conn,
 	}
 
 	return &DriverRemoteConnection{client: client, isClosed: false, settings: settings}, nil
@@ -136,7 +148,6 @@ func (driver *DriverRemoteConnection) Submit(traversalString string) (ResultSet,
 }
 
 // submitGremlinLang sends a GremlinLang traversal to the server.
-// TODO test and update when connection is set up
 func (driver *DriverRemoteConnection) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
 	if driver.isClosed {
 		return nil, newError(err0203SubmitGremlinLangToClosedConnectionError)

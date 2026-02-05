@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,20 +27,11 @@ import (
 
 func TestAuthentication(t *testing.T) {
 
-	t.Run("Test BasicAuthInfo.", func(t *testing.T) {
-		header := BasicAuthInfo("Lyndon", "Bauto")
-		assert.Nil(t, header.GetHeader())
-		b, _, _ := header.GetBasicAuth()
-		assert.True(t, b)
-	})
-
-	t.Run("Test GetHeader.", func(t *testing.T) {
-		header := &AuthInfo{}
-		assert.Nil(t, header.GetHeader())
-		header = nil
-		assert.Nil(t, header.GetHeader())
-		httpHeader := http.Header{}
-		header = &AuthInfo{Header: httpHeader}
-		assert.Equal(t, httpHeader, header.GetHeader())
+	t.Run("Test BasicAuth interceptor", func(t *testing.T) {
+		interceptor := BasicAuth("user", "pass")
+		req, _ := NewHttpRequest("POST", "http://localhost:8182/gremlin")
+		err := interceptor(req)
+		assert.Nil(t, err)
+		assert.Contains(t, req.Headers.Get(HeaderAuthorization), "Basic ")
 	})
 }

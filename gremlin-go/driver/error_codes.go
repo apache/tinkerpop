@@ -57,10 +57,10 @@ const (
 	err0409GetSerializerToReadUnknownCustomTypeError errorCode = "E0409_GRAPH_BINARY_GETSERIALIZERTOREAD_UNKNOWN_CUSTOM_TYPE_ERROR"
 
 	// response handling errors
-	err0501ResponseHandlerResultSetNotCreatedError errorCode = "E0501_PROTOCOL_RESPONSEHANDLER_NO_RESULTSET_ON_DATA_RECEIVE"
-	err0502ResponseHandlerReadLoopError            errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_READ_LOOP_ERROR"
-	err0502ResponseHandlerError                    errorCode = "E0502_PROTOCOL_RESPONSEHANDLER_ERROR"
-	err0503ResponseHandlerAuthError                errorCode = "E0503_PROTOCOL_RESPONSEHANDLER_AUTH_ERROR"
+	err0501ResponseResultSetNotCreatedError errorCode = "E0501_RESPONSE_NO_RESULTSET_ON_DATA_RECEIVE"
+	err0502ResponseReadLoopError            errorCode = "E0502_RESPONSE_READ_LOOP_ERROR"
+	err0502ResponseError                    errorCode = "E0502_RESPONSE_ERROR"
+	err0503ResponseAuthError                errorCode = "E0503_RESPONSE_AUTH_ERROR"
 
 	// result.go errors
 	err0601ResultNotVertexError         errorCode = "E0601_RESULT_NOT_VERTEX_ERROR"

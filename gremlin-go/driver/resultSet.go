@@ -152,8 +152,8 @@ func (channelResultSet *channelResultSet) All() ([]*Result, error) {
 
 func (channelResultSet *channelResultSet) addResult(r *Result) {
 	channelResultSet.channelMutex.Lock()
-	if r.GetType().Kind() == reflect.Array || r.GetType().Kind() == reflect.Slice {
-		for _, v := range r.Data.([]interface{}) {
+	if data, ok := r.Data.([]interface{}); ok {
+		for _, v := range data {
 			if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
 				for i := int64(0); i < (v.(*Traverser)).bulk; i++ {
 					channelResultSet.channel <- &Result{(v.(*Traverser)).value}

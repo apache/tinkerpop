@@ -20,17 +20,24 @@ under the License.
 package gremlingo
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"math/big"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"sort"
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/text/language"
 )
 
 const personLabel = "Person"
@@ -55,15 +62,10 @@ var testNames = []string{"Lyndon", "Yang", "Simon", "Rithin", "Alexey", "Valenty
 
 func newDefaultConnectionSettings() *connectionSettings {
 	return &connectionSettings{
-		authInfo:                 &AuthInfo{},
 		tlsConfig:                &tls.Config{},
-		keepAliveInterval:        keepAliveIntervalDefault,
-		writeDeadline:            writeDeadlineDefault,
 		connectionTimeout:        connectionTimeoutDefault,
 		enableCompression:        false,
 		enableUserAgentOnConnect: true,
-		readBufferSize:           readBufferSizeDefault,
-		writeBufferSize:          writeBufferSizeDefault,
 	}
 }
 
@@ -90,11 +92,10 @@ func addTestData(t *testing.T, g *GraphTraversalSource) {
 	assert.Nil(t, <-promise)
 }
 
-func getTestGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
+func getTestGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalSource {
 	remote, err := NewDriverRemoteConnection(url,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = tls
-			settings.AuthInfo = auth
 			settings.TraversalSource = testServerGraphAlias
 		})
 	assert.Nil(t, err)
@@ -104,8 +105,8 @@ func getTestGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Conf
 	return g
 }
 
-func initializeGraph(t *testing.T, url string, auth AuthInfoProvider, tls *tls.Config) *GraphTraversalSource {
-	g := getTestGraph(t, url, auth, tls)
+func initializeGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalSource {
+	g := getTestGraph(t, url, tls)
 
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
@@ -244,11 +245,6 @@ func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 	return defaultValue
 }
 
-func getBasicAuthInfo() *AuthInfo {
-	return BasicAuthInfo(getEnvOrDefaultString("GREMLIN_GO_BASIC_AUTH_USERNAME", "stephen"),
-		getEnvOrDefaultString("GREMLIN_GO_BASIC_AUTH_PASSWORD", "password"))
-}
-
 func skipTestsIfNotEnabled(t *testing.T, testSuiteName string, testSuiteEnabled bool) {
 	if !testSuiteEnabled {
 		t.Skipf("Skipping %s because %s tests are not enabled.", t.Name(), testSuiteName)
@@ -259,20 +255,55 @@ func TestConnection(t *testing.T) {
 	// Integration test variables.
 	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
-	testNoAuthAuthInfo := &AuthInfo{}
 	testNoAuthTlsConfig := &tls.Config{}
 
 	// No authentication integration test with graphs loaded and alias configured server
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
 	testNoAuthWithAliasEnable := getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true)
-	testNoAuthWithAliasAuthInfo := &AuthInfo{}
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
 	// Basic authentication integration test variables.
 	testBasicAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_BASIC_AUTH_URL", basicAuthWithSsl)
 	testBasicAuthEnable := getEnvOrDefaultBool("RUN_BASIC_AUTH_INTEGRATION_TESTS", false)
-	testBasicAuthAuthInfo := getBasicAuthInfo()
+	testBasicAuthUsername := getEnvOrDefaultString("GREMLIN_GO_BASIC_AUTH_USERNAME", "stephen")
+	testBasicAuthPassword := getEnvOrDefaultString("GREMLIN_GO_BASIC_AUTH_PASSWORD", "password")
 	testBasicAuthTlsConfig := &tls.Config{InsecureSkipVerify: true}
+
+	// this test is used to test the ws->http POC changes via manual execution with a local TP 4.0 gremlin server running on 8182
+	t.Run("Test client.submit()", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		tlsConf := tls.Config{
+			InsecureSkipVerify: true,
+		}
+
+		client, err := NewClient(testNoAuthUrl,
+			//client, err := NewClient(noAuthSslUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = &tlsConf
+				settings.EnableCompression = true
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		assert.Nil(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		// synchronous
+		for i := 0; i < 5; i++ {
+			submitCount(i, client, t)
+		}
+
+		// async
+		var wg sync.WaitGroup
+		for i := 0; i < 5; i++ {
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				submitCount(i, client, t)
+			}(i)
+		}
+		wg.Wait()
+	})
 
 	t.Run("Test client.submit() with concurrency", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
@@ -280,8 +311,6 @@ func TestConnection(t *testing.T) {
 		client, err := NewClient(testNoAuthUrl,
 			func(settings *ClientSettings) {
 				settings.TlsConfig = testNoAuthTlsConfig
-				settings.AuthInfo = testNoAuthAuthInfo
-				settings.WriteBufferSize = 1024
 				settings.EnableCompression = true
 				settings.TraversalSource = testServerModernGraphAlias
 			})
@@ -310,7 +339,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Read test data out of the graph and check that it is correct.
@@ -325,7 +354,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		readWithNextAndHasNext(t, g)
@@ -336,7 +365,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		resultSet, err := g.V().HasLabel(personLabel).Properties(nameKey).GetResultSet()
@@ -360,7 +389,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := getTestGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := getTestGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Drop the graph.
@@ -405,7 +434,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Read test data out of the graph and check that it is correct.
@@ -421,7 +450,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		// Run traversal and test Next/HasNext calls
@@ -447,7 +476,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		readUsingAnonymousTraversal(t, g)
@@ -476,7 +505,9 @@ func TestConnection(t *testing.T) {
 		remote, err := NewDriverRemoteConnection(testBasicAuthUrl,
 			func(settings *DriverRemoteConnectionSettings) {
 				settings.TlsConfig = testBasicAuthTlsConfig
-				settings.AuthInfo = testBasicAuthAuthInfo
+				settings.RequestInterceptors = []RequestInterceptor{
+					BasicAuth(testBasicAuthUsername, testBasicAuthPassword),
+				}
 			})
 		assert.Nil(t, err)
 		assert.NotNil(t, remote)
@@ -502,7 +533,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		r, err := g.WithSack(1).V().Has("name", "Lyndon").Values("foo").Sack(Operator.Sum).Sack().ToList()
@@ -521,7 +552,7 @@ func TestConnection(t *testing.T) {
 	//	skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 	//
 	//	// Initialize graph
-	//	g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+	//	g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 	//	defer g.remoteConnection.Close()
 	//
 	//	r, err := g.V().Has("name", "Lyndon").Values("foo").Profile().ToList()
@@ -539,7 +570,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		prop := &BigDecimal{11, big.NewInt(int64(22))}
@@ -559,7 +590,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 		defer g.remoteConnection.Close()
 
 		prop := &ByteBuffer{[]byte{byte(127), byte(255)}}
@@ -579,7 +610,6 @@ func TestConnection(t *testing.T) {
 		remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 			func(settings *DriverRemoteConnectionSettings) {
 				settings.TlsConfig = testNoAuthWithAliasTlsConfig
-				settings.AuthInfo = testNoAuthWithAliasAuthInfo
 				settings.TraversalSource = testServerModernGraphAlias
 			})
 		assert.Nil(t, err)
@@ -599,7 +629,7 @@ func TestConnection(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
 		// Initialize graph
-		g := initializeGraph(t, testNoAuthUrl, testNoAuthAuthInfo, testNoAuthTlsConfig)
+		g := initializeGraph(t, testNoAuthUrl, testNoAuthTlsConfig)
 
 		// Drop the graph.
 		dropGraph(t, g)
@@ -607,8 +637,7 @@ func TestConnection(t *testing.T) {
 		// Add vertices and edges to graph.
 		rs, err := g.AddV("person").Property("id", T__.Unfold().Property().AddV()).ToList()
 		assert.Nil(t, rs)
-		fmt.Println(err.Error())
-		assert.True(t, isSameErrorCode(newError(err0502ResponseHandlerReadLoopError), err))
+		assert.True(t, isSameErrorCode(newError(err0502ResponseError), err))
 
 		rs, err = g.V().Count().ToList()
 		assert.NotNil(t, rs)
@@ -621,7 +650,7 @@ func TestConnection(t *testing.T) {
 	t.Run("Get all properties when materializeProperties is all", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		// vertex contains 2 properties, name and age
@@ -634,7 +663,7 @@ func TestConnection(t *testing.T) {
 	t.Run("Skip properties when materializeProperties is tokens", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		// vertex contains 2 properties, name and age
@@ -647,7 +676,7 @@ func TestConnection(t *testing.T) {
 	t.Run("Get all properties when no materializeProperties", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		r, err := g.V().Has("person", "name", "marko").Next()
@@ -659,7 +688,7 @@ func TestConnection(t *testing.T) {
 	t.Run("Test DriverRemoteConnection Traversal With materializeProperties in Modern Graph", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 
-		g := getModernGraph(t, testNoAuthUrl, &AuthInfo{}, &tls.Config{})
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
 		vertices, err := g.With("materializeProperties", MaterializeProperties.Tokens).V().ToList()
@@ -759,4 +788,349 @@ func submitCount(i int, client *Client, t *testing.T) {
 	c, err := result.GetInt()
 	assert.Equal(t, 6+i, c)
 	_, _ = fmt.Fprintf(os.Stdout, "Received result : %s\n", result)
+}
+
+func TestStreamingResultDelivery(t *testing.T) {
+	testNoAuthWithAliasEnable := getEnvOrDefaultBool("RUN_INTEGRATION_WITH_ALIAS_TESTS", true)
+	skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthWithAliasEnable)
+	remote, err := NewDriverRemoteConnection(getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl),
+		func(settings *DriverRemoteConnectionSettings) {
+			settings.TlsConfig = &tls.Config{}
+			settings.TraversalSource = "ggrateful"
+		})
+	assert.Nil(t, err)
+	assert.NotNil(t, remote)
+	g := Traversal_().With(remote)
+	defer g.remoteConnection.Close()
+
+	t.Run("first result arrives before all results", func(t *testing.T) {
+		start := time.Now()
+		rs, err := g.V().Properties().GetResultSet()
+		assert.Nil(t, err)
+
+		// First result should arrive quickly
+		_, ok, err := rs.One()
+		firstResultTime := time.Since(start)
+		assert.Nil(t, err)
+		assert.True(t, ok)
+
+		// Drain remaining
+		_, err = rs.All()
+		assert.Nil(t, err)
+		totalTime := time.Since(start)
+
+		t.Logf("First result: %v, Total: %v, Ratio: %.2f%%",
+			firstResultTime, totalTime, float64(firstResultTime)/float64(totalTime)*100)
+	})
+
+	t.Run("results arrive incrementally", func(t *testing.T) {
+		rs, err := g.V().Properties().GetResultSet()
+		assert.Nil(t, err)
+
+		var timestamps []time.Time
+		start := time.Now()
+
+		for {
+			_, ok, err := rs.One()
+			assert.Nil(t, err)
+			if !ok {
+				break
+			}
+			timestamps = append(timestamps, time.Now())
+		}
+
+		if len(timestamps) < 2 {
+			t.Skip("need more results to test incremental delivery")
+		}
+
+		firstHalf := timestamps[len(timestamps)/2].Sub(start)
+		total := timestamps[len(timestamps)-1].Sub(start)
+		t.Logf("Half results at: %v, All results at: %v", firstHalf, total)
+	})
+}
+
+// Unit tests for connection (moved from httpConnection_test.go)
+
+func newTestLogHandler() *logHandler {
+	return newLogHandler(&defaultLogger{}, Warning, language.English)
+}
+
+func TestNewConnection(t *testing.T) {
+	t.Run("creates connection with default settings", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", &connectionSettings{})
+
+		assert.NotNil(t, conn.httpClient)
+		assert.NotNil(t, conn.httpClient.Transport)
+	})
+
+	t.Run("applies TLS config", func(t *testing.T) {
+		tlsConfig := &tls.Config{InsecureSkipVerify: true}
+		conn := newConnection(newTestLogHandler(), "https://localhost:8182/gremlin", &connectionSettings{
+			tlsConfig: tlsConfig,
+		})
+
+		transport := conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, tlsConfig, transport.TLSClientConfig)
+	})
+}
+
+func TestSetHttpRequestHeaders(t *testing.T) {
+	t.Run("sets content type and accept headers", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{})
+		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
+
+		conn.setHttpRequestHeaders(req)
+
+		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Content-Type"))
+		assert.Equal(t, graphBinaryMimeType, req.Headers.Get("Accept"))
+	})
+
+	t.Run("sets user agent when enabled", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
+			enableUserAgentOnConnect: true,
+		})
+		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
+
+		conn.setHttpRequestHeaders(req)
+
+		assert.NotEmpty(t, req.Headers.Get(HeaderUserAgent))
+	})
+
+	t.Run("sets compression header when enabled", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{
+			enableCompression: true,
+		})
+		req, _ := NewHttpRequest(http.MethodPost, "http://localhost/gremlin")
+
+		conn.setHttpRequestHeaders(req)
+
+		assert.Equal(t, "deflate", req.Headers.Get("Accept-Encoding"))
+	})
+}
+
+func TestGetReader(t *testing.T) {
+	conn := newConnection(newTestLogHandler(), "http://localhost/gremlin", &connectionSettings{})
+
+	t.Run("returns body for non-compressed response", func(t *testing.T) {
+		resp := &http.Response{
+			Header: http.Header{},
+			Body:   http.NoBody,
+		}
+
+		reader, closer, err := conn.getReader(resp)
+
+		assert.NoError(t, err)
+		assert.Nil(t, closer)
+		assert.Equal(t, resp.Body, reader)
+	})
+
+	t.Run("returns zlib reader for deflate response", func(t *testing.T) {
+		// Valid zlib compressed empty data
+		zlibData := []byte{0x78, 0x9c, 0x03, 0x00, 0x00, 0x00, 0x00, 0x01}
+		resp := &http.Response{
+			Header: http.Header{"Content-Encoding": []string{"deflate"}},
+			Body:   io.NopCloser(bytes.NewReader(zlibData)),
+		}
+
+		reader, closer, err := conn.getReader(resp)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, closer)
+		assert.NotNil(t, reader)
+		require.NoError(t, closer.Close())
+	})
+
+	t.Run("returns error for invalid zlib data", func(t *testing.T) {
+		resp := &http.Response{
+			Header: http.Header{"Content-Encoding": []string{"deflate"}},
+			Body:   io.NopCloser(bytes.NewReader([]byte{0x00, 0x00})),
+		}
+
+		_, _, err := conn.getReader(resp)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestConnectionWithMockServer(t *testing.T) {
+	t.Run("handles connection error", func(t *testing.T) {
+		conn := newConnection(newTestLogHandler(), "http://localhost:99999/gremlin", &connectionSettings{
+			connectionTimeout: 100 * time.Millisecond,
+		})
+
+		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		assert.NoError(t, err) // submit returns nil, error goes to ResultSet
+
+		// All() blocks until stream closes, then we can check error
+		_, _ = rs.All()
+		assert.Error(t, rs.GetError())
+	})
+
+	t.Run("receives headers from request", func(t *testing.T) {
+		headersCh := make(chan http.Header, 1)
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			headersCh <- r.Header.Clone()
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+
+		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{
+			enableUserAgentOnConnect: true,
+			enableCompression:        true,
+		})
+
+		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		require.NoError(t, err)
+
+		select {
+		case receivedHeaders := <-headersCh:
+			assert.Equal(t, graphBinaryMimeType, receivedHeaders.Get("Content-Type"))
+			assert.Equal(t, "deflate", receivedHeaders.Get("Accept-Encoding"))
+			assert.NotEmpty(t, receivedHeaders.Get(userAgentHeader))
+		case <-time.After(time.Second):
+			t.Fatal("timeout waiting for request")
+		}
+
+		_, _ = rs.All() // drain
+	})
+}
+
+// Tests for connection pool configuration settings
+
+func TestConnectionPoolSettings(t *testing.T) {
+	t.Run("default values are applied when settings are 0", func(t *testing.T) {
+		// Create connection with empty settings (all zeros)
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", &connectionSettings{})
+
+		transport := conn.httpClient.Transport.(*http.Transport)
+
+		// Verify default values are applied
+		assert.Equal(t, 128, transport.MaxConnsPerHost, "MaxConnsPerHost should default to 128")
+		assert.Equal(t, 8, transport.MaxIdleConnsPerHost, "MaxIdleConnsPerHost should default to 8")
+		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout, "IdleConnTimeout should default to 180s")
+	})
+
+	t.Run("custom values are passed through to http.Transport", func(t *testing.T) {
+		customSettings := &connectionSettings{
+			maxConnsPerHost:     256,
+			maxIdleConnsPerHost: 16,
+			idleConnTimeout:     300 * time.Second,
+			keepAliveInterval:   60 * time.Second,
+			connectionTimeout:   30 * time.Second,
+		}
+
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", customSettings)
+
+		transport := conn.httpClient.Transport.(*http.Transport)
+
+		// Verify custom values are applied
+		assert.Equal(t, 256, transport.MaxConnsPerHost, "MaxConnsPerHost should be custom value")
+		assert.Equal(t, 16, transport.MaxIdleConnsPerHost, "MaxIdleConnsPerHost should be custom value")
+		assert.Equal(t, 300*time.Second, transport.IdleConnTimeout, "IdleConnTimeout should be custom value")
+	})
+
+	t.Run("partial custom settings use defaults for unset values", func(t *testing.T) {
+		// Only set maxConnsPerHost, leave others at 0
+		customSettings := &connectionSettings{
+			maxConnsPerHost: 64,
+		}
+
+		conn := newConnection(newTestLogHandler(), "http://localhost:8182/gremlin", customSettings)
+
+		transport := conn.httpClient.Transport.(*http.Transport)
+
+		// Verify custom value is applied
+		assert.Equal(t, 64, transport.MaxConnsPerHost, "MaxConnsPerHost should be custom value")
+		// Verify defaults are used for unset values
+		assert.Equal(t, 8, transport.MaxIdleConnsPerHost, "MaxIdleConnsPerHost should default to 8")
+		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout, "IdleConnTimeout should default to 180s")
+	})
+}
+
+func TestClientSettingsWiring(t *testing.T) {
+	t.Run("ClientSettings wires connection pool settings", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin",
+			func(settings *ClientSettings) {
+				settings.MaximumConcurrentConnections = 200
+				settings.MaxIdleConnections = 20
+				settings.IdleConnectionTimeout = 240 * time.Second
+				settings.KeepAliveInterval = 45 * time.Second
+			})
+		require.NoError(t, err)
+		defer client.Close()
+
+		// Verify settings were wired to connectionSettings
+		assert.Equal(t, 200, client.connectionSettings.maxConnsPerHost)
+		assert.Equal(t, 20, client.connectionSettings.maxIdleConnsPerHost)
+		assert.Equal(t, 240*time.Second, client.connectionSettings.idleConnTimeout)
+		assert.Equal(t, 45*time.Second, client.connectionSettings.keepAliveInterval)
+
+		// Verify settings were applied to http.Transport
+		transport := client.conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, 200, transport.MaxConnsPerHost)
+		assert.Equal(t, 20, transport.MaxIdleConnsPerHost)
+		assert.Equal(t, 240*time.Second, transport.IdleConnTimeout)
+	})
+
+	t.Run("ClientSettings uses defaults when not configured", func(t *testing.T) {
+		client, err := NewClient("http://localhost:8182/gremlin")
+		require.NoError(t, err)
+		defer client.Close()
+
+		// Verify defaults are used (0 in settings means use default)
+		assert.Equal(t, 0, client.connectionSettings.maxConnsPerHost)
+		assert.Equal(t, 0, client.connectionSettings.maxIdleConnsPerHost)
+		assert.Equal(t, time.Duration(0), client.connectionSettings.idleConnTimeout)
+		assert.Equal(t, time.Duration(0), client.connectionSettings.keepAliveInterval)
+
+		// Verify defaults were applied to http.Transport
+		transport := client.conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, 128, transport.MaxConnsPerHost)
+		assert.Equal(t, 8, transport.MaxIdleConnsPerHost)
+		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout)
+	})
+}
+
+func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
+	t.Run("DriverRemoteConnectionSettings wires connection pool settings", func(t *testing.T) {
+		drc, err := NewDriverRemoteConnection("http://localhost:8182/gremlin",
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.MaximumConcurrentConnections = 150
+				settings.MaxIdleConnections = 15
+				settings.IdleConnectionTimeout = 200 * time.Second
+				settings.KeepAliveInterval = 40 * time.Second
+			})
+		require.NoError(t, err)
+		defer drc.Close()
+
+		// Verify settings were wired to connectionSettings
+		assert.Equal(t, 150, drc.client.connectionSettings.maxConnsPerHost)
+		assert.Equal(t, 15, drc.client.connectionSettings.maxIdleConnsPerHost)
+		assert.Equal(t, 200*time.Second, drc.client.connectionSettings.idleConnTimeout)
+		assert.Equal(t, 40*time.Second, drc.client.connectionSettings.keepAliveInterval)
+
+		// Verify settings were applied to http.Transport
+		transport := drc.client.conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, 150, transport.MaxConnsPerHost)
+		assert.Equal(t, 15, transport.MaxIdleConnsPerHost)
+		assert.Equal(t, 200*time.Second, transport.IdleConnTimeout)
+	})
+
+	t.Run("DriverRemoteConnectionSettings uses defaults when not configured", func(t *testing.T) {
+		drc, err := NewDriverRemoteConnection("http://localhost:8182/gremlin")
+		require.NoError(t, err)
+		defer drc.Close()
+
+		// Verify defaults are used (0 in settings means use default)
+		assert.Equal(t, 0, drc.client.connectionSettings.maxConnsPerHost)
+		assert.Equal(t, 0, drc.client.connectionSettings.maxIdleConnsPerHost)
+		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.idleConnTimeout)
+		assert.Equal(t, time.Duration(0), drc.client.connectionSettings.keepAliveInterval)
+
+		// Verify defaults were applied to http.Transport
+		transport := drc.client.conn.httpClient.Transport.(*http.Transport)
+		assert.Equal(t, 128, transport.MaxConnsPerHost)
+		assert.Equal(t, 8, transport.MaxIdleConnsPerHost)
+		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout)
+	})
 }

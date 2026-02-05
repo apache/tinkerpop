@@ -547,13 +547,11 @@ func TestTraversal(t *testing.T) {
 func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 	// No authentication integration test with graphs loaded and alias configured server
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
-	testNoAuthWithAliasAuthInfo := &AuthInfo{}
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = testNoAuthWithAliasTlsConfig
-			settings.AuthInfo = testNoAuthWithAliasAuthInfo
 			settings.TraversalSource = "gmodern"
 		})
 	assert.Nil(t, err)
@@ -561,15 +559,13 @@ func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 	return Traversal_().With(remote)
 }
 
-func newConnection(t *testing.T) *DriverRemoteConnection {
+func newTestRemoteConnection(t *testing.T) *DriverRemoteConnection {
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
-	testNoAuthWithAliasAuthInfo := &AuthInfo{}
 	testNoAuthWithAliasTlsConfig := &tls.Config{}
 
 	remote, err := NewDriverRemoteConnection(testNoAuthWithAliasUrl,
 		func(settings *DriverRemoteConnectionSettings) {
 			settings.TlsConfig = testNoAuthWithAliasTlsConfig
-			settings.AuthInfo = testNoAuthWithAliasAuthInfo
 			settings.TraversalSource = "gtx"
 		})
 	assert.Nil(t, err)

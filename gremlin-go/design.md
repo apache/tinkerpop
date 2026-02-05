@@ -37,7 +37,7 @@ A `Client` represents the entry point to interaction with a Gremlin-supported se
 
 ##### Cardinalities
 
-* One `gremlinClient`
+* One `connection`
 
 ##### Lifecycle and States
 
@@ -47,11 +47,11 @@ A `Client` represents the entry point to interaction with a Gremlin-supported se
 ```mermaid
 classDiagram
 	class Client
-	Client: gremlinClient gremlinClient
+	Client: conn *connection
 	Client: NewClient(host, configurations) Client
 	Client: Close()
 	Client: Submit(traversal) ResultSet
-	Client: submit(bytecode) ResultSet
+	Client: SubmitWithOptions(traversalString, options) ResultSet
 ```
 
 ```mermaid
@@ -64,44 +64,38 @@ sequenceDiagram
 	
 ```
 
-#### gremlinClient
+#### connection
 
-The `gremlinClient` entity handles invoking serialization and deserialization of data, as well as handling the lifecycle of raw data passed to and received from the `httpTransporter` layer. Upon sending a request, an instance of `gremlinClient` starts a `goroutine` to asynchronously read and populate data into a  `ResultSet`.
+The `connection` entity is the unified HTTP communication layer that handles serialization, HTTP request/response, and streaming deserialization. It manages the lifecycle of requests sent to and responses received from a Gremlin Server. Upon sending a request, the `connection` starts a `goroutine` to asynchronously stream and populate data into a `ResultSet`.
 
 ##### Cardinalities
 
-* One `transporter`
 * One `serializer`
 * One `http.Client`
 
 ##### Lifecycle and States
 
-* States
-  * `closed bool`
-* When `close()` is invoked, set the `closed` boolean to `true` which will terminate the `goroutine` used for asynchronously reading, and invoke `close()` on the `transporter`.
+* When `close()` is invoked, idle HTTP connections are closed.
 
 ```mermaid
 classDiagram
-	class gremlinClient
-	gremlinClient: httpClient *http.Client
-	gremlinClient: serializer *serializer
-	gremlinClient: connSettings *connectionSettings
-	gremlinClient: close()
-	gremlinClient: send(request)
-	gremlinClient: receive(rs ResultSet, msg []byte)
+	class connection
+	connection: httpClient *http.Client
+	connection: serializer *GraphBinarySerializer
+	connection: connSettings *connectionSettings
+	connection: close()
+	connection: submit(request) ResultSet
 ```
 
 ```mermaid
 sequenceDiagram
-    client->>gremlinClient: send(request)
-    gremlinClient-->>client: ResultSet
-	gremlinClient->>serializer: serializeMessage(request)
-	serializer-->>gremlinClient: bytes
-	gremlinClient->>httpTransporter: Write(bytes)
-	gremlinClient->>httpTransporter: Read()
-	httpTransporter-->>gremlinClient: bytes
-    gremlinClient->>serializer: deserializeMessage(response)
-    gremlinClient-->>gremlinClient: population of ResultSet
+    Client->>connection: submit(request)
+    connection-->>Client: ResultSet
+	connection->>serializer: SerializeMessage(request)
+	serializer-->>connection: bytes
+	connection->>httpClient: Do(httpRequest)
+	httpClient-->>connection: httpResponse
+    connection->>connection: streamToResultSet (async)
 	
 
 ```
@@ -124,10 +118,6 @@ classDiagram
 	serializer: serializeMessage(request) []byte
 	serializer: deserializeMessage([]byte) response
 ```
-
-#### httpTransporter
-
-The `httpTransporter` is responsible for sending and receiving bytes to/from the server. It is intended for one `httpTransporter` to be instantiated per http request and response.
 
 #### Result
 
