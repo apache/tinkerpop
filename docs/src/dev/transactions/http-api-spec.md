@@ -1,129 +1,125 @@
-# HTTP Transaction API Specification
+## Request Format Specification
 
-## Overview
+**Endpoint:** `POST /gremlin`  
+**Content-Type:** `application/json`
 
-The Gremlin Server exposes a REST API for transaction management. Transactions are modeled as resources with unique IDs, and all operations within a transaction include the transaction ID in the URL path.
+### Required Fields
 
-**NOTE** This is very preliminary and can easily be modeled by a single endpoint.
+| Field | Type | Description |
+|-------|------|-------------|
+| `gremlin` | String | The Gremlin query to execute. For tx control: `"g.tx().begin()"`, `"g.tx().commit()"`, `"g.tx().rollback()"` |
+| `g` | String | Graph/traversal source alias (e.g., `"g"`, `"gmodern"`, `"gcrew"`) |
+| `transactionId` | String | Client-generated UUID. Must be consistent across all requests in the same transaction |
 
-## API Endpoints
+### Required Header
 
-### Non-Transactional Traversal
-```
-POST /gremlin
-```
-Standard Gremlin Server endpoint for executing traversals without a transaction.
+| Header | Type | Description |
+|--------|------|-------------|
+| `X-Transaction-Id` | String | Same value as body `transactionId`. Used for load balancer routing |
 
-### Begin Transaction
-```
-POST /gremlin/tx
+---
 
-Response: 201 Created
-Location: /gremlin/tx/{txId}
-{
-  "txId": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-Creates a new transaction and returns a unique transaction ID.
+## Transaction Control Commands
 
-### Execute Traversal Within Transaction
-```
-POST /gremlin/tx/{txId}
+The server must detect these exact Gremlin strings to handle transaction lifecycle:
 
-Response: 200 OK
-(Standard Gremlin response)
-```
-Executes a traversal within the context of the specified transaction. Request body is the same as `POST /gremlin`, but the traversal is scoped to the transaction.
+```mermaid
+flowchart LR
+    subgraph detection["Transaction Control Detection"]
+        begin['"g.tx().begin()"']
+        commit['"g.tx().commit()"']
+        rollback['"g.tx().rollback()"']
+        other["Any other gremlin"]
+    end
 
-### Get Transaction Status
-```
-GET /gremlin/tx/{txId}
-
-Response: 200 OK
-{
-  "txId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "ACTIVE"
-}
-```
-Returns the current status of a transaction (ACTIVE, COMMITTED, or ROLLED_BACK).
-
-### Commit Transaction
-```
-POST /gremlin/tx/{txId}/commit
-
-Response: 200 OK
-{
-  "txId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "COMMITTED"
-}
-```
-Commits all changes made within the transaction.
-
-### Rollback Transaction
-```
-POST /gremlin/tx/{txId}/rollback
-
-Response: 200 OK
-{
-  "txId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "ROLLED_BACK"
-}
-```
-Rolls back all changes made within the transaction.
-
-### Abort Transaction
-```
-DELETE /gremlin/tx/{txId}
-
-Response: 200 OK
-{
-  "txId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "ROLLED_BACK"
-}
-```
-Alternative to rollback - aborts the transaction and rolls back all changes.
-
-## Error Responses
-
-### Transaction Not Found
-```
-GET /gremlin/tx/invalid-id
-
-Response: 404 Not Found
-{
-  "error": "Transaction not found",
-  "txId": "invalid-id"
-}
+    begin --> beginAction["Create new TransactionContext<br/>• Allocate dedicated thread<br/>• Open graph transaction<br/>• Start inactivity timeout<br/>• Store context keyed by transactionId"]
+    
+    commit --> commitAction["Commit and cleanup<br/>• Commit graph transaction<br/>• Remove TransactionContext<br/>• Release dedicated thread<br/>• Cancel timeout timer"]
+    
+    rollback --> rollbackAction["Rollback and cleanup<br/>• Rollback graph transaction<br/>• Remove TransactionContext<br/>• Release dedicated thread<br/>• Cancel timeout timer"]
+    
+    other --> otherAction["Execute within transaction<br/>• Lookup TransactionContext by transactionId<br/>• Execute on transaction's thread<br/>• Reset inactivity timeout"]
 ```
 
-### Transaction Already in Terminal State
+**IMPORTANT:** String matching should be exact (after trimming whitespace)
+
+---
+
+
+## Protocol Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: 1. BEGIN TRANSACTION
+
+    Client->>Server: POST /gremlin<br/>Header: X-Transaction-Id: abc-123-def-456<br/>Body: {"gremlin": "g.tx().begin()", "g": "gmodern", "transactionId": "abc-123-def-456"}
+    
+    Note right of Server: Create TransactionContext<br/>• Allocate thread for tx<br/>• Open graph transaction<br/>• Start timeout timer
+    
+    Server-->>Client: 200 OK
+
+    Note over Client,Server: 2. EXECUTE OPERATIONS (repeat as needed)
+
+    Client->>Server: POST /gremlin<br/>Header: X-Transaction-Id: abc-123-def-456<br/>Body: {"gremlin": "g.addV('person').property('name','josh')", "g": "gmodern", "transactionId": "abc-123-def-456"}
+    
+    Note right of Server: Lookup TransactionContext<br/>Execute on tx thread<br/>Reset timeout timer
+    
+    Server-->>Client: 200 OK + results
+
+    Note over Client,Server: 3. COMMIT or ROLLBACK
+
+    Client->>Server: POST /gremlin<br/>Header: X-Transaction-Id: abc-123-def-456<br/>Body: {"gremlin": "g.tx().commit()", "g": "gmodern", "transactionId": "abc-123-def-456"}
+    
+    Note right of Server: Commit graph transaction<br/>Cleanup TransactionContext<br/>Release thread
+    
+    Server-->>Client: 200 OK
 ```
-POST /gremlin/tx/{txId}/commit
 
-Response: 409 Conflict
-{
-  "error": "Transaction already in terminal state",
-  "txId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "COMMITTED"
-}
+---
+
+## Transaction ID: Dual Transmission Design
+
+### Why Transaction ID Appears Twice
+
+```mermaid
+flowchart TB
+    subgraph request["HTTP Request Structure"]
+        subgraph headers["HTTP HEADERS"]
+            h1["Content-Type: application/json"]
+            h2["X-Transaction-Id: abc-123-def-456"]
+        end
+        subgraph body["HTTP BODY (JSON)"]
+            b1['"gremlin": "g.addV(\'person\')"']
+            b2['"g": "gmodern"']
+            b3['"transactionId": "abc-123-def-456"']
+        end
+    end
+
+    h2 -->|FOR LOAD BALANCER ROUTING| lb["Load Balancers, Proxies, API Gateways"]
+    b3 -->|FOR SERVER PROCESSING| server["Graph Database Server"]
 ```
 
-### Transaction Execution Error
+### Architectural Rationale
+
+| Aspect | X-Transaction-Id HEADER | transactionId BODY FIELD |
+|--------|------------------------|--------------------------|
+| **Purpose** | Infrastructure routing | Application logic |
+| **Used by** | Load balancers, proxies, API gateways | Graph database server to lookup transaction state |
+| **Why needed** | Load balancers typically only inspect headers, not body. Enables sticky sessions without application-layer parsing. Works with any LB that supports header-based routing. | Server needs to associate request with correct transaction. Part of the Gremlin request protocol specification. Consistent with other request fields (gremlin, g, bindings). |
+
+### Load Balancer Sticky Routing
+
+```mermaid
+flowchart TB
+    LB["Load Balancer<br/>(reads X-Transaction-Id header)"]
+    
+    LB --> ServerA["Server A<br/>tx: abc, def"]
+    LB --> ServerB["Server B<br/>tx: xyz, uvw"]
+    LB --> ServerC["Server C<br/>tx: 123, 456"]
+    
+    req1["Request with<br/>X-Transaction-Id: abc"] -.->|Always routes to| ServerA
+    req2["Request with<br/>X-Transaction-Id: xyz"] -.->|Always routes to| ServerB
 ```
-POST /gremlin/tx/{txId}
-
-Response: 500 Internal Server Error
-{
-  "error": "Traversal execution failed",
-  "message": "...",
-  "txId": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-## Transaction ID Format
-
-- **Format**: UUID
-- **Example**: `550e8400-e29b-41d4-a716-446655440000`
-- **Generation**: Server-generated on `POST /gremlin/tx`
-- **Usage**: Included in all subsequent requests as URL path parameter
-- **Purpose**: Routes requests to correct transaction context on server
