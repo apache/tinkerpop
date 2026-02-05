@@ -17,13 +17,12 @@
  *  under the License.
  */
 
-import * as utils from '../utils.js';
 import Connection, { ConnectionOptions } from './connection.js';
 import { Readable } from 'stream';
+import {RequestMessage} from "./request-message.js";
 
 export type RequestOptions = {
   requestId?: string;
-  session?: string;
   bindings?: any;
   language?: string;
   accept?: string;
@@ -67,14 +66,6 @@ export default class Client {
     url: string,
     private readonly options: ClientOptions = {},
   ) {
-    if (this.options.processor === 'session') {
-      // compatibility with old 'session' processor setting
-      this.options.session = options.session || utils.getUuid();
-    }
-    if (this.options.session) {
-      // re-assign processor to 'session' when in session mode
-      this.options.processor = options.processor || 'session';
-    }
     this._connection = new Connection(url, options);
   }
 
@@ -110,31 +101,21 @@ export default class Client {
    * @param {Object|null} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
-   */
+   */ //TODO:: tighten return type to Promise<ResultSet>
+  //TODO:: Remove bytecode as allowable message type
   submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
-    const requestIdOverride = requestOptions && requestOptions.requestId;
-    if (requestIdOverride) {
-      delete requestOptions['requestId'];
-    }
+      const requestBuilder = RequestMessage.build(message)
+          .addG(this.options.traversalSource || 'g')
+          .addLanguage('gremlin-lang');
 
-    const args = Object.assign(
-      {
-        gremlin: message,
-        aliases: { g: this.options.traversalSource || 'g' },
-      },
-      requestOptions,
-    );
+      if (requestOptions?.bindings) {
+          requestBuilder.addBindings(requestOptions.bindings);
+      }
+      if (bindings) {
+          requestBuilder.addBindings(bindings);
+      }
 
-    args['language'] = 'gremlin-lang';
-    args['accept'] = this._connection.mimeType;
-
-    if (bindings) args['bindings'] = bindings;
-
-    if (this.options.session && this.options.processor === 'session') {
-      args['session'] = this.options.session;
-      return this._connection.submit('session', 'eval', args, requestIdOverride);
-    }
-    return this._connection.submit(this.options.processor || '', 'eval', args, requestIdOverride);
+      return this._connection.submit(requestBuilder.create());
   }
 
   /**
@@ -144,30 +125,9 @@ export default class Client {
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {ReadableStream}
    */
+  //TODO:: Update stream() to mirror submit()
   stream(message: string, bindings: any, requestOptions?: RequestOptions): Readable {
-    const requestIdOverride = requestOptions && requestOptions.requestId;
-    if (requestIdOverride) {
-      delete requestOptions['requestId'];
-    }
-
-    const args = Object.assign(
-      {
-        gremlin: message,
-        aliases: { g: this.options.traversalSource || 'g' },
-      },
-      requestOptions,
-    );
-
-    args['language'] = 'gremlin-lang';
-    args['accept'] = this._connection.mimeType;
-
-    if (bindings) args['bindings'] = bindings;
-
-    if (this.options.session && this.options.processor === 'session') {
-      args['session'] = this.options.session;
-      return this._connection.stream('session', 'eval', args, requestIdOverride);
-    }
-    return this._connection.stream(this.options.processor || '', 'eval', args, requestIdOverride);
+      throw new Error("Stream not yet implemented");
   }
 
   /**
@@ -176,10 +136,6 @@ export default class Client {
    * @returns {Promise}
    */
   close(): Promise<void> {
-    if (this.options.session && this.options.processor === 'session') {
-      const args = { session: this.options.session };
-      return this._connection.submit(this.options.processor, 'close', args, null).then(() => this._connection.close());
-    }
     return this._connection.close();
   }
 

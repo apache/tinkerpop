@@ -34,14 +34,14 @@ let serverAuthUrl;
 let socketServerUrl;
 let sockerServerConfigPath;
 if (process.env.DOCKER_ENVIRONMENT === 'true') {
-  serverUrl = 'ws://gremlin-server-test-js:45940/gremlin';
-  serverAuthUrl = 'wss://gremlin-server-test-js:45941/gremlin';
-  socketServerUrl = 'ws://gremlin-socket-server-js:';
+  serverUrl = 'http://gremlin-server-test-js:45940/gremlin';
+  serverAuthUrl = 'https://gremlin-server-test-js:45941/gremlin';
+  socketServerUrl = 'http://gremlin-socket-server-js:';
   sockerServerConfigPath = '/js_app/gremlin-socket-server/conf/test-ws-gremlin.yaml';
 } else {
-  serverUrl = 'ws://localhost:45940/gremlin';
-  serverAuthUrl = 'wss://localhost:45941/gremlin';
-  socketServerUrl = 'ws://localhost:';
+  serverUrl = 'http://localhost:8182/gremlin';
+  serverAuthUrl = 'https://localhost:45941/gremlin';
+  socketServerUrl = 'http://localhost:';
   sockerServerConfigPath = '../../../../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml';
 }
 
@@ -70,15 +70,6 @@ export function getDriverRemoteConnectionGraphSON(traversalSource) {
 
 export function getClient(traversalSource) {
   return new Client(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
-}
-
-export function getSessionClient(traversalSource) {
-  const sessionId = utilsJs.getUuid();
-  return new Client(serverUrl, {
-    'traversalSource': traversalSource,
-    'session': sessionId.toString(),
-    mimeType: process.env.CLIENT_MIMETYPE,
-  });
 }
 
 function getMimeTypeFromSocketServerSettings(socketServerSettings) {

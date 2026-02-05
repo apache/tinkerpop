@@ -48,6 +48,7 @@ import {
   typeKey,
   valueKey,
 } from './type-serializers.js';
+import {RequestMessage} from "../../driver/request-message.js";
 
 export type GraphWriterOptions = {
   serializers?: Record<string, TypeSerializer<any>>;
@@ -128,25 +129,41 @@ export class GraphSON2Writer {
     return JSON.stringify(this.adaptObject(obj));
   }
 
-  writeRequest({
-    requestId,
-    op,
-    processor,
-    args,
-  }: {
-    processor: string | undefined;
-    op: string;
-    args: any;
-    requestId?: string | null;
-  }) {
-    const req = {
-      requestId: { '@type': 'g:UUID', '@value': requestId },
-      op,
-      processor,
-      args: this._adaptArgs(args, true),
+  writeRequest(request: RequestMessage) {
+    const fields: Record<string, any> = {
+      language: request.getLanguage() || "gremlin-lang",
+      g: request.getG() || "g",
+      bindings: this._adaptArgs(request.getBindings() || {}, true)
     };
 
-    return Buffer.from(JSON.stringify(req));
+    const timeoutMs = request.getTimeoutMs();
+    if (timeoutMs !== undefined) fields.timeoutMs = this.adaptObject(timeoutMs);
+
+    const materializeProperties = request.getMaterializeProperties();
+    if (materializeProperties !== undefined) fields.materializeProperties = this.adaptObject(materializeProperties);
+
+    const bulkResults = request.getBulkResults();
+    if (bulkResults !== undefined) fields.bulkResults = this.adaptObject(bulkResults);
+
+    const allFields = request.getFields();
+    for (const [key, value] of allFields) {
+        fields[key] = this.adaptObject(value);
+    }
+
+    const req: {
+      gremlin: string,
+      timeoutMs: number | undefined,
+      bindings: object | undefined
+    } = {
+      gremlin: request.getGremlin(),
+      timeoutMs: undefined,
+      bindings: undefined
+    };
+
+    if (request.getBindings() !== undefined) req.bindings = request.getBindings();
+
+    const reqString = JSON.stringify(req)
+    return Buffer.from(reqString);
   }
 
   /**
