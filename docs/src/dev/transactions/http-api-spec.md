@@ -26,19 +26,16 @@ The server must detect these exact Gremlin strings to handle transaction lifecyc
 ```mermaid
 flowchart LR
     subgraph detection["Transaction Control Detection"]
-        begin['"g.tx().begin()"']
-        commit['"g.tx().commit()"']
-        rollback['"g.tx().rollback()"']
+        begin["g.tx#40;#41;.begin#40;#41;"]
+        commit["g.tx#40;#41;.commit#40;#41;"]
+        rollback["g.tx#40;#41;.rollback#40;#41;"]
         other["Any other gremlin"]
     end
 
-    begin --> beginAction["Create new TransactionContext<br/>• Allocate dedicated thread<br/>• Open graph transaction<br/>• Start inactivity timeout<br/>• Store context keyed by transactionId"]
-    
-    commit --> commitAction["Commit and cleanup<br/>• Commit graph transaction<br/>• Remove TransactionContext<br/>• Release dedicated thread<br/>• Cancel timeout timer"]
-    
-    rollback --> rollbackAction["Rollback and cleanup<br/>• Rollback graph transaction<br/>• Remove TransactionContext<br/>• Release dedicated thread<br/>• Cancel timeout timer"]
-    
-    other --> otherAction["Execute within transaction<br/>• Lookup TransactionContext by transactionId<br/>• Execute on transaction's thread<br/>• Reset inactivity timeout"]
+    begin --> beginAction["Create new TransactionContext"]
+    commit --> commitAction["Commit and cleanup"]
+    rollback --> rollbackAction["Rollback and cleanup"]
+    other --> otherAction["Execute within transaction"]
 ```
 
 **IMPORTANT:** String matching should be exact (after trimming whitespace)
@@ -91,10 +88,10 @@ flowchart TB
             h1["Content-Type: application/json"]
             h2["X-Transaction-Id: abc-123-def-456"]
         end
-        subgraph body["HTTP BODY (JSON)"]
-            b1['"gremlin": "g.addV(\'person\')"']
-            b2['"g": "gmodern"']
-            b3['"transactionId": "abc-123-def-456"']
+        subgraph body["HTTP BODY #40;JSON#41;"]
+            b1["gremlin: g.addV#40;person#41;"]
+            b2["g: gmodern"]
+            b3["transactionId: abc-123-def-456"]
         end
     end
 
