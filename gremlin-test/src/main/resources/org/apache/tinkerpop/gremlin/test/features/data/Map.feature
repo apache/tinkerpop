@@ -49,6 +49,7 @@ Feature: Data - MAP
     When iterated to list
     Then the result should be empty
 
+  @AllowMapPropertyValues
   Scenario: g_V_valuesXmapX_isXtypeOfXGType_MAPXX
     Given the empty graph
     And the graph initializer of
@@ -64,6 +65,7 @@ Feature: Data - MAP
       | result |
       | m[{"key1":"1","key2":"2"}] |
 
+  @AllowMapPropertyValues
   Scenario: g_V_hasXmap_typeOfXGType_MAPXX_valuesXnameX
     Given the empty graph
     And the graph initializer of
@@ -79,6 +81,7 @@ Feature: Data - MAP
       | result |
       | test |
 
+  @AllowMapPropertyValues
   Scenario: g_V_valuesXmapX_isXtypeOfXGType_MAPXX_countXlocalX
     Given the empty graph
     And the graph initializer of
@@ -94,6 +97,7 @@ Feature: Data - MAP
       | result |
       | d[3].l |
 
+  @AllowMapPropertyValues
   Scenario: g_V_valuesXmapX_isXtypeOfXGType_MAPXX_selectXvaluesX
     Given the empty graph
     And the graph initializer of
@@ -110,6 +114,7 @@ Feature: Data - MAP
       | NYC |
       | USA |
 
+  @AllowMapPropertyValues
   Scenario: g_V_valuesXmapX_isXtypeOfXGType_MAPXX_whereX_countXlocalX_isXgtX1XXX
     Given the empty graph
     And the graph initializer of
@@ -126,6 +131,7 @@ Feature: Data - MAP
       | result |
       | m[{"key1":"1","key2":"2"}] |
 
+  @AllowMapPropertyValues
   Scenario: g_V_valuesXmapX_isXtypeOfXGType_MAPXX_foldX
     Given the empty graph
     And the graph initializer of
