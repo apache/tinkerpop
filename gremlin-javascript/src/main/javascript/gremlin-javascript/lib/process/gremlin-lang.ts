@@ -18,12 +18,21 @@
  */
 
 import { P, TextP, EnumValue } from './traversal.js';
+import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 
 export default class GremlinLang {
   private gremlin: string = '';
+  private optionsStrategies: OptionsStrategy[] = [];
   
   constructor(toClone?: GremlinLang) {
-    if (toClone) this.gremlin = toClone.gremlin;
+    if (toClone) {
+      this.gremlin = toClone.gremlin;
+      this.optionsStrategies = [...toClone.optionsStrategies];
+    }
+  }
+  
+  getOptionsStrategies(): OptionsStrategy[] {
+    return this.optionsStrategies;
   }
   
   private _argAsString(arg: any): string {
@@ -40,6 +49,15 @@ export default class GremlinLang {
     if (arg instanceof EnumValue) {
       return arg.toString();
     }
+    if (arg instanceof TraversalStrategy && !(arg instanceof OptionsStrategy)) {
+      const simpleName = arg.fqcn.split('.').pop() || arg.fqcn;
+      const configEntries = Object.entries(arg.configuration);
+      if (configEntries.length === 0) {
+        return simpleName;
+      }
+      const configStr = configEntries.map(([k, v]) => `${k}:${this._argAsString(v)}`).join(', ');
+      return `new ${simpleName}(${configStr})`;
+    }
     if (Array.isArray(arg)) {
       return '[' + arg.map(a => this._argAsString(a)).join(', ') + ']';
     }
@@ -52,6 +70,27 @@ export default class GremlinLang {
   }
   
   addStep(name: string, args?: any[]): GremlinLang {
+    const argsStr = args?.length ? args.map(a => this._argAsString(a)).join(', ') : '';
+    this.gremlin += `.${name}(${argsStr})`;
+    return this;
+  }
+  
+  addSource(name: string, args?: any[]): GremlinLang {
+    if (name === 'withStrategies' && args) {
+      const nonOptionsStrategies: any[] = [];
+      for (const strategy of args) {
+        if (strategy instanceof OptionsStrategy) {
+          this.optionsStrategies.push(strategy);
+        } else {
+          nonOptionsStrategies.push(strategy);
+        }
+      }
+      if (nonOptionsStrategies.length > 0) {
+        const argsStr = nonOptionsStrategies.map(a => this._argAsString(a)).join(', ');
+        this.gremlin += `.withStrategies(${argsStr})`;
+      }
+      return this;
+    }
     const argsStr = args?.length ? args.map(a => this._argAsString(a)).join(', ') : '';
     this.gremlin += `.${name}(${argsStr})`;
     return this;

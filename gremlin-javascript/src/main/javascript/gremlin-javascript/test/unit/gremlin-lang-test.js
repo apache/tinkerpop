@@ -20,6 +20,7 @@
 import assert from 'assert';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 import { P, TextP, order, t } from '../../lib/process/traversal.js';
+import { OptionsStrategy, ReadOnlyStrategy } from '../../lib/process/traversal-strategy.js';
 
 describe('GremlinLang', function () {
   describe('#getGremlin()', function () {
@@ -196,6 +197,58 @@ describe('GremlinLang', function () {
     it('should handle object with mixed value types', function () {
       const gremlinLang = new GremlinLang();
       assert.strictEqual(gremlinLang.addStep('inject', [{str: 'a', num: 1, bool: true}]).getGremlin(), "g.inject(['str':'a', 'num':1, 'bool':true])");
+    });
+  });
+
+  describe('addSource', function () {
+    it('should add withBulk source', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addSource('withBulk', [false]).getGremlin(), 'g.withBulk(false)');
+    });
+
+    it('should add withSack source', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addSource('withSack', [1]).getGremlin(), 'g.withSack(1)');
+    });
+
+    it('should chain source followed by step', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addSource('withBulk', [false]).addStep('V').getGremlin(), 'g.withBulk(false).V()');
+    });
+  });
+
+  describe('OptionsStrategy extraction', function () {
+    it('should store OptionsStrategy and not serialize it', function () {
+      const gremlinLang = new GremlinLang();
+      const optionsStrategy = new OptionsStrategy({timeout: 1000});
+      gremlinLang.addSource('withStrategies', [optionsStrategy]);
+      assert.strictEqual(gremlinLang.getGremlin(), 'g');
+      assert.strictEqual(gremlinLang.getOptionsStrategies().length, 1);
+      assert.strictEqual(gremlinLang.getOptionsStrategies()[0], optionsStrategy);
+    });
+
+    it('should serialize non-OptionsStrategy', function () {
+      const gremlinLang = new GremlinLang();
+      gremlinLang.addSource('withStrategies', [new ReadOnlyStrategy()]);
+      assert.strictEqual(gremlinLang.getGremlin(), 'g.withStrategies(ReadOnlyStrategy)');
+    });
+
+    it('should handle mixed strategies', function () {
+      const gremlinLang = new GremlinLang();
+      const optionsStrategy = new OptionsStrategy({timeout: 1000});
+      gremlinLang.addSource('withStrategies', [optionsStrategy, new ReadOnlyStrategy()]);
+      assert.strictEqual(gremlinLang.getGremlin(), 'g.withStrategies(ReadOnlyStrategy)');
+      assert.strictEqual(gremlinLang.getOptionsStrategies().length, 1);
+      assert.strictEqual(gremlinLang.getOptionsStrategies()[0], optionsStrategy);
+    });
+
+    it('should clone optionsStrategies array', function () {
+      const original = new GremlinLang();
+      const optionsStrategy = new OptionsStrategy({timeout: 1000});
+      original.addSource('withStrategies', [optionsStrategy]);
+      const clone = new GremlinLang(original);
+      assert.strictEqual(clone.getOptionsStrategies().length, 1);
+      assert.strictEqual(clone.getOptionsStrategies()[0], optionsStrategy);
     });
   });
 });
