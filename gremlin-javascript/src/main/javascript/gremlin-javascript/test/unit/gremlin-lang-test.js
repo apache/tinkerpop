@@ -152,7 +152,7 @@ describe('GremlinLang', function () {
 
     it('should handle chained P predicates', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.V().has('age', and(gt(5), lt(10)))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.V().has('age', gt(5).and(lt(10)))");
     });
   });
 

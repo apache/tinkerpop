@@ -35,6 +35,24 @@ export default class GremlinLang {
     return this.optionsStrategies;
   }
   
+  private _predicateAsString(p: P | TextP): string {
+    if (p.operator === 'and' || p.operator === 'or') {
+      return `${this._predicateAsString(p.value)}.${p.operator}(${this._predicateAsString(p.other)})`;
+    }
+    
+    let result = p.operator + '(';
+    if (Array.isArray(p.value)) {
+      result += '[' + p.value.map(v => this._argAsString(v)).join(', ') + ']';
+    } else {
+      result += this._argAsString(p.value);
+      if (p.other !== undefined && p.other !== null) {
+        result += ',' + this._argAsString(p.other);
+      }
+    }
+    result += ')';
+    return result;
+  }
+
   private _argAsString(arg: any): string {
     if (arg === null || arg === undefined) return 'null';
     if (typeof arg === 'boolean') return arg ? 'true' : 'false';
@@ -44,7 +62,7 @@ export default class GremlinLang {
       return `'${escaped}'`;
     }
     if (arg instanceof P || arg instanceof TextP) {
-      return arg.toString();
+      return this._predicateAsString(arg);
     }
     if (arg instanceof EnumValue) {
       return arg.toString();
