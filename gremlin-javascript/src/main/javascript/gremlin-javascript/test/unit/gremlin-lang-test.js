@@ -53,42 +53,42 @@ describe('GremlinLang', function () {
 
     it('should handle boolean arguments', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['active', true]).getGremlin(), "g.has('active', true)");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['active', true]).getGremlin(), "g.V().has('active', true)");
     });
 
     it('should handle null arguments', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('property', ['x', null]).getGremlin(), "g.property('x', null)");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('property', ['x', null]).getGremlin(), "g.V().property('x', null)");
     });
 
     it('should handle multiple number arguments', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['count', 42]).getGremlin(), "g.has('count', 42)");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['count', 42]).getGremlin(), "g.V().has('count', 42)");
     });
 
     it('should handle string arguments', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['name', 'josh']).getGremlin(), "g.has('name', 'josh')");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['name', 'josh']).getGremlin(), "g.V().has('name', 'josh')");
     });
 
     it('should escape single quotes in strings', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['x', "it's"]).getGremlin(), "g.has('x', 'it\\'s')");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['x', "it's"]).getGremlin(), "g.V().has('x', 'it\\'s')");
     });
 
     it('should escape backslashes in strings', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['x', 'a\\b']).getGremlin(), "g.has('x', 'a\\\\b')");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['x', 'a\\b']).getGremlin(), "g.V().has('x', 'a\\\\b')");
     });
 
     it('should handle array arguments', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('V', [[1, 2, 3]]).getGremlin(), 'g.V([1, 2, 3])');
+      assert.strictEqual(gremlinLang.addStep('inject', [[1, 2, 3]]).getGremlin(), 'g.inject([1, 2, 3])');
     });
 
     it('should handle empty array', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('V', [[]]).getGremlin(), 'g.V([])');
+      assert.strictEqual(gremlinLang.addStep('inject', [[]]).getGremlin(), 'g.inject([])');
     });
 
     it('should handle nested arrays', function () {
@@ -132,39 +132,39 @@ describe('GremlinLang', function () {
   describe('P and TextP predicates', function () {
     it('should handle P.gt predicate', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['age', P.gt(5)]).getGremlin(), "g.has('age', gt(5))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.gt(5)]).getGremlin(), "g.V().has('age', gt(5))");
     });
 
     it('should handle P.within with array', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('V', [P.within([1, 2, 3])]).getGremlin(), "g.V(within([1, 2, 3]))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.within([1, 2, 3])]).getGremlin(), "g.V().has('age', within([1, 2, 3]))");
     });
 
     it('should handle P.within with empty array', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('V', [P.within([])]).getGremlin(), "g.V(within([]))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.within([])]).getGremlin(), "g.V().has('age', within([]))");
     });
 
     it('should handle TextP.containing predicate', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['name', TextP.containing('foo')]).getGremlin(), "g.has('name', containing('foo'))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['name', TextP.containing('foo')]).getGremlin(), "g.V().has('name', containing('foo'))");
     });
 
     it('should handle chained P predicates', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.has('age', and(gt(5), lt(10)))");
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['age', P.gt(5).and(P.lt(10))]).getGremlin(), "g.V().has('age', and(gt(5), lt(10)))");
     });
   });
 
   describe('EnumValue support', function () {
-    it('should handle order.shuffle enum', function () {
+    it('should handle order enum in by step', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('order', [order.shuffle]).getGremlin(), 'g.order(shuffle)');
+      assert.strictEqual(gremlinLang.addStep('V').addStep('order').addStep('by', [order.shuffle]).getGremlin(), 'g.V().order().by(shuffle)');
     });
 
     it('should handle t.label enum', function () {
       const gremlinLang = new GremlinLang();
-      assert.strictEqual(gremlinLang.addStep('values', [t.label]).getGremlin(), 'g.values(label)');
+      assert.strictEqual(gremlinLang.addStep('V').addStep('values', [t.label]).getGremlin(), 'g.V().values(label)');
     });
 
     it('should handle enum in complex step', function () {
