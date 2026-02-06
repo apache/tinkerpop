@@ -611,8 +611,11 @@ include or ignore certain tests. The tags enable the practical and necessary abi
 they simply cannot support. It is important to be aware of the following tags when writing tests as not including a
 tag when one is necessary will cause provider tests to fail:
 
+* `@AllowListPropertyValues` - The scenario requires that the graph can store a `List` as a property value.
+* `@AllowMapPropertyValues` - The scenario requires that the graph can store a `Map` as a property value.
 * `@AllowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `true` (meaning that it can store `null` values).
+* `@AllowSetPropertyValues` - The scenario requires that the graph can store a `Set` as a property value.
 * `@DisallowNullPropertyValues` - The scenario requires that the graph be configured with `AllowNullPropertyValues` as
 `false` (meaning that it cannot store `null` values).
 * `@GraphComputerOnly` - The scenario is only supported with `GraphComputer`.

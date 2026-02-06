@@ -38,6 +38,7 @@ Feature: Data - LIST
     When iterated to list
     Then the result should be empty
 
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX
     Given the empty graph
     And the graph initializer of
@@ -53,6 +54,8 @@ Feature: Data - LIST
       | result |
       | l[a,b,c] |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_hasXlist_typeOfXGType_LISTXX_valuesXnameX
     Given the empty graph
     And the graph initializer of
@@ -68,6 +71,8 @@ Feature: Data - LIST
       | result |
       | test |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX_unfold
     Given the empty graph
     And the graph initializer of
@@ -85,6 +90,8 @@ Feature: Data - LIST
       | y |
       | z |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX_countXlocalX
     Given the empty graph
     And the graph initializer of
@@ -100,6 +107,8 @@ Feature: Data - LIST
       | result |
       | d[5].l |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX_unfold_rangeX1_3X
     Given the empty graph
     And the graph initializer of
@@ -116,6 +125,8 @@ Feature: Data - LIST
       | second |
       | third |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX_project_byXidentityX_byXcountXlocalX
     Given the empty graph
     And the graph initializer of
@@ -131,6 +142,8 @@ Feature: Data - LIST
       | result |
       | m[{"original":"l[apple,banana]","size":"d[2].l"}] |
 
+
+  @AllowListPropertyValues
   Scenario: g_V_valuesXlistX_isXtypeOfXGType_LISTXX_whereXcountXlocalX_isXgtX2XXX
     Given the empty graph
     And the graph initializer of
