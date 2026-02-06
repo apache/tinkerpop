@@ -86,6 +86,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Fixed default `enableCompression` setting to be `false` instead of `undefined` in `gremlin-javascript`
 * Increased default `max_content_length`/`max_msg_size` in `gremlin-python` from 4MB to 10MB.
 * Added the `PopContaining` interface designed to get label and `Pop` combinations held in a `PopInstruction` object.
+* Backport `OffsetDateTime` serializers from 4.0.0-beta for deserialization. Note `Date` remains the default serializer for GLV native date types.
 * Fixed bug preventing a vertex from being dropped and then re-added in the same `TinkerTransaction`
 * Fixed bug which could cause a 'Conflict: element modified in another transaction' when a transaction is attempting to add/drop/update a vertex or edge while another transaction is reading the same vertex or edge.
 * Upgraded Node version from 18 to 20
