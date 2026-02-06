@@ -58,6 +58,8 @@ import java.util.function.UnaryOperator;
 
 /**
  * Converts bytecode to a Javascript string of Gremlin.
+ * <p/>
+ * Assumes use of https://www.npmjs.com/package/uuid library for UUID handling.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -157,7 +159,7 @@ public final class JavascriptTranslator implements Translator.ScriptTranslator {
 
         @Override
         protected String getSyntax(final UUID o) {
-            return "'" + o.toString() + "'";
+            return "uuid.parse('" + o.toString() + "')";
         }
 
         @Override

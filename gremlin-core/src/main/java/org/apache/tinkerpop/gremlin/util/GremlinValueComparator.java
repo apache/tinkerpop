@@ -26,12 +26,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -241,7 +240,7 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
         Nulltype,
         Boolean         (Boolean.class),
         Number          (Number.class),
-        Date            (Date.class),
+        Date            (OffsetDateTime.class),
         String          (String.class),
         UUID            (UUID.class),
         Vertex          (Vertex.class),

@@ -38,6 +38,8 @@ import java.util.stream.Collectors;
  *     <li>Makes anonymous traversals explicit with double underscore</li>
  *     <li>Makes enums explicit with their proper name</li>
  * </ul>
+ * <p/>
+ * Assumes use of https://www.npmjs.com/package/uuid library for UUID handling.
  */
 public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     public JavascriptTranslateVisitor() {
@@ -222,7 +224,9 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
             sb.append("uuid.v4()");
             return null;
         }
+        sb.append("uuid.parse(");
         visitStringLiteral(ctx.stringLiteral());
+        sb.append(")");
         return null;
     }
 
