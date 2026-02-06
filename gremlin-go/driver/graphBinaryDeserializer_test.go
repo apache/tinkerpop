@@ -72,10 +72,10 @@ func (r *slowReader) Read(p []byte) (n int, err error) {
 	return n, nil
 }
 
-func TestStreamingDeserializer(t *testing.T) {
+func TestGraphBinaryDeserializer(t *testing.T) {
 	t.Run("readInt32", func(t *testing.T) {
 		data := []byte{0x00, 0x00, 0x00, 0x2A} // 42
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		val, err := d.readInt32()
 		assert.Nil(t, err)
 		assert.Equal(t, int32(42), val)
@@ -83,7 +83,7 @@ func TestStreamingDeserializer(t *testing.T) {
 
 	t.Run("readInt64", func(t *testing.T) {
 		data := []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x64} // 100
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		val, err := d.readInt64()
 		assert.Nil(t, err)
 		assert.Equal(t, int64(100), val)
@@ -91,7 +91,7 @@ func TestStreamingDeserializer(t *testing.T) {
 
 	t.Run("readString", func(t *testing.T) {
 		data := []byte{0x00, 0x00, 0x00, 0x05, 'h', 'e', 'l', 'l', 'o'}
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		val, err := d.readString()
 		assert.Nil(t, err)
 		assert.Equal(t, "hello", val)
@@ -99,7 +99,7 @@ func TestStreamingDeserializer(t *testing.T) {
 
 	t.Run("readString empty", func(t *testing.T) {
 		data := []byte{0x00, 0x00, 0x00, 0x00}
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		val, err := d.readString()
 		assert.Nil(t, err)
 		assert.Equal(t, "", val)
@@ -107,14 +107,14 @@ func TestStreamingDeserializer(t *testing.T) {
 
 	t.Run("error on incomplete data", func(t *testing.T) {
 		data := []byte{0x00, 0x00} // incomplete int32
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		_, err := d.readInt32()
 		assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 	})
 
 	t.Run("sticky error", func(t *testing.T) {
 		data := []byte{0x00} // too short
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 
 		_, err1 := d.readInt32()
 		assert.Error(t, err1)
@@ -160,18 +160,18 @@ func TestStreamingChannelDelivery(t *testing.T) {
 	})
 }
 
-// TestStreamingBlocksOnPartialData verifies that the deserializer correctly blocks
+// TestGraphBinaryDeserializerBlocksOnPartialData verifies that the deserializer correctly blocks
 // when it receives partial data, waiting for the rest of the object to arrive.
 // This simulates the real-world scenario where Go's HTTP client receives chunks
 // that don't align with server-sent GraphBinary object boundaries.
-func TestStreamingBlocksOnPartialData(t *testing.T) {
+func TestGraphBinaryDeserializerBlocksOnPartialData(t *testing.T) {
 	t.Run("blocks until complete int32 is available", func(t *testing.T) {
 		// Split a 4-byte int32 across two chunks
 		chunk1 := []byte{0x00, 0x00} // First 2 bytes
 		chunk2 := []byte{0x00, 0x2A} // Last 2 bytes (total = 42)
 
 		reader := newSlowReader([][]byte{chunk1, chunk2}, 20*time.Millisecond)
-		d := NewStreamingDeserializer(reader)
+		d := NewGraphBinaryDeserializer(reader)
 
 		start := time.Now()
 		val, err := d.readInt32()
@@ -192,7 +192,7 @@ func TestStreamingBlocksOnPartialData(t *testing.T) {
 		chunk2 := []byte{'l', 'l', 'o'}                    // "llo"
 
 		reader := newSlowReader([][]byte{chunk1, chunk2}, 20*time.Millisecond)
-		d := NewStreamingDeserializer(reader)
+		d := NewGraphBinaryDeserializer(reader)
 
 		start := time.Now()
 		val, err := d.readString()
@@ -205,9 +205,9 @@ func TestStreamingBlocksOnPartialData(t *testing.T) {
 	})
 }
 
-// TestStreamingMultipleObjects verifies that multiple GraphBinary objects
+// TestGraphBinaryDeserializerMultipleObjects verifies that multiple GraphBinary objects
 // can be read from a stream, with each object returned as soon as it's complete.
-func TestStreamingMultipleObjects(t *testing.T) {
+func TestGraphBinaryDeserializerMultipleObjects(t *testing.T) {
 	t.Run("reads multiple objects as they arrive", func(t *testing.T) {
 		// Build a stream with 3 fully-qualified int32 values
 		// Each int32: type(1) + flag(1) + value(4) = 6 bytes
@@ -217,7 +217,7 @@ func TestStreamingMultipleObjects(t *testing.T) {
 
 		// Deliver each object as a separate chunk with delay
 		reader := newSlowReader([][]byte{obj1, obj2, obj3}, 15*time.Millisecond)
-		d := NewStreamingDeserializer(reader)
+		d := NewGraphBinaryDeserializer(reader)
 
 		var results []int32
 		var times []time.Duration
@@ -253,7 +253,7 @@ func TestStreamingMultipleObjects(t *testing.T) {
 		}
 
 		reader := newSlowReader([][]byte{chunk1, chunk2}, 20*time.Millisecond)
-		d := NewStreamingDeserializer(reader)
+		d := NewGraphBinaryDeserializer(reader)
 
 		// First object should return immediately
 		val1, err := d.ReadFullyQualified()
@@ -276,9 +276,9 @@ func TestStreamingMultipleObjects(t *testing.T) {
 	})
 }
 
-// TestStreamingWithEndOfStreamMarker verifies that the deserializer correctly
+// TestGraphBinaryDeserializerWithEndOfStreamMarker verifies that the deserializer correctly
 // handles the EndOfStream marker and subsequent status reading.
-func TestStreamingWithEndOfStreamMarker(t *testing.T) {
+func TestGraphBinaryDeserializerWithEndOfStreamMarker(t *testing.T) {
 	t.Run("reads EndOfStream marker and status", func(t *testing.T) {
 		// Build a complete response:
 		// - Header (2 bytes): version + flags
@@ -294,7 +294,7 @@ func TestStreamingWithEndOfStreamMarker(t *testing.T) {
 			0x01, // Exception is null
 		}
 
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 
 		// Read header
 		err := d.ReadHeader()
@@ -328,7 +328,7 @@ func TestStreamingWithEndOfStreamMarker(t *testing.T) {
 			0x01, // Exception is null
 		}
 
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 
 		marker, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
@@ -342,9 +342,9 @@ func TestStreamingWithEndOfStreamMarker(t *testing.T) {
 	})
 }
 
-// TestStreamingComplexTypes verifies streaming deserialization of complex types
+// TestGraphBinaryDeserializerComplexTypes verifies streaming deserialization of complex types
 // like vertices, edges, and paths.
-func TestStreamingComplexTypes(t *testing.T) {
+func TestGraphBinaryDeserializerComplexTypes(t *testing.T) {
 	t.Run("reads vertex from stream", func(t *testing.T) {
 		// Vertex: id(int32) + labels(list of string) + properties(nullable)
 		data := []byte{
@@ -359,7 +359,7 @@ func TestStreamingComplexTypes(t *testing.T) {
 			0xfe, 0x01,
 		}
 
-		d := NewStreamingDeserializer(bytes.NewReader(data))
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
 		val, err := d.ReadFullyQualified()
 		assert.Nil(t, err)
 
@@ -382,7 +382,7 @@ func TestStreamingComplexTypes(t *testing.T) {
 		}
 
 		reader := newSlowReader([][]byte{chunk1, chunk2}, 15*time.Millisecond)
-		d := NewStreamingDeserializer(reader)
+		d := NewGraphBinaryDeserializer(reader)
 
 		start := time.Now()
 		val, err := d.ReadFullyQualified()

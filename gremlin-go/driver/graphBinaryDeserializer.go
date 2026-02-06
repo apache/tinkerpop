@@ -32,7 +32,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// StreamingDeserializer reads GraphBinary data directly from an io.Reader,
+// GraphBinaryDeserializer reads GraphBinary data directly from an io.Reader,
 // enabling streaming deserialization of server responses.
 //
 // Streaming Behavior:
@@ -56,7 +56,7 @@ import (
 //
 // The bufio.Reader wrapper provides efficient buffering without affecting the
 // streaming semantics - it simply reduces the number of underlying read syscalls.
-type StreamingDeserializer struct {
+type GraphBinaryDeserializer struct {
 	r   *bufio.Reader
 	buf [8]byte
 	err error // sticky error
@@ -65,13 +65,13 @@ type StreamingDeserializer struct {
 // GraphBinary flag for bulked list/set
 const flagBulked = 0x02
 
-// NewStreamingDeserializer creates a new StreamingDeserializer that reads from the given io.Reader.
+// NewGraphBinaryDeserializer creates a new GraphBinaryDeserializer that reads from the given io.Reader.
 // The reader is wrapped in a buffered reader for efficient reading.
-func NewStreamingDeserializer(r io.Reader) *StreamingDeserializer {
-	return &StreamingDeserializer{r: bufio.NewReaderSize(r, 8192)}
+func NewGraphBinaryDeserializer(r io.Reader) *GraphBinaryDeserializer {
+	return &GraphBinaryDeserializer{r: bufio.NewReaderSize(r, 8192)}
 }
 
-func (d *StreamingDeserializer) readByte() (byte, error) {
+func (d *GraphBinaryDeserializer) readByte() (byte, error) {
 	if d.err != nil {
 		return 0, d.err
 	}
@@ -83,7 +83,7 @@ func (d *StreamingDeserializer) readByte() (byte, error) {
 	return b, nil
 }
 
-func (d *StreamingDeserializer) readBytes(n int) ([]byte, error) {
+func (d *GraphBinaryDeserializer) readBytes(n int) ([]byte, error) {
 	if d.err != nil {
 		return nil, d.err
 	}
@@ -96,7 +96,7 @@ func (d *StreamingDeserializer) readBytes(n int) ([]byte, error) {
 	return buf, nil
 }
 
-func (d *StreamingDeserializer) readInt32() (int32, error) {
+func (d *GraphBinaryDeserializer) readInt32() (int32, error) {
 	if d.err != nil {
 		return 0, d.err
 	}
@@ -108,7 +108,7 @@ func (d *StreamingDeserializer) readInt32() (int32, error) {
 	return int32(binary.BigEndian.Uint32(d.buf[:4])), nil
 }
 
-func (d *StreamingDeserializer) readUint32() (uint32, error) {
+func (d *GraphBinaryDeserializer) readUint32() (uint32, error) {
 	if d.err != nil {
 		return 0, d.err
 	}
@@ -120,7 +120,7 @@ func (d *StreamingDeserializer) readUint32() (uint32, error) {
 	return binary.BigEndian.Uint32(d.buf[:4]), nil
 }
 
-func (d *StreamingDeserializer) readInt64() (int64, error) {
+func (d *GraphBinaryDeserializer) readInt64() (int64, error) {
 	if d.err != nil {
 		return 0, d.err
 	}
@@ -134,7 +134,7 @@ func (d *StreamingDeserializer) readInt64() (int64, error) {
 
 // ReadHeader reads and validates the GraphBinary response header.
 // This must be called before reading any objects from the stream.
-func (d *StreamingDeserializer) ReadHeader() error {
+func (d *GraphBinaryDeserializer) ReadHeader() error {
 	if _, err := d.readByte(); err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func (d *StreamingDeserializer) ReadHeader() error {
 // ReadFullyQualified reads the next fully-qualified GraphBinary value from the stream.
 // Returns the deserialized object, or an error if reading fails.
 // When the end of the result stream is reached, this returns a Marker equal to EndOfStream().
-func (d *StreamingDeserializer) ReadFullyQualified() (interface{}, error) {
+func (d *GraphBinaryDeserializer) ReadFullyQualified() (interface{}, error) {
 	dtByte, err := d.readByte()
 	if err != nil {
 		return nil, err
@@ -167,7 +167,7 @@ func (d *StreamingDeserializer) ReadFullyQualified() (interface{}, error) {
 	return d.readValue(dt, flag)
 }
 
-func (d *StreamingDeserializer) readValue(dt dataType, flag byte) (interface{}, error) {
+func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}, error) {
 	switch dt {
 	case intType:
 		return d.readInt32()
@@ -260,7 +260,7 @@ func (d *StreamingDeserializer) readValue(dt dataType, flag byte) (interface{}, 
 	}
 }
 
-func (d *StreamingDeserializer) readString() (string, error) {
+func (d *GraphBinaryDeserializer) readString() (string, error) {
 	length, err := d.readInt32()
 	if err != nil {
 		return "", err
@@ -275,7 +275,7 @@ func (d *StreamingDeserializer) readString() (string, error) {
 	return string(buf), nil
 }
 
-func (d *StreamingDeserializer) readList(bulked bool) (interface{}, error) {
+func (d *GraphBinaryDeserializer) readList(bulked bool) (interface{}, error) {
 	length, err := d.readInt32()
 	if err != nil {
 		return nil, err
@@ -301,7 +301,7 @@ func (d *StreamingDeserializer) readList(bulked bool) (interface{}, error) {
 	return list, nil
 }
 
-func (d *StreamingDeserializer) readMap() (interface{}, error) {
+func (d *GraphBinaryDeserializer) readMap() (interface{}, error) {
 	length, err := d.readUint32()
 	if err != nil {
 		return nil, err
@@ -329,7 +329,7 @@ func (d *StreamingDeserializer) readMap() (interface{}, error) {
 	return m, nil
 }
 
-func (d *StreamingDeserializer) readVertex(withProps bool) (*Vertex, error) {
+func (d *GraphBinaryDeserializer) readVertex(withProps bool) (*Vertex, error) {
 	id, err := d.ReadFullyQualified()
 	if err != nil {
 		return nil, err
@@ -360,7 +360,7 @@ func (d *StreamingDeserializer) readVertex(withProps bool) (*Vertex, error) {
 	return v, nil
 }
 
-func (d *StreamingDeserializer) readEdge() (*Edge, error) {
+func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 	id, err := d.ReadFullyQualified()
 	if err != nil {
 		return nil, err
@@ -404,7 +404,7 @@ func (d *StreamingDeserializer) readEdge() (*Edge, error) {
 	return e, nil
 }
 
-func (d *StreamingDeserializer) readPath() (*Path, error) {
+func (d *GraphBinaryDeserializer) readPath() (*Path, error) {
 	labels, err := d.ReadFullyQualified()
 	if err != nil {
 		return nil, err
@@ -434,7 +434,7 @@ func (d *StreamingDeserializer) readPath() (*Path, error) {
 	return path, nil
 }
 
-func (d *StreamingDeserializer) readProperty() (*Property, error) {
+func (d *GraphBinaryDeserializer) readProperty() (*Property, error) {
 	key, err := d.readString()
 	if err != nil {
 		return nil, err
@@ -449,7 +449,7 @@ func (d *StreamingDeserializer) readProperty() (*Property, error) {
 	return &Property{Key: key, Value: value}, nil
 }
 
-func (d *StreamingDeserializer) readVertexProperty() (*VertexProperty, error) {
+func (d *GraphBinaryDeserializer) readVertexProperty() (*VertexProperty, error) {
 	id, err := d.ReadFullyQualified()
 	if err != nil {
 		return nil, err
@@ -488,7 +488,7 @@ func (d *StreamingDeserializer) readVertexProperty() (*VertexProperty, error) {
 	return vp, nil
 }
 
-func (d *StreamingDeserializer) readBigInt() (*big.Int, error) {
+func (d *GraphBinaryDeserializer) readBigInt() (*big.Int, error) {
 	length, err := d.readInt32()
 	if err != nil {
 		return nil, err
@@ -509,7 +509,7 @@ func (d *StreamingDeserializer) readBigInt() (*big.Int, error) {
 	return bi, nil
 }
 
-func (d *StreamingDeserializer) readBigDecimal() (*BigDecimal, error) {
+func (d *GraphBinaryDeserializer) readBigDecimal() (*BigDecimal, error) {
 	scale, err := d.readInt32()
 	if err != nil {
 		return nil, err
@@ -521,7 +521,7 @@ func (d *StreamingDeserializer) readBigDecimal() (*BigDecimal, error) {
 	return &BigDecimal{Scale: scale, UnscaledValue: unscaled}, nil
 }
 
-func (d *StreamingDeserializer) readDateTime() (time.Time, error) {
+func (d *GraphBinaryDeserializer) readDateTime() (time.Time, error) {
 	year, err := d.readInt32()
 	if err != nil {
 		return time.Time{}, err
@@ -551,7 +551,7 @@ func (d *StreamingDeserializer) readDateTime() (time.Time, error) {
 	return time.Date(int(year), time.Month(month), int(day), int(h), int(m), int(s), int(ns), GetTimezoneFromOffset(int(offset))), nil
 }
 
-func (d *StreamingDeserializer) readDuration() (time.Duration, error) {
+func (d *GraphBinaryDeserializer) readDuration() (time.Duration, error) {
 	seconds, err := d.readInt64()
 	if err != nil {
 		return 0, err
@@ -563,7 +563,7 @@ func (d *StreamingDeserializer) readDuration() (time.Duration, error) {
 	return time.Duration(seconds*int64(time.Second) + int64(nanos)), nil
 }
 
-func (d *StreamingDeserializer) readByteBuffer() (*ByteBuffer, error) {
+func (d *GraphBinaryDeserializer) readByteBuffer() (*ByteBuffer, error) {
 	length, err := d.readInt32()
 	if err != nil {
 		return nil, err
@@ -575,7 +575,7 @@ func (d *StreamingDeserializer) readByteBuffer() (*ByteBuffer, error) {
 	return &ByteBuffer{Data: data}, nil
 }
 
-func (d *StreamingDeserializer) readEnum() (string, error) {
+func (d *GraphBinaryDeserializer) readEnum() (string, error) {
 	if _, err := d.readByte(); err != nil { // type code (string)
 		return "", err
 	}
@@ -588,7 +588,7 @@ func (d *StreamingDeserializer) readEnum() (string, error) {
 // ReadStatus reads the response status after the EndOfStream marker.
 // Returns the status code, message, exception string, and any error encountered.
 // This should be called after ReadFullyQualified() returns an EndOfStream marker.
-func (d *StreamingDeserializer) ReadStatus() (code uint32, message string, exception string, err error) {
+func (d *GraphBinaryDeserializer) ReadStatus() (code uint32, message string, exception string, err error) {
 	code, err = d.readUint32()
 	if err != nil {
 		return 0, "", "", err

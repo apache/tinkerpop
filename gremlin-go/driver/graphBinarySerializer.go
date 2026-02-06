@@ -20,9 +20,9 @@ under the License.
 package gremlingo
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"math/big"
 	"reflect"
 	"time"
@@ -83,44 +83,43 @@ type graphBinaryTypeSerializer struct {
 	logHandler *logHandler
 }
 
-func (serializer *graphBinaryTypeSerializer) writeType(value interface{}, buffer *bytes.Buffer, writer writer) ([]byte, error) {
-	return serializer.writeTypeValue(value, buffer, writer, true)
+func (serializer *graphBinaryTypeSerializer) writeType(value interface{}, w io.Writer, writer writer) error {
+	return serializer.writeTypeValue(value, w, writer, true)
 }
 
-func (serializer *graphBinaryTypeSerializer) writeTypeValue(value interface{}, buffer *bytes.Buffer, writer writer, nullable bool) ([]byte, error) {
+func (serializer *graphBinaryTypeSerializer) writeTypeValue(value interface{}, w io.Writer, writer writer, nullable bool) error {
 	if value == nil {
 		if !nullable {
 			serializer.logHandler.log(Error, unexpectedNull)
-			return nil, newError(err0401WriteTypeValueUnexpectedNullError)
+			return newError(err0401WriteTypeValueUnexpectedNullError)
 		}
-		serializer.writeValueFlagNull(buffer)
-		return buffer.Bytes(), nil
+		return serializer.writeValueFlagNull(w)
 	}
 	if nullable {
-		serializer.writeValueFlagNone(buffer)
+		if err := serializer.writeValueFlagNone(w); err != nil {
+			return err
+		}
 	}
-	return writer(value, buffer, serializer)
+	return writer(value, w, serializer)
 }
 
 // Format: {length}{item_0}...{item_n}
-func listWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func listWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	v := reflect.ValueOf(value)
 	valLen := v.Len()
-	err := binary.Write(buffer, binary.BigEndian, int32(valLen))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int32(valLen)); err != nil {
+		return err
 	}
 	for i := 0; i < valLen; i++ {
-		_, err := typeSerializer.write(v.Index(i).Interface(), buffer)
-		if err != nil {
-			return nil, err
+		if err := typeSerializer.write(v.Index(i).Interface(), w); err != nil {
+			return err
 		}
 	}
-	return buffer.Bytes(), nil
+	return nil
 }
 
 // Format: {length}{value}
-func byteBufferWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func byteBufferWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	var v ByteBuffer
 	if reflect.TypeOf(value).Kind() == reflect.Ptr {
 		v = *(value.(*ByteBuffer))
@@ -128,85 +127,73 @@ func byteBufferWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *g
 		v = value.(ByteBuffer)
 	}
 
-	err := binary.Write(buffer, binary.BigEndian, int32(len(v.Data)))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int32(len(v.Data))); err != nil {
+		return err
 	}
-	buffer.Write(v.Data)
-
-	return buffer.Bytes(), nil
+	_, err := w.Write(v.Data)
+	return err
 }
 
 // Format: {length}{item_0}...{item_n}
 // Item format: {type_code}{type_info}{value_flag}{value}
-func mapWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func mapWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	if value == nil {
-		_, err := typeSerializer.writeValue(int32(0), buffer, false)
-		if err != nil {
-			return nil, err
-		}
-		return buffer.Bytes(), nil
+		return typeSerializer.writeValue(int32(0), w, false)
 	}
 
 	v := reflect.ValueOf(value)
 	keys := v.MapKeys()
-	err := binary.Write(buffer, binary.BigEndian, int32(len(keys)))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int32(len(keys))); err != nil {
+		return err
 	}
 	for _, k := range keys {
 		convKey := k.Convert(v.Type().Key())
 		// serialize k
-		_, err := typeSerializer.write(k.Interface(), buffer)
-		if err != nil {
-			return nil, err
+		if err := typeSerializer.write(k.Interface(), w); err != nil {
+			return err
 		}
 		// serialize v.MapIndex(c_key)
 		val := v.MapIndex(convKey)
-		_, err = typeSerializer.write(val.Interface(), buffer)
-		if err != nil {
-			return nil, err
+		if err := typeSerializer.write(val.Interface(), w); err != nil {
+			return err
 		}
 	}
-	return buffer.Bytes(), nil
+	return nil
 }
 
-func stringWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
-	err := binary.Write(buffer, binary.BigEndian, int32(len(value.(string))))
-	if err != nil {
-		return nil, err
+func stringWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
+	str := value.(string)
+	if err := binary.Write(w, binary.BigEndian, int32(len(str))); err != nil {
+		return err
 	}
-	_, err = buffer.WriteString(value.(string))
-	return buffer.Bytes(), err
+	_, err := io.WriteString(w, str)
+	return err
 }
 
-func longWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func longWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	switch v := value.(type) {
 	case int:
 		value = int64(v)
 	case uint32:
 		value = int64(v)
 	}
-	err := binary.Write(buffer, binary.BigEndian, value)
-	return buffer.Bytes(), err
+	return binary.Write(w, binary.BigEndian, value)
 }
 
-func intWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func intWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	switch v := value.(type) {
 	case uint16:
 		value = int32(v)
 	}
-	err := binary.Write(buffer, binary.BigEndian, value.(int32))
-	return buffer.Bytes(), err
+	return binary.Write(w, binary.BigEndian, value.(int32))
 }
 
-func shortWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func shortWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	switch v := value.(type) {
 	case int8:
 		value = int16(v)
 	}
-	err := binary.Write(buffer, binary.BigEndian, value.(int16))
-	return buffer.Bytes(), err
+	return binary.Write(w, binary.BigEndian, value.(int16))
 }
 
 // Golang stores BigIntegers with big.Int types
@@ -236,7 +223,7 @@ func getSignedBytesFromBigInt(n *big.Int) []byte {
 }
 
 // Format: {length}{value_0}...{value_n}
-func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func bigIntWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	var v big.Int
 	switch val := value.(type) {
 	case uint:
@@ -251,226 +238,189 @@ func bigIntWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSer
 		}
 	}
 	signedBytes := getSignedBytesFromBigInt(&v)
-	err := binary.Write(buffer, binary.BigEndian, int32(len(signedBytes)))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int32(len(signedBytes))); err != nil {
+		return err
 	}
-	for i := 0; i < len(signedBytes); i++ {
-		err := binary.Write(buffer, binary.BigEndian, signedBytes[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return buffer.Bytes(), nil
+	_, err := w.Write(signedBytes)
+	return err
 }
 
 // Format: {scale}{unscaled_value}
-func bigDecimalWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func bigDecimalWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	var v BigDecimal
 	if reflect.TypeOf(value).Kind() == reflect.Ptr {
 		v = *(value.(*BigDecimal))
 	} else {
 		v = value.(BigDecimal)
 	}
-	err := binary.Write(buffer, binary.BigEndian, v.Scale)
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, v.Scale); err != nil {
+		return err
 	}
 
-	return bigIntWriter(v.UnscaledValue, buffer, typeSerializer)
+	return bigIntWriter(v.UnscaledValue, w, typeSerializer)
 }
 
 // Format: {Id}{Label}{properties}
-func vertexWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func vertexWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	v := value.(*Vertex)
-	_, err := typeSerializer.write(v.Id, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(v.Id, w); err != nil {
+		return err
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue([1]string{v.Label}, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue([1]string{v.Label}, w, false); err != nil {
+		return err
 	}
 	// Note that as TinkerPop currently send "references" only, properties will always be null
-	buffer.Write(nullBytes)
-	return buffer.Bytes(), nil
+	_, err := w.Write(nullBytes)
+	return err
 }
 
 // Format: {Id}{Label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}
-func edgeWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func edgeWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	e := value.(*Edge)
-	_, err := typeSerializer.write(e.Id, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(e.Id, w); err != nil {
+		return err
 	}
 
 	// Not fully qualified
-	_, err = typeSerializer.writeValue([1]string{e.Label}, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue([1]string{e.Label}, w, false); err != nil {
+		return err
 	}
 
 	// Write in-vertex
-	_, err = typeSerializer.write(e.InV.Id, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(e.InV.Id, w); err != nil {
+		return err
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue([1]string{e.InV.Label}, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue([1]string{e.InV.Label}, w, false); err != nil {
+		return err
 	}
 	// Write out-vertex
-	_, err = typeSerializer.write(e.OutV.Id, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(e.OutV.Id, w); err != nil {
+		return err
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue([1]string{e.OutV.Label}, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue([1]string{e.OutV.Label}, w, false); err != nil {
+		return err
 	}
 
 	// Note that as TinkerPop currently send "references" only, parent and properties will always be null
-	buffer.Write(nullBytes)
-	buffer.Write(nullBytes)
-	return buffer.Bytes(), nil
+	if _, err := w.Write(nullBytes); err != nil {
+		return err
+	}
+	_, err := w.Write(nullBytes)
+	return err
 }
 
 // Format: {Key}{Value}{parent}
-func propertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func propertyWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	v := value.(*Property)
 
 	// Not fully qualified.
-	_, err := typeSerializer.writeValue(v.Key, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue(v.Key, w, false); err != nil {
+		return err
 	}
 
-	_, err = typeSerializer.write(v.Value, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(v.Value, w); err != nil {
+		return err
 	}
 	// Note that as TinkerPop currently send "references" only, parent and properties  will always be null
-	buffer.Write(nullBytes)
-	return buffer.Bytes(), nil
+	_, err := w.Write(nullBytes)
+	return err
 }
 
 // Format: {Id}{Label}{Value}{parent}{properties}
-func vertexPropertyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func vertexPropertyWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	vp := value.(*VertexProperty)
-	_, err := typeSerializer.write(vp.Id, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(vp.Id, w); err != nil {
+		return err
 	}
 
 	// Not fully qualified.
-	_, err = typeSerializer.writeValue([1]string{vp.Label}, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue([1]string{vp.Label}, w, false); err != nil {
+		return err
 	}
-	_, err = typeSerializer.write(vp.Value, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(vp.Value, w); err != nil {
+		return err
 	}
 	// Note that as TinkerPop currently send "references" only, parent and properties will always be null
-	buffer.Write(nullBytes)
-	buffer.Write(nullBytes)
-	return buffer.Bytes(), nil
+	if _, err := w.Write(nullBytes); err != nil {
+		return err
+	}
+	_, err := w.Write(nullBytes)
+	return err
 }
 
 // Format: {Labels}{Objects}
-func pathWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func pathWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	p := value.(*Path)
-	_, err := typeSerializer.write(p.Labels, buffer)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.write(p.Labels, w); err != nil {
+		return err
 	}
-	_, err = typeSerializer.write(p.Objects, buffer)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return typeSerializer.write(p.Objects, w)
 }
 
 // Format: Same as List.
 // Mostly similar to listWriter with small changes
-func setWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func setWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	slice := value.(Set).ToSlice()
-	return listWriter(slice, buffer, typeSerializer)
+	return listWriter(slice, w, typeSerializer)
 }
 
-func dateTimeWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func dateTimeWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	t := value.(time.Time)
-	err := binary.Write(buffer, binary.BigEndian, int32(t.Year()))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int32(t.Year())); err != nil {
+		return err
 	}
-	err = binary.Write(buffer, binary.BigEndian, byte(t.Month()))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, byte(t.Month())); err != nil {
+		return err
 	}
-	err = binary.Write(buffer, binary.BigEndian, byte(t.Day()))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, byte(t.Day())); err != nil {
+		return err
 	}
 	// construct time of day in nanoseconds
 	h := t.Hour()
 	m := t.Minute()
 	s := t.Second()
 	ns := (h * 60 * 60 * 1e9) + (m * 60 * 1e9) + (s * 1e9) + t.Nanosecond()
-	err = binary.Write(buffer, binary.BigEndian, int64(ns))
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, int64(ns)); err != nil {
+		return err
 	}
 	_, os := t.Zone()
-	err = binary.Write(buffer, binary.BigEndian, int32(os))
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return binary.Write(w, binary.BigEndian, int32(os))
 }
 
-func durationWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func durationWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	t := value.(time.Duration)
 	sec := int64(t / time.Second)
 	nanos := int32(t % time.Second)
-	err := binary.Write(buffer, binary.BigEndian, sec)
-	if err != nil {
-		return nil, err
+	if err := binary.Write(w, binary.BigEndian, sec); err != nil {
+		return err
 	}
-	err = binary.Write(buffer, binary.BigEndian, nanos)
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return binary.Write(w, binary.BigEndian, nanos)
 }
 
-func enumWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-	_, err := typeSerializer.write(reflect.ValueOf(value).String(), buffer)
-	return buffer.Bytes(), err
+func enumWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+	return typeSerializer.write(reflect.ValueOf(value).String(), w)
 }
 
-func markerWriter(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) ([]byte, error) {
+func markerWriter(value interface{}, w io.Writer, _ *graphBinaryTypeSerializer) error {
 	m := value.(Marker)
-	err := binary.Write(buffer, binary.BigEndian, m.GetValue())
-	return buffer.Bytes(), err
+	return binary.Write(w, binary.BigEndian, m.GetValue())
 }
 
 // Format: {strategy_class}{configuration}
-func traversalStrategyWriter(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
+func traversalStrategyWriter(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
 	ts := value.(*traversalStrategy)
 
-	_, err := typeSerializer.writeValue(ts.name, buffer, false)
-	if err != nil {
-		return nil, err
+	if err := typeSerializer.writeValue(ts.name, w, false); err != nil {
+		return err
 	}
 
-	return mapWriter(ts.configuration, buffer, typeSerializer)
+	return mapWriter(ts.configuration, w, typeSerializer)
 }
 
 const (
@@ -565,49 +515,48 @@ func (serializer *graphBinaryTypeSerializer) getSerializerToWrite(val interface{
 }
 
 // Writes an object in fully-qualified format, containing {type_code}{type_info}{value_flag}{value}.
-func (serializer *graphBinaryTypeSerializer) write(valueObject interface{}, buffer *bytes.Buffer) (interface{}, error) {
+func (serializer *graphBinaryTypeSerializer) write(valueObject interface{}, w io.Writer) error {
 	if valueObject == nil {
 		// return Object of type "unspecified object null" with the value flag set to null.
-		buffer.Write(nullBytes)
-		return buffer.Bytes(), nil
+		_, err := w.Write(nullBytes)
+		return err
 	}
 
 	writer, dataType, err := serializer.getSerializerToWrite(valueObject)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	buffer.Write(dataType.getCodeBytes())
-	return serializer.writeType(valueObject, buffer, writer)
+	if _, err := w.Write(dataType.getCodeBytes()); err != nil {
+		return err
+	}
+	return serializer.writeType(valueObject, w, writer)
 }
 
 // Writes a value without including type information.
-func (serializer *graphBinaryTypeSerializer) writeValue(value interface{}, buffer *bytes.Buffer, nullable bool) (interface{}, error) {
+func (serializer *graphBinaryTypeSerializer) writeValue(value interface{}, w io.Writer, nullable bool) error {
 	if value == nil {
 		if !nullable {
 			serializer.logHandler.log(Error, unexpectedNull)
-			return nil, newError(err0403WriteValueUnexpectedNullError)
+			return newError(err0403WriteValueUnexpectedNullError)
 		}
-		serializer.writeValueFlagNull(buffer)
-		return buffer.Bytes(), nil
+		return serializer.writeValueFlagNull(w)
 	}
 
 	writer, _, err := serializer.getSerializerToWrite(value)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	message, err := serializer.writeTypeValue(value, buffer, writer, nullable)
-	if err != nil {
-		return nil, err
-	}
-	return message, nil
+	return serializer.writeTypeValue(value, w, writer, nullable)
 }
 
-func (serializer *graphBinaryTypeSerializer) writeValueFlagNull(buffer *bytes.Buffer) {
-	buffer.WriteByte(valueFlagNull)
+func (serializer *graphBinaryTypeSerializer) writeValueFlagNull(w io.Writer) error {
+	_, err := w.Write([]byte{valueFlagNull})
+	return err
 }
 
-func (serializer *graphBinaryTypeSerializer) writeValueFlagNone(buffer *bytes.Buffer) {
-	buffer.WriteByte(valueFlagNone)
+func (serializer *graphBinaryTypeSerializer) writeValueFlagNone(w io.Writer) error {
+	_, err := w.Write([]byte{valueFlagNone})
+	return err
 }
 
 // GetTimezoneFromOffset is a helper function to convert an offset in seconds to a time.Location

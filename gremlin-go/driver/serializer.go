@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
 	"sync"
 )
 
@@ -39,15 +40,15 @@ type GraphBinarySerializer struct {
 }
 
 // CustomTypeReader user provided function to deserialize custom types
-// Deprecated: Custom type deserialization is handled by StreamingDeserializer
+// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
 type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
 
-type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
+type writer func(interface{}, io.Writer, *graphBinaryTypeSerializer) error
 
 var serializers map[dataType]writer
 
 // customTypeReaderLock used to synchronize access to the customDeserializers map
-// Deprecated: Custom type deserialization is handled by StreamingDeserializer
+// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
 var customTypeReaderLock = sync.RWMutex{}
 var customDeserializers map[string]CustomTypeReader
 
@@ -103,11 +104,11 @@ func (gs *GraphBinarySerializer) buildMessage(gremlin string, args map[string]in
 	// Version
 	buffer.WriteByte(versionByte)
 
-	_, err := gs.ser.writeValue(args, &buffer, false)
+	err := gs.ser.writeValue(args, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
-	_, err = gs.ser.writeValue(gremlin, &buffer, false)
+	err = gs.ser.writeValue(gremlin, &buffer, false)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +143,7 @@ func (gs *GraphBinarySerializer) DeserializeMessage(message []byte) (Response, e
 		return msg, newError(err0405ReadValueInvalidNullInputError)
 	}
 
-	d := NewStreamingDeserializer(bytes.NewReader(message))
+	d := NewGraphBinaryDeserializer(bytes.NewReader(message))
 
 	// Read header
 	if err := d.ReadHeader(); err != nil {
@@ -187,25 +188,20 @@ func initSerializers() {
 		longType:       longWriter,
 		intType:        intWriter,
 		shortType:      shortWriter,
-		byteType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-			err := binary.Write(buffer, binary.BigEndian, value.(uint8))
-			return buffer.Bytes(), err
+		byteType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+			return binary.Write(w, binary.BigEndian, value.(uint8))
 		},
-		booleanType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-			err := binary.Write(buffer, binary.BigEndian, value.(bool))
-			return buffer.Bytes(), err
+		booleanType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+			return binary.Write(w, binary.BigEndian, value.(bool))
 		},
-		uuidType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-			err := binary.Write(buffer, binary.BigEndian, value)
-			return buffer.Bytes(), err
+		uuidType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+			return binary.Write(w, binary.BigEndian, value)
 		},
-		floatType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-			err := binary.Write(buffer, binary.BigEndian, value)
-			return buffer.Bytes(), err
+		floatType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+			return binary.Write(w, binary.BigEndian, value)
 		},
-		doubleType: func(value interface{}, buffer *bytes.Buffer, typeSerializer *graphBinaryTypeSerializer) ([]byte, error) {
-			err := binary.Write(buffer, binary.BigEndian, value)
-			return buffer.Bytes(), err
+		doubleType: func(value interface{}, w io.Writer, typeSerializer *graphBinaryTypeSerializer) error {
+			return binary.Write(w, binary.BigEndian, value)
 		},
 		vertexType:         vertexWriter,
 		edgeType:           edgeWriter,
@@ -227,7 +223,7 @@ func initSerializers() {
 }
 
 // RegisterCustomTypeReader register a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending StreamingDeserializer
+// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
 func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
 	customTypeReaderLock.Lock()
 	defer customTypeReaderLock.Unlock()
@@ -235,7 +231,7 @@ func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
 }
 
 // UnregisterCustomTypeReader unregister a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending StreamingDeserializer
+// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
 func UnregisterCustomTypeReader(customTypeName string) {
 	customTypeReaderLock.Lock()
 	defer customTypeReaderLock.Unlock()

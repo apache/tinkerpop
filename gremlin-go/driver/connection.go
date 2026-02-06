@@ -272,7 +272,7 @@ func (c *connection) getReader(resp *http.Response) (io.Reader, io.Closer, error
 }
 
 func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
-	d := NewStreamingDeserializer(reader)
+	d := NewGraphBinaryDeserializer(reader)
 	if err := d.ReadHeader(); err != nil {
 		if err != io.EOF {
 			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
