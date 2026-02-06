@@ -38,10 +38,8 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatur
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -186,12 +184,12 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
                 null,
                 false, true,
                 1, 2.0,
+                Constants.date,
                 "bar", "foo",
                 Constants.uuid,
                 Constants.set1, Constants.set2,
                 Constants.list1, Constants.list2,
-                Constants.map1, Constants.map2,
-                Constants.date
+                Constants.map1, Constants.map2
         ), traversal);
     }
 
@@ -212,13 +210,13 @@ public abstract class OrderabilityTest extends AbstractGremlinProcessTest {
                 null,
                 false, true,
                 1, 2.0,
+                Constants.date,
                 "bar", "foo",
                 Constants.uuid,
                 Constants.set1, Constants.set2,
                 Constants.list1, Constants.list2,
                 Constants.map1, Constants.map2,
-                unknown,
-                Constants.date
+                unknown
         ), traversal);
     }
 

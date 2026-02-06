@@ -25,6 +25,7 @@ ext/
 __pycache__/
 *.py[cdo]
 **/venv/
+**/.venv/
 __version__.py
 .glv
 settings.xml
