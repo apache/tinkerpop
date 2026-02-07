@@ -241,11 +241,11 @@ describe('Traversal', function () {
     });
 
     it('convert to string representation with P.within', function () {
-      assert.strictEqual(P.within('a', 'b').toString(), 'within(\'a\',\'b\')');
+      assert.strictEqual(P.within('a', 'b').toString(), "within(['a', 'b'])");
     });
 
     it('convert to string representation with P.within array', function () {
-      assert.strictEqual(P.within(['a', 'b']).toString(), 'within(\'a\',\'b\')');
+      assert.strictEqual(P.within(['a', 'b']).toString(), "within(['a', 'b'])");
     });
   });
 
