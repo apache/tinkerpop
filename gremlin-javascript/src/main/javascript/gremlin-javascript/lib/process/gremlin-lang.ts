@@ -19,6 +19,7 @@
 
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
+import { Long } from '../utils.js';
 
 export default class GremlinLang {
   private gremlin: string = '';
@@ -56,7 +57,18 @@ export default class GremlinLang {
   private _argAsString(arg: any): string {
     if (arg === null || arg === undefined) return 'null';
     if (typeof arg === 'boolean') return arg ? 'true' : 'false';
-    if (typeof arg === 'number') return String(arg);
+    if (arg instanceof Long) {
+      return String(arg.value);
+    }
+    if (arg instanceof Date) {
+      return `datetime('${arg.toISOString()}')`;
+    }
+    if (typeof arg === 'number') {
+      if (Number.isNaN(arg)) return 'NaN';
+      if (arg === Infinity) return '+Infinity';
+      if (arg === -Infinity) return '-Infinity';
+      return String(arg);
+    }
     if (typeof arg === 'string') {
       const escaped = arg.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       return `'${escaped}'`;
@@ -75,6 +87,19 @@ export default class GremlinLang {
       }
       const configStr = configEntries.map(([k, v]) => `${k}:${this._argAsString(v)}`).join(', ');
       return `new ${simpleName}(${configStr})`;
+    }
+    if (arg instanceof Set) {
+      const items = [...arg];
+      if (items.length === 0) return '{}';
+      return '{' + items.map(a => this._argAsString(a)).join(', ') + '}';
+    }
+    if (arg instanceof Map) {
+      if (arg.size === 0) return '[:]';
+      const entries: string[] = [];
+      arg.forEach((v, k) => {
+        entries.push(`${this._argAsString(k)}:${this._argAsString(v)}`);
+      });
+      return '[' + entries.join(', ') + ']';
     }
     if (Array.isArray(arg)) {
       return '[' + arg.map(a => this._argAsString(a)).join(', ') + ']';

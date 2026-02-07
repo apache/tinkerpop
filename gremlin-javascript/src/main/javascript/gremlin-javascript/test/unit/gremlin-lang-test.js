@@ -21,6 +21,7 @@ import assert from 'assert';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 import { P, TextP, order, t } from '../../lib/process/traversal.js';
 import { OptionsStrategy, ReadOnlyStrategy } from '../../lib/process/traversal-strategy.js';
+import { Long, toLong } from '../../lib/utils.js';
 
 describe('GremlinLang', function () {
   describe('#getGremlin()', function () {
@@ -99,6 +100,41 @@ describe('GremlinLang', function () {
     it('should handle array with mixed types', function () {
       const gremlinLang = new GremlinLang();
       assert.strictEqual(gremlinLang.addStep('inject', [['a', 1, true, null]]).getGremlin(), "g.inject(['a', 1, true, null])");
+    });
+
+    it('should handle NaN', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [NaN]).getGremlin(), 'g.inject(NaN)');
+    });
+
+    it('should handle Infinity', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [Infinity]).getGremlin(), 'g.inject(+Infinity)');
+    });
+
+    it('should handle -Infinity', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [-Infinity]).getGremlin(), 'g.inject(-Infinity)');
+    });
+
+    it('should handle Long values', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [new Long('9007199254740993')]).getGremlin(), 'g.V(9007199254740993)');
+    });
+
+    it('should handle toLong values', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V', [toLong('9223372036854775807')]).getGremlin(), 'g.V(9223372036854775807)');
+    });
+
+    it('should handle Date values', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Date('2018-03-21T08:35:44.741Z')]).getGremlin(), "g.inject(datetime('2018-03-21T08:35:44.741Z'))");
+    });
+
+    it('should handle Date in has step', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('V').addStep('has', ['created', new Date('2024-01-01T00:00:00.000Z')]).getGremlin(), "g.V().has('created', datetime('2024-01-01T00:00:00.000Z'))");
     });
   });
 
@@ -197,6 +233,38 @@ describe('GremlinLang', function () {
     it('should handle object with mixed value types', function () {
       const gremlinLang = new GremlinLang();
       assert.strictEqual(gremlinLang.addStep('inject', [{str: 'a', num: 1, bool: true}]).getGremlin(), "g.inject(['str':'a', 'num':1, 'bool':true])");
+    });
+  });
+
+  describe('Set and Map support', function () {
+    it('should handle Set with numbers', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Set([1, 2, 3])]).getGremlin(), 'g.inject({1, 2, 3})');
+    });
+
+    it('should handle empty Set', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Set()]).getGremlin(), 'g.inject({})');
+    });
+
+    it('should handle Set with strings', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Set(['a', 'b'])]).getGremlin(), "g.inject({'a', 'b'})");
+    });
+
+    it('should handle Map with string key', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Map([['name', 'josh']])]).getGremlin(), "g.inject(['name':'josh'])");
+    });
+
+    it('should handle empty Map', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Map()]).getGremlin(), 'g.inject([:])');
+    });
+
+    it('should handle Map with enum key', function () {
+      const gremlinLang = new GremlinLang();
+      assert.strictEqual(gremlinLang.addStep('inject', [new Map([[t.label, 'person']])]).getGremlin(), "g.inject([label:'person'])");
     });
   });
 
