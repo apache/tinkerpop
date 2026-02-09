@@ -18,6 +18,7 @@
 @StepClassData @DataUUID
 Feature: Data - UUID
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX
     Given the empty graph
     And the graph initializer of
@@ -33,6 +34,7 @@ Feature: Data - UUID
       | result |
       | uuid[f47af10b-58cc-4372-a567-0f02b2f3d479] |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_hasXuuid_typeOfXGType_UUIDXX_valuesXnameX
     Given the empty graph
     And the graph initializer of
@@ -48,6 +50,7 @@ Feature: Data - UUID
       | result |
       | test |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX_project_byXidentityX_byXconstantXuuidXX
     Given the empty graph
     And the graph initializer of
@@ -63,6 +66,7 @@ Feature: Data - UUID
       | result |
       | m[{"original":"uuid[f47af10b-58cc-4372-a567-0f02b2f3d479]","type":"uuid"}] |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX_whereXisXeqXuuidXX
     Given the empty graph
     And the graph initializer of
@@ -78,6 +82,7 @@ Feature: Data - UUID
       | result |
       | uuid[f47af10b-58cc-4372-a567-0f02b2f3d479] |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX_chooseXisXeqXuuidXX_constantXmatchX_constantXnoMatchXX
     Given the empty graph
     And the graph initializer of
@@ -93,6 +98,7 @@ Feature: Data - UUID
       | result |
       | match |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX_localXaggregateXaXX_capXaX
     Given the empty graph
     And the graph initializer of
@@ -108,6 +114,7 @@ Feature: Data - UUID
       | result |
       | uuid[f47af10b-58cc-4372-a567-0f02b2f3d479] |
 
+  @AllowUUIDPropertyValues
   Scenario: g_V_valuesXuuidX_isXtypeOfXGType_UUIDXX_aggregateXaX_capXaX
     Given the empty graph
     And the graph initializer of
