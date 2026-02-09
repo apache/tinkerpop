@@ -18,6 +18,7 @@
 @StepClassData @DataDateTime
 Feature: Data - DATETIME
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX
     Given the empty graph
     And the graph initializer of
@@ -33,6 +34,7 @@ Feature: Data - DATETIME
       | result |
       | dt[2023-08-08T00:00:00Z] |
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_project_byXidentityX_byXdateAddXDT_dayX1XX
     Given the empty graph
     And the graph initializer of
@@ -48,6 +50,7 @@ Feature: Data - DATETIME
       | result |
       | m[{"original":"dt[2023-08-08T00:00:00Z]","nextDay":"dt[2023-08-09T00:00:00Z]"}] |
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_dateDiffXdatetimeX2023_08_10XX
     Given the empty graph
     And the graph initializer of
@@ -63,6 +66,7 @@ Feature: Data - DATETIME
       | result |
       | d[-30000].l |
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_whereXisXgtXdatetimeX2020_01_01XXXX
     Given the empty graph
     And the graph initializer of
@@ -78,6 +82,7 @@ Feature: Data - DATETIME
       | result |
       | dt[2023-08-08T00:00:00Z] |
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_chooseXisXeqXdatetimeX2023_08_08XXXX_constantXmatchX_constantXnoMatchXX
     Given the empty graph
     And the graph initializer of
@@ -93,6 +98,7 @@ Feature: Data - DATETIME
       | result |
       | match |
 
+  @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_localXaggregateXaX_capXaX
     Given the empty graph
     And the graph initializer of
