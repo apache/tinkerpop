@@ -28,7 +28,7 @@ type request struct {
 // MakeStringRequest creates a request from a Gremlin string query for submission to a Gremlin server.
 //
 // This function is exposed publicly to enable alternative transport protocols (gRPC, HTTP/2, etc.)
-// to construct properly formatted requests outside the standard WebSocket client. The returned
+// to construct properly formatted requests outside the standard HTTP client. The returned
 // request can then be serialized using SerializeMessage().
 //
 // Parameters:

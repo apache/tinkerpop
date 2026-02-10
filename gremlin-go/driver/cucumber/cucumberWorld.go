@@ -109,7 +109,7 @@ func (t *CucumberWorld) loadAllDataGraph() {
 			if err != nil {
 				panic(fmt.Sprintf("Failed to create connection '%v'", err))
 			}
-			g := gremlingo.Traversal_().With(connection)
+			g := gremlingo.Traversal_().With(connection).With("language", "gremlin-lang")
 			t.graphDataMap[name] = &DataGraph{
 				name:             name,
 				connection:       connection,
@@ -130,7 +130,7 @@ func (t *CucumberWorld) loadEmptyDataGraph() {
 
 func (t *CucumberWorld) reloadEmptyData() {
 	graphData := t.getDataGraphFromMap("empty")
-	g := gremlingo.Traversal_().With(graphData.connection)
+	g := gremlingo.Traversal_().With(graphData.connection).With("language", "gremlin-lang")
 	graphData.vertices = getVertices(g)
 	graphData.edges = getEdges(g)
 }

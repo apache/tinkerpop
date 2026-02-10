@@ -22,21 +22,12 @@ package gremlingo
 import (
 	"crypto/tls"
 	"reflect"
-	"runtime"
 	"time"
 
 	"golang.org/x/text/language"
 )
 
-const keepAliveIntervalDefault = 5 * time.Second
-const writeDeadlineDefault = 3 * time.Second
 const connectionTimeoutDefault = 5 * time.Second
-
-// ReadBufferSize and WriteBufferSize specify I/O buffer sizes in bytes. The default is 1MB.
-// If a buffer size is set zero, then the transporter default size is used. The I/O buffer
-// sizes do not limit the size of the messages that can be sent or received.
-const readBufferSizeDefault = 1048576
-const writeBufferSizeDefault = 1048576
 
 // ClientSettings is used to modify a Client's settings on initialization.
 type ClientSettings struct {
@@ -44,18 +35,34 @@ type ClientSettings struct {
 	LogVerbosity      LogVerbosity
 	Logger            Logger
 	Language          language.Tag
-	AuthInfo          AuthInfoProvider
 	TlsConfig         *tls.Config
-	KeepAliveInterval time.Duration
-	WriteDeadline     time.Duration
 	ConnectionTimeout time.Duration
 	EnableCompression bool
-	ReadBufferSize    int
-	WriteBufferSize   int
 
-	// Maximum number of concurrent connections. Default: number of runtime processors
+	// MaximumConcurrentConnections is the maximum number of concurrent TCP connections
+	// to the Gremlin server. This limits how many requests can be in-flight simultaneously.
+	// Default: 128. Set to 0 to use the default.
 	MaximumConcurrentConnections int
-	EnableUserAgentOnConnect     bool
+
+	// MaxIdleConnections is the maximum number of idle (keep-alive) connections to retain
+	// in the connection pool. Idle connections are reused for subsequent requests.
+	// Default: 8. Set to 0 to use the default.
+	MaxIdleConnections int
+
+	// IdleConnectionTimeout is how long an idle connection remains in the pool before
+	// being closed. Set this to match your server's idle timeout if needed.
+	// Default: 180 seconds (3 minutes). Set to 0 to use the default.
+	IdleConnectionTimeout time.Duration
+
+	// KeepAliveInterval is the interval between TCP keep-alive probes on idle connections.
+	// This helps detect dead connections and keeps connections alive through firewalls.
+	// Default: 30 seconds. Set to 0 to use the default.
+	KeepAliveInterval time.Duration
+
+	EnableUserAgentOnConnect bool
+
+	// RequestInterceptors are functions that modify HTTP requests before sending.
+	RequestInterceptors []RequestInterceptor
 }
 
 // Client is used to connect and interact with a Gremlin-supported server.
@@ -64,7 +71,7 @@ type Client struct {
 	traversalSource    string
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
-	httpProtocol       *httpProtocol
+	conn               *connection
 }
 
 // NewClient creates a Client and configures it with the given parameters.
@@ -75,44 +82,46 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		LogVerbosity:             Info,
 		Logger:                   &defaultLogger{},
 		Language:                 language.English,
-		AuthInfo:                 &AuthInfo{},
 		TlsConfig:                &tls.Config{},
-		KeepAliveInterval:        keepAliveIntervalDefault,
-		WriteDeadline:            writeDeadlineDefault,
 		ConnectionTimeout:        connectionTimeoutDefault,
 		EnableCompression:        false,
 		EnableUserAgentOnConnect: true,
-		ReadBufferSize:           readBufferSizeDefault,
-		WriteBufferSize:          writeBufferSizeDefault,
 
-		MaximumConcurrentConnections: runtime.NumCPU(),
+		MaximumConcurrentConnections: 0, // Use default (128)
+		MaxIdleConnections:           0, // Use default (8)
+		IdleConnectionTimeout:        0, // Use default (180s)
+		KeepAliveInterval:            0, // Use default (30s)
 	}
 	for _, configuration := range configurations {
 		configuration(settings)
 	}
 
 	connSettings := &connectionSettings{
-		authInfo:                 settings.AuthInfo,
 		tlsConfig:                settings.TlsConfig,
-		keepAliveInterval:        settings.KeepAliveInterval,
-		writeDeadline:            settings.WriteDeadline,
 		connectionTimeout:        settings.ConnectionTimeout,
+		maxConnsPerHost:          settings.MaximumConcurrentConnections,
+		maxIdleConnsPerHost:      settings.MaxIdleConnections,
+		idleConnTimeout:          settings.IdleConnectionTimeout,
+		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
-		readBufferSize:           settings.ReadBufferSize,
-		writeBufferSize:          settings.WriteBufferSize,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
 
-	httpProt := newHttpProtocol(logHandler, url, connSettings)
+	conn := newConnection(logHandler, url, connSettings)
+
+	// Add user-provided interceptors
+	for _, interceptor := range settings.RequestInterceptors {
+		conn.AddInterceptor(interceptor)
+	}
 
 	client := &Client{
 		url:                url,
 		traversalSource:    settings.TraversalSource,
 		logHandler:         logHandler,
 		connectionSettings: connSettings,
-		httpProtocol:       httpProt,
+		conn:               conn,
 	}
 
 	return client, nil
@@ -121,8 +130,10 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // Close closes the client via connection.
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
-	// TODO check what needs to be closed
 	client.logHandler.logf(Info, closeClient, client.url)
+	if client.conn != nil {
+		client.conn.close()
+	}
 }
 
 func (client *Client) errorCallback() {
@@ -133,10 +144,7 @@ func (client *Client) errorCallback() {
 func (client *Client) SubmitWithOptions(traversalString string, requestOptions RequestOptions) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, traversalString)
 	request := MakeStringRequest(traversalString, client.traversalSource, requestOptions)
-
-	// TODO interceptors (ie. auth)
-
-	rs, err := client.httpProtocol.send(&request)
+	rs, err := client.conn.submit(&request)
 	return rs, err
 }
 
@@ -152,10 +160,8 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 }
 
 // submitGremlinLang submits GremlinLang to the server to execute and returns a ResultSet.
-// TODO test and update when connection is set up
 func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
-	// TODO placeholder
 	requestOptionsBuilder := new(RequestOptionsBuilder)
 	if len(gremlinLang.GetParameters()) > 0 {
 		requestOptionsBuilder.SetBindings(gremlinLang.GetParameters())
@@ -165,7 +171,7 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 	}
 
 	request := MakeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
-	return client.httpProtocol.send(&request)
+	return client.conn.submit(&request)
 }
 
 func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interface{}) *RequestOptionsBuilder {
