@@ -220,6 +220,262 @@ Feature: Comparability
     When iterated to list
     Then the result should be empty
     
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_eqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.eq(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_neqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.neq(1.0d))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[NaN] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_ltX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.lt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_lteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.lte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_gtX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.gt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXNaNX_gteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(NaN).is(P.gte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  ######################################################
+  ## Double vs. null
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_eqXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.eq(null))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_neqXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.neq(null))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].d |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_ltXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.lt(null))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_lteXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.lte(null))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_gtXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.gt(null))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_gteXnullX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1.0d).is(P.gte(null))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_eqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.eq(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_neqX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.neq(1.0d))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_ltX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.lt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_lteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.lte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_gtX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.gt(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_gteX1dX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.gte(1.0d))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  ######################################################
+  ## null vs. NaN
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_eqXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.eq(NaN))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_neqXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.neq(NaN))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | null |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_ltXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.lt(NaN))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_lteXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.lte(NaN))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_gtXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.gt(NaN))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectXnullX_gteXNaNX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(null).is(P.gte(NaN))
+      """
+    When iterated to list
+    Then the result should be empty
+
   ######################################################
   ## NaN vs. null
   ######################################################
@@ -857,6 +1113,130 @@ Feature: Comparability
       | result |
       | d[1].d |
 
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_notXnotXisXeqXNaNXXXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1d).not(not(is(P.eq(NaN))))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_whereXnotXisXltXNaNXXXX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1d).where(__.inject(1).not(is(P.lt(NaN))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].d |
+
+  ######################################################
+  ## XOR
+  ######################################################
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXtrue_trueX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.eq(1)),not(is(P.eq(1)))),and(is(P.eq(1)),not(is(P.eq(1))))))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXtrue_falseX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.eq(1)),not(is(P.gt(1)))),and(is(P.gt(1)),not(is(P.eq(1))))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXtrue_errorX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.eq(1)),not(is(P.lt(NaN)))),and(is(P.lt(NaN)),not(is(P.eq(1))))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXfalse_trueX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.gt(1)),not(is(P.eq(1)))),and(is(P.eq(1)),not(is(P.gt(1))))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXfalse_falseX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.gt(1)),not(is(P.gt(1)))),and(is(P.gt(1)),not(is(P.gt(1))))))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXfalse_errorX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.gt(1)),not(is(P.lt(NaN)))),and(is(P.lt(NaN)),not(is(P.gt(1))))))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXerror_trueX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.lt(NaN)),not(is(P.eq(1)))),and(is(P.eq(1)),not(is(P.lt(NaN))))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[1].i |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXerror_falseX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.lt(NaN)),not(is(P.gt(1)))),and(is(P.gt(1)),not(is(P.lt(NaN))))))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: InjectX1dX_xorXerror_errorX
+    Given the empty graph
+    And the traversal of
+      """
+      g.inject(1).filter(or(and(is(P.lt(NaN)),not(is(P.lt(NaN)))),and(is(P.lt(NaN)),not(is(P.lt(NaN))))))
+      """
+    When iterated to list
+    Then the result should be empty
+
   ######################################################
   ## Infinity vs. Infinity
   ######################################################
@@ -948,8 +1328,3 @@ Feature: Comparability
       """
     When iterated to list
     Then the result should be empty
-
-
-
-
-

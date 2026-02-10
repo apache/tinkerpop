@@ -23,14 +23,20 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
-* Bumped SLF4j to 2.0.16.
+* Added `subgraph()` support for `gremlin-python` so that results are stored in a detached `Graph` object.
 * Modified grammar to make `discard()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
-* Bumped GMavenPlus to 4.1.1
 * Removed `Meta` field from `ResponseResult` struct in `gremlin-go`
+* Removed deprecated elements of the Java-based process testing suite: `ProcessStandardSuite`, `ProcessComputerSuite`, `ProcessLimitedSuite` and associated tests.
+* Removed redundant Gremlin Server integration testing: `org.apache.tinkerpop.gremlin.process.*` and related infrastructure.
+* Removed obsolete `gremlin-groovy` translation testing: `ParameterizedGroovyTranslatorProvider` and related infrastructure.
 * Replace `Bytecode` with `GremlinLang` & update serialization to GraphBinary 4 for `gremlin-go`
 * Added `RequestInterceptor` to `gremlin-go` with `auth` reference implementations to replace `authInfo`
 * Refactored GraphBinary serializers to use `io.Writer` and `io.Reader` instead of `*bytes.Buffer` for streaming capacities
 * Refactored `httpProtocol` and `httpTransport` in `gremlin-go` into single `connection.go` that handles HTTP request and response
+* Bumped SLF4j to 2.0.16.
+* Bumped GMavenPlus to 4.1.1.
+* Bumped to Guice 6.0.0.
+* Bumped Caffeine to 3.2.3.
 
 [[release-4-0-0-beta-1]]
 === TinkerPop 4.0.0-beta.1 (January 17, 2025)

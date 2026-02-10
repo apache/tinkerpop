@@ -27,11 +27,10 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.structure.graph import Vertex
+from gremlin_python.structure.graph import Vertex, Edge, Graph
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.protocol import GremlinServerError
-from gremlin_python.driver import serializer
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'http://localhost:{}/')
 test_no_auth_url = gremlin_server_url.format(45940)
@@ -214,13 +213,19 @@ class TestDriverRemoteConnection(object):
         assert len(p.objects[1].properties) == 0
         assert len(p.objects[2].properties) == 0
         # #
-        # test materializeProperties in Path - 'all' should materialize properties on each element
-        # p = g.with_("materializeProperties", "all").V().has('name', 'marko').outE().inV().has_label('software').path().next()
-        # assert 3 == len(p.objects)
-        # assert p.objects[0].properties is not None and len(p.objects[0].properties) > 0
-        # # edges have dict-like properties; ensure not empty
-        # assert p.objects[1].properties is not None and len(p.objects[1].properties) > 0
-        # assert p.objects[2].properties is not None and len(p.objects[2].properties) > 0
+        # subgraph - skipping GraphSON for now. we can remove this carve-out when we remove the GraphSON support which
+        # was meant to be temporary
+        if not isinstance(remote_connection._client._response_serializer, serializer.GraphSONSerializersV4):
+            sg = g.E().has_label('knows').subgraph('sg').cap('sg').next()
+            assert isinstance(sg, Graph)
+            assert len(sg.vertices) == 3
+            assert len(sg.edges) == 2
+            for v in sg.vertices.values():
+                assert isinstance(v, Vertex)
+                assert v.label == 'person'
+            for e in sg.edges.values():
+                assert isinstance(e, Edge)
+                assert e.label == 'knows'
 
     def test_iteration(self, remote_connection):
         statics.load_statics(globals())

@@ -23,7 +23,7 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta, timezone
 from gremlin_python.statics import long, bigint, BigDecimal, SingleByte, SingleChar
-from gremlin_python.structure.graph import Vertex, Edge, Property, VertexProperty, Path
+from gremlin_python.structure.graph import Graph, Vertex, Edge, Property, VertexProperty, Path
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryWriter, GraphBinaryReader
 from gremlin_python.process.traversal import Direction
 from gremlin_python.structure.io.util import Marker
@@ -235,3 +235,42 @@ class TestGraphBinaryV4(object):
         x = Marker.end_of_stream()
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
+
+    def test_graph(self):
+        graph = Graph()
+        v1 = Vertex(1, "person")
+        v2 = Vertex(2, "person")
+        graph.vertices[1] = v1
+        graph.vertices[2] = v2
+        e1 = Edge(3, v1, "knows", v2)
+        graph.edges[3] = e1
+
+        # Add some properties
+        vp1 = VertexProperty(4, "name", "marko", v1)
+        v1.properties.append(vp1)
+        vp1.properties.append(Property("acl", "public", vp1))
+
+        e1.properties.append(Property("weight", 0.5, e1))
+
+        output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(graph))
+
+        assert isinstance(output, Graph)
+        assert len(output.vertices) == 2
+        assert len(output.edges) == 1
+
+        rv1 = output.vertices[1]
+        assert rv1.label == "person"
+        assert len(rv1.properties) == 1
+        rvp1 = rv1.properties[0]
+        assert rvp1.value == "marko"
+        assert len(rvp1.properties) == 1
+        assert rvp1.properties[0].key == "acl"
+        assert rvp1.properties[0].value == "public"
+
+        re1 = output.edges[3]
+        assert re1.label == "knows"
+        assert re1.outV.id == 1
+        assert re1.inV.id == 2
+        assert len(re1.properties) == 1
+        assert re1.properties[0].key == "weight"
+        assert re1.properties[0].value == 0.5

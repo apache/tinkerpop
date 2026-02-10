@@ -639,11 +639,82 @@ class TinkerGraphIO(_GraphBinaryTypeIO):
 
     @classmethod
     def dictify(cls, obj, writer, to_extend, as_value=False, nullable=True):
-        raise AttributeError("TinkerGraph serialization is not currently supported by gremlin-python")
+        cls.prefix_bytes(cls.graphbinary_type, as_value, nullable, to_extend)
+
+        vertices = list(obj.vertices.values())
+        edges = list(obj.edges.values())
+
+        IntIO.dictify(len(vertices), writer, to_extend, True, False)
+        for v in vertices:
+            writer.to_dict(v.id, to_extend)
+            ListIO.dictify([v.label], writer, to_extend, True, False)
+            v_props = v.properties
+            IntIO.dictify(len(v_props), writer, to_extend, True, False)
+            for vp in v_props:
+                writer.to_dict(vp.id, to_extend)
+                ListIO.dictify([vp.label], writer, to_extend, True, False)
+                writer.to_dict(vp.value, to_extend)
+                writer.to_dict(None, to_extend)
+                ListIO.dictify(vp.properties, writer, to_extend, True, False)
+
+        IntIO.dictify(len(edges), writer, to_extend, True, False)
+        for e in edges:
+            writer.to_dict(e.id, to_extend)
+            ListIO.dictify([e.label], writer, to_extend, True, False)
+            writer.to_dict(e.inV.id, to_extend)
+            writer.to_dict(None, to_extend)
+            writer.to_dict(e.outV.id, to_extend)
+            writer.to_dict(None, to_extend)
+            writer.to_dict(None, to_extend)
+            ListIO.dictify(e.properties, writer, to_extend, True, False)
+
+        return to_extend
 
     @classmethod
-    def objectify(cls, b, reader, as_value=False):
-        raise AttributeError("TinkerGraph deserialization is not currently supported by gremlin-python")
+    def objectify(cls, buff, reader, nullable=True):
+        return cls.is_null(buff, reader, cls._read_graph, nullable)
+
+    @classmethod
+    def _read_graph(cls, b, r):
+        graph = Graph()
+        vertex_count = r.to_object(b, DataType.int, False)
+        for _ in range(vertex_count):
+            v_id = r.read_object(b)
+            v_label = r.to_object(b, DataType.list, False)[0]
+            vertex = Vertex(v_id, v_label)
+            graph.vertices[v_id] = vertex
+
+            vp_count = r.to_object(b, DataType.int, False)
+            for _ in range(vp_count):
+                vp_id = r.read_object(b)
+                vp_label = r.to_object(b, DataType.list, False)[0]
+                vp_value = r.read_object(b)
+                r.read_object(b)  # discard parent
+                vp = VertexProperty(vp_id, vp_label, vp_value, vertex)
+                vertex.properties.append(vp)
+
+                meta_props = r.to_object(b, DataType.list, False)
+                if meta_props:
+                    vp.properties.extend(meta_props)
+
+        edge_count = r.to_object(b, DataType.int, False)
+        for _ in range(edge_count):
+            e_id = r.read_object(b)
+            e_label = r.to_object(b, DataType.list, False)[0]
+            in_v_id = r.read_object(b)
+            r.read_object(b)  # discard in-v label
+            out_v_id = r.read_object(b)
+            r.read_object(b)  # discard out-v label
+            r.read_object(b)  # discard parent
+
+            edge = Edge(e_id, graph.vertices[out_v_id], e_label, graph.vertices[in_v_id])
+            graph.edges[e_id] = edge
+
+            edge_props = r.to_object(b, DataType.list, False)
+            if edge_props:
+                edge.properties.extend(edge_props)
+
+        return graph
 
 
 class VertexIO(_GraphBinaryTypeIO):

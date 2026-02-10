@@ -52,10 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_INTEGRATE)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 public final class TinkerTransactionGraph extends AbstractTinkerGraph {
 
     static {

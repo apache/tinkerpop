@@ -183,23 +183,22 @@ Feature: Step - group()
       | result |
       | m[{"software":"d[2.0].d", "person":"d[5.0].d"}] |
 
-  # This test works, but the test frameworks don't all support it well because of how parameters are now processed
-  # in 3.6.0 where we need more than just simple JSON processing. would be nice to "ignore" it somehow as it does
-  # work in some situations but not all test frameworks have that ability either (i.e. to ignore prior to parsing
-  # the parameter). TINKERPOP-2699
-  #
-  # The post-ordering really isn't really right but works around TINKERPOP-2600
-#  Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
-#    Given the modern graph
-#    And using the parameter xx1 defined as "m[{\"marko\":\"l[\"666\"]\", \"noone\":\"l[\"blah\"]\"}]"
-#    And the traversal of
-#      """
-#      g.withSideEffect("a", xx1).V().group("a").by("name").by(__.outE().label().fold()).cap("a").unfold().group().by(Column.keys).by(select(Column.values).order(Scope.local).by(Order.asc))
-#      """
-#    When iterated to list
-#    Then the result should be unordered
-#      | result |
-#      | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":["666", "created", "knows", "knows"]}] |
+  Scenario: g_withSideEffectXa__marko_666_noone_blahX_V_groupXaX_byXnameX_byXoutE_label_foldX_capXaX
+    Given the modern graph
+    And the traversal of
+      """
+      g.withSideEffect("a", [marko:["666"],noone:["blah"]]).V().
+        group("a").
+          by("name").
+          by(__.outE().label().fold()).
+        cap("a").unfold().
+        group().by(Column.keys).by(select(Column.values).
+        order(Scope.local).by(Order.asc))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"ripple":[], "peter":["created"], "noone":["blah"], "vadas":[], "josh":["created", "created"], "lop":[], "marko":["666", "created", "knows", "knows"]}] |
 
   @GraphComputerVerificationStarGraphExceeded
   Scenario: g_V_hasLabelXpersonX_asXpX_outXcreatedX_group_byXnameX_byXselectXpX_valuesXageX_sumX

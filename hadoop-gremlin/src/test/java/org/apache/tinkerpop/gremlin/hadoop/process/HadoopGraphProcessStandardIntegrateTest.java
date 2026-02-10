@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.hadoop.process;
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessLimitedStandardSuite;
+import org.apache.tinkerpop.gremlin.process.ProcessEmbeddedStandardSuite;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessLimitedStandardSuite.class)
+@RunWith(ProcessEmbeddedStandardSuite.class)
 @GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
 public class HadoopGraphProcessStandardIntegrateTest {
 

@@ -2101,8 +2101,8 @@ scriptEngines: {
                ...}
 ----
 
-The specifics for this comma delimited format can be found
-link:https://static.javadoc.io/com.github.ben-manes.caffeine/caffeine/2.6.2/com/github/benmanes/caffeine/cache/CaffeineSpec.html[here].
+The specifics for this comma-delimited format can be found
+link:https://www.javadoc.io/doc/com.github.ben-manes.caffeine/caffeine/latest/com.github.benmanes.caffeine/com/github/benmanes/caffeine/cache/CaffeineSpec.html[here].
 By default, the cache is set to `softValues` which means they are garbage collected in a globally least-recently-used
 manner as memory gets low. For production systems, it is likely that a more predictable strategy be taken as shown
 above with the use of the `maximumSize`.

@@ -650,7 +650,7 @@ apply to embedded operations (i.e. running Gremlin in the same JVM as the `Graph
 
 ==== JVM Test Suite
 
-IMPORTANT: 4.0.0-beta.1 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
+IMPORTANT: 4.0.0-beta.2 Release - The final form of the TinkerPop test suite for 4.0 is not wholly settled, but going
 forward providers should focus on implementing the <<gherkin-tests-suite>> as opposed to the JVM suite.
 
 The JVM test suite is useful to graph system implementers who want to validate that their `Graph` implementation is
@@ -708,8 +708,8 @@ annotation.  See the `TinkerGraph` implementation below as an example:
 [source,java]
 ----
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 public class TinkerGraph implements Graph {
 ----
 
@@ -725,8 +725,8 @@ that was under test). The following is an example of this annotation usage as ta
 
 [source,java]
 ----
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_inXwrittenByX_b__a_inXsungByX_bX",
@@ -825,7 +825,7 @@ tests that validate many TinkerPop components internally. The tests themselves c
 with their syntax described in the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gremlin-language-test-cases[TinkerPop Developer Documentation].
 
-TinkerPop provides some infrastructure, for JVM based graphs, to help make it easier for providers to implement these
+TinkerPop provides some infrastructure for JVM-based graphs to help make it easier for providers to implement these
 tests against their implementations. This infrastructure is built on `cucumber-java` which is a dependency of
 `gremlin-test`. There are two main components to implementing the tests:
 
@@ -840,7 +840,7 @@ important to proper execution specific to their implementations. The most import
 properly implementing the `GraphTraversalSource getGraphTraversalSource(GraphData)` method which provides to the test
 the `GraphTraversalSource` to execute the test against.
 
-The JUnit test class is really just the test runner. It is a simple class which must include some Cucumber annotations.
+The JUnit test class is really just the test runner. It is a simple class that must include some Cucumber annotations.
 The following is just an example as taken from TinkerGraph:
 
 [source,java]
@@ -854,7 +854,7 @@ The following is just an example as taken from TinkerGraph:
         objectFactory = GuiceFactory.class})
 ----
 
-The `@CucumberOptions` that are used are mostly implementation specific, so it will be up to the provider to make some
+The `@CucumberOptions` that are used are mostly implementation-specific, so it will be up to the provider to make some
 choices as to what is right for their environment. For TinkerGraph, it needed to ignore Gherkin tests with the
 `@GraphComputerOnly` and `@AllowNullPropertyValues` tags (the full list of possible tags can be found
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/developer/#gherkin-tags[here]), since this configuration was for OLTP
@@ -866,7 +866,7 @@ Gherkin test files that should be made available locally. The files can be refer
 
 The "objectFactory" is the last component. Cucumber relies on dependency injection to get a `World` implementation into
 the test infrastructure. Providers may choose from multiple available implementations, but TinkerPop chose to use
-Guice. To follow this approach include the following module:
+Guice. To follow this approach, include the following module:
 
 [source,xml]
 ----
@@ -920,8 +920,8 @@ test suite to help alleviate test duplication between the two frameworks:
 
 [source,java]
 ----
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 ----
 
 === Accessibility via GremlinPlugin

@@ -41,6 +41,18 @@ might apply.
 
 ==== Graph System Providers
 
+===== Java-based Test Suite
+
+The traditional Java-based "process" test suite has been removed. It was deprecated in 3.8.0, with the instruction to
+move to the more comprehensive, language agnostic, Gherkin test framework which now unifies all Gremlin semantics
+testing. This unified approach to testing with Gherkin provides the easiest way to ensure that the same Gremlin
+semantics are applied for both graph systems and for Gremlin Language Variants, with the additional benefit that its
+easy-to-read format is well suited to LLMs.
+
+TinkerPop does retain a small cohort of Java-based "process" tests for embedded graphs wishing to validate some
+additional features that are not well suited to the Gherkin style. Providers who wish to use these simply implement the
+`ProcessEmbeddedStandardSuite` and the `ProcessEmbeddedComputerSuite` as has normally been done in the past.
+
 ==== Graph Driver Providers
 
 == TinkerPop 4.0.0-beta.1

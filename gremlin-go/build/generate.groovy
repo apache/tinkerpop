@@ -72,7 +72,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     )
 
     def staticTranslate = [
-    "g_withSackX2147483647iX_injectX0_5fX_sackXdivX_sack":"    \"g_withSackX2147483647iX_injectX0_5fX_sackXdivX_sack\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.WithSack(int32(2147483647)).Inject(0.5).Sack(gremlingo.Operator.Div).Sack()}}, ", //Scenario fails due to floating point rounding error in Go if this is allowed to correctly translate to float32(0.5)
+        "g_withSackX2147483647iX_injectX0_5fX_sackXdivX_sack":"    \"g_withSackX2147483647iX_injectX0_5fX_sackXdivX_sack\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return g.WithSack(int32(2147483647)).Inject(0.5).Sack(gremlingo.Operator.Div).Sack()}}, ", //Scenario fails due to floating point rounding error in Go if this is allowed to correctly translate to float32(0.5)
     ]
 
     gremlins.each { k,v ->
@@ -84,7 +84,6 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
             writer.write(k)
             writer.write("\": {")
             def collected = v.collect { GremlinTranslator.translate(it, Translator.GO) }
-            def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
             def gremlinItty = collected.iterator()
             while (gremlinItty.hasNext()) {
                 def t = gremlinItty.next()
@@ -92,7 +91,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                 try {
                     writer.write(t.getTranslated().
                             replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
-                            replaceAll("v([0-9]+)", "p[\"v\$1\"]").
+                            replaceAll("^-v([0-9]+)^-", "p[\"v\$1\"]"). // using ^- to avoid matching on g.io() tests - unexpected side-effect
                             replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
                             replaceAll("e([0-9]+)", "p[\"e\$1\"]").
                             replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").

@@ -53,30 +53,8 @@ import java.util.stream.StreamSupport;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_LIMITED_COMPUTER)
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest$Traversals",
-        method = "g_V_both_both_count",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest$Traversals",
-        method = "g_V_repeatXoutX_timesX3X_count",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest$Traversals",
-        method = "g_V_repeatXoutX_timesX8X_count",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest$Traversals",
-        method = "g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_PROCESS_EMBEDDED_COMPUTER)
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest$Traversals",
         method = "grateful_V_out_out_profile",
@@ -85,26 +63,6 @@ import java.util.stream.StreamSupport;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ProfileTest$Traversals",
         method = "grateful_V_out_out_profileXmetricsX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method = "g_V_hasLabelXsongX_groupXaX_byXnameX_byXproperties_groupCount_byXlabelXX_out_capXaX",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method = "g_V_outXfollowedByX_group_byXsongTypeX_byXbothE_group_byXlabelX_byXweight_sumXX",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method = "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method = "g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
-        reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.",
-        computers = {"ALL"})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldStartAndEndWorkersForVertexProgramAndMapReduce",
@@ -119,22 +77,6 @@ import java.util.stream.StreamSupport;
         method = "*",
         reason = "This test makes use of a sideEffect to enforce when a thread interruption is triggered and thus isn't applicable to HadoopGraph",
         computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest$Traversals",
-        method = "g_io_readXxmlX",
-        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.ReadTest$Traversals",
-        method = "g_io_read_withXreader_graphmlX",
-        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest$Traversals",
-        method = "g_io_writeXxmlX",
-        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.WriteTest$Traversals",
-        method = "g_io_write_withXwriter_graphmlX",
-        reason = "Hadoop-Gremlin does not support reads/writes with GraphML.")
 public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);

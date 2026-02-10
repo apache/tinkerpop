@@ -132,3 +132,32 @@ class TestGraph(object):
         assert hash(path) == hash(path2)
         assert path != Path([set(["a"]), set(["c", "b"]), set([])], [1, Vertex(1), "hello"])
         assert path != Path([set(["a", "b"]), set(["c", "b"]), set([])], [3, Vertex(1), "hello"])
+
+    def test_element_value_values(self):
+        v = Vertex(1, "person", [VertexProperty(10, "name", "marko", Vertex(1)),
+                                 VertexProperty(11, "age", 29, Vertex(1))])
+        assert v["name"] == "marko"
+        assert v["age"] == 29
+        try:
+            x = v["nonexistent"]
+            assert False, "Should have thrown KeyError"
+        except KeyError:
+            pass
+
+        assert v.values("name") == ["marko"]
+        assert v.values("age") == [29]
+        assert "marko" in v.values()
+        assert 29 in v.values()
+        assert len(v.values()) == 2
+        assert v.values("name", "age") == ["marko", 29]
+        assert v.values("nonexistent") == []
+
+        e = Edge(2, Vertex(1), "knows", Vertex(3), [Property("weight", 0.5, None)])
+        assert e["weight"] == 0.5
+        assert e.values("weight") == [0.5]
+        assert e.values() == [0.5]
+
+        vp = VertexProperty(10, "name", "marko", Vertex(1), [Property("acl", "public", None)])
+        assert vp["acl"] == "public"
+        assert vp.values("acl") == ["public"]
+        assert vp.values() == ["public"]

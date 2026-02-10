@@ -55,6 +55,7 @@ Feature: Data - SET
       | s[name,age] |
       | s[name,lang] |
 
+  @AllowSetPropertyValues
   Scenario: g_V_valuesXsetX_isXtypeOfXGType_SETXX
     Given the empty graph
     And the graph initializer of
@@ -70,6 +71,7 @@ Feature: Data - SET
       | result |
       | s[a,b,c] |
 
+  @AllowSetPropertyValues
   Scenario: g_V_hasXset_typeOfXGType_SETXX_valuesXnameX
     Given the empty graph
     And the graph initializer of
@@ -85,6 +87,7 @@ Feature: Data - SET
       | result |
       | test |
 
+  @AllowSetPropertyValues
   Scenario: g_V_valuesXsetX_isXtypeOfXGType_SETXX_unfold
     Given the empty graph
     And the graph initializer of
@@ -102,6 +105,7 @@ Feature: Data - SET
       | y |
       | z |
 
+  @AllowSetPropertyValues
   Scenario: g_V_valuesXsetX_isXtypeOfXGType_SETXX_countXlocalX
     Given the empty graph
     And the graph initializer of
@@ -117,6 +121,7 @@ Feature: Data - SET
       | result |
       | d[5].l |
 
+  @AllowSetPropertyValues
   Scenario: g_V_valuesXsetX_isXtypeOfXGType_SETXX_whereXcountXlocalX_isXeqX3XXX
     Given the empty graph
     And the graph initializer of
@@ -133,6 +138,7 @@ Feature: Data - SET
       | result |
       | s[d[1].i,d[2].i,d[3].i] |
 
+  @AllowSetPropertyValues
   Scenario: g_V_valuesXsetX_isXtypeOfXGType_SETXX_unfold_limitX2X
     Given the empty graph
     And the graph initializer of
