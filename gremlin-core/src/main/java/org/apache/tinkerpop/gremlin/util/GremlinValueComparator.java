@@ -370,9 +370,6 @@ public abstract class GremlinValueComparator implements Comparator<Object> {
                 return false;
             }
         }
-        if (fi.hasNext() || si.hasNext()) {
-            return false;
-        }
         return true;
     }
 
