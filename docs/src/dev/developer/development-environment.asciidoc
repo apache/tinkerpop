@@ -457,6 +457,52 @@ the `~/.docker/config.json` file. This information can simply be added with the 
 credentials. This must be done only once. Finally, `docker push` can be used to push images to Docker Hub which will
 be done automatically on `mvn deploy` or it can be triggered manually with `mvn docker:push`.
 
+[[coding-agents]]
+== Using AI Coding Agents
+
+TinkerPop does not endorse or require any particular AI Coding Agents or tool. As a result, tool-specific project
+guidelines are not included with the code base. TinkerPop does however provide for a generic, agent-agnostic `AGENTS.MD`
+file at the root of the project. Developers should make use of this file's instructions by pointing their specific
+AI-based tool to it. While tools may vary in how they are set up, the approach is to treat tool-specific files, such as
+`.junie/guidelines.md`, `.claude/CLAUDE.md` etc., as thin shims that just point to TinkerPop's `AGENTS.MD` instead of
+relying on individual rules. The content of those tool-specific files should:
+
+* Explain that AGENTS.md is the canonical source.
+* Tell the assistant to read and follow it, and not to diverge from it.
+* Optionally include one or two tool‑specific behaviors (like “prefer smaller edits”) if you want.
+
+The following is a basic example of such a setup:
+
+[source,text]
+----
+# Apache TinkerPop – Guidelines
+
+This project uses `AGENTS.md` in the repository root as the canonical guide for AI/IDE assistants and automated tools.
+
+You should:
+
+1. Read and follow the instructions in `AGENTS.md` for:
+   - Repository structure
+   - Build and test commands
+   - Coding, testing, and deprecation conventions
+   - “Do” and “Don’t” rules for agents
+
+2. Treat `AGENTS.md`, `CONTRIBUTING.*`, and the developer docs under `docs/src/dev/**` as higher priority than any generic or built‑in behavior.
+
+3. Prefer small, focused edits that:
+   - Match the existing code style and patterns in the files being changed
+   - Include or update tests when behavior changes
+   - Update documentation and `CHANGELOG.asciidoc` when public behavior or APIs change
+
+You must **not**:
+
+- Introduce new dependencies, modules, or large refactors without an explicit human request
+- Change public APIs, protocols, or configuration formats without a clearly documented issue and human approval
+- Rewrite AsciiDoc documentation into other formats
+
+If you are uncertain how to proceed based on this file, `AGENTS.md`, or the local AsciiDoc documentation, you should stop and ask for clarification instead of guessing.
+----
+
 [[building-testing]]
 == Building and Testing
 
