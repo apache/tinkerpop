@@ -559,17 +559,21 @@ func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog
 		if ordered {
 			if expectSet {
 				for i, a := range actualResult {
-					if fmt.Sprint(a.(*gremlingo.SimpleSet).ToSlice()) != fmt.Sprint(expectedResult[i].(*gremlingo.SimpleSet).ToSlice()) {
+					actualSlice := a.(*gremlingo.SimpleSet).ToSlice()
+					expectedSlice := expectedResult[i].(*gremlingo.SimpleSet).ToSlice()
+					if !compareListEqualsWithOrder(expectedSlice, actualSlice) {
 						return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 					}
 				}
 			} else if len(actualResult) == 1 && len(expectedResult) == 1 && reflect.TypeOf(actualResult[0]).Kind() == reflect.Map &&
 				reflect.TypeOf(expectedResult[0]).Kind() == reflect.Map {
-				if !compareMapEquals(actualResult[0].(map[interface{}]interface{}), expectedResult[0].(map[interface{}]interface{})) {
+				if !compareMapEquals(expectedResult[0].(map[interface{}]interface{}), actualResult[0].(map[interface{}]interface{})) {
 					return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
 				}
-			} else if fmt.Sprint(actualResult) != fmt.Sprint(expectedResult) {
-				return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
+			} else {
+				if !compareListEqualsWithOrder(expectedResult, actualResult) {
+					return fmt.Errorf("actual result does not match expected (order expected)\nActual: %v\nExpected: %v", actualResult, expectedResult)
+				}
 			}
 		} else {
 			if characterizedAs == "of" {
@@ -588,40 +592,20 @@ func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog
 	}
 }
 
+// compareMapEquals compares two maps for equality by checking if they have the same length
+// and if every key-value pair in the actual map has a logically equal counterpart in the expected map.
 func compareMapEquals(expected map[interface{}]interface{}, actual map[interface{}]interface{}) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
 	for k, a := range actual {
 		var e interface{}
 		containsKey := false
 		for ke, ee := range expected {
-			if fmt.Sprint(k) == fmt.Sprint(ke) {
+			if compareSingleEqual(k, ke) {
 				containsKey = true
 				e = ee
 				break
-			} else {
-				if reflect.ValueOf(k).Kind() == reflect.Ptr &&
-					reflect.ValueOf(ke).Kind() == reflect.Ptr {
-					switch k.(type) {
-					case *gremlingo.Vertex:
-						switch ke.(type) {
-						case *gremlingo.Vertex:
-							if fmt.Sprint(*k.(*gremlingo.Vertex)) == fmt.Sprint(*ke.(*gremlingo.Vertex)) {
-								containsKey = true
-							}
-						default:
-							// Not equal.
-						}
-					default:
-						// If we are here we probably need to implement an additional type like the Vertex above.
-						if fmt.Sprint(*k.(*interface{})) == fmt.Sprint(*ke.(*interface{})) {
-							fmt.Println("WARNING: Encountered unknown pointer type as map key.")
-							containsKey = true
-						}
-					}
-					if containsKey {
-						e = ee
-						break
-					}
-				}
 			}
 		}
 		if !containsKey {
@@ -629,61 +613,172 @@ func compareMapEquals(expected map[interface{}]interface{}, actual map[interface
 			return false
 		}
 
-		if a == nil && e == nil {
-			continue
-		} else if a == nil || e == nil {
-			// One value is nil, other is not. They are not equal.
-			fmt.Printf("Map comparison error: One map has a nil key, other does not.\n")
+		if !compareSingleEqual(a, e) {
+			fmt.Printf("Map comparison error: Expected != Actual (%v!=%v)\n", e, a)
 			return false
-		} else {
-			switch reflect.TypeOf(a).Kind() {
-			case reflect.Array, reflect.Slice:
-				switch reflect.TypeOf(e).Kind() {
-				case reflect.Array, reflect.Slice:
-					// Compare arrays
-					if !compareListEqualsWithoutOrder(e.([]interface{}), a.([]interface{})) {
-						return false
-					}
-				default:
-					fmt.Printf("Map comparison error: Expected type is Array/Slice, actual is %s.\n", reflect.TypeOf(a).Kind())
-					return false
-				}
-			case reflect.Map:
-				switch reflect.TypeOf(a).Kind() {
-				case reflect.Map:
-					// Compare maps
-					if !compareMapEquals(e.(map[interface{}]interface{}), a.(map[interface{}]interface{})) {
-						return false
-					}
-				default:
-					fmt.Printf("Map comparison error: Expected type is Map, actual is %s.\n", reflect.TypeOf(a).Kind())
-					return false
-				}
-			default:
-				if fmt.Sprint(a) != fmt.Sprint(e) {
-					fmt.Printf("Map comparison error: Expected != Actual (%s!=%s)\n", fmt.Sprint(a), fmt.Sprint(e))
-					return false
-				}
-			}
 		}
 	}
 	return true
 }
 
-func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{}) bool {
-	// This is a little weird, but there isn't a good solution to either of these problems:
-	// 		1. Comparison of types in Go. No deep equals which actually works properly. Needs to be done manually.
-	// 		2. In place deletion in a loop.
-	// So to do in place deletion in a loop we can do the following:
-	// 		1. Loop from back to wrong (don't need to worry about deleted indices that way.
-	//		2. Create a new slice with the index removed when we fix the item we want to delete.
-	// To do an orderless copy, a copy of the expected result is created. Results are removed as they are found. This stops
-	// the following from returning equal [1 2 2 2] and [1 1 1 2]
+// compareSingleEqual is the core logical equality function used for Gremlin Gherkin tests.
+// It avoids using fmt.Sprint which can include memory addresses for pointers (like Vertices or Edges),
+// leading to false negatives in tests. It performs recursive comparisons for complex types
+// and handles Gremlin-specific elements by comparing their IDs.
+func compareSingleEqual(actual interface{}, expected interface{}) bool {
+	if actual == nil && expected == nil {
+		return true
+	} else if actual == nil || expected == nil {
+		return false
+	}
 
-	// Shortcut.
-	if fmt.Sprint(expected) == fmt.Sprint(actual) {
+	actualSet, ok1 := actual.(*gremlingo.SimpleSet)
+	expectedSet, ok2 := expected.(*gremlingo.SimpleSet)
+	if ok1 && ok2 {
+		return compareListEqualsWithoutOrder(expectedSet.ToSlice(), actualSet.ToSlice())
+	} else if ok1 || ok2 {
+		return false
+	}
+
+	actualPath, ok1 := actual.(*gremlingo.Path)
+	expectedPath, ok2 := expected.(*gremlingo.Path)
+	if ok1 && ok2 {
+		return compareListEqualsWithOrder(expectedPath.Objects, actualPath.Objects)
+	} else if ok1 || ok2 {
+		return false
+	}
+
+	actualV, ok1 := actual.(*gremlingo.Vertex)
+	expectedV, ok2 := expected.(*gremlingo.Vertex)
+	if ok1 && ok2 {
+		return actualV.Id == expectedV.Id
+	}
+
+	actualE, ok1 := actual.(*gremlingo.Edge)
+	expectedE, ok2 := expected.(*gremlingo.Edge)
+	if ok1 && ok2 {
+		return actualE.Id == expectedE.Id
+	}
+
+	actualVP, ok1 := actual.(*gremlingo.VertexProperty)
+	expectedVP, ok2 := expected.(*gremlingo.VertexProperty)
+	if ok1 && ok2 {
+		return actualVP.Id == expectedVP.Id
+	}
+
+	actualP, ok1 := actual.(*gremlingo.Property)
+	expectedP, ok2 := expected.(*gremlingo.Property)
+	if ok1 && ok2 {
+		return actualP.Key == expectedP.Key && compareSingleEqual(actualP.Value, expectedP.Value)
+	}
+
+	switch a := actual.(type) {
+	case map[interface{}]interface{}:
+		e, ok := expected.(map[interface{}]interface{})
+		if !ok {
+			return false
+		}
+		return compareMapEquals(e, a)
+	case []interface{}:
+		e, ok := expected.([]interface{})
+		if !ok {
+			return false
+		}
+		return compareListEqualsWithOrder(e, a)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+		return compareNumeric(actual, expected)
+	default:
+		return fmt.Sprint(actual) == fmt.Sprint(expected)
+	}
+}
+
+// compareNumeric normalizes different numeric types to float64 to allow for comparison
+// between different precisions and representations (e.g. int64 vs float32).
+// It also explicitly handles NaN equality which is required for some Gremlin tests.
+func compareNumeric(actual interface{}, expected interface{}) bool {
+	var aVal, eVal float64
+	switch a := actual.(type) {
+	case int:
+		aVal = float64(a)
+	case int8:
+		aVal = float64(a)
+	case int16:
+		aVal = float64(a)
+	case int32:
+		aVal = float64(a)
+	case int64:
+		aVal = float64(a)
+	case uint:
+		aVal = float64(a)
+	case uint8:
+		aVal = float64(a)
+	case uint16:
+		aVal = float64(a)
+	case uint32:
+		aVal = float64(a)
+	case uint64:
+		aVal = float64(a)
+	case float32:
+		aVal = float64(a)
+	case float64:
+		aVal = a
+	default:
+		return fmt.Sprint(actual) == fmt.Sprint(expected)
+	}
+
+	switch e := expected.(type) {
+	case int:
+		eVal = float64(e)
+	case int8:
+		eVal = float64(e)
+	case int16:
+		eVal = float64(e)
+	case int32:
+		eVal = float64(e)
+	case int64:
+		eVal = float64(e)
+	case uint:
+		eVal = float64(e)
+	case uint8:
+		eVal = float64(e)
+	case uint16:
+		eVal = float64(e)
+	case uint32:
+		eVal = float64(e)
+	case uint64:
+		eVal = float64(e)
+	case float32:
+		eVal = float64(e)
+	case float64:
+		eVal = e
+	default:
+		return fmt.Sprint(actual) == fmt.Sprint(expected)
+	}
+
+	if math.IsNaN(aVal) && math.IsNaN(eVal) {
 		return true
 	}
+	return aVal == eVal
+}
+
+// compareListEqualsWithOrder compares two slices for equality, ensuring that they have
+// the same length and that elements at each index are logically equal.
+func compareListEqualsWithOrder(expected []interface{}, actual []interface{}) bool {
+	if len(expected) != len(actual) {
+		return false
+	}
+	for i := range actual {
+		if !compareSingleEqual(actual[i], expected[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// compareListEqualsWithoutOrder compares two slices for equality regardless of order.
+// It ensures they have the same length and that every element in the actual slice
+// has a corresponding logically equal element in the expected slice.
+func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{}) bool {
 	if len(expected) != len(actual) {
 		return false
 	}
@@ -691,71 +786,11 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 	copy(expectedCopy, expected)
 	for _, a := range actual {
 		found := false
-		if a == nil {
-			for i := len(expectedCopy) - 1; i >= 0; i-- {
-				if expectedCopy[i] == nil {
-					expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
-					found = true
-					break
-				}
-			}
-		} else if actualSet, ok := a.(*gremlingo.SimpleSet); ok {
-			// Set is a special case here because there is no TypeOf().Kind() for sets.
-			actualStringArray := makeSortedStringArrayFromSet(actualSet)
-
-			for i := len(expectedCopy) - 1; i >= 0; i-- {
-				curExpected := expectedCopy[i]
-				expectedSet, ok := curExpected.(*gremlingo.SimpleSet)
-				if ok {
-					expectedStringArray := makeSortedStringArrayFromSet(expectedSet)
-
-					if reflect.DeepEqual(actualStringArray, expectedStringArray) {
-						expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
-						found = true
-						break
-					}
-				}
-			}
-		} else {
-			switch reflect.TypeOf(a).Kind() {
-			case reflect.Array, reflect.Slice:
-				for i := len(expectedCopy) - 1; i >= 0; i-- {
-					if expectedCopy[i] != nil {
-						switch reflect.TypeOf(expectedCopy[i]).Kind() {
-						case reflect.Array, reflect.Slice:
-							if compareListEqualsWithoutOrder(expectedCopy[i].([]interface{}), a.([]interface{})) {
-								expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
-								found = true
-							}
-						}
-						if found {
-							break
-						}
-					}
-				}
-			case reflect.Map:
-				for i := len(expectedCopy) - 1; i >= 0; i-- {
-					if expectedCopy[i] != nil {
-						switch reflect.TypeOf(expectedCopy[i]).Kind() {
-						case reflect.Map:
-							if compareMapEquals(expectedCopy[i].(map[interface{}]interface{}), a.(map[interface{}]interface{})) {
-								expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
-								found = true
-							}
-						}
-						if found {
-							break
-						}
-					}
-				}
-			default:
-				for i := len(expectedCopy) - 1; i >= 0; i-- {
-					if fmt.Sprint(a) == fmt.Sprint(expectedCopy[i]) {
-						expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
-						found = true
-						break
-					}
-				}
+		for i := len(expectedCopy) - 1; i >= 0; i-- {
+			if compareSingleEqual(a, expectedCopy[i]) {
+				expectedCopy = append(expectedCopy[:i], expectedCopy[i+1:]...)
+				found = true
+				break
 			}
 		}
 		if !found {
@@ -766,55 +801,17 @@ func compareListEqualsWithoutOrder(expected []interface{}, actual []interface{})
 	return true
 }
 
+// compareListEqualsWithOf compares two slices for "of" equality.
+// This is used for Gherkin "of" assertions where the actual result must be
+// a subset of the expected results or vice versa depending on the context,
+// but generally confirms that all elements in 'actual' exist in 'expected'.
 func compareListEqualsWithOf(expected []interface{}, actual []interface{}) bool {
-	// When comparing with "of", we expect cases like [1 2] (expected) and [1 1 1 2] (actual) , or
-	// [1 1 1 2] (expected) and [1 2] (actual) to return equal.
 	for _, a := range actual {
 		found := false
-		if a == nil {
-			for i := len(expected) - 1; i >= 0; i-- {
-				if expected[i] == nil {
-					found = true
-					break
-				}
-			}
-		} else {
-			switch reflect.TypeOf(a).Kind() {
-			case reflect.Array, reflect.Slice:
-				for i := len(expected) - 1; i >= 0; i-- {
-					if expected[i] != nil {
-						switch reflect.TypeOf(expected[i]).Kind() {
-						case reflect.Array, reflect.Slice:
-							if compareListEqualsWithoutOrder(expected[i].([]interface{}), a.([]interface{})) {
-								found = true
-							}
-						}
-						if found {
-							break
-						}
-					}
-				}
-			case reflect.Map:
-				for i := len(expected) - 1; i >= 0; i-- {
-					if expected[i] != nil {
-						switch reflect.TypeOf(expected[i]).Kind() {
-						case reflect.Map:
-							if compareMapEquals(expected[i].(map[interface{}]interface{}), a.(map[interface{}]interface{})) {
-								found = true
-							}
-						}
-						if found {
-							break
-						}
-					}
-				}
-			default:
-				for i := len(expected) - 1; i >= 0; i-- {
-					if fmt.Sprint(a) == fmt.Sprint(expected[i]) {
-						found = true
-						break
-					}
-				}
+		for i := len(expected) - 1; i >= 0; i-- {
+			if compareSingleEqual(a, expected[i]) {
+				found = true
+				break
 			}
 		}
 		if !found {

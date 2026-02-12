@@ -27,6 +27,7 @@ const {Given, Then, When, setDefaultTimeout} = require('cucumber');
 setDefaultTimeout(10 * 1000);
 const chai = require('chai')
 chai.use(require('chai-string'));
+const uuid = require('uuid');
 const expect = chai.expect;
 const util = require('util');
 const gremlin = require('./gremlin').gremlin;
@@ -76,6 +77,7 @@ const ignoreReason = {
   floatingPointIssues: "Javascript floating point numbers not working in this case",
   subgraphStepNotSupported: "Javascript does not yet support subgraph()",
   treeStepNotSupported: "Javascript does not yet support tree()",
+  uuidSerializationIssues: "Javascript does not serialize to a UUID object, which complicates test assertions",
   needsFurtherInvestigation: '',
 };
 
@@ -102,6 +104,9 @@ const ignoredScenarios = {
    // floating point issues
   'g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack': new IgnoreError(ignoreReason.floatingPointIssues),
   'g_withSackX2X_V_sackXdivX_byXconstantX4_0XX_sack': new IgnoreError(ignoreReason.floatingPointIssues),
+  // uuid issues
+  'g_inject_order_byXdescX': new IgnoreError(ignoreReason.uuidSerializationIssues),
+  'g_inject_order': new IgnoreError(ignoreReason.uuidSerializationIssues),
 };
 
 Given(/^the (.+) graph$/, function (graphName) {
@@ -425,7 +430,7 @@ function toDateTime(value) {
 }
 
 function toUuid(value) {
-  return value;
+  return uuid.parse(value);
 }
 
 function toMerge(value) {

@@ -88,7 +88,7 @@ public class JavascriptTranslatorTest {
     @Test
     public void shouldTranslateUuid() {
         final UUID uuid = UUID.fromString("ffffffff-fd49-1e4b-0000-00000d4b8a1d");
-        assertTranslation(String.format("'%s'", uuid), uuid);
+        assertTranslation(String.format("uuid.parse('%s')", uuid), uuid);
     }
 
     @Test

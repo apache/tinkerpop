@@ -29,12 +29,14 @@ import org.junit.runners.Parameterized;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.time.OffsetDateTime;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asSet;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asList;
@@ -52,8 +54,6 @@ public class OrderTest {
     @RunWith(Parameterized.class)
     public static class OrderListTest {
 
-        private static final SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
-
         @Parameterized.Parameters(name = "{0}.sort({1}) = {2}")
         public static Iterable<Object[]> data() throws ParseException {
             return new ArrayList<>(Arrays.asList(new Object[][]{
@@ -61,10 +61,26 @@ public class OrderTest {
                     {Order.asc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("a", "b", "c", "d")},
                     {Order.desc, Arrays.asList("b", "a", "c", "d"), Arrays.asList("d", "c", "b", "a")},
                     {Order.desc, Arrays.asList("c", "a", null, "d"), Arrays.asList("d", "c", "a", null)},
-                    {Order.asc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-                            Arrays.asList(formatter.parse("1-Jan-2008"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"))},
-                    {Order.desc, Arrays.asList(formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2008")),
-                            Arrays.asList(formatter.parse("1-Jan-2020"), formatter.parse("1-Jan-2018"), formatter.parse("1-Jan-2008"))},
+                    {Order.asc, Arrays.asList(
+                        OffsetDateTime.of(2018, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2008, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
+                    ),
+                        Arrays.asList(
+                        OffsetDateTime.of(2008, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2018, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
+                    )},
+                    {Order.desc, Arrays.asList(
+                        OffsetDateTime.of(2018, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+                        OffsetDateTime.of(2008, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
+                    ),
+                        Arrays.asList(
+                        OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC),
+                        OffsetDateTime.of(2018, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC),
+                        OffsetDateTime.of(2008, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC)
+                    )},
                     {Order.desc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L, null)},
                     {Order.desc, Arrays.asList(100L, 1L, -1L, 0L), Arrays.asList(100L, 1L, 0L, -1L)},
                     {Order.asc, Arrays.asList(100L, 1L, null, -1L, 0L), Arrays.asList(null, -1L, 0L, 1L, 100L)},

@@ -394,15 +394,16 @@ We define the type space, and the global order across the type space as follows:
 3.  Number
 4.  Date
 5.  String
-6.  Vertex
-7.  Edge
-8.  VertexProperty
-9.  Property
-10. Path
-11. Set
-12. List
-13. Map
-14. Unknown
+6.  UUID
+7.  Vertex
+8.  Edge
+9.  VertexProperty
+10. Property
+11. Path
+12. Set
+13. List
+14. Map
+15. Unknown
 ----
 
 Values in different type spaces will be ordered according to their priority (e.g. all Numbers < all Strings).

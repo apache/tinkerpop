@@ -153,11 +153,9 @@ Feature: Orderability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order
     Given the empty graph
-
-    # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject("zzz","foo",["a","b","c","d"],1,["a","b","c"],[a:"a",b:"b"],null,2.0d,[a:"a",b:false,c:"c"],"bar",true,false,Infinity,NaN,-Infinity).order()
+      g.inject("zzz","foo",UUID("6100808b-62f9-42b7-957e-ed66c30f40d1"),["a","b","c","d"],1,datetime("2023-08-01T00:00:00Z"),["a","b","c"],[a:"a",b:"b"],null,2.0d,datetime("2023-01-01T00:00:00Z"),{"x","y","z"},[a:"a",b:false,c:"c"],"bar",UUID("5100808b-62f9-42b7-957e-ed66c30f40d1"),true,false,Infinity,NaN,-Infinity).order()
       """
     When iterated to list
     Then the result should be ordered
@@ -170,9 +168,14 @@ Feature: Orderability
       | d[2.0].d |
       | d[Infinity] |
       | d[NaN] |
+      | dt[2023-01-01T00:00:00Z] |
+      | dt[2023-08-01T00:00:00Z] |
       | bar |
       | foo |
       | zzz |
+      | uuid[5100808b-62f9-42b7-957e-ed66c30f40d1] |
+      | uuid[6100808b-62f9-42b7-957e-ed66c30f40d1] |
+      | s[x,y,z] |
       | l[a,b,c] |
       | l[a,b,c,d] |
       | m[{"a":"a", "b":false, "c":"c"}] |
@@ -181,10 +184,9 @@ Feature: Orderability
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order_byXdescX
     Given the empty graph
-    # TODO add support for Set, UUID, Date once the framework supports it
     And the traversal of
       """
-      g.inject("zzz","foo",["a","b","c","d"],1,["a","b","c"],[a:"a",b:"b"],null,2.0d,[a:"a",b:false,c:"c"],"bar",true,false,Infinity,NaN,-Infinity).order().by(desc)
+      g.inject("zzz","foo",UUID("6100808b-62f9-42b7-957e-ed66c30f40d1"),["a","b","c","d"],1,datetime("2023-08-01T00:00:00Z"),["a","b","c"],[a:"a",b:"b"],null,2.0d,datetime("2023-01-01T00:00:00Z"),{"x","y","z"},[a:"a",b:false,c:"c"],"bar",UUID("5100808b-62f9-42b7-957e-ed66c30f40d1"),true,false,Infinity,NaN,-Infinity).order().by(desc)
       """
     When iterated to list
     Then the result should be ordered
@@ -193,9 +195,14 @@ Feature: Orderability
       | m[{"a":"a", "b":false, "c":"c"}] |
       | l[a,b,c,d] |
       | l[a,b,c] |
+      | s[x,y,z] |
+      | uuid[6100808b-62f9-42b7-957e-ed66c30f40d1] |
+      | uuid[5100808b-62f9-42b7-957e-ed66c30f40d1] |
       | zzz |
       | foo |
       | bar |
+      | dt[2023-08-01T00:00:00Z] |
+      | dt[2023-01-01T00:00:00Z] |
       | d[NaN] |
       | d[Infinity] |
       | d[2.0].d |
