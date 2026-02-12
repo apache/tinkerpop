@@ -104,6 +104,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+* Fixed bug in Gremlin orderability semantics for `OffsetDateTime`.
+* Fixed bug in Javascript translation for UUID.
 * Fixed bug in pre-repeat() `emit()/until()` where `emit()` and `until()` traversers weren't added to the results.
 * Expose serialization functions for alternative transport protocols in gremlin-go
 * Improved Gremlint formatting to keep the first argument for a step on the same line if line breaks were required to meet max line length.
