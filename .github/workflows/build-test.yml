@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -26,7 +26,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -40,7 +40,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -58,7 +58,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -74,7 +74,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -90,7 +90,7 @@ jobs:
       needs: smoke
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v5
+        - uses: actions/checkout@v6
         - name: Set up JDK 11
           uses: actions/setup-java@v5
           with:
@@ -103,7 +103,7 @@ jobs:
         - name: Save Docker image
           working-directory: ./gremlin-server
           run: docker save --output gremlin-server.tar tinkerpop/gremlin-server
-        - uses: actions/cache@v4
+        - uses: actions/cache@v5
           id: gremlin-server-test-docker-image
           with:
             path: |
@@ -126,7 +126,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -150,7 +150,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -171,7 +171,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -188,7 +188,7 @@ jobs:
     needs: cache-gremlin-server-docker-image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -204,14 +204,14 @@ jobs:
 #    needs: cache-gremlin-server-docker-image
 #    runs-on: ubuntu-latest
 #    steps:
-#      - uses: actions/checkout@v5
+#      - uses: actions/checkout@v6
 #      - name: Set up JDK 11
 #        uses: actions/setup-java@v5
 #        with:
 #          java-version: '11'
 #          distribution: 'temurin'
 #      - name: Get Cached Server Base Image
-#        uses: actions/cache@v4
+#        uses: actions/cache@v5
 #        id: gremlin-server-test-docker-image
 #        with:
 #          path: |
@@ -232,14 +232,14 @@ jobs:
 #    needs: cache-gremlin-server-docker-image
 #    runs-on: ubuntu-latest
 #    steps:
-#      - uses: actions/checkout@v5
+#      - uses: actions/checkout@v6
 #      - name: Set up JDK 11
 #        uses: actions/setup-java@v5
 #        with:
 #          java-version: '11'
 #          distribution: 'temurin'
 #      - name: Get Cached Server Base Image
-#        uses: actions/cache@v4
+#        uses: actions/cache@v5
 #        id: gremlin-server-test-docker-image
 #        with:
 #          path: |
@@ -260,14 +260,14 @@ jobs:
 #    needs: cache-gremlin-server-docker-image
 #    runs-on: ubuntu-latest
 #    steps:
-#      - uses: actions/checkout@v5
+#      - uses: actions/checkout@v6
 #      - name: Set up JDK 11
 #        uses: actions/setup-java@v5
 #        with:
 #          java-version: '11'
 #          distribution: 'temurin'
 #      - name: Get Cached Server Base Image
-#        uses: actions/cache@v4
+#        uses: actions/cache@v5
 #        id: gremlin-server-test-docker-image
 #        with:
 #          path: |
@@ -288,7 +288,7 @@ jobs:
     needs: cache-gremlin-server-docker-image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
@@ -310,7 +310,7 @@ jobs:
 #    needs: cache-gremlin-server-docker-image
 #    runs-on: ubuntu-latest
 #    steps:
-#      - uses: actions/checkout@v5
+#      - uses: actions/checkout@v6
 #      - name: Set up JDK11
 #        uses: actions/setup-java@v5
 #        with:
@@ -321,7 +321,7 @@ jobs:
 #        with:
 #          dotnet-version: '8.0.x'
 #      - name: Get Cached Server Base Image
-#        uses: actions/cache@v4
+#        uses: actions/cache@v5
 #        id: gremlin-server-test-docker-image
 #        with:
 #          path: |
@@ -344,7 +344,7 @@ jobs:
     needs: smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up JDK11
         uses: actions/setup-java@v5
         with:
@@ -360,7 +360,7 @@ jobs:
     needs: cache-gremlin-server-docker-image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
