@@ -25,9 +25,9 @@ import assert from 'assert';
 import { graphBinaryReader } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 import { Traverser } from '../../../lib/process/traversal.js';
-import Bytecode from '../../../lib/process/bytecode.js';
+
 import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
-const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
+const g = () => new GraphTraversal(undefined, undefined);
 
 const { from } = Buffer;
 

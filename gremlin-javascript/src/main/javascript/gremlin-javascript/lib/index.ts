@@ -27,8 +27,7 @@ import * as strategiesModule from './process/traversal-strategy.js';
 import * as graph from './structure/graph.js';
 import * as gs from './structure/io/graph-serializer.js';
 import * as rc from './driver/remote-connection.js';
-import Bytecode from './process/bytecode.js';
-import Translator from './process/translator.js';
+import GremlinLang from './process/gremlin-lang.js';
 import * as utils from './utils.js';
 import DriverRemoteConnection from './driver/driver-remote-connection.js';
 import ResponseError from './driver/response-error.js';
@@ -53,7 +52,6 @@ export const driver = {
 };
 
 export const process = {
-  Bytecode,
   EnumValue: t.EnumValue,
   P: t.P,
   TextP: t.TextP,
@@ -77,7 +75,7 @@ export const process = {
   GraphTraversal: gt.GraphTraversal,
   GraphTraversalSource: gt.GraphTraversalSource,
   statics: gt.statics,
-  Translator,
+  GremlinLang,
   traversal: AnonymousTraversalSource.traversal,
   AnonymousTraversalSource,
   withOptions: t.withOptions,

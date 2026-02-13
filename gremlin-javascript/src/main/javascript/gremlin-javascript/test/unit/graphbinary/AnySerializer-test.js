@@ -28,9 +28,9 @@ import { DataType, anySerializer } from '../../../lib/structure/io/binary/GraphB
 import { Vertex, VertexProperty, Edge, Path, Property } from '../../../lib/structure/graph.js';
 import { Traverser, P, TextP, EnumValue } from '../../../lib/process/traversal.js';
 import { OptionsStrategy } from '../../../lib/process/traversal-strategy.js';
-import Bytecode from '../../../lib/process/bytecode.js';
+
 import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
-const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
+const g = () => new GraphTraversal(undefined, undefined);
 
 const { from, concat } = Buffer;
 
@@ -80,27 +80,7 @@ describe('GraphBinary.AnySerializer', () => {
       { v:new Date('2023-08-02T01:23:45-07:30'),
           b:[DataType.OFFSETDATETIME,0x00, 0x00,0x00,0x07,0xe7,0x08,0x02,0x00,0x00,0x1d,0x20,0x66,0xbf,0xba,0x00,0x00,0x00,0x00,0x00] },
 
-      // BytecodeSerializer
-      // Traversal type
-      { v: g().V(),
-        b: [
-          DataType.BYTECODE,0x00,
-          0x00,0x00,0x00,0x01, // {steps_length}
-            0x00,0x00,0x00,0x01, 0x56, // V
-            0x00,0x00,0x00,0x00, // (void)
-          0x00,0x00,0x00,0x00, // {sources_length}
-        ]
-      },
-      // Bytecode type
-      { v: g().V().getBytecode(),
-        b: [
-          DataType.BYTECODE,0x00,
-          0x00,0x00,0x00,0x01, // {steps_length}
-            0x00,0x00,0x00,0x01, 0x56, // V
-            0x00,0x00,0x00,0x00, // (void)
-          0x00,0x00,0x00,0x00, // {sources_length}
-        ]
-      },
+
 
       // TraverserSerializer
       { v: new Traverser("A1", 16),
@@ -495,9 +475,7 @@ describe('GraphBinary.AnySerializer', () => {
       // BINDING
       // TODO: it's ignored for now
 
-      // BYTECODE
-      { v:null,                                   b:[0x15,0x01] },
-      { v:new Bytecode(),                         b:[0x15,0x00, 0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00] },
+
 
       // CARDINALITY
       { v:null,                                   b:[0x16,0x01] },

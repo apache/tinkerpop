@@ -21,7 +21,7 @@
  * @author Jorge Bay Gondra
  */
 
-import Bytecode from '../process/bytecode.js';
+import GremlinLang from '../process/gremlin-lang.js';
 import { TraversalStrategy } from '../process/traversal-strategy.js';
 import { Traversal, Traverser } from '../process/traversal.js';
 import type { ConnectionOptions } from './connection.js';
@@ -64,11 +64,11 @@ export abstract class RemoteConnection {
   }
 
   /**
-   * Submits the <code>Bytecode</code> provided and returns a <code>RemoteTraversal</code>.
-   * @param {Bytecode} bytecode
+   * Submits the <code>GremlinLang</code> provided and returns a <code>RemoteTraversal</code>.
+   * @param {GremlinLang} gremlinLang
    * @returns {Promise} Returns a <code>Promise</code> that resolves to a <code>RemoteTraversal</code>.
    */
-  abstract submit(bytecode: Bytecode | null): Promise<RemoteTraversal>;
+  abstract submit(gremlinLang: GremlinLang): Promise<RemoteTraversal>;
 
   /**
    * Create a new <code>RemoteConnection</code> that is bound to a session using the configuration from this one.
@@ -78,13 +78,13 @@ export abstract class RemoteConnection {
   abstract createSession(): RemoteConnection;
 
   /**
-   * Submits a <code>Bytecode.GraphOp.commit</code> to the server and closes the connection.
+   * Submits a commit operation to the server and closes the connection.
    * @returns {Promise}
    */
   abstract commit(): Promise<void>;
 
   /**
-   * Submits a <code>Bytecode.GraphOp.rollback</code> to the server and closes the connection.
+   * Submits a rollback operation to the server and closes the connection.
    * @returns {Promise}
    */
   abstract rollback(): Promise<void>;
@@ -104,7 +104,7 @@ export class RemoteTraversal extends Traversal {
     public traversers: Traverser<any>[],
     public sideEffects?: any[],
   ) {
-    super(null, null, new Bytecode());
+    super(null, null);
   }
 }
 
@@ -114,7 +114,7 @@ export class RemoteStrategy extends TraversalStrategy {
    * @param {RemoteConnection} connection
    */
   constructor(public connection: RemoteConnection) {
-    // gave this a fqcn that has a local "js:" prefix since this strategy isn't sent as bytecode to the server.
+    // gave this a fqcn that has a local "js:" prefix since this strategy isn't sent to the server.
     // this is a sort of local-only strategy that actually executes client side. not sure if this prefix is the
     // right way to name this or not, but it should have a name to identify it.
     super('js:RemoteStrategy');
@@ -126,7 +126,7 @@ export class RemoteStrategy extends TraversalStrategy {
       return Promise.resolve();
     }
 
-    return this.connection.submit(traversal.getBytecode()).then(function (remoteTraversal: RemoteTraversal) {
+    return this.connection.submit(traversal.getGremlinLang()).then(function (remoteTraversal: RemoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
       traversal.traversers = remoteTraversal.traversers;
     });

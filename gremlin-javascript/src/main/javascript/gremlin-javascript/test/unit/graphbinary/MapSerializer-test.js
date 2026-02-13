@@ -26,9 +26,8 @@ import assert from 'assert';
 import { mapSerializer } from '../../../lib/structure/io/binary/GraphBinary.js';
 import { Traverser } from '../../../lib/process/traversal.js';
 
-import Bytecode from '../../../lib/process/bytecode.js';
-import { GraphTraversal } from '../../../lib/process/graph-traversal.js';
-const g = () => new GraphTraversal(undefined, undefined, new Bytecode());
+
+
 
 const { from, concat } = Buffer;
 
@@ -77,28 +76,7 @@ describe('GraphBinary.MapSerializer', () => {
       ]
     },
 
-    { v:{ aliases: new Map([ ['g','g'] ]), gremlin: g().V().getBytecode() },
-      b:[0x00,0x00,0x00,0x02,
-        /*'aliases'*/
-        0x03,0x00, 0x00,0x00,0x00,0x07, ...from('aliases'),
-        /*aliases map*/
-        0x0A,0x00, 0x00,0x00,0x00,0x01,
-          /*'g'*/0x03,0x00,0x00,0x00,0x00,0x01,0x67, /*'g'*/0x03,0x00,0x00,0x00,0x00,0x01,0x67,
 
-        /*'gremlin'*/
-        0x03,0x00, 0x00,0x00,0x00,0x07, ...from('gremlin'),
-        /*gremlin bytecode*/
-        0x15,0x00,
-          // {steps_length}
-          0x00,0x00,0x00,0x01,
-            // step 1 - {name} String
-            0x00,0x00,0x00,0x01,  ...from('V'),
-            // step 1 - {values_length} Int
-            0x00,0x00,0x00,0x00,
-          // {sources_length}
-          0x00,0x00,0x00,0x00,
-      ]
-    },
 
     { des:1, err:/buffer is missing/,                  fq:1, b:undefined },
     { des:1, err:/buffer is missing/,                  fq:0, b:undefined },

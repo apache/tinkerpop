@@ -157,13 +157,13 @@ export class SubgraphStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
     super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy', options);
     if (this.configuration.vertices instanceof Traversal) {
-      this.configuration.vertices = this.configuration.vertices.bytecode;
+      this.configuration.vertices = this.configuration.vertices.gremlinLang;
     }
     if (this.configuration.edges instanceof Traversal) {
-      this.configuration.edges = this.configuration.edges.bytecode;
+      this.configuration.edges = this.configuration.edges.gremlinLang;
     }
     if (this.configuration.vertexProperties instanceof Traversal) {
-      this.configuration.vertexProperties = this.configuration.vertexProperties.bytecode;
+      this.configuration.vertexProperties = this.configuration.vertexProperties.gremlinLang;
     }
   }
 }

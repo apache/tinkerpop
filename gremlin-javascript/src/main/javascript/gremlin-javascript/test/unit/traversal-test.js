@@ -28,69 +28,12 @@ import anon from '../../lib/process/anonymous-traversal.js';
 import { P, order, direction, Traverser, Traversal } from '../../lib/process/traversal.js';
 import { statics } from '../../lib/process/graph-traversal.js';
 const V = statics.V;
-import Bytecode from '../../lib/process/bytecode.js';
+
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
 import { RemoteConnection } from '../../lib/driver/remote-connection.js';
 
 describe('Traversal', function () {
 
-  describe('#getByteCode()', function () {
-    it('should add steps for with a string parameter', function () {
-      const g = anon.traversal().with_(new Graph());
-      const bytecode = g.V().out('created').getBytecode();
-      assert.ok(bytecode);
-      assert.strictEqual(bytecode.sourceInstructions.length, 0);
-      assert.strictEqual(bytecode.stepInstructions.length, 2);
-      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
-      assert.strictEqual(bytecode.stepInstructions[1][0], 'out');
-      assert.strictEqual(bytecode.stepInstructions[1][1], 'created');
-    });
-
-    it('should add steps with an enum value', function () {
-      const g = anon.traversal().with_(new Graph());
-      const bytecode = g.V().order().by('age', order.desc).getBytecode();
-      assert.ok(bytecode);
-      assert.strictEqual(bytecode.sourceInstructions.length, 0);
-      assert.strictEqual(bytecode.stepInstructions.length, 3);
-      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
-      assert.strictEqual(bytecode.stepInstructions[1][0], 'order');
-      assert.strictEqual(bytecode.stepInstructions[2][0], 'by');
-      assert.strictEqual(bytecode.stepInstructions[2][1], 'age');
-      assert.strictEqual(typeof bytecode.stepInstructions[2][2], 'object');
-      assert.strictEqual(bytecode.stepInstructions[2][2].typeName, 'Order');
-      assert.strictEqual(bytecode.stepInstructions[2][2].elementName, 'desc');
-    });
-
-    it('should add steps with Direction aliases from_ and to properly mapped to OUT and IN', function () {
-      const g = anon.traversal().with_(new Graph());
-      const bytecode = g.V().to(direction.from_, 'knows').to(direction.in, 'created').getBytecode();
-      assert.ok(bytecode);
-      assert.strictEqual(bytecode.sourceInstructions.length, 0);
-      assert.strictEqual(bytecode.stepInstructions.length, 3);
-      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
-      assert.strictEqual(bytecode.stepInstructions[1][0], 'to');
-      assert.strictEqual(typeof bytecode.stepInstructions[1][1], 'object');
-      assert.strictEqual(bytecode.stepInstructions[1][1].typeName, 'Direction');
-      assert.strictEqual(bytecode.stepInstructions[1][1].elementName, 'OUT');
-      assert.strictEqual(bytecode.stepInstructions[1][2], 'knows');
-      assert.strictEqual(bytecode.stepInstructions[2][1].typeName, 'Direction');
-      assert.strictEqual(bytecode.stepInstructions[2][1].elementName, 'IN');
-      assert.strictEqual(bytecode.stepInstructions[2][2], 'created');
-    });
-
-    it('should configure OptionStrategy for with_()', function () {
-      const g = new Graph().traversal();
-      const bytecode = g.with_('x','test').with_('y').V().getBytecode();
-      assert.ok(bytecode);
-      assert.strictEqual(bytecode.sourceInstructions.length, 1);
-      assert.strictEqual(bytecode.sourceInstructions[0][0], 'withStrategies');
-      const conf = bytecode.sourceInstructions[0][1].configuration;
-      assert.strictEqual(conf.x, 'test');
-      assert.strictEqual(conf.y, true);
-      assert.strictEqual(bytecode.stepInstructions.length, 1);
-      assert.strictEqual(bytecode.stepInstructions[0][0], 'V');
-    });
-  });
 
   describe('#next()', function () {
     it('should apply the strategies and return a Promise with the iterator item', function () {
@@ -228,7 +171,7 @@ describe('Traversal', function () {
       };
       const strategies = new TraversalStrategies();
       strategies.addStrategy(strategyMock);
-      const traversal = new Traversal(null, strategies, new Bytecode());
+      const traversal = new Traversal(null, strategies);
       return traversal.iterate().then(() => {
         assert.strictEqual(applied, true);
       });
@@ -241,11 +184,11 @@ describe('Traversal', function () {
     });
 
     it('convert to string representation with P.within', function () {
-      assert.strictEqual(P.within('a', 'b').toString(), 'within(\'a\',\'b\')');
+      assert.strictEqual(P.within('a', 'b').toString(), "within(['a', 'b'])");
     });
 
     it('convert to string representation with P.within array', function () {
-      assert.strictEqual(P.within(['a', 'b']).toString(), 'within(\'a\',\'b\')');
+      assert.strictEqual(P.within(['a', 'b']).toString(), "within(['a', 'b'])");
     });
   });
 
@@ -306,67 +249,7 @@ describe('Traversal', function () {
     });
   });
 
-  describe('#shouldExtractIdFromVertex()', function () {
-    const g = anon.traversal().with_(new Graph());
-    it('should extract ID from Vertex objects for V()', function () {
-      // Test basic V() step with mixed ID types
-      const vStart = g.V(1, new Vertex(2, 'person'));
-      const vStartBytecode = vStart.getBytecode();
-      assert.strictEqual(vStartBytecode.stepInstructions[0][0], 'V');
-      assert.strictEqual(vStartBytecode.stepInstructions[0][1], 1);
-      assert.strictEqual(vStartBytecode.stepInstructions[0][2], 2); // ID should be extracted from Vertex
 
-      // Test V() step in the middle of a traversal
-      const vMid = g.inject('foo').V(1, new Vertex(2, 'person'));
-      const vMidBytecode = vMid.getBytecode();
-      assert.strictEqual(vMidBytecode.stepInstructions[0][0], 'inject');
-      assert.strictEqual(vMidBytecode.stepInstructions[0][1], 'foo');
-      assert.strictEqual(vMidBytecode.stepInstructions[1][0], 'V');
-      assert.strictEqual(vMidBytecode.stepInstructions[1][1], 1);
-      assert.strictEqual(vMidBytecode.stepInstructions[1][2], 2); // ID should be extracted from Vertex
-    });
-    it('should extract ID from Vertex objects for from()/to()', function () {
-      // Test edge creation with from/to vertices
-      const fromTo = g.addE('Edge').from_(new Vertex(1, 'person')).to(new Vertex(2, 'person'));
-      const fromToBytecode = fromTo.getBytecode();
-      assert.strictEqual(fromToBytecode.stepInstructions[0][0], 'addE');
-      assert.strictEqual(fromToBytecode.stepInstructions[0][1], 'Edge');
-      assert.strictEqual(fromToBytecode.stepInstructions[1][0], 'from');
-      assert.strictEqual(fromToBytecode.stepInstructions[1][1], 1); // ID should be extracted from Vertex
-      assert.strictEqual(fromToBytecode.stepInstructions[2][0], 'to');
-      assert.strictEqual(fromToBytecode.stepInstructions[2][1], 2); // ID should be extracted from Vertex
-    });
-    it('should extract ID from Vertex objects for mergeE()', function () {
-      // Test mergeE() with Vertex in map
-      const mergeMap = new Map();
-      mergeMap.set('label', 'knows');
-      mergeMap.set(direction.out, new Vertex(1, 'person'));
-      mergeMap.set(direction.in, new Vertex(2, 'person'));
-
-      const mergeEStart = g.mergeE(mergeMap);
-      const mergeEStartBytecode = mergeEStart.getBytecode();
-      assert.strictEqual(mergeEStartBytecode.stepInstructions[0][0], 'mergeE');
-
-      // Check that the map contains extracted IDs
-      const mergeMapArg = mergeEStartBytecode.stepInstructions[0][1];
-      assert.strictEqual(mergeMapArg.get('label'), 'knows');
-      assert.strictEqual(mergeMapArg.get(direction.out), 1); // ID should be extracted from Vertex
-      assert.strictEqual(mergeMapArg.get(direction.in), 2); // ID should be extracted from Vertex
-
-      // Test mergeE() in the middle of a traversal
-      const mergeEMid = g.inject('foo').mergeE(mergeMap);
-      const mergeEMidBytecode = mergeEMid.getBytecode();
-      assert.strictEqual(mergeEMidBytecode.stepInstructions[0][0], 'inject');
-      assert.strictEqual(mergeEMidBytecode.stepInstructions[0][1], 'foo');
-      assert.strictEqual(mergeEMidBytecode.stepInstructions[1][0], 'mergeE');
-
-      // Check that the map contains extracted IDs
-      const mergeMapArg2 = mergeEMidBytecode.stepInstructions[1][1];
-      assert.strictEqual(mergeMapArg2.get('label'), 'knows');
-      assert.strictEqual(mergeMapArg2.get(direction.out), 1); // ID should be extracted from Vertex
-      assert.strictEqual(mergeMapArg2.get(direction.in), 2); // ID should be extracted from Vertex
-    });
-  });
 });
 
 class MockRemoteConnection extends RemoteConnection {
@@ -379,7 +262,7 @@ class MockRemoteConnection extends RemoteConnection {
     return this._bound;
   }
 
-  submit(bytecode) {
+  submit(gremlinLang) {
     return Promise.resolve(undefined);
   }
 

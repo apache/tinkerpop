@@ -18,7 +18,7 @@
  */
 
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
-import Bytecode from './bytecode.js';
+import GremlinLang from './gremlin-lang.js';
 import { GraphTraversalSource } from './graph-traversal.js';
 import { TraversalStrategies } from './traversal-strategy.js';
 
@@ -48,7 +48,7 @@ export class Transaction {
     return new this.g.graphTraversalSourceClass(
       this.g.graph,
       traversalStrategy,
-      new Bytecode(this.g.bytecode),
+      new GremlinLang(this.g.gremlinLang),
       this.g.graphTraversalSourceClass,
       this.g.graphTraversalClass,
     );

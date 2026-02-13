@@ -19,7 +19,6 @@
 
 import * as utils from '../utils.js';
 import Connection, { ConnectionOptions } from './connection.js';
-import Bytecode from '../process/bytecode.js';
 import { Readable } from 'stream';
 
 export type RequestOptions = {
@@ -28,6 +27,12 @@ export type RequestOptions = {
   bindings?: any;
   language?: string;
   accept?: string;
+  evaluationTimeout?: number;
+  batchSize?: number;
+  userAgent?: string;
+  materializeProperties?: string;
+  bulkResults?: boolean | string;
+  params?: Record<string, any>;
 };
 
 type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
@@ -100,13 +105,13 @@ export default class Client {
    */
 
   /**
-   * Send a request to the Gremlin Server, can send a script or bytecode steps.
-   * @param {Bytecode|string} message The bytecode or script to send
+   * Send a request to the Gremlin Server.
+   * @param {string} message The script to send
    * @param {Object|null} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
    */
-  submit(message: Bytecode | string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
+  submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
     const requestIdOverride = requestOptions && requestOptions.requestId;
     if (requestIdOverride) {
       delete requestOptions['requestId'];
@@ -120,32 +125,26 @@ export default class Client {
       requestOptions,
     );
 
+    args['language'] = 'gremlin-lang';
+    args['accept'] = this._connection.mimeType;
+
+    if (bindings) args['bindings'] = bindings;
+
     if (this.options.session && this.options.processor === 'session') {
       args['session'] = this.options.session;
+      return this._connection.submit('session', 'eval', args, requestIdOverride);
     }
-
-    if (message instanceof Bytecode) {
-      if (this.options.session && this.options.processor === 'session') {
-        return this._connection.submit('session', 'bytecode', args, requestIdOverride);
-      }
-      return this._connection.submit('traversal', 'bytecode', args, requestIdOverride);
-    } else if (typeof message === 'string') {
-      args['bindings'] = bindings;
-      args['language'] = 'gremlin-groovy';
-      args['accept'] = this._connection.mimeType;
-      return this._connection.submit(this.options.processor || '', 'eval', args, requestIdOverride);
-    }
-    throw new TypeError('message must be of type Bytecode or string');
+    return this._connection.submit(this.options.processor || '', 'eval', args, requestIdOverride);
   }
 
   /**
-   * Send a request to the Gremlin Server and receive a stream for the results, can send a script or bytecode steps.
-   * @param {Bytecode|string} message The bytecode or script to send
+   * Send a request to the Gremlin Server and receive a stream for the results.
+   * @param {string} message The script to send
    * @param {Object} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {ReadableStream}
    */
-  stream(message: Bytecode | string, bindings: any, requestOptions?: RequestOptions): Readable {
+  stream(message: string, bindings: any, requestOptions?: RequestOptions): Readable {
     const requestIdOverride = requestOptions && requestOptions.requestId;
     if (requestIdOverride) {
       delete requestOptions['requestId'];
@@ -159,22 +158,16 @@ export default class Client {
       requestOptions,
     );
 
+    args['language'] = 'gremlin-lang';
+    args['accept'] = this._connection.mimeType;
+
+    if (bindings) args['bindings'] = bindings;
+
     if (this.options.session && this.options.processor === 'session') {
       args['session'] = this.options.session;
+      return this._connection.stream('session', 'eval', args, requestIdOverride);
     }
-
-    if (message instanceof Bytecode) {
-      if (this.options.session && this.options.processor === 'session') {
-        return this._connection.stream('session', 'bytecode', args, requestIdOverride);
-      }
-      return this._connection.stream('traversal', 'bytecode', args, requestIdOverride);
-    } else if (typeof message === 'string') {
-      args['bindings'] = bindings;
-      args['language'] = 'gremlin-groovy';
-      args['accept'] = this._connection.mimeType;
-      return this._connection.stream(this.options.processor || '', 'eval', args, requestIdOverride);
-    }
-    throw new TypeError('message must be of type Bytecode or string');
+    return this._connection.stream(this.options.processor || '', 'eval', args, requestIdOverride);
   }
 
   /**

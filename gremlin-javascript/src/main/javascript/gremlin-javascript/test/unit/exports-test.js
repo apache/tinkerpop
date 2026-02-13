@@ -28,7 +28,7 @@ describe('API', function () {
   it('should export fields under process', function () {
     assert.ok(glvModule);
     assert.ok(glvModule.process);
-    assert.strictEqual(typeof glvModule.process.Bytecode, 'function');
+    assert.strictEqual(typeof glvModule.process.GremlinLang, 'function');
     assert.strictEqual(typeof glvModule.process.EnumValue, 'function');
     assert.strictEqual(typeof glvModule.process.P, 'function');
     assert.strictEqual(typeof glvModule.process.Traversal, 'function');

@@ -22,10 +22,8 @@
  */
 
 import { Buffer } from 'buffer';
-import Bytecode from '../../process/bytecode.js';
 import {
   BulkSetSerializer,
-  BytecodeSerializer,
   DateSerializer,
   OffsetDateTimeSerializer,
   DirectionSerializer,
@@ -147,10 +145,6 @@ export class GraphSON2Writer {
       processor,
       args: this._adaptArgs(args, true),
     };
-
-    if (req.args['gremlin'] instanceof Bytecode) {
-      req.args['gremlin'] = this.adaptObject(req.args['gremlin']);
-    }
 
     return Buffer.from(JSON.stringify(req));
   }
@@ -319,7 +313,6 @@ const graphSON3Deserializers = Object.assign({}, graphSON2Deserializers, {
 const graphSON2Serializers = [
   NumberSerializer,
   OffsetDateTimeSerializer,
-  BytecodeSerializer,
   TraverserSerializer,
   TraversalStrategySerializer,
   PSerializer,

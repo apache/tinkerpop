@@ -36,7 +36,6 @@ export default class AnySerializer {
       ioc.booleanSerializer,
       ioc.offsetDateTimeSerializer,
       ioc.dateSerializer,
-      ioc.bytecodeSerializer,
       ioc.pSerializer,
       ioc.traverserSerializer,
       ioc.enumSerializer,
