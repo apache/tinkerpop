@@ -82,9 +82,6 @@ public abstract class AbstractGremlinServerIntegrationTest {
         overriddenSettings.evaluationTimeout = timeoutInMillis;
     }
 
-    public InputStream getSettingsInputStream() {
-        return AbstractGremlinServerIntegrationTest.class.getResourceAsStream("gremlin-server-integration.yaml");
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -123,8 +120,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
     }
 
     public CompletableFuture<ServerGremlinExecutor> startServerAsync() throws Exception {
-        final InputStream stream = getSettingsInputStream();
-        final Settings settings = Settings.read(stream);
+        var filePath = "classpath:" + GremlinServer.class.getPackageName().replace(".", "/") + "/gremlin-server-integration.yaml";
+        final Settings settings = Settings.read(filePath);
         overriddenSettings = overrideSettings(settings);
         ServerTestHelper.rewritePathsInGremlinServerSettings(overriddenSettings);
         if (GREMLIN_SERVER_EPOLL) {
