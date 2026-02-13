@@ -249,10 +249,28 @@ class TestGraphSONReader:
         expected = datetime.datetime(2016, 12, 14, 16, 14, 36, 295000)
         pts = calendar.timegm(expected.utctimetuple()) + expected.microsecond / 1e6
         ts = int(round(pts * 1000))
-        dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Date", "@value": ts}))
-        assert isinstance(dt, datetime.datetime)
+        output = self.graphson_reader.read_object(json.dumps({"@type": "g:Date", "@value": ts}))
+        assert isinstance(output, datetime.datetime)
         # TINKERPOP-1848
-        assert dt == expected
+        assert expected == output
+
+    def test_offsetdatetime(self):
+        tz = datetime.timezone(datetime.timedelta(seconds=36000))
+        ms = 12345678912
+        expected = datetime.datetime(2022, 5, 20, tzinfo=tz) + datetime.timedelta(microseconds=ms)
+        output = self.graphson_reader.read_object(json.dumps({"@type": "gx:OffsetDateTime", "@value": expected.isoformat()}))
+        assert isinstance(output, datetime.datetime)
+        assert expected == output
+
+    def test_offsetdatetime_zulu(self):
+        tz = datetime.timezone.utc
+        ms = 12345678912
+        expected = datetime.datetime(2022, 5, 20, tzinfo=tz) + datetime.timedelta(microseconds=ms)
+        # simulate zulu format
+        expected_zulu = expected.isoformat()[:-6] + 'Z'
+        output = self.graphson_reader.read_object(json.dumps({"@type": "gx:OffsetDateTime", "@value": expected_zulu}))
+        assert isinstance(output, datetime.datetime)
+        assert expected == output
 
     def test_timestamp(self):
         dt = self.graphson_reader.read_object(json.dumps({"@type": "g:Timestamp", "@value": 1481750076295}))
