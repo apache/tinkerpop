@@ -37,6 +37,7 @@ Where:
 specially useful for representing complex and custom types.
 * `{value_flag}` is a single byte providing information about the value. Each type may have its own specific flags so
 see each type for more details. Generally, flags have the following meaning:
+** `0x00` The value is `non-null`, which means it is followed by a `{value}`.
 ** `0x01` The value is `null`. When this flag is set, no bytes for `{value}` will be provided.
 * `{value}` is a sequence of bytes which content is determined by the type.
 
@@ -45,10 +46,10 @@ All encodings are big-endian.
 Quick examples, using hexadecimal notation to represent each byte:
 
 - `01 00 00 00 00 01`: a 32-bit integer number, that represents the decimal number 1. It’s composed by the
-type_code `0x01`, and empty flag value `0x00` and four bytes to describe the value.
-- `01 00 00 00 00 ff`: a 32-bit integer, representing the number 256.
+type_code `0x01`, and non-null value_flag `0x00` and four bytes to describe the value.
+- `01 00 00 00 00 ff`: a 32-bit integer, representing the number 255.
 - `01 01`: a null value for a 32-bit integer. It’s composed by the type_code `0x01`, and a null flag value `0x01`.
-- `02 00 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02`, empty flags and
+- `02 00 00 00 00 00 00 00 00 01`: a 64-bit integer number 1. It’s composed by the type_code `0x02`, non-null value_flag and
 eight bytes to describe the value.
 
 == Version 4.0
@@ -60,8 +61,6 @@ The serialization format supports new types being added without the need to intr
 Changes to existing types require new revision.
 
 === Data Type Codes
-
-==== Core Data Types
 
 - `0x01`: Int
 - `0x02`: Long
@@ -76,7 +75,7 @@ Changes to existing types require new revision.
 - `0x0d`: Edge
 - `0x0e`: Path
 - `0x0f`: Property
-- `0x10`: TinkerGraph
+- `0x10`: Graph
 - `0x11`: Vertex
 - `0x12`: VertexProperty
 - `0x18`: Direction
@@ -92,13 +91,10 @@ Changes to existing types require new revision.
 - `0xf1`: PrimitivePDT
 - `0xfd`: Marker
 - `0xfe`: Unspecified null object
-
-==== Extended Types
-
 - `0x80`: Char
 - `0x81`: Duration
 
-=== Null handling
+=== Null Handling
 
 The serialization format defines two ways to represent null values:
 
@@ -120,7 +116,7 @@ Format: 4-byte two's complement integer.
 Example values:
 
 - `00 00 00 01`: 32-bit integer number 1.
-- `00 00 01 01`: 32-bit integer number 256.
+- `00 00 01 01`: 32-bit integer number 257.
 - `ff ff ff ff`: 32-bit integer number -1.
 - `ff ff ff fe`: 32-bit integer number -2.
 
@@ -128,7 +124,7 @@ Example values:
 
 Format: 8-byte two's complement integer.
 
-Example values
+Example values:
 
 - `00 00 00 00 00 00 00 01`: 64-bit integer number 1.
 - `ff ff ff ff ff ff ff fe`: 64-bit integer number -2.
@@ -139,11 +135,11 @@ Format: `{length}{text_value}`
 
 Where:
 
-- `{length}` is an `Int` describing the byte length of the text. Length is a positive number or zero to represent
+- `{length}` is an `Int {value}` describing the byte length of the text. Length is a positive number or zero to represent
 the empty string.
 - `{text_value}` is a sequence of bytes representing the string value in UTF8 encoding.
 
-Example values
+Example values:
 
 - `00 00 00 03 61 62 63`: the string 'abc'.
 - `00 00 00 04 61 62 63 64`: the string 'abcd'.
@@ -157,17 +153,17 @@ Format: `{year}{month}{day}{time}{offset}`
 
 Where:
 
-- `{year}` is an `Int` from -999,999,999 to 999,999,999.
-- `{month}` is a `Byte` to represent the month, from 1 (January) to 12 (December)
-- `{day}` is a `Byte` from 1 to 31.
-- `{time}` is a `Long` to represent nanoseconds since midnight, from 0 to 86399999999999
-- `{offset}` is an `Int` to represent total zone offset in seconds, from -64800 (-18:00) to 64800 (+18:00).
+- `{year}` is an `Int {value}` from -999,999,999 to 999,999,999.
+- `{month}` is a `Byte {value}` to represent the month, from 1 (January) to 12 (December)
+- `{day}` is a `Byte {value}` from 1 to 31.
+- `{time}` is a `Long {value}` to represent nanoseconds since midnight, from 0 to 86399999999999
+- `{offset}` is an `Int {value}` to represent total zone offset in seconds, from -64800 (-18:00) to 64800 (+18:00).
 
 ==== Double
 
 Format: 8 bytes representing IEEE 754 double-precision binary floating-point format.
 
-Example values
+Example values:
 
 - `3f f0 00 00 00 00 00 00`: Double 1
 - `3f 70 00 00 00 00 00 00`: Double 0.00390625
@@ -177,7 +173,7 @@ Example values
 
 Format: 4 bytes representing IEEE 754 single-precision binary floating-point format.
 
-Example values
+Example values:
 
 - `3f 80 00 00`: Float 1
 - `3e c0 00 00`: Float 0.375
@@ -190,18 +186,20 @@ Format (value_flag=0x00): `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an `Int` describing the length of the collection.
-- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
+- `{length}` is an `Int {value}` describing the length of the collection.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully-qualified typed value composed of
 `{type_code}{type_info}{value_flag}{value}`.
+
+value_flag=0x01 represents null.
 
 Format (value_flag=0x02): `{length}{item_0}{bulk_0}...{item_n}{bulk_n}`
 
 Where:
 
-- `{length}` is an `Int` describing the length of the collection.
-- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully qualified typed value composed of
+- `{length}` is an `Int {value}` describing the length of the collection.
+- `{item_0}...{item_n}` are the items of the list. `{item_i}` is a fully-qualified typed value composed of
 `{type_code}{type_info}{value_flag}{value}`.
-- `{bulk_0}...{bulk_n}` are `Int` that represent how many times that item should be repeated in the expanded list.
+- `{bulk_0}...{bulk_n}` are `Long {value}s` that represent how many times that item should be repeated in the expanded list.
 
 ==== Set
 
@@ -211,14 +209,19 @@ Format: Same as `List`.
 
 ==== Map
 
-A dictionary of keys to values. A {value_flag} equal to 0x02 means that the map is ordered.
+A dictionary of keys to values. Both keys and values can be any type specified in this document.
+
+The {value_flag} are defined as:
+- `0x00` unordered
+- `0x01` null
+- `0x02` ordered
 
 Format: `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an `Int` describing the length of the map.
-- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully qualified typed values one
+- `{length}` is an `Int {value}` describing the length of the map.
+- `{item_0}...{item_n}` are the items of the map. `{item_i}` is sequence of 2 fully-qualified typed values one
 representing the key and the following representing the value, each composed of
 `{type_code}{type_info}{value_flag}{value}`.
 
@@ -238,15 +241,15 @@ Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `List` {value}.
-- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{inVLabel}` is a `List` {value}.
-- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{outVLabel}` is a `List` {value}.
-- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+- `{id}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `List {value}`.
+- `{inVId}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{inVLabel}` is a `List {value}`.
+- `{outVId}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVLabel}` is a `List {value}`.
+- `{parent}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
 the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
-- `{properties}` is a `List` of `Property` objects.
+- `{properties}` is a fully-qualified `List` of `Property` objects.
 
 Example values:
 
@@ -260,7 +263,7 @@ Example values:
 00 00 00 01  03 00  00 00 00 06  70 65 72 73 6f 6e            outVLabel is a size 1 list with string 'person'
 fe 01                                                         parent is always null
 09 00  00 00 00 01                                            properties is a size 1 list
-0f 00 00 00 00 05  73 69 6e 63 65  01 00  00 00 07 d9  fe 01  property with key 'since' and value 2009 and null parent
+0f 00 00 00 00 05  73 69 6e 63 65  01 00 00 00 07 d9  fe 01   property with key 'since' and value 2009 and null parent
 ----
 
 ==== Path
@@ -269,8 +272,8 @@ Format: `{labels}{objects}`
 
 Where:
 
-- `{labels}` is a fully qualified `List` in which each item is a fully qualified `Set` of `String`.
-- `{objects}` is a fully qualified `List` of fully qualified typed values.
+- `{labels}` is a fully-qualified `List` in which each item is a fully-qualified `Set` of `String`.
+- `{objects}` is a fully-qualified `List` of fully-qualified typed values.
 
 ==== Property
 
@@ -278,46 +281,46 @@ Format: `{key}{value}{parent}`
 
 Where:
 
-- `{key}` is a `String` value.
-- `{value}`  is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which is either
+- `{key}` is a `String {value}`.
+- `{value}`  is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which is either
 an `Edge` or `VertexProperty`. Note that as TinkerPop currently sends "references" only this value will always be
 `null`.
 
 ==== Graph
 
 A collection of vertices and edges. Note that while similar the vertex/edge formats here hold some differences as
-compared to the `Vertex` and `Edge` formats used for standard serialization/deserialiation of a single graph element.
+compared to the `Vertex` and `Edge` formats used for standard serialization/deserialization of a single graph element.
 
 Format: `{vlength}{vertex_0}...{vertex_n}{elength}{edge_0}...{edge_n}`
 
 Where:
 
-- `{vlength}` is an `Int` describing the number of vertices.
+- `{vlength}` is an `Int {value}` describing the number of vertices.
 - `{vertex_0}...{vertex_n}` are vertices as described below.
-- `{elength}` is an `Int` describing the number of edges.
+- `{elength}` is an `Int {value}` describing the number of edges.
 - `{edge_0}...{edge_n}` are edges as described below.
 
 Vertex Format: `{id}{label}{plength}{property_0}...{property_n}`
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `String` value.
-- `{plength}` is an `Int` describing the number of properties on the vertex.
-- `{property_0}...{property_n}` are the vertex properties consisting of `{id}{label}{value}{parent}{properties}` as
-defined in `VertexProperty` where the `{parent}` is always `null` and `{properties}` is a `List` of `Property` objects.
+- `{id}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `List {value}`.
+- `{plength}` is an `Int {value}` describing the number of properties on the vertex.
+- `{property_0}...{property_n}` are the vertex properties consisting of `{id}{label}{value}{parent}{properties}` where
+the `{parent}` is always `null` and `{properties}` is a `List {value}` of `Property` objects.
 
 Edge Format: `{id}{label}{inVId}{inVLabel}{outVId}{outVLabel}{parent}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `String` value.
-- `{inVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{id}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `List {value}`.
+- `{inVId}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{inVLabel}` is always `null`.
-- `{outVId}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{outVId}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
 - `{outVLabel}` is always `null`.
 - `{parent}` is always `null`.
-- `{properties}` is a `List` of `Property` objects.
+- `{properties}` is a `List {value}` of `Property` objects.
 
 ==== Vertex
 
@@ -325,9 +328,9 @@ Format: `{id}{label}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `List` {value}.
-- `{properties}` is a `List` of `VertexProperty` values.
+- `{id}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `List {value}`.
+- `{properties}` is a fully-qualified `List` of `VertexProperty` values.
 
 Example values:
 
@@ -336,7 +339,7 @@ Example values:
 01 00  00 00 00 01                                        id is int 1
 00 00 00 01  03 00  00 00 00 06  70 65 72 73 6f 6e        label is size 1 list with string 'person'
 09 00  00 00 00 01  12 00  02 00  00 00 00 00 00 00 00 09 properties is a size 1 list with VertexProperty id 9
-00 00 00 01  03 00  00 00 00 08  6c 6f 63 61 74 69 6f 6e  VertexProperty label is string 'location'
+00 00 00 01  03 00  00 00 00 08  6c 6f 63 61 74 69 6f 6e  VertexProperty label is size 1 list with string 'location'
 03 00  00 00 00 08  73 61 6e 74 61 20 66 65               VertexProperty value is string 'santa fe'
 fe 01                                                     VertexProperty parent is always null
 09 00  00 00 00 01                                        VertexProperty has a size 1 list
@@ -350,12 +353,12 @@ Format: `{id}{label}{value}{parent}{properties}`
 
 Where:
 
-- `{id}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{label}` is a `List` {value}.
-- `{value}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-- `{parent}` is a fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
+- `{id}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{label}` is a `List {value}`.
+- `{value}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+- `{parent}` is a fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}` which contains
 the parent `Vertex`. Note that as TinkerPop currently send "references" only, this value will always be `null`.
-- `{properties}` is a `List` of `Property` objects.
+- `{properties}` is a fully-qualified `List` of `Property` objects.
 
 Example values:
 
@@ -370,21 +373,21 @@ fe 01                                         parent is always null
 
 ==== Direction
 
-Format: a fully qualified single `String` representing the enum value.
+Format: a fully-qualified single `String` representing the enum value.
 
 Example values:
 
-- `00 00 00 03 4F 55 54`: OUT
-- `00 00 00 02 49 4E`: IN
+- `03 00 00 00 00 03 4F 55 54`: OUT
+- `03 00 00 00 00 02 49 4E`: IN
 
 ==== T
 
-Format: a fully qualified single `String` representing the enum value.
+Format: a fully-qualified single `String` representing the enum value.
 
 Example values:
 
-- `00 00 00 05 6C 61 62 65 6C`: label
-- `00 00 00 02 69 64`: id
+- `03 00 00 00 00 05 6C 61 62 65 6C`: label
+- `03 00 00 00 00 02 69 64`: id
 
 ==== BigDecimal
 
@@ -395,8 +398,8 @@ Format: `{scale}{unscaled_value}`
 
 Where:
 
-- `{scale}` is an `Int`.
-- `{unscaled_value}` is a `BigInteger`.
+- `{scale}` is an `Int {value}`.
+- `{unscaled_value}` is a `BigInteger {value}`.
 
 ==== BigInteger
 
@@ -406,14 +409,14 @@ Format: `{length}{value}`
 
 Where:
 
-- `{length}` is an `Int` describing the size of `{value}` in bytes.
+- `{length}` is an `Int {value}` describing the size of `{value}` in bytes.
 - `{value}` is the two's complement of the `BigInteger`.
 
 Example values of the two's complement `{value}`:
 
 - `00`: Integer 0.
 - `01`: Integer 1.
-- `127`: Integer 7f.
+- `7f`: Integer 127.
 - `00 80`: Integer 128.
 - `ff`: Integer -1.
 - `80`: Integer -128.
@@ -434,7 +437,7 @@ Format: `{length}{value}`
 
 Where:
 
-- `{length}` is an `Int` representing the amount of bytes contained in the value.
+- `{length}` is an `Int {value}` representing the amount of bytes contained in the value.
 - `{value}` sequence of bytes.
 
 ==== Short
@@ -456,7 +459,7 @@ Format: `{length}{item_0}...{item_n}`
 
 Where:
 
-- `{length}` is an `Int` describing the amount of items.
+- `{length}` is an `Int {value}` describing the amount of items.
 - `{item_0}...{item_n}` are the items of the `Tree`. `{item_i}` is composed of a `{key}` which is a fully-qualified typed value
 followed by a `{Tree}`.
 
@@ -475,15 +478,15 @@ Format: `{type}{fields}`
 
 Where:
 
-- `{type}` is a `String` containing the implementation specific text identifier of the custom type.
-- `{fields}` is a `Map` representing the fields of the composite type.
+- `{type}` is a fully-qualified `String` containing the implementation specific text identifier of the custom type.
+- `{fields}` is a fully-qualified `Map` representing the fields of the composite type.
 
 Example values:
 
 [source,text]
 ----
 03 00 00 00 00 05 50 6F 69 6E 74: the string "Point"
-0A 00 00 00 00 02 31 30: length 2 map header
+0A 00 00 00 00 02: a length 2 map
 03 00 00 00 00 01 78 01 00 00 00 00 01: {x:1}
 03 00 00 00 00 01 79 01 00 00 00 00 02: {y:2}
 ----
@@ -496,8 +499,8 @@ Format: `{type}{value}`
 
 Where:
 
-- `{type}` is a `String` containing the implementation specific text identifier of the custom type.
-- `{value}` is a `String` representing the string version of the value.
+- `{type}` is a fully-qualified `String` containing the implementation specific text identifier of the custom type.
+- `{value}` is a fully-qualified `String` representing the string version of the value.
 
 Example values:
 
@@ -525,9 +528,9 @@ character, while the second byte is binary 10 followed by the 6 low bits of the 
 The 3 and 4-byte encodings are similar to the 2-byte encoding, except that the first byte of the 3-byte encoding starts
 with `1110` and the first byte of the 4-byte encoding starts with `11110`.
 
-Example values (hex bytes)
+Example values (hex bytes):
 
-- `97`: Character 'a'.
+- `61`: Character 'a'.
 - `c2 a2`: Character '¢'.
 - `e2 82 ac`: Character '€'
 
@@ -539,8 +542,8 @@ Format: `{seconds}{nanos}`
 
 Where:
 
-- `{seconds}` is a `Long`.
-- `{nanos}` is an `Int`.
+- `{seconds}` is a `Long {value}`.
+- `{nanos}` is an `Int {value}`.
 
 === Request and Response Messages
 
@@ -555,10 +558,10 @@ Format: `{version}{fields}{gremlin}`
 
 Where:
 
-- `{version}` is a `Byte` representing the specification version, with the most significant bit set to one. For this
-version of the format, the value expected is `0x84` (`10000004`).
-- `{fields}` is a `Map`.
-- `{gremlin}` is a `String`.
+- `{version}` is a `Byte {value}` representing the specification version, with the most significant bit set to one. For this
+version of the format, the value expected is `0x84` (`10000100`).
+- `{fields}` is a `Map {value}`.
+- `{gremlin}` is a `String {value}`.
 
 The total length is not part of the message as the transport layer will provide it. For example: in HTTP, there is the
 `Content-Length` header which defines the payload size.
@@ -569,14 +572,14 @@ Format: `{version}{bulked}{result_data}{marker}{status_code}{status_message}{exc
 
 Where:
 
-- `{version}` is a `Byte` representing the protocol version, with the most significant bit set to one. For this version
-of the protocol, the value expected is `0x84` (`10000004`).
-- `{bulked}` is a `Byte` representing whether `{result_data}` is bulked. `00` is false and `01` is true.
-- `{result_data}` is a sequence of fully qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
-If `{bulked}` is `01` then each value is followed by an 8-byte integer denoting the bulk of the preceding value.
-- `{marker}` is a `Marker`.
-- `{status_code}` is an `Int`.
-- `{status_message}` is a nullable `String`.
-- `{exception}` is a nullable `String`.
+- `{version}` is a `Byte {value}` representing the protocol version, with the most significant bit set to one. For this version
+of the protocol, the value expected is `0x84` (`10000100`).
+- `{bulked}` is a `Byte {value}` representing whether `{result_data}` is bulked. `00` is false and `01` is true.
+- `{result_data}` is a sequence of fully-qualified typed value composed of `{type_code}{type_info}{value_flag}{value}`.
+If `{bulked}` is `01` then each value is followed by a `Long` value denoting the bulk of the preceding value.
+- `{marker}` is a fully-qualified `Marker`.
+- `{status_code}` is an `Int {value}`.
+- `{status_message}` is a nullable `{value_flag}` and `String {value}`.
+- `{exception}` is a nullable `{value_flag}` and `String {value}`.
 
 The total length is not part of the message as the transport layer will provide it.
