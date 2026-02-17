@@ -41,9 +41,12 @@ from gremlin_python.driver.aiohttp.transport import AiohttpTransport, AiohttpHTT
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 gremlin_basic_auth_url = os.environ.get('GREMLIN_SERVER_BASIC_AUTH_URL', 'wss://localhost:{}/gremlin')
 gremlin_socket_server_url = os.environ.get('GREMLIN_SOCKET_SERVER_URL', 'ws://localhost:{}/gremlin')
-gremlin_socket_server_config_path = os.environ.get("GREMLIN_SOCKET_SERVER_CONFIG_PATH",
-                                                   "../../../../../../gremlin-tools/gremlin-socket-server/conf/"
-                                                   "test-ws-gremlin.yaml")
+
+# Get the directory where conftest.py is located
+current_dir = os.path.dirname(os.path.realpath(__file__))
+default_config_path = os.path.join(current_dir, "../../../../../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml")
+gremlin_socket_server_config_path = os.environ.get("GREMLIN_SOCKET_SERVER_CONFIG_PATH", default_config_path)
+
 kerberos_hostname = os.environ.get('KRB_HOSTNAME', socket.gethostname())
 anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)

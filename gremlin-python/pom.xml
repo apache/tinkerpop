@@ -31,6 +31,8 @@ limitations under the License.
         <skipTests>${maven.test.skip}</skipTests>
         <gremlin.server.dir>${project.parent.basedir}/gremlin-server</gremlin.server.dir>
         <tinkerpop.root.dir>${project.parent.basedir}</tinkerpop.root.dir>
+        <pytestArgs></pytestArgs>
+        <radishArgs></radishArgs>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -169,6 +171,8 @@ limitations under the License.
                                             <env key="GREMLIN_SERVER" value="${project.version}"/>
                                             <env key="ABS_PROJECT_HOME" value="${project.basedir}/../"/>
                                             <env key="BUILD_DIR" value="${project.build.directory}/python3"/>
+                                            <env key="PYTEST_ARGS" value="${pytestArgs}"/>
+                                            <env key="RADISH_ARGS" value="${radishArgs}"/>
                                             <arg line="compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests"/>
                                         </exec>
                                         <exec executable="docker" failonerror="true">

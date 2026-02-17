@@ -24,6 +24,11 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
 from radish import before, after, world
 
+import warnings
+
+# Disable DeprecationWarnings globally for radish runs
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 outV = __.out_v
 label = __.label
 inV = __.in_v

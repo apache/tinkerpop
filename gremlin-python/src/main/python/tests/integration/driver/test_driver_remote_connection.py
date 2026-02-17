@@ -35,7 +35,7 @@ from gremlin_python.driver.serializer import GraphSONSerializersV2d0
 
 __author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
 
-from tests.conftest import anonymous_url
+from integration.conftest import anonymous_url
 
 gremlin_server_url = os.environ.get('GREMLIN_SERVER_URL', 'ws://localhost:{}/gremlin')
 test_no_auth_url = gremlin_server_url.format(45940)

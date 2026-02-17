@@ -64,15 +64,24 @@ services:
       - KRB_HOSTNAME=${KRB_HOSTNAME:-gremlin-server-test}
       - GREMLIN_SOCKET_SERVER_URL=ws://gremlin-socket-server-python:{}/gremlin
       - GREMLIN_SOCKET_SERVER_CONFIG_PATH=/python_app/gremlin-socket-server/conf/test-ws-gremlin.yaml
+      - PYTEST_ARGS=${PYTEST_ARGS:-}
+      - RADISH_ARGS=${RADISH_ARGS:-}
     working_dir: /python_app
     command: >
       bash -c "apt-get update && apt-get -y install libkrb5-dev krb5-user
       && echo 'password' | kinit stephen
       && klist
       && pip install .[test,kerberos]
-      && pytest
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0'
+      && if [ -z \"$PYTEST_ARGS\" ] && [ -z \"$RADISH_ARGS\" ]; then
+        pytest &&
+        radish --junit-xml python-reports/feature-graphson-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json' &&
+        radish --junit-xml python-reports/feature-graphbinary-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0' ;
+      elif [ -n \"$PYTEST_ARGS\" ]; then
+        pytest $PYTEST_ARGS ;
+      elif [ -n \"$RADISH_ARGS\" ]; then
+        radish --junit-xml python-reports/feature-graphson-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v3.0+json' $RADISH_ARGS &&
+        radish --junit-xml python-reports/feature-graphbinary-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v1.0' $RADISH_ARGS ;
+      fi
       && pip install .
       && echo 'Running examples...'
       && python3 examples/basic_gremlin.py
