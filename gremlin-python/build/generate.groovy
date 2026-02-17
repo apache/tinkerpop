@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.language.corpus.FeatureReader
 import java.nio.file.Paths
 
 // file is overwritten on each generation
-radishGremlinFile = new File("${projectBaseDir}/gremlin-python/src/main/python/radish/gremlin.py")
+radishGremlinFile = new File("${projectBaseDir}/gremlin-python/src/main/python/tests/feature/gremlin.py")
 
 // assumes globally unique scenario names for keys with list of Gremlin traversals as they appear
 gremlins = FeatureReader.parseGrouped(Paths.get("${projectBaseDir}", "gremlin-test", "src", "main", "resources", "org", "apache", "tinkerpop", "gremlin", "test", "features").toString())

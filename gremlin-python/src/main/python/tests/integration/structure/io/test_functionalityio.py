@@ -228,3 +228,46 @@ def test_odd_bits(remote_connection):
             assert v == dur
         finally:
             g.V(vid).drop().iterate()
+
+def test_timestamp(remote_connection_graphsonV2):
+    g = traversal().withRemote(remote_connection_graphsonV2)
+    ts = timestamp(1481750076295 / 1000)
+    resp = g.addV('test_vertex').property('ts', ts)
+    resp = resp.toList()
+    vid = resp[0].id
+    try:
+        ts_prop = g.V(vid).properties('ts').toList()[0]
+        assert isinstance(ts_prop.value, timestamp)
+        assert ts_prop.value == ts
+    except OSError:
+        assert False, "Error making request"
+    finally:
+        g.V(vid).drop().iterate()
+
+def test_datetime(remote_connection_graphsonV2):
+    g = traversal().withRemote(remote_connection_graphsonV2)
+    dt = datetime.datetime.utcfromtimestamp(1481750076295 / 1000)
+    resp = g.addV('test_vertex').property('dt', dt).toList()
+    vid = resp[0].id
+    try:
+        dt_prop = g.V(vid).properties('dt').toList()[0]
+        assert isinstance(dt_prop.value, datetime.datetime)
+        assert dt_prop.value == dt
+    except OSError:
+        assert False, "Error making request"
+    finally:
+        g.V(vid).drop().iterate()
+
+def test_uuid(remote_connection_graphsonV2):
+    g = traversal().withRemote(remote_connection_graphsonV2)
+    uid = uuid.UUID("41d2e28a-20a4-4ab0-b379-d810dede3786")
+    resp = g.addV('test_vertex').property('uuid', uid).toList()
+    vid = resp[0].id
+    try:
+        uid_prop = g.V(vid).properties('uuid').toList()[0]
+        assert isinstance(uid_prop.value, uuid.UUID)
+        assert uid_prop.value == uid
+    except OSError:
+        assert False, "Error making request"
+    finally:
+        g.V(vid).drop().iterate()

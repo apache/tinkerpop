@@ -16,5 +16,3 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-__author__ = 'Marko A. Rodriguez (http://markorodriguez.com)'
