@@ -67,11 +67,24 @@ When adding or modifying files, follow the existing structure and conventions in
 
 ***
 
-## 3. Build and test recipes
+## 3. Nested AGENTS.md files
+
+This repository uses additional `AGENTS.md` files in certain subdirectories (for example, 
+`gremlin-python/AGENTS.md`, `gremlin-dotnet/AGENTS.md`, etc.) to provide stack‑specific guidance.
+
+Agents should:
+
+- Always read this root `AGENTS.md` for global rules.
+- When working in a subdirectory, also look for the closest `AGENTS.md` in the current or parent 
+directories and apply its instructions for that area.
+- Treat more specific `AGENTS.md` files (deeper in the tree) as overriding or refining the generic 
+guidance here when there is a conflict.
+
+## 4. Build and test recipes
 
 These commands are the **preferred** way for agents and contributors to build and test. 
 
-### 3.1 Basic build and test
+### 4.1 Basic build and test
 
 - Build everything:
 
@@ -91,7 +104,7 @@ These commands are the **preferred** way for agents and contributors to build an
   mvn clean install -pl tinkergraph-gremlin
   ```
 
-### 3.2 Integration and specialized builds
+### 4.2 Integration and specialized builds
 
 - Enable integration tests:
 
@@ -105,7 +118,7 @@ These commands are the **preferred** way for agents and contributors to build an
   mvn clean install -DincludeNeo4j
   ```
 
-### 3.3 Gremlin Language Variant (GLV) builds
+### 4.3 Gremlin Language Variant (GLV) builds
 
 Build Gremlin Server first:
 
@@ -141,7 +154,7 @@ Each GLV has its own module structure:
   
 ***
 
-## 4. Documentation and site
+## 5. Documentation and site
 
 TinkerPop’s documentation is AsciiDoc‑based and lives under `docs/src/**`.
 
@@ -153,17 +166,17 @@ When adding or updating docs:
 
 ***
 
-## 5. Coding and testing conventions
+## 6. Coding and testing conventions
 
 Agents should follow these conventions when generating or editing code and tests.
 
-### 5.1 Code style
+### 6.1 Code style
 
 - Match the existing style in nearby code.
 - Do **not** use import wildcards (for example, avoid `import org.apache.tinkerpop.gremlin.structure.*`); prefer explicit imports.
 - Respect existing naming patterns and package organization.
 
-### 5.2 Test guidelines
+### 6.2 Test guidelines
 
 - Prefer SLF4J `Logger` for output instead of `System.out.println` or `println` in tests.
 - Use `TestHelper` utilities to create temporary directories and file structures for file‑based tests, instead of hard‑coding paths.
@@ -177,7 +190,7 @@ for more details and use Gherkin tests under:
   gremlin-tests/src/main/resources/org/apache/tinkerpop/gremlin/test/features
   ```
 
-### 5.3 Deprecation
+### 6.3 Deprecation
 
 When deprecating code:
 
@@ -194,7 +207,7 @@ issue.
 
 ***
 
-## 6. Changelog, license, and checks
+## 7. Changelog, license, and checks
 
 When changes affect behavior, APIs, or user‑visible features:
 
@@ -205,11 +218,11 @@ When changes affect behavior, APIs, or user‑visible features:
 
 ***
 
-## 7. Do and don’t for agents
+## 8. Do and don’t for agents
 
 These rules apply to any AI/IDE assistant operating on this repository.
 
-### 7.1 Do
+### 8.1 Do
 
 - **Do** make small, focused changes that are easy to review.
 - **Do** run the relevant build and test commands before suggesting that a change is complete.
@@ -218,7 +231,7 @@ These rules apply to any AI/IDE assistant operating on this repository.
 - **Do** follow existing patterns for code structure, documentation layout, and naming.
 - **Do** point maintainers to relevant documentation or issues when proposing non‑trivial changes.
 
-### 7.2 Don’t
+### 8.2 Don’t
 
 - **Don’t** perform large, sweeping refactors (across many modules or files) unless explicitly requested.
 - **Don’t** change public APIs, configuration formats, or network protocols without explicit human approval and associated design/issue.
@@ -235,7 +248,7 @@ If you are uncertain about the impact of a change, prefer to:
 
 ***
 
-## 8. When in doubt
+## 9. When in doubt
 
 If AGENTS.md does not clearly cover a situation:
 
