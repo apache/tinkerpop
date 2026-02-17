@@ -81,7 +81,10 @@ To accurately evaluate the results, follow this strict hierarchy:
 2.  **Verify via XML Reports**: If the build fails (non-zero exit) you **must** inspect the JUnit XML reports in `gremlin-python/target/python3/python-reports/`:
     *   `TEST-native-python.xml` (Unit/Integration tests)
     *   `feature-graphbinary-result.xml` (Feature tests - GraphBinary)
+    *   `feature-graphbinary-params-result.xml` (Feature tests - GraphBinary parameterized)
+    *   `feature-graphbinary-bulked-result.xml` (Feature tests - GraphBinary bulked)
     *   `feature-graphson-result.xml` (Feature tests - GraphSON)
+    *   `feature-graphson-params-result.xml` (Feature tests - GraphSON parameterized)
 
 Feature test XML reports will not be present if the unit/integration tests fail.
 

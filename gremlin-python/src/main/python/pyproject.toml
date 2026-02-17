@@ -52,6 +52,7 @@ ujson = ["ujson>=2.0.0"]
 test = [
     "pytest>=6.2.5,<8.0.0",
     "radish-bdd==0.18.2",
+    "lxml==5.3.0",
     "PyHamcrest>=1.9.0,<3.0.0",
     "PyYAML>=5.3"
 ]
@@ -59,7 +60,7 @@ test = [
 [tool.pytest.ini_options]
 addopts = "--junitxml=./python-reports/TEST-native-python.xml -sv"
 norecursedirs = [".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg", "lib", "lib64"]
-testpaths = ["tests"]
+testpaths = ["tests/unit","tests/integration"]
 
 [tool.setuptools.dynamic]
 version = {attr = "gremlin_python.__version__"}

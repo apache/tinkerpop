@@ -56,15 +56,27 @@ services:
       - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test-python:{}/gremlin
       - IO_TEST_DIRECTORY=/python_app/gremlin-test/graphbinary/
       - IO_TEST_DIRECTORY_GRAPHSON=/python_app/gremlin-test/graphson/
+      - PYTEST_ARGS=${PYTEST_ARGS:-}
+      - RADISH_ARGS=${RADISH_ARGS:-}
     working_dir: /python_app
     command: >
-      bash -c "pip install .[test,kerberos]
-      && pytest
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true'
-      && radish -f dots -e -t -b ./radish ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json'
+      bash -c "pip install .[test]
+      && if [ -z \"$PYTEST_ARGS\" ] && [ -z \"$RADISH_ARGS\" ]; then
+        pytest && 
+        radish --junit-xml python-reports/feature-graphbinary-bulked-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true' && 
+        radish --junit-xml python-reports/feature-graphbinary-params-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true' && 
+        radish --junit-xml python-reports/feature-graphbinary-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' && 
+        radish --junit-xml python-reports/feature-graphson-params-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true' && 
+        radish --junit-xml python-reports/feature-graphson-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' ;
+      elif [ -n \"$PYTEST_ARGS\" ]; then
+        pytest $PYTEST_ARGS ;
+      elif [ -n \"$RADISH_ARGS\" ]; then
+        radish --junit-xml python-reports/feature-graphbinary-bulked-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='bulked=true' $RADISH_ARGS &&
+        radish --junit-xml python-reports/feature-graphbinary-params-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' --user-data='parameterize=true' $RADISH_ARGS &&
+        radish --junit-xml python-reports/feature-graphbinary-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.graphbinary-v4.0' $RADISH_ARGS &&
+        radish --junit-xml python-reports/feature-graphson-params-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' --user-data='parameterize=true' $RADISH_ARGS &&
+        radish --junit-xml python-reports/feature-graphson-result.xml -f dots -e -t -b ./tests/feature ./gremlin-test --user-data='serializer=application/vnd.gremlin-v4.0+json' $RADISH_ARGS ;
+      fi
       && pip install .
       && echo 'Running examples...'
       && python3 examples/basic_gremlin.py
