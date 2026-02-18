@@ -26,8 +26,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
-
-import com.google.common.base.Function;
+import java.util.function.Function;
 
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 
