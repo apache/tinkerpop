@@ -69,10 +69,10 @@ export default class GremlinLang {
     if (arg === null || arg === undefined) return 'null';
     if (typeof arg === 'boolean') return arg ? 'true' : 'false';
     if (arg instanceof Long) {
-      return String(arg.value);
+      return String(arg.value) + 'L';
     }
     if (arg instanceof Date) {
-      const iso = arg.toISOString().replace('.000Z', 'Z');
+      const iso = arg.toISOString();
       return `datetime("${iso}")`;
     }
     if (typeof arg === 'number') {
@@ -82,6 +82,8 @@ export default class GremlinLang {
       return String(arg);
     }
     if (typeof arg === 'string') {
+      // JSON.stringify handles all special character escaping in one call.
+      // Strip the outer double quotes and re-wrap in single quotes for Gremlin.
       const escaped = JSON.stringify(arg).slice(1, -1).replace(/'/g, "\\'");
       return `'${escaped}'`;
     }

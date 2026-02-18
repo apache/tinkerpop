@@ -21,7 +21,7 @@ import assert from 'assert';
 import { GraphTraversalSource, statics as __, CardinalityValue } from '../../lib/process/graph-traversal.js';
 import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          operator as Operator, pop as Pop, cardinality as Cardinality,
-         withOptions as WithOptions } from '../../lib/process/traversal.js';
+         withOptions as WithOptions, direction } from '../../lib/process/traversal.js';
 import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
 import { Graph, Vertex } from '../../lib/structure/graph.js';
@@ -157,9 +157,9 @@ describe('GremlinLang', function () {
       // #60
       [g.addV('test').property('p1',123), "g.addV('test').property('p1',123)"],
       // #61
-      [g.addV('test').property('date',new Date('2021-02-01T09:30:00.000Z')), `g.addV('test').property('date',datetime("2021-02-01T09:30:00Z"))`],
+      [g.addV('test').property('date',new Date('2021-02-01T09:30:00.000Z')), `g.addV('test').property('date',datetime("2021-02-01T09:30:00.000Z"))`],
       // #62
-      [g.addV('test').property('date',new Date('2021-02-01T00:00:00.000Z')), `g.addV('test').property('date',datetime("2021-02-01T00:00:00Z"))`],
+      [g.addV('test').property('date',new Date('2021-02-01T00:00:00.000Z')), `g.addV('test').property('date',datetime("2021-02-01T00:00:00.000Z"))`],
       // #63
       [g.addE('route').from_(__.V('1')).to(__.V('2')), "g.addE('route').from(__.V('1')).to(__.V('2'))"],
       // #64
@@ -189,15 +189,15 @@ describe('GremlinLang', function () {
       // #76
       [g.V('3').out('route').aggregate('x').where(P.within('x')).path().by('code'), "g.V('3').out('route').aggregate('x').where(within(['x'])).path().by('code')"],
       // #77
-      [g.V().has('date',new Date('2021-02-22T00:00:00.000Z')), `g.V().has('date',datetime("2021-02-22T00:00:00Z"))`],
+      [g.V().has('date',new Date('2021-02-22T00:00:00.000Z')), `g.V().has('date',datetime("2021-02-22T00:00:00.000Z"))`],
       // #78
-      [g.V().has('date',P.within([new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z')])), `g.V().has('date',within([datetime("2021-01-01T00:00:00Z"),datetime("2021-02-22T00:00:00Z")]))`],
+      [g.V().has('date',P.within([new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z')])), `g.V().has('date',within([datetime("2021-01-01T00:00:00.000Z"),datetime("2021-02-22T00:00:00.000Z")]))`],
       // #79
-      [g.V().has('date',P.between(new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z'))), `g.V().has('date',between(datetime("2021-01-01T00:00:00Z"),datetime("2021-02-22T00:00:00Z")))`],
+      [g.V().has('date',P.between(new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z'))), `g.V().has('date',between(datetime("2021-01-01T00:00:00.000Z"),datetime("2021-02-22T00:00:00.000Z")))`],
       // #80
-      [g.V().has('date',P.inside(new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z'))), `g.V().has('date',inside(datetime("2021-01-01T00:00:00Z"),datetime("2021-02-22T00:00:00Z")))`],
+      [g.V().has('date',P.inside(new Date('2021-01-01T00:00:00.000Z'),new Date('2021-02-22T00:00:00.000Z'))), `g.V().has('date',inside(datetime("2021-01-01T00:00:00.000Z"),datetime("2021-02-22T00:00:00.000Z")))`],
       // #81
-      [g.V().has('date',P.gt(new Date('2021-01-01T00:00:00.000Z'))), `g.V().has('date',gt(datetime("2021-01-01T00:00:00Z")))`],
+      [g.V().has('date',P.gt(new Date('2021-01-01T00:00:00.000Z'))), `g.V().has('date',gt(datetime("2021-01-01T00:00:00.000Z")))`],
       // #82
       [g.V().has('runways',P.between(3,5)), "g.V().has('runways',between(3,5))"],
       // #83
@@ -280,6 +280,21 @@ describe('GremlinLang', function () {
       [g.V().has('code',P.within([])), "g.V().has('code',within([]))"],
       // #122 - P.not
       [g.V().has('age',P.not(P.eq(5))), "g.V().has('age',not(eq(5)))"],
+      // #123 - Direction aliases from_ and to mapped to OUT and IN
+      [g.V().to(direction.from_, 'knows').to(direction.in, 'created'),
+       "g.V().to(Direction.OUT,'knows').to(Direction.IN,'created')"],
+      // #124 - from_/to with Vertex ID extraction
+      [g.addE('knows').from_(new Vertex(1, 'person')).to(new Vertex(2, 'person')),
+       "g.addE('knows').from(1).to(2)"],
+      // #125 - mid-traversal V() with Vertex ID extraction
+      [g.inject('foo').V(1, new Vertex(2, 'person')),
+       "g.inject('foo').V(1,2)"],
+      // #126 - mergeE with Vertex ID extraction in Map (source step)
+      [g.mergeE(new Map([['label', 'knows'], [direction.out, new Vertex(1, 'person')], [direction.in, new Vertex(2, 'person')]])),
+       "g.mergeE(['label':'knows',(Direction.OUT):1,(Direction.IN):2])"],
+      // #127 - mergeE with Vertex ID extraction in Map (mid-traversal)
+      [g.inject('foo').mergeE(new Map([['label', 'knows'], [direction.out, new Vertex(1, 'person')], [direction.in, new Vertex(2, 'person')]])),
+       "g.inject('foo').mergeE(['label':'knows',(Direction.OUT):1,(Direction.IN):2])"],
     ];
 
     tests.forEach(([traversal, expected], index) => {
@@ -291,7 +306,7 @@ describe('GremlinLang', function () {
 
   describe('JS-specific tests', function () {
     it('should handle Long values', function () {
-      assert.strictEqual(g.V(new Long('9007199254740993')).getGremlinLang().getGremlin(), 'g.V(9007199254740993)');
+      assert.strictEqual(g.V(new Long('9007199254740993')).getGremlinLang().getGremlin(), 'g.V(9007199254740993L)');
     });
 
     it('should handle NaN', function () {
