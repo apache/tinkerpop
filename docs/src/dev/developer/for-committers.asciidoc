@@ -412,8 +412,10 @@ included to further qualify the type of numeric. The following options are avail
 * Path - *p[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the `Path` should be added to
 between the square brackets. These values respect the type system thus allowing for creation of `Path` of vertices,
 edges, maps, and any other available type.
+* Property - *prop[_key_,_value_]* - The key is simply a string, and the value is expected to be a typed value using the
+syntax presented here.
 * Set - *s[_xxx_,_yyy_,_zzz_,...]* - A comma separated collection of values that make up the set should be added to
-between the square brackets. These values respect the type system thus allowing for creation of sets of vertices,
+between the square brackets. These values respect the type system thus allowing to create sets of vertices,
 edges, maps, and any other available type.
 * String - Any value not using the system notation will be interpreted as
 a string by default.
@@ -423,6 +425,11 @@ such as null and spaces.
 * Vertex - *v[_xxx_]* - The "xxx" should be replaced with the "name" property of a vertex in the graph. This syntax may
 include the `.id` suffix which would indicate getting the vertex identifier or the `.sid` suffix which gets a string
 representation of the edge identifier.
+* VertexProperty - *vp[_xxx_]* - The "xxx" should be replaced with a representation of a vertex property in the form of
+the `vertex_name-key->value`. Note that the key is just a string and the value is a typed value using the syntax
+presented here.
+
+vp[marko-name->marko]
 
 In addition, parameter names should adhere to a common form as they hold some meaning to certain language variant
 implementations:

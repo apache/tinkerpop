@@ -150,6 +150,70 @@ Feature: Orderability
       | d[11].i |
       | d[10].i |
 
+  Scenario: g_E_properties_order
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").as("a").
+        addE("self").from("a").to("a").property("weight", 0.5d).property("a", 10i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 11i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 12i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 13i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 14i).
+        addE("self").from("a").to("a").property("weight", 0.2d).property("a", 15i)
+      """
+    And the traversal of
+      """
+      g.E().properties().order()
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | prop[a,d[10].i] |
+      | prop[a,d[11].i] |
+      | prop[a,d[12].i] |
+      | prop[a,d[13].i] |
+      | prop[a,d[14].i] |
+      | prop[a,d[15].i] |
+      | prop[weight,d[0.2].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.5].d] |
+      | prop[weight,d[1.0].d] |
+      | prop[weight,d[1.0].d] |
+
+  Scenario: g_E_properties_order_byXdescX
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "alice").as("a").
+        addE("self").from("a").to("a").property("weight", 0.5d).property("a", 10i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 11i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 12i).
+        addE("self").from("a").to("a").property("weight", 1.0d).property("a", 13i).
+        addE("self").from("a").to("a").property("weight", 0.4d).property("a", 14i).
+        addE("self").from("a").to("a").property("weight", 0.2d).property("a", 15i)
+      """
+    And the traversal of
+      """
+      g.E().properties().order().by(desc)
+      """
+    When iterated to list
+    Then the result should be ordered
+      | result |
+      | prop[weight,d[1.0].d] |
+      | prop[weight,d[1.0].d] |
+      | prop[weight,d[0.5].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.2].d] |
+      | prop[a,d[15].i] |
+      | prop[a,d[14].i] |
+      | prop[a,d[13].i] |
+      | prop[a,d[12].i] |
+      | prop[a,d[11].i] |
+      | prop[a,d[10].i] |
+
   @GraphComputerVerificationInjectionNotSupported
   Scenario: g_inject_order
     Given the empty graph

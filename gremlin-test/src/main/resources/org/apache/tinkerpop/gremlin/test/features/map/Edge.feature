@@ -58,25 +58,13 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | result |
       | e[josh-created->lop] |
 
-  Scenario: g_EXe11X
+  Scenario: g_EXeid7_eid11X
     Given the modern graph
-    And using the parameter e11 defined as "e[josh-created->lop]"
+    And using the parameter eid7 defined as "e[marko-knows->vadas].id"
+    And using the parameter eid11 defined as "e[josh-created->lop].id"
     And the traversal of
       """
-      g.E(e11)
-      """
-    When iterated to list
-    Then the result should be unordered
-      | result |
-      | e[josh-created->lop] |
-
-  Scenario: g_EXe7_e11X
-    Given the modern graph
-    And using the parameter e7 defined as "e[marko-knows->vadas]"
-    And using the parameter e11 defined as "e[josh-created->lop]"
-    And the traversal of
-      """
-      g.E(e7,e11)
+      g.E(eid7,eid11)
       """
     When iterated to list
     Then the result should be unordered
@@ -84,9 +72,9 @@ Feature: Step - E(), inV(), outV(), bothV(), otherV()
       | e[marko-knows->vadas] |
       | e[josh-created->lop] |
 
-  Scenario: g_EXlistXe7_e11XX
+  Scenario: g_EXlistXeid7_eid11XX
     Given the modern graph
-    And using the parameter xx1 defined as "l[e[marko-knows->vadas],e[josh-created->lop]]"
+    And using the parameter xx1 defined as "l[e[marko-knows->vadas].id,e[josh-created->lop].id]"
     And the traversal of
       """
       g.E(xx1)

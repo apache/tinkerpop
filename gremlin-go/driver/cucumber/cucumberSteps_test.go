@@ -56,6 +56,7 @@ func init() {
 		regexp.MustCompile(`^d\[(.*)]\.[n]$`):     toBigInt,
 		regexp.MustCompile(`^d\[(.*)]\.[i]$`):     toInt32,
 		regexp.MustCompile(`^vp\[(.+)]$`):         toVertexProperty,
+		regexp.MustCompile(`^prop\[(.+)]$`):       toProperty,
 		regexp.MustCompile(`^v\[(.+)]$`):          toVertex,
 		regexp.MustCompile(`^v\[(.+)]\.id$`):      toVertexId,
 		regexp.MustCompile(`^e\[(.+)]$`):          toEdge,
@@ -172,6 +173,14 @@ func toInt32(stringVal, graphName string) interface{} {
 		return nil
 	}
 	return int32(val)
+}
+
+// Parse property as key/value pair.
+func toProperty(stringVal, graphName string) interface{} {
+	commaIdx := strings.Index(stringVal, ",")
+	key := stringVal[:commaIdx]
+	value := parseValue(stringVal[commaIdx+1:], graphName)
+	return &gremlingo.Property{Key: key, Value: value}
 }
 
 // Parse vertex property.

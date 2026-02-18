@@ -369,6 +369,12 @@ def _convert(val, ctx):
         return __find_cached_element(ctx, graph_name, val[2:-1], "e")
     elif isinstance(val, str) and re.match(r"^vp\[.*\]$", val):  # parse vertexproperty
         return __find_cached_element(ctx, graph_name, val[3:-1], "vp")
+    elif isinstance(val, str) and re.match(r"^prop\[.+\]$", val):  # parse property as key/value pair
+        inner = val[5:-1]
+        comma_idx = inner.index(",")
+        key = inner[:comma_idx]
+        value = _convert(inner[comma_idx + 1:], ctx)
+        return Property(key, value, None)
     elif isinstance(val, str) and re.match(r"^m\[.*\]$", val):  # parse json as a map
         return _convert(json.loads(val[2:-1]), ctx)
     elif isinstance(val, str) and re.match(r"^p\[.*\]$", val):  # parse path
@@ -438,6 +444,9 @@ def _convert_results(val):
     if isinstance(val, Path):
         # kill out labels as they aren't in the assertion logic
         return Path([set([])], val.objects)
+    elif isinstance(val, Property) and not isinstance(val, VertexProperty):
+        # strip element for key/value only comparison with prop[...] syntax
+        return Property(val.key, val.value, None)
     elif _is_nan(val):
         # we need to use the string form for NaN to test the results since float.nan != float.nan
         return "d[NaN]"

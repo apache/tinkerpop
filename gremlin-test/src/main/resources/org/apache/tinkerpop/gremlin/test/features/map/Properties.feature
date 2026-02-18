@@ -108,23 +108,74 @@ Feature: Step - properties()
       | lop |
       | ripple |
 
-  Scenario: g_injectXg_VX1X_propertiesXnameX_nextX_value
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_E_propertiesXweightX
+    Given the modern graph
+    And the traversal of
       """
-      The test suite doesn't do well with vertex property values.
+      g.E().properties("weight")
       """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | prop[weight,d[0.2].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.4].d] |
+      | prop[weight,d[0.5].d] |
+      | prop[weight,d[1.0].d] |
+      | prop[weight,d[1.0].d] |
 
-  Scenario: g_V_hasXageX_properties_hasXid_nameIdX_value
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_E_properties
+    Given the empty graph
+    And the graph initializer of
       """
-      GLV suite doesn't support property identifiers and related assertions
+      g.addV("person").property("name","alice").as("a").
+        addV("person").property("name","bob").as("b").
+        addE("knows").from("a").to("b").property("weight", 0.5d).property("since", 2020i)
       """
+    And the traversal of
+      """
+      g.E().properties()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | prop[weight,d[0.5].d] |
+      | prop[since,d[2020].i] |
 
-  Scenario: g_V_hasXageX_properties_hasXid_nameIdAsStringX_value
-    Given an unsupported test
-    Then nothing should happen because
+  Scenario: g_E_propertiesXsinceX
+    Given the empty graph
+    And the graph initializer of
       """
-      GLV suite doesn't support property identifiers and related assertions
+      g.addV("person").property("name","alice").as("a").
+        addV("person").property("name","bob").as("b").
+        addE("knows").from("a").to("b").property("weight", 0.5d).property("since", 2020i)
       """
+    And the traversal of
+      """
+      g.E().properties("since")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | prop[since,d[2020].i] |
+
+  Scenario: g_E_properties_multi_edges
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name","alice").as("a").
+        addV("person").property("name","bob").as("b").
+        addE("knows").from("a").to("b").property("weight", 0.5d).property("since", 2020i).
+        addE("likes").from("a").to("b").property("weight", 1.0d).property("tag", "friend")
+      """
+    And the traversal of
+      """
+      g.E().properties()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | prop[weight,d[0.5].d] |
+      | prop[since,d[2020].i] |
+      | prop[weight,d[1.0].d] |
+      | prop[tag,friend] |

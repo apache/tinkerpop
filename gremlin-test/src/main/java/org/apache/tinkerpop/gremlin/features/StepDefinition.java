@@ -167,11 +167,6 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
-        add(Pair.with(Pattern.compile("v\\[(.+)\\]"), s -> {
-            final Iterator<Object> itty = g.V().has("name", s).id();
-            return String.format("new Vertex(%s,\"%s\")", itty.hasNext() ?
-                    world.convertIdToScript(itty.next(), Vertex.class) : s, Vertex.DEFAULT_LABEL);
-        }));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
         add(Pair.with(Pattern.compile("t\\[(.*)\\]"), s -> String.format("T.%s", s)));
@@ -180,15 +175,6 @@ public final class StepDefinition {
         add(Pair.with(Pattern.compile("(null)"), s -> "null"));
         add(Pair.with(Pattern.compile("(true)"), s -> "true"));
         add(Pair.with(Pattern.compile("(false)"), s -> "false"));
-
-        // the following force ignore conditions as they cannot be parsed by the grammar at this time. the grammar will
-        // need to be modified to handle them or perhaps these tests stay relegated to the JVM in some way
-        add(Pair.with(Pattern.compile("e\\[(.+)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Edge as a parameter which is not supported by gremlin-language");
-        }));
-        add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
-            throw new AssumptionViolatedException("This test uses a Path as a parameter which is not supported by gremlin-language");
-        }));
     }};
 
     private List<Pair<Pattern, Function<String,Object>>> objectMatcherConverters = new ArrayList<Pair<Pattern, Function<String,Object>>>() {{
@@ -218,10 +204,13 @@ public final class StepDefinition {
         // return the string values as is, used to wrap results that may contain other regex patterns
         add(Pair.with(Pattern.compile("str\\[(.*)\\]"), String::valueOf));
 
-        /*
-         * TODO FIXME Add same support for other languages (js, python, .net)
-         */
         add(Pair.with(Pattern.compile("vp\\[(.+)\\]"), s -> getVertexProperty(g, s)));
+        add(Pair.with(Pattern.compile("prop\\[(.+)\\]"), s -> {
+            final int commaIdx = s.indexOf(",");
+            final String key = s.substring(0, commaIdx);
+            final Object value = convertToObject(s.substring(commaIdx + 1));
+            return Pair.with(key, value);
+        }));
 
         add(Pair.with(Pattern.compile("p\\[(.*)\\]"), s -> {
             final String[] items = s.split(",");
@@ -652,6 +641,8 @@ public final class StepDefinition {
                 return new LinkedHashMap() {{
                     put(((Map.Entry<?, ?>) o).getKey(), ((Map.Entry<?, ?>) o).getValue());
                 }};
+            } else if (o instanceof Property && !(o instanceof VertexProperty)) {
+                return Pair.with(((Property) o).key(), ((Property) o).value());
             } else {
                 return o;
             }
