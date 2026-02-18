@@ -26,9 +26,8 @@ const RemoteConnection = rcModule.RemoteConnection;
 const RemoteTraversal = rcModule.RemoteTraversal;
 import * as utils from '../utils.js';
 import Client, { RequestOptions } from './client.js';
-import Bytecode from '../process/bytecode.js';
+import GremlinLang from '../process/gremlin-lang.js';
 import { ConnectionOptions } from './connection.js';
-import { OptionsStrategy } from '../process/traversal-strategy.js';
 
 /**
  * Represents the default {@link RemoteConnection} implementation.
@@ -70,31 +69,45 @@ export default class DriverRemoteConnection extends RemoteConnection {
   }
 
   /** @override */
-  submit(bytecode: Bytecode) {
-    const optionsStrategy = bytecode.sourceInstructions.find(
-      (i) => i[0] === 'withStrategies' && i[1] instanceof OptionsStrategy,
-    );
-    const allowedKeys = [
-      'evaluationTimeout',
-      'scriptEvaluationTimeout',
-      'batchSize',
-      'requestId',
-      'userAgent',
-      'materializeProperties',
-    ];
+  submit(gremlinLang: GremlinLang) {
+    gremlinLang.addG(this.options.traversalSource || 'g');
 
     let requestOptions: RequestOptions | undefined = undefined;
-    if (optionsStrategy !== undefined) {
+    const strategies = gremlinLang.getOptionsStrategies();
+    if (strategies.length > 0) {
       requestOptions = {};
-      const conf = optionsStrategy[1].configuration;
-      for (const key in conf) {
-        if (conf.hasOwnProperty(key) && allowedKeys.indexOf(key) > -1) {
-          requestOptions[key as keyof RequestOptions] = conf[key];
+      const allowedKeys = [
+        'evaluationTimeout',
+        'scriptEvaluationTimeout',
+        'batchSize',
+        'requestId',
+        'userAgent',
+        'materializeProperties',
+        'bulkResults',
+      ];
+      for (const strategy of strategies) {
+        for (const key in strategy.configuration) {
+          if (allowedKeys.indexOf(key) > -1) {
+            requestOptions[key as keyof RequestOptions] = strategy.configuration[key];
+          }
         }
       }
     }
 
-    return this._client.submit(bytecode, null, requestOptions).then((result) => new RemoteTraversal(result.toArray()));
+    if (!requestOptions) {
+      requestOptions = {};
+    }
+    if (!('bulkResults' in requestOptions)) {
+      requestOptions.bulkResults = true;
+    }
+
+    const params = gremlinLang.getParameters();
+    if (params.size > 0) {
+      requestOptions.params = Object.fromEntries(params);
+    }
+
+    return this._client.submit(gremlinLang.getGremlin(), null, requestOptions)
+      .then((result) => new RemoteTraversal(result.toArray()));
   }
 
   override createSession() {
@@ -113,11 +126,11 @@ export default class DriverRemoteConnection extends RemoteConnection {
   }
 
   override commit() {
-    return this._client.submit(Bytecode.GraphOp.commit, null);
+    return this._client.submit('g.tx().commit()', null);
   }
 
   override rollback() {
-    return this._client.submit(Bytecode.GraphOp.rollback, null);
+    return this._client.submit('g.tx().rollback()', null);
   }
 
   override close() {

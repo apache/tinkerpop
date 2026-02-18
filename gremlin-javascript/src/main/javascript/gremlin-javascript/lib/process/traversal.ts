@@ -22,8 +22,8 @@
  */
 
 import { Graph } from '../structure/graph.js';
-import Bytecode from './bytecode.js';
 import { TraversalStrategies } from './traversal-strategy.js';
+import GremlinLang from './gremlin-lang.js';
 
 const itemDone = Object.freeze({ value: null, done: true });
 const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
@@ -37,7 +37,7 @@ export class Traversal {
   constructor(
     public graph: Graph | null,
     public traversalStrategies: TraversalStrategies | null,
-    public bytecode: Bytecode,
+    public gremlinLang: GremlinLang = new GremlinLang(),
   ) {}
 
   /**
@@ -47,9 +47,9 @@ export class Traversal {
     return this;
   }
 
-  /** @returns {Bytecode} */
-  getBytecode() {
-    return this.bytecode;
+  /** @returns {GremlinLang} */
+  getGremlinLang(): GremlinLang {
+    return this.gremlinLang;
   }
 
   /**
@@ -86,7 +86,7 @@ export class Traversal {
    * @returns {Promise}
    */
   iterate() {
-    this.bytecode.addStep('discard');
+    this.gremlinLang.addStep('discard');
     return this._applyStrategies().then(() => {
       let it;
       while ((it = this._getNext()) && !it.done) {
@@ -133,15 +133,15 @@ export class Traversal {
    * @returns {Array}
    */
   toJSON() {
-    return this.bytecode.stepInstructions;
+    return this.gremlinLang.getGremlin();
   }
 
   /**
-   * Returns the Bytecode JSON representation of the traversal
+   * Returns the GremlinLang representation of the traversal
    * @returns {String}
    */
   toString() {
-    return this.bytecode.toString();
+    return this.gremlinLang.getGremlin();
   }
 }
 
@@ -255,18 +255,18 @@ export class P<T1 = any, T2 = any> {
    * @returns {string}
    */
   toString() {
-    function formatValue(value: T1 | T2): any {
+    function formatValue(value: T1 | T2): string {
       if (Array.isArray(value)) {
         const acc = [];
         for (const item of value) {
           acc.push(formatValue(item));
         }
-        return acc;
+        return '[' + acc.join(', ') + ']';
       }
       if (value && typeof value === 'string') {
         return `'${value}'`;
       }
-      return value;
+      return String(value);
     }
 
     if (this.other === undefined || this.other === null) {
@@ -511,7 +511,7 @@ export class EnumValue {
   ) {}
 
   toString() {
-    return this.elementName;
+    return this.typeName + '.' + this.elementName;
   }
 }
 

@@ -23,7 +23,6 @@
 
 import * as t from '../../process/traversal.js';
 import * as ts from '../../process/traversal-strategy.js';
-import Bytecode from '../../process/bytecode.js';
 import * as g from '../graph.js';
 import * as utils from '../../utils.js';
 
@@ -128,43 +127,6 @@ export class LongSerializer extends TypeSerializer<utils.Long> {
 
   canBeUsedFor(value: unknown) {
     return value instanceof utils.Long;
-  }
-}
-
-export class BytecodeSerializer extends TypeSerializer<Bytecode> {
-  serialize(item: Bytecode) {
-    let bytecode = item;
-    if (item instanceof t.Traversal) {
-      bytecode = item.getBytecode();
-    }
-    const result: Partial<SerializedValue> = {};
-    result[typeKey] = 'g:Bytecode';
-    const resultValue: any = (result[valueKey] = {});
-    const sources = this._serializeInstructions(bytecode.sourceInstructions);
-    if (sources) {
-      resultValue['source'] = sources;
-    }
-    const steps = this._serializeInstructions(bytecode.stepInstructions);
-    if (steps) {
-      resultValue['step'] = steps;
-    }
-    return result as SerializedValue;
-  }
-
-  _serializeInstructions(instructions: any[]) {
-    if (instructions.length === 0) {
-      return null;
-    }
-    const result = new Array(instructions.length);
-    result[0] = instructions[0];
-    for (let i = 0; i < instructions.length; i++) {
-      result[i] = instructions[i].map((item: unknown) => this.writer.adaptObject(item));
-    }
-    return result;
-  }
-
-  canBeUsedFor(value: unknown) {
-    return value instanceof Bytecode || value instanceof t.Traversal;
   }
 }
 
