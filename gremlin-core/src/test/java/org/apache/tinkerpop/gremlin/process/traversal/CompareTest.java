@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.javatuples.Pair;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +30,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asList;
@@ -249,6 +251,117 @@ public class CompareTest {
                 {Compare.gt, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), false},
                 {Compare.gte, asMap(1.0, "foo", 2.0, "bar"), asMap(2, "bar", 1, "foo"), true},
 
+                // Empty collections
+                {Compare.eq,  asList(), asList(), true},
+                {Compare.neq, asList(), asList(), false},
+                {Compare.lt,  asList(), asList(), false},
+                {Compare.lte, asList(), asList(), true},
+                {Compare.gt,  asList(), asList(), false},
+                {Compare.gte, asList(), asList(), true},
+
+                {Compare.lt,  asList(), asList(1), true},
+                {Compare.gt,  asList(1), asList(), true},
+
+                {Compare.eq,  asSet(), asSet(), true},
+                {Compare.lt,  asSet(), asSet(1), true},
+                {Compare.gt,  asSet(1), asSet(), true},
+
+                {Compare.eq,  asMap(), asMap(), true},
+                {Compare.lt,  asMap(), asMap(1, 1), true},
+                {Compare.gt,  asMap(1, 1), asMap(), true},
+
+                // Different sizes
+                {Compare.lt,  asList(1, 2, 3), asList(1, 2, 3, 4), true},
+                {Compare.gt,  asList(1, 2, 3, 4), asList(1, 2, 3), true},
+                {Compare.lt,  asList(1, 2, 4), asList(1, 2, 3, 4), false},
+                {Compare.gt,  asList(1, 2, 4), asList(1, 2, 3, 4), true},
+
+                {Compare.lt,  asSet(1, 2, 3), asSet(1, 2, 3, 4), true},
+                {Compare.gt,  asSet(1, 2, 3, 4), asSet(1, 2, 3), true},
+                {Compare.lt,  asSet(1, 2, 4), asSet(1, 2, 3, 4), false},
+                {Compare.gt,  asSet(1, 2, 4), asSet(1, 2, 3, 4), true},
+
+                {Compare.lt,  asMap(1, 1, 2, 2, 3, 3), asMap(1, 1, 2, 2, 3, 3, 4, 4), true},
+                {Compare.gt,  asMap(1, 1, 2, 2, 3, 3, 4, 4), asMap(1, 1, 2, 2, 3, 3), true},
+
+                // Type promotion within collections
+                {Compare.eq,  asList(1, 2), asList(1.0, 2.0), true},
+                {Compare.lt,  asList(1, 2), asList(1.0, 3.0), true},
+                {Compare.eq,  asSet(1, 2), asSet(2.0, 1.0), true},
+                {Compare.eq,  asMap(1, 1.0), asMap(1L, 1.0d), true},
+
+                // Lexicographical comparison with mixed types (but pairwise comparable)
+                {Compare.lt,  asList(1, "a"), asList(1, "b"), true},
+                {Compare.lt,  asList(1, "a"), asList(2, "a"), true},
+                {Compare.gt,  asList(1, "a"), asList(0, "a"), true},
+
+                // Sets and Maps with mixed types (Orderability used for sorting)
+                {Compare.lt,  asSet(1, "a"), asSet(1, "b"), true},
+                {Compare.eq,  asSet(1, "a"), asSet("a", 1), true},
+                {Compare.gt,  asMap(1, "a", "z", 2), asMap(1, "a", "y", 2), true},
+
+                // Incomparable elements (cross-type) in collections
+                {Compare.eq,  asList(1, "a"), asList(1, 1), false},
+                {Compare.neq, asList(1, "a"), asList(1, 1), true},
+                {Compare.lt,  asList(1, "a"), asList(1, 1), false},
+                {Compare.gt,  asList(1, "a"), asList(1, 1), false},
+
+                {Compare.eq,  asSet(1, "a"), asSet(1, 2.0), false},
+                {Compare.lt,  asSet(1, "a"), asSet(1, 2.0), false},
+
+                // Nested collections
+                {Compare.lt,  asList(asList(1, 2)), asList(asList(1, 3)), true},
+                {Compare.lt,  asList(asList(1, 2)), asList(asList(1, 2, 3)), true},
+                {Compare.gt,  asList(asList(1, 2)), asList(asList(1, 1)), true},
+
+                // Nulls in collections
+                {Compare.eq,  asList(1, null), asList(1, null), true},
+                {Compare.eq,  asList(1, null), asList(1, 2), false},
+                {Compare.lt,  asList(1, null), asList(1, 2), false},
+                {Compare.gt,  asList(1, null), asList(1, 2), false},
+
+                // Paths
+                {Compare.eq,  p(), p(), true},
+                {Compare.neq, p(), p(), false},
+                {Compare.lt,  p(), p(), false},
+                {Compare.lte, p(), p(), true},
+                {Compare.gt,  p(), p(), false},
+                {Compare.gte, p(), p(), true},
+
+                {Compare.lt,  p(), p(1), true},
+                {Compare.gt,  p(1), p(), true},
+
+                // Lexicographical comparison (pairwise)
+                {Compare.lt,  p(1, "a"), p(1, "b"), true},
+                {Compare.lt,  p(1, "a"), p(2, "a"), true},
+                {Compare.gt,  p(1, "a"), p(0, "a"), true},
+
+                // Different sizes
+                {Compare.lt,  p(1, 2, 3), p(1, 2, 3, 4), true},
+                {Compare.gt,  p(1, 2, 3, 4), p(1, 2, 3), true},
+
+                // Incomparable elements (cross-type) in paths
+                {Compare.eq,  p(1, "a"), p(1, 1), false},
+                {Compare.neq, p(1, "a"), p(1, 1), true},
+                {Compare.lt,  p(1, "a"), p(1, 1), false},
+                {Compare.gt,  p(1, "a"), p(1, 1), false},
+
+                // Nested collections in paths
+                {Compare.lt,  p(asList(1, 2)), p(asList(1, 3)), true},
+                {Compare.lt,  p(asList(1, 2)), p(asList(1, 2, 3)), true},
+                {Compare.gt,  p(asList(1, 2)), p(asList(1, 1)), true},
+
+                // Nulls in paths
+                {Compare.eq,  p(1, null), p(1, null), true},
+                {Compare.eq,  p(1, null), p(1, 2), false},
+                {Compare.lt,  p(1, null), p(1, 2), false},
+                {Compare.gt,  p(1, null), p(1, 2), false},
+
+                // Cross-type Path vs List (must be false/error per semantics)
+                {Compare.eq,  p(1, 2), asList(1, 2), false},
+                {Compare.neq, p(1, 2), asList(1, 2), true},
+                {Compare.lt,  p(1, 2), asList(1, 2), false},
+                {Compare.gt,  p(1, 2), asList(1, 2), false},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);
@@ -432,5 +545,13 @@ public class CompareTest {
     }
 
     static class D extends B {
+    }
+
+    private static Path p(final Object... objects) {
+        final Path path = MutablePath.make();
+        for (final Object obj : objects) {
+            path.extend(obj, Collections.emptySet());
+        }
+        return path;
     }
 }
