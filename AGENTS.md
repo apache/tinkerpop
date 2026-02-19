@@ -172,6 +172,7 @@ Agents should follow these conventions when generating or editing code and tests
 
 ### 6.1 Code style
 
+- All files should include the Apache Software Foundation license header.
 - Match the existing style in nearby code.
 - Do **not** use import wildcards (for example, avoid `import org.apache.tinkerpop.gremlin.structure.*`); prefer explicit imports.
 - Respect existing naming patterns and package organization.
