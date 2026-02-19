@@ -135,11 +135,11 @@ jobs:
       - name: Build with Maven Windows
         if: runner.os == 'Windows'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -DskipImageBuild -Dci
+          mvn clean install -pl %EXCLUDE_MODULES% -q -DskipTests -DskipImageBuild -Dci
       - name: Build with Maven Ubuntu
         if: runner.os == 'Linux'
         run: |
-          mvn clean install -pl -:gremlin-javascript,-:gremlin-python,-gremlin-dotnet,-:gremlin-dotnet-source,-:gremlin-dotnet-tests,-:gremlint -q -DskipTests -Dci
+          mvn clean install -pl $EXCLUDE_MODULES -q -DskipTests -Dci
           mvn verify -pl :hadoop-gremlin -DskipTests -DskipIntegrationTests=false
   spark-core:
     name: spark core
