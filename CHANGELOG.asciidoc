@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+* Preserved `BulkSet` when given to 'P'.
 * Fixed bug in Gremlin orderability semantics for `OffsetDateTime`.
 * Fixed bug in Javascript translation for UUID.
 * Fixed bug in pre-repeat() `emit()/until()` where `emit()` and `until()` traversers weren't added to the results.
