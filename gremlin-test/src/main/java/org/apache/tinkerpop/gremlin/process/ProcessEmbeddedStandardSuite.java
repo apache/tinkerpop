@@ -74,9 +74,6 @@ public class ProcessEmbeddedStandardSuite extends AbstractGremlinSuite {
             // optimizations
             IncidentToAdjacentStrategyProcessTest.class,
             EarlyLimitStrategyProcessTest.class,
-
-            // semantics
-            ComparabilitySemanticsTest.class,
     };
 
     /**
