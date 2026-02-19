@@ -161,3 +161,24 @@ class TestGraph(object):
         assert vp["acl"] == "public"
         assert vp.values("acl") == ["public"]
         assert vp.values() == ["public"]
+
+    def test_element_contains_and_keys(self):
+        v = Vertex(1, "person", [VertexProperty(10, "name", "marko", Vertex(1)),
+                                 VertexProperty(11, "age", 29, Vertex(1))])
+        assert "name" in v
+        assert "age" in v
+        assert "nonexistent" not in v
+        assert v.keys() == {"name", "age"}
+
+        e = Edge(2, Vertex(1), "knows", Vertex(3), [Property("weight", 0.5, None)])
+        assert "weight" in e
+        assert "missing" not in e
+        assert e.keys() == {"weight"}
+
+        empty_v = Vertex(99)
+        assert "anything" not in empty_v
+        assert empty_v.keys() == set()
+
+        # supports the pattern: vertex[key] if key in vertex else None
+        assert v["name"] if "name" in v else None == "marko"
+        assert v["missing"] if "missing" in v else None is None

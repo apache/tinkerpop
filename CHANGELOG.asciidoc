@@ -23,6 +23,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
+* Added `__contains__` and `keys()` to `Element` in `gremlin-python`.
 * Added `subgraph()` support for `gremlin-python` so that results are stored in a detached `Graph` object.
 * Modified grammar to make `discard()` usage more consistent as a filter step where it can now be used to chain additional traversal steps and be used anonymously.
 * Removed `Meta` field from `ResponseResult` struct in `gremlin-go`
