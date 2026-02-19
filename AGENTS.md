@@ -175,6 +175,7 @@ Agents should follow these conventions when generating or editing code and tests
 - Match the existing style in nearby code.
 - Do **not** use import wildcards (for example, avoid `import org.apache.tinkerpop.gremlin.structure.*`); prefer explicit imports.
 - Respect existing naming patterns and package organization.
+- Define variables as `final` whenever possible, except for loop variables.
 
 ### 6.2 Test guidelines
 
