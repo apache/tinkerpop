@@ -41,6 +41,15 @@ class Element(object):
                 return p.value
         raise KeyError(key)
 
+    def __contains__(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return True
+        return False
+
+    def keys(self):
+        return set(p.key for p in self.properties)
+
     def values(self, *property_keys):
         if len(property_keys) == 0:
             return [p.value for p in self.properties]
