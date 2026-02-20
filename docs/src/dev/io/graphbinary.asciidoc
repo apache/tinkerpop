@@ -54,6 +54,92 @@ eight bytes to describe the value.
 
 == Version 4.0
 
+=== Changes from Version 1.0
+
+==== Removed Types
+
+The following types have been removed:
+
+- `Date` (0x04), `Timestamp` (0x05) - replaced by `DateTime`
+- `Class` (0x06)
+- `Barrier` (0x13), `Binding` (0x14), `Bytecode` (0x15), `Cardinality` (0x16), `Column` (0x17), `Operator` (0x19), 
+`Order` (0x1a), `Pick` (0x1b), `Pop` (0x1c), `Lambda` (0x1d), `P` (0x1e), `Scope` (0x1f), `Traverser` (0x21), `TextP` 
+(0x28), `TraversalStrategy` (0x29), `DT` (0x2f), `GType` (0x30)
+- `BulkSet` (0x2a) - functionality merged into `List`
+- `Metrics` (0x2c), `TraversalMetrics` (0x2d)
+- `Custom` (0x00) - replaced by `CompositePDT` and `PrimitivePDT`
+- `InetAddress` (0x82)
+- `Instant` (0x83), `LocalDate` (0x84), `LocalDateTime` (0x85), `LocalTime` (0x86), `MonthDay` (0x87), 
+`OffsetDateTime` (0x88), `OffsetTime` (0x89), `Period` (0x8a), `Year` (0x8b), `YearMonth` (0x8c), 
+`ZonedDateTime` (0x8d), `ZoneOffset` (0x8e) - Java-specific time types replaced by `DateTime`
+
+==== Added Types
+
+- `DateTime` (0x04) - unified date-time representation with timezone offset
+- `CompositePDT` (0xf0) - provider-defined composite type with typed fields
+- `PrimitivePDT` (0xf1) - provider-defined primitive type with stringified value
+- `Marker` (0xfd) - separator between result data and status in response messages
+
+==== Modified Types
+
+===== List
+
+The {value_flag} now indicates the format variant:
+
+0x00: Standard format
+0x01: Null
+0x02: Bulked format where each item is followed by a Long bulk count
+
+This change incorporates the functionality previously provided by BulkSet.
+
+===== Map
+
+The {value_flag} now indicates ordering:
+
+0x00: Standard format (no ordering defined)
+0x01: Null
+0x02: Ordered
+
+===== Labels and Properties in Edge, Graph, Vertex, and VertexProperty
+
+The {label} field is now a List of Strings instead of a String value. Also, the {properties} field used to always be
+null but can now contain a `List` of properties (this change actually started in a revision to v1).
+
+===== Byte
+
+Changed from unsigned 8-bit integer to signed two's complement representation.
+
+===== ByteBuffer
+
+Renamed to `Binary` (0x25). Format remains unchanged.
+
+===== Graph
+
+Renamed from TinkerGraph. Type code (0x10) remains unchanged. Label format has changed.
+
+==== Request Message Changes
+
+The request message format has been updated:
+
+- Version 1.0: {version}{request_id}{op}{processor}{args}
+- Version 4.0: {version}{fields}{gremlin}
+
+`OpProcessors` have been removed so {op}{processor} were removed and {args} is essentially renamed to {fields}. The
+version byte changed from `0x81` to `0x84`.
+
+==== Response Message Changes
+
+The response message format has been restructured:
+
+- Version 1.0: {version}{request_id}{status_code}{status_message}{status_attributes}{result_meta}{result_data}
+- Version 4.0: {version}{bulked}{result_data}{marker}{status_code}{status_message}{exception}
+
+This new format expects all the results in one ResponseMessage (like it is in HTTP).
+
+- Added {bulked} flag to indicate whether result data contains bulk counts since there are no Traverser serializers
+- Added {marker} to separate result data from status information
+- Version byte changed from 0x81 to 0x84
+
 === Forward Compatibility
 
 The serialization format supports new types being added without the need to introduce a new version.
@@ -80,6 +166,7 @@ Changes to existing types require new revision.
 - `0x12`: VertexProperty
 - `0x18`: Direction
 - `0x20`: T
+- `0x21`: Merge
 - `0x22`: BigDecimal
 - `0x23`: BigInteger
 - `0x24`: Byte
@@ -205,7 +292,7 @@ Where:
 
 A collection that contains no duplicate elements.
 
-Format: Same as `List`.
+Format: Same as `List` for `0x00` and `0x01` {value_flag} formats. No support for bulk (`0x02`).
 
 ==== Map
 
@@ -388,6 +475,17 @@ Example values:
 
 - `03 00 00 00 00 05 6C 61 62 65 6C`: label
 - `03 00 00 00 00 02 69 64`: id
+
+==== Merge
+
+Format: a fully-qualified single `String` representing the enum value.
+
+Example values:
+
+- `03 00 00 00 00 08 6F 6E 43 72 65 61 74 65`: onCreate
+- `03 00 00 00 00 07 6F 6E 4D 61 74 63 68`: onMatch
+- `03 00 00 00 00 04 6F 75 74 56`: outV
+- `03 00 00 00 00 03 69 6E 56`: inV
 
 ==== BigDecimal
 
