@@ -26,11 +26,13 @@ import org.apache.tinkerpop.gremlin.process.computer.Computer;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -58,6 +60,7 @@ import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.awt.Color;
@@ -660,6 +663,13 @@ public class TinkerGraphTest {
         for (Metrics i : m.getMetrics(1).getNested()) {
             assertThat(i.getDuration(TimeUnit.NANOSECONDS), greaterThan(0L));
         }
+    }
+
+    @Test
+    public void shouldReturnOnGraphComputerTrue() {
+        final GraphTraversalSource g = TinkerFactory.createModern().traversal().withComputer();
+        final GraphTraversal.Admin traversal = g.V().out().iterate().asAdmin();
+        Assert.assertTrue(TraversalHelper.onGraphComputer(traversal));
     }
 
     /**
