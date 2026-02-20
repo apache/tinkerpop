@@ -33,13 +33,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.apache.tinkerpop.gremlin.structure.T.id;
 
 public class ModernTraversals {
-    static final String SERVER_HOST = System.getenv().getOrDefault("GREMLIN_SERVER_HOST", "localhost");
-    static final int SERVER_PORT = Integer.parseInt(System.getenv().getOrDefault("GREMLIN_SERVER_PORT", "8182"));
+    static final String SERVER_HOST = System.getProperty("GREMLIN_SERVER_HOST", "localhost");
+    static final int SERVER_PORT = Integer.parseInt(System.getProperty("GREMLIN_SERVER_PORT", "8182"));
 
     public static void main(String[] args) throws Exception {
         // Performs basic traversals on the Modern toy graph loaded on the server
         Cluster cluster = Cluster.build(SERVER_HOST).port(SERVER_PORT).create();
-        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "g"));
+        GraphTraversalSource g = traversal().withRemote(DriverRemoteConnection.using(cluster, "gmodern"));
 
         List<Edge> e1 = g.V(1).bothE().toList(); // (1)
         List<Edge> e2 = g.V(1).bothE().where(otherV().hasId(2)).toList(); // (2)
