@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
@@ -71,7 +72,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     protected P(final PBiPredicate<V, V> biPredicate, final Collection<V> literals, final Map<String, V> variables, final boolean isCollection) {
         this.biPredicate = biPredicate;
         this.variables.putAll(variables);
-        this.literals = new ArrayList<>(literals);
+        if (literals instanceof BulkSet) {
+            this.literals = new BulkSet<>();
+            this.literals.addAll(literals);
+        } else {
+            this.literals = new ArrayList<>(literals);
+        }
         this.isCollection = isCollection;
     }
 
@@ -89,7 +95,16 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      */
     public V getValue() {
         if (isCollection) {
-            Collection<V> values = this.literals.stream().collect(Collectors.toList());
+            if (this.variables.isEmpty()) return (V) this.literals;
+
+            final Collection<V> values;
+            if (this.literals instanceof BulkSet) {
+                values = new BulkSet<>();
+                values.addAll(this.literals);
+            } else {
+                values = new ArrayList<>(this.literals);
+            }
+
             values.addAll(this.variables.values());
             return (V) values;
         } else if (!this.literals.isEmpty()) {
@@ -113,7 +128,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         } else if (value instanceof Collection) {
             isCollection = true;
             if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
-                this.literals = new ArrayList<>();
+                this.literals = (value instanceof BulkSet) ? new BulkSet<>() : new ArrayList<>();
                 for (Object v : ((Collection<?>) value)) {
                     // Separate variables and literals
                     if (v instanceof GValue) {
