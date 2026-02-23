@@ -17,41 +17,12 @@
  *  under the License.
  */
 
-/**
- * @author Igor Ostapenko
- */
-
 import { Buffer } from 'buffer';
 
-export default class DateSerializer {
-  constructor(ioc, ID) {
+export default class MarkerSerializer {
+  constructor(ioc) {
     this.ioc = ioc;
-    this.ID = ID;
-    this.ioc.serializers[ID] = this;
-  }
-
-  canBeUsedFor(value) {
-    return value instanceof Date;
-  }
-
-  serialize(item, fullyQualifiedFormat = true) {
-    if (item === undefined || item === null) {
-      if (fullyQualifiedFormat) {
-        return Buffer.from([this.ID, 0x01]);
-      }
-      return Buffer.from([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-    }
-
-    const bufs = [];
-    if (fullyQualifiedFormat) {
-      bufs.push(Buffer.from([this.ID, 0x00]));
-    }
-
-    const v = Buffer.alloc(8);
-    v.writeBigInt64BE(BigInt(item.getTime()));
-    bufs.push(v);
-
-    return Buffer.concat(bufs);
+    this.ioc.serializers[ioc.DataType.MARKER] = this;
   }
 
   deserialize(buffer, fullyQualifiedFormat = true) {
@@ -62,41 +33,33 @@ export default class DateSerializer {
       if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
         throw new Error('buffer is missing');
       }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
+      if (buffer.length < (fullyQualifiedFormat ? 3 : 1)) {
+        throw new Error('buffer is too short for marker');
       }
 
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        if (type_code !== this.ID) {
+        if (type_code !== this.ioc.DataType.MARKER) {
           throw new Error('unexpected {type_code}');
         }
         cursor = cursor.slice(1);
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
         const value_flag = cursor.readUInt8();
         len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
         if (value_flag !== 0) {
           throw new Error('unexpected {value_flag}');
         }
         cursor = cursor.slice(1);
       }
 
-      if (cursor.length < 8) {
-        throw new Error('unexpected {value} length');
+      const value = cursor.readUInt8();
+      len++;
+      if (value !== 0) {
+        throw new Error('unexpected marker value');
       }
-      len += 8;
 
-      const ms = cursor.readBigInt64BE();
-      const v = new Date(Number(ms));
-
-      return { v, len };
+      return { v: 'marker', len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }

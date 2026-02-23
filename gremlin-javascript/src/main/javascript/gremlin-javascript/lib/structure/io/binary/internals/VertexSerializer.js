@@ -40,8 +40,8 @@ export default class VertexSerializer {
         return Buffer.from([this.ioc.DataType.VERTEX, 0x01]);
       }
       const id = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00]; // String ''
-      const label = [0x00, 0x00, 0x00, 0x00]; // ''
-      const properties = [0xfe, 0x01]; // null
+      const label = [0x00, 0x00, 0x00, 0x00]; // empty list
+      const properties = [0x09, 0x00, 0x00, 0x00, 0x00, 0x00]; // empty list
       return Buffer.from([...id, ...label, ...properties]);
     }
 
@@ -54,10 +54,11 @@ export default class VertexSerializer {
     bufs.push(this.ioc.anySerializer.serialize(item.id));
 
     // {label}
-    bufs.push(this.ioc.stringSerializer.serialize(item.label, false));
+    const labels = Array.isArray(item.label) ? item.label : item.label ? [item.label] : [];
+    bufs.push(this.ioc.listSerializer.serialize(labels, false));
 
     // {properties}
-    bufs.push(this.ioc.anySerializer.serialize(item.properties));
+    bufs.push(this.ioc.listSerializer.serialize([], true));
 
     return Buffer.concat(bufs);
   }
@@ -108,7 +109,8 @@ export default class VertexSerializer {
 
       let label, label_len;
       try {
-        ({ v: label, len: label_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: label, len: label_len } = this.ioc.listSerializer.deserialize(cursor, false));
+        label = Array.isArray(label) && label.length > 0 ? label[0] : label;
         len += label_len;
       } catch (err) {
         err.message = '{label}: ' + err.message;

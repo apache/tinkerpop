@@ -22,37 +22,44 @@
  */
 
 import { Buffer } from 'buffer';
-import { Traverser } from '../../../../process/traversal.js';
 
-export default class TraverserSerializer {
+export default class BinarySerializer {
   constructor(ioc) {
     this.ioc = ioc;
-    this.ioc.serializers[ioc.DataType.TRAVERSER] = this;
+    this.ioc.serializers[ioc.DataType.BINARY] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof Traverser;
+    return value instanceof Buffer;
   }
 
   serialize(item, fullyQualifiedFormat = true) {
     if (item === undefined || item === null) {
       if (fullyQualifiedFormat) {
-        return Buffer.from([this.ioc.DataType.TRAVERSER, 0x01]);
+        return Buffer.from([this.ioc.DataType.BINARY, 0x01]);
       }
-      const bulk = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]; // 1
-      const value = [0xfe, 0x01]; // null
-      return Buffer.from([...bulk, ...value]);
+      return Buffer.from([0x00, 0x00, 0x00, 0x00]); // {length} = 0
     }
 
     const bufs = [];
     if (fullyQualifiedFormat) {
-      bufs.push(Buffer.from([this.ioc.DataType.TRAVERSER, 0x00]));
+      bufs.push(Buffer.from([this.ioc.DataType.BINARY, 0x00]));
     }
 
-    // {bulk}
-    bufs.push(this.ioc.longSerializer.serialize(item.bulk, false));
-    // {value}
-    bufs.push(this.ioc.anySerializer.serialize(item.object));
+    // {length}
+    let length = item.length;
+    if (length < 0) {
+      length = 0; // TODO: test it
+    }
+    if (length > this.ioc.intSerializer.INT32_MAX) {
+      throw new Error(
+        `Buffer length=${length} is greater than supported max_length=${this.ioc.intSerializer.INT32_MAX}.`,
+      );
+    }
+    bufs.push(this.ioc.intSerializer.serialize(length, false));
+
+    // {value} sequence of bytes
+    bufs.push(item);
 
     return Buffer.concat(bufs);
   }
@@ -72,7 +79,7 @@ export default class TraverserSerializer {
       if (fullyQualifiedFormat) {
         const type_code = cursor.readUInt8();
         len++;
-        if (type_code !== this.ioc.DataType.TRAVERSER) {
+        if (type_code !== this.ioc.DataType.BINARY) {
           throw new Error('unexpected {type_code}');
         }
         cursor = cursor.slice(1);
@@ -91,30 +98,25 @@ export default class TraverserSerializer {
         cursor = cursor.slice(1);
       }
 
-      let bulk, bulk_len;
+      let length, length_len;
       try {
-        ({ v: bulk, len: bulk_len } = this.ioc.longSerializer.deserialize(cursor, false));
-        len += bulk_len;
+        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
+        len += length_len;
       } catch (err) {
-        err.message = '{bulk}: ' + err.message;
+        err.message = '{length}: ' + err.message;
         throw err;
       }
-      if (bulk < 0) {
-        throw new Error('{bulk} is less than zero');
+      if (length < 0) {
+        throw new Error('{length} is less than zero');
       }
-      cursor = cursor.slice(bulk_len);
+      cursor = cursor.slice(length_len);
 
-      let value, value_len;
-      try {
-        ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += value_len;
-      } catch (err) {
-        err.message = '{value}: ' + err.message;
-        throw err;
+      if (cursor.length < length) {
+        throw new Error(`{value}: unexpected actual {value} length=${cursor.length} when {length}=${length}`);
       }
-      cursor = cursor.slice(value_len);
+      const v = cursor.slice(0, length);
+      len += length;
 
-      const v = new Traverser(value, bulk);
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
