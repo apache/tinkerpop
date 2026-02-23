@@ -40,13 +40,13 @@ export default class EdgeSerializer {
         return Buffer.from([this.ioc.DataType.EDGE, 0x01]);
       }
       const id = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00]; // String ''
-      const label = [0x00, 0x00, 0x00, 0x00]; // ''
+      const label = [0x00, 0x00, 0x00, 0x00]; // empty list
       const inVId = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00]; // String ''
-      const inVLabel = [0x00, 0x00, 0x00, 0x00]; // ''
+      const inVLabel = [0x00, 0x00, 0x00, 0x00]; // empty list
       const outVId = [0x03, 0x00, 0x00, 0x00, 0x00, 0x00]; // String ''
-      const outVLabel = [0x00, 0x00, 0x00, 0x00]; // ''
+      const outVLabel = [0x00, 0x00, 0x00, 0x00]; // empty list
       const parent = [0xfe, 0x01]; // null
-      const properties = [0xfe, 0x01]; // null
+      const properties = [0x09, 0x00, 0x00, 0x00, 0x00, 0x00]; // empty list
       return Buffer.from([...id, ...label, ...inVId, ...inVLabel, ...outVId, ...outVLabel, ...parent, ...properties]);
     }
 
@@ -59,7 +59,8 @@ export default class EdgeSerializer {
     bufs.push(this.ioc.anySerializer.serialize(item.id));
 
     // {label}
-    bufs.push(this.ioc.stringSerializer.serialize(item.label, false));
+    const labels = Array.isArray(item.label) ? item.label : item.label ? [item.label] : [];
+    bufs.push(this.ioc.listSerializer.serialize(labels, false));
 
     // {inVId}
     const inVId = item.inV && item.inV.id;
@@ -67,7 +68,8 @@ export default class EdgeSerializer {
 
     // {inVLabel}
     const inVLabel = item.inV && item.inV.label;
-    bufs.push(this.ioc.stringSerializer.serialize(inVLabel, false));
+    const inVLabels = Array.isArray(inVLabel) ? inVLabel : inVLabel ? [inVLabel] : [];
+    bufs.push(this.ioc.listSerializer.serialize(inVLabels, false));
 
     // {outVId}
     const outVId = item.outV && item.outV.id;
@@ -75,13 +77,14 @@ export default class EdgeSerializer {
 
     // {outVLabel}
     const outVLabel = item.outV && item.outV.label;
-    bufs.push(this.ioc.stringSerializer.serialize(outVLabel, false));
+    const outVLabels = Array.isArray(outVLabel) ? outVLabel : outVLabel ? [outVLabel] : [];
+    bufs.push(this.ioc.listSerializer.serialize(outVLabels, false));
 
     // {parent}
     bufs.push(this.ioc.unspecifiedNullSerializer.serialize(null));
 
     // {properties}
-    bufs.push(this.ioc.unspecifiedNullSerializer.serialize(null));
+    bufs.push(this.ioc.listSerializer.serialize([], true));
 
     return Buffer.concat(bufs);
   }
@@ -132,7 +135,8 @@ export default class EdgeSerializer {
 
       let label, label_len;
       try {
-        ({ v: label, len: label_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: label, len: label_len } = this.ioc.listSerializer.deserialize(cursor, false));
+        label = Array.isArray(label) && label.length > 0 ? label[0] : label;
         len += label_len;
       } catch (err) {
         err.message = '{label}: ' + err.message;
@@ -152,7 +156,8 @@ export default class EdgeSerializer {
 
       let inVLabel, inVLabel_len;
       try {
-        ({ v: inVLabel, len: inVLabel_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: inVLabel, len: inVLabel_len } = this.ioc.listSerializer.deserialize(cursor, false));
+        inVLabel = Array.isArray(inVLabel) && inVLabel.length > 0 ? inVLabel[0] : inVLabel;
         len += inVLabel_len;
       } catch (err) {
         err.message = '{inVLabel}: ' + err.message;
@@ -172,7 +177,8 @@ export default class EdgeSerializer {
 
       let outVLabel, outVLabel_len;
       try {
-        ({ v: outVLabel, len: outVLabel_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: outVLabel, len: outVLabel_len } = this.ioc.listSerializer.deserialize(cursor, false));
+        outVLabel = Array.isArray(outVLabel) && outVLabel.length > 0 ? outVLabel[0] : outVLabel;
         len += outVLabel_len;
       } catch (err) {
         err.message = '{outVLabel}: ' + err.message;

@@ -99,10 +99,10 @@ export default class MapSerializer {
         }
         const value_flag = cursor.readUInt8();
         len++;
-        if (value_flag === 1) {
+        if (value_flag === 0x01) {
           return { v: null, len };
         }
-        if (value_flag !== 0) {
+        if (value_flag !== 0x00 && value_flag !== 0x02) {
           throw new Error('unexpected {value_flag}');
         }
         cursor = cursor.slice(1);

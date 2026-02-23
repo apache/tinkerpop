@@ -67,6 +67,7 @@ export default class SetSerializer {
   deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
+    let isBulked = false;
 
     try {
       if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
@@ -92,9 +93,10 @@ export default class SetSerializer {
         if (valueFlag === 1) {
           return { v: null, len };
         }
-        if (valueFlag !== 0) {
+        if (valueFlag !== 0 && valueFlag !== 2) {
           throw new Error('unexpected {value_flag}');
         }
+        isBulked = valueFlag === 2;
         cursor = cursor.slice(1);
       }
 
@@ -122,7 +124,20 @@ export default class SetSerializer {
           throw err;
         }
         cursor = cursor.slice(valueLen);
-        v.add(value);
+        
+        if (isBulked) {
+          if (cursor.length < 8) {
+            throw new Error(`{item_${i}}: bulk count is missing`);
+          }
+          const bulkCount = cursor.readBigInt64BE();
+          len += 8;
+          cursor = cursor.slice(8);
+          
+          // Set.add is idempotent; bulk count only affects cardinality, not Set membership
+          v.add(value);
+        } else {
+          v.add(value);
+        }
       }
 
       return { v, len };
