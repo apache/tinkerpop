@@ -51,5 +51,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         public override Bytecode Bytecode { get; } = new();
+
+        public override GremlinLang GremlinLang { get; } = new();
     }
 }

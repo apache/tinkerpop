@@ -165,5 +165,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
         }
 
         public override Bytecode Bytecode { get; }
+
+        public override GremlinLang GremlinLang { get; } = new();
     }
 }

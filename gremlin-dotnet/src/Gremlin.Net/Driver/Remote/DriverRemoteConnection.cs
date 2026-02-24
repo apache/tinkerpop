@@ -118,6 +118,46 @@ namespace Gremlin.Net.Driver.Remote
             return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
         }
 
+        /// <summary>
+        ///     Submits <see cref="GremlinLang" /> for evaluation to a remote Gremlin Server.
+        /// </summary>
+        /// <param name="gremlinLang">The <see cref="GremlinLang" /> to submit.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <returns>A <see cref="ITraversal" /> allowing to access the results and side-effects.</returns>
+        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(GremlinLang gremlinLang,
+            CancellationToken cancellationToken = default)
+        {
+            gremlinLang.AddG(_traversalSource);
+
+            var requestId = Guid.NewGuid();
+            var requestMsg =
+                RequestMessage.Build(Tokens.OpsEval)
+                    .Processor(Processor)
+                    .OverrideRequestId(requestId)
+                    .AddArgument(Tokens.ArgsGremlin, gremlinLang.GetGremlin())
+                    .AddArgument(Tokens.ArgsBindings, gremlinLang.Parameters);
+
+            foreach (var optionsStrategy in gremlinLang.OptionsStrategies)
+            {
+                foreach (var pair in optionsStrategy.Configuration)
+                {
+                    if (_allowedKeys.Contains(pair.Key))
+                    {
+                        requestMsg.AddArgument(pair.Key, pair.Value);
+                    }
+                }
+            }
+
+            if (IsSessionBound)
+            {
+                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId!);
+            }
+
+            var resultSet = await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)
+                .ConfigureAwait(false);
+            return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
+        }
+
         private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode,
             CancellationToken cancellationToken)
         {

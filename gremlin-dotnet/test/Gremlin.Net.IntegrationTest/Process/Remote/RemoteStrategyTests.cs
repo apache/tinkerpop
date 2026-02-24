@@ -95,5 +95,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
         }
 
         public override Bytecode Bytecode { get; }
+
+        public override GremlinLang GremlinLang { get; } = new();
     }
 }

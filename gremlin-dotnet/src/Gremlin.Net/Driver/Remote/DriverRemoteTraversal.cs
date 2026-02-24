@@ -35,5 +35,7 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         public override Bytecode Bytecode => throw new NotSupportedException("Remote traversals do not have Bytecode");
+
+        public override GremlinLang GremlinLang => throw new NotSupportedException("Remote traversals do not have GremlinLang");
     }
 }

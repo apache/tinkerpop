@@ -42,6 +42,11 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets the <see cref="Traversal.Bytecode" /> representation of this traversal.
         /// </summary>
         public abstract Bytecode Bytecode { get; }
+
+        /// <summary>
+        ///     Gets the <see cref="Traversal.GremlinLang" /> representation of this traversal.
+        /// </summary>
+        public abstract GremlinLang GremlinLang { get; }
         
         /// <summary>
         ///     Determines if this traversal was spawned anonymously or not.
@@ -230,6 +235,7 @@ namespace Gremlin.Net.Process.Traversal
         public ITraversal<TStart, TEnd> Iterate()
         {
             Bytecode.AddStep("discard");
+            GremlinLang.AddStep("discard");
             while (MoveNext())
             {
             }
