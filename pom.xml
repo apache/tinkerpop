@@ -500,6 +500,7 @@ limitations under the License.
                         <exclude>docs/gremlint/build/**</exclude>
                         <exclude>docs/gremlint/public/CNAME</exclude>
                         <exclude>gremlin-console/bin/gremlin.sh</exclude>
+                        <exclude>**/AGENTS.md</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.gbin</exclude>
                         <exclude>**/*.iml</exclude>
