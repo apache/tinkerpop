@@ -39,11 +39,6 @@ namespace Gremlin.Net.Process.Traversal
         private IEnumerator<Traverser>? _traverserEnumerator;
 
         /// <summary>
-        ///     Gets the <see cref="Traversal.Bytecode" /> representation of this traversal.
-        /// </summary>
-        public abstract Bytecode Bytecode { get; }
-
-        /// <summary>
         ///     Gets the <see cref="Traversal.GremlinLang" /> representation of this traversal.
         /// </summary>
         public abstract GremlinLang GremlinLang { get; }
@@ -234,7 +229,6 @@ namespace Gremlin.Net.Process.Traversal
         /// <returns>The fully drained traversal.</returns>
         public ITraversal<TStart, TEnd> Iterate()
         {
-            Bytecode.AddStep("discard");
             GremlinLang.AddStep("discard");
             while (MoveNext())
             {

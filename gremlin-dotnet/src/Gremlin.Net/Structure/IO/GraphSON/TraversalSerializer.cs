@@ -21,6 +21,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 
@@ -30,9 +31,7 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     {
         public Dictionary<string, dynamic> Dictify(dynamic objectData, GraphSONWriter writer)
         {
-            ITraversal traversal = objectData;
-            var bytecode = traversal.Bytecode;
-            return writer.ToDict(bytecode);
+            throw new NotSupportedException("Traversal serialization via GraphSON is no longer supported. Use GremlinLang instead.");
         }
     }
 }

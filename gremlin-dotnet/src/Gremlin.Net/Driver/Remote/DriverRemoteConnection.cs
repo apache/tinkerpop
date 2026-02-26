@@ -105,20 +105,6 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         /// <summary>
-        ///     Submits <see cref="Bytecode" /> for evaluation to a remote Gremlin Server.
-        /// </summary>
-        /// <param name="bytecode">The <see cref="Bytecode" /> to submit.</param>
-        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
-        /// <returns>A <see cref="ITraversal" /> allowing to access the results and side-effects.</returns>
-        public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode,
-            CancellationToken cancellationToken = default)
-        {
-            var requestId = Guid.NewGuid();
-            var resultSet = await SubmitBytecodeAsync(requestId, bytecode, cancellationToken).ConfigureAwait(false);
-            return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
-        }
-
-        /// <summary>
         ///     Submits <see cref="GremlinLang" /> for evaluation to a remote Gremlin Server.
         /// </summary>
         /// <param name="gremlinLang">The <see cref="GremlinLang" /> to submit.</param>
@@ -156,40 +142,6 @@ namespace Gremlin.Net.Driver.Remote
             var resultSet = await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken)
                 .ConfigureAwait(false);
             return new DriverRemoteTraversal<TStart, TEnd>(resultSet);
-        }
-
-        private async Task<IEnumerable<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode,
-            CancellationToken cancellationToken)
-        {
-            _logger.SubmittingBytecode(bytecode, requestid);
-            
-            var requestMsg =
-                RequestMessage.Build(Tokens.OpsBytecode)
-                    .Processor(Processor)
-                    .OverrideRequestId(requestid)
-                    .AddArgument(Tokens.ArgsGremlin, bytecode)
-                    .AddArgument(Tokens.ArgsAliases, new Dictionary<string, string> {{"g", _traversalSource}});
-
-            if (IsSessionBound)
-            {
-                requestMsg.AddArgument(Tokens.ArgsSession, _sessionId!);
-            }
-
-            var optionsStrategyInst = bytecode.SourceInstructions.Find(
-                s => s.OperatorName == "withStrategies" && s.Arguments[0] is OptionsStrategy);
-            if (optionsStrategyInst != null)
-            {
-                OptionsStrategy optionsStrategy = optionsStrategyInst.Arguments[0]!;
-                foreach (var pair in optionsStrategy.Configuration)
-                {
-                    if (_allowedKeys.Contains(pair.Key))
-                    {
-                        requestMsg.AddArgument(pair.Key, pair.Value);
-                    }
-                }
-            }
-
-            return await _client.SubmitAsync<Traverser>(requestMsg.Create(), cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

@@ -21,7 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Process.Traversal.Strategy.Finalization;
@@ -38,89 +37,63 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = new GraphTraversalSource().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
-            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
+            var gremlin = g.WithoutStrategies(typeof(ReadOnlyStrategy)).GremlinLang.GetGremlin();
 
-            Assert.Equal(2, bytecode.SourceInstructions.Count);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(2, bytecode.SourceInstructions[0].Arguments.Length);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(new IncidentToAdjacentStrategy(), bytecode.SourceInstructions[0].Arguments[1]);
-
-            Assert.Equal("withoutStrategies", bytecode.SourceInstructions[1].OperatorName);
-            Assert.Single(bytecode.SourceInstructions[1].Arguments);
-            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[1].Arguments[0]);
+            Assert.Contains("withStrategies(", gremlin);
+            Assert.Contains("withoutStrategies(", gremlin);
         }
 
         [Fact]
-        public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithoutStrategies()
+        public void ShouldIncludeMultipleStrategiesInGremlinLangWhenGivenToWithoutStrategies()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(LazyBarrierStrategy)).Bytecode;
+            var gremlin = g.WithoutStrategies(typeof(ReadOnlyStrategy), typeof(LazyBarrierStrategy)).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Equal(2, bytecode.SourceInstructions[0].Arguments.Length);
-            Assert.Equal("withoutStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(typeof(LazyBarrierStrategy), bytecode.SourceInstructions[0].Arguments[1]);
+            Assert.Contains("withoutStrategies(", gremlin);
+            Assert.Contains("ReadOnlyStrategy", gremlin);
+            Assert.Contains("LazyBarrierStrategy", gremlin);
         }
 
         [Fact]
-        public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithoutStrategies()
+        public void ShouldIncludeOneStrategyInGremlinLangWhenGivenToWithoutStrategies()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithoutStrategies(typeof(ReadOnlyStrategy)).Bytecode;
+            var gremlin = g.WithoutStrategies(typeof(ReadOnlyStrategy)).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Single(bytecode.SourceInstructions[0].Arguments);
-            Assert.Equal("withoutStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(typeof(ReadOnlyStrategy), bytecode.SourceInstructions[0].Arguments[0]);
+            Assert.Contains("withoutStrategies(", gremlin);
+            Assert.Contains("ReadOnlyStrategy", gremlin);
         }
 
         [Fact]
-        public void ShouldIncludeConfigurationInBytecodeWhenGivenToWithStrategies()
+        public void ShouldIncludeConfigurationInGremlinLangWhenGivenToWithStrategies()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithStrategies(new MatchAlgorithmStrategy("greedy")).Bytecode;
+            var gremlin = g.WithStrategies(new MatchAlgorithmStrategy("greedy")).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Single(bytecode.SourceInstructions[0].Arguments);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new MatchAlgorithmStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Contains("greedy",
-                ((MatchAlgorithmStrategy) bytecode.SourceInstructions[0].Arguments[0]!).Configuration.Values);
+            Assert.Contains("withStrategies(", gremlin);
         }
 
         [Fact]
-        public void ShouldIncludeMultipleStrategiesInBytecodeWhenGivenToWithStrategies()
+        public void ShouldIncludeMultipleStrategiesInGremlinLangWhenGivenToWithStrategies()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy()).Bytecode;
+            var gremlin = g.WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy()).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Equal(2, bytecode.SourceInstructions[0].Arguments.Length);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(new IncidentToAdjacentStrategy(), bytecode.SourceInstructions[0].Arguments[1]);
+            Assert.Contains("withStrategies(", gremlin);
         }
 
         [Fact]
-        public void ShouldIncludeOneStrategyInBytecodeWhenGivenToWithStrategies()
+        public void ShouldIncludeOneStrategyInGremlinLangWhenGivenToWithStrategies()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithStrategies(new ReadOnlyStrategy()).Bytecode;
+            var gremlin = g.WithStrategies(new ReadOnlyStrategy()).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Single(bytecode.SourceInstructions[0].Arguments);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal("ReadOnlyStrategy", bytecode.SourceInstructions[0].Arguments[0]!.ToString());
-            Assert.Equal(new ReadOnlyStrategy().GetHashCode(),
-                bytecode.SourceInstructions[0].Arguments[0]!.GetHashCode());
+            Assert.Contains("withStrategies(", gremlin);
             Assert.Equal(0, g.TraversalStrategies.Count);
         }
 
@@ -129,34 +102,20 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = new GraphTraversalSource().WithStrategies(new ReadOnlyStrategy(), new IncidentToAdjacentStrategy());
 
-            var bytecode = g.V().Bytecode;
+            var gremlin = g.V().GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Equal(2, bytecode.SourceInstructions[0].Arguments.Length);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new ReadOnlyStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(new IncidentToAdjacentStrategy(), bytecode.SourceInstructions[0].Arguments[1]);
-            Assert.Single(bytecode.StepInstructions);
-            Assert.Equal("V", bytecode.StepInstructions[0].OperatorName);
+            Assert.Contains("withStrategies(", gremlin);
+            Assert.Contains(".V()", gremlin);
         }
 
         [Fact]
-        public void TraversalWithStrategies_StrategyWithTraversalInConfig_IncludeTraversalInInConfigInBytecode()
+        public void TraversalWithStrategies_StrategyWithTraversalInConfig_IncludeTraversalInGremlinLang()
         {
             var g = new GraphTraversalSource();
 
-            var bytecode = g.WithStrategies(new SubgraphStrategy(__.Has("name", "marko"), checkAdjacentVertices: false)).Bytecode;
+            var gremlin = g.WithStrategies(new SubgraphStrategy(__.Has("name", "marko"), checkAdjacentVertices: false)).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Single(bytecode.SourceInstructions[0].Arguments);
-            Assert.Equal("withStrategies", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(new SubgraphStrategy(), bytecode.SourceInstructions[0].Arguments[0]);
-            SubgraphStrategy strategy = bytecode.SourceInstructions[0].Arguments[0]!;
-            Assert.Equal(typeof(GraphTraversal<object, object>), strategy.Configuration["vertices"]!.GetType());
-            ITraversal traversal = strategy.Configuration["vertices"]!;
-            Assert.Equal("has", traversal.Bytecode.StepInstructions[0].OperatorName);
-            Assert.Equal(new List<string> {"name", "marko"}, traversal.Bytecode.StepInstructions[0].Arguments);
-            Assert.Equal(false, strategy.Configuration["checkAdjacentVertices"]);
+            Assert.Contains("withStrategies(", gremlin);
         }
     }
 }

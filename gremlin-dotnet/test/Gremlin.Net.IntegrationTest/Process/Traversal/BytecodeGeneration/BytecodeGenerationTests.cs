@@ -34,11 +34,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = AnonymousTraversalSource.Traversal().With(null);
 
-            var bytecode = g.V().HasLabel("firstLabel", "secondLabel", "thirdLabel").Bytecode;
+            var gremlin = g.V().HasLabel("firstLabel", "secondLabel", "thirdLabel").GremlinLang.GetGremlin();
 
-            Assert.Empty(bytecode.SourceInstructions);
-            Assert.Equal(2, bytecode.StepInstructions.Count);
-            Assert.Equal(3, bytecode.StepInstructions[1].Arguments.Length);
+            Assert.Equal("g.V().hasLabel(\"firstLabel\",\"secondLabel\",\"thirdLabel\")", gremlin);
         }
 
         [Fact]
@@ -46,14 +44,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = AnonymousTraversalSource.Traversal().With(null);
 
-            var bytecode = g.V().Out("created").Bytecode;
+            var gremlin = g.V().Out("created").GremlinLang.GetGremlin();
 
-            Assert.Empty(bytecode.SourceInstructions);
-            Assert.Equal(2, bytecode.StepInstructions.Count);
-            Assert.Equal("V", bytecode.StepInstructions[0].OperatorName);
-            Assert.Equal("out", bytecode.StepInstructions[1].OperatorName);
-            Assert.Equal("created", bytecode.StepInstructions[1].Arguments[0]);
-            Assert.Single(bytecode.StepInstructions[1].Arguments);
+            Assert.Equal("g.V().out(\"created\")", gremlin);
         }
 
         [Fact]
@@ -61,19 +54,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = AnonymousTraversalSource.Traversal().With(null);
 
-            var bytecode = g.WithSack(1).E().GroupCount<double>().By("weight").Bytecode;
+            var gremlin = g.WithSack(1).E().GroupCount<double>().By("weight").GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.SourceInstructions);
-            Assert.Equal("withSack", bytecode.SourceInstructions[0].OperatorName);
-            Assert.Equal(1, bytecode.SourceInstructions[0].Arguments[0]);
-            Assert.Equal(3, bytecode.StepInstructions.Count);
-            Assert.Equal("E", bytecode.StepInstructions[0].OperatorName);
-            Assert.Equal("groupCount", bytecode.StepInstructions[1].OperatorName);
-            Assert.Equal("by", bytecode.StepInstructions[2].OperatorName);
-            Assert.Equal("weight", bytecode.StepInstructions[2].Arguments[0]);
-            Assert.Empty(bytecode.StepInstructions[0].Arguments);
-            Assert.Empty(bytecode.StepInstructions[1].Arguments);
-            Assert.Single(bytecode.StepInstructions[2].Arguments);
+            Assert.Equal("g.withSack(1).E().groupCount().by(\"weight\")", gremlin);
         }
 
         [Fact]
@@ -81,30 +64,25 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
         {
             var g = AnonymousTraversalSource.Traversal().With(null);
 
-            var bytecode = g.Inject(1, 2, 3).Bytecode;
+            var gremlin = g.Inject(1, 2, 3).GremlinLang.GetGremlin();
 
-            Assert.Single(bytecode.StepInstructions);
-            Assert.Equal("inject", bytecode.StepInstructions[0].OperatorName);
-            Assert.Equal(3, bytecode.StepInstructions[0].Arguments.Length);
+            Assert.Equal("g.inject(1,2,3)", gremlin);
         }
 
         [Fact]
-        public void AnonymousTraversal_Start_EmptyBytecode()
+        public void AnonymousTraversal_Start_EmptyGremlinLang()
         {
-            var bytecode = __.Start().Bytecode;
+            var gremlinLang = __.Start().GremlinLang;
 
-            Assert.Empty(bytecode.SourceInstructions);
-            Assert.Empty(bytecode.StepInstructions);
+            Assert.True(gremlinLang.IsEmpty);
         }
 
         [Fact]
         public void AnonymousTraversal_VXnullX()
         {
-            var bytecode = __.V(null).Bytecode;
-            
-            Assert.Single(bytecode.StepInstructions);
-            Assert.Single(bytecode.StepInstructions[0].Arguments);
-            Assert.Null(bytecode.StepInstructions[0].Arguments[0]);
+            var gremlin = __.V(null).GremlinLang.GetGremlin();
+
+            Assert.Contains(".V(null)", gremlin);
         }
         
         [Fact]

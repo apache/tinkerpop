@@ -32,46 +32,45 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
     public class GraphTraversalSourceTests
     {
         [Fact]
-        public void ShouldBeIndependentFromReturnedGraphTraversalModifyingBytecode()
+        public void ShouldBeIndependentFromReturnedGraphTraversal()
         {
             var g = AnonymousTraversalSource.Traversal().With(null);
 
             g.V().Has("someKey", "someValue").Drop();
 
-            Assert.Empty(g.Bytecode.StepInstructions);
-            Assert.Empty(g.Bytecode.SourceInstructions);
+            Assert.True(g.GremlinLang.IsEmpty);
         }
 
         [Fact]
-        public void ShouldBeIndependentFromReturnedGraphTraversalSourceModifyingBytecode()
+        public void ShouldBeIndependentFromReturnedGraphTraversalSource()
         {
             var g1 = AnonymousTraversalSource.Traversal().With(null);
 
             var g2 = g1.WithSideEffect("someSideEffectKey", "someSideEffectValue");
 
-            Assert.Empty(g1.Bytecode.SourceInstructions);
-            Assert.Empty(g1.Bytecode.StepInstructions);
-            Assert.Single(g2.Bytecode.SourceInstructions);
+            Assert.True(g1.GremlinLang.IsEmpty);
+            Assert.False(g2.GremlinLang.IsEmpty);
         }
 
         [Fact]
-        public void CloneShouldCreateIndependentGraphTraversalModifyingBytecode()
+        public void CloneShouldCreateIndependentGraphTraversal()
         {
+            GremlinLang.ResetCounter();
             var g = AnonymousTraversalSource.Traversal().With(null);
             var original = g.V().Out("created");
             var clone = original.Clone().Out("knows");
             var cloneClone = clone.Clone().Out("created");
             
-            Assert.Equal(2, original.Bytecode.StepInstructions.Count);
-            Assert.Equal(3, clone.Bytecode.StepInstructions.Count);
-            Assert.Equal(4, cloneClone.Bytecode.StepInstructions.Count);
+            Assert.Equal("g.V().out(\"created\")", original.GremlinLang.GetGremlin());
+            Assert.Equal("g.V().out(\"created\").out(\"knows\")", clone.GremlinLang.GetGremlin());
+            Assert.Equal("g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin());
 
             original.Has("person", "name", "marko");
             clone.V().Out();
             
-            Assert.Equal(3, original.Bytecode.StepInstructions.Count);
-            Assert.Equal(5, clone.Bytecode.StepInstructions.Count);
-            Assert.Equal(4, cloneClone.Bytecode.StepInstructions.Count);
+            Assert.Equal("g.V().out(\"created\").has(\"person\",\"name\",\"marko\")", original.GremlinLang.GetGremlin());
+            Assert.Equal("g.V().out(\"created\").out(\"knows\").V().out()", clone.GremlinLang.GetGremlin());
+            Assert.Equal("g.V().out(\"created\").out(\"knows\").out(\"created\")", cloneClone.GremlinLang.GetGremlin());
         }
         
         [Fact]
@@ -81,7 +80,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             g.V(0).AddE("self").To(__.V(1));
 
-            Assert.Throws<ArgumentException>(() => g.V(0).AddE("self").To(g.V(1)));
+            Assert.Throws<InvalidOperationException>(() => g.V(0).AddE("self").To(g.V(1)));
         }
     }
 }

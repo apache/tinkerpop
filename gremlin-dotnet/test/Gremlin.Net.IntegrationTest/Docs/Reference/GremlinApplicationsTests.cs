@@ -50,7 +50,7 @@ using (var gremlinClient = new GremlinClient(gremlinServer))
             bindings);
 }
 
-// bytecode
+// traversal
 using (var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182)))
 {
     var g = Traversal().With(new DriverRemoteConnection(gremlinClient));

@@ -48,12 +48,6 @@ namespace Gremlin.Net.Process.Traversal
         public ICollection<ITraversalStrategy> TraversalStrategies { get; set; }
 
         /// <summary>
-        ///     Gets or sets the <see cref="Traversal.Bytecode" /> associated with the current state of this graph traversal
-        ///     source.
-        /// </summary>
-        public Bytecode Bytecode { get; set; }
-
-        /// <summary>
         ///     Gets or sets the <see cref="Traversal.GremlinLang" /> associated with the current state of this graph traversal
         ///     source.
         /// </summary>
@@ -63,7 +57,7 @@ namespace Gremlin.Net.Process.Traversal
         ///     Initializes a new instance of the <see cref="GraphTraversalSource" /> class.
         /// </summary>
         public GraphTraversalSource()
-            : this(new List<ITraversalStrategy>(), new Bytecode(), new GremlinLang())
+            : this(new List<ITraversalStrategy>(), new GremlinLang())
         {
         }
 
@@ -71,38 +65,20 @@ namespace Gremlin.Net.Process.Traversal
         ///     Initializes a new instance of the <see cref="GraphTraversalSource" /> class.
         /// </summary>
         /// <param name="traversalStrategies">The traversal strategies associated with this graph traversal source.</param>
-        /// <param name="bytecode">
-        ///     The <see cref="Traversal.Bytecode" /> associated with the current state of this graph traversal
-        ///     source.
-        /// </param>
-        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode)
-            : this(traversalStrategies, bytecode, new GremlinLang())
-        {
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GraphTraversalSource" /> class.
-        /// </summary>
-        /// <param name="traversalStrategies">The traversal strategies associated with this graph traversal source.</param>
-        /// <param name="bytecode">
-        ///     The <see cref="Traversal.Bytecode" /> associated with the current state of this graph traversal
-        ///     source.
-        /// </param>
         /// <param name="gremlinLang">
         ///     The <see cref="Traversal.GremlinLang" /> associated with the current state of this graph traversal
         ///     source.
         /// </param>
-        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode, GremlinLang gremlinLang)
+        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, GremlinLang gremlinLang)
         {
             TraversalStrategies = traversalStrategies;
-            Bytecode = bytecode;
             GremlinLang = gremlinLang;
         }
 
-        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, Bytecode bytecode,
+        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies,
             GremlinLang gremlinLang, IRemoteConnection connection)
             : this(traversalStrategies.Where(strategy => strategy.GetType() != typeof(RemoteStrategy)).ToList(),
-                bytecode, gremlinLang)
+                gremlinLang)
         {
             _connection = connection;
             TraversalStrategies.Add(new RemoteStrategy(connection));
@@ -115,30 +91,27 @@ namespace Gremlin.Net.Process.Traversal
 
         public GraphTraversalSource With(string key, object? value)
         {
-            var optionsStrategyInst = Bytecode.SourceInstructions.Find(
-                inst => inst.OperatorName == "withStrategies" && inst.Arguments[0] is OptionsStrategy);
+            var existingOptions = GremlinLang.OptionsStrategies;
             OptionsStrategy optionsStrategy;
 
-            if (optionsStrategyInst == null)
+            if (existingOptions.Count == 0)
             {
                 optionsStrategy = new OptionsStrategy();
                 optionsStrategy.Configuration[key] = value;
                 return WithStrategies(optionsStrategy);
             }
 
-            optionsStrategy = optionsStrategyInst.Arguments[0]!;
+            optionsStrategy = existingOptions[existingOptions.Count - 1];
             optionsStrategy.Configuration[key] = value;
             return new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                new Bytecode(Bytecode), GremlinLang.Clone());
+                GremlinLang.Clone());
         }
 
 
         public GraphTraversalSource WithBulk(bool useBulk)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withBulk", useBulk);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withBulk", useBulk);
             return source;
         }
@@ -146,9 +119,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithPath()
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withPath");
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withPath");
             return source;
         }
@@ -156,9 +127,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(object? initialValue)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue);
             return source;
         }
@@ -166,9 +135,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(object? initialValue, IBinaryOperator? mergeOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, mergeOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, mergeOperator);
             return source;
         }
@@ -176,9 +143,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(object? initialValue, IUnaryOperator? splitOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, splitOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, splitOperator);
             return source;
         }
@@ -187,9 +152,7 @@ namespace Gremlin.Net.Process.Traversal
             IBinaryOperator? mergeOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, splitOperator, mergeOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, splitOperator, mergeOperator);
             return source;
         }
@@ -197,9 +160,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(ISupplier? initialValue)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue);
             return source;
         }
@@ -207,9 +168,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(ISupplier? initialValue, IBinaryOperator? mergeOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, mergeOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, mergeOperator);
             return source;
         }
@@ -217,9 +176,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSack(ISupplier? initialValue, IUnaryOperator? splitOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, splitOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, splitOperator);
             return source;
         }
@@ -228,9 +185,7 @@ namespace Gremlin.Net.Process.Traversal
             IBinaryOperator? mergeOperator)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSack", initialValue, splitOperator, mergeOperator);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSack", initialValue, splitOperator, mergeOperator);
             return source;
         }
@@ -238,9 +193,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSideEffect(string? key, object? initialValue)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSideEffect", key, initialValue);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSideEffect", key, initialValue);
             return source;
         }
@@ -248,9 +201,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSideEffect(string? key, object? initialValue, IBinaryOperator reducer)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSideEffect", key, initialValue, reducer);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSideEffect", key, initialValue, reducer);
             return source;
         }
@@ -258,9 +209,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSideEffect(string? key, ISupplier? initialValue)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSideEffect", key, initialValue);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSideEffect", key, initialValue);
             return source;
         }
@@ -268,9 +217,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversalSource WithSideEffect(string? key, ISupplier? initialValue, IBinaryOperator? reducer)
         {
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
-            source.Bytecode.AddSource("withSideEffect", key, initialValue, reducer);
-
+                                                  GremlinLang.Clone());
             source.GremlinLang.AddSource("withSideEffect", key, initialValue, reducer);
             return source;
         }
@@ -280,11 +227,9 @@ namespace Gremlin.Net.Process.Traversal
             if (traversalStrategies == null) throw new ArgumentNullException(nameof(traversalStrategies));
             
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
+                                                  GremlinLang.Clone());
             var args = new List<object>(traversalStrategies.Length);
             args.AddRange(traversalStrategies);
-            source.Bytecode.AddSource("withStrategies", args.ToArray());
-
             source.GremlinLang.AddSource("withStrategies", args.ToArray());
             return source;
         }
@@ -294,16 +239,14 @@ namespace Gremlin.Net.Process.Traversal
             if (traversalStrategyClasses == null) throw new ArgumentNullException(nameof(traversalStrategyClasses));
             
             var source = new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                                                  new Bytecode(Bytecode), GremlinLang.Clone());
+                                                  GremlinLang.Clone());
             var args = new List<object?>(traversalStrategyClasses.Length);
             args.AddRange(traversalStrategyClasses);
-            source.Bytecode.AddSource("withoutStrategies", args.ToArray());
-
             source.GremlinLang.AddSource("withoutStrategies", args.ToArray());
             return source;
         }
 
-        [Obsolete("Use the Bindings class instead.", false)]
+        [Obsolete("Use GValue instead.", false)]
         public GraphTraversalSource WithBindings(object? bindings)
         {
             return this;
@@ -321,7 +264,7 @@ namespace Gremlin.Net.Process.Traversal
         [Obsolete("Prefer use of AnonymousTraversalSource.with().", false)]
         public GraphTraversalSource WithRemote(IRemoteConnection remoteConnection) =>
             new GraphTraversalSource(new List<ITraversalStrategy>(TraversalStrategies),
-                new Bytecode(Bytecode), GremlinLang.Clone(), remoteConnection);
+                GremlinLang.Clone(), remoteConnection);
 
         /// <summary>
         ///     Spawns a new <see cref="RemoteTransaction"/> object that can then start and stop a transaction.
@@ -357,19 +300,15 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Edge, Edge> E(params object?[]? edgesIds)
         {
-            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             if (edgesIds == null)
             {
-                traversal.Bytecode.AddStep("E", new object?[] { null });
-
                 traversal.GremlinLang.AddStep("E", new object?[] { null });
             }
             else
             {
                 var args = new List<object?>(edgesIds.Length);
                 args.AddRange(edgesIds);
-                traversal.Bytecode.AddStep("E", args.ToArray());
-
                 traversal.GremlinLang.AddStep("E", args.ToArray());
             }
             return traversal;
@@ -381,11 +320,9 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> V(params object?[]? vertexIds)
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             if (vertexIds == null)
             {
-                traversal.Bytecode.AddStep("V", new object?[] { null });
-
                 traversal.GremlinLang.AddStep("V", new object?[] { null });
             }
             else
@@ -399,8 +336,6 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 var args = new List<object?>(vertexIds.Length);
                 args.AddRange(vertexIds);
-                traversal.Bytecode.AddStep("V", args.ToArray());
-
                 traversal.GremlinLang.AddStep("V", args.ToArray());
             }
             return traversal;
@@ -412,9 +347,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Edge, Edge> AddE(string label)
         {
-            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("addE", label);
-
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addE", label);
             return traversal;
         }
@@ -425,9 +358,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Edge, Edge> AddE(ITraversal edgeLabelTraversal)
         {
-            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("addE", edgeLabelTraversal);
-
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addE", edgeLabelTraversal);
             return traversal;
         }
@@ -444,9 +375,7 @@ namespace Gremlin.Net.Process.Traversal
             if (m != null && m[Direction.In] is Vertex inV) {
                 m[Direction.In] = inV.Id;
             }
-            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("mergeE", m);
-
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeE", m);
             return traversal;
         }
@@ -457,9 +386,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Edge, Edge> MergeE(ITraversal? t)
         {
-            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("mergeE", t);
-
+            var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeE", t);
             return traversal;
         }
@@ -470,9 +397,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> AddV()
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("addV");
-
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addV");
             return traversal;
         }
@@ -483,9 +408,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> AddV(string label)
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("addV", label);
-
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addV", label);
             return traversal;
         }
@@ -496,9 +419,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> AddV(ITraversal vertexLabelTraversal)
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("addV", vertexLabelTraversal);
-
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("addV", vertexLabelTraversal);
             return traversal;
         }
@@ -509,9 +430,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> MergeV(IDictionary<object,object>? m)
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("mergeV", m);
-
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeV", m);
             return traversal;
         }
@@ -522,9 +441,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Vertex, Vertex> MergeV(ITraversal? t)
         {
-            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("mergeV", t);
-
+            var traversal = new GraphTraversal<Vertex, Vertex>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("mergeV", t);
             return traversal;
         }
@@ -535,21 +452,17 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Inject<TStart>(params TStart?[]? starts)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
 
             // null starts is treated as g.inject(null) meaning inject a single null traverser
             if (starts == null)
             {
-                traversal.Bytecode.AddStep("inject", new object?[] { null });
-
                 traversal.GremlinLang.AddStep("inject", new object?[] { null });
             }
             else
             {
                 var args = new List<object?>(starts.Length);
                 args.AddRange(starts.Cast<object?>());
-                traversal.Bytecode.AddStep("inject", args.ToArray());
-
                 traversal.GremlinLang.AddStep("inject", args.ToArray());
             }
 
@@ -562,9 +475,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Io<TStart>(string file)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("io", file);
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("io", file);
             return traversal;
         }
@@ -575,9 +486,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Call<TStart>()
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("call");
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call");
             return traversal;
         }
@@ -588,9 +497,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Call<TStart>(string? service)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("call", service);
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call", service);
             return traversal;
         }
@@ -601,9 +508,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Call<TStart>(string? service, IDictionary<object, object>? m)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("call", service, m);
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call", service, m);
             return traversal;
         }
@@ -614,9 +519,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Call<TStart>(string? service, ITraversal? t)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("call", service, t);
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call", service, t);
             return traversal;
         }
@@ -628,9 +531,7 @@ namespace Gremlin.Net.Process.Traversal
         public GraphTraversal<TStart, TStart> Call<TStart>(string? service, IDictionary<object, object>? m,
             ITraversal? t)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
-            traversal.Bytecode.AddStep("call", service, m, t);
-
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             traversal.GremlinLang.AddStep("call", service, m, t);
             return traversal;
         }
@@ -641,11 +542,9 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TStart> Union<TStart>(params ITraversal[] unionTraversals)
         {
-            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, new Bytecode(Bytecode), GremlinLang.Clone());
+            var traversal = new GraphTraversal<TStart, TStart>(TraversalStrategies, GremlinLang.Clone());
             var args = new List<object>(unionTraversals.Length);
             args.AddRange(unionTraversals);
-            traversal.Bytecode.AddStep("union", args.ToArray());
-
             traversal.GremlinLang.AddStep("union", args.ToArray());
             return traversal;
         }

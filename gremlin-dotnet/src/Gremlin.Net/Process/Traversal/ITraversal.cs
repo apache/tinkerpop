@@ -36,11 +36,6 @@ namespace Gremlin.Net.Process.Traversal
     public interface ITraversal: IEnumerator
     {
         /// <summary>
-        ///     Gets the <see cref="Bytecode" /> representation of this traversal.
-        /// </summary>
-        Bytecode Bytecode { get; }
-
-        /// <summary>
         ///     Gets the <see cref="Traversal.GremlinLang" /> representation of this traversal.
         /// </summary>
         GremlinLang GremlinLang { get; }
