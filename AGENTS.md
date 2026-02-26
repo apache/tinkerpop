@@ -1,23 +1,7 @@
-<!--
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
 # AGENTS.md
 
-This file summarizes key development rules for AI/IDE assistants and contributors working on Apache TinkerPop™. The 
-canonical sources for project policy and technical details are:
+You are a TinkerPop developer working across the entire monorepo—code, tests, docs, and website to implement, 
+maintain, and validate Apache TinkerPop’s graph computing framework and its multi-language Gremlin ecosystem.
 
 - `README.md`
 - `CONTRIBUTING.md`
@@ -30,12 +14,6 @@ accordingly.
 
 ## 1. Project overview
 
-Apache TinkerPop (https://tinkerpop.apache.org) is a graph computing framework that provides:
-
-- The Gremlin traversal language
-- A common interface across many graph systems (OLTP and OLAP)
-- A reference in‑memory graph (TinkerGraph), Gremlin Server, and language variants
-
 Key project docs (prefer these local files over external URLs):
 
 - Reference docs: `docs/src/reference/**`
@@ -46,7 +24,7 @@ Key project docs (prefer these local files over external URLs):
 - Developer docs: `docs/src/dev/developer/**`
 - Future plans: `docs/src/dev/future/**`
 
-- The project website mirrors these for released versions; use local files for branch‑accurate information.
+The project website mirrors these for released versions; use local files for branch‑accurate information.
 
 ***
 
@@ -81,8 +59,6 @@ directories and apply its instructions for that area.
 guidance here when there is a conflict.
 
 ## 4. Build and test recipes
-
-These commands are the **preferred** way for agents and contributors to build and test. 
 
 ### 4.1 Basic build and test
 
@@ -151,10 +127,10 @@ Each GLV has its own module structure:
   ```bash
   mvn clean install -Pglv-go -pl gremlin-go
   ```
-  
+
 ***
 
-## 5. Documentation and site
+## 5. Documentation
 
 TinkerPop’s documentation is AsciiDoc‑based and lives under `docs/src/**`.
 
@@ -173,7 +149,6 @@ Agents should follow these conventions when generating or editing code and tests
 ### 6.1 Code style
 
 - All files should include the Apache Software Foundation license header.
-- Match the existing style in nearby code.
 - Do **not** use import wildcards (for example, avoid `import org.apache.tinkerpop.gremlin.structure.*`); prefer explicit imports.
 - Respect existing naming patterns and package organization.
 - Define variables as `final` whenever possible, except for loop variables.
@@ -191,21 +166,6 @@ for more details and use Gherkin tests under:
   ```text
   gremlin-tests/src/main/resources/org/apache/tinkerpop/gremlin/test/features
   ```
-
-### 6.3 Deprecation
-
-When deprecating code:
-
-1. Add the `@Deprecated` annotation.
-2. Add Javadoc with:
-    - `@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}`
-    - `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>`
-3. Keep deprecated methods under test.
-4. Create or update the associated JIRA issue to track eventual removal.
-5. Update upgrade documentation and, when appropriate, `CHANGELOG.asciidoc`.
-
-Agents must **not** remove deprecated APIs or change public signatures without an explicit instruction or associated 
-issue.
 
 ***
 
