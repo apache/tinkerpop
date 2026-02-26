@@ -135,7 +135,8 @@ public class TinkerGraph extends AbstractTinkerGraph {
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
+        final Set<String> labels = ElementHelper.getLabelsValue(keyValues).orElse(
+                Collections.singleton(Vertex.DEFAULT_LABEL));
 
         if (null != idValue) {
             if (this.vertices.containsKey(idValue))
@@ -144,7 +145,7 @@ public class TinkerGraph extends AbstractTinkerGraph {
             idValue = vertexIdManager.getNextId(this);
         }
 
-        final Vertex vertex = createTinkerVertex(idValue, label, this);
+        final Vertex vertex = createTinkerVertex(idValue, labels, this);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         this.vertices.put(vertex.id(), vertex);
 

@@ -733,6 +733,11 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         @Override
+        public Set<String> labels() {
+            throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
+        }
+
+        @Override
         public Graph graph() {
             return StarGraph.this;
         }

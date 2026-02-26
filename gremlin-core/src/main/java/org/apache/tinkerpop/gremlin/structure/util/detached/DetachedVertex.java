@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a {@link Vertex} that is disconnected from a {@link Graph}.  "Disconnection" can mean detachment from
@@ -53,10 +55,23 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     private static final String VALUE = "value";
     private static final String PROPERTIES = "properties";
 
+    private Set<String> vertexLabels;
+
     private DetachedVertex() {}
 
     protected DetachedVertex(final Vertex vertex, final boolean withProperties) {
         super(vertex);
+
+        // Capture all labels from the source vertex for multi-label support.
+        // super(vertex) only stores element.label() (single label) in DetachedElement.
+        try {
+            final Set<String> srcLabels = vertex.labels();
+            if (srcLabels.size() > 1) {
+                this.vertexLabels = new LinkedHashSet<>(srcLabels);
+            }
+        } catch (UnsupportedOperationException e) {
+            // Adjacent vertices in graph computer context may not support labels()
+        }
 
         // only serialize properties if requested, and there are meta properties present. this prevents unnecessary
         // object creation of a new HashMap of a new HashMap which will just be empty.  it will use
@@ -97,6 +112,23 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
                 this.properties.get(property.key()).add(property);
             });
         }
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.vertexLabels != null) {
+            return Collections.unmodifiableSet(this.vertexLabels);
+        }
+        // Fall back to single label from parent
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    @Override
+    public String label() {
+        if (this.vertexLabels != null && !this.vertexLabels.isEmpty()) {
+            return this.vertexLabels.iterator().next();
+        }
+        return this.label != null ? this.label : Vertex.DEFAULT_LABEL;
     }
 
     @Override
@@ -193,6 +225,14 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
         public Builder setLabel(final String label) {
             v.label = label;
+            return this;
+        }
+
+        public Builder setLabels(final Set<String> labels) {
+            v.vertexLabels = labels != null ? new LinkedHashSet<>(labels) : null;
+            if (labels != null && !labels.isEmpty()) {
+                v.label = labels.iterator().next();
+            }
             return this;
         }
 

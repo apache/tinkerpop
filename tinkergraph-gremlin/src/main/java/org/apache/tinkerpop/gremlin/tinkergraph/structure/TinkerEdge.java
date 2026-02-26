@@ -106,6 +106,11 @@ public class TinkerEdge extends TinkerElement implements Edge {
     }
 
     @Override
+    public Set<String> labels() {
+        return Collections.singleton(this.label);
+    }
+
+    @Override
     public void remove() {
         graph.touch(this);
         TinkerIndexHelper.removeElementIndex(this);

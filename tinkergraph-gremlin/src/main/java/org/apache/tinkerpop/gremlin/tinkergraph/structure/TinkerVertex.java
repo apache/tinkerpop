@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,11 +55,18 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     private boolean allowNullPropertyValues;
     private final boolean isTxMode;
 
+    /**
+     * Multi-label storage for this vertex. Shadows the single-label field in TinkerElement.
+     */
+    protected final Set<String> vertexLabels;
+
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         super(id, label);
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+        this.vertexLabels = new LinkedHashSet<>();
+        this.vertexLabels.add(null == label ? Vertex.DEFAULT_LABEL : label);
     }
 
     protected TinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
@@ -66,12 +74,78 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         this.graph = graph;
         this.isTxMode = graph instanceof TinkerTransactionGraph;
         this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+        this.vertexLabels = new LinkedHashSet<>();
+        this.vertexLabels.add(null == label ? Vertex.DEFAULT_LABEL : label);
+    }
+
+    /**
+     * Constructs a TinkerVertex with multiple labels.
+     */
+    protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
+        super(id, (labels == null || labels.isEmpty()) ? Vertex.DEFAULT_LABEL : labels.iterator().next());
+        this.graph = graph;
+        this.isTxMode = graph instanceof TinkerTransactionGraph;
+        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+        if (labels == null || labels.isEmpty()) {
+            this.vertexLabels = new LinkedHashSet<>();
+            this.vertexLabels.add(Vertex.DEFAULT_LABEL);
+        } else {
+            this.vertexLabels = new LinkedHashSet<>(labels);
+        }
+    }
+
+    @Override
+    public Set<String> labels() {
+        return Collections.unmodifiableSet(this.vertexLabels);
+    }
+
+    @Override
+    @Deprecated
+    public String label() {
+        return this.vertexLabels.iterator().next();
+    }
+
+    @Override
+    public void addLabel(final String label, final String... labels) {
+        ElementHelper.validateLabel(label);
+        for (final String l : labels) {
+            ElementHelper.validateLabel(l);
+        }
+
+        // Remove default label if it was the only label and we're adding real labels
+        if (this.vertexLabels.size() == 1 && this.vertexLabels.contains(Vertex.DEFAULT_LABEL)) {
+            this.vertexLabels.remove(Vertex.DEFAULT_LABEL);
+        }
+
+        this.vertexLabels.add(label);
+        Collections.addAll(this.vertexLabels, labels);
+        this.graph.updateVertexLabelIndex(this);
+    }
+
+    @Override
+    public void dropLabels() {
+        this.vertexLabels.clear();
+        this.vertexLabels.add(Vertex.DEFAULT_LABEL);
+        this.graph.updateVertexLabelIndex(this);
+    }
+
+    @Override
+    public void dropLabel(final String label, final String... labels) {
+        this.vertexLabels.remove(label);
+        for (final String l : labels) {
+            this.vertexLabels.remove(l);
+        }
+
+        if (this.vertexLabels.isEmpty()) {
+            this.vertexLabels.add(Vertex.DEFAULT_LABEL);
+        }
+        this.graph.updateVertexLabelIndex(this);
     }
 
     @Override
     public Object clone() {
         if (!isTxMode) {
-            final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+            final TinkerVertex vertex = new TinkerVertex(id, new LinkedHashSet<>(vertexLabels), graph);
             vertex.inEdgesId = inEdgesId;
             vertex.outEdgesId = outEdgesId;
             vertex.properties = properties;
@@ -79,6 +153,8 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
 
         final TinkerVertex vertex = new TinkerVertex(id, label, graph, currentVersion);
+        vertex.vertexLabels.clear();
+        vertex.vertexLabels.addAll(this.vertexLabels);
         if (inEdgesId != null)
             vertex.inEdgesId = CollectionUtil.clone((ConcurrentHashMap<String, Set<Object>>) inEdgesId);
 

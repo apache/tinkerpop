@@ -28,11 +28,15 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex {
+
+    private Set<String> vertexLabels;
 
     private ReferenceVertex() {
 
@@ -46,8 +50,39 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
         super(id, label);
     }
 
+    public ReferenceVertex(final Object id, final Set<String> labels) {
+        super(id, labels != null && !labels.isEmpty() ? labels.iterator().next() : Vertex.DEFAULT_LABEL);
+        this.vertexLabels = labels != null ? new LinkedHashSet<>(labels) : null;
+    }
+
     public ReferenceVertex(final Vertex vertex) {
         super(vertex);
+        // Capture all labels from the source vertex for multi-label support.
+        // super(vertex) only stores element.label() (single label) in ReferenceElement.
+        try {
+            final Set<String> srcLabels = vertex.labels();
+            if (srcLabels.size() > 1) {
+                this.vertexLabels = new LinkedHashSet<>(srcLabels);
+            }
+        } catch (UnsupportedOperationException e) {
+            // Adjacent vertices in graph computer context may not support labels()
+        }
+    }
+
+    @Override
+    public Set<String> labels() {
+        if (this.vertexLabels != null) {
+            return Collections.unmodifiableSet(this.vertexLabels);
+        }
+        return this.label != null ? Collections.singleton(this.label) : Collections.emptySet();
+    }
+
+    @Override
+    public String label() {
+        if (this.vertexLabels != null && !this.vertexLabels.isEmpty()) {
+            return this.vertexLabels.iterator().next();
+        }
+        return this.label != null ? this.label : Vertex.DEFAULT_LABEL;
     }
 
     @Override

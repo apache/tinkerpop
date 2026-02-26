@@ -20,8 +20,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -46,14 +50,30 @@ import java.util.Set;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> implements TraversalParent, GraphComputing {
+public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> implements TraversalParent, GraphComputing, Configuring {
 
     protected final String[] propertyKeys;
     private boolean onGraphComputer = false;
+    private boolean multilabel = false;
+    private final Parameters parameters = new Parameters();
 
     public ElementMapStep(final Traversal.Admin traversal, final String... propertyKeys) {
         super(traversal);
         this.propertyKeys = propertyKeys;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        if (keyValues[0].equals(WithOptions.multilabel)) {
+            this.multilabel = true;
+        } else {
+            this.parameters.set(this, keyValues);
+        }
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
     }
 
     @Override
@@ -65,7 +85,11 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
             map.put(T.key, ((VertexProperty<?>) element).key());
             map.put(T.value, ((VertexProperty<?>) element).value());
         } else {
-            map.put(T.label, element.label());
+            if (isMultilabelEnabled()) {
+                map.put(T.label, element.labels());
+            } else {
+                map.put(T.label, element.label());
+            }
         }
 
         if (element instanceof Edge) {
@@ -100,6 +124,17 @@ public class ElementMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>> imple
 
     public boolean isOnGraphComputer() {
         return onGraphComputer;
+    }
+
+    /**
+     * Checks if multilabel mode is enabled either via step-level {@code .with(WithOptions.multilabel)}
+     * or source-level {@code g.with("multilabel")}.
+     */
+    private boolean isMultilabelEnabled() {
+        if (this.multilabel) return true;
+        return getTraversal().getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey("multilabel") || os.getOptions().containsKey(WithOptions.multilabel))
+                .orElse(false);
     }
 
     public String[] getPropertyKeys() {

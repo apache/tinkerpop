@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddLabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
@@ -361,6 +362,33 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, vertexLabel);
         final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new AddVertexStartStepPlaceholder(traversal, vertexLabel));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by adding a vertex with multiple labels.
+     * Creates the vertex with the first label, then adds the remaining labels.
+     *
+     * @param label1     the first label
+     * @param label2     the second label
+     * @param moreLabels additional labels
+     * @return the traversal with the vertex added
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
+        if (null == label1) throw new IllegalArgumentException("vertexLabel cannot be null");
+        if (null == label2) throw new IllegalArgumentException("vertexLabel cannot be null");
+        for (final String l : moreLabels) {
+            if (null == l) throw new IllegalArgumentException("vertexLabel cannot be null");
+        }
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.addV, label1, label2, moreLabels);
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = new DefaultGraphTraversal<>(clone);
+        traversal.addStep(new AddVertexStartStepPlaceholder(traversal, label1));
+        // Add the AddLabelStep directly to avoid double-recording in GremlinLang.
+        // The addV step above already recorded all labels; calling t.addLabel() would
+        // record an additional addLabel() step in GremlinLang, producing incorrect output
+        // like g.addV("a","b").addLabel("b") instead of g.addV("a","b").
+        return traversal.addStep(new AddLabelStep<>(traversal, label2, moreLabels));
     }
 
     /**
