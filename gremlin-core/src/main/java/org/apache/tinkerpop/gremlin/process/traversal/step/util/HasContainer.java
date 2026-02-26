@@ -92,7 +92,14 @@ public class HasContainer implements Serializable, Cloneable, Predicate<Element>
     }
 
     protected boolean testLabel(final Element element) {
-        return this.predicate.test(element.label());
+        // Test against all labels for multi-label support.
+        // For single-label elements this is equivalent to testing element.label().
+        for (final String label : element.labels()) {
+            if (this.predicate.test(label)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean testValue(final Property property) {

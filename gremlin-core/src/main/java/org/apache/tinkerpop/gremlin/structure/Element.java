@@ -45,10 +45,27 @@ public abstract interface Element {
     public Object id();
 
     /**
+     * Gets all labels for this element.
+     * <p>
+     * For {@link Vertex}: may return zero or more labels (multi-label support).
+     * For {@link Edge}: returns a singleton set (single label only in TinkerGraph).
+     * For {@link VertexProperty}: returns a singleton set containing the property key.
+     *
+     * @return An unmodifiable {@link Set} of labels; may be empty for vertices with no labels
+     * @since 4.0.0
+     */
+    public default Set<String> labels() {
+        return Collections.singleton(label());
+    }
+
+    /**
      * Gets the label for the graph {@code Element} which helps categorize it.
      *
      * @return The label of the element
+     * @deprecated As of release 4.0.0, replaced by {@link #labels()}. This method returns an arbitrary label
+     *             when multiple labels exist.
      */
+    @Deprecated
     public String label();
 
     /**
@@ -99,6 +116,41 @@ public abstract interface Element {
      */
     public void remove();
 
+    /**
+     * Adds one or more labels to this element.
+     *
+     * @param label  the first label to add
+     * @param labels additional labels to add
+     * @throws UnsupportedOperationException if the element does not support label mutation
+     * @since 4.0.0
+     */
+    public default void addLabel(final String label, final String... labels) {
+        throw Element.Exceptions.labelMutationNotSupported();
+    }
+
+    /**
+     * Removes all labels from this element, triggering the provider's default label behavior.
+     *
+     * @throws UnsupportedOperationException if the element does not support label mutation
+     * @since 4.0.0
+     */
+    public default void dropLabels() {
+        throw Element.Exceptions.labelMutationNotSupported();
+    }
+
+    /**
+     * Removes specific labels from this element.
+     * If this action removes all labels, triggers the provider's default label behavior.
+     *
+     * @param label  the first label to remove
+     * @param labels additional labels to remove
+     * @throws UnsupportedOperationException if the element does not support label mutation
+     * @since 4.0.0
+     */
+    public default void dropLabel(final String label, final String... labels) {
+        throw Element.Exceptions.labelMutationNotSupported();
+    }
+
 
     /**
      * Get the values of properties as an {@link Iterator}.
@@ -144,6 +196,10 @@ public abstract interface Element {
 
         public static IllegalArgumentException labelCanNotBeAHiddenKey(final String label) {
             return new IllegalArgumentException("Label can not be a hidden key: " + label);
+        }
+
+        public static UnsupportedOperationException labelMutationNotSupported() {
+            return new UnsupportedOperationException("Label mutation is not supported on this element");
         }
     }
 }

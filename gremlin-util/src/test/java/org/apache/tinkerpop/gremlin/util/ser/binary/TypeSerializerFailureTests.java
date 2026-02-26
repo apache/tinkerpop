@@ -57,7 +57,7 @@ public class TypeSerializerFailureTests {
 
     @Parameterized.Parameters(name = "Value={0}")
     public static Collection input() {
-        final ReferenceVertex vertex = new ReferenceVertex("a vertex", null);
+        final ReferenceVertex vertex = new ReferenceVertex("a vertex", (String) null);
 
         final BulkSet<Object> bulkSet = new BulkSet<>();
         bulkSet.add(vertex, 1L);

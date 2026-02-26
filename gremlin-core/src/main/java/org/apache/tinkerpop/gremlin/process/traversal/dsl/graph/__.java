@@ -127,6 +127,48 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#labels()
+     */
+    public static <A extends Element> GraphTraversal<A, String> labels() {
+        return __.<A>start().labels();
+    }
+
+    /**
+     * @see GraphTraversal#addLabel(String, String...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final String label, final String... moreLabels) {
+        return __.<A>start().addLabel(label, moreLabels);
+    }
+
+    /**
+     * @see GraphTraversal#addLabel(Traversal)
+     */
+    public static <A extends Element> GraphTraversal<A, A> addLabel(final Traversal<?, String> labelTraversal) {
+        return __.<A>start().addLabel(labelTraversal);
+    }
+
+    /**
+     * @see GraphTraversal#dropLabels()
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabels() {
+        return __.<A>start().dropLabels();
+    }
+
+    /**
+     * @see GraphTraversal#dropLabel(String, String...)
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabel(final String label, final String... moreLabels) {
+        return __.<A>start().dropLabel(label, moreLabels);
+    }
+
+    /**
+     * @see GraphTraversal#dropLabel(Traversal)
+     */
+    public static <A extends Element> GraphTraversal<A, A> dropLabel(final Traversal<?, String> labelTraversal) {
+        return __.<A>start().dropLabel(labelTraversal);
+    }
+
+    /**
      * @see GraphTraversal#id()
      */
     public static <A extends Element> GraphTraversal<A, Object> id() {
@@ -652,6 +694,13 @@ public class __ {
      */
     public static <A> GraphTraversal<A, Vertex> addV() {
         return __.<A>start().addV();
+    }
+
+    /**
+     * @see GraphTraversal#addV(String, String, String...)
+     */
+    public static <A> GraphTraversal<A, Vertex> addV(final String label1, final String label2, final String... moreLabels) {
+        return __.<A>start().addV(label1, label2, moreLabels);
     }
 
     /**

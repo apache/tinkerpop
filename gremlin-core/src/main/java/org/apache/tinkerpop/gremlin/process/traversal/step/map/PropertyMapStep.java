@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.WithOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalProduct;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -58,6 +59,7 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
 
     protected int tokens;
     protected Traversal.Admin<Element, ? extends Property> propertyTraversal;
+    protected boolean multilabel = false;
 
     protected Parameters parameters = new Parameters();
     protected Traversal.Admin<K, E> valueTraversal;
@@ -97,6 +99,8 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                     this.tokens |= (int) keyValues[i];
                 }
             }
+        } else if (keyValues[0].equals(WithOptions.multilabel)) {
+            this.multilabel = true;
         } else {
             this.parameters.set(this, keyValues);
         }
@@ -200,9 +204,26 @@ public class PropertyMapStep<K,E> extends ScalarMapStep<Element, Map<K, E>>
                 if (includeToken(WithOptions.keys)) map.put(T.key, getVertexPropertyKey((VertexProperty<?>) element));
                 if (includeToken(WithOptions.values)) map.put(T.value, getVertexPropertyValue((VertexProperty<?>) element));
             } else {
-                if (includeToken(WithOptions.labels)) map.put(T.label, getElementLabel(element));
+                if (includeToken(WithOptions.labels)) {
+                    if (isMultilabelEnabled()) {
+                        map.put(T.label, element.labels());
+                    } else {
+                        map.put(T.label, getElementLabel(element));
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Checks if multilabel mode is enabled either via step-level {@code .with(WithOptions.multilabel)}
+     * or source-level {@code g.with("multilabel")}.
+     */
+    private boolean isMultilabelEnabled() {
+        if (this.multilabel) return true;
+        return getTraversal().getStrategies().getStrategy(OptionsStrategy.class)
+                .map(os -> os.getOptions().containsKey("multilabel") || os.getOptions().containsKey(WithOptions.multilabel))
+                .orElse(false);
     }
 
     protected Object getElementId(Element element){

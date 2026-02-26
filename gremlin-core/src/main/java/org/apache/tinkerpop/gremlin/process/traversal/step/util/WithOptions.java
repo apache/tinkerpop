@@ -90,4 +90,16 @@ public class WithOptions {
      * Index items using a {@code LinkedHashMap}.
      */
     public static int map = 1;
+
+    //
+    // Multi-label configuration
+    //
+
+    /**
+     * Configures multi-label behavior for valueMap and elementMap steps.
+     * When enabled, labels are returned as {@code Set<String>} instead of {@code String}.
+     *
+     * @since 4.0.0
+     */
+    public static final String multilabel = Graph.Hidden.hide("tinkerpop.multilabel");
 }

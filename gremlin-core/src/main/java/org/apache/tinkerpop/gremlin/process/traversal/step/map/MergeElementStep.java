@@ -252,7 +252,25 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
             final Object v = e.getValue();
 
             if (ignoreTokens) {
-                if (!(k instanceof String)) {
+                // Allow T.label in onMatch for multi-label replacement support
+                if (k == T.label) {
+                    if (v instanceof String) {
+                        ElementHelper.validateLabel((String) v);
+                    } else if (v instanceof java.util.Collection) {
+                        for (final Object label : (java.util.Collection<?>) v) {
+                            if (!(label instanceof String)) {
+                                throw new IllegalArgumentException(String.format(
+                                        "option(onMatch) expects T.label collection to contain only Strings - found: %s",
+                                        label.getClass().getSimpleName()));
+                            }
+                            ElementHelper.validateLabel((String) label);
+                        }
+                    } else {
+                        throw new IllegalArgumentException(String.format(
+                                "option(onMatch) expects T.label value to be String or Collection<String> - found: %s",
+                                v.getClass().getSimpleName()));
+                    }
+                } else if (!(k instanceof String)) {
                     throw new IllegalArgumentException(String.format("option(onMatch) expects keys in Map to be of String - check: %s", k));
                 } else {
                     ElementHelper.validateProperty((String) k, v);
@@ -269,12 +287,21 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
                             op, allowedTokens, k));
                 }
                 if (k == T.label) {
-                    if (!(v instanceof String)) {
-                        throw new IllegalArgumentException(String.format(
-                                "%s() and option(onCreate) args expect T.label value to be of String - found: %s", op,
-                                v.getClass().getSimpleName()));
-                    } else {
+                    if (v instanceof String) {
                         ElementHelper.validateLabel((String) v);
+                    } else if (v instanceof java.util.Collection) {
+                        for (final Object label : (java.util.Collection<?>) v) {
+                            if (!(label instanceof String)) {
+                                throw new IllegalArgumentException(String.format(
+                                        "%s() expects T.label collection to contain only Strings - found: %s",
+                                        op, label.getClass().getSimpleName()));
+                            }
+                            ElementHelper.validateLabel((String) label);
+                        }
+                    } else {
+                        throw new IllegalArgumentException(String.format(
+                                "%s() and option(onCreate) args expect T.label value to be String or Collection<String> - found: %s",
+                                op, v.getClass().getSimpleName()));
                     }
                 }
                 if (k == Direction.OUT && v instanceof Merge && v != Merge.outV) {
@@ -335,10 +362,10 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
 
         final Graph graph = getGraph();
         final Object id = search.get(T.id);
-        final String label = (String) search.get(T.label);
+        final Object labelValue = search.get(T.label);
 
         GraphTraversal t = searchVerticesTraversal(graph, id);
-        t = searchVerticesLabelConstraint(t, label);
+        t = searchVerticesLabelConstraint(t, labelValue);
         t = searchVerticesPropertyConstraints(t, search);
 
         // this should auto-close the underlying traversal
@@ -349,8 +376,20 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
         return id != null ? graph.traversal().V(id) : graph.traversal().V();
     }
 
-    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final String label) {
-        return label != null ? t.hasLabel(label) : t;
+    protected GraphTraversal searchVerticesLabelConstraint(GraphTraversal t, final Object labelValue) {
+        if (labelValue == null) {
+            return t;
+        }
+        if (labelValue instanceof String) {
+            return t.hasLabel((String) labelValue);
+        } else if (labelValue instanceof java.util.Collection) {
+            // Multi-label: AND semantics - must have ALL specified labels
+            for (final Object label : (java.util.Collection<?>) labelValue) {
+                t = t.hasLabel((String) label);
+            }
+            return t;
+        }
+        return t;
     }
 
     protected GraphTraversal searchVerticesPropertyConstraints(GraphTraversal t, final Map search) {

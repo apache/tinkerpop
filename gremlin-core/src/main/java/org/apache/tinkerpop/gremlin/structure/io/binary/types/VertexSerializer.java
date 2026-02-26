@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -43,11 +45,19 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     @Override
     protected Vertex readValue(final Buffer buffer, final GraphBinaryReader context) throws IOException {
         final Object id = context.read(buffer);
-        // reading single string value for now according to GraphBinaryV4
-        final String label = (String) context.readValue(buffer, List.class, false).get(0);
+        // Read labels as List<String> for multi-label support
+        final List<String> labelList = context.readValue(buffer, List.class, false);
         final List<DetachedVertexProperty> properties = context.read(buffer);
 
-        final DetachedVertex.Builder builder = DetachedVertex.build().setId(id).setLabel(label);
+        final DetachedVertex.Builder builder = DetachedVertex.build().setId(id);
+
+        if (labelList != null && !labelList.isEmpty()) {
+            if (labelList.size() == 1) {
+                builder.setLabel(labelList.get(0));
+            } else {
+                builder.setLabels(new LinkedHashSet<>(labelList));
+            }
+        }
 
         if (properties != null) {
             for (final DetachedVertexProperty vp : properties) {
@@ -61,11 +71,12 @@ public class VertexSerializer extends SimpleTypeSerializer<Vertex> {
     @Override
     protected void writeValue(final Vertex value, final Buffer buffer, final GraphBinaryWriter context) throws IOException {
         context.write(value.id(), buffer);
-        // wrapping label into list here for now according to GraphBinaryV4, but we aren't allowing null label yet
-        if (value.label() == null) {
-            throw new IOException("Unexpected null value when nullable is false");
+        // Write all labels as List<String> for multi-label support.
+        final java.util.Set<String> labels = value.labels();
+        if (labels == null || labels.isEmpty()) {
+            throw new IOException("Unexpected null or empty labels when nullable is false");
         }
-        context.writeValue(Collections.singletonList(value.label()), buffer, false);
+        context.writeValue(new ArrayList<>(labels), buffer, false);
         if (value instanceof ReferenceVertex) {
             context.write(null, buffer);
         }

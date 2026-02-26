@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.CardinalityValueTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyVertexProperty;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A {@code VertexProperty} is similar to a {@link Property} in that it denotes a key/value pair associated with an
@@ -76,6 +78,18 @@ public interface VertexProperty<V> extends Property<V>, Element {
     @Override
     public default String label() {
         return this.key();
+    }
+
+    /**
+     * Returns a singleton set containing the property key, consistent with the single-label
+     * semantics of {@link VertexProperty}.
+     *
+     * @return a singleton {@link Set} containing this property's key
+     * @since 4.0.0
+     */
+    @Override
+    public default Set<String> labels() {
+        return Collections.singleton(this.key());
     }
 
     /**

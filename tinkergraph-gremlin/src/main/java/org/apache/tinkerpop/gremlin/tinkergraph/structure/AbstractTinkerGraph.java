@@ -283,12 +283,36 @@ public abstract class AbstractTinkerGraph implements Graph {
 
     protected abstract void addInEdge(final TinkerVertex vertex, final String label, final Edge edge);
 
+    /**
+     * Called when a vertex's labels are modified to allow the graph to update any internal label indices.
+     * The default implementation is a no-op since TinkerGraph does not maintain a separate label index.
+     *
+     * @param vertex the vertex whose labels have changed
+     * @since 4.0.0
+     */
+    public void updateVertexLabelIndex(final TinkerVertex vertex) {
+        // no-op by default - TinkerGraph does not maintain a separate label index
+    }
+
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph) {
         return new TinkerVertex(id, label, graph);
     }
 
     protected TinkerVertex createTinkerVertex(final Object id, final String label, final AbstractTinkerGraph graph, final long currentVersion) {
         return new TinkerVertex(id, label, graph, currentVersion);
+    }
+
+    /**
+     * Creates a TinkerVertex with multiple labels.
+     *
+     * @param id     the vertex id
+     * @param labels the set of labels for the vertex
+     * @param graph  the graph instance
+     * @return a new TinkerVertex
+     * @since 4.0.0
+     */
+    protected TinkerVertex createTinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph) {
+        return new TinkerVertex(id, labels, graph);
     }
 
     protected TinkerEdge createTinkerEdge(final Object id, final Vertex outVertex, final String label, final Vertex inVertex) {

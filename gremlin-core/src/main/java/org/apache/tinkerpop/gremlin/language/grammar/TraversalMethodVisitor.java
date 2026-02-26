@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -95,6 +96,25 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
         } else {
             return this.graphTraversal.addV((String) literalOrVar);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_addV_StringVarargs(final GremlinParser.TraversalMethod_addV_StringVarargsContext ctx) {
+        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
+        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
+        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
+        final Object secondLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(1));
+        final String secondLabel = secondLiteralOrVar instanceof String ? (String) secondLiteralOrVar : ((GValue<String>) secondLiteralOrVar).get();
+
+        final String[] moreLabels = new String[args.size() - 2];
+        for (int i = 2; i < args.size(); i++) {
+            final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
+            moreLabels[i - 2] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+        }
+        return this.graphTraversal.addV(firstLabel, secondLabel, moreLabels);
     }
 
     /**
@@ -976,6 +996,80 @@ public class TraversalMethodVisitor extends TraversalRootVisitor<GraphTraversal>
     @Override
     public GraphTraversal visitTraversalMethod_label(final GremlinParser.TraversalMethod_labelContext ctx) {
         return graphTraversal.label();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_labels(final GremlinParser.TraversalMethod_labelsContext ctx) {
+        return graphTraversal.labels();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_addLabel_String(final GremlinParser.TraversalMethod_addLabel_StringContext ctx) {
+        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
+        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
+        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
+
+        if (args.size() == 1) {
+            return this.graphTraversal.addLabel(firstLabel);
+        } else {
+            final String[] moreLabels = new String[args.size() - 1];
+            for (int i = 1; i < args.size(); i++) {
+                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
+                moreLabels[i - 1] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+            }
+            return this.graphTraversal.addLabel(firstLabel, moreLabels);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_addLabel_Traversal(final GremlinParser.TraversalMethod_addLabel_TraversalContext ctx) {
+        return this.graphTraversal.addLabel(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dropLabels_Empty(final GremlinParser.TraversalMethod_dropLabels_EmptyContext ctx) {
+        return this.graphTraversal.dropLabels();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dropLabel_String(final GremlinParser.TraversalMethod_dropLabel_StringContext ctx) {
+        final List<GremlinParser.StringArgumentContext> args = ctx.stringArgument();
+        final Object firstLiteralOrVar = antlr.argumentVisitor.visitStringArgument(args.get(0));
+        final String firstLabel = firstLiteralOrVar instanceof String ? (String) firstLiteralOrVar : ((GValue<String>) firstLiteralOrVar).get();
+
+        if (args.size() == 1) {
+            return this.graphTraversal.dropLabel(firstLabel);
+        } else {
+            final String[] moreLabels = new String[args.size() - 1];
+            for (int i = 1; i < args.size(); i++) {
+                final Object literalOrVar = antlr.argumentVisitor.visitStringArgument(args.get(i));
+                moreLabels[i - 1] = literalOrVar instanceof String ? (String) literalOrVar : ((GValue<String>) literalOrVar).get();
+            }
+            return this.graphTraversal.dropLabel(firstLabel, moreLabels);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public GraphTraversal visitTraversalMethod_dropLabel_Traversal(final GremlinParser.TraversalMethod_dropLabel_TraversalContext ctx) {
+        return this.graphTraversal.dropLabel(antlr.tvisitor.visitNestedTraversal(ctx.nestedTraversal()));
     }
 
     /**
