@@ -134,6 +134,12 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
+                    if (scenario.Tags.Any(t => t.Name == "@MultiLabel"))
+                    {
+                        failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.MultiLabelStepsNotSupported));
+                        continue;
+                    }
+
                     StepBlock? currentStep = null;
                     StepDefinition? stepDefinition = null;
                     foreach (var step in scenario.Steps)

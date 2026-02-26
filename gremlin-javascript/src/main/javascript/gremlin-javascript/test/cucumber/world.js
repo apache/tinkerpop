@@ -110,6 +110,10 @@ Before({tags: "@StepWrite"}, function() {
   return 'skipped'
 })
 
+Before({tags: "@MultiLabel"}, function() {
+  return 'skipped'
+})
+
 function getVertices(connection) {
   const g = anon.traversal().withRemote(connection);
   return g.V().group().by('name').by(__.tail()).next().then(it => {

@@ -94,6 +94,10 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "WithReservedKeysVerificationStrategy" in tagset
 
+    # Multi-label steps not yet available in Python GLV
+    if not step.context.ignore:
+        step.context.ignore = "MultiLabel" in tagset
+
     if (step.context.ignore):
         return
 

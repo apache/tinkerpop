@@ -704,3 +704,26 @@ Feature: Step - addV()
     Then the result should be unordered
       | result |
       | d[2010].i |
+
+  @MultiLabel
+  Scenario: g_addVXa_bX_labels
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("a", "b").labels().fold()
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 1 for count of "g.V().hasLabel(\"a\").hasLabel(\"b\")"
+
+  @MultiLabel
+  Scenario: g_addVXa_b_cX_labels_count
+    Given the empty graph
+    And the traversal of
+      """
+      g.addV("a", "b", "c").labels().count()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[3].l |
