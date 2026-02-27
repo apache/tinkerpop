@@ -1459,10 +1459,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, Edge> MergeE (IDictionary<object,object?>? m)
         {
-            if (m != null && m[Direction.Out] is Vertex outV) {
+            if (m != null && m.TryGetValue(Direction.Out, out var outValue) && outValue is Vertex outV) {
                 m[Direction.Out] = outV.Id;
             }
-            if (m != null && m[Direction.In] is Vertex inV) {
+            if (m != null && m.TryGetValue(Direction.In, out var inValue) && inValue is Vertex inV) {
                 m[Direction.In] = inV.Id;
             }
             Bytecode.AddStep("mergeE", m);
