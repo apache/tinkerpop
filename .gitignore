@@ -48,3 +48,5 @@ gremlint/
 coverage.out
 .env
 gremlinconsoletest.egg-info
+CLAUDE.md
+**/.claude/
