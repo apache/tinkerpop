@@ -45,7 +45,5 @@ export default class GraphBinaryWriter {
       this.ioc.mapSerializer.serialize(args, false),
     ];
     return Buffer.concat(bufs);
-
-
   }
 }

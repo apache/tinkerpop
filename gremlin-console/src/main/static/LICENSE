@@ -207,7 +207,7 @@ BSD-style Licenses
 
 The Apache TinkerPop project bundles the following components under the BSD License:
 
-     Antlr4 (org.antlr:antlr4-runtime:4.9.1 - https://www.antlr.org) - for details, see licenses/antlr4
+     Antlr4 (org.antlr:antlr4-runtime:4.13.2 - https://www.antlr.org) - for details, see licenses/antlr4
      JLine (jline:jline:2.14.6 - https://github.com/jline/jline2) - for details, see licenses/jline2
      Kryo (com.esotericsoftware:kryo-shaded:3.0.3 - https://github.com/EsotericSoftware/kryo)
        - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.kryo
