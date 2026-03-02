@@ -39,7 +39,7 @@ describe('DriverRemoteConnection', function () {
 
   describe('#submit()', function () {
     it('should send the request and parse the response', function () {
-      return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+      return connection.submit('g.V().tail()')
         .then(function (response) {
           assert.ok(response);
           assert.ok(response.traversers);
@@ -48,7 +48,7 @@ describe('DriverRemoteConnection', function () {
         });
     });
     it('should send the request with syntax error and parse the response error', function () {
-      return connection.submit(new Bytecode().addStep('SYNTAX_ERROR'))
+      return connection.submit('SYNTAX_ERROR')
         .catch(function (err) {
           assert.ok(err);
           assert.ok(err.message.indexOf('599') > 0);

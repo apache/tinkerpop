@@ -121,7 +121,7 @@ export default class Connection extends EventEmitter {
 
   /** @override */
   submit(request: RequestMessage) {
-    const request_buf = this._writer.writeRequest(request);
+    const request_buf: Buffer = this._writer.writeRequest(request);
     
     return this.#makeHttpRequest(request_buf)
         .then((response) => {
@@ -188,12 +188,15 @@ export default class Connection extends EventEmitter {
         headers[key] = Array.isArray(value) ? value.join(', ') : value;
       });
     }
-
-    return fetch(this.url, {
+    let request = {
       method: 'POST',
       headers,
       body: request_buf,
-    });
+    }
+
+    // TODO:: add request interceptors
+
+    return fetch(this.url, request);
   }
 
   async #handleResponse(response: Response) {

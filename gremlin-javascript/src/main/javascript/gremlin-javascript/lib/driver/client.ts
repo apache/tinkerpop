@@ -102,7 +102,6 @@ export default class Client {
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
    * @returns {Promise}
    */ //TODO:: tighten return type to Promise<ResultSet>
-  //TODO:: Remove bytecode as allowable message type
   submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
       const requestBuilder = RequestMessage.build(message)
           .addG(this.options.traversalSource || 'g')
