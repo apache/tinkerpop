@@ -51,7 +51,7 @@ describe('Client', function () {
         });
     });
     it('should send and parse a script with non-native javascript bindings', function () {
-      return client.submit('card.class.simpleName + ":" + card', { card: cardinality.set } )
+      return client.submit('card.class.simpleName + ":" + card', { card: cardinality.set })
         .then(function (result) {
           assert.ok(result);
           assert.strictEqual(result.first(), 'Cardinality:set');
