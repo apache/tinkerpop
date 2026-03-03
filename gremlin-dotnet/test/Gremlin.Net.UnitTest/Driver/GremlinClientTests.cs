@@ -47,7 +47,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldCreateClientWithCustomSettings()
         {
-            var settings = new HttpConnectionSettings
+            var settings = new ConnectionSettings
             {
                 EnableCompression = true,
                 BulkResults = true

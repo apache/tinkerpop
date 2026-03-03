@@ -22,210 +22,138 @@
 #endregion
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
+using Gremlin.Net.Structure.IO;
 
 namespace Gremlin.Net.Driver
 {
-    internal interface IResponseHandlerForSingleRequestMessage
+    /// <summary>
+    ///     HTTP-based connection that sends requests via HTTP POST to Gremlin Server.
+    /// </summary>
+    internal class Connection : IDisposable
     {
-        void HandleReceived(ResponseMessage<List<object>> received);
-        void Finalize(Dictionary<string, object> statusAttributes);
-        void HandleFailure(Exception objException);
-        void Cancel();
-    }
+        private const string GraphBinaryMimeType = SerializationTokens.GraphBinary4MimeType;
 
-    internal class Connection : IConnection
-    {
-        private readonly IMessageSerializer _messageSerializer;
+        private readonly HttpClient _httpClient;
         private readonly Uri _uri;
-        private readonly IWebSocketConnection _webSocketConnection;
-        private readonly string? _username;
-        private readonly string? _password;
-        private readonly string? _sessionId;
+        private readonly IMessageSerializer _serializer;
+        private readonly bool _enableCompression;
+        private readonly bool _enableUserAgentOnConnect;
+        private readonly bool _bulkResults;
+        // Interceptor slot reserved for future spec
+        // private readonly IReadOnlyList<Func<HttpRequestMessage, Task>> _interceptors;
 
-        private readonly ConcurrentQueue<(RequestMessage msg, CancellationToken cancellationToken)> _writeQueue = new();
-
-        private readonly ConcurrentDictionary<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId =
-            new();
-
-        private readonly ConcurrentDictionary<Guid, CancellationTokenRegistration> _cancellationByRequestId = new();
-        private int _connectionState = 0;
-        private int _writeInProgress = 0;
-        private const int Closed = 1;
-
-        public Connection(IWebSocketConnection webSocketConnection, Uri uri, string? username, string? password,
-            IMessageSerializer messageSerializer, string? sessionId)
+        public Connection(Uri uri, IMessageSerializer serializer,
+            ConnectionSettings settings)
         {
             _uri = uri;
-            _username = username;
-            _password = password;
-            _sessionId = sessionId;
-            _messageSerializer = messageSerializer;
-            _webSocketConnection = webSocketConnection;
-        }
+            _serializer = serializer;
+            _enableCompression = settings.EnableCompression;
+            _enableUserAgentOnConnect = settings.EnableUserAgentOnConnect;
+            _bulkResults = settings.BulkResults;
 
-        public async Task ConnectAsync(CancellationToken cancellationToken)
-        {
-            await _webSocketConnection.ConnectAsync(_uri, cancellationToken).ConfigureAwait(false);
-            BeginReceiving();
-        }
-
-        public int NrRequestsInFlight => _callbackByRequestId.Count;
-
-        public bool IsOpen => _webSocketConnection.IsOpen && Volatile.Read(ref _connectionState) != Closed;
-
-        public Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken)
-        {
-            var receiver = new ResponseHandlerForSingleRequestMessage<T>();
-            var requestId = Guid.NewGuid();
-            _callbackByRequestId.GetOrAdd(requestId, receiver);
-
-            _cancellationByRequestId.GetOrAdd(requestId, cancellationToken.Register(() =>
+#if NET6_0_OR_GREATER
+            var handler = new SocketsHttpHandler
             {
-                if (_callbackByRequestId.TryRemove(requestId, out var responseHandler))
-                {
-                    responseHandler.Cancel();
-                }
-            }));
-            _writeQueue.Enqueue((requestMessage, cancellationToken));
-            BeginSendingMessages();
-            return receiver.Result;
+                PooledConnectionIdleTimeout = settings.IdleConnectionTimeout,
+                MaxConnectionsPerServer = settings.MaxConnectionsPerServer,
+                ConnectTimeout = settings.ConnectionTimeout,
+                KeepAlivePingTimeout = settings.KeepAliveInterval,
+            };
+            _httpClient = new HttpClient(handler);
+#else
+            _httpClient = new HttpClient();
+            _httpClient.Timeout = settings.ConnectionTimeout;
+#endif
         }
 
-        private void BeginReceiving()
+        /// <summary>
+        ///     Constructor that accepts a pre-configured HttpClient (for testing).
+        /// </summary>
+        internal Connection(Uri uri, IMessageSerializer serializer,
+            ConnectionSettings settings, HttpClient httpClient)
         {
-            var state = Volatile.Read(ref _connectionState);
-            if (state == Closed) return;
-            ReceiveMessagesAsync().Forget();
+            _uri = uri;
+            _serializer = serializer;
+            _enableCompression = settings.EnableCompression;
+            _enableUserAgentOnConnect = settings.EnableUserAgentOnConnect;
+            _bulkResults = settings.BulkResults;
+            _httpClient = httpClient;
         }
 
-        private async Task ReceiveMessagesAsync()
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
+            CancellationToken cancellationToken = default)
         {
-            while (true)
-            {
-                try
-                {
-                    var received = await _webSocketConnection.ReceiveMessageAsync().ConfigureAwait(false);
-                    await HandleReceivedAsync(received).ConfigureAwait(false);
-                }
-                catch (Exception e)
-                {
-                    await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
-                    break;
-                }
-            }
-        }
-
-        private async Task HandleReceivedAsync(byte[] received)
-        {
-            var receivedMsg = await _messageSerializer.DeserializeMessageAsync(received).ConfigureAwait(false);
-            try
-            {
-                HandleReceivedMessage(receivedMsg);
-            }
-            catch (Exception e)
-            {
-                // Propagate failure to all pending handlers
-                foreach (var cb in _callbackByRequestId.Values)
-                {
-                    cb.HandleFailure(e);
-                }
-                _callbackByRequestId.Clear();
-                DisposeCancellationRegistrations();
-            }
-        }
-
-        private void HandleReceivedMessage(ResponseMessage<List<object>> receivedMsg)
-        {
-            if (receivedMsg.StatusCode != 200)
-            {
-                throw new Exceptions.ResponseException(receivedMsg.StatusCode, receivedMsg.StatusMessage,
-                    receivedMsg.Exception);
-            }
-
-            // In the 4.0 format, all results arrive in a single response
-            foreach (var handler in _callbackByRequestId.Values)
-            {
-                handler.HandleReceived(receivedMsg);
-                handler.Finalize(new Dictionary<string, object>());
-            }
-            _callbackByRequestId.Clear();
-            DisposeCancellationRegistrations();
-        }
-
-        private void BeginSendingMessages()
-        {
-            if (Interlocked.CompareExchange(ref _writeInProgress, 1, 0) != 0)
-                return;
-            SendMessagesFromQueueAsync().Forget();
-        }
-
-        private async Task SendMessagesFromQueueAsync()
-        {
-            while (_writeQueue.TryDequeue(out var msg))
-            {
-                try
-                {
-                    await SendMessageAsync(msg.msg, msg.cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException e) when (msg.cancellationToken == e.CancellationToken)
-                {
-                    // Send was cancelled for this message
-                }
-                catch (Exception e)
-                {
-                    await CloseConnectionBecauseOfFailureAsync(e).ConfigureAwait(false);
-                    break;
-                }
-            }
-            Interlocked.CompareExchange(ref _writeInProgress, 0, 1);
-
-            if (!_writeQueue.IsEmpty && Interlocked.CompareExchange(ref _writeInProgress, 1, 0) == 0)
-            {
-                await SendMessagesFromQueueAsync().ConfigureAwait(false);
-            }
-        }
-
-        private async Task CloseConnectionBecauseOfFailureAsync(Exception exception)
-        {
-            EmptyWriteQueue();
-            await CloseAsync().ConfigureAwait(false);
-            NotifyAboutConnectionFailure(exception);
-        }
-
-        private void EmptyWriteQueue()
-        {
-            while (_writeQueue.TryDequeue(out _))
-            {
-            }
-        }
-
-        private void NotifyAboutConnectionFailure(Exception exception)
-        {
-            foreach (var cb in _callbackByRequestId.Values)
-            {
-                cb.HandleFailure(exception);
-            }
-            _callbackByRequestId.Clear();
-            DisposeCancellationRegistrations();
-        }
-
-        private async Task SendMessageAsync(RequestMessage message, CancellationToken cancellationToken)
-        {
-            var serializedMsg = await _messageSerializer.SerializeMessageAsync(message, cancellationToken)
+            var requestBytes = await _serializer.SerializeMessageAsync(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
-            await _webSocketConnection.SendMessageAsync(serializedMsg, cancellationToken).ConfigureAwait(false);
+
+            using var content = new ByteArrayContent(requestBytes);
+            content.Headers.ContentType = new MediaTypeHeaderValue(GraphBinaryMimeType);
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, _uri);
+            httpRequest.Content = content;
+            httpRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GraphBinaryMimeType));
+
+            if (_enableCompression)
+            {
+                httpRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+            }
+
+            if (_enableUserAgentOnConnect)
+            {
+                httpRequest.Headers.TryAddWithoutValidation("User-Agent", Utils.UserAgent);
+            }
+
+            if (_bulkResults)
+            {
+                httpRequest.Headers.Add("bulkResults", "true");
+            }
+
+            // Future: apply interceptors here
+
+            using var response = await _httpClient.SendAsync(httpRequest, cancellationToken)
+                .ConfigureAwait(false);
+
+            var responseBytes = await ReadResponseBytesAsync(response).ConfigureAwait(false);
+
+            var responseMessage = await _serializer.DeserializeMessageAsync(responseBytes, cancellationToken)
+                .ConfigureAwait(false);
+
+            return BuildResultSet<T>(responseMessage);
         }
 
-        public async Task CloseAsync()
+        private static async Task<byte[]> ReadResponseBytesAsync(HttpResponseMessage response)
         {
-            Interlocked.Exchange(ref _connectionState, Closed);
-            await _webSocketConnection.CloseAsync().ConfigureAwait(false);
+            var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            if (response.Content.Headers.ContentEncoding.Contains("deflate"))
+            {
+                using var deflateStream = new DeflateStream(stream, CompressionMode.Decompress);
+                using var ms = new MemoryStream();
+                await deflateStream.CopyToAsync(ms).ConfigureAwait(false);
+                return ms.ToArray();
+            }
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+            return memoryStream.ToArray();
+        }
+
+        private static ResultSet<T> BuildResultSet<T>(ResponseMessage<List<object>> responseMessage)
+        {
+            var results = new List<T>();
+            foreach (var item in responseMessage.Result)
+            {
+                results.Add((T)item);
+            }
+            return new ResultSet<T>(results, new Dictionary<string, object>());
         }
 
         #region IDisposable Support
@@ -244,20 +172,10 @@ namespace Gremlin.Net.Driver
             {
                 if (disposing)
                 {
-                    _webSocketConnection?.Dispose();
-                    DisposeCancellationRegistrations();
+                    _httpClient?.Dispose();
                 }
                 _disposed = true;
             }
-        }
-
-        private void DisposeCancellationRegistrations()
-        {
-            foreach (var cancellation in _cancellationByRequestId.Values)
-            {
-                cancellation.Dispose();
-            }
-            _cancellationByRequestId.Clear();
         }
 
         #endregion

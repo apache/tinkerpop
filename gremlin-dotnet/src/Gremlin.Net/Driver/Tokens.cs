@@ -41,31 +41,6 @@ namespace Gremlin.Net.Driver
         public const string RequestId = "requestId";
 
         /// <summary>
-        ///     Operation used by the client to authenticate itself.
-        /// </summary>
-        public const string OpsAuthentication = "authentication";
-
-        /// <summary>
-        ///     Operation used to evaluate a Gremlin script provided as a string.
-        /// </summary>
-        public const string OpsEval = "eval";
-
-        /// <summary>
-        ///     Operation used to get all the keys of all side-effects as produced by a previously executed Traversal.
-        /// </summary>
-        public const string OpsClose = "close";
-
-        /// <summary>
-        ///     Default OpProcessor.
-        /// </summary>
-        public const string ProcessorTraversal = "traversal";
-
-        /// <summary>
-        ///     Session OpProcessor.
-        /// </summary>
-        public const string ProcessorSession = "session";
-
-        /// <summary>
         ///     Argument name that allows the definition of the number of items each ResponseMessage should
         ///     contain from a particular result - overrides the resultIterationBatchSize server setting.
         /// </summary>
@@ -78,20 +53,9 @@ namespace Gremlin.Net.Driver
         public const string ArgsBindings = "bindings";
 
         /// <summary>
-        ///     Argument name that allows definition of alias names for Graph and TraversalSource objects on the
-        ///     remote system.
-        /// </summary>
-        public const string ArgsAliases = "aliases";
-
-        /// <summary>
         ///     Argument name that corresponds to the Gremlin to evaluate.
         /// </summary>
         public const string ArgsGremlin = "gremlin";
-
-        /// <summary>
-        ///     Argument name that allows to define the id of session.
-        /// </summary>
-        public const string ArgsSession = "session";
 
         /// <summary>
         ///     Argument name that allows a value that is a custom string that the user can pass to a server that
@@ -115,12 +79,6 @@ namespace Gremlin.Net.Driver
         ///     Allowed values: all, tokens
         /// </summary>
         public const string ArgMaterializeProperties = "materializeProperties";
-
-        /// <summary>
-        ///     Argument name for the response to the server authentication challenge. This value is dependent on the SASL
-        ///     authentication mechanism required by the server.
-        /// </summary>
-        public const string ArgsSasl = "sasl";
 
         /// <summary>
         ///     Argument name for the traversal source alias.
