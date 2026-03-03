@@ -22,7 +22,7 @@
  */
 
 import { Buffer } from 'buffer';
-import { direction, t as _t, EnumValue } from '../../../../process/traversal.js';
+import { direction, t as _t, merge as _merge, EnumValue } from '../../../../process/traversal.js';
 
 export default class EnumSerializer {
   constructor(ioc) {
@@ -38,15 +38,17 @@ export default class EnumSerializer {
 
     this.types = {
       Direction: { code: ioc.DataType.DIRECTION, enum: to_orig_enum(direction) },
+      Merge: { code: ioc.DataType.MERGE, enum: to_orig_enum(_merge) },
       T: { code: ioc.DataType.T, enum: to_orig_enum(_t) },
     };
 
     this.ioc.serializers[ioc.DataType.DIRECTION] = this;
+    this.ioc.serializers[ioc.DataType.MERGE] = this;
     this.ioc.serializers[ioc.DataType.T] = this;
   }
 
   canBeUsedFor(value) {
-    return value instanceof EnumValue && (value.typeName === 'Direction' || value.typeName === 'T');
+    return value instanceof EnumValue && (value.typeName === 'Direction' || value.typeName === 'Merge' || value.typeName === 'T');
   }
 
   serialize(item, fullyQualifiedFormat = true) {
@@ -85,6 +87,8 @@ export default class EnumSerializer {
         len++;
         if (type_code === this.ioc.DataType.DIRECTION) {
           typeName = 'Direction';
+        } else if (type_code === this.ioc.DataType.MERGE) {
+          typeName = 'Merge';
         } else if (type_code === this.ioc.DataType.T) {
           typeName = 'T';
         } else {

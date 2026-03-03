@@ -52,6 +52,7 @@ const DataType = {
   SHORT: 0x26,
   BOOLEAN: 0x27,
   TREE: 0x2b,
+  MERGE: 0x2e,
 
   CHAR: 0x80,
   DURATION: 0x81,

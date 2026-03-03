@@ -26,7 +26,7 @@
 
 import { assert } from 'chai';
 import { Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
-import { direction, t } from '../../../lib/process/traversal.js';
+import { direction, t, merge } from '../../../lib/process/traversal.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
 
 const { anySerializer } = ioc;
@@ -178,6 +178,11 @@ describe('Type Detection Tests', () => {
     it('t.id → T (0x20)', () => {
       const result = anySerializer.serialize(t.id);
       assert.strictEqual(result[0], DataType.T);
+    });
+
+    it('merge.onCreate → MERGE (0x2e)', () => {
+      const result = anySerializer.serialize(merge.onCreate);
+      assert.strictEqual(result[0], DataType.MERGE);
     });
   });
 
@@ -381,7 +386,7 @@ describe('Type Detection Tests', () => {
     });
 
     it('enum values', () => {
-      const values = [direction.out, direction.in, direction.both, t.id, t.key, t.label, t.value];
+      const values = [direction.out, direction.in, direction.both, t.id, t.key, t.label, t.value, merge.onCreate, merge.onMatch, merge.outV, merge.inV];
       values.forEach(value => {
         const serialized = anySerializer.serialize(value);
         const deserialized = anySerializer.deserialize(serialized);

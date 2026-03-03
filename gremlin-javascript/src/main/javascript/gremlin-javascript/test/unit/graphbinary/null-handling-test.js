@@ -106,6 +106,14 @@ describe('GraphBinary v4 Null Handling Tests', () => {
         assert.strictEqual(result.len, 2);
       });
     });
+
+    describe('MERGE', () => {
+      it('deserialize fully-qualified null', () => {
+        const result = ioc.enumSerializer.deserialize(Buffer.from([DataType.MERGE, 0x01]), true);
+        assert.strictEqual(result.v, null);
+        assert.strictEqual(result.len, 2);
+      });
+    });
   });
 
   describe('per-type bare null', () => {
