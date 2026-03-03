@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
@@ -33,20 +32,17 @@ using Gremlin.Net.Driver.Messages;
 namespace Gremlin.Net.Structure.IO.GraphBinary
 {
     /// <summary>
-    ///     Serializes data to and from Gremlin Server in GraphBinary format.
+    ///     Serializes data to and from Gremlin Server in GraphBinary 4.0 format.
     /// </summary>
     public class GraphBinaryMessageSerializer : IMessageSerializer
     {
-        private const string MimeType = SerializationTokens.GraphBinary1MimeType;
-        private static readonly byte[] Header = Encoding.UTF8.GetBytes(MimeType);
-        
         private readonly GraphBinaryReader _reader;
         private readonly GraphBinaryWriter _writer;
         private readonly RequestMessageSerializer _requestSerializer = new RequestMessageSerializer();
         private readonly ResponseMessageSerializer _responseSerializer = new ResponseMessageSerializer();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
+        ///     Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
         /// </summary>
         /// <param name="registry">The <see cref="TypeSerializerRegistry"/> to use for serialization.</param>
         public GraphBinaryMessageSerializer(TypeSerializerRegistry? registry = null)
@@ -54,9 +50,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             _reader = new GraphBinaryReader(registry);
             _writer = new GraphBinaryWriter(registry);
         }
-        
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
+        ///     Initializes a new instance of the <see cref="GraphBinaryMessageSerializer" /> class.
         /// </summary>
         /// <param name="reader">The <see cref="GraphBinaryReader"/> used to deserialize from GraphBinary.</param>
         /// <param name="writer">The <see cref="GraphBinaryWriter"/> used to serialize to GraphBinary.</param>
@@ -72,20 +68,19 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
             CancellationToken cancellationToken = default)
         {
             using var stream = new MemoryStream();
-            await stream.WriteByteAsync((byte) Header.Length, cancellationToken).ConfigureAwait(false);
-            await stream.WriteAsync(Header, cancellationToken).ConfigureAwait(false);
+            // No MIME type prefix — HTTP uses Content-Type header
             await _requestSerializer.WriteValueAsync(requestMessage, stream, _writer, cancellationToken)
                 .ConfigureAwait(false);
-            var bytes = stream.ToArray();
-            return bytes;
+            return stream.ToArray();
         }
 
         /// <inheritdoc />
-        public async Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
+        public async Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
             CancellationToken cancellationToken = default)
         {
             using var stream = new MemoryStream(message);
-            return await _responseSerializer.ReadValueAsync(stream, _reader, cancellationToken).ConfigureAwait(false);
+            return await _responseSerializer.ReadValueAsync(stream, _reader, cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 }

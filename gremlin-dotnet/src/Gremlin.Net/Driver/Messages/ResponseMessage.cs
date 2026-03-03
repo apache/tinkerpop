@@ -21,42 +21,55 @@
 
 #endregion
 
-using System;
-
 namespace Gremlin.Net.Driver.Messages
 {
     /// <summary>
-    ///     The message returned from the server.
+    ///     The 4.0 response message returned from the server.
     /// </summary>
-    /// <typeparam name="T">The type of the data returned.</typeparam>
+    /// <typeparam name="T">The type of the result data.</typeparam>
     public record ResponseMessage<T>
     {
         /// <summary>
         ///     Initializes a new instance of the <see cref="ResponseMessage{T}" /> record.
         /// </summary>
-        /// <param name="requestId">The identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.</param>
-        /// <param name="status">Status information about this <see cref="ResponseMessage{T}"/>.</param>
-        /// <param name="result">The result with its data and optional meta information.</param>
-        public ResponseMessage(Guid? requestId, ResponseStatus status, ResponseResult<T> result)
+        /// <param name="bulked">Whether the response contains bulked results.</param>
+        /// <param name="result">The deserialized result data.</param>
+        /// <param name="statusCode">The status code from the status footer.</param>
+        /// <param name="statusMessage">Optional status message from the status footer.</param>
+        /// <param name="exception">Optional exception string from the status footer.</param>
+        public ResponseMessage(bool bulked, T result, int statusCode,
+            string? statusMessage, string? exception)
         {
-            RequestId = requestId;
-            Status = status;
+            Bulked = bulked;
             Result = result;
+            StatusCode = statusCode;
+            StatusMessage = statusMessage;
+            Exception = exception;
         }
-        
-        /// <summary>
-        ///     Gets the identifier of the <see cref="RequestMessage"/> that generated this <see cref="ResponseMessage{T}"/>.
-        /// </summary>
-        public Guid? RequestId { get; }
 
         /// <summary>
-        ///     Gets status information about this <see cref="ResponseMessage{T}"/>.
+        ///     Gets whether the response contains bulked results.
         /// </summary>
-        public ResponseStatus Status { get; }
+        public bool Bulked { get; }
 
         /// <summary>
-        ///     Gets the result with its data and optional meta information.
+        ///     Gets the deserialized result data.
         /// </summary>
-        public ResponseResult<T> Result { get; set; }
+        public T Result { get; }
+
+        /// <summary>
+        ///     Gets the status code from the status footer (200 = success).
+        /// </summary>
+        public int StatusCode { get; }
+
+        /// <summary>
+        ///     Gets the optional status message from the status footer.
+        /// </summary>
+        public string? StatusMessage { get; }
+
+        /// <summary>
+        ///     Gets the optional exception string from the status footer.
+        /// </summary>
+        public string? Exception { get; }
     }
 }

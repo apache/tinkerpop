@@ -49,43 +49,26 @@ namespace Gremlin.Net.IntegrationTest.Driver
             await Task.WhenAll(tasks);
         }
 
-        [Theory]
+        [Theory(Skip = "WebSocket connection pool test, not applicable to HTTP (Phase 2 cleanup)")]
         [InlineData(1)]
         [InlineData(2)]
         [InlineData(8)]
         public void ShouldCreateConfiguredNrConnections(int connectionPoolSize)
         {
-            using (var gremlinClient = CreateGremlinClient(connectionPoolSize))
-            {
-                var nrConnections = gremlinClient.NrConnections;
-                Assert.Equal(connectionPoolSize, nrConnections);
-            }
+            // Phase 2: test body removed — connection pool not applicable to HTTP
         }
 
-        [Fact]
+        [Fact(Skip = "WebSocket connection pool test, not applicable to HTTP (Phase 2 cleanup)")]
         public async Task ShouldThrowConnectionPoolBusyExceptionWhenPoolIsBusy()
         {
-            const int nrParallelRequests = 2;
-            using (var gremlinClient = CreateGremlinClient(connectionPoolSize: 1, maxInProcessPerConnection: 1))
-            {
-                const int sleepTime = 100;
-
-                var thrownException = await Assert.ThrowsAsync<ConnectionPoolBusyException>(() =>
-                    ExecuteMultipleLongRunningRequestsInParallel(gremlinClient, nrParallelRequests, sleepTime));
-                Assert.Contains(nameof(ConnectionPoolSettings.MaxInProcessPerConnection), thrownException.Message);
-                Assert.Contains(nameof(ConnectionPoolSettings.PoolSize), thrownException.Message);
-            }
+            // Phase 2: test body removed — connection pool not applicable to HTTP
+            await Task.CompletedTask;
         }
 
         private static GremlinClient CreateGremlinClient(int connectionPoolSize = 2, int maxInProcessPerConnection = 4)
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            return new GremlinClient(gremlinServer,
-                connectionPoolSettings: new ConnectionPoolSettings
-                {
-                    PoolSize = connectionPoolSize,
-                    MaxInProcessPerConnection = maxInProcessPerConnection
-                });
+            return new GremlinClient(gremlinServer);
         }
     }
 }

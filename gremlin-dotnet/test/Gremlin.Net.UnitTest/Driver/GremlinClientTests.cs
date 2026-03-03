@@ -21,10 +21,8 @@
 
 #endregion
 
-using System;
 using Gremlin.Net.Driver;
-using Gremlin.Net.Structure.IO;
-using Gremlin.Net.Structure.IO.GraphSON;
+using Gremlin.Net.Structure.IO.GraphBinary;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
@@ -32,49 +30,39 @@ namespace Gremlin.Net.UnitTest.Driver
     public class GremlinClientTests
     {
         [Fact]
-        public void ShouldThrowOnExecutionOfMultiConnectionInPool()
+        public void ShouldCreateClientWithDefaultSettings()
         {
-            var host = "localhost";
-            var port = 8182;
-            var sessionId = Guid.NewGuid().ToString();
-            // set pool size more than 1
-            var poolSettings = new ConnectionPoolSettings {PoolSize = 2};
-
-            var gremlinServer = new GremlinServer(host, port);
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-                new GremlinClient(gremlinServer, connectionPoolSettings: poolSettings, sessionId: sessionId));
-        }
-
-#pragma warning disable 612,618
-        [Fact]
-        public void ShouldThrowForInvalidGraphSONReaderWriterCombination()
-        {
-            Assert.Throws<ArgumentException>(() =>
-                new GremlinClient(new GremlinServer(), new GraphSON2Reader(), new GraphSON3Writer()));
-        }
-        
-        [Fact]
-        public void ShouldThrowForInvalidGraphSONReaderForGivenMimeType()
-        {
-            Assert.Throws<ArgumentException>(() =>
-                new GremlinClient(new GremlinServer(), new GraphSON3Reader(), new GraphSON2Writer(),
-                    SerializationTokens.GraphSON2MimeType));
-        }
-        
-        [Fact]
-        public void ShouldThrowForInvalidGraphSONWriterForGivenMimeType()
-        {
-            Assert.Throws<ArgumentException>(() =>
-                new GremlinClient(new GremlinServer(), new GraphSON2Reader(), new GraphSON3Writer(),
-                    SerializationTokens.GraphSON2MimeType));
+            using var client = new GremlinClient(new GremlinServer());
+            // Should not throw — default serializer and settings are used
         }
 
         [Fact]
-        public void ShouldThrowForUnsupportedMimeType()
+        public void ShouldCreateClientWithCustomSerializer()
         {
-            Assert.Throws<ArgumentException>(() =>
-                new GremlinClient(new GremlinServer(), new GraphSON3Reader(), new GraphSON3Writer(), "unsupported"));
+            var serializer = new GraphBinaryMessageSerializer();
+            using var client = new GremlinClient(new GremlinServer(), messageSerializer: serializer);
+            // Should not throw
         }
-#pragma warning restore 612,618
+
+        [Fact]
+        public void ShouldCreateClientWithCustomSettings()
+        {
+            var settings = new HttpConnectionSettings
+            {
+                EnableCompression = true,
+                BulkResults = true
+            };
+            using var client = new GremlinClient(new GremlinServer(), connectionSettings: settings);
+            // Should not throw
+        }
+
+        [Fact]
+        public void ShouldDisposeWithoutError()
+        {
+            var client = new GremlinClient(new GremlinServer());
+            client.Dispose();
+            // Should not throw on double dispose
+            client.Dispose();
+        }
     }
 }

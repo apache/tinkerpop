@@ -39,7 +39,7 @@ namespace Gremlin.Net.Driver
 
         public void HandleReceived(ResponseMessage<List<object>> received)
         {
-            foreach (var d in received.Result.Data!)
+            foreach (var d in received.Result)
             {
                 _result.Add((T) d);
             }

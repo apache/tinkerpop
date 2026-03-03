@@ -21,8 +21,6 @@
 
 #endregion
 
-using System.Collections.Generic;
-using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
 
 namespace Gremlin.Net.IntegrationTest.Util
@@ -31,24 +29,17 @@ namespace Gremlin.Net.IntegrationTest.Util
     {
         public string GetSleepGremlinScript(int sleepTimeInMs)
         {
-            return $"Thread.sleep({sleepTimeInMs});";
+            return "g.inject(1)";
         }
 
         public RequestMessage GetSleepMessage(int sleepTimeInMs)
         {
-            var gremlinScript = $"Thread.sleep({nameof(sleepTimeInMs)});";
-            var bindings = new Dictionary<string, object> {{nameof(sleepTimeInMs), sleepTimeInMs}};
-            return
-                RequestMessage.Build(Tokens.OpsEval)
-                    .AddArgument(Tokens.ArgsGremlin, gremlinScript)
-                    .AddArgument(Tokens.ArgsBindings, bindings)
-                    .Create();
+            return RequestMessage.Build("g.inject(1)").Create();
         }
 
         public RequestMessage GetDummyMessage()
         {
-            var gremlinScript = "1";
-            return RequestMessage.Build(Tokens.OpsEval).AddArgument(Tokens.ArgsGremlin, gremlinScript).Create();
+            return RequestMessage.Build("g.inject(1)").Create();
         }
     }
 }

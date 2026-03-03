@@ -34,9 +34,10 @@ using System.Numerics;
 using System.Collections.Generic;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
+using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Process.Traversal.Strategy.Finalization;
 using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
-using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
@@ -720,8 +721,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_withoutStrategiesXFilterRankingStrategyX_V_out_order_dedup", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(FilterRankingStrategy)).V().Out().Order().Dedup()}}, 
                {"g_withStrategiesXGraphFilterStrategyX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new GraphFilterStrategy()).V()}}, 
                {"g_withoutStrategiesXGraphFilterStrategyX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(GraphFilterStrategy)).V()}}, 
-               {"g_withStrategiesXHaltedTraverserStrategyXDetachedFactoryXX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new HaltedTraverserStrategy(haltedTraverserFactory: "org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory")).V()}}, 
-               {"g_withStrategiesXHaltedTraverserStrategyXReferenceFactoryXX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new HaltedTraverserStrategy(haltedTraverserFactory: "org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory")).V()}}, 
+               {"g_withStrategiesXHaltedTraverserStrategyXDetachedFactoryXX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new HaltedTraverserStrategy(haltedTraverserFactoryName: "org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory")).V()}}, 
+               {"g_withStrategiesXHaltedTraverserStrategyXReferenceFactoryXX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new HaltedTraverserStrategy(haltedTraverserFactoryName: "org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory")).V()}}, 
                {"g_withoutStrategiesXHaltedTraverserStrategyX_V", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(HaltedTraverserStrategy)).V()}}, 
                {"g_withStrategiesXIdentityRemovalStrategyX_V_identity_out", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithStrategies(new IdentityRemovalStrategy()).V().Identity().Out()}}, 
                {"g_withoutStrategiesXIdentityRemovalStrategyX_V_identity_out", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.WithoutStrategies(typeof(IdentityRemovalStrategy)).V().Identity().Out()}}, 

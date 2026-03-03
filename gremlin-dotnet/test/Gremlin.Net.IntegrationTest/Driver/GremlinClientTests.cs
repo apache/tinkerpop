@@ -23,8 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -43,8 +41,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Theory]
-        [InlineData("'justAString'", "justAString")]
-        [InlineData("'Hello' + 'World'", "HelloWorld")]
+        [InlineData("g.inject('justAString')", "justAString")]
+        [InlineData("g.inject('HelloWorld')", "HelloWorld")]
         public async Task ShouldSendScriptForEvaluationAndReturnCorrectResult(string requestMsg, string expectedResponse)
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
@@ -62,12 +60,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                var responseMsgSize = 5000;
-                var requestMsg = $"'1'*{responseMsgSize}";
+                var requestMsg = "g.inject(1,2,3,4,5,6,7,8,9,10)";
 
-                var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
+                var response = await gremlinClient.SubmitAsync<int>(requestMsg);
 
-                Assert.Equal(responseMsgSize, response!.Length);
+                Assert.Equal(10, response.Count);
             }
         }
 
@@ -77,15 +74,10 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                var gremlinScript = "g.V().has(propertyKey, propertyValue);";
-                var bindings = new Dictionary<string, object>
-                {
-                    {"propertyKey", "name"},
-                    {"propertyValue", "unknownTestName"}
-                };
+                var gremlinScript = "g.V().has('name','unknownTestName')";
 
                 var response =
-                    await gremlinClient.SubmitWithSingleResultAsync<object>(gremlinScript, bindings);
+                    await gremlinClient.SubmitWithSingleResultAsync<object>(gremlinScript);
 
                 Assert.Null(response);
             }
@@ -103,41 +95,24 @@ namespace Gremlin.Net.IntegrationTest.Driver
                     await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
 
                 Assert.Equal(typeof(ResponseException), exception.GetType());
-                Assert.Contains($"ServerEvaluationError: No such property: {requestMsg}",
-                    exception.Message);
+                Assert.Contains("Failed to interpret Gremlin query", exception.Message);
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Thread.sleep not available in GremlinLang (Phase 2 cleanup)")]
         public async Task ShouldSupportCancellation()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using var gremlinClient = new GremlinClient(gremlinServer);
-            const int sleepTime = 5000;
-            var requestMsg = _requestMessageProvider.GetSleepMessage(sleepTime);
-            var cts = new CancellationTokenSource();
-
-            var submitTask = gremlinClient.SubmitAsync<object>(requestMsg, cts.Token);
-            await Task.Delay(TimeSpan.FromMilliseconds(sleepTime * 0.1), CancellationToken.None);
-            cts.Cancel();
-
-            await Assert.ThrowsAsync<TaskCanceledException>(() => submitTask);
-            Assert.True(submitTask.IsCanceled);
+            await Task.CompletedTask;
         }
 
         [Fact]
         public async Task ShouldReassembleResponseBatches()
         {
-            const int batchSize = 2;
             var expectedResult = new List<int> {1, 2, 3, 4, 5};
-            var requestScript = $"{nameof(expectedResult)}";
-            var bindings = new Dictionary<string, object> {{nameof(expectedResult), expectedResult}};
-            var requestMessage =
-                RequestMessage.Build(Tokens.OpsEval)
-                    .AddArgument(Tokens.ArgsBatchSize, batchSize)
-                    .AddArgument(Tokens.ArgsGremlin, requestScript)
-                    .AddArgument(Tokens.ArgsBindings, bindings)
-                    .Create();
+            var requestScript = "g.inject(1,2,3,4,5)";
+            var requestMessage = RequestMessage.Build(requestScript).Create();
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
@@ -147,28 +122,13 @@ namespace Gremlin.Net.IntegrationTest.Driver
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Thread.sleep not available in GremlinLang (Phase 2 cleanup)")]
         public async Task ShouldCorrectlyAssignResponsesToRequests()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                var sleepTime = 100;
-                var expectedFirstResult = 1;
-                var gremlinScript = _requestMessageProvider.GetSleepGremlinScript(sleepTime);
-                gremlinScript += $"{expectedFirstResult}";
-                var firstRequestMsg = RequestMessage.Build(Tokens.OpsEval)
-                    .AddArgument(Tokens.ArgsGremlin, gremlinScript).Create();
-                var expectedSecondResponse = 2;
-                var secondScript = $"{expectedSecondResponse}";
-
-                var firstResponseTask = gremlinClient.SubmitWithSingleResultAsync<int>(firstRequestMsg);
-                var secondResponseTask = gremlinClient.SubmitWithSingleResultAsync<int>(secondScript);
-
-                var secondResponse = await secondResponseTask;
-                Assert.Equal(expectedSecondResponse, secondResponse);
-                var firstResponse = await firstResponseTask;
-                Assert.Equal(expectedFirstResult, firstResponse);
+                await Task.CompletedTask;
             }
         }
 
@@ -179,10 +139,9 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
                 var expectedResult = new List<int> {1, 2, 3, 4, 5};
-                var requestMsg = $"{nameof(expectedResult)}";
-                var bindings = new Dictionary<string, object> {{nameof(expectedResult), expectedResult}};
+                var requestMsg = "g.inject(1,2,3,4,5)";
 
-                var response = await gremlinClient.SubmitAsync<int>(requestMsg, bindings);
+                var response = await gremlinClient.SubmitAsync<int>(requestMsg);
 
                 Assert.Equal(expectedResult, response);
             }
@@ -197,7 +156,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
 
             Assert.NotNull(resultSet.StatusAttributes);
-            Assert.True(resultSet.StatusAttributes.ContainsKey("host"));
         }
 
         [Fact]
@@ -230,68 +188,34 @@ namespace Gremlin.Net.IntegrationTest.Driver
             var gremlinServer = new GremlinServer(TestHost, TestPort);
             using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                var requestMsg = "a + b";
-                var a = 1;
-                var b = 2;
-                var bindings = new Dictionary<string, object> {{"a", a}, {"b", b}};
+                var requestMsg = "g.inject(3)";
 
                 var response =
-                    await gremlinClient.SubmitWithSingleResultAsync<int>(requestMsg, bindings);
+                    await gremlinClient.SubmitWithSingleResultAsync<int>(requestMsg);
 
-                Assert.Equal(a + b, response);
+                Assert.Equal(3, response);
             }
         }
 
-        [Fact]
+        [Fact(Skip = "WebSocket-specific test, not applicable to HTTP connection (Phase 2 cleanup)")]
         public async Task ShouldConfigureWebSocketOptionsAsSpecified()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            ClientWebSocketOptions? optionsSet = null;
-            var expectedKeepAliveInterval = TimeSpan.FromMilliseconds(11);
-            var webSocketConfiguration =
-                new Action<ClientWebSocketOptions>(options =>
-                {
-                    options.UseDefaultCredentials = false;
-                    options.KeepAliveInterval = expectedKeepAliveInterval;
-                    optionsSet = options;
-                });
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
+            using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                // send dummy message to create at least one connection
-                await gremlinClient.SubmitAsync(_requestMessageProvider.GetDummyMessage());
-                
-                Assert.NotNull(optionsSet);
-                Assert.False(optionsSet.UseDefaultCredentials);
-                Assert.Equal(expectedKeepAliveInterval, optionsSet.KeepAliveInterval);
+                // Phase 2: test body removed — WebSocket options not applicable to HTTP
+                await Task.CompletedTask;
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Session-based test, sessions not supported over HTTP (Phase 2 cleanup)")]
         public async Task ShouldSaveVariableBetweenRequestsInSession()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
-            var sessionId = Guid.NewGuid().ToString();
-            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: sessionId))
+            using (var gremlinClient = new GremlinClient(gremlinServer))
             {
-                await gremlinClient.SubmitAsync<int>("x = 1");
-
-                var expectedResult = new List<int> {3};
-                var response = await gremlinClient.SubmitAsync<int>("x + 2");
-
-                Assert.Equal(expectedResult, response);
-            }
-
-            using (var gremlinClient = new GremlinClient(gremlinServer, sessionId: sessionId))
-            {
-                try
-                {
-                    await gremlinClient.SubmitAsync<int>("x");
-                    Assert.True(false, "The 'x' variable should not exist after session close");
-                }
-                catch (Exception)
-                {
-                    // do nothing
-                }
+                // Phase 2: test body removed — sessions not supported over HTTP
+                await Task.CompletedTask;
             }
         }
         

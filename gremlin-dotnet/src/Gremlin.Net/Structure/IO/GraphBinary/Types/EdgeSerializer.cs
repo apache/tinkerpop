@@ -46,12 +46,15 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
+            // wrapping label into list here for now according to GraphBinaryV4
+            await writer.WriteNonNullableValueAsync(new List<object> { value.Label }, stream, cancellationToken).ConfigureAwait(false);
 
             await writer.WriteAsync(value.InV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(value.InV.Label, stream, cancellationToken).ConfigureAwait(false);
+            // wrapping label into list here for now according to GraphBinaryV4
+            await writer.WriteNonNullableValueAsync(new List<object> { value.InV.Label }, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(value.OutV.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(value.OutV.Label, stream, cancellationToken).ConfigureAwait(false);
+            // wrapping label into list here for now according to GraphBinaryV4
+            await writer.WriteNonNullableValueAsync(new List<object> { value.OutV.Label }, stream, cancellationToken).ConfigureAwait(false);
 
             // Placeholder for the parent vertex
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
@@ -65,13 +68,20 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken)
+            // reading single string value for now according to GraphBinaryV4
+            var labelList = (List<object?>)await reader.ReadNonNullableValueAsync<List<object>>(stream, cancellationToken)
                 .ConfigureAwait(false);
+            var label = (string)labelList[0]!;
 
-            var inV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
-            var outV = new Vertex(await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false),
-                (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false));
+            var inVId = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            // reading single string value for now according to GraphBinaryV4
+            var inVLabelList = (List<object?>)await reader.ReadNonNullableValueAsync<List<object>>(stream, cancellationToken).ConfigureAwait(false);
+            var inV = new Vertex(inVId, (string)inVLabelList[0]!);
+
+            var outVId = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            // reading single string value for now according to GraphBinaryV4
+            var outVLabelList = (List<object?>)await reader.ReadNonNullableValueAsync<List<object>>(stream, cancellationToken).ConfigureAwait(false);
+            var outV = new Vertex(outVId, (string)outVLabelList[0]!);
 
             // discard possible parent vertex
             await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);

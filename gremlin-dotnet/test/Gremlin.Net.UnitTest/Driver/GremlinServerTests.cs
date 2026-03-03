@@ -37,7 +37,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
             var uri = gremlinServer.Uri;
 
-            Assert.Equal($"ws://{host}:{port}/gremlin", uri.AbsoluteUri);
+            Assert.Equal($"http://{host}:{port}/gremlin", uri.AbsoluteUri);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Gremlin.Net.UnitTest.Driver
 
             var uri = gremlinServer.Uri;
 
-            Assert.Equal($"wss://{host}:{port}/gremlin", uri.AbsoluteUri);
+            Assert.Equal($"https://{host}:{port}/gremlin", uri.AbsoluteUri);
         }
 
         [Fact]
@@ -61,6 +61,24 @@ namespace Gremlin.Net.UnitTest.Driver
             var uri = gremlinServer.Uri;
 
             Assert.Equal(8182, uri.Port);
+        }
+
+        [Fact]
+        public void ShouldUseCustomPath()
+        {
+            var gremlinServer = new GremlinServer("localhost", 8182, path: "/custom");
+
+            var uri = gremlinServer.Uri;
+
+            Assert.Equal("http://localhost:8182/custom", uri.AbsoluteUri);
+        }
+
+        [Fact]
+        public void ShouldUseDefaultGremlinPath()
+        {
+            var gremlinServer = new GremlinServer("localhost", 8182);
+
+            Assert.Equal("/gremlin", gremlinServer.Uri.AbsolutePath);
         }
     }
 }

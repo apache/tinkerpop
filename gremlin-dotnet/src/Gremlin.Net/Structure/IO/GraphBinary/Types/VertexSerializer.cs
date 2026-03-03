@@ -46,7 +46,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             await writer.WriteAsync(value.Id, stream, cancellationToken).ConfigureAwait(false);
-            await writer.WriteNonNullableValueAsync(value.Label, stream, cancellationToken).ConfigureAwait(false);
+            // wrapping label into list here for now according to GraphBinaryV4
+            await writer.WriteNonNullableValueAsync(new List<object> { value.Label }, stream, cancellationToken).ConfigureAwait(false);
             await writer.WriteAsync(null, stream, cancellationToken).ConfigureAwait(false);
         }
 
@@ -55,7 +56,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
             CancellationToken cancellationToken = default)
         {
             var id = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var label = (string)await reader.ReadNonNullableValueAsync<string>(stream, cancellationToken).ConfigureAwait(false);
+            // reading single string value for now according to GraphBinaryV4
+            var labelList = (List<object?>)await reader.ReadNonNullableValueAsync<List<object>>(stream, cancellationToken).ConfigureAwait(false);
+            var label = (string)labelList[0]!;
 
             var properties = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
             var propertiesAsArray = null == properties ? Array.Empty<object>() : (properties as List<object>)?.ToArray();

@@ -21,57 +21,86 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary
 {
     /// <summary>
-    /// Allows to deserialize a <see cref="ResponseMessage{T}"/>.
+    ///     Deserializes a <see cref="ResponseMessage{T}"/> from the GraphBinary 4.0 streaming format.
     /// </summary>
     public class ResponseMessageSerializer
     {
         /// <summary>
-        /// Reads a response message from the stream.
+        ///     Reads a response message from the stream in the 4.0 format:
+        ///     version byte + bulked flag + result data + marker + status footer.
         /// </summary>
         /// <param name="stream">The GraphBinary data to parse.</param>
         /// <param name="reader">A <see cref="GraphBinaryReader"/> that can be used to read nested values.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read response message.</returns>
-        public async Task<ResponseMessage<List<object>>> ReadValueAsync(MemoryStream stream, GraphBinaryReader reader,
-            CancellationToken cancellationToken = default)
+        public async Task<ResponseMessage<List<object>>> ReadValueAsync(MemoryStream stream,
+            GraphBinaryReader reader, CancellationToken cancellationToken = default)
         {
-            var version = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false) & 0xff;
-
+            // 1. Version byte — validate MSB is set
+            var version = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false) & 0xFF;
             if (version >> 7 != 1)
             {
-                // This is an indication that the response stream was incorrectly built
-                // Or the stream offsets are wrong
                 throw new IOException("The most significant bit should be set according to the format");
             }
 
-            var requestId =
-                (Guid?)await reader.ReadNullableValueAsync<Guid>(stream, cancellationToken).ConfigureAwait(false);
-            var code = (ResponseStatusCode)await reader.ReadNonNullableValueAsync<int>(stream, cancellationToken)
-                .ConfigureAwait(false);
-            var message = (string?)await reader.ReadNullableValueAsync<string>(stream, cancellationToken)
-                .ConfigureAwait(false);
-            var dictObj = await reader
-                .ReadNonNullableValueAsync<Dictionary<string, object>>(stream, cancellationToken).ConfigureAwait(false);
-            var attributes = (Dictionary<string, object>)dictObj;
+            // 2. Bulked flag
+            var bulkedByte = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
+            var bulked = bulkedByte == 0x01;
 
-            var status = new ResponseStatus(code, attributes, message);
+            // 3. Read result data until Marker
+            var results = new List<object>();
+            while (true)
+            {
+                var value = await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
 
-            var meta = (Dictionary<string, object>)await reader
-                .ReadNonNullableValueAsync<Dictionary<string, object>>(stream, cancellationToken).ConfigureAwait(false);
-            var data = (List<object>?)await reader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
-            var result = new ResponseResult<List<object>>(data, meta);
+                if (value is Marker)
+                {
+                    break;
+                }
 
-            return new ResponseMessage<List<object>>(requestId, status, result);
+                if (bulked)
+                {
+                    // Read the fully-qualified Long bulk count following the value
+                    var bulkCount = (long)(await reader.ReadAsync(stream, cancellationToken)
+                        .ConfigureAwait(false))!;
+                    results.Add(new Traverser(value, bulkCount));
+                }
+                else
+                {
+                    results.Add(value!);
+                }
+            }
+
+            // 4. Status footer: status code (Int value)
+            var statusCode = (int)await reader.ReadNonNullableValueAsync<int>(
+                stream, cancellationToken).ConfigureAwait(false);
+
+            // 5. Nullable status message (value_flag + String value)
+            var statusMessage = (string?)await reader.ReadNullableValueAsync<string>(
+                stream, cancellationToken).ConfigureAwait(false);
+
+            // 6. Nullable exception (value_flag + String value)
+            var exception = (string?)await reader.ReadNullableValueAsync<string>(
+                stream, cancellationToken).ConfigureAwait(false);
+
+            if (statusCode != 200)
+            {
+                throw new ResponseException(statusCode, statusMessage, exception);
+            }
+
+            return new ResponseMessage<List<object>>(bulked, results, statusCode,
+                statusMessage, exception);
         }
     }
 }

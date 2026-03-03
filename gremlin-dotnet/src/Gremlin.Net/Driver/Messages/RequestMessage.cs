@@ -27,55 +27,38 @@ using System.Collections.Generic;
 namespace Gremlin.Net.Driver.Messages
 {
     /// <summary>
-    ///     The model for a request message sent to the server.
+    ///     The model for a 4.0 request message sent to the server.
     /// </summary>
     public class RequestMessage
     {
-        private RequestMessage(Guid requestId, string operation, string processor, Dictionary<string, object> arguments)
+        private RequestMessage(string gremlin, Dictionary<string, object> fields)
         {
-            RequestId = requestId;
-            Operation = operation;
-            Processor = processor;
-            Arguments = arguments;
+            Gremlin = gremlin ?? throw new ArgumentNullException(nameof(gremlin));
+            Fields = fields;
+            if (!Fields.ContainsKey(Tokens.ArgsLanguage))
+            {
+                Fields[Tokens.ArgsLanguage] = "gremlin-lang";
+            }
         }
 
         /// <summary>
-        ///     Gets the ID of this request message.
+        ///     Gets the Gremlin query string.
         /// </summary>
-        /// <value>A UUID representing the unique identification for the request.</value>
-        public Guid RequestId { get; }
+        public string Gremlin { get; }
 
         /// <summary>
-        ///     Gets the name of the operation that should be executed by the Gremlin Server.
+        ///     Gets the fields map containing language, g, bindings, and other options.
         /// </summary>
-        /// <value>
-        ///     The name of the "operation" to execute based on the available OpProcessor configured in the Gremlin Server. This
-        ///     defaults to "eval" which evaluates a request script.
-        /// </value>
-        public string Operation { get; }
-
-        /// <summary>
-        ///     Gets the name of the OpProcessor to utilize.
-        /// </summary>
-        /// <value>
-        ///     The name of the OpProcessor to utilize. This defaults to an empty string which represents the default
-        ///     OpProcessor for evaluating scripts.
-        /// </value>
-        public string Processor { get; }
-
-        /// <summary>
-        ///     Gets arguments of the <see cref="RequestMessage" />.
-        /// </summary>
-        public Dictionary<string, object> Arguments { get; }
+        public Dictionary<string, object> Fields { get; }
 
         /// <summary>
         ///     Initializes a <see cref="Builder" /> to build a <see cref="RequestMessage" />.
         /// </summary>
-        /// <param name="operation">The name of the OpProcessor to utilize.</param>
+        /// <param name="gremlin">The Gremlin query string.</param>
         /// <returns>A <see cref="Builder" /> to build a <see cref="RequestMessage" />.</returns>
-        public static Builder Build(string operation)
+        public static Builder Build(string gremlin)
         {
-            return new Builder(operation);
+            return new Builder(gremlin);
         }
 
         /// <summary>
@@ -83,52 +66,70 @@ namespace Gremlin.Net.Driver.Messages
         /// </summary>
         public class Builder
         {
-            private const string DefaultProcessor = "";
-            private readonly Dictionary<string, object> _arguments = new Dictionary<string, object>();
-            private readonly string _operation;
-            private string _processor = DefaultProcessor;
-            private Guid _requestId = Guid.NewGuid();
+            private readonly string _gremlin;
+            private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
+            private readonly Dictionary<string, object> _bindings = new Dictionary<string, object>();
 
-            internal Builder(string operation)
+            internal Builder(string gremlin)
             {
-                _operation = operation;
+                _gremlin = gremlin;
             }
 
             /// <summary>
-            ///     If this value is not set in the builder then the <see cref="RequestMessage.Processor" /> defaults to
-            ///     the standard op processor (empty string).
+            ///     Sets the traversal source name.
             /// </summary>
-            /// <param name="processor">The name of the processor.</param>
+            /// <param name="g">The traversal source name.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder Processor(string processor)
+            public Builder AddG(string g)
             {
-                _processor = processor;
+                _fields[Tokens.ArgsG] = g;
                 return this;
             }
 
             /// <summary>
-            ///     Overrides the request identifier with a specified one, otherwise the
-            ///     <see cref="Builder" /> will randomly generate a <see cref="Guid" />.
+            ///     Adds a single binding parameter.
             /// </summary>
-            /// <param name="requestId">The request identifier to use.</param>
+            /// <param name="key">The binding key.</param>
+            /// <param name="val">The binding value.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder OverrideRequestId(Guid requestId)
+            public Builder AddBinding(string key, object val)
             {
-                _requestId = requestId;
+                _bindings[key] = val;
                 return this;
             }
 
             /// <summary>
-            ///     Adds and argument to the <see cref="RequestMessage" />.
+            ///     Adds multiple binding parameters.
             /// </summary>
-            /// <param name="key">The key of the argument.</param>
-            /// <param name="value">The value of the argument.</param>
+            /// <param name="bindings">The bindings to add.</param>
             /// <returns>The <see cref="Builder" />.</returns>
-            public Builder AddArgument(string key, object value)
+            public Builder AddBindings(Dictionary<string, object> bindings)
             {
-                _arguments.Add(key, value);
+                foreach (var kvp in bindings)
+                {
+                    _bindings[kvp.Key] = kvp.Value;
+                }
                 return this;
             }
+
+            /// <summary>
+            ///     Adds a field to the request message.
+            /// </summary>
+            /// <param name="key">The field key.</param>
+            /// <param name="value">The field value.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddField(string key, object value)
+            {
+                _fields[key] = value;
+                return this;
+            }
+
+            /// <summary>
+            ///     Checks whether a field has been set.
+            /// </summary>
+            /// <param name="key">The field key to check.</param>
+            /// <returns>True if the field exists.</returns>
+            public bool HasField(string key) => _fields.ContainsKey(key);
 
             /// <summary>
             ///     Creates the <see cref="RequestMessage" /> given the settings provided to the <see cref="Builder" />.
@@ -136,7 +137,8 @@ namespace Gremlin.Net.Driver.Messages
             /// <returns>The built <see cref="RequestMessage" />.</returns>
             public RequestMessage Create()
             {
-                return new RequestMessage(_requestId, _operation, _processor, _arguments);
+                _fields[Tokens.ArgsBindings] = _bindings;
+                return new RequestMessage(_gremlin, _fields);
             }
         }
     }

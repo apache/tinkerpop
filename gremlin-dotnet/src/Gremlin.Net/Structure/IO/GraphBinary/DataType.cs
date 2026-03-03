@@ -86,6 +86,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         public static readonly DataType Custom = new DataType(0);
         
         /// <summary>
+        /// A marker type used to signal the end of result data in a streaming response.
+        /// </summary>
+        public static readonly DataType Marker = new DataType(0xFD);
+
+        /// <summary>
         /// A null value for an unspecified Object value.
         /// </summary>
         public static readonly DataType UnspecifiedNull = new DataType(0xFE);

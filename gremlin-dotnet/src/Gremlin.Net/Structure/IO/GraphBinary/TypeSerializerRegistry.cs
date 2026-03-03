@@ -132,6 +132,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
                 {DataType.Char, new CharSerializer()},
                 {DataType.Duration, new DurationSerializer()},
                 {DataType.OffsetDateTime, new OffsetDateTimeSerializer()},
+                {DataType.Marker, new MarkerSerializer()},
             };
 
         private readonly Dictionary<string, CustomTypeSerializer> _serializerByCustomTypeName =

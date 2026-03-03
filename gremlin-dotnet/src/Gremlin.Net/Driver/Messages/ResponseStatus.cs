@@ -66,7 +66,7 @@ namespace Gremlin.Net.Driver.Messages
         public static void ThrowIfStatusIndicatesError(this ResponseStatus status)
         {
             if (status.Code.IndicatesError())
-                throw new ResponseException(status.Code, status.Attributes, $"{status.Code}: {status.Message}");
+                throw new ResponseException((int)status.Code, $"{status.Code}: {status.Message}", null);
         }
     }
 }

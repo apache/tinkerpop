@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
-using Gremlin.Net.Structure.IO.GraphSON;
+using Gremlin.Net.Structure.IO.GraphBinary;
 using DriverRemoteConnectionImpl = Gremlin.Net.Driver.Remote.DriverRemoteConnection;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public RemoteConnectionFactory(IMessageSerializer? messageSerializer = null)
         {
-            _messageSerializer = messageSerializer ?? new GraphSON3MessageSerializer();
+            _messageSerializer = messageSerializer ?? new GraphBinaryMessageSerializer();
         }
 
         public IRemoteConnection CreateRemoteConnection(int connectionPoolSize = 2)
@@ -61,8 +61,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         public IGremlinClient CreateClient(IMessageSerializer? messageSerializer = null, int connectionPoolSize = 2)
         {
             var c = new GremlinClient(new GremlinServer(TestHost, TestPort),
-                    messageSerializer ?? _messageSerializer,
-                    connectionPoolSettings: new() { PoolSize = connectionPoolSize });
+                    messageSerializer ?? _messageSerializer);
 
             _cleanUp.Add(c);
             return c;

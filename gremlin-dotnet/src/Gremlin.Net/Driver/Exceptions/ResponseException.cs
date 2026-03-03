@@ -22,8 +22,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using Gremlin.Net.Driver.Messages;
 
 namespace Gremlin.Net.Driver.Exceptions
 {
@@ -35,25 +33,24 @@ namespace Gremlin.Net.Driver.Exceptions
         /// <summary>
         ///     Initializes a new instance of the <see cref="ResponseException" /> class.
         /// </summary>
-        /// <param name="statusCode">The status code returned by the server.</param>
-        /// <param name="statusAttributes">The status attributes from the gremlin response.</param>
-        /// <param name="message">The error message string.</param>
-        public ResponseException(ResponseStatusCode statusCode,
-                                 IReadOnlyDictionary<string, object> statusAttributes,
-                                 string message) : base(message)
+        /// <param name="statusCode">The status code from the GraphBinary status footer.</param>
+        /// <param name="statusMessage">The status message from the server.</param>
+        /// <param name="serverException">The exception class name from the server, if provided.</param>
+        public ResponseException(int statusCode, string? statusMessage, string? serverException)
+            : base(statusMessage ?? $"Server error: {statusCode}")
         {
             StatusCode = statusCode;
-            StatusAttributes = statusAttributes;
+            ServerException = serverException;
         }
 
         /// <summary>
-        ///     Gets the status code returned from the server.
+        ///     Gets the status code from the GraphBinary status footer.
         /// </summary>
-        public ResponseStatusCode StatusCode { get; }
+        public int StatusCode { get; }
 
         /// <summary>
-        ///     Gets the status attributes from the gremlin response
+        ///     Gets the exception class name from the server, if provided.
         /// </summary>
-        public IReadOnlyDictionary<string, object> StatusAttributes { get; }
+        public string? ServerException { get; }
     }
 }

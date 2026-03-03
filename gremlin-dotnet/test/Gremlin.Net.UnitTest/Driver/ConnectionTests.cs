@@ -286,8 +286,8 @@ namespace Gremlin.Net.UnitTest.Driver
             var fakeMessageSerializer = Substitute.For<IMessageSerializer>();
             var receivedBytes = new byte[] { 1, 2, 3 };
             var messageToCancel = RequestMessage.Build(string.Empty).Create();
-            var receivedMessage = new ResponseMessage<List<object>>(messageToCancel.RequestId,
-                new ResponseStatus(ResponseStatusCode.Success), new ResponseResult<List<object>>(null));
+            var receivedMessage = new ResponseMessage<List<object>>(false,
+                new List<object>(), 200, null, null);
             fakeMessageSerializer.DeserializeMessageAsync(receivedBytes, Arg.Any<CancellationToken>())
                 .Returns(receivedMessage);
             var fakeWebSocketConnection = Substitute.For<IWebSocketConnection>();

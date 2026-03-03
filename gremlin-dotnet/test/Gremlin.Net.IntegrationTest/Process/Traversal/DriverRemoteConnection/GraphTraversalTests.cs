@@ -27,7 +27,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
-using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Xunit;
@@ -217,7 +216,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var responseException = Assert.Throws<ResponseException>(() =>
                                  g.With("y").With("x", "test").With(Tokens.ArgsEvalTimeout, 10).Inject(1)
                                   .SideEffect(Lambda.Groovy("Thread.sleep(10000)")).Iterate());
-            Assert.Equal(ResponseStatusCode.ServerTimeout, responseException.StatusCode);
+            Assert.Equal(598, responseException.StatusCode);
 
         }
 
