@@ -42,40 +42,63 @@ export default class GraphBinaryReader {
       throw new Error('Buffer is empty.');
     }
 
-    const response = { status: {}, result: {} };
     let cursor = buffer;
     let len;
 
     // {version} is a Byte representing the protocol version
     const version = cursor[0];
-    if (version !== 0x81) {
+    if (version !== 0x84) {
       throw new Error(`Unsupported version '${version}'.`);
     }
     cursor = cursor.slice(1); // skip version
 
-    // {request_id} is a nullable UUID
-    ({ v: response.requestId, len } = this.ioc.uuidSerializer.deserialize(cursor, false, true));
+    // {bulked} is a Byte: 0x00 = not bulked, 0x01 = bulked
+    const bulked = cursor[0] === 0x01;
+    cursor = cursor.slice(1);
+
+    // {result_data} stream - read values until marker
+    const data = [];
+    while (cursor[0] !== 0xfd) {
+      const { v, len: valueLen } = this.ioc.anySerializer.deserialize(cursor);
+      cursor = cursor.slice(valueLen);
+
+      if (bulked) {
+        const { v: bulk, len: bulkLen } = this.ioc.longSerializer.deserialize(cursor, false);
+        cursor = cursor.slice(bulkLen);
+        data.push({ v, bulk: Number(bulk) });
+      } else {
+        data.push(v);
+      }
+    }
+
+    // Skip marker [0xFD, 0x00, 0x00]
+    cursor = cursor.slice(3);
+
+    // {status_code} is an Int bare
+    let code;
+    ({ v: code, len } = this.ioc.intSerializer.deserialize(cursor, false));
     cursor = cursor.slice(len);
 
-    // {status_code} is an Int
-    ({ v: response.status.code, len } = this.ioc.intSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
+    // {status_message} is nullable
+    let message = null;
+    if (cursor[0] === 0x00) {
+      cursor = cursor.slice(1);
+      ({ v: message, len } = this.ioc.stringSerializer.deserialize(cursor, false));
+      cursor = cursor.slice(len);
+    } else {
+      cursor = cursor.slice(1); // skip 0x01 null flag
+    }
 
-    // {status_message} is a nullable String
-    ({ v: response.status.message, len } = this.ioc.stringSerializer.deserialize(cursor, false, true));
-    cursor = cursor.slice(len);
+    // {exception} is nullable
+    let exception = null;
+    if (cursor[0] === 0x00) {
+      cursor = cursor.slice(1);
+      ({ v: exception } = this.ioc.stringSerializer.deserialize(cursor, false));
+    }
 
-    // {status_attributes} is a Map
-    ({ v: response.status.attributes, len } = this.ioc.mapSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
-
-    // {result_meta} is a Map
-    ({ v: response.result.meta, len } = this.ioc.mapSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
-
-    // {result_data} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
-    ({ v: response.result.data } = this.ioc.anySerializer.deserialize(cursor));
-
-    return response;
+    return {
+      status: { code, message, exception },
+      result: { data, bulked },
+    };
   }
 }

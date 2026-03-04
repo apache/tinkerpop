@@ -31,18 +31,14 @@ export default class GraphBinaryWriter {
     this.ioc = ioc;
   }
 
-  writeRequest({ requestId, op, processor, args }) {
+  writeRequest({ gremlin, fields }) {
     const bufs = [
       // {version} 1 byte
-      Buffer.from([0x81]),
-      // {request_id} UUID
-      this.ioc.uuidSerializer.serialize(requestId, false),
-      // {op} String
-      this.ioc.stringSerializer.serialize(op, false),
-      // {processor} String
-      this.ioc.stringSerializer.serialize(processor, false),
-      // {args} Map
-      this.ioc.mapSerializer.serialize(args, false),
+      Buffer.from([0x84]),
+      // {fields} Map bare
+      this.ioc.mapSerializer.serialize(fields || new Map(), false),
+      // {gremlin} String bare
+      this.ioc.stringSerializer.serialize(gremlin, false),
     ];
     return Buffer.concat(bufs);
   }
