@@ -166,7 +166,6 @@ Changes to existing types require new revision.
 - `0x12`: VertexProperty
 - `0x18`: Direction
 - `0x20`: T
-- `0x21`: Merge
 - `0x22`: BigDecimal
 - `0x23`: BigInteger
 - `0x24`: Byte
@@ -174,6 +173,7 @@ Changes to existing types require new revision.
 - `0x26`: Short
 - `0x27`: Boolean
 - `0x2b`: Tree
+- `0x2e`: Merge
 - `0xf0`: CompositePDT
 - `0xf1`: PrimitivePDT
 - `0xfd`: Marker
