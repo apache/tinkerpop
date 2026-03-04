@@ -2103,7 +2103,7 @@ const gremlins = {
     g_V_sackXassignX_byXageX_byXnameX_sack: [function({g}) { return g.V().sack(Operator.assign).by("age").by("name").sack() }], 
     g_V_sideEffectXidentityX: [function({g}) { return g.V().sideEffect(__.identity()) }], 
     g_V_sideEffectXidentity_valuesXnameXX: [function({g}) { return g.V().sideEffect(__.identity().values("name")) }], 
-    g_V_sideEffectXpropertyXage_22X: [function({g}) { return g.addV("person").property("age", 21) }, function({g}) { return g.V().sideEffect(__.property("age", 22)) }, function({g}) { return g.V().has("age", 21) }, function({g}) { return g.V().has("age", 22) }], 
+    g_V_sideEffectXpropertyXsingle_age_22X: [function({g}) { return g.addV("person").property(Cardinality.single, "age", 21) }, function({g}) { return g.V().sideEffect(__.property(Cardinality.single, "age", 22)) }, function({g}) { return g.V().has("age", 21) }, function({g}) { return g.V().has("age", 22) }], 
     g_V_group_byXvaluesXnameX_sideEffectXconstantXzyxXX_substringX1XX_byXconstantX1X_sideEffectXconstantXxyzXXX: [function({g}) { return g.V().group().by(__.values("name").sideEffect(__.constant("zyx")).substring(0, 1)).by(__.constant(1).sideEffect(__.constant("xyz"))) }], 
     g_withSideEffectXx_setX_V_both_both_sideEffectXlocalXaggregateXxX_byXnameXX_capXxX_unfold: [function({g}) { return g.withSideEffect("x", new Set([])).V().both().both().sideEffect(__.local(__.aggregate("x").by("name"))).cap("x").unfold() }], 
     g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX: [function({g}) { return g.V().has("age").groupCount("a").by("name").out().cap("a") }], 
