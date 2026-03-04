@@ -73,6 +73,13 @@ describe('Type Detection Tests', () => {
       assert.strictEqual(anySerializer.serialize(-Infinity)[0], DataType.DOUBLE);
     });
 
+    it('-0 → DOUBLE (0x07) preserving sign', () => {
+      const result = anySerializer.serialize(-0);
+      assert.strictEqual(result[0], DataType.DOUBLE);
+      const deserialized = anySerializer.deserialize(result);
+      assert.isTrue(Object.is(deserialized.v, -0));
+    });
+
     it('BigInt within Int64 range → BIGINTEGER (0x23)', () => {
       assert.strictEqual(anySerializer.serialize(123n)[0], DataType.BIGINTEGER);
       assert.strictEqual(anySerializer.serialize(-456n)[0], DataType.BIGINTEGER);
@@ -316,13 +323,6 @@ describe('Type Detection Tests', () => {
       const serialized = anySerializer.serialize(NaN);
       const deserialized = anySerializer.deserialize(serialized);
       assert.isTrue(Number.isNaN(deserialized.v));
-    });
-
-    it('-0 round-trip (loses sign)', () => {
-      const serialized = anySerializer.serialize(-0);
-      const deserialized = anySerializer.deserialize(serialized);
-      // -0 loses its sign through serialization, becomes +0
-      assert.strictEqual(deserialized.v, 0);
     });
 
     it('complex nested structure', () => {

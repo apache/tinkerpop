@@ -48,7 +48,8 @@ export default class NumberSerializationStrategy {
         Number.isNaN(item) ||
         item === Number.POSITIVE_INFINITY ||
         item === Number.NEGATIVE_INFINITY ||
-        !Number.isInteger(item)
+        !Number.isInteger(item) ||
+        Object.is(item, -0)
       ) {
         return this.ioc.doubleSerializer.serialize(item, fullyQualifiedFormat);
       }

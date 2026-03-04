@@ -174,7 +174,7 @@ function invalidDateComparator(actual, expected) {
 }
 
 describe('GraphBinary v4 Model Tests', () => {
-  // run mode (31 entries)
+  // run mode (32 entries)
   run('pos-biginteger');
   run('neg-biginteger');
   run('empty-binary');
@@ -206,6 +206,7 @@ describe('GraphBinary v4 Model Tests', () => {
   run('no-prop-vertex');
   run('id-t');
   run('out-direction');
+  run('neg-zero-double', negZeroComparator);
 
   // runWriteRead mode (22 entries)
   runWriteRead('min-byte');
@@ -231,8 +232,7 @@ describe('GraphBinary v4 Model Tests', () => {
   runWriteRead('set-cardinality-vertexproperty', setCardinalityComparator);
   runWriteRead('traversal-vertex');
 
-  // runRead mode (6 entries)
-  runRead('neg-zero-double', negZeroComparator);
+  // runRead mode (5 entries)
   runRead('neg-zero-float', negZeroComparator);
   runRead('max-offsetdatetime', invalidDateComparator);
   runRead('min-offsetdatetime', invalidDateComparator);
