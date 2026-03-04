@@ -50,15 +50,15 @@ Feature: Step - sideEffect()
       | v[ripple] |
       | v[peter] |
 
-  Scenario: g_V_sideEffectXpropertyXage_22X
+  Scenario: g_V_sideEffectXpropertyXsingle_age_22X
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("person").property("age",21)
+      g.addV("person").property(Cardinality.single,"age",21)
       """
     And the traversal of
       """
-      g.V().sideEffect(__.property("age",22))
+      g.V().sideEffect(__.property(Cardinality.single,"age",22))
       """
     When iterated to list
     Then the result should have a count of 1

@@ -2032,7 +2032,7 @@ world.gremlins = {
     'g_V_sackXassignX_byXageX_byXnameX_sack': [(lambda g:g.V().sack(Operator.assign).by('age').by('name').sack())], 
     'g_V_sideEffectXidentityX': [(lambda g:g.V().side_effect(__.identity()))], 
     'g_V_sideEffectXidentity_valuesXnameXX': [(lambda g:g.V().side_effect(__.identity().values('name')))], 
-    'g_V_sideEffectXpropertyXage_22X': [(lambda g:g.add_v('person').property('age', 21)), (lambda g:g.V().side_effect(__.property('age', 22))), (lambda g:g.V().has('age', 21)), (lambda g:g.V().has('age', 22))], 
+    'g_V_sideEffectXpropertyXsingle_age_22X': [(lambda g:g.add_v('person').property(Cardinality.single, 'age', 21)), (lambda g:g.V().side_effect(__.property(Cardinality.single, 'age', 22))), (lambda g:g.V().has('age', 21)), (lambda g:g.V().has('age', 22))], 
     'g_V_group_byXvaluesXnameX_sideEffectXconstantXzyxXX_substringX1XX_byXconstantX1X_sideEffectXconstantXxyzXXX': [(lambda g:g.V().group().by(__.values('name').side_effect(__.constant('zyx')).substring(0, 1)).by(__.constant(1).side_effect(__.constant('xyz'))))], 
     'g_withSideEffectXx_setX_V_both_both_sideEffectXlocalXaggregateXxX_byXnameXX_capXxX_unfold': [(lambda g:g.with_side_effect('x', set()).V().both().both().side_effect(__.local(__.aggregate('x').by('name'))).cap('x').unfold())], 
     'g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX': [(lambda g:g.V().has('age').group_count('a').by('name').out().cap('a'))], 
