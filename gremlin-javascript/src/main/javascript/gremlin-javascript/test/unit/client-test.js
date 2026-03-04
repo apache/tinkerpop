@@ -21,15 +21,14 @@ import assert from 'assert';
 import Client from '../../lib/driver/client.js';
 
 describe('Client', function () {
-  const customOpProcessor = 'customOpProcessor';
   const query = 'customQuery';
 
-  it('should use default opProcessor', function () {
+  it('should submit request with default traversalSource', function () {
     const connectionMock = {
-      submit: function (processor, op, args, requestId) {
-        assert.strictEqual(args.gremlin, query);
-        assert.strictEqual(processor, '');
-
+      submit: function (requestMessage) {
+        assert.strictEqual(requestMessage.getGremlin(), query);
+        assert.strictEqual(requestMessage.getG(), 'g');
+        assert.strictEqual(requestMessage.getLanguage(), 'gremlin-lang');
         return Promise.resolve();
       }
     };
@@ -39,41 +38,23 @@ describe('Client', function () {
     customClient.submit(query)
   });
 
-  it('should allow to configure opProcessor', function () {
+  it('should submit request with custom traversalSource', function () {
     const connectionMock = {
-      submit: function (processor, op, args, requestId) {
-        assert.strictEqual(args.gremlin, query);
-        assert.strictEqual(processor, customOpProcessor);
-
+      submit: function (requestMessage) {
+        assert.strictEqual(requestMessage.getGremlin(), query);
+        assert.strictEqual(requestMessage.getG(), 'gCustom');
         return Promise.resolve();
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor, connectOnStartup: false});
+    const customClient = new Client('ws://localhost:9321', {traversalSource: 'gCustom', connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query)
-  });
-
-  it('should allow to submit extra arguments', function () {
-    const connectionMock = {
-      submit: function (processor, op, args, requestId) {
-        assert.strictEqual(args.gremlin, query);
-        assert.strictEqual(args.evaluationTimeout, 123);
-        assert.strictEqual(args.materializeProperties, 'tokens');
-        assert.strictEqual(processor, customOpProcessor);
-
-        return Promise.resolve();
-      }
-    };
-
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', processor: customOpProcessor, connectOnStartup: false});
-    customClient._connection = connectionMock;
-    customClient.submit(query, null, {'evaluationTimeout': 123, 'materializeProperties': 'tokens'})
   });
 
   it('should use default mimeType', function () {
     const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
-    assert.strictEqual(customClient._connection.mimeType, 'application/vnd.graphbinary-v1.0')
+    assert.strictEqual(customClient._connection.mimeType, 'application/vnd.graphbinary-v4.0')
   });
 
   it('should use given mimeType', function () {

@@ -83,7 +83,7 @@ function getMimeTypeFromSocketServerSettings(socketServerSettings) {
       break;
     case "GraphBinaryV1":
     default:
-      mimeType = 'application/vnd.graphbinary-v1.0';
+      mimeType = 'application/vnd.graphbinary-v4.0';
       break;
   }
   return mimeType;
