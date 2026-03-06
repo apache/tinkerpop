@@ -20,7 +20,6 @@
 import assert from 'assert';
 import { AssertionError } from 'assert';
 import anon from '../../lib/process/anonymous-traversal.js';
-import Bytecode from '../../lib/process/bytecode.js';
 import { getSecureConnectionWithPlainTextSaslAuthenticator, getDriverRemoteConnection } from '../helper.js';
 import PlainTextSaslAuthenticator from '../../lib/driver/auth/plain-text-sasl-authenticator.js';
 
@@ -44,7 +43,7 @@ describe('DriverRemoteConnection', function () {
       it('should send the request with valid credentials and parse the response', function () {
         connection = getSecureConnectionWithPlainTextSaslAuthenticator(null, 'stephen', 'password');
 
-        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+        return connection.submit('g.V().tail()')
           .then(function (response) {
             assert.ok(response);
             assert.ok(response.traversers);
@@ -54,7 +53,7 @@ describe('DriverRemoteConnection', function () {
       it('should send the request with invalid credentials and parse the response error', function () {
         connection = getSecureConnectionWithPlainTextSaslAuthenticator(null, 'Bob', 'password');
 
-        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+        return connection.submit('g.V().tail()')
           .then(function() {
             assert.fail("invalid credentials should throw");
           })
@@ -71,7 +70,7 @@ describe('DriverRemoteConnection', function () {
           rejectUnauthorized: false
         });
 
-        return connection.submit(new Bytecode().addStep('V', []).addStep('tail', []))
+        return connection.submit('g.V().tail()')
             .then(function() {
               assert.fail("server is running TLS and trying to connect with ws:// so this should result in error thrown");
             })

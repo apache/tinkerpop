@@ -28,7 +28,7 @@ import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
 import { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,HaltedTraverserStrategy, FilterRankingStrategy,
         OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } from '../../lib/process/traversal-strategy.js';
-import Bytecode from '../../lib/process/bytecode.js';
+import GremlinLang from '../../lib/process/gremlin-lang.js';
 import { getConnection, getDriverRemoteConnection } from '../helper.js';
 import * as helper from '../helper.js';
 const __ = statics;
@@ -37,8 +37,8 @@ let connection;
 let txConnection;
 
 class SocialTraversal extends GraphTraversal {
-  constructor(graph, traversalStrategies, bytecode) {
-    super(graph, traversalStrategies, bytecode);
+  constructor(graph, traversalStrategies, gremlinLang) {
+    super(graph, traversalStrategies, gremlinLang);
   }
 
   aged(age) {
@@ -47,8 +47,8 @@ class SocialTraversal extends GraphTraversal {
 }
 
 class SocialTraversalSource extends GraphTraversalSource {
-  constructor(graph, traversalStrategies, bytecode) {
-    super(graph, traversalStrategies, bytecode, SocialTraversalSource, SocialTraversal);
+  constructor(graph, traversalStrategies, gremlinLang) {
+    super(graph, traversalStrategies, gremlinLang, SocialTraversalSource, SocialTraversal);
   }
 
   person(name) {
@@ -57,7 +57,7 @@ class SocialTraversalSource extends GraphTraversalSource {
 }
 
 function anonymous() {
-  return new SocialTraversal(null, null, new Bytecode());
+  return new SocialTraversal(null, null, new GremlinLang());
 }
 
 function aged(age) {

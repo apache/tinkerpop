@@ -22,7 +22,6 @@
  */
 
 import assert from 'assert';
-import Bytecode from '../../lib/process/bytecode.js';
 import { Vertex } from '../../lib/structure/graph.js';
 import { getConnection } from '../helper.js';
 
