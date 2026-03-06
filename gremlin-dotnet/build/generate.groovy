@@ -114,13 +114,13 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
                 writer.write("(g,p) =>")
                 writer.write(t.getTranslated().
                         replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
-                        replaceAll("v([0-9]+)", "(Vertex) p[\"v\$1\"]").
+                        replaceAll("(?<![\\w\\-])v([0-9]+)(?![\\w\\.])", "(Vertex) p[\"v\$1\"]").
                         replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
-                        replaceAll("e([0-9]+)", "p[\"e\$1\"]").
+                        replaceAll("(?<![\\w\\-])e([0-9]+)(?![\\w\\.])", "p[\"e\$1\"]").
                         replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
-                        replaceAll("l([0-9]+)", "(IFunction) p[\"l\$1\"]").
+                        replaceAll("(?<![\\w\\-])l([0-9]+)(?![\\w\\.])", "(IFunction) p[\"l\$1\"]").
                         replaceAll("pred([0-9]+)", "(IPredicate) p[\"pred\$1\"]").
-                        replaceAll("c([0-9]+)", "(IComparator) p[\"c\$1\"]"))
+                        replaceAll("(?<![\\w\\-])c([0-9]+)(?![\\w\\.])", "(IComparator) p[\"c\$1\"]"))
                 if (gremlinItty.hasNext())
                     writer.write(', ')
                 else

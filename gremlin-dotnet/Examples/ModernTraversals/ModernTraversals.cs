@@ -36,7 +36,7 @@ public class ModernTraversalExample
         // Use gmodern in CI environment, default connection locally
         var traversalSource = IsDocker ? "gmodern" : "g";
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), traversalSource);
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         /*
         This example requires the Modern toy graph to be preloaded upon launching the Gremlin server.
