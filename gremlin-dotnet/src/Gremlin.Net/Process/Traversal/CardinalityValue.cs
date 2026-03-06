@@ -22,71 +22,60 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
     ///     Holds a property value with the associated <see cref="Traversal.Cardinality" />.
     /// </summary>
-    public class CardinalityValue : Bytecode
+    public class CardinalityValue
     {
         /// <summary>
         ///     Gets the <see cref="Traversal.Cardinality" /> for the value.
         /// </summary>
-        public Cardinality? Cardinality
-        {
-            get
-            {
-                return this.SourceInstructions[0].Arguments[0];
-            }
-        }
+        public Cardinality? Cardinality { get; }
 
         /// <summary>
         ///     Gets the value.
         /// </summary>
-        public object? Value
-        {
-            get
-            {
-                return this.SourceInstructions[0].Arguments[1];
-            }
-        }
+        public object? Value { get; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CardinalityValue" /> class.
         /// </summary>
-        public CardinalityValue(Cardinality card, object val)
+        /// <param name="cardinality">The cardinality for the value.</param>
+        /// <param name="value">The property value.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="cardinality" /> is null.</exception>
+        public CardinalityValue(Cardinality cardinality, object? value)
         {
-            if (card == null)
-                throw new ArgumentNullException("Cardinality argument must not be null");
-            this.AddSource("CardinalityValueTraversal", card, val);
+            if (cardinality == null)
+                throw new ArgumentNullException(nameof(cardinality), "Cardinality argument must not be null");
+            Cardinality = cardinality;
+            Value = value;
         }
 
         /// <summary>
-        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and Single <see cref="Cardinality" />.
+        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and Single <see cref="Traversal.Cardinality" />.
         /// </summary>
-        public static CardinalityValue Single(object value)
+        public static CardinalityValue Single(object? value)
         {
-            return new CardinalityValue(Cardinality.Single, value);
+            return new CardinalityValue(Traversal.Cardinality.Single, value);
         }
 
         /// <summary>
-        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and Set <see cref="Cardinality" />.
+        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and Set <see cref="Traversal.Cardinality" />.
         /// </summary>
-        public static CardinalityValue Set(object value)
+        public static CardinalityValue Set(object? value)
         {
-            return new CardinalityValue(Cardinality.Set, value);
+            return new CardinalityValue(Traversal.Cardinality.Set, value);
         }
 
         /// <summary>
-        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and List <see cref="Cardinality" />.
+        ///     Creates a new <see cref="CardinalityValue" /> with a particular value and List <see cref="Traversal.Cardinality" />.
         /// </summary>
-        public static CardinalityValue List(object value)
+        public static CardinalityValue List(object? value)
         {
-            return new CardinalityValue(Cardinality.List, value);
+            return new CardinalityValue(Traversal.Cardinality.List, value);
         }
     }
 }

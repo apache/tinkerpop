@@ -39,9 +39,9 @@ namespace Gremlin.Net.Benchmarks
     [MemoryDiagnoser]
     public class MessageSerializerBenchmarks
     {
-        private static readonly Bytecode EmptyBytecode = new Bytecode();
+        private static readonly GremlinLang EmptyGremlinLang = new GremlinLang();
 
-        private static readonly Bytecode SomeBytecode = Traversal().With(null).WithComputer().V().
+        private static readonly GremlinLang SomeGremlinLang = Traversal().With(null).WithComputer().V().
             Has("Name", "marko").
             Where(
                 Out("knows").
@@ -49,15 +49,16 @@ namespace Gremlin.Net.Benchmarks
                 Count().
                 Is(Gt(3))).
             Has("birthDate", Lt(DateTimeOffset.Parse("1980-01-01 00:00:00"))).
-            Bytecode;
+            GremlinLang;
 
-        private static readonly RequestMessage RequestMessageWithEmptyBytecode = RequestMessageFor(EmptyBytecode);
+        private static readonly RequestMessage RequestMessageWithEmptyGremlinLang = RequestMessageFor(EmptyGremlinLang);
         
-        private static readonly RequestMessage RequestMessage = RequestMessageFor(SomeBytecode);
+        private static readonly RequestMessage RequestMessage = RequestMessageFor(SomeGremlinLang);
         
-        private static RequestMessage RequestMessageFor(Bytecode bytecode) => RequestMessage.Build(Tokens.OpsBytecode)
+        private static RequestMessage RequestMessageFor(GremlinLang gremlinLang) => RequestMessage.Build(Tokens.OpsEval)
             .Processor(Tokens.ProcessorTraversal).OverrideRequestId(Guid.NewGuid())
-            .AddArgument(Tokens.ArgsGremlin, bytecode).Create();
+            .AddArgument(Tokens.ArgsGremlin, gremlinLang.GetGremlin())
+            .AddArgument(Tokens.ArgsBindings, gremlinLang.Parameters).Create();
 
         private static readonly GraphBinaryMessageSerializer BinaryMessageSerializer =
             new GraphBinaryMessageSerializer();
@@ -66,22 +67,22 @@ namespace Gremlin.Net.Benchmarks
             GraphSON3MessageSerializer = new GraphSON3MessageSerializer();
         
         [Benchmark]
-        public async Task<byte[]> TestWriteEmptyBytecodeBinary() =>
-            await BinaryMessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyBytecode)
+        public async Task<byte[]> TestWriteEmptyGremlinLangBinary() =>
+            await BinaryMessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyGremlinLang)
                 .ConfigureAwait(false);
         
         [Benchmark]
-        public async Task<byte[]> TestWriteEmptyBytecodeGraphSON3() =>
-            await GraphSON3MessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyBytecode)
+        public async Task<byte[]> TestWriteEmptyGremlinLangGraphSON3() =>
+            await GraphSON3MessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyGremlinLang)
                 .ConfigureAwait(false);
         
         [Benchmark]
-        public async Task<byte[]> TestWriteBytecodeBinary() =>
+        public async Task<byte[]> TestWriteGremlinLangBinary() =>
             await BinaryMessageSerializer.SerializeMessageAsync(RequestMessage)
                 .ConfigureAwait(false);
         
         [Benchmark]
-        public async Task<byte[]> TestWriteBytecodeGraphSON3() =>
+        public async Task<byte[]> TestWriteGremlinLangGraphSON3() =>
             await GraphSON3MessageSerializer.SerializeMessageAsync(RequestMessage)
                 .ConfigureAwait(false);
 

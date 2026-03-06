@@ -33,13 +33,13 @@ namespace Gremlin.Net.Process.Remote
     public interface IRemoteConnection
     {
         /// <summary>
-        ///     Submits <see cref="ITraversal" /> <see cref="Bytecode" /> to a server and returns a
+        ///     Submits <see cref="ITraversal" /> <see cref="Traversal.GremlinLang" /> to a server and returns a
         ///     <see cref="ITraversal" />.
         /// </summary>
-        /// <param name="bytecode">The <see cref="Bytecode" /> to send.</param>
+        /// <param name="gremlinLang">The <see cref="Traversal.GremlinLang" /> to send.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The <see cref="ITraversal" /> with the results and optional side-effects.</returns>
-        Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(Bytecode bytecode, CancellationToken cancellationToken = default);
+        Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(GremlinLang gremlinLang, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Creates a <see cref="RemoteTransaction" /> in the context of a <see cref="GraphTraversalSource" /> designed to work with
