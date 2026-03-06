@@ -58,8 +58,11 @@ services:
       - VERTEX_LABEL=dotnet-example
     working_dir: /gremlin-dotnet
     command: >
-      bash -c "dotnet tool update -g dotnet-trx; dotnet test ./Gremlin.Net.sln -c Release --logger trx; /root/.dotnet/tools/trx;
+      bash -c "find . -path '*/TestResults/*.trx' -delete 2>/dev/null || true;
+      dotnet tool update -g dotnet-trx; dotnet test ./Gremlin.Net.sln -c Release --logger trx;
       EXIT_CODE=$$?;
+      /root/.dotnet/tools/trx || true;
+      if [ $$EXIT_CODE -ne 0 ]; then echo '❌ dotnet test FAILED (exit code '$$EXIT_CODE') — build or test errors above'; fi;
       echo 'Running examples...';
       dotnet run --project Examples/BasicGremlin/BasicGremlin.csproj;
       dotnet run --project Examples/Connections/Connections.csproj;
