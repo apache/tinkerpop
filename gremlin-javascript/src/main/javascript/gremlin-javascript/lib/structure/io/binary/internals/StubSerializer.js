@@ -17,10 +17,14 @@
  *  under the License.
  */
 
-/**
- * @author Igor Ostapenko
- */
-
-import ArraySerializerTestTemplate from './ArraySerializerTestTemplate.js';
-
-ArraySerializerTestTemplate({ ID: 0x09, name: 'List' });
+export default class StubSerializer {
+  constructor(ioc, typeCode, typeName) {
+    this.ioc = ioc;
+    this.typeCode = typeCode;
+    this.typeName = typeName;
+    this.ioc.serializers[typeCode] = this;
+  }
+  deserialize() {
+    throw new Error(`${this.typeName} deserialization is not yet implemented`);
+  }
+}

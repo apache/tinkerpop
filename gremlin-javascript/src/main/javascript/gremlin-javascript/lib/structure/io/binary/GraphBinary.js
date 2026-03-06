@@ -18,7 +18,7 @@
  */
 
 /**
- * GraphBinary 1.0 support implementation.
+ * GraphBinary 4.0 support implementation.
  *
  * The officially expected entrypoint is GraphBinaryReader/GraphBinaryWriter pair of classes,
  * examine lib/driver/** for use cases.
@@ -27,33 +27,13 @@
  * also consider AnySerializer.serialize() unit tests for real examples.
  * See NumberSerializationStrategy to understand how it deals with JavaScript numbers' serialization.
  *
- * Consider AnySerializer.serialize()/deserialize() unit tests to see what is not implemented,
- * what is ignored, what is not expected to be (de)serialized, etc.
- *
  * TODO: it has the following open topics:
- * - [] Should we do anything for application/vnd.graphbinary-v1.0-stringd mime type support?
  * Core Data Types support:
  * - [] 0x22: BigDecimal
  * - [] 0x2b: Tree
- * - [] 0x2c: Metrics
- * - [] 0x2d: TraversalMetrics
- * - [] 0x00: Custom
  * Extended Types support:
  * - [] 0x80: Char
  * - [] 0x81: Duration
- * - [] 0x82: InetAddress
- * - [] 0x83: Instant
- * - [] 0x84: LocalDate
- * - [] 0x85: LocalDateTime
- * - [] 0x86: LocalTime
- * - [] 0x87: MonthDay
- * - [] 0x88: OffsetDateTime
- * - [] 0x89: OffsetTime
- * - [] 0x8a: Period
- * - [] 0x8b: Year
- * - [] 0x8c: YearMonth
- * - [] 0x8d: ZonedDateTime
- * - [] 0x8e: ZoneOffset
  *
  * @author Igor Ostapenko
  */
@@ -63,10 +43,8 @@ import DataType from './internals/DataType.js';
 import * as utils from './internals/utils.js';
 import IntSerializer from './internals/IntSerializer.js';
 import LongSerializer from './internals/LongSerializer.js';
-import LongSerializerNg from './internals/LongSerializerNg.js';
 import StringSerializer from './internals/StringSerializer.js';
-import DateSerializer from './internals/DateSerializer.js';
-import OffsetDateTimeSerializer from './internals/OffsetDateTimeSerializer.js';
+import DateTimeSerializer from './internals/DateTimeSerializer.js';
 import DoubleSerializer from './internals/DoubleSerializer.js';
 import FloatSerializer from './internals/FloatSerializer.js';
 import ArraySerializer from './internals/ArraySerializer.js';
@@ -78,19 +56,15 @@ import PathSerializer from './internals/PathSerializer.js';
 import PropertySerializer from './internals/PropertySerializer.js';
 import VertexSerializer from './internals/VertexSerializer.js';
 import VertexPropertySerializer from './internals/VertexPropertySerializer.js';
-import PSerializer from './internals/PSerializer.js';
-import TraverserSerializer from './internals/TraverserSerializer.js';
-import EnumSerializer from './internals/EnumSerializer.js';
-import LambdaSerializer from './internals/LambdaSerializer.js';
 import BigIntegerSerializer from './internals/BigIntegerSerializer.js';
 import ByteSerializer from './internals/ByteSerializer.js';
-import ByteBufferSerializer from './internals/ByteBufferSerializer.js';
+import BinarySerializer from './internals/BinarySerializer.js';
 import ShortSerializer from './internals/ShortSerializer.js';
 import BooleanSerializer from './internals/BooleanSerializer.js';
-import TextPSerializer from './internals/TextPSerializer.js';
-import TraversalStrategySerializer from './internals/TraversalStrategySerializer.js';
-import BulkSetSerializer from './internals/BulkSetSerializer.js';
+import MarkerSerializer from './internals/MarkerSerializer.js';
 import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js';
+import EnumSerializer from './internals/EnumSerializer.js';
+import StubSerializer from './internals/StubSerializer.js';
 import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
 import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
@@ -105,12 +79,8 @@ ioc.serializers = {};
 
 ioc.intSerializer = new IntSerializer(ioc);
 ioc.longSerializer = new LongSerializer(ioc);
-ioc.longSerializerNg = new LongSerializerNg(ioc);
 ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
-ioc.dateSerializer = new DateSerializer(ioc, ioc.DataType.DATE);
-ioc.offsetDateTimeSerializer = new OffsetDateTimeSerializer(ioc, ioc.DataType.OFFSETDATETIME);
-ioc.timestampSerializer = new DateSerializer(ioc, ioc.DataType.TIMESTAMP);
-ioc.classSerializer = new StringSerializer(ioc, ioc.DataType.CLASS);
+ioc.dateTimeSerializer = new DateTimeSerializer(ioc);
 ioc.doubleSerializer = new DoubleSerializer(ioc);
 ioc.floatSerializer = new FloatSerializer(ioc);
 ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
@@ -122,19 +92,20 @@ ioc.pathSerializer = new PathSerializer(ioc);
 ioc.propertySerializer = new PropertySerializer(ioc);
 ioc.vertexSerializer = new VertexSerializer(ioc);
 ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
-ioc.pSerializer = new PSerializer(ioc);
-ioc.traverserSerializer = new TraverserSerializer(ioc);
-ioc.enumSerializer = new EnumSerializer(ioc);
-ioc.lambdaSerializer = new LambdaSerializer(ioc);
 ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
 ioc.byteSerializer = new ByteSerializer(ioc);
-ioc.byteBufferSerializer = new ByteBufferSerializer(ioc);
+ioc.binarySerializer = new BinarySerializer(ioc);
 ioc.shortSerializer = new ShortSerializer(ioc);
 ioc.booleanSerializer = new BooleanSerializer(ioc);
-ioc.textPSerializer = new TextPSerializer(ioc);
-ioc.traversalStrategySerializer = new TraversalStrategySerializer(ioc);
-ioc.bulkSetSerializer = new BulkSetSerializer(ioc);
+ioc.markerSerializer = new MarkerSerializer(ioc);
 ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
+ioc.enumSerializer = new EnumSerializer(ioc);
+
+// Register stub serializers for unimplemented v4 types
+new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
+new StubSerializer(ioc, ioc.DataType.GRAPH, 'Graph');
+new StubSerializer(ioc, ioc.DataType.COMPOSITEPDT, 'CompositePDT');
+new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
 
 ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
 ioc.anySerializer = new AnySerializer(ioc);
@@ -148,12 +119,8 @@ export const {
   serializers,
   intSerializer,
   longSerializer,
-  longSerializerNg,
   stringSerializer,
-  dateSerializer,
-  offsetDateTimeSerializer,
-  timestampSerializer,
-  classSerializer,
+  dateTimeSerializer,
   doubleSerializer,
   floatSerializer,
   listSerializer,
@@ -165,19 +132,14 @@ export const {
   propertySerializer,
   vertexSerializer,
   vertexPropertySerializer,
-  pSerializer,
-  traverserSerializer,
-  enumSerializer,
-  lambdaSerializer,
   bigIntegerSerializer,
   byteSerializer,
-  byteBufferSerializer,
+  binarySerializer,
   shortSerializer,
   booleanSerializer,
-  textPSerializer,
-  traversalStrategySerializer,
-  bulkSetSerializer,
+  markerSerializer,
   unspecifiedNullSerializer,
+  enumSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,
