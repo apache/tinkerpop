@@ -21,21 +21,21 @@
  * @author Jorge Bay Gondra
  */
 
-import { GraphTraversalSource } from '../process/graph-traversal.js';
-import { TraversalStrategies } from '../process/traversal-strategy.js';
+// import { GraphTraversalSource } from '../process/graph-traversal.js';
+// import { TraversalStrategies } from '../process/traversal-strategy.js';
 
 /**
  * An "empty" graph object to server only as a reference.
  */
 export class Graph {
-  /**
-   * Returns the graph traversal source.
-   * @param TraversalSourceClass The constructor to use for the {@code GraphTraversalSource} instance.
-   * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
-   */
-  traversal(TraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource): GraphTraversalSource {
-    return new TraversalSourceClass(this, new TraversalStrategies());
-  }
+  // /**
+  //  * Returns the graph traversal source.
+  //  * @param TraversalSourceClass The constructor to use for the {@code GraphTraversalSource} instance.
+  //  * @deprecated As of release 3.3.5, replaced by the traversal() anonymous function.
+  //  */
+  // traversal(TraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource): GraphTraversalSource {
+  //   return new TraversalSourceClass(this, new TraversalStrategies());
+  // }
 
   toString() {
     return 'graph[]';
