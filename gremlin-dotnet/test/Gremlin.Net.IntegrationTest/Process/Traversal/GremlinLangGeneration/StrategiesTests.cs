@@ -28,7 +28,7 @@ using Gremlin.Net.Process.Traversal.Strategy.Optimization;
 using Gremlin.Net.Process.Traversal.Strategy.Verification;
 using Xunit;
 
-namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
+namespace Gremlin.Net.IntegrationTest.Process.Traversal.GremlinLangGeneration
 {
     public class StrategiesTests
     {

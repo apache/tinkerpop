@@ -1801,6 +1801,30 @@ namespace Gremlin.Net.Process.Traversal
             return Wrap<TStart, TEnd>(this);
         }
 
+        /// <summary>
+        ///     Adds the property step to this <see cref="GraphTraversal{SType, EType}" />.
+        ///     When a <see cref="IDictionary{TKey, TValue}" /> is supplied, each key/value pair in the map
+        ///     will be added as a property with the given <see cref="Cardinality" />.
+        ///     A value may be a <see cref="CardinalityValue" /> to override the cardinality for that entry.
+        /// </summary>
+        public GraphTraversal<TStart, TEnd> Property(Cardinality cardinality, IDictionary<object, object> map)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+
+            foreach (var entry in map)
+            {
+                if (entry.Value is CardinalityValue cardVal)
+                {
+                    Property(cardVal.Cardinality!, entry.Key, cardVal.Value);
+                }
+                else
+                {
+                    Property(cardinality, entry.Key, entry.Value);
+                }
+            }
+            return Wrap<TStart, TEnd>(this);
+        }
+
 
         /// <summary>
         ///     Adds the propertyMap step to this <see cref="GraphTraversal{SType, EType}" />.

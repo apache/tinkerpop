@@ -1012,5 +1012,34 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             Assert.Equal("g.inject(ids).V(ids)", result.GetGremlin());
             Assert.True(result.Parameters.ContainsKey("ids"));
         }
+
+        // --- Cardinality with Map Tests ---
+
+        [Fact]
+        public void g_V_1_Property_List_Map_With_CardinalityValue()
+        {
+            var map = new Dictionary<object, object>
+            {
+                { "age", CardinalityValue.Single(36) },
+                { "city", "wilmington" },
+                { "state", "delaware" }
+            };
+            Assert.Equal(
+                "g.V(\"1\").property(Cardinality.single,\"age\",36).property(Cardinality.list,\"city\",\"wilmington\").property(Cardinality.list,\"state\",\"delaware\")",
+                _g.V("1").Property(Cardinality.List, map).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void g_V_1_Property_Set_Map_All_Same_Cardinality()
+        {
+            var map = new Dictionary<object, object>
+            {
+                { "city", "wilmington" },
+                { "state", "delaware" }
+            };
+            Assert.Equal(
+                "g.V(\"1\").property(Cardinality.set,\"city\",\"wilmington\").property(Cardinality.set,\"state\",\"delaware\")",
+                _g.V("1").Property(Cardinality.Set, map).GremlinLang.GetGremlin());
+        }
     }
 }

@@ -25,9 +25,9 @@ using System;
 using Gremlin.Net.Process.Traversal;
 using Xunit;
 
-namespace Gremlin.Net.IntegrationTest.Process.Traversal.BytecodeGeneration
+namespace Gremlin.Net.IntegrationTest.Process.Traversal.GremlinLangGeneration
 {
-    public class BytecodeGenerationTests
+    public class GremlinLangGenerationTests
     {
         [Fact]
         public void GraphTraversalStepsShouldUnrollParamsParameters()

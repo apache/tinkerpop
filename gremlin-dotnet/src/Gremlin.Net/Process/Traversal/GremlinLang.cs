@@ -180,6 +180,8 @@ namespace Gremlin.Net.Process.Traversal
 
             if (arg is byte byteVal)
                 return $"{byteVal}B";
+            if (arg is sbyte sbyteVal)
+                return $"{sbyteVal}B";
             if (arg is short shortVal)
                 return $"{shortVal}S";
             if (arg is int intVal)

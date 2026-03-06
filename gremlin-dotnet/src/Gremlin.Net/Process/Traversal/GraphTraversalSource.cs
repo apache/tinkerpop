@@ -75,8 +75,8 @@ namespace Gremlin.Net.Process.Traversal
             GremlinLang = gremlinLang;
         }
 
-        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies,
-            GremlinLang gremlinLang, IRemoteConnection connection)
+        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, GremlinLang gremlinLang,
+            IRemoteConnection connection)
             : this(traversalStrategies.Where(strategy => strategy.GetType() != typeof(RemoteStrategy)).ToList(),
                 gremlinLang)
         {
