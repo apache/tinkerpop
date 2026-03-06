@@ -30,17 +30,17 @@ public class ConnectionExample
 
     static void Main()
     {
-        WithRemote();
+        WithRemoteConnection();
         WithConf();
         WithSerializer();
     }
 
     // Connecting to the server
-    static void WithRemote()
+    static void WithRemoteConnection()
     {
         var server = new GremlinServer(ServerHost, ServerPort);
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(server), "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         // Simple query to verify connection
         var v = g.AddV(VertexLabel).Iterate();
@@ -53,7 +53,7 @@ public class ConnectionExample
     {
         using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
         new GremlinServer(hostname: ServerHost, port: ServerPort, enableSsl: false, username: "", password: "")), "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         var v = g.AddV(VertexLabel).Iterate();
         var count = g.V().HasLabel(VertexLabel).Count().Next();
@@ -66,7 +66,7 @@ public class ConnectionExample
         var server = new GremlinServer(ServerHost, ServerPort);
         var client = new GremlinClient(server, new GraphSON3MessageSerializer());
         using var remoteConnection = new DriverRemoteConnection(client, "g");
-        var g = Traversal().WithRemote(remoteConnection);
+        var g = Traversal().With(remoteConnection);
 
         var v = g.AddV(VertexLabel).Iterate();
         var count = g.V().HasLabel(VertexLabel).Count().Next();
