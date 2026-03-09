@@ -5,3 +5,5 @@ npm-debug.log
 node/
 doc/
 build/
+lib/language/grammar/
+**/.duel-cache/

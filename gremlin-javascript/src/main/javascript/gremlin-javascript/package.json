@@ -20,13 +20,19 @@
   "type": "module",
   "main": "./build/cjs/index.cjs",
   "exports": {
-    "import": "./build/esm/index.js",
-    "require": "./build/cjs/index.cjs"
+    ".": {
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.cjs"
+    },
+    "./language": {
+      "import": "./build/esm/language/index.js"
+    }
   },
   "files": [
     "build"
   ],
   "dependencies": {
+    "antlr4ng": "~3.0.16",
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
     "readable-stream": "^4.5.2",
@@ -35,16 +41,17 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "~12.7.0",
-    "@knighted/duel": "^1.0.7",
+    "@eslint/js": "^9.16.0",
+    "@knighted/duel": "^4.0.2",
     "@tsconfig/node18": "^18.2.2",
     "@types/readable-stream": "^4.0.10",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
+    "antlr-ng": "^1.0.10",
     "chai": "~4.5.0",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
     "cross-env": "^10.1.0",
-    "@eslint/js": "^9.16.0",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
@@ -65,10 +72,13 @@
     "url": "https://issues.apache.org/jira/browse/TINKERPOP"
   },
   "scripts": {
+    "postinstall": "node scripts/patch-antlr4ng.js",
+    "generate": "mkdir -p lib/language/grammar && antlr-ng -Dlanguage=TypeScript -visitor --generate-listener --exact-output-dir -o lib/language/grammar ../../../../../gremlin-language/src/main/antlr4/Gremlin.g4",
+    "prebuild": "npm run generate",
     "build": "rm -rf build && duel --dirs",
-    "prepare": "npm run build",
+    "prepare": "npm run generate && npm run build",
     "test": "npm run unit-test && npm run integration-test",
-    "unit-test": "cross-env TS_NODE_PROJECT='tsconfig.test.json' mocha test/unit/*",
+    "unit-test": "cross-env TS_NODE_PROJECT='tsconfig.test.json' mocha 'test/unit/**/*.js'",
     "integration-test": "npm run integration-test-graphson30 && npm run integration-test-graphbinary",
     "integration-test-graphson30": "cross-env TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",
     "integration-test-graphbinary": "cross-env TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' ./node_modules/mocha/bin/mocha.js test/integration -t 5000",

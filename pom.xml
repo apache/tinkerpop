@@ -234,9 +234,9 @@ limitations under the License.
             --add-opens=java.base/java.net=ALL-UNNAMED
         </jdk17JvmArgs>
 
-        <runtime.npm.version>10.8.2</runtime.npm.version>
-        <runtime.node.version>v20.19.4</runtime.node.version>
-        <node.test.version>20</node.test.version>
+        <runtime.npm.version>10.9.4</runtime.npm.version>
+        <runtime.node.version>v22.22.1</runtime.node.version>
+        <node.test.version>22</node.test.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -546,6 +546,7 @@ limitations under the License.
                         <exclude>**/npm-debug.log</exclude>
                         <exclude>**/dist/**</exclude>
                         <exclude>**/build/**</exclude>
+                        <exclude>**/.duel-cache/**</exclude>
                         <exclude>docs/upgrade/spec/cmdb-data.gremlin</exclude>
                         <exclude>docs/upgrade/spec/spec.md</exclude>
                         <!-- javascript docs/lib -->
