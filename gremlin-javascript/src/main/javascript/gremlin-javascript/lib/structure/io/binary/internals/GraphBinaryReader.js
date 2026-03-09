@@ -75,9 +75,8 @@ export default class GraphBinaryReader {
     cursor = cursor.slice(3);
 
     // {status_code} is an Int bare
-    let code;
-    ({ v: code, len } = this.ioc.intSerializer.deserialize(cursor, false));
-    cursor = cursor.slice(len);
+    const { v: code, len: codeLen } = this.ioc.intSerializer.deserialize(cursor, false);
+    cursor = cursor.slice(codeLen);
 
     // {status_message} is nullable
     let message = null;

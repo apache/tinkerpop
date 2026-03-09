@@ -21,7 +21,7 @@
  * @author Jorge Bay Gondra
  */
 
-import { RemoteConnection } from '../driver/remote-connection.js';
+import type { RemoteConnection } from '../driver/remote-connection.js';
 import { Traversal } from './traversal.js';
 
 export class TraversalStrategies {

@@ -39,7 +39,7 @@ if (process.env.DOCKER_ENVIRONMENT === 'true') {
   socketServerUrl = 'http://gremlin-socket-server-js:';
   sockerServerConfigPath = '/js_app/gremlin-socket-server/conf/test-ws-gremlin.yaml';
 } else {
-  serverUrl = 'http://localhost:8182/gremlin';
+  serverUrl = 'http://localhost:45940/gremlin';
   serverAuthUrl = 'https://localhost:45941/gremlin';
   socketServerUrl = 'http://localhost:';
   sockerServerConfigPath = '../../../../../gremlin-tools/gremlin-socket-server/conf/test-ws-gremlin.yaml';
