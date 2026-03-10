@@ -29,9 +29,8 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
-    "grunt": "^1.5.3",
-    "grunt-cli": "~1.5.0",
-    "grunt-jsdoc": "~2.4.1",
+    "jsdoc": "^3.6.3",
+    "js-yaml": "^3.14.2",
     "mocha": "^10.2.0",
     "prettier": "^3.0.0"
   },
@@ -56,7 +55,8 @@
     "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
     "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
     "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",
-    "lint": "eslint --ext .js ."
+    "lint": "eslint --ext .js .",
+    "doc": "jsdoc -r -d doc -R README.md lib/"
   },
   "engines": {
     "node": ">=20"

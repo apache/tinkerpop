@@ -172,13 +172,13 @@ limitations under the License.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>grunt jsdoc</id>
+                        <id>npm jsdoc</id>
                         <goals>
-                            <goal>grunt</goal>
+                            <goal>npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>jsdoc</arguments>
+                            <arguments>run doc</arguments>
                         </configuration>
                     </execution>
                 </executions>
