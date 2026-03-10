@@ -173,19 +173,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             Assert.Equal(expectedGraphSON, serializedGraphSON);
         }
 
-        [Theory, MemberData(nameof(Versions))]
-        public void ShouldSerializeBinding(int version)
-        {
-            var writer = CreateGraphSONWriter(version);
-            var binding = new Binding("theKey", 123);
-
-            var graphSon = writer.WriteObject(binding);
-
-            const string expected =
-                "{\"@type\":\"g:Binding\",\"@value\":{\"value\":{\"@type\":\"g:Int32\",\"@value\":123},\"key\":\"theKey\"}}";
-            Assert.Equal(expected, graphSon);
-        }
-
         [Fact]
         public void ShouldSerializeWithCustomSerializerForNewType()
         {
@@ -523,10 +510,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphSON
             var writer = CreateGraphSONWriter(version);
             var readonlyStrategy = new SubgraphStrategy(vertices: __.HasLabel("person"));
 
-            var graphSon = writer.WriteObject(readonlyStrategy);
-
-            const string expected = "{\"@type\":\"g:SubgraphStrategy\",\"@value\":{\"fqcn\":\"org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy\",\"conf\":{\"vertices\":{\"@type\":\"g:Bytecode\",\"@value\":{\"step\":[[\"hasLabel\",\"person\"]]}}}}}";
-            Assert.Equal(expected, graphSon);
+            Assert.Throws<NotSupportedException>(() => writer.WriteObject(readonlyStrategy));
         }
 
         [Theory, MemberData(nameof(Versions))]

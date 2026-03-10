@@ -45,11 +45,11 @@ public class DriverRemoteConnectionTests
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
         loggerFactory.CreateLogger(Arg.Any<string>()).Returns(logger);
         using var driverRemoteConnection = new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactory);
-        var bytecodeToLog = SomeValidBytecode;
+        var gremlinLangToLog = SomeValidGremlinLang;
 
-        await driverRemoteConnection.SubmitAsync<object, object>(bytecodeToLog);
+        await driverRemoteConnection.SubmitAsync<object, object>(gremlinLangToLog);
         
-        logger.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
+        logger.VerifyMessageWasLogged(LogLevel.Debug, gremlinLangToLog.ToString());
     }
     
     [Fact]
@@ -61,7 +61,7 @@ public class DriverRemoteConnectionTests
         loggerFactory.CreateLogger(Arg.Any<string>()).Returns(logger);
         using var driverRemoteConnection = new DriverRemoteConnection(TestHost, TestPort, loggerFactory: loggerFactory);
 
-        await driverRemoteConnection.SubmitAsync<object, object>(SomeValidBytecode);
+        await driverRemoteConnection.SubmitAsync<object, object>(SomeValidGremlinLang);
         
         logger.VerifyNothingWasLogged();
     }
@@ -76,20 +76,20 @@ public class DriverRemoteConnectionTests
         using var gremlinClient =
             new GremlinClient(new GremlinServer(TestHost, TestPort), loggerFactory: loggerFactory);
         var driverRemoteConnection = new DriverRemoteConnection(gremlinClient);
-        var bytecodeToLog = SomeValidBytecode;
+        var gremlinLangToLog = SomeValidGremlinLang;
 
-        await driverRemoteConnection.SubmitAsync<object, object>(SomeValidBytecode);
+        await driverRemoteConnection.SubmitAsync<object, object>(SomeValidGremlinLang);
 
-        logger.VerifyMessageWasLogged(LogLevel.Debug, bytecodeToLog.ToString());
+        logger.VerifyMessageWasLogged(LogLevel.Debug, gremlinLangToLog.ToString());
     }
 
-    private static Bytecode SomeValidBytecode
+    private static GremlinLang SomeValidGremlinLang
     {
         get
         {
-            var bytecode = new Bytecode();
-            bytecode.StepInstructions.Add(new Instruction("inject", 1, 2));
-            return bytecode;
+            var gremlinLang = new GremlinLang();
+            gremlinLang.AddStep("inject", 1, 2);
+            return gremlinLang;
         }
     }
 }

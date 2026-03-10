@@ -40,7 +40,7 @@ namespace Gremlin.Net.Driver
             "A connection was closed. Removing it from the pool so it can be replaced.")]
         public static partial void RemovingClosedConnectionFromPool(this ILogger logger);
         
-        [LoggerMessage(20003, LogLevel.Debug, "Submitting Bytecode {bytecode} for request: {requestId}")]
-        public static partial void SubmittingBytecode(this ILogger logger, Bytecode bytecode, Guid requestId);
+        [LoggerMessage(20003, LogLevel.Debug, "Submitting GremlinLang {gremlinLang} for request: {requestId}")]
+        public static partial void SubmittingGremlinLang(this ILogger logger, GremlinLang gremlinLang, Guid requestId);
     }
 }

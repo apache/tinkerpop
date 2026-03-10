@@ -62,7 +62,7 @@ namespace Gremlin.Net.Process.Remote
             {
                 throw new InvalidOperationException("Transaction already started on this object");
             }
-            _g = new GraphTraversalSource(_g.TraversalStrategies, _g.Bytecode, _sessionBasedConnection);
+            _g = new GraphTraversalSource(_g.TraversalStrategies, _g.GremlinLang, _sessionBasedConnection);
             return _g;
         }
 

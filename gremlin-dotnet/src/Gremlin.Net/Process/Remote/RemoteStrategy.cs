@@ -54,7 +54,7 @@ namespace Gremlin.Net.Process.Remote
         public async Task ApplyAsync<TStart, TEnd>(ITraversal<TStart, TEnd> traversal, CancellationToken cancellationToken = default)
         {
             if (traversal.Traversers != null) return;
-            var remoteTraversal = await _remoteConnection.SubmitAsync<TStart, TEnd>(traversal.Bytecode, cancellationToken)
+            var remoteTraversal = await _remoteConnection.SubmitAsync<TStart, TEnd>(traversal.GremlinLang, cancellationToken)
                 .ConfigureAwait(false);
             traversal.Traversers = remoteTraversal.Traversers;
         }

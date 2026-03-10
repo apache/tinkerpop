@@ -37,15 +37,15 @@ namespace Gremlin.Net.Structure.IO.GraphBinary.Types
         /// <summary>
         ///     Initializes a new instance of the <see cref="TraversalSerializer" /> class.
         /// </summary>
-        public TraversalSerializer() : base(DataType.Bytecode)
+        public TraversalSerializer() : base(DataType.FromTypeCode(0x15))
         {
         }
 
         /// <inheritdoc />
-        protected override async Task WriteValueAsync(ITraversal value, Stream stream, GraphBinaryWriter writer,
+        protected override Task WriteValueAsync(ITraversal value, Stream stream, GraphBinaryWriter writer,
             CancellationToken cancellationToken = default)
         {
-            await writer.WriteNonNullableValueAsync(value.Bytecode, stream, cancellationToken).ConfigureAwait(false);
+            throw new NotSupportedException("Traversal serialization via GraphBinary is no longer supported. Use GremlinLang instead.");
         }
 
         /// <summary>

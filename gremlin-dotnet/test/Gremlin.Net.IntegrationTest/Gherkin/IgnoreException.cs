@@ -70,7 +70,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         /// <summary>
         /// tree() is not supported yet
         /// </summary>
-        TreeStepNotSupported
+        TreeStepNotSupported,
 
         /// <summary>
         /// write() is not supported yet for testing

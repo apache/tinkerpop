@@ -50,8 +50,6 @@ namespace Gremlin.Net.Structure.IO.GraphBinary
         public static readonly DataType Vertex = new DataType(0x11);
         public static readonly DataType VertexProperty = new DataType(0x12);
         public static readonly DataType Barrier = new DataType(0x13);
-        public static readonly DataType Binding = new DataType(0x14);
-        public static readonly DataType Bytecode = new DataType(0x15);
         public static readonly DataType Cardinality = new DataType(0x16);
         public static readonly DataType Column = new DataType(0x17);
         public static readonly DataType Direction = new DataType(0x18);

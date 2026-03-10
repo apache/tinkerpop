@@ -58,7 +58,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <returns>A <see cref="GraphTraversalSource" /> configured to use the provided <see cref="IRemoteConnection" />.</returns>
         public GraphTraversalSource With(IRemoteConnection remoteConnection) =>
             new GraphTraversalSource(new List<ITraversalStrategy>(),
-                new Bytecode(), remoteConnection);
+                new GremlinLang(), remoteConnection);
     }
 
 }

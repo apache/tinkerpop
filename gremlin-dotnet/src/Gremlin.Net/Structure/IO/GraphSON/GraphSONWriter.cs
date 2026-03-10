@@ -49,8 +49,6 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         protected readonly Dictionary<Type, IGraphSONSerializer> Serializers = new()
         {
             { typeof(ITraversal), new TraversalSerializer() },
-            { typeof(Bytecode), new BytecodeSerializer() },
-            { typeof(Binding), new BindingSerializer() },
             { typeof(RequestMessage), new RequestMessageSerializer() },
             { typeof(int), new Int32Converter() },
             { typeof(long), new Int64Converter() },

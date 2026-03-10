@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Process.Traversal.Strategy
 {
     /// <summary>
-    ///     Provides a common base class for strategies that are only included in <see cref="Bytecode" />
+    ///     Provides a common base class for strategies that are only included in <see cref="GremlinLang" />
     ///     to be applied remotely.
     /// </summary>
     public abstract class AbstractTraversalStrategy : ITraversalStrategy, IEquatable<AbstractTraversalStrategy>
