@@ -671,40 +671,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
             Assert.Equal(expected, actual);
         }
         
-        [Fact]
-        public async Task TestBinding()
-        {
-            var expected = new Binding("name", "marko");
-            var writer = CreateGraphBinaryWriter();
-            var reader = CreateGraphBinaryReader();
-            var serializationStream = new MemoryStream();
-            
-            await writer.WriteAsync(expected, serializationStream);
-            serializationStream.Position = 0;
-            var actual = await reader.ReadAsync(serializationStream);
-            
-            Assert.Equal(expected, actual);
-        }
-        
-        [Fact]
-        public async Task TestBytecode()
-        {
-            var expected = new Bytecode();
-            expected.SourceInstructions.Add(new Instruction("withStrategies", "SubgraphStrategy"));
-            expected.StepInstructions.Add(new Instruction("V", 1, 2, 3));
-            expected.StepInstructions.Add(new Instruction("out"));
-            var writer = CreateGraphBinaryWriter();
-            var reader = CreateGraphBinaryReader();
-            var serializationStream = new MemoryStream();
-            
-            await writer.WriteAsync(expected, serializationStream);
-            serializationStream.Position = 0;
-            var actual = (Bytecode?) await reader.ReadAsync(serializationStream);
-            
-            Assert.Equal(expected.SourceInstructions, actual!.SourceInstructions);
-            Assert.Equal(expected.StepInstructions, actual.StepInstructions);
-        }
-        
         [Theory]
         [InlineData(1)]
         [InlineData(123)]

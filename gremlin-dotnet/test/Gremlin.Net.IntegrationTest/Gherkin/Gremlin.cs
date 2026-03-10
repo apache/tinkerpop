@@ -2109,7 +2109,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             ITraversal traversal = f.Invoke(g, parameters);
             foreach (var sideEffect in sideEffects)
             {
-                traversal.Bytecode.AddSource("withSideEffect", sideEffect.Key, sideEffect.Value);
+                traversal.GremlinLang.AddSource("withSideEffect", sideEffect.Key, sideEffect.Value);
             }
             return traversal;
         }

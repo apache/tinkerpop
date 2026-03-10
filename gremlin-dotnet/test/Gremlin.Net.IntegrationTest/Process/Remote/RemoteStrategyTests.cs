@@ -38,14 +38,14 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Fact]
-        public void ShouldSendBytecodeToGremlinServer()
+        public void ShouldSendGremlinLangToGremlinServer()
         {
             const string expectedResult = "gremlin";
-            var testBytecode = new Bytecode();
-            testBytecode.AddStep("V");
-            testBytecode.AddStep("has", "test");
-            testBytecode.AddStep("inject", expectedResult);
-            var testTraversal = CreateTraversalWithRemoteStrategy(testBytecode);
+            var gremlinLang = new GremlinLang();
+            gremlinLang.AddStep("V");
+            gremlinLang.AddStep("has", "test");
+            gremlinLang.AddStep("inject", expectedResult);
+            var testTraversal = CreateTraversalWithRemoteStrategy(gremlinLang);
 
             var actualResult = testTraversal.Next();
 
@@ -53,47 +53,47 @@ namespace Gremlin.Net.IntegrationTest.Process.Remote
         }
         
         [Fact]
-        public void ShouldThrowOriginalExceptionWhenByteCodeIsInvalid()
+        public void ShouldThrowOriginalExceptionWhenGremlinLangIsInvalid()
         {
-            var testBytecode = new Bytecode();
-            testBytecode.AddStep("V");
-            testBytecode.AddStep("this_step_does_not_exist", "test");
-            var testTraversal = CreateTraversalWithRemoteStrategy(testBytecode);
+            var gremlinLang = new GremlinLang();
+            gremlinLang.AddStep("V");
+            gremlinLang.AddStep("this_step_does_not_exist", "test");
+            var testTraversal = CreateTraversalWithRemoteStrategy(gremlinLang);
 
             Assert.Throws<ResponseException>(() => testTraversal.Next());
         }
 
         [Fact]
-        public async Task ShouldSendBytecodeToGremlinServerAsynchronouslyForTraversalPromise()
+        public async Task ShouldSendGremlinLangToGremlinServerAsynchronouslyForTraversalPromise()
         {
             const string expectedResult = "gremlin";
-            var testBytecode = new Bytecode();
-            testBytecode.AddStep("V");
-            testBytecode.AddStep("has", "test");
-            testBytecode.AddStep("inject", expectedResult);
-            var testTraversal = CreateTraversalWithRemoteStrategy(testBytecode);
+            var gremlinLang = new GremlinLang();
+            gremlinLang.AddStep("V");
+            gremlinLang.AddStep("has", "test");
+            gremlinLang.AddStep("inject", expectedResult);
+            var testTraversal = CreateTraversalWithRemoteStrategy(gremlinLang);
 
             var actualResult = await testTraversal.Promise(t => t.Next());
 
             Assert.Equal(expectedResult, actualResult);
         }
 
-        private DefaultTraversal<object, object> CreateTraversalWithRemoteStrategy(Bytecode bytecode)
+        private DefaultTraversal<object, object> CreateTraversalWithRemoteStrategy(GremlinLang gremlinLang)
         {
             var remoteStrategy =
                 new RemoteStrategy(new DriverRemoteConnection(new GremlinClient(new GremlinServer(TestHost, TestPort))));
-            return new TestTraversal(remoteStrategy, bytecode);
+            return new TestTraversal(remoteStrategy, gremlinLang);
         }
     }
 
     internal class TestTraversal : DefaultTraversal<object, object>
     {
-        public TestTraversal(ITraversalStrategy traversalStrategy, Bytecode bytecode)
+        public TestTraversal(ITraversalStrategy traversalStrategy, GremlinLang gremlinLang)
         {
             TraversalStrategies.Add(traversalStrategy);
-            Bytecode = bytecode;
+            GremlinLang = gremlinLang;
         }
 
-        public override Bytecode Bytecode { get; }
+        public override GremlinLang GremlinLang { get; }
     }
 }

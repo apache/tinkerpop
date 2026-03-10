@@ -46,11 +46,6 @@ namespace Gremlin.Net.Driver
         public const string OpsAuthentication = "authentication";
 
         /// <summary>
-        ///     Operation used for a request that contains the Bytecode representation of a Traversal.
-        /// </summary>
-        public const string OpsBytecode = "bytecode";
-
-        /// <summary>
         ///     Operation used to evaluate a Gremlin script provided as a string.
         /// </summary>
         public const string OpsEval = "eval";

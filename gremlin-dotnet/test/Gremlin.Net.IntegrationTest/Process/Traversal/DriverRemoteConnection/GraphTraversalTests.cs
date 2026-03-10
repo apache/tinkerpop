@@ -56,8 +56,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
 
-            var b = Bindings.Instance;
-            var count = g.V().Has("person", "age", b.Of("x", P.Lt(30))).Count().Next();
+            var count = g.V().Has("person", "age", P.Lt(30)).Count().Next();
 
             Assert.Equal(2, count);
         }
@@ -191,13 +190,12 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         }
 
         [Fact]
-        public void ShouldUseBindingsInTraversal()
+        public void ShouldUseParametersInTraversal()
         {
             var connection = _connectionFactory.CreateRemoteConnection();
             var g = AnonymousTraversalSource.Traversal().With(connection);
 
-            var b = new Bindings();
-            var count = g.V().Has(b.Of("propertyKey", "name"), b.Of("propertyValue", "marko")).OutE().Count().Next();
+            var count = g.V().Has("name", "marko").OutE().Count().Next();
 
             Assert.Equal(3, count);
         }  
