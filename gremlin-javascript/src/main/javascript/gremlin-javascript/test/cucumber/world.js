@@ -22,7 +22,7 @@
  */
 'use strict';
 
-const {setWorldConstructor, Before, BeforeAll, AfterAll} = require('cucumber');
+const {setWorldConstructor, Before, BeforeAll, AfterAll} = require('@cucumber/cucumber');
 const helper = require('../helper');
 const traversal = require('../../lib/process/anonymous-traversal').traversal;
 const graphTraversalModule = require('../../lib/process/graph-traversal');
