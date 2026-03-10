@@ -41,10 +41,10 @@ export default class VertexPropertySerializer {
       }
       return Buffer.concat([
         this.ioc.unspecifiedNullSerializer.serialize(null), // {id}=null
-        this.ioc.stringSerializer.serialize('', false), // {label}=''
+        this.ioc.listSerializer.serialize([], false), // {label}=empty list
         this.ioc.unspecifiedNullSerializer.serialize(null), // {value}=null
         this.ioc.unspecifiedNullSerializer.serialize(null), // {parent}=null
-        this.ioc.unspecifiedNullSerializer.serialize(null), // {properties}=null
+        this.ioc.listSerializer.serialize([], true), // {properties}=empty list
       ]);
     }
 
@@ -57,7 +57,8 @@ export default class VertexPropertySerializer {
     bufs.push(this.ioc.anySerializer.serialize(item.id));
 
     // {label}
-    bufs.push(this.ioc.stringSerializer.serialize(item.label, false));
+    const labels = Array.isArray(item.label) ? item.label : item.label ? [item.label] : [];
+    bufs.push(this.ioc.listSerializer.serialize(labels, false));
 
     // {value}
     bufs.push(this.ioc.anySerializer.serialize(item.value));
@@ -66,7 +67,7 @@ export default class VertexPropertySerializer {
     bufs.push(this.ioc.unspecifiedNullSerializer.serialize(null));
 
     // {properties}
-    bufs.push(this.ioc.anySerializer.serialize(item.properties));
+    bufs.push(this.ioc.listSerializer.serialize([], true));
 
     return Buffer.concat(bufs);
   }
@@ -116,10 +117,11 @@ export default class VertexPropertySerializer {
       }
       cursor = cursor.slice(id_len);
 
-      // {label} is a String value
+      // {label} is a List value
       let label, label_len;
       try {
-        ({ v: label, len: label_len } = this.ioc.stringSerializer.deserialize(cursor, false));
+        ({ v: label, len: label_len } = this.ioc.listSerializer.deserialize(cursor, false));
+        label = Array.isArray(label) && label.length > 0 ? label[0] : label;
         len += label_len;
       } catch (err) {
         err.message = '{label}: ' + err.message;

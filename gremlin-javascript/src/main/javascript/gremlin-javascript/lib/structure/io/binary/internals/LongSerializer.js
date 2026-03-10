@@ -93,8 +93,7 @@ export default class LongSerializer {
 
       let v = cursor.readBigInt64BE();
       if (v < Number.MIN_SAFE_INTEGER || v > Number.MAX_SAFE_INTEGER) {
-        // TODO: It tries to keep the same contract as GraphSON LongSerializer provides.
-        // Is it still appropriate to do so? Should we consider LongSerializerNg?
+        // Keeps the same contract as GraphSON LongSerializer — converts to Number (loses precision beyond 2^53).
         v = parseFloat(v.toString());
       } else {
         v = Number(v);

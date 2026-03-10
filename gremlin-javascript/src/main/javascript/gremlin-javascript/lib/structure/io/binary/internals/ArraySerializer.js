@@ -70,6 +70,7 @@ export default class ArraySerializer {
   deserialize(buffer, fullyQualifiedFormat = true) {
     let len = 0;
     let cursor = buffer;
+    let isBulked = false;
 
     try {
       if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
@@ -95,9 +96,10 @@ export default class ArraySerializer {
         if (value_flag === 1) {
           return { v: null, len };
         }
-        if (value_flag !== 0) {
+        if (value_flag !== 0 && value_flag !== 2) {
           throw new Error('unexpected {value_flag}');
         }
+        isBulked = value_flag === 2;
         cursor = cursor.slice(1);
       }
 
@@ -125,7 +127,21 @@ export default class ArraySerializer {
           throw err;
         }
         cursor = cursor.slice(value_len);
-        v.push(value);
+        
+        if (isBulked) {
+          if (cursor.length < 8) {
+            throw new Error(`{item_${i}}: bulk count is missing`);
+          }
+          const bulkCount = cursor.readBigInt64BE();
+          len += 8;
+          cursor = cursor.slice(8);
+          
+          for (let j = 0n; j < bulkCount; j++) {
+            v.push(value);
+          }
+        } else {
+          v.push(value);
+        }
       }
 
       return { v, len };

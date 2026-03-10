@@ -30,15 +30,9 @@ export default class AnySerializer {
     // specifically ordered, the first canBeUsedFor=true wins
     this.serializers = [
       ioc.unspecifiedNullSerializer,
-
       ioc.numberSerializationStrategy,
-
       ioc.booleanSerializer,
-      ioc.offsetDateTimeSerializer,
-      ioc.dateSerializer,
-      ioc.pSerializer,
-      ioc.traverserSerializer,
-      ioc.enumSerializer,
+      ioc.dateTimeSerializer,
       ioc.setSerializer,
       ioc.listSerializer,
       ioc.uuidSerializer,
@@ -47,14 +41,10 @@ export default class AnySerializer {
       ioc.propertySerializer,
       ioc.vertexSerializer,
       ioc.vertexPropertySerializer,
+      ioc.enumSerializer,
       ioc.stringSerializer,
-      ioc.classSerializer,
-      ioc.textPSerializer,
-      ioc.traversalStrategySerializer,
-
-      ioc.byteBufferSerializer, // Buffer instance
-      ioc.lambdaSerializer, // any function
-      ioc.mapSerializer, // Map or any Object
+      ioc.binarySerializer,
+      ioc.mapSerializer,
     ];
   }
 

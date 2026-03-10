@@ -42,7 +42,7 @@ export default class ByteSerializer {
       bufs.push(Buffer.from([this.ioc.DataType.BYTE, 0x00]));
     }
     const v = Buffer.alloc(1);
-    v.writeUInt8(item); // if item is not within uint8 limits writeUInt8 will error
+    v.writeInt8(item); // if item is not within int8 limits writeInt8 will error
     bufs.push(v);
 
     return Buffer.concat(bufs);
@@ -87,7 +87,7 @@ export default class ByteSerializer {
       }
       len += 1;
 
-      const v = cursor.readUInt8();
+      const v = cursor.readInt8();
       return { v, len };
     } catch (err) {
       throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
