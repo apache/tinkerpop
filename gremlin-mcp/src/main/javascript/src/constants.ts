@@ -45,6 +45,7 @@ export const TOOL_NAMES = {
   RUN_GREMLIN_QUERY: 'run_gremlin_query',
   REFRESH_SCHEMA_CACHE: 'refresh_schema_cache',
   FORMAT_GREMLIN_QUERY: 'format_gremlin_query',
+  TRANSLATE_GREMLIN_QUERY: 'translate_gremlin_query',
 } as const;
 
 // Default Configuration Values

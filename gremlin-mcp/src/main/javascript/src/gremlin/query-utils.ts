@@ -33,6 +33,17 @@ type GraphTraversalSource = process.GraphTraversalSource;
 
 const { label } = gremlin.process.statics;
 
+type CountResult = { value?: unknown };
+
+const extractCountMap = (result: unknown): Map<string, number> | undefined => {
+  if (typeof result !== 'object' || result === null || !('value' in result)) {
+    return undefined;
+  }
+
+  const value = (result as CountResult).value;
+  return value instanceof Map ? (value as Map<string, number>) : undefined;
+};
+
 /**
  * Processes items in controlled batches with concurrency limiting.
  *
@@ -127,7 +138,7 @@ export const getVertexCountsPerLabel = (g: GraphTraversalSource) =>
     'g.V().groupCount().by(label()).next()'
   ).pipe(
     Effect.map(result => {
-      const map = (result as any)?.value as Map<string, number> | undefined;
+      const map = extractCountMap(result);
       return { value: map ? (Object.fromEntries(map) as Record<string, number>) : undefined };
     })
   );
@@ -145,7 +156,7 @@ export const getEdgeCountsPerLabel = (g: GraphTraversalSource) =>
     'g.E().groupCount().by(label()).next()'
   ).pipe(
     Effect.map(result => {
-      const map = (result as any)?.value as Map<string, number> | undefined;
+      const map = extractCountMap(result);
       return { value: map ? (Object.fromEntries(map) as Record<string, number>) : undefined };
     })
   );

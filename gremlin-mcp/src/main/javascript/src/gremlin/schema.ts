@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-import { Effect, Context, Layer } from 'effect';
+import { Effect, Context, Layer, pipe } from 'effect';
 import { generateGraphSchema, DEFAULT_SCHEMA_CONFIG } from './schema-generator.js';
 import {
   createSchemaCache,
@@ -50,11 +50,16 @@ export const SchemaServiceLive = Layer.effect(
     const config = yield* AppConfig;
     const cacheRef = yield* createSchemaCache();
 
-    const generateSchemaEffect = generateGraphSchema(gremlinClient, {
-      ...DEFAULT_SCHEMA_CONFIG,
-      includeCounts: config.schema.includeCounts,
-      includeSampleValues: config.schema.includeSampleValues,
-    });
+    const generateSchemaEffect = pipe(
+      gremlinClient.getConnection,
+      Effect.flatMap(conn =>
+        generateGraphSchema(conn, {
+          ...DEFAULT_SCHEMA_CONFIG,
+          includeCounts: config.schema.includeCounts,
+          includeSampleValues: config.schema.includeSampleValues,
+        })
+      )
+    );
 
     const getSchema = getCachedSchema(cacheRef, generateSchemaEffect);
     const peekSchema = peekCachedSchema(cacheRef);

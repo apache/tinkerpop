@@ -56,11 +56,12 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
+      expect(Option.isSome(result.gremlin.endpoint)).toBe(true);
+      expect(result.gremlin.endpoint).toEqual(
+        Option.some({ host: 'localhost', port: 8182, traversalSource: 'g' })
+      );
       expect(result).toMatchObject({
         gremlin: {
-          host: 'localhost',
-          port: 8182,
-          traversalSource: 'g',
           useSSL: false,
           idleTimeout: 300,
         },
@@ -89,11 +90,11 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
+      expect(result.gremlin.endpoint).toEqual(
+        Option.some({ host: 'localhost', port: 8182, traversalSource: 'g' })
+      );
       expect(result).toMatchObject({
         gremlin: {
-          host: 'localhost',
-          port: 8182,
-          traversalSource: 'g',
           useSSL: false,
           idleTimeout: 300,
         },
@@ -110,10 +111,12 @@ describe('Effect-based Configuration Management', () => {
       });
     });
 
-    it('should fail when required GREMLIN_MCP_ENDPOINT is missing', async () => {
+    it('should succeed with no GREMLIN_MCP_ENDPOINT (offline mode)', async () => {
       delete process.env.GREMLIN_MCP_ENDPOINT;
 
-      await expect(Effect.runPromise(AppConfig)).rejects.toThrow();
+      const result = await Effect.runPromise(AppConfig);
+
+      expect(result.gremlin.endpoint).toEqual(Option.none());
     });
 
     it('should parse boolean values correctly', async () => {
@@ -136,9 +139,9 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
-      expect(result.gremlin.host).toBe('localhost');
-      expect(result.gremlin.port).toBe(8182);
-      expect(result.gremlin.traversalSource).toBe('custom');
+      expect(result.gremlin.endpoint).toEqual(
+        Option.some({ host: 'localhost', port: 8182, traversalSource: 'custom' })
+      );
     });
 
     it('should parse comma-separated denylist', async () => {
@@ -235,9 +238,7 @@ describe('Effect-based Configuration Management', () => {
       const result = await Effect.runPromise(AppConfig);
 
       // Check all required fields are present
-      expect(result.gremlin.host).toBeDefined();
-      expect(result.gremlin.port).toBeDefined();
-      expect(result.gremlin.traversalSource).toBeDefined();
+      expect(Option.isSome(result.gremlin.endpoint)).toBe(true);
       expect(result.gremlin.useSSL).toBeDefined();
       expect(result.gremlin.idleTimeout).toBeDefined();
       expect(result.schema.enumDiscoveryEnabled).toBeDefined();
@@ -256,7 +257,9 @@ describe('Effect-based Configuration Management', () => {
 
       const result = await Effect.runPromise(AppConfig);
 
-      expect(result.gremlin.traversalSource).toBe('g');
+      expect(result.gremlin.endpoint).toEqual(
+        Option.some({ host: 'localhost', port: 8182, traversalSource: 'g' })
+      );
       expect(result.gremlin.useSSL).toBe(false);
       expect(result.gremlin.idleTimeout).toBe(300);
       expect(result.schema.enumDiscoveryEnabled).toBe(true);

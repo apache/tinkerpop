@@ -9,7 +9,7 @@
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
+ *  Unless required by applicable law or agreed in writing,
  *  software distributed under the License is distributed on an
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
@@ -21,31 +21,47 @@
  * @fileoverview MCP resource handlers for graph database information.
  *
  * Provides MCP resources that expose real-time graph database status and schema
- * information. Resources are automatically updated and can be subscribed to by
- * MCP clients for live monitoring.
+ * information. Resources are always registered; when no endpoint is configured
+ * they return a "disconnected - configure an endpoint" message.
  */
 
-import { Effect, pipe, Runtime } from 'effect';
+import { Effect, pipe, Runtime, Option } from 'effect';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RESOURCE_URIS, MIME_TYPES } from '../constants.js';
-import { ERROR_PREFIXES } from '../errors.js';
 import { GremlinService } from '../gremlin/service.js';
+import type { AppConfigType } from '../config.js';
+
+const OFFLINE_STATUS = 'disconnected - configure an endpoint';
+const OFFLINE_SCHEMA = JSON.stringify(
+  {
+    status: 'disconnected',
+    message: 'Configure `GREMLIN_MCP_ENDPOINT` to enable graph operations.',
+  },
+  null,
+  2
+);
 
 /**
  * Registers MCP resource handlers with the server.
  *
+ * Both resources are always registered. When no endpoint is configured the
+ * responses contain a static "disconnected" message; otherwise the live
+ * Gremlin service is queried.
+ *
  * @param server - MCP server instance
  * @param runtime - Effect runtime with Gremlin service
- *
- * Registers resources for:
- * - Graph connection status monitoring
- * - Live schema information access
+ * @param config - Application configuration
  */
 export function registerEffectResourceHandlers(
   server: McpServer,
-  runtime: Runtime.Runtime<GremlinService>
+  runtime: Runtime.Runtime<GremlinService>,
+  config: AppConfigType
 ): void {
-  // Register status resource using the recommended registerResource method
+  const endpointFromEnv = process.env['GREMLIN_MCP_ENDPOINT'] ?? '';
+  const endpointIsConfiguredInEnv = endpointFromEnv.trim() !== '';
+  const hasEndpoint = endpointIsConfiguredInEnv && Option.isSome(config.gremlin.endpoint);
+
+  // Register status resource
   server.registerResource(
     'status',
     RESOURCE_URIS.STATUS,
@@ -54,13 +70,25 @@ export function registerEffectResourceHandlers(
       description: 'Real-time connection status of the Gremlin graph database',
       mimeType: MIME_TYPES.TEXT_PLAIN,
     },
-    () =>
-      Effect.runPromise(
+    (_uri, _extra) => {
+      if (!hasEndpoint) {
+        return Promise.resolve({
+          contents: [
+            {
+              uri: RESOURCE_URIS.STATUS,
+              mimeType: MIME_TYPES.TEXT_PLAIN,
+              text: OFFLINE_STATUS,
+            },
+          ],
+        });
+      }
+
+      return Effect.runPromise(
         pipe(
           GremlinService,
           Effect.andThen(service => service.getStatus),
           Effect.map(statusObj => statusObj.status),
-          Effect.catchAll(error => Effect.succeed(`${ERROR_PREFIXES.CONNECTION}: ${error}`)),
+          Effect.catchAll(error => Effect.succeed(String(error))),
           Effect.provide(runtime)
         )
       ).then(result => ({
@@ -71,10 +99,11 @@ export function registerEffectResourceHandlers(
             text: result,
           },
         ],
-      }))
+      }));
+    }
   );
 
-  // Register schema resource using the recommended registerResource method
+  // Register schema resource
   server.registerResource(
     'schema',
     RESOURCE_URIS.SCHEMA,
@@ -84,12 +113,26 @@ export function registerEffectResourceHandlers(
         'Complete schema of the graph including vertex labels, edge labels, and relationship patterns',
       mimeType: MIME_TYPES.APPLICATION_JSON,
     },
-    () =>
-      Effect.runPromise(
+    (_uri, _extra) => {
+      if (!hasEndpoint) {
+        return Promise.resolve({
+          contents: [
+            {
+              uri: RESOURCE_URIS.SCHEMA,
+              mimeType: MIME_TYPES.APPLICATION_JSON,
+              text: OFFLINE_SCHEMA,
+            },
+          ],
+        });
+      }
+
+      return Effect.runPromise(
         pipe(
           GremlinService,
           Effect.andThen(service => service.getSchema),
-          Effect.catchAll(error => Effect.succeed({ error: String(error) })),
+          Effect.catchAll(error =>
+            Effect.succeed({ status: 'disconnected', message: String(error) })
+          ),
           Effect.provide(runtime)
         )
       ).then(result => ({
@@ -100,6 +143,7 @@ export function registerEffectResourceHandlers(
             text: JSON.stringify(result, null, 2),
           },
         ],
-      }))
+      }));
+    }
   );
 }

@@ -25428,7 +25428,7 @@
         ]
     },
     {
-        "scenario": "g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated",
+        "scenario": "g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited",
         "traversals": [
             {
                 "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\",\"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\",\"Y\")",
@@ -25451,6 +25451,131 @@
                 "java": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
                 "javascript": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
                 "python": "g.merge_e(xx1).option(Merge.on_create, xx2).option(Merge.on_match, xx3)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_error",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\",\"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\",\"Y\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addE(string6).from(string3).to(string5).property(string7, string8).addE(string6).from(string5).to(string3).property(string7, string8)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"a\").AddV((string) \"person\").Property(\"name\", \"vadas\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE((string) \"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"a\").AddV(\"person\").Property(\"name\", \"vadas\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE(\"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from_(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('a').add_v('person').property('name', 'vadas').as_('b').add_e('knows').from_('a').to('b').property('created', 'Y').add_e('knows').from_('b').to('a').property('created', 'Y')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, map1).option(Merge.onMatch, map2)",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (IDictionary<object, object>) xx2).Option(Merge.OnMatch, (IDictionary<object, object>) xx3)",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, xx2).Option(gremlingo.Merge.OnMatch, xx3)",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "python": "g.merge_e(xx1).option(Merge.on_create, xx2).option(Merge.on_match, xx3)"
+            },
+            {
+                "original": "g.V()",
+                "language": "g.V()",
+                "anonymized": "g.V()",
+                "dotnet": "g.V()",
+                "go": "g.V()",
+                "groovy": "g.V()",
+                "java": "g.V()",
+                "javascript": "g.V()",
+                "python": "g.V()"
+            },
+            {
+                "original": "g.E()",
+                "language": "g.E()",
+                "anonymized": "g.E()",
+                "dotnet": "g.E()",
+                "go": "g.E()",
+                "groovy": "g.E()",
+                "java": "g.E()",
+                "javascript": "g.E()",
+                "python": "g.E()"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")",
+                "language": "g.E().hasLabel(\"knows\").has(\"created\", \"Y\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, string2)",
+                "dotnet": "g.E().HasLabel(\"knows\").Has(\"created\", \"Y\")",
+                "go": "g.E().HasLabel(\"knows\").Has(\"created\", \"Y\")",
+                "groovy": "g.E().hasLabel(\"knows\").has(\"created\", \"Y\")",
+                "java": "g.E().hasLabel(\"knows\").has(\"created\", \"Y\")",
+                "javascript": "g.E().hasLabel(\"knows\").has(\"created\", \"Y\")",
+                "python": "g.E().has_label('knows').has('created', 'Y')"
+            },
+            {
+                "original": "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")",
+                "language": "g.E().hasLabel(\"knows\").has(\"created\", \"N\").outV().has(\"name\", \"vadas\")",
+                "anonymized": "g.E().hasLabel(string0).has(string1, string2).outV().has(string3, string4)",
+                "dotnet": "g.E().HasLabel(\"knows\").Has(\"created\", \"N\").OutV().Has(\"name\", \"vadas\")",
+                "go": "g.E().HasLabel(\"knows\").Has(\"created\", \"N\").OutV().Has(\"name\", \"vadas\")",
+                "groovy": "g.E().hasLabel(\"knows\").has(\"created\", \"N\").outV().has(\"name\", \"vadas\")",
+                "java": "g.E().hasLabel(\"knows\").has(\"created\", \"N\").outV().has(\"name\", \"vadas\")",
+                "javascript": "g.E().hasLabel(\"knows\").has(\"created\", \"N\").outV().has(\"name\", \"vadas\")",
+                "python": "g.E().has_label('knows').has('created', 'N').out_v().has('name', 'vadas')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\",\"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\",\"Y\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addE(string6).from(string3).to(string5).property(string7, string8).addE(string6).from(string5).to(string3).property(string7, string8)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"a\").AddV((string) \"person\").Property(\"name\", \"vadas\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE((string) \"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"a\").AddV(\"person\").Property(\"name\", \"vadas\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE(\"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from_(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('a').add_v('person').property('name', 'vadas').as_('b').add_e('knows').from_('a').to('b').property('created', 'Y').add_e('knows').from_('b').to('a').property('created', 'Y')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, map1).option(Merge.onMatch, map2)",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (IDictionary<object, object>) xx2).Option(Merge.OnMatch, (IDictionary<object, object>) xx3)",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, xx2).Option(gremlingo.Merge.OnMatch, xx3)",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, xx2).option(Merge.onMatch, xx3)",
+                "python": "g.merge_e(xx1).option(Merge.on_create, xx2).option(Merge.on_match, xx3)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withSideEffect_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_dynamic_override_sketchily_allowed",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\",\"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\",\"Y\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "anonymized": "g.addV(string0).property(string1, string2).as(string3).addV(string0).property(string1, string4).as(string5).addE(string6).from(string3).to(string5).property(string7, string8).addE(string6).from(string5).to(string3).property(string7, string8)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").As(\"a\").AddV((string) \"person\").Property(\"name\", \"vadas\").As(\"b\").AddE((string) \"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE((string) \"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").As(\"a\").AddV(\"person\").Property(\"name\", \"vadas\").As(\"b\").AddE(\"knows\").From(\"a\").To(\"b\").Property(\"created\", \"Y\").AddE(\"knows\").From(\"b\").To(\"a\").Property(\"created\", \"Y\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").as(\"a\").addV(\"person\").property(\"name\", \"vadas\").as(\"b\").addE(\"knows\").from_(\"a\").to(\"b\").property(\"created\", \"Y\").addE(\"knows\").from_(\"b\").to(\"a\").property(\"created\", \"Y\")",
+                "python": "g.add_v('person').property('name', 'marko').as_('a').add_v('person').property('name', 'vadas').as_('b').add_e('knows').from_('a').to('b').property('created', 'Y').add_e('knows').from_('b').to('a').property('created', 'Y')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(Merge.onCreate, select(\"sideEffect1\")).option(Merge.onMatch,xx3)",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\")).option(Merge.onMatch, xx3)",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, __.select(string0)).option(Merge.onMatch, map1)",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\")).Option(Merge.OnMatch, (IDictionary<object, object>) xx3)",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\")).Option(gremlingo.Merge.OnMatch, xx3)",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\")).option(Merge.onMatch, xx3)",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\")).option(Merge.onMatch, xx3)",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\")).option(Merge.onMatch, xx3)",
+                "python": "g.merge_e(xx1).option(Merge.on_create, __.select('sideEffect1')).option(Merge.on_match, xx3)"
             },
             {
                 "original": "g.V()",
@@ -26306,6 +26431,33 @@
         ]
     },
     {
+        "scenario": "g_withSideEffect_withSideEffect_mergeE_outV_dynamic_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(onCreate, select(\"sideEffect1\"))",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, __.select(string0))",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\"))",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\"))",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "python": "g.merge_e(xx1).option(Merge.on_create, __.select('sideEffect1'))"
+            }
+        ]
+    },
+    {
         "scenario": "g_mergeE_inV_override_prohibited",
         "traversals": [
             {
@@ -26329,6 +26481,33 @@
                 "java": "g.mergeE(xx1).option(Merge.onCreate, xx2)",
                 "javascript": "g.mergeE(xx1).option(Merge.onCreate, xx2)",
                 "python": "g.merge_e(xx1).option(Merge.on_create, xx2)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withSideEffect_mergeE_inV_dynamic_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(onCreate, select(\"sideEffect1\"))",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, __.select(string0))",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\"))",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\"))",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "python": "g.merge_e(xx1).option(Merge.on_create, __.select('sideEffect1'))"
             }
         ]
     },
@@ -26360,6 +26539,33 @@
         ]
     },
     {
+        "scenario": "g_mergeE_label_dynamic_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(onCreate, select(\"sideEffect1\"))",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, __.select(string0))",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\"))",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\"))",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "python": "g.merge_e(xx1).option(Merge.on_create, __.select('sideEffect1'))"
+            }
+        ]
+    },
+    {
         "scenario": "g_mergeE_id_override_prohibited",
         "traversals": [
             {
@@ -26383,6 +26589,33 @@
                 "java": "g.mergeE(xx1).option(Merge.onCreate, xx2)",
                 "javascript": "g.mergeE(xx1).option(Merge.onCreate, xx2)",
                 "python": "g.merge_e(xx1).option(Merge.on_create, xx2)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withSideEffect_mergeE_id_dynamic_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "language": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "anonymized": "g.addV(string0).property(string1, string2).addV(string0).property(string1, string3)",
+                "dotnet": "g.AddV((string) \"person\").Property(\"name\", \"marko\").AddV((string) \"person\").Property(\"name\", \"vadas\")",
+                "go": "g.AddV(\"person\").Property(\"name\", \"marko\").AddV(\"person\").Property(\"name\", \"vadas\")",
+                "groovy": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "java": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "javascript": "g.addV(\"person\").property(\"name\", \"marko\").addV(\"person\").property(\"name\", \"vadas\")",
+                "python": "g.add_v('person').property('name', 'marko').add_v('person').property('name', 'vadas')"
+            },
+            {
+                "original": "g.mergeE(xx1).option(onCreate, select(\"sideEffect1\"))",
+                "language": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "anonymized": "g.mergeE(map0).option(Merge.onCreate, __.select(string0))",
+                "dotnet": "g.MergeE((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\"))",
+                "go": "g.MergeE(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\"))",
+                "groovy": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "java": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "javascript": "g.mergeE(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "python": "g.merge_e(xx1).option(Merge.on_create, __.select('sideEffect1'))"
             }
         ]
     },
@@ -28575,6 +28808,22 @@
                 "java": "g.mergeV(xx1).option(Merge.onCreate, xx2)",
                 "javascript": "g.mergeV(xx1).option(Merge.onCreate, xx2)",
                 "python": "g.merge_v(xx1).option(Merge.on_create, xx2)"
+            }
+        ]
+    },
+    {
+        "scenario": "g_withSideEffect_mergeV_label_dynamic_override_prohibited",
+        "traversals": [
+            {
+                "original": "g.mergeV(xx1).option(onCreate, select('sideEffect1'))",
+                "language": "g.mergeV(xx1).option(Merge.onCreate, __.select('sideEffect1'))",
+                "anonymized": "g.mergeV(map0).option(Merge.onCreate, __.select(string0))",
+                "dotnet": "g.MergeV((IDictionary<object, object>) xx1).Option(Merge.OnCreate, (ITraversal) __.Select<object>(\"sideEffect1\"))",
+                "go": "g.MergeV(xx1).Option(gremlingo.Merge.OnCreate, gremlingo.T__.Select(\"sideEffect1\"))",
+                "groovy": "g.mergeV(xx1).option(Merge.onCreate, __.select('sideEffect1'))",
+                "java": "g.mergeV(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "javascript": "g.mergeV(xx1).option(Merge.onCreate, __.select(\"sideEffect1\"))",
+                "python": "g.merge_v(xx1).option(Merge.on_create, __.select('sideEffect1'))"
             }
         ]
     },

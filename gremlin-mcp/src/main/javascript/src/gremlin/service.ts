@@ -9,7 +9,7 @@
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
+ *  Unless required by applicable law or agreed in writing,
  *  software distributed under the License is distributed on an
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  *  KIND, either express or implied.  See the License for the
@@ -22,7 +22,8 @@
  *
  * Provides a modular, composable service layer for Gremlin graph databases using
  * Effect-ts patterns. Handles connection management, schema caching, query execution,
- * and error handling.
+ * and error handling. On any GremlinConnectionError the service invalidates the
+ * cached connection and retries the operation once to transparently reconnect.
  */
 
 import { Effect, Context, Layer, pipe } from 'effect';
@@ -32,7 +33,7 @@ import { isGremlinResult } from '../utils/type-guards.js';
 import { GremlinConnectionError, GremlinQueryError, Errors, ParseError } from '../errors.js';
 import { GremlinClient } from './client.js';
 import { SchemaService } from './schema.js';
-import type { GremlinClientType, GremlinResultSet } from './types.js';
+import type { GremlinClientType, GremlinResultSet, ConnectionState } from './types.js';
 import type { GraphSchema, ServiceStatus } from './types.js';
 
 /**
@@ -63,24 +64,34 @@ export class GremlinService extends Context.Tag('GremlinService')<
 /**
  * Creates the Gremlin service implementation with dependency injection.
  *
- * @returns Effect providing the complete service implementation
- *
- * The service implementation manages:
- * - Connection state through the GremlinClient service
- * - Schema cache with automatic generation and refresh capabilities
- * - Query execution with result transformation and validation
- * - Health monitoring and status reporting
+ * The service wraps all graph operations in a reconnect layer: on any
+ * GremlinConnectionError the cached connection is invalidated and the operation
+ * is retried once with a fresh connection.
  */
 const makeGremlinService = Effect.gen(function* () {
   const gremlinClient = yield* GremlinClient;
   const schemaService = yield* SchemaService;
 
   /**
+   * Wraps an Effect so that on GremlinConnectionError the connection is
+   * invalidated and the operation retried exactly once.
+   */
+  const withReconnect = <A, E>(
+    operation: Effect.Effect<A, E | GremlinConnectionError>
+  ): Effect.Effect<A, E | GremlinConnectionError> =>
+    pipe(
+      operation,
+      Effect.catchTag('GremlinConnectionError', () =>
+        pipe(
+          Effect.logWarning('Connection error — invalidating and retrying once'),
+          Effect.andThen(gremlinClient.invalidate),
+          Effect.andThen(operation)
+        )
+      )
+    );
+
+  /**
    * Executes a raw Gremlin query against the client.
-   *
-   * @param query - Gremlin traversal query string
-   * @param client - Gremlin client instance
-   * @returns Effect with query results or execution error
    */
   const executeRawQuery = (
     query: string,
@@ -93,9 +104,6 @@ const makeGremlinService = Effect.gen(function* () {
 
   /**
    * Processes Gremlin ResultSet into standard array format.
-   *
-   * @param resultSet - Raw result from Gremlin client
-   * @returns Array of result items
    */
   const processResultSet = (resultSet: unknown): unknown[] => {
     if (resultSet && typeof resultSet === 'object' && '_items' in resultSet) {
@@ -109,10 +117,6 @@ const makeGremlinService = Effect.gen(function* () {
 
   /**
    * Transforms raw result set into parsed GremlinQueryResult format.
-   *
-   * @param query - Original query string for error context
-   * @param resultSet - Raw result set from Gremlin
-   * @returns Effect with parsed results and metadata
    */
   const transformGremlinResult = (
     query: string,
@@ -130,10 +134,6 @@ const makeGremlinService = Effect.gen(function* () {
 
   /**
    * Validates query result against the GremlinQueryResult schema.
-   *
-   * @param query - Original query string for error context
-   * @param result - Parsed result object
-   * @returns Effect with validated GremlinQueryResult
    */
   const validateQueryResult = (
     query: string,
@@ -145,17 +145,14 @@ const makeGremlinService = Effect.gen(function* () {
     );
 
   /**
-   * Executes a Gremlin query with comprehensive error handling.
-   *
-   * @param query - Gremlin traversal query string
-   * @returns Effect with parsed and validated query results
+   * Core query execution — obtains the connection and runs the query.
    */
-  const executeQuery = (
+  const doExecuteQuery = (
     query: string
   ): Effect.Effect<GremlinQueryResult, GremlinQueryError | GremlinConnectionError | ParseError> =>
     pipe(
-      Effect.logDebug(`Executing Gremlin query: ${query}`),
-      Effect.andThen(() => executeRawQuery(query, gremlinClient.client)),
+      gremlinClient.getConnection,
+      Effect.flatMap(conn => executeRawQuery(query, conn.client)),
       Effect.filterOrFail(isGremlinResult, resultSet =>
         Errors.query('Invalid result format received', query, resultSet)
       ),
@@ -163,18 +160,59 @@ const makeGremlinService = Effect.gen(function* () {
       Effect.andThen(parsedResults => validateQueryResult(query, parsedResults))
     );
 
-  const getStatus = Effect.succeed({ status: 'connected' as const });
+  /**
+   * Executes a Gremlin query with transparent reconnection on failure.
+   */
+  const executeQuery = (
+    query: string
+  ): Effect.Effect<GremlinQueryResult, GremlinQueryError | GremlinConnectionError | ParseError> =>
+    pipe(
+      Effect.logDebug(`Executing Gremlin query: ${query}`),
+      Effect.andThen(() => withReconnect(doExecuteQuery(query)))
+    );
 
-  const healthCheck = Effect.succeed({
-    healthy: true,
-    details: 'Connected',
-  });
+  /**
+   * Performs a lightweight server round-trip to verify the current connection is still alive.
+   */
+  const verifyConnectionAlive = (
+    conn: ConnectionState
+  ): Effect.Effect<void, GremlinConnectionError> =>
+    pipe(
+      Effect.tryPromise(() => conn.g.inject(1).next()),
+      Effect.asVoid,
+      Effect.mapError(error => Errors.connection('Connection health check failed', error))
+    );
+
+  /**
+   * Returns current connection status without throwing.
+   */
+  const getStatus: Effect.Effect<ServiceStatus, never> = pipe(
+    withReconnect(
+      pipe(
+        gremlinClient.getConnection,
+        Effect.flatMap(conn => verifyConnectionAlive(conn)),
+        Effect.as({ status: 'connected' as const })
+      )
+    ),
+    Effect.catchAll(() => Effect.succeed({ status: 'disconnected' as const }))
+  );
+
+  const healthCheck: Effect.Effect<{ healthy: boolean; details: string }, never> = pipe(
+    withReconnect(
+      pipe(
+        gremlinClient.getConnection,
+        Effect.flatMap(conn => verifyConnectionAlive(conn)),
+        Effect.as({ healthy: true, details: 'Connected' })
+      )
+    ),
+    Effect.catchAll(() => Effect.succeed({ healthy: false, details: 'Connection unavailable' }))
+  );
 
   return {
     getStatus,
-    getSchema: schemaService.getSchema,
+    getSchema: withReconnect(schemaService.getSchema),
     getCachedSchema: schemaService.peekSchema,
-    refreshSchemaCache: schemaService.refreshSchema,
+    refreshSchemaCache: withReconnect(schemaService.refreshSchema),
     executeQuery,
     healthCheck,
   } as const;
@@ -183,7 +221,6 @@ const makeGremlinService = Effect.gen(function* () {
 /**
  * Creates a layer providing the Gremlin service implementation.
  *
- * This layer depends on the `GremlinClient` service, which is expected
- * to be provided elsewhere in the application's layer composition.
+ * Depends on `GremlinClient` and `SchemaService`.
  */
 export const GremlinServiceLive = Layer.effect(GremlinService, makeGremlinService);

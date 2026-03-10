@@ -27,7 +27,7 @@
 
 import { Effect, Duration } from 'effect';
 import { type GraphSchema, type Vertex, type Edge } from './models/index.js';
-import { Errors, type GremlinConnectionError, type GremlinQueryError } from '../errors.js';
+import { Errors, type GremlinQueryError } from '../errors.js';
 import type { ConnectionState, SchemaConfig } from './types.js';
 import {
   getVertexLabels,
@@ -176,12 +176,8 @@ const applySchemaTimeout = (
 export const generateGraphSchema = (
   connectionState: ConnectionState,
   config: SchemaConfig = DEFAULT_SCHEMA_CONFIG
-): Effect.Effect<GraphSchema, GremlinConnectionError | GremlinQueryError> =>
+): Effect.Effect<GraphSchema, GremlinQueryError> =>
   Effect.gen(function* () {
-    if (!connectionState.g) {
-      return yield* Effect.fail(Errors.connection('Graph traversal source not available'));
-    }
-
     const g = connectionState.g;
     const startTime = Date.now();
 

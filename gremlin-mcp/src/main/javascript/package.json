@@ -8,7 +8,8 @@
     "gremlin-mcp": "dist/server.js"
   },
   "scripts": {
-    "build": "tsc && chmod +x dist/server.js",
+    "generate-step-names": "node scripts/generate-step-names.js",
+    "build": "npm run generate-step-names && tsc && chmod +x dist/server.js",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
     "test": "jest",
@@ -49,6 +50,7 @@
     "@types/gremlin": "^3.6.7",
     "effect": "^3.17.9",
     "gremlin": "^3.7.4",
+    "gremlin-language": "file:../../../../gremlin-javascript/src/main/javascript/gremlin-javascript",
     "winston": "^3.17.0",
     "zod": "^3.25.76"
   },

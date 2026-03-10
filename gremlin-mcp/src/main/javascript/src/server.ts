@@ -29,13 +29,23 @@
  * Built with Effect-ts for functional composition and error handling.
  */
 
-import { ConfigProvider, Effect, Layer, pipe, LogLevel, Logger, Context, Fiber } from 'effect';
+import {
+  ConfigProvider,
+  Effect,
+  Layer,
+  pipe,
+  LogLevel,
+  Logger,
+  Context,
+  Fiber,
+  Option,
+} from 'effect';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { AppConfig, type AppConfigType } from './config.js';
 import { GremlinService, GremlinServiceLive } from './gremlin/service.js';
-import { GremlinClientLive } from './gremlin/connection.js';
+import { GremlinClient } from './gremlin/client.js';
 import { SchemaServiceLive } from './gremlin/schema.js';
 import { registerEffectToolHandlers } from './handlers/tools.js';
 import { registerEffectResourceHandlers } from './handlers/resources.js';
@@ -85,8 +95,8 @@ const makeMcpServerService = Effect.gen(function* () {
   const runtime = yield* Effect.runtime<GremlinService>();
 
   // Register handlers with dependency injection
-  registerEffectToolHandlers(server, runtime);
-  registerEffectResourceHandlers(server, runtime);
+  registerEffectToolHandlers(server, runtime, config);
+  registerEffectResourceHandlers(server, runtime, config);
 
   yield* Effect.logInfo('✅ Handlers registered successfully', {
     service: config.server.name,
@@ -130,12 +140,43 @@ const McpServerServiceLive = Layer.effect(McpServerService, makeMcpServerService
 
 /**
  * Layer composition providing all application dependencies.
+ *
+ * When GREMLIN_MCP_ENDPOINT is not set we use a gremlin-free offline stub so
+ * the gremlin driver is never imported or instantiated.  When it IS set we
+ * dynamically import the real GremlinClientLive (which pulls in the driver).
  */
-const GremlinLayer = Layer.provide(GremlinServiceLive, SchemaServiceLive);
-const AppLayer = Layer.provide(
-  McpServerServiceLive,
-  Layer.provide(GremlinLayer, GremlinClientLive)
+const NO_ENDPOINT_MSG =
+  'No Gremlin Server configured. Set GREMLIN_MCP_ENDPOINT to enable graph operations.';
+
+const GremlinClientOfflineLive = Layer.succeed(
+  GremlinClient,
+  GremlinClient.of({
+    getConnection: Effect.fail(Errors.connection(NO_ENDPOINT_MSG)),
+    invalidate: Effect.void,
+  })
 );
+
+const GremlinLayer = Layer.provide(GremlinServiceLive, SchemaServiceLive);
+
+// Choose the client layer based purely on whether the env var is present at startup.
+// This is checked before any Effect runs so the gremlin driver is never loaded when
+// no endpoint is configured.
+const endpointIsConfigured =
+  process.env['GREMLIN_MCP_ENDPOINT'] !== undefined &&
+  process.env['GREMLIN_MCP_ENDPOINT'].trim() !== '';
+
+// Dynamically import the real client layer only when an endpoint is provided,
+// keeping the gremlin driver out of the module graph in offline mode.
+const getGremlinClientLayer = async () => {
+  if (!endpointIsConfigured) {
+    return GremlinClientOfflineLive;
+  }
+  const { GremlinClientLive } = await import('./gremlin/connection.js');
+  return GremlinClientLive;
+};
+
+// Resolved once at startup; used below in AppLayer.
+const GremlinClientLayerPromise = getGremlinClientLayer();
 
 /**
  * Main application Effect.
@@ -147,10 +188,23 @@ const program = Effect.gen(function* () {
   // Get configuration
   const config = yield* AppConfig;
 
+  const endpointInfo = Option.match(config.gremlin.endpoint, {
+    onNone: () => ({ configured: false }),
+    onSome: ep => ({
+      configured: true,
+      host: ep.host,
+      port: ep.port,
+      traversalSource: ep.traversalSource,
+    }),
+  });
+
   yield* Effect.logInfo('🚀 Starting Apache TinkerPop Gremlin MCP Server...', {
     service: config.server.name,
     version: config.server.version,
-    gremlinEndpoint: `${config.gremlin.host}:${config.gremlin.port}`,
+    gremlinEndpoint: Option.match(config.gremlin.endpoint, {
+      onNone: () => '(none)',
+      onSome: ep => `${ep.host}:${ep.port}`,
+    }),
     logLevel: config.logging.level,
     config: {
       server: {
@@ -158,13 +212,11 @@ const program = Effect.gen(function* () {
         version: config.server.version,
       },
       gremlin: {
-        host: config.gremlin.host,
-        port: config.gremlin.port,
-        traversalSource: config.gremlin.traversalSource,
+        ...endpointInfo,
         useSSL: config.gremlin.useSSL,
         idleTimeout: config.gremlin.idleTimeout,
-        username: config.gremlin.username ?? null,
-        hasPassword: Boolean(config.gremlin.password),
+        username: Option.getOrNull(config.gremlin.username),
+        hasPassword: Option.isSome(config.gremlin.password),
       },
       schema: {
         enumDiscoveryEnabled: config.schema.enumDiscoveryEnabled,
@@ -303,69 +355,97 @@ const withGracefulShutdown = <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.E
   });
 
 /**
- * Main entry point with full Effect composition
+ * Main entry point with full Effect composition.
+ *
+ * @param appLayer - Fully composed application layer (built after resolving the
+ *   gremlin client layer asynchronously so the gremlin driver is never imported
+ *   when GREMLIN_MCP_ENDPOINT is not set).
  */
-const main = Effect.gen(function* () {
-  // Add startup logging before anything else - CRITICAL: Use stderr only
-  yield* logToStderr({
-    level: 'info',
-    message: 'Apache TinkerPop - Gremlin MCP Server executable started',
-    process_info: {
-      pid: process.pid,
-      node_version: process.versions.node,
-      platform: process.platform,
-      argv: process.argv,
-      cwd: process.cwd(),
-    },
-  });
-
-  // Get configuration early for logging setup
-  const config = yield* AppConfig;
-
-  // Log configuration
-  yield* logToStderr({
-    level: 'info',
-    message: 'Configuration loaded',
-    config: {
-      gremlin: {
-        host: config.gremlin.host,
-        port: config.gremlin.port,
-        use_ssl: config.gremlin.useSSL,
-        traversal_source: config.gremlin.traversalSource,
-        idle_timeout: config.gremlin.idleTimeout,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const main = (appLayer: Layer.Layer<McpServerService, any, never>) =>
+  Effect.gen(function* () {
+    // Add startup logging before anything else - CRITICAL: Use stderr only
+    yield* logToStderr({
+      level: 'info',
+      message: 'Apache TinkerPop - Gremlin MCP Server executable started',
+      process_info: {
+        pid: process.pid,
+        node_version: process.versions.node,
+        platform: process.platform,
+        argv: process.argv,
+        cwd: process.cwd(),
       },
-      logging: {
-        level: config.logging.level,
-      },
-    },
-  });
+    });
 
-  // Run the main program with all services provided
-  yield* pipe(
-    withGracefulShutdown(program),
-    Effect.provide(AppLayer),
-    Effect.provide(createLoggerLayer(config))
-  );
-});
+    // Get configuration early for logging setup
+    const config = yield* AppConfig;
+
+    // Log configuration
+    yield* logToStderr({
+      level: 'info',
+      message: 'Configuration loaded',
+      config: {
+        gremlin: Option.match(config.gremlin.endpoint, {
+          onNone: () => ({
+            configured: false,
+            use_ssl: config.gremlin.useSSL,
+            idle_timeout: config.gremlin.idleTimeout,
+          }),
+          onSome: ep => ({
+            configured: true,
+            host: ep.host,
+            port: ep.port,
+            use_ssl: config.gremlin.useSSL,
+            traversal_source: ep.traversalSource,
+            idle_timeout: config.gremlin.idleTimeout,
+          }),
+        }),
+        logging: {
+          level: config.logging.level,
+        },
+      },
+    });
+
+    // Run the main program with all services provided
+    yield* pipe(
+      withGracefulShutdown(program),
+      Effect.provide(appLayer),
+      Effect.provide(createLoggerLayer(config))
+    );
+  });
 
 /**
- * Run the application with improved error handling using Effect patterns
+ * Run the application with improved error handling using Effect patterns.
+ *
+ * Async so we can await the gremlin client layer resolution before building the
+ * full layer graph and starting the Effect runtime.
  */
 // Ensure environment variables are used for configuration resolution across the app
 const EnvConfigLayer = Layer.setConfigProvider(ConfigProvider.fromEnv());
 
-const runMain = pipe(
-  Effect.scoped(main),
-  Effect.provide(EnvConfigLayer),
-  Effect.catchAll((error: unknown) =>
-    logToStderr({
-      level: 'error',
-      message: 'Fatal error in main program',
-      error: error instanceof Error ? error.message : String(error),
-      error_type: error instanceof Error ? error.constructor.name : typeof error,
-      stack: error instanceof Error ? error.stack : undefined,
-    }).pipe(Effect.andThen(() => Effect.sync(() => process.exit(1))))
-  )
-);
+async function run(): Promise<void> {
+  const gremlinClientLayer = await GremlinClientLayerPromise;
 
-Effect.runPromise(runMain);
+  const AppLayer = Layer.provide(
+    McpServerServiceLive,
+    Layer.provide(GremlinLayer, gremlinClientLayer)
+  );
+
+  const runMain = pipe(
+    Effect.scoped(main(AppLayer)),
+    Effect.provide(EnvConfigLayer),
+    Effect.catchAll((error: unknown) =>
+      logToStderr({
+        level: 'error',
+        message: 'Fatal error in main program',
+        error: error instanceof Error ? error.message : String(error),
+        error_type: error instanceof Error ? error.constructor.name : typeof error,
+        stack: error instanceof Error ? error.stack : undefined,
+      }).pipe(Effect.andThen(() => Effect.sync(() => process.exit(1))))
+    )
+  );
+
+  await Effect.runPromise(runMain);
+}
+
+run();

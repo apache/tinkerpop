@@ -17,25 +17,24 @@
  *  under the License.
  */
 
-import { Context } from 'effect';
+import { Context, Effect } from 'effect';
+import type { GremlinConnectionError } from '../errors.js';
 import type { ConnectionState } from './types.js';
 
 /**
- * Represents the Gremlin client as a service in the Effect context.
+ * Gremlin client service providing lazy, reconnect-capable connection management.
  *
- * This service provides access to the active Gremlin connection state,
- * including the client, connection, and traversal source (`g`).
+ * `getConnection` returns the existing connection from the cache, or creates a new
+ * one if none exists. Fails with `GremlinConnectionError` if no endpoint is configured
+ * or if the connection attempt fails.
  *
- * @example
- * ```typescript
- * import { Effect } from 'effect';
- * import { GremlinClient } from './client.js';
- *
- * const myEffect = Effect.gen(function* () {
- *   const gremlin = yield* GremlinClient;
- *   const count = yield* Effect.tryPromise(() => gremlin.g.V().count().next());
- *   return count.value;
- * });
- * ```
+ * `invalidate` closes the current connection (if any) and clears the cache so the
+ * next `getConnection` call creates a fresh connection.
  */
-export class GremlinClient extends Context.Tag('GremlinClient')<GremlinClient, ConnectionState>() {}
+export class GremlinClient extends Context.Tag('GremlinClient')<
+  GremlinClient,
+  {
+    readonly getConnection: Effect.Effect<ConnectionState, GremlinConnectionError>;
+    readonly invalidate: Effect.Effect<void, never>;
+  }
+>() {}

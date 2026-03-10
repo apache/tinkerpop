@@ -25,7 +25,13 @@
       "require": "./build/cjs/index.cjs"
     },
     "./language": {
-      "import": "./build/esm/language/index.js"
+      "import": "./build/esm/language/index.js",
+      "types": "./build/esm/language/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "language": ["./build/esm/language/index.d.ts"]
     }
   },
   "files": [

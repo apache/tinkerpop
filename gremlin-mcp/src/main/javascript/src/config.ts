@@ -110,11 +110,12 @@ const parseCommaSeparatedList = (value: string): string[] =>
     .filter(s => s.length > 0);
 
 /**
- * GREMLIN_MCP_ENDPOINT: string, required. Gremlin Server compatible websocket endpoint.
+ * GREMLIN_MCP_ENDPOINT: string, optional. Gremlin Server compatible websocket endpoint.
+ * When omitted the server starts in offline mode — translate/format tools remain available
+ * but graph tools (query, schema, status) will return a "no server configured" error.
  */
-const GremlinMcpEndpointConfig = pipe(
-  Config.string('GREMLIN_MCP_ENDPOINT'),
-  Config.mapOrFail(parseEndpoint)
+const GremlinMcpEndpointConfig = Config.option(
+  pipe(Config.string('GREMLIN_MCP_ENDPOINT'), Config.mapOrFail(parseEndpoint))
 );
 
 /**
@@ -218,21 +219,13 @@ const GremlinMcpSchemaIncludeCountsConfig = Config.withDefault(
  * Ensures host, port, traversalSource, useSSL, username, password, and idleTimeout are present and valid.
  * Returns a validated config object or throws ConfigError on failure.
  */
-const ConnectionConfig = pipe(
-  Config.all({
-    endpoint: GremlinMcpEndpointConfig,
-    useSSL: GremlinMcpUseSslConfig,
-    username: GremlinMcpUsernameConfig,
-    password: GremlinMcpPasswordConfig,
-    idleTimeout: GremlinMcpIdleTimeoutConfig,
-  }),
-  Config.map(({ endpoint, ...rest }) => ({
-    host: endpoint.host,
-    port: endpoint.port,
-    traversalSource: endpoint.traversalSource,
-    ...rest,
-  }))
-);
+const ConnectionConfig = Config.all({
+  endpoint: GremlinMcpEndpointConfig,
+  useSSL: GremlinMcpUseSslConfig,
+  username: GremlinMcpUsernameConfig,
+  password: GremlinMcpPasswordConfig,
+  idleTimeout: GremlinMcpIdleTimeoutConfig,
+});
 
 /**
  * SchemaDiscoveryConfig: Aggregates and validates all schema discovery-related environment variables.

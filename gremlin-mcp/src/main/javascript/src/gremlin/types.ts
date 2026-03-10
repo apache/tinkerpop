@@ -32,7 +32,7 @@ export type GremlinConnection = driver.DriverRemoteConnection;
 export type GraphTraversalSource = process.GraphTraversalSource;
 
 /**
- * Internal connection state - represents a fully initialized connection
+ * Active Gremlin connection state. Only created when the connection succeeds.
  */
 export interface ConnectionState {
   readonly client: GremlinClientType;

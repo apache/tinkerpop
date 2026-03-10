@@ -25,7 +25,7 @@
  * for service access.
  */
 
-import { Effect, Runtime, pipe } from 'effect';
+import { Effect, Runtime, Option, pipe } from 'effect';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { TOOL_NAMES } from '../constants.js';
@@ -33,10 +33,17 @@ import { GremlinService } from '../gremlin/service.js';
 import {
   createToolEffect,
   createStringToolEffect,
-  createQueryEffect,
   createSuccessResponse,
 } from './tool-patterns.js';
 import { formatQuery } from 'gremlint';
+import { GremlinTranslator } from 'gremlin-language/language';
+import { normalizeAndTranslate } from '../translator/index.js';
+import type { AppConfigType } from '../config.js';
+import {
+  markGremlinConnected,
+  markGremlinDisconnected,
+  isGremlinConnectionError,
+} from '../connectivity-state.js';
 
 /**
  * Input validation schemas for tool parameters.
@@ -68,21 +75,119 @@ const formatQueryInputSchema = z
   })
   .strict();
 
+// Translate Gremlin Query input
+const TRANSLATE_TARGETS = [
+  'canonical',
+  'javascript',
+  'python',
+  'go',
+  'dotnet',
+  'java',
+  'groovy',
+  'anonymized',
+] as const;
+type TranslateTarget = (typeof TRANSLATE_TARGETS)[number];
+
+const toUnknownRecord = (value: unknown): Record<string, unknown> | null =>
+  typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+
+const TARGET_TO_TRANSLATOR_KEY: Record<TranslateTarget, string> = {
+  canonical: 'CANONICAL',
+  javascript: 'JAVASCRIPT',
+  python: 'PYTHON',
+  go: 'GO',
+  dotnet: 'DOTNET',
+  java: 'JAVA',
+  groovy: 'GROOVY',
+  anonymized: 'ANONYMIZED',
+};
+
+const TRANSLATE_SOURCES = [
+  'canonical',
+  'javascript',
+  'python',
+  'go',
+  'dotnet',
+  'java',
+  'groovy',
+  'auto',
+] as const;
+
+const translateQueryInputSchema = z
+  .object({
+    gremlin: z
+      .string()
+      .min(1, 'The Gremlin query cannot be empty')
+      .describe(
+        'The Gremlin query string to translate. When source is omitted or "canonical", must use gremlin-language ANTLR grammar format. For any other source value, the query will be normalized automatically.'
+      ),
+    target: z.enum(TRANSLATE_TARGETS).describe('The target language to translate into'),
+    source: z
+      .enum(TRANSLATE_SOURCES)
+      .optional()
+      .describe(
+        'The source dialect of the input query. Omit or use "auto" to normalize automatically via LLM before translating (default behavior). Use "canonical" to skip normalization and translate directly (only if your input is already in canonical gremlin-language ANTLR format).'
+      ),
+    traversalSource: z
+      .string()
+      .optional()
+      .describe('The traversal source variable name (default: "g")'),
+  })
+  .strict();
+
 /**
- * Registers all MCP tool handlers with the server.
+ * Registers MCP tool handlers with the server.
+ *
+ * Graph tools (status, schema, query) are only registered when a Gremlin endpoint is configured. Utility tools (translate, format) are always registered.
  *
  * @param server - MCP server instance
  * @param runtime - Effect runtime with Gremlin service
- *
- * Registers tools for:
- * - Graph status monitoring
- * - Schema introspection and caching
- * - Query execution
+ * @param config - Application configuration
  */
 export function registerEffectToolHandlers(
   server: McpServer,
-  runtime: Runtime.Runtime<GremlinService>
+  runtime: Runtime.Runtime<GremlinService>,
+  config: AppConfigType
 ): void {
+  if (Option.isSome(config.gremlin.endpoint)) {
+    registerGraphTools(server, runtime);
+  }
+  registerUtilityTools(server, runtime);
+}
+
+/**
+ * Registers graph-connectivity tools (status, schema, query).
+ * Only called when a Gremlin endpoint is configured.
+ */
+function registerGraphTools(server: McpServer, runtime: Runtime.Runtime<GremlinService>): void {
+  const withOperationConnectivityTracking = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+    pipe(
+      effect,
+      Effect.tap(() => Effect.sync(markGremlinConnected)),
+      Effect.tapError(error =>
+        Effect.sync(() => {
+          if (isGremlinConnectionError(error)) {
+            markGremlinDisconnected();
+          }
+        })
+      )
+    );
+
+  const getTrackedStatus = pipe(
+    GremlinService,
+    Effect.andThen(service => service.getStatus),
+    Effect.tap(statusObj =>
+      Effect.sync(() => {
+        if (statusObj.status === 'connected') {
+          markGremlinConnected();
+        } else {
+          markGremlinDisconnected();
+        }
+      })
+    ),
+    Effect.map(statusObj => statusObj.status)
+  );
+
   // Get Graph Status
   server.registerTool(
     TOOL_NAMES.GET_GRAPH_STATUS,
@@ -94,12 +199,7 @@ export function registerEffectToolHandlers(
     () =>
       Effect.runPromise(
         pipe(
-          createStringToolEffect(
-            Effect.andThen(GremlinService, service =>
-              Effect.map(service.getStatus, statusObj => statusObj.status)
-            ),
-            'Connection status check failed'
-          ),
+          createStringToolEffect(getTrackedStatus, 'Connection status check failed'),
           Effect.provide(runtime)
         )
       )
@@ -118,7 +218,9 @@ export function registerEffectToolHandlers(
       Effect.runPromise(
         pipe(
           createToolEffect(
-            Effect.andThen(GremlinService, service => service.getSchema),
+            withOperationConnectivityTracking(
+              Effect.andThen(GremlinService, service => service.getSchema)
+            ),
             'Schema retrieval failed'
           ),
           Effect.provide(runtime)
@@ -138,8 +240,10 @@ export function registerEffectToolHandlers(
       Effect.runPromise(
         pipe(
           createStringToolEffect(
-            Effect.andThen(GremlinService, service =>
-              Effect.map(service.refreshSchemaCache, () => 'Schema cache refreshed successfully.')
+            withOperationConnectivityTracking(
+              Effect.andThen(GremlinService, service =>
+                Effect.map(service.refreshSchemaCache, () => 'Schema cache refreshed successfully.')
+              )
             ),
             'Failed to refresh schema'
           ),
@@ -158,7 +262,101 @@ export function registerEffectToolHandlers(
     },
     (args: unknown) => {
       const { query } = runQueryInputSchema.parse(args);
-      return Effect.runPromise(pipe(createQueryEffect(query), Effect.provide(runtime)));
+      return Effect.runPromise(
+        pipe(
+          GremlinService,
+          Effect.andThen(service => withOperationConnectivityTracking(service.executeQuery(query))),
+          Effect.map(createSuccessResponse),
+          Effect.catchAll(error => {
+            const errorResponse = {
+              results: [],
+              message: `Query failed: ${error}`,
+            };
+            return Effect.succeed(createSuccessResponse(errorResponse));
+          }),
+          Effect.provide(runtime)
+        )
+      );
+    }
+  );
+}
+
+/**
+ * Registers utility tools (translate, format) that do not require a Gremlin server.
+ * Always registered regardless of endpoint configuration.
+ */
+function registerUtilityTools(server: McpServer, runtime: Runtime.Runtime<GremlinService>): void {
+  // Translate Gremlin Query
+  server.registerTool(
+    TOOL_NAMES.TRANSLATE_GREMLIN_QUERY,
+    {
+      title: 'Translate Gremlin Query',
+      description:
+        'Translate a Gremlin query into another language variant. By default, automatically normalizes the input via LLM before translating. Set source to "canonical" to skip normalization if the input is already in canonical gremlin-language ANTLR format.',
+      inputSchema: translateQueryInputSchema.shape,
+    },
+    (args: unknown) => {
+      const { gremlin, target, source, traversalSource } = translateQueryInputSchema.parse(args);
+      const translatorKey = TARGET_TO_TRANSLATOR_KEY[target];
+      const tsource = traversalSource ?? 'g';
+
+      if (source === 'canonical') {
+        // Approach 1: direct translation, canonical input assumed
+        try {
+          const result = GremlinTranslator.translate(
+            gremlin,
+            tsource,
+            translatorKey as Parameters<typeof GremlinTranslator.translate>[2]
+          );
+          return Promise.resolve(
+            createSuccessResponse({
+              success: true,
+              original: result.getOriginal(),
+              translated: result.getTranslated(),
+              target,
+            })
+          );
+        } catch (error) {
+          return Promise.resolve(
+            createSuccessResponse({
+              success: false,
+              error: error instanceof Error ? error.message : String(error),
+              target,
+            })
+          );
+        }
+      }
+
+      // Approach 2+5: mechanical normalization then LLM normalization via MCP sampling
+      return Effect.runPromise(
+        pipe(
+          Effect.tryPromise(() =>
+            normalizeAndTranslate(gremlin, translatorKey, tsource, server.server)
+          ),
+          Effect.map(result =>
+            createSuccessResponse({
+              success: true,
+              original: result.original,
+              normalized: result.normalized,
+              translated: result.translated,
+              target,
+              ...(result.llmNormalizationSkipped && {
+                warning:
+                  'LLM normalization unavailable; result is based on mechanical normalization only and may be less accurate.',
+              }),
+            })
+          ),
+          Effect.catchAll(error =>
+            Effect.succeed(
+              createSuccessResponse({
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+                target,
+              })
+            )
+          )
+        )
+      );
     }
   );
 
@@ -197,9 +395,15 @@ export function registerEffectToolHandlers(
               error: {
                 message: String(error),
                 // include common error fields when present to make it structured
-                name: (error && (error as any).name) || undefined,
-                stack: (error && (error as any).stack) || undefined,
-                details: (error && (error as any).details) || undefined,
+                name:
+                  toUnknownRecord(error) && typeof toUnknownRecord(error)?.['name'] === 'string'
+                    ? (toUnknownRecord(error)?.['name'] as string)
+                    : undefined,
+                stack:
+                  toUnknownRecord(error) && typeof toUnknownRecord(error)?.['stack'] === 'string'
+                    ? (toUnknownRecord(error)?.['stack'] as string)
+                    : undefined,
+                details: toUnknownRecord(error)?.['details'],
               },
             })
           )
