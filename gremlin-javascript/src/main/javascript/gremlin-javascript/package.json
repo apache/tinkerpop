@@ -24,14 +24,16 @@
     "chai": "~4.5.0",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "cucumber": "~6.0.7",
-    "eslint": "^8.42.0",
+    "@eslint/js": "^9.16.0",
+    "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
-    "jsdoc": "^3.6.3",
+    "globals": "^15.14.0",
+    "jsdoc": "^4.0.5",
     "js-yaml": "^3.14.2",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.5",
     "prettier": "^3.0.0"
   },
   "repository": {
@@ -55,7 +57,7 @@
     "features-docker": "npm run features-graphson30-docker && npm run features-graphbinary-docker",
     "features-graphson30-docker": "cross-env CLIENT_MIMETYPE='application/vnd.gremlin-v3.0+json' cucumber-js --require test/cucumber ../gremlin-test/",
     "features-graphbinary-docker": "cross-env CLIENT_MIMETYPE='application/vnd.graphbinary-v1.0' cucumber-js --require test/cucumber ../gremlin-test/",
-    "lint": "eslint --ext .js .",
+    "lint": "eslint .",
     "doc": "jsdoc -r -d doc -R README.md lib/"
   },
   "engines": {
