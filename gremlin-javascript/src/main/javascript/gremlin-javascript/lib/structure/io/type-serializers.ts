@@ -402,7 +402,7 @@ class ArraySerializer extends TypeSerializer<unknown[]> {
     };
   }
 
-  canBeUsedFor(value: unknown) {
+  canBeUsedFor(value: unknown): value is unknown[] {
     return Array.isArray(value);
   }
 }
@@ -481,7 +481,7 @@ export class SetSerializer extends ArraySerializer {
     };
   }
 
-  canBeUsedFor(value: unknown) {
-    return value instanceof Set;
+  canBeUsedFor(value: unknown): value is unknown[] {
+    return value instanceof Set as any;
   }
 }

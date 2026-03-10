@@ -196,15 +196,14 @@ export default class Connection extends EventEmitter {
     this._ws = new WebSocket(
       this.url,
       !useGlobalWebSocket
-        ? {
-            // @ts-expect-error
+        ? ({
             headers: headers,
             ca: this.options.ca,
             cert: this.options.cert,
             pfx: this.options.pfx,
             rejectUnauthorized: this.options.rejectUnauthorized,
             agent: this.options.agent,
-          }
+          } as any)
         : undefined,
     );
 
@@ -212,22 +211,17 @@ export default class Connection extends EventEmitter {
       this._ws.binaryType = 'arraybuffer';
     }
 
-    // @ts-expect-error
     this._ws!.addEventListener('open', this.#handleOpen);
-    // @ts-expect-error
     this._ws!.addEventListener('error', this.#handleError);
     // Only attach unexpected-response listener for Node.js WebSocket (ws package)
     // Browser WebSocket does not have this event and .on() method
     if (!useGlobalWebSocket) {
       // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
       // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
-      // @ts-expect-error
-      this._ws!.on('unexpected-response', this.#handleUnexpectedResponse);
+      (this._ws! as NodeWebSocket).on('unexpected-response', this.#handleUnexpectedResponse);
     }
 
-    // @ts-expect-error
     this._ws!.addEventListener('message', this.#handleMessage);
-    // @ts-expect-error
     this._ws!.addEventListener('close', this.#handleClose);
 
     return await this._openPromise;
@@ -468,21 +462,17 @@ export default class Connection extends EventEmitter {
         handler.callback(cause);
       }
     });
-    // @ts-expect-error
     this._ws?.removeEventListener('open', this.#handleOpen);
-    // @ts-expect-error
     this._ws?.removeEventListener('error', this.#handleError);
     // Only remove unexpected-response listener for Node.js WebSocket (ws package)
     // Browser WebSocket does not have this event and .off() method
     if (this._ws && 'off' in this._ws) {
       // The following listener needs to use `.on` and `.off` because the `ws` package's addEventListener only accepts certain event types
       // Ref: https://github.com/websockets/ws/blob/8.16.0/lib/event-target.js#L202-L241
-      this._ws.off('unexpected-response', this.#handleUnexpectedResponse);
+      (this._ws as NodeWebSocket).off('unexpected-response', this.#handleUnexpectedResponse);
     }
 
-    // @ts-expect-error
     this._ws?.removeEventListener('message', this.#handleMessage);
-    // @ts-expect-error
     this._ws?.removeEventListener('close', this.#handleClose);
     this._openPromise = null;
     this._closePromise = null;

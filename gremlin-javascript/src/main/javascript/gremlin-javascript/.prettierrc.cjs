@@ -17,6 +17,8 @@
  *  under the License.
  */
 
+'use strict';
+
 module.exports = {
   singleQuote: true,
   printWidth: 120,
