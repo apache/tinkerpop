@@ -39,8 +39,8 @@ namespace Gremlin.Net.Structure.IO
         public const string GraphSON3MimeType = "application/vnd.gremlin-v3.0+json";
 
         /// <summary>
-        ///     The MIME type for GraphBinary 1.
+        ///     The MIME type for GraphBinary 4.0.
         /// </summary>
-        public const string GraphBinary1MimeType = "application/vnd.graphbinary-v1.0";
+        public const string GraphBinary4MimeType = "application/vnd.graphbinary-v4.0";
     }
 }

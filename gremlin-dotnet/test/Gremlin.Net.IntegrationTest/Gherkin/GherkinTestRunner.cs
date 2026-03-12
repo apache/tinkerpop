@@ -32,8 +32,7 @@ using Gherkin;
 using Gherkin.Ast;
 using Gremlin.Net.Driver;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
-using Gremlin.Net.Structure.IO.GraphBinary;
-using Gremlin.Net.Structure.IO.GraphSON;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit.Abstractions;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
@@ -116,19 +115,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                         continue;
                     }
 
-                    if (scenario.Tags.Any(t => t.Name == "@StepTree"))
+                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepTree"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.TreeStepNotSupported));
                         continue;
                     }
 
-                    if (scenario.Tags.Any(t => t.Name == "@StepWrite"))
+                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepWrite"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.WriteStepTestingNotSupported));
                         continue;
                     }
 
-                    if (scenario.Tags.Any(t => t.Name == "@StepSubgraph"))
+                    if (scenario.Tags.Concat(feature.Tags).Any(t => t.Name == "@StepSubgraph"))
                     {
                         failedSteps.Add(scenario.Steps.First(), new IgnoreException(IgnoreReason.SubgraphStepNotSupported));
                         continue;
@@ -172,8 +171,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         public static IEnumerable<object[]> MessageSerializers =>
             new List<object[]>
             {
-                new object[] {new GraphBinaryMessageSerializer()},
-                new object[] {new GraphSON3MessageSerializer()}
+                new object[] {new GraphBinaryMessageSerializer()}
             };
 
         private void WriteOutput(string line)

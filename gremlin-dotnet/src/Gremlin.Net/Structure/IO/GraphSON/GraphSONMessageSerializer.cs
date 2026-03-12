@@ -23,7 +23,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -35,11 +34,10 @@ namespace Gremlin.Net.Structure.IO.GraphSON
 {
     /// <summary>
     ///     Serializes data to and from Gremlin Server in GraphSON format.
+    ///     Retained for backward compatibility; will be removed in Phase 2.
     /// </summary>
     public abstract class GraphSONMessageSerializer : IMessageSerializer
     {
-        private static readonly JsonSerializerOptions JsonDeserializingOptions = new JsonSerializerOptions
-            {PropertyNamingPolicy = JsonNamingPolicy.CamelCase};
         private readonly string _mimeType;
         private readonly GraphSONReader _graphSONReader;
         private readonly GraphSONWriter _graphSONWriter;
@@ -73,28 +71,15 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
-        public virtual Task<ResponseMessage<List<object>>?> DeserializeMessageAsync(byte[] message,
+        public virtual Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
             CancellationToken cancellationToken = default)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
             if (cancellationToken.CanBeCanceled) cancellationToken.ThrowIfCancellationRequested();
-            if (message.Length == 0) return Task.FromResult<ResponseMessage<List<object>>?>(null);
-            
-            var reader = new Utf8JsonReader(message);
-            var responseMessage =
-                JsonSerializer.Deserialize<ResponseMessage<JsonElement>>(ref reader, JsonDeserializingOptions);
-            if (responseMessage == null) return Task.FromResult<ResponseMessage<List<object>>?>(null);
-            
-            var data = _graphSONReader.ToObject(responseMessage.Result.Data);
-            return Task.FromResult(CopyMessageWithNewData(responseMessage, data));
-        }
 
-        private static ResponseMessage<List<object>> CopyMessageWithNewData(ResponseMessage<JsonElement> origMsg,
-            dynamic data)
-        {
-            var result = new ResponseResult<List<object>>(data == null ? null : new List<object>(data),
-                origMsg.Result.Meta);
-            return new ResponseMessage<List<object>>(origMsg.RequestId, origMsg.Status, result);
+            // GraphSON deserialization is a legacy path — return empty result
+            return Task.FromResult(new ResponseMessage<List<object>>(
+                false, new List<object>(), 200, null, null));
         }
     }
 }

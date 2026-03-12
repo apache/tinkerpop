@@ -33,7 +33,7 @@ using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
-using Gremlin.Net.Structure.IO.GraphSON;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit;
 
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
@@ -53,13 +53,14 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly JsonSerializerOptions JsonDeserializingOptions =
             new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         
-        public static ScenarioData ScenarioData { get; set; } = new ScenarioData(new GraphSON3MessageSerializer());
+        public static ScenarioData ScenarioData { get; set; } = new ScenarioData(new GraphBinaryMessageSerializer());
 
         private static readonly IDictionary<Regex, Func<string, string, object?>> Parsers =
             new Dictionary<string, Func<string, string, object?>>
             {
                 {@"str\[(.*)\]", (x, graphName) => x }, //returns the string value as is
                 {@"vp\[(.+)\]", ToVertexProperty},
+                {@"prop\[(.+)\]", ToProperty},
                 {@"dt\[(.+)\]", ToDateTime},
                 {@"uuid\[(.+)\]", ToUuid},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
@@ -288,7 +289,21 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
                     if (ordered)
                     {
-                        Assert.Equal(expected, _result!);
+                        var expectedList = expected.ToList();
+                        var resultList = _result!.ToList();
+                        Assert.Equal(expectedList.Count, resultList.Count);
+                        for (int i = 0; i < expectedList.Count; i++)
+                        {
+                            if (expectedList[i] is Property expectedProp && resultList[i] is Property resultProp)
+                            {
+                                Assert.Equal(expectedProp.Key, resultProp.Key);
+                                Assert.Equal(expectedProp.Value, resultProp.Value);
+                            }
+                            else
+                            {
+                                Assert.Equal(expectedList[i], resultList[i]);
+                            }
+                        }
                     }
                     else
                     {
@@ -318,6 +333,21 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                                     break;
                                 }
                                 Assert.True(expectedArrayContainsResultAsSet);
+                            }
+                            else if (resultItem is Property resultProperty)
+                            {
+                                var found = false;
+                                foreach (var expectedItem in expectedArray)
+                                {
+                                    if (expectedItem is Property expectedProperty &&
+                                        resultProperty.Key == expectedProperty.Key &&
+                                        Equals(resultProperty.Value, expectedProperty.Value))
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                Assert.True(found, $"Property {resultItem} not found in expected results");
                             }
                             else if (resultItem is double resultItemDouble &&
                                      expectedArray.Select(e => e!.GetType()).Any(t => t == typeof(decimal)))
@@ -499,6 +529,19 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static VertexProperty ToVertexProperty(string triplet, string graphName)
         {
             return ScenarioData.GetByGraphName(graphName).VertexProperties[triplet];
+        }
+
+        private static object ToProperty(string value, string graphName)
+        {
+            var commaIndex = value.IndexOf(',');
+            if (commaIndex < 0)
+            {
+                return new Property(value, null);
+            }
+            var key = value.Substring(0, commaIndex);
+            var valueStr = value.Substring(commaIndex + 1);
+            var parsedValue = ParseValue(valueStr, graphName);
+            return new Property(key, parsedValue);
         }
 
         private static Path ToPath(string value, string graphName)

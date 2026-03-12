@@ -339,40 +339,40 @@ jobs:
           EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl gremlin-python
-#  dotnet:
-#    name: .NET
-#    timeout-minutes: 20
-#    needs: cache-gremlin-server-docker-image
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v6
-#      - name: Set up JDK11
-#        uses: actions/setup-java@v5
-#        with:
-#          java-version: '11'
-#          distribution: 'temurin'
-#      - name: Set up .NET 8.0.x
-#        uses: actions/setup-dotnet@v4
-#        with:
-#          dotnet-version: '8.0.x'
-#      - name: Get Cached Server Base Image
-#        uses: actions/cache@v5
-#        id: gremlin-server-test-docker-image
-#        with:
-#          path: |
-#            ./gremlin-server/*
-#            ~/.m2/repository/org/apache/tinkerpop/*
-#          key: ${{ github.sha }}
-#      - name: Load Docker Image
-#        working-directory: ./gremlin-server
-#        run: docker load --input gremlin-server.tar
-#      - name: Build with Maven
-#        run: |
-#          touch gremlin-dotnet/src/.glv
-#          touch gremlin-dotnet/test/.glv
-#          EXCLUDE="${EXCLUDE_MODULES/-:gremlin-dotnet-source,-:gremlin-dotnet-tests,},$EXCLUDE_FOR_GLV"
-#          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
-#          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
+  dotnet:
+    name: .NET
+    timeout-minutes: 20
+    needs: cache-gremlin-server-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK11
+        uses: actions/setup-java@v5
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Set up .NET 8.0.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Get Cached Server Base Image
+        uses: actions/cache@v5
+        id: gremlin-server-test-docker-image
+        with:
+          path: |
+            ./gremlin-server/*
+            ~/.m2/repository/org/apache/tinkerpop/*
+          key: ${{ github.sha }}
+      - name: Load Docker Image
+        working-directory: ./gremlin-server
+        run: docker load --input gremlin-server.tar
+      - name: Build with Maven
+        run: |
+          touch gremlin-dotnet/src/.glv
+          touch gremlin-dotnet/test/.glv
+          EXCLUDE="${EXCLUDE_MODULES/-:gremlin-dotnet-source,-:gremlin-dotnet-tests,},$EXCLUDE_FOR_GLV"
+          mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
+          mvn verify -pl :gremlin-dotnet,:gremlin-dotnet-tests -P gremlin-dotnet
   neo4j-gremlin:
     name: neo4j-gremlin
     timeout-minutes: 20
