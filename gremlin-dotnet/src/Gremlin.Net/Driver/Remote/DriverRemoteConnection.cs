@@ -111,6 +111,7 @@ namespace Gremlin.Net.Driver.Remote
         public async Task<ITraversal<TStart, TEnd>> SubmitAsync<TStart, TEnd>(GremlinLang gremlinLang,
             CancellationToken cancellationToken = default)
         {
+            _logger.SubmittingGremlinLang(gremlinLang);
             gremlinLang.AddG(_traversalSource);
 
             var requestMsg = RequestMessage.Build(gremlinLang.GetGremlin())

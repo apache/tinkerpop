@@ -28,7 +28,7 @@ namespace Gremlin.Net.Driver
     /// <summary>
     ///     Holds settings for the HTTP connection.
     /// </summary>
-    public class HttpConnectionSettings
+    public class ConnectionSettings
     {
         /// <summary>
         ///     The default TCP connection timeout.

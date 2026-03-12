@@ -99,14 +99,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
             }
         }
 
-        [Fact(Skip = "Thread.sleep not available in GremlinLang (Phase 2 cleanup)")]
-        public async Task ShouldSupportCancellation()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using var gremlinClient = new GremlinClient(gremlinServer);
-            await Task.CompletedTask;
-        }
-
         [Fact]
         public async Task ShouldReassembleResponseBatches()
         {
@@ -119,16 +111,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var response = await gremlinClient.SubmitAsync<int>(requestMessage);
 
                 Assert.Equal(expectedResult, response);
-            }
-        }
-
-        [Fact(Skip = "Thread.sleep not available in GremlinLang (Phase 2 cleanup)")]
-        public async Task ShouldCorrectlyAssignResponsesToRequests()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                await Task.CompletedTask;
             }
         }
 
@@ -197,28 +179,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
             }
         }
 
-        [Fact(Skip = "WebSocket-specific test, not applicable to HTTP connection (Phase 2 cleanup)")]
-        public async Task ShouldConfigureWebSocketOptionsAsSpecified()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                // Phase 2: test body removed — WebSocket options not applicable to HTTP
-                await Task.CompletedTask;
-            }
-        }
-
-        [Fact(Skip = "Session-based test, sessions not supported over HTTP (Phase 2 cleanup)")]
-        public async Task ShouldSaveVariableBetweenRequestsInSession()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                // Phase 2: test body removed — sessions not supported over HTTP
-                await Task.CompletedTask;
-            }
-        }
-        
         [Fact]
         public void ShouldLogWithProvidedLoggerFactory()
         {

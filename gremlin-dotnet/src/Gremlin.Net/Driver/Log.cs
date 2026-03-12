@@ -29,18 +29,10 @@ namespace Gremlin.Net.Driver
 {
     internal static partial class Log
     {
-        [LoggerMessage(20000, LogLevel.Information, "Creating {nrConnections} new connections")]
-        public static partial void FillingPool(this ILogger logger, int nrConnections);
-
-        [LoggerMessage(20001, LogLevel.Warning,
-            "Could not get a connection from the pool. Will try again. Retry {retryCount} of {maxRetries}")]
-        public static partial void CouldNotGetConnectionFromPool(this ILogger logger, int retryCount, int maxRetries);
-
-        [LoggerMessage(20002, LogLevel.Information,
-            "A connection was closed. Removing it from the pool so it can be replaced.")]
-        public static partial void RemovingClosedConnectionFromPool(this ILogger logger);
+        [LoggerMessage(20000, LogLevel.Information, "Initialized HTTP connections to {uri}")]
+        public static partial void InitializedHttpConnection(this ILogger logger, Uri uri);
         
-        [LoggerMessage(20003, LogLevel.Debug, "Submitting GremlinLang {gremlinLang} for request: {requestId}")]
-        public static partial void SubmittingGremlinLang(this ILogger logger, GremlinLang gremlinLang, Guid requestId);
+        [LoggerMessage(20001, LogLevel.Debug, "Submitting GremlinLang {gremlinLang}")]
+        public static partial void SubmittingGremlinLang(this ILogger logger, GremlinLang gremlinLang);
     }
 }

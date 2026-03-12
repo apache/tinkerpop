@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure.IO.GraphBinary4;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary4
 {

@@ -36,7 +36,7 @@ namespace Gremlin.Net.Driver
     /// </summary>
     public class GremlinClient : IGremlinClient
     {
-        private readonly HttpConnection _httpConnection;
+        private readonly Connection _connection;
 
         internal ILoggerFactory LoggerFactory { get; }
 
@@ -48,29 +48,32 @@ namespace Gremlin.Net.Driver
         ///     A <see cref="IMessageSerializer" /> instance to serialize messages sent to and received
         ///     from the server.
         /// </param>
-        /// <param name="connectionSettings">The <see cref="HttpConnectionSettings" /> for the HTTP connection.</param>
+        /// <param name="connectionSettings">The <see cref="ConnectionSettings" /> for the HTTP connection.</param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
         // Interceptor slot reserved for future spec:
         // IReadOnlyList<Func<HttpRequestMessage, Task>>? interceptors = null,
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
-            HttpConnectionSettings? connectionSettings = null,
+            ConnectionSettings? connectionSettings = null,
             ILoggerFactory? loggerFactory = null)
         {
             messageSerializer ??= new GraphBinaryMessageSerializer();
-            connectionSettings ??= new HttpConnectionSettings();
+            connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
-            _httpConnection = new HttpConnection(
+            _connection = new Connection(
                 gremlinServer.Uri,
                 messageSerializer,
                 connectionSettings);
+
+            var logger = LoggerFactory.CreateLogger<GremlinClient>();
+            logger.InitializedHttpConnection(gremlinServer.Uri);
         }
 
         /// <inheritdoc />
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
             CancellationToken cancellationToken = default)
         {
-            return await _httpConnection.SubmitAsync<T>(requestMessage, cancellationToken)
+            return await _connection.SubmitAsync<T>(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -94,7 +97,7 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
-                    _httpConnection?.Dispose();
+                    _connection?.Dispose();
                 _disposed = true;
             }
         }

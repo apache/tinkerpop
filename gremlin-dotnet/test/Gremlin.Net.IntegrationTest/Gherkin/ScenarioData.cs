@@ -109,7 +109,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             // Property name might not exist and C# doesn't support "null" keys in Dictionary
             if (g.V().Count().Next() == g.V().Has("name").Count().Next())
             {
-                return g.V().Group<string, object>().By("name").By(__.Tail<Vertex>()).Next()!
+                return g.With("materializeProperties", "all").V().Group<string, object>()
+                    .By("name").By(__.Tail<Vertex>()).Next()!
                     .ToDictionary(kv => kv.Key, kv => (Vertex) kv.Value);
             }
             else
@@ -122,17 +123,36 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             try
             {
-                IFunction lambda = Lambda.Groovy(
-                    "it.outVertex().value('name') + '-' + it.label() + '->' + it.inVertex().value('name')", 1);
-
-                return g.E().Group<string, Edge>()
-                    .By(lambda)
+                // Use project() instead of a Groovy lambda to build the edge key string
+                // in the form "outV-label->inV". This avoids lambdas which are not supported
+                // over HTTP 4.0 with GraphBinary serialization.
+                var edgeMap = g.With("materializeProperties", "all").E()
+                    .Group<IDictionary<string, object>, object>()
+                    .By(__.Project<object>("o", "l", "i")
+                        .By(__.OutV().Values<object>("name"))
+                        .By(__.Label())
+                        .By(__.InV().Values<object>("name")))
                     .By(__.Tail<object>())
                     .Next()!;
+
+                var edges = new Dictionary<string, Edge>();
+                foreach (var kv in edgeMap)
+                {
+                    var key = kv.Key;
+                    var outV = key["o"]?.ToString();
+                    var label = key["l"]?.ToString();
+                    var inV = key["i"]?.ToString();
+                    edges[$"{outV}-{label}->{inV}"] = (Edge) kv.Value;
+                }
+                return edges;
             }
             catch (ResponseException)
             {
                 // Property name might not exist
+                return EmptyEdges;
+            }
+            catch (KeyNotFoundException)
+            {
                 return EmptyEdges;
             }
         }
@@ -141,62 +161,55 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             try
             {
-                /*
-                 * This closure will turn a VertexProperty into a triple string of the form:
-                 * "vertexName-propKey->propVal"
-                 *
-                 * It will also take care of wrapping propVal in the appropriate Numeric format. We must do this in
-                 * case a Vertex has multiple properties with the same key and number value but in different numeric
-                 * type spaces (rare, but possible, and presumably something we may want to write tests around).
-                 */
-                var groovy = @"
-                    { vp ->
-                          def result = vp.element().value('name') + '-' + vp.key() + '->'
-                          def value = vp.value()
-                          def type = ''
-                          switch(value) {
-                            case { !(it instanceof Number) }:
-                              return result + value
-                            case Byte:
-                              type = 'b'
-                              break
-                            case Short:
-                              type = 's'
-                              break
-                            case Integer:
-                              type = 'i'
-                              break
-                            case Long:
-                              type = 'l'
-                              break
-                            case Float:
-                              type = 'f'
-                              break
-                            case Double:
-                              type = 'd'
-                              break
-                            case BigDecimal:
-                              type = 'm'
-                              break
-                            case BigInteger:
-                              type = 'n'
-                              break
-                          }
-                          return result + 'd[' + value + '].' + type
-                    }  
-                ";
-                
-                IFunction lambda = Lambda.Groovy(groovy, 1);
-
-                return g.V().Properties<VertexProperty>().Group<string, VertexProperty>()
-                    .By(lambda)
+                // Use project() instead of a Groovy lambda to build the vertex property key
+                // string in the form "vertexName-propKey->propVal". This avoids lambdas which
+                // are not supported over HTTP 4.0 with GraphBinary serialization.
+                // The toy graphs only use String/Int/Float/Double types so we handle those here.
+                var vpMap = g.V().Properties<object>()
+                    .Group<IDictionary<string, object>, object>()
+                    .By(__.Project<object>("n", "k", "v")
+                        .By(__.Element().Values<object>("name"))
+                        .By(__.Key())
+                        .By(__.Value<object>()))
                     .By(__.Tail<object>())
                     .Next()!;
+
+                var vps = new Dictionary<string, VertexProperty>();
+                foreach (var kv in vpMap)
+                {
+                    var key = kv.Key;
+                    var name = key["n"]?.ToString();
+                    var k = key["k"]?.ToString();
+                    var val = key["v"];
+                    var valStr = FormatVertexPropertyValue(k!, val);
+                    vps[$"{name}-{k}->{valStr}"] = (VertexProperty) kv.Value;
+                }
+                return vps;
             }
             catch (ResponseException)
             {
                 return EmptyVertexProperties;
             }
+            catch (KeyNotFoundException)
+            {
+                return EmptyVertexProperties;
+            }
+        }
+
+        /// <summary>
+        ///     Formats a vertex property value for use as a lookup key, wrapping numeric values
+        ///     in the Gherkin d[value].type notation.
+        /// </summary>
+        private static string FormatVertexPropertyValue(string propertyKey, object? value)
+        {
+            // The toy graphs use known property keys with specific numeric types.
+            // Match the same logic as the Python GLV's _get_v_keys helper.
+            return propertyKey switch
+            {
+                "weight" => $"d[{value}].d",
+                "age" or "since" or "skill" => $"d[{value}].i",
+                _ => value?.ToString() ?? ""
+            };
         }
 
         public void Dispose()

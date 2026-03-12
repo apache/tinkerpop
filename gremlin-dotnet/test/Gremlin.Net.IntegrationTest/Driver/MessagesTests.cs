@@ -37,13 +37,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
         private static readonly string TestHost = ConfigProvider.Configuration["TestServerIpAddress"]!;
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
-        [Fact(Skip = "3.x alias API not available in 4.0 (Phase 2 cleanup)")]
-        public async Task ShouldUseAliasForTraversalSource()
-        {
-            // Phase 2: 4.0 uses AddG() instead of aliases map
-            await Task.CompletedTask;
-        }
-
         [Fact]
         public async Task ShouldThrowForInvalidOperation()
         {
@@ -58,23 +51,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
                 Assert.Contains("Failed to interpret Gremlin query", thrownException.Message);
                 Assert.Contains(ivalidOperationName, thrownException.Message);
-            }
-        }
-
-        [Fact(Skip = "3.x processor API not available in 4.0 (Phase 2 cleanup)")]
-        public async Task ShouldThrowForInvalidProcessor()
-        {
-            // Phase 2: Processor() method removed from 4.0 RequestMessage.Builder
-            await Task.CompletedTask;
-        }
-
-        [Fact(Skip = "Thread.sleep not available in GremlinLang (Phase 2 cleanup)")]
-        public async Task ShouldUseSpecifiedEvaluationTimeout()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                await Task.CompletedTask;
             }
         }
 

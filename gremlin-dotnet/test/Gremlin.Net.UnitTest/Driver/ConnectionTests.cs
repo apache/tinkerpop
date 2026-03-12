@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -23,315 +23,319 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.WebSockets;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
-using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Structure.IO.GraphBinary4;
+using Gremlin.Net.Structure.IO;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace Gremlin.Net.UnitTest.Driver
 {
     public class ConnectionTests
     {
-        [Fact]
-        public async Task ShouldHandleCloseMessageAfterConnectAsync()
+        private static readonly Uri TestUri = new Uri("http://localhost:8182/gremlin");
+
+        /// <summary>
+        ///     Creates a mock HttpMessageHandler that captures the request and returns a canned response.
+        /// </summary>
+        private static (HttpClient httpClient, MockHandler handler) CreateMockHttpClient(
+            byte[]? responseBytes = null, string? contentEncoding = null)
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>()).Returns(
-                new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, WebSocketCloseStatus.MessageTooBig,
-                    "Message is too large"));
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-            var uri = new Uri("wss://localhost:8182");
-            var connection = GetConnection(mockedClientWebSocket, uri: uri);
+            var handler = new MockHandler(responseBytes ?? BuildMinimalResponseBytes(), contentEncoding);
+            var httpClient = new HttpClient(handler);
+            return (httpClient, handler);
+        }
 
-            await connection.ConnectAsync(CancellationToken.None);
+        /// <summary>
+        ///     Builds a minimal valid 4.0 GraphBinary response: version + non-bulked + marker + status 200 + null msg + null exc.
+        /// </summary>
+        private static byte[] BuildMinimalResponseBytes()
+        {
+            using var ms = new MemoryStream();
+            ms.WriteByte(0x81); // version
+            ms.WriteByte(0x00); // non-bulked
+            ms.WriteByte(0xFD); // marker type code
+            ms.WriteByte(0x00); // marker value
+            WriteInt(ms, 200); // status code
+            ms.WriteByte(0x01); // null status message
+            ms.WriteByte(0x01); // null exception
+            return ms.ToArray();
+        }
 
-            Assert.False(connection.IsOpen);
-            Assert.Equal(0, connection.NrRequestsInFlight);
-            await mockedClientWebSocket.Received(1).ConnectAsync(uri, Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.Received(1)
-                .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.Received(1).CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
-                Arg.Any<CancellationToken>());
+        private static void WriteInt(Stream stream, int value)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            stream.Write(bytes, 0, 4);
         }
 
         [Fact]
-        public async Task ShouldThrowIfClosedMessageReceivedWithValidPropertiesAsync()
+        public async Task ShouldSetContentTypeHeader()
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
 
-            var webSocketConnection = new WebSocketConnection(
-                mockedClientWebSocket,
-                new WebSocketSettings());
+            await connection.SubmitAsync<object>(CreateTestRequest());
 
-            // Test all known close statuses
-            foreach (Enum closeStatus in Enum.GetValues(typeof(WebSocketCloseStatus)))
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal(SerializationTokens.GraphBinary4MimeType,
+                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
+        }
+
+        [Fact]
+        public async Task ShouldSetAcceptHeader()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Contains(handler.CapturedRequest!.Headers.Accept,
+                h => h.MediaType == SerializationTokens.GraphBinary4MimeType);
+        }
+
+        [Fact]
+        public async Task ShouldSendPostRequest()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal(HttpMethod.Post, handler.CapturedRequest!.Method);
+        }
+
+        [Fact]
+        public async Task ShouldSendToCorrectUri()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal(TestUri, handler.CapturedRequest!.RequestUri);
+        }
+
+        [Fact]
+        public async Task ShouldSetAcceptEncodingWhenCompressionEnabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableCompression = true };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Contains(handler.CapturedRequest!.Headers.AcceptEncoding,
+                e => e.Value == "deflate");
+        }
+
+        [Fact]
+        public async Task ShouldNotSetAcceptEncodingWhenCompressionDisabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableCompression = false };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.DoesNotContain(handler.CapturedRequest!.Headers.AcceptEncoding,
+                e => e.Value == "deflate");
+        }
+
+        [Fact]
+        public async Task ShouldSetUserAgentWhenEnabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableUserAgentOnConnect = true };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.True(handler.CapturedRequest!.Headers.Contains("User-Agent"));
+        }
+
+        [Fact]
+        public async Task ShouldNotSetUserAgentWhenDisabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableUserAgentOnConnect = false };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.False(handler.CapturedRequest!.Headers.Contains("User-Agent"));
+        }
+
+        [Fact]
+        public async Task ShouldSetBulkResultsHeaderWhenEnabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { BulkResults = true };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.True(handler.CapturedRequest!.Headers.Contains("bulkResults"));
+            Assert.Equal("true", handler.CapturedRequest.Headers.GetValues("bulkResults").First());
+        }
+
+        [Fact]
+        public async Task ShouldNotSetBulkResultsHeaderWhenDisabled()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { BulkResults = false };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.False(handler.CapturedRequest!.Headers.Contains("bulkResults"));
+        }
+
+        [Fact]
+        public async Task ShouldDecompressDeflateResponse()
+        {
+            // Compress the minimal response bytes with deflate
+            var originalBytes = BuildMinimalResponseBytes();
+            byte[] compressedBytes;
+            using (var compressedStream = new MemoryStream())
             {
-                mockedClientWebSocket
-                    .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
-                    .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, (WebSocketCloseStatus)closeStatus, closeStatus.ToString()));
-
-                await AssertExpectedConnectionClosedException((WebSocketCloseStatus?)closeStatus, closeStatus.ToString(), () => webSocketConnection.ReceiveMessageAsync());
-            }
-
-            // Test null/empty close property values as well.
-            mockedClientWebSocket
-                .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
-                .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, null));
-            await AssertExpectedConnectionClosedException(null, null, () => webSocketConnection.ReceiveMessageAsync());
-
-            mockedClientWebSocket
-                .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
-                .Returns(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, null, string.Empty));
-            await AssertExpectedConnectionClosedException(null, string.Empty, () => webSocketConnection.ReceiveMessageAsync());
-        }
-
-        [Fact]
-        public async Task ShouldThrowOnSubmitRequestIfWebSocketIsNotOpen()
-        {
-            // This is to test that race bugs don't get introduced which would cause submitted requests to hang if the
-            // connection is being closed/aborted or is not connected. In these cases, WebSocket.SendAsync should throw for the underlying
-            // websocket is not open and the caller should be notified of that failure.
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-
-            var connection = GetConnection(mockedClientWebSocket);
-            var request = RequestMessage.Build("gremlin").Create();
-
-            // Simulate the SendAsync exception behavior if the underlying websocket is closed (see reference https://docs.microsoft.com/en-us/dotnet/api/system.net.websockets.clientwebsocket.sendasync?view=net-6.0)
-            mockedClientWebSocket
-                .SendAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(),
-                    Arg.Any<CancellationToken>())
-                .ThrowsAsync(new ObjectDisposedException(nameof(ClientWebSocket), "Socket closed"));
-
-            // Test various closing/closed WebSocketStates with SubmitAsync.
-            mockedClientWebSocket.State.Returns(WebSocketState.Closed);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.SubmitAsync<dynamic>(request, CancellationToken.None));
-
-            mockedClientWebSocket.State.Returns(WebSocketState.CloseSent);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.SubmitAsync<dynamic>(request, CancellationToken.None));
-
-            mockedClientWebSocket.State.Returns(WebSocketState.CloseReceived);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.SubmitAsync<dynamic>(request, CancellationToken.None));
-
-            mockedClientWebSocket.State.Returns(WebSocketState.Aborted);
-            await Assert.ThrowsAsync<ObjectDisposedException>(() => connection.SubmitAsync<dynamic>(request, CancellationToken.None));
-
-            // Simulate SendAsync exception behavior if underlying websocket is not connected.
-            mockedClientWebSocket
-                .SendAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(),
-                    Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("Socket not connected"));
-            mockedClientWebSocket.State.Returns(WebSocketState.Connecting);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => connection.SubmitAsync<dynamic>(request, CancellationToken.None));
-        }
-
-        [Fact]
-        public async Task ShouldHandleCloseMessageForInFlightRequestsAsync()
-        {
-            // Tests that in-flight requests will get notified if a connection close message is received.
-            var uri = new Uri("wss://localhost:8182");
-            var closeResult = new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, WebSocketCloseStatus.EndpointUnavailable, "Server shutdown");
-
-            var receiveSemaphore = new SemaphoreSlim(0, 1);
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>())
-                .ReturnsForAnyArgs(async x =>
+                using (var deflateStream = new DeflateStream(compressedStream, CompressionMode.Compress, true))
                 {
-                    await receiveSemaphore.WaitAsync();
-                    mockedClientWebSocket.State.Returns(WebSocketState.CloseReceived);
-                    return closeResult;
-                });
-            mockedClientWebSocket.State.Returns(WebSocketState.Open);
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-
-            var connection = GetConnection(mockedClientWebSocket, uri: uri);
-            await connection.ConnectAsync(CancellationToken.None);
-
-            // Create two in-flight requests that will block on waiting for a response.
-            var requestMsg1 = RequestMessage.Build("gremlin").Create();
-            var requestMsg2 = RequestMessage.Build("gremlin").Create();
-            Task request1 = connection.SubmitAsync<dynamic>(requestMsg1, CancellationToken.None);
-            Task request2 = connection.SubmitAsync<dynamic>(requestMsg2, CancellationToken.None);
-
-            // Confirm the requests are in-flight.
-            Assert.Equal(2, connection.NrRequestsInFlight);
-
-            // Release the connection close message.
-            receiveSemaphore.Release();
-
-            // Assert that both requests get notified with the closed exception.
-            await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request1);
-            await AssertExpectedConnectionClosedException(closeResult.CloseStatus, closeResult.CloseStatusDescription, () => request2);
-
-            // delay for NotifyAboutConnectionFailure running in another thread
-            var runs = 0;
-            while (connection.NrRequestsInFlight == 2 && ++runs < 5)
-            {
-                await Task.Delay(5);
+                    deflateStream.Write(originalBytes, 0, originalBytes.Length);
+                }
+                compressedBytes = compressedStream.ToArray();
             }
 
-            Assert.False(connection.IsOpen);
-            Assert.Equal(0, connection.NrRequestsInFlight);
-            await mockedClientWebSocket.Received(1).ConnectAsync(uri, Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.Received(1)
-                .ReceiveAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.Received(1).CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty,
-                Arg.Any<CancellationToken>());
+            var (httpClient, handler) = CreateMockHttpClient(compressedBytes, "deflate");
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableCompression = true };
+            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+
+            // Should not throw — decompression should work
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(result);
         }
 
         [Fact]
-        public async Task ShouldProperlyHandleCancellationForSubmitAsync()
+        public void ShouldDisposeWithoutError()
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-            var connection = GetConnection(mockedClientWebSocket);
-            var cts = new CancellationTokenSource();
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var connection = new Connection(TestUri, serializer, settings, httpClient);
 
-            var task = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                cts.Token);
-            cts.Cancel();
-
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
-            Assert.True(task.IsCanceled);
-            await mockedClientWebSocket.Received(1).SendAsync(Arg.Any<ArraySegment<byte>>(),
-                Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(), cts.Token);
-            await mockedClientWebSocket.DidNotReceive().CloseAsync(Arg.Any<WebSocketCloseStatus>(), Arg.Any<string>(),
-                Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.DidNotReceive().ReceiveAsync(Arg.Any<ArraySegment<byte>>(), cts.Token);
+            connection.Dispose();
+            // Double dispose should not throw
+            connection.Dispose();
         }
 
-        [Fact]
-        public async Task ShouldProperlyHandleCancellationForSubmitAsyncIfAlreadyCancelled()
+        private static RequestMessage CreateTestRequest()
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-            var connection = GetConnection(mockedClientWebSocket);
-            var token = new CancellationToken(canceled: true);
-
-            var task = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                token);
-
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
-            Assert.True(task.IsCanceled);
-            await mockedClientWebSocket.DidNotReceive().SendAsync(Arg.Any<ArraySegment<byte>>(),
-                Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.DidNotReceive().CloseAsync(Arg.Any<WebSocketCloseStatus>(), Arg.Any<string>(),
-                Arg.Any<CancellationToken>());
-            await mockedClientWebSocket.DidNotReceive().ReceiveAsync(Arg.Any<ArraySegment<byte>>(), token);
+            return RequestMessage.Build("g.V()").AddG("g").Create();
         }
 
-        [Fact]
-        public async Task ShouldContinueSubmittingOtherMessagesIfOneIsCancelled()
+        private static IMessageSerializer CreateMockSerializer()
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-            var tcs = new TaskCompletionSource();
-            mockedClientWebSocket.SendAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<WebSocketMessageType>(),
-                Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
-            var connection = GetConnection(mockedClientWebSocket);
-            var cts = new CancellationTokenSource();
-
-            var taskToCancel = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                cts.Token);
-            var taskToComplete = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                CancellationToken.None);
-            cts.Cancel();
-            var taskToComplete2 = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                CancellationToken.None);
-            tcs.TrySetResult();
-
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await taskToCancel);
-            Assert.True(taskToCancel.IsCanceled);
-            await Task.Delay(TimeSpan.FromMilliseconds(400)); // wait a bit to let the messages being sent
-            await mockedClientWebSocket.Received(3).SendAsync(Arg.Any<ArraySegment<byte>>(),
-                Arg.Any<WebSocketMessageType>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+            var serializer = Substitute.For<IMessageSerializer>();
+            serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(new byte[] { 0x81 }));
+            serializer.DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(
+                    new ResponseMessage<List<object>>(false, new List<object>(), 200, null, null)));
+            return serializer;
         }
 
-        [Fact]
-        public async Task ShouldContinueSubmittingOtherMessagesIfOneIsAlreadyCancelled()
+        /// <summary>
+        ///     A test HttpMessageHandler that captures the request and returns a canned response.
+        /// </summary>
+        private class MockHandler : HttpMessageHandler
         {
-            var mockedClientWebSocket = Substitute.For<IClientWebSocket>();
-            mockedClientWebSocket.Options.Returns(new ClientWebSocket().Options);
-            var cancelledToken = new CancellationToken(canceled: true);
-            mockedClientWebSocket.SendAsync(Arg.Any<ArraySegment<byte>>(), Arg.Any<WebSocketMessageType>(),
-                    Arg.Any<bool>(), cancelledToken)
-                .Throws(new TaskCanceledException(null, null, cancelledToken));
-            var messageToSend = RequestMessage.Build(string.Empty).Create();
-            var fakeMessageSerializer = Substitute.For<IMessageSerializer>();
-            var bytesToSend = new byte[] { 1, 2, 3 };
-            fakeMessageSerializer.SerializeMessageAsync(messageToSend, Arg.Any<CancellationToken>())
-                .Returns(bytesToSend);
-            var connection = GetConnection(mockedClientWebSocket, fakeMessageSerializer);
+            private readonly byte[] _responseBytes;
+            private readonly string? _contentEncoding;
 
-            var taskToCancel = connection.SubmitAsync<object>(RequestMessage.Build(string.Empty).Create(),
-                cancelledToken);
-            var taskToComplete = connection.SubmitAsync<object>(messageToSend, CancellationToken.None);
+            public HttpRequestMessage? CapturedRequest { get; private set; }
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await taskToCancel);
-            Assert.True(taskToCancel.IsCanceled);
-            await mockedClientWebSocket.Received(1).SendAsync(bytesToSend, Arg.Any<WebSocketMessageType>(),
-                Arg.Any<bool>(), Arg.Any<CancellationToken>());
-        }
+            public MockHandler(byte[] responseBytes, string? contentEncoding = null)
+            {
+                _responseBytes = responseBytes;
+                _contentEncoding = contentEncoding;
+            }
 
-        [Fact]
-        public async Task ShouldNotProcessReceivedMessageForCancelledRequest()
-        {
-            var fakeMessageSerializer = Substitute.For<IMessageSerializer>();
-            var receivedBytes = new byte[] { 1, 2, 3 };
-            var messageToCancel = RequestMessage.Build(string.Empty).Create();
-            var receivedMessage = new ResponseMessage<List<object>>(false,
-                new List<object>(), 200, null, null);
-            fakeMessageSerializer.DeserializeMessageAsync(receivedBytes, Arg.Any<CancellationToken>())
-                .Returns(receivedMessage);
-            var fakeWebSocketConnection = Substitute.For<IWebSocketConnection>();
-            var receiveTaskCompletionSource = new TaskCompletionSource<byte[]>();
-            fakeWebSocketConnection.ReceiveMessageAsync().Returns(receiveTaskCompletionSource.Task);
-            var connection = GetConnection(fakeWebSocketConnection, fakeMessageSerializer);
-            await connection.ConnectAsync(CancellationToken.None);
-            var cts = new CancellationTokenSource();
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                // Clone the request headers before the original request is disposed
+                CapturedRequest = CloneRequest(request);
 
-            var submitTask = connection.SubmitAsync<object>(messageToCancel, cts.Token);
-            cts.Cancel();
-            receiveTaskCompletionSource.SetResult(receivedBytes);
-            await Assert.ThrowsAsync<TaskCanceledException>(() => submitTask);
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(_responseBytes)
+                };
+                response.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue(SerializationTokens.GraphBinary4MimeType);
+                if (_contentEncoding != null)
+                {
+                    response.Content.Headers.ContentEncoding.Add(_contentEncoding);
+                }
+                return Task.FromResult(response);
+            }
 
-            Assert.Equal(0, connection.NrRequestsInFlight);
-        }
+            private static HttpRequestMessage CloneRequest(HttpRequestMessage original)
+            {
+                var clone = new HttpRequestMessage(original.Method, original.RequestUri);
 
-        private static Connection GetConnection(IClientWebSocket clientWebSocket,
-            IMessageSerializer? messageSerializer = null, Uri? uri = null)
-        {
-            return GetConnection(new WebSocketConnection(clientWebSocket, new WebSocketSettings()), messageSerializer,
-                uri);
-        }
+                // Copy headers
+                foreach (var header in original.Headers)
+                {
+                    clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
 
-        private static Connection GetConnection(IWebSocketConnection webSocketConnection,
-            IMessageSerializer? messageSerializer = null, Uri? uri = null)
-        {
-            uri ??= new Uri("wss://localhost:8182");
-            messageSerializer ??= new GraphBinaryMessageSerializer();
-            return new Connection(
-                webSocketConnection,
-                uri: uri,
-                username: "user",
-                password: "password",
-                messageSerializer: messageSerializer,
-                sessionId: null);
-        }
+                // Copy content headers by creating a dummy content
+                if (original.Content != null)
+                {
+                    var contentBytes = original.Content.ReadAsByteArrayAsync().Result;
+                    clone.Content = new ByteArrayContent(contentBytes);
+                    foreach (var header in original.Content.Headers)
+                    {
+                        clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+                }
 
-        private static async Task AssertExpectedConnectionClosedException(WebSocketCloseStatus? expectedCloseStatus,
-            string? expectedCloseDescription, Func<Task> func)
-        {
-            var exception = await Assert.ThrowsAsync<ConnectionClosedException>(func);
-            Assert.Equal(expectedCloseStatus, exception.Status);
-            Assert.Equal(expectedCloseDescription, exception.Description);
+                return clone;
+            }
         }
     }
 }
