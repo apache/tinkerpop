@@ -31,12 +31,5 @@ namespace Gremlin.Net.Benchmarks
         {
             BenchmarkRunner.Run<MessageSerializerBenchmarks>();
         }
-        
-        // public static async Task Main()
-        // {
-        //     var watch = Stopwatch.StartNew();
-        //     await CompressionBenchmarks.GraphBinaryWithCompression();
-        //     Console.WriteLine(watch.Elapsed);
-        // }
     }
 }

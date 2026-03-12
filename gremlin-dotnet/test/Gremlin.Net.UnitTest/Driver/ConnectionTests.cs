@@ -60,7 +60,7 @@ namespace Gremlin.Net.UnitTest.Driver
         private static byte[] BuildMinimalResponseBytes()
         {
             using var ms = new MemoryStream();
-            ms.WriteByte(0x81); // version
+            ms.WriteByte(0x84); // version
             ms.WriteByte(0x00); // non-bulked
             ms.WriteByte(0xFD); // marker type code
             ms.WriteByte(0x00); // marker value
@@ -271,7 +271,7 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var serializer = Substitute.For<IMessageSerializer>();
             serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult(new byte[] { 0x81 }));
+                .Returns(Task.FromResult(new byte[] { 0x84 }));
             serializer.DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(
                     new ResponseMessage<List<object>>(false, new List<object>(), 200, null, null)));

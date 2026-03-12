@@ -35,7 +35,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
     {
         /// <summary>
         ///     Writes a request message to a stream in the 4.0 format:
-        ///     version byte (0x81) + fields map value + gremlin string value.
+        ///     version byte (0x84) + fields map value + gremlin string value.
         /// </summary>
         /// <param name="requestMessage">The message to serialize.</param>
         /// <param name="stream">The stream to write to.</param>

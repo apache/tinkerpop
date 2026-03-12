@@ -39,7 +39,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <summary>
         /// A <see cref="byte"/> representing the version of the GraphBinary v4 specification.
         /// </summary>
-        public const byte VersionByte = 0x81;
+        public const byte VersionByte = 0x84;
 
         private static readonly byte[] UnspecifiedNullBytes = {DataType.UnspecifiedNull.TypeCode, 0x01};
 

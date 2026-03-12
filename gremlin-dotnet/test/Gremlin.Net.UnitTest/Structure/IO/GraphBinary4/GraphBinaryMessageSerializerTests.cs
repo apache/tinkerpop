@@ -40,8 +40,8 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             var actual = await serializer.SerializeMessageAsync(msg);
 
-            // First byte should be version byte 0x81 — no MIME prefix
-            Assert.Equal(0x81, actual[0]);
+            // First byte should be version byte 0x84 — no MIME prefix
+            Assert.Equal(0x84, actual[0]);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             var actual = await serializer.SerializeMessageAsync(msg);
 
-            // The first byte is the version byte (0x81), not a MIME length byte
+            // The first byte is the version byte (0x84), not a MIME length byte
             Assert.True(actual[0] >> 7 == 1, "First byte should have MSB set (version byte)");
         }
 

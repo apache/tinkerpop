@@ -42,7 +42,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             await serializer.WriteValueAsync(msg, stream, writer);
 
             var bytes = stream.ToArray();
-            Assert.Equal(0x81, bytes[0]);
+            Assert.Equal(0x84, bytes[0]);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             // Should have more than just the version byte
             Assert.True(bytes.Length > 1);
             // Version byte
-            Assert.Equal(0x81, bytes[0]);
+            Assert.Equal(0x84, bytes[0]);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var bytes = await serializer.SerializeMessageAsync(msg);
 
             // First byte is version byte, no MIME prefix
-            Assert.Equal(0x81, bytes[0]);
+            Assert.Equal(0x84, bytes[0]);
             Assert.True(bytes.Length > 1);
         }
     }

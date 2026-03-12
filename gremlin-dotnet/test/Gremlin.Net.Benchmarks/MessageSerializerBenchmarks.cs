@@ -29,7 +29,6 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO.GraphBinary4;
-using Gremlin.Net.Structure.IO.GraphSON;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 using static Gremlin.Net.Process.Traversal.__;
 using static Gremlin.Net.Process.Traversal.P;
@@ -41,69 +40,54 @@ namespace Gremlin.Net.Benchmarks
     {
         private static readonly GremlinLang EmptyGremlinLang = new GremlinLang();
 
-        private static readonly GremlinLang SomeGremlinLang = Traversal().With(null).WithComputer().V().
-            Has("Name", "marko").
-            Where(
-                Out("knows").
-                Has("name", Within(new List<string> {"stephen", "peter", "josh"})).
-                Count().
-                Is(Gt(3))).
-            Has("birthDate", Lt(DateTimeOffset.Parse("1980-01-01 00:00:00"))).
-            GremlinLang;
+        private static readonly GremlinLang SomeGremlinLang = BuildSomeGremlinLang();
 
-        private static readonly RequestMessage RequestMessageWithEmptyGremlinLang = RequestMessageFor(EmptyGremlinLang);
-        
-        private static readonly RequestMessage RequestMessage = RequestMessageFor(SomeGremlinLang);
-        
-        private static RequestMessage RequestMessageFor(GremlinLang gremlinLang) => RequestMessage.Build(Tokens.OpsEval)
-            .Processor(Tokens.ProcessorTraversal).OverrideRequestId(Guid.NewGuid())
-            .AddArgument(Tokens.ArgsGremlin, gremlinLang.GetGremlin())
-            .AddArgument(Tokens.ArgsBindings, gremlinLang.Parameters).Create();
+        private static GremlinLang BuildSomeGremlinLang()
+        {
+            var dt = DateTimeOffset.Parse("1980-01-01 00:00:00");
+            return Traversal().With(null).WithComputer().V()
+                .Has("Name", "marko")
+                .Where(
+                    Out("knows")
+                    .Has("name", Within(new List<string> {"stephen", "peter", "josh"}))
+                    .Count()
+                    .Is(Gt(3)))
+                .Has("birthDate", Lt(dt))
+                .GremlinLang;
+        }
 
-        private static readonly GraphBinaryMessageSerializer BinaryMessageSerializer =
-            new GraphBinaryMessageSerializer();
+        private static readonly RequestMessage RequestMessageWithEmptyGremlinLang =
+            RequestMessageFor(EmptyGremlinLang);
 
-        private static readonly GraphSON3MessageSerializer
-            GraphSON3MessageSerializer = new GraphSON3MessageSerializer();
-        
+        private static readonly RequestMessage RequestMessage =
+            RequestMessageFor(SomeGremlinLang);
+
+        private static RequestMessage RequestMessageFor(GremlinLang gremlinLang) =>
+            Gremlin.Net.Driver.Messages.RequestMessage.Build(gremlinLang.GetGremlin())
+                .AddG("g")
+                .AddBindings(gremlinLang.Parameters)
+                .Create();
+
+        private static readonly GraphBinaryMessageSerializer BinaryMessageSerializer = new();
+
         [Benchmark]
         public async Task<byte[]> TestWriteEmptyGremlinLangBinary() =>
             await BinaryMessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyGremlinLang)
                 .ConfigureAwait(false);
-        
-        [Benchmark]
-        public async Task<byte[]> TestWriteEmptyGremlinLangGraphSON3() =>
-            await GraphSON3MessageSerializer.SerializeMessageAsync(RequestMessageWithEmptyGremlinLang)
-                .ConfigureAwait(false);
-        
+
         [Benchmark]
         public async Task<byte[]> TestWriteGremlinLangBinary() =>
             await BinaryMessageSerializer.SerializeMessageAsync(RequestMessage)
                 .ConfigureAwait(false);
-        
+
         [Benchmark]
-        public async Task<byte[]> TestWriteGremlinLangGraphSON3() =>
-            await GraphSON3MessageSerializer.SerializeMessageAsync(RequestMessage)
+        public async Task<ResponseMessage<List<object>>> TestReadSmallBinary() =>
+            await BinaryMessageSerializer.DeserializeMessageAsync(TestMessages.SmallBinaryResponseMessageBytes)
                 .ConfigureAwait(false);
 
         [Benchmark]
-        public async Task<ResponseMessage<List<object>>?> TestReadSmallResponseMessageBinary() =>
-            await BinaryMessageSerializer.DeserializeMessageAsync(TestMessages.SmallBinaryResponseMessageBytes)
-                .ConfigureAwait(false);
-        
-        [Benchmark]
-        public async Task<ResponseMessage<List<object>>?> TestReadSmallResponseMessageGraphSON3() =>
-            await GraphSON3MessageSerializer.DeserializeMessageAsync(TestMessages.SmallGraphSON3ResponseMessageBytes)
-                .ConfigureAwait(false);
-        
-        [Benchmark]
-        public async Task<ResponseMessage<List<object>>?> TestReadBigResponseMessageBinary() =>
+        public async Task<ResponseMessage<List<object>>> TestReadBigBinary() =>
             await BinaryMessageSerializer.DeserializeMessageAsync(TestMessages.BigBinaryResponseMessageBytes)
-                .ConfigureAwait(false);
-        
-        [Benchmark]
-        public async Task<ResponseMessage<List<object>>?> TestReadBigResponseMessageGraphSON3() =>
-            await GraphSON3MessageSerializer.DeserializeMessageAsync(TestMessages.BigGraphSON3ResponseMessageBytes)
                 .ConfigureAwait(false);
     }
 }

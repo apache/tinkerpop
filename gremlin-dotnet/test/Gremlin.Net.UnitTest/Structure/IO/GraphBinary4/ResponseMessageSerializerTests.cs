@@ -35,12 +35,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         [Fact]
         public async Task ShouldDeserializeNonBulkedResponse()
         {
-            // Build a response: version(0x81) + bulked(0x00) + int value 42 + marker + status footer
+            // Build a response: version(0x84) + bulked(0x00) + int value 42 + marker + status footer
             using var stream = new MemoryStream();
             var writer = new GraphBinaryWriter();
 
             // Version byte
-            await stream.WriteByteAsync(0x81);
+            await stream.WriteByteAsync(0x84);
             // Bulked = false
             await stream.WriteByteAsync(0x00);
             // Fully-qualified int value: type_code(0x01) + value_flag(0x00) + int32(42)
@@ -78,7 +78,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             using var stream = new MemoryStream();
 
             // Version byte
-            await stream.WriteByteAsync(0x81);
+            await stream.WriteByteAsync(0x84);
             // Bulked = true
             await stream.WriteByteAsync(0x01);
             // Fully-qualified string value: type_code(0x03) + value_flag(0x00) + string "hello"
@@ -119,7 +119,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             using var stream = new MemoryStream();
 
             // Version byte
-            await stream.WriteByteAsync(0x81);
+            await stream.WriteByteAsync(0x84);
             // Bulked = false
             await stream.WriteByteAsync(0x00);
             // No result data — go straight to marker: type_code(0xFD) + value_flag(0x00) + value(0x00)
@@ -172,7 +172,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             using var stream = new MemoryStream();
 
             // Version + non-bulked
-            await stream.WriteByteAsync(0x81);
+            await stream.WriteByteAsync(0x84);
             await stream.WriteByteAsync(0x00);
             // First result: int 1
             await stream.WriteByteAsync(0x01);
