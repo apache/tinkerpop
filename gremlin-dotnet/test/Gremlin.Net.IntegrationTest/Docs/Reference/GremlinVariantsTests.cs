@@ -29,7 +29,7 @@ using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
-using Gremlin.Net.Structure.IO.GraphBinary;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Gremlin.Net.Structure.IO.GraphSON;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -146,9 +146,8 @@ using var gremlinClient = new GremlinClient(gremlinServer);
 
 var response =
     await gremlinClient.SubmitWithSingleResultAsync<string>(
-        RequestMessage.Build(Tokens.OpsEval).
-            AddArgument(Tokens.ArgsGremlin, "g.V().count()").
-            AddArgument(Tokens.ArgsEvalTimeout, 500).
+        RequestMessage.Build("g.V().count()").
+            AddField(Tokens.ArgsEvalTimeout, 500).
             Create());
 // end::submittingScriptsWithTimeout[]
         }

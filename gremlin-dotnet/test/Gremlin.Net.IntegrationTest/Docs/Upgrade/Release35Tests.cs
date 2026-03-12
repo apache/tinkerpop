@@ -23,7 +23,7 @@
 
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure.IO.GraphBinary;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 

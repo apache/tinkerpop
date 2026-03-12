@@ -22,13 +22,10 @@
 #endregion
 
 using System;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Structure.IO;
-using Gremlin.Net.Structure.IO.GraphBinary;
-using Gremlin.Net.Structure.IO.GraphSON;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,111 +36,9 @@ namespace Gremlin.Net.Driver
     /// </summary>
     public class GremlinClient : IGremlinClient
     {
-        private readonly ConnectionPool _connectionPool;
-        
+        private readonly HttpConnection _httpConnection;
+
         internal ILoggerFactory LoggerFactory { get; }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
-        /// </summary>
-        /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
-        /// <param name="graphSONReader">A <see cref="GraphSONReader" /> instance to read received GraphSON data.</param>
-        /// <param name="graphSONWriter">a <see cref="GraphSONWriter" /> instance to write GraphSON data.</param>
-        /// <param name="connectionPoolSettings">The <see cref="ConnectionPoolSettings" /> for the connection pool.</param>
-        /// <param name="webSocketConfiguration">
-        ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
-        ///     object used to configure WebSocket connections.
-        /// </param>
-        /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
-        [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
-        public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter,
-            ConnectionPoolSettings? connectionPoolSettings = null,
-            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
-            : this(gremlinServer, graphSONReader, graphSONWriter, SerializationTokens.GraphSON3MimeType,
-                connectionPoolSettings, webSocketConfiguration, sessionId)
-        {
-        }
-        
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
-        /// </summary>
-        /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
-        /// <param name="graphSONReader">A <see cref="GraphSONReader" /> instance to read received GraphSON data.</param>
-        /// <param name="graphSONWriter">a <see cref="GraphSONWriter" /> instance to write GraphSON data.</param>
-        /// <param name="mimeType">The GraphSON version mime type, defaults to latest supported by the server.</param>
-        /// <param name="connectionPoolSettings">The <see cref="ConnectionPoolSettings" /> for the connection pool.</param>
-        /// <param name="webSocketConfiguration">
-        ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
-        ///     object used to configure WebSocket connections.
-        /// </param>
-        /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
-        [Obsolete("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
-        public GremlinClient(GremlinServer gremlinServer, GraphSONReader? graphSONReader, GraphSONWriter? graphSONWriter,
-            string mimeType, ConnectionPoolSettings? connectionPoolSettings = null,
-            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null)
-        {
-            IMessageSerializer messageSerializer;
-            switch (mimeType)
-            {
-                case SerializationTokens.GraphSON3MimeType:
-                    VerifyGraphSONArgumentTypeForMimeType<GraphSON3Reader>(graphSONReader, nameof(graphSONReader),
-                        mimeType);
-                    VerifyGraphSONArgumentTypeForMimeType<GraphSON3Writer>(graphSONWriter, nameof(graphSONWriter),
-                        mimeType);
-                    messageSerializer = new GraphSON3MessageSerializer(
-                        (GraphSON3Reader?) graphSONReader ?? new GraphSON3Reader(),
-                        (GraphSON3Writer?) graphSONWriter ?? new GraphSON3Writer());
-                    break;
-                case SerializationTokens.GraphSON2MimeType:
-                    VerifyGraphSONArgumentTypeForMimeType<GraphSON2Reader>(graphSONReader, nameof(graphSONReader),
-                        mimeType);
-                    VerifyGraphSONArgumentTypeForMimeType<GraphSON2Writer>(graphSONWriter, nameof(graphSONWriter),
-                        mimeType);
-                    messageSerializer = new GraphSON2MessageSerializer(
-                        (GraphSON2Reader?) graphSONReader ?? new GraphSON2Reader(),
-                        (GraphSON2Writer?) graphSONWriter ?? new GraphSON2Writer());
-                    break;
-                default:
-                    throw new ArgumentException(nameof(mimeType), $"{mimeType} not supported");
-            }
-
-            var connectionFactory =
-                new ConnectionFactory(gremlinServer, messageSerializer,
-                    new WebSocketSettings
-                    {
-                        WebSocketConfigurationCallback = webSocketConfiguration,
-                        EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
-                    }, sessionId);
-
-            // make sure one connection in pool as session mode
-            if (!string.IsNullOrEmpty(sessionId))
-            {
-                if (connectionPoolSettings != null)
-                {
-                    if (connectionPoolSettings.PoolSize != 1)
-                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings), "PoolSize must be 1 in session mode!");
-                }
-                else
-                {
-                    connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
-                }
-            }
-
-            LoggerFactory = NullLoggerFactory.Instance;
-
-            _connectionPool = new ConnectionPool(connectionFactory,
-                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
-        }
-
-        private static void VerifyGraphSONArgumentTypeForMimeType<T>(object? argument, string argumentName,
-            string mimeType)
-        {
-            if (argument != null && argument is not T)
-            {
-                throw new ArgumentException(
-                    $"{argumentName} is not a {typeof(T).Name} but the mime type is: {mimeType}", argumentName);
-            }
-        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
@@ -153,69 +48,30 @@ namespace Gremlin.Net.Driver
         ///     A <see cref="IMessageSerializer" /> instance to serialize messages sent to and received
         ///     from the server.
         /// </param>
-        /// <param name="connectionPoolSettings">The <see cref="ConnectionPoolSettings" /> for the connection pool.</param>
-        /// <param name="webSocketConfiguration">
-        ///     A delegate that will be invoked with the <see cref="ClientWebSocketOptions" />
-        ///     object used to configure WebSocket connections.
-        /// </param>
-        /// <param name="sessionId">The session Id if Gremlin Client in session mode, defaults to null as session-less Client.</param>
-        /// <param name="disableCompression">
-        ///     Whether to disable compression. Compression is only supported since .NET 6.
-        ///     There it is also enabled by default.
-        /// 
-        ///     Note that compression might make your application susceptible to attacks like CRIME/BREACH. Compression
-        ///     should therefore be turned off if your application sends sensitive data to the server as well as data
-        ///     that could potentially be controlled by an untrusted user.
-        /// </param>
+        /// <param name="connectionSettings">The <see cref="HttpConnectionSettings" /> for the HTTP connection.</param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
+        // Interceptor slot reserved for future spec:
+        // IReadOnlyList<Func<HttpRequestMessage, Task>>? interceptors = null,
         public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
-            ConnectionPoolSettings? connectionPoolSettings = null,
-            Action<ClientWebSocketOptions>? webSocketConfiguration = null, string? sessionId = null,
-            bool disableCompression = false, ILoggerFactory? loggerFactory = null)
+            HttpConnectionSettings? connectionSettings = null,
+            ILoggerFactory? loggerFactory = null)
         {
             messageSerializer ??= new GraphBinaryMessageSerializer();
-            var webSocketSettings = new WebSocketSettings
-            {
-                WebSocketConfigurationCallback = webSocketConfiguration,
-                EnableUserAgentOnConnect = connectionPoolSettings?.EnableUserAgentOnConnect ?? ConnectionPoolSettings.DefaultEnableUserAgentOnConnect
-#if NET6_0_OR_GREATER
-                , UseCompression = !disableCompression
-#endif
-            };
-            var connectionFactory =
-                new ConnectionFactory(gremlinServer, messageSerializer, webSocketSettings, sessionId);
-
-            // make sure one connection in pool as session mode
-            if (!string.IsNullOrEmpty(sessionId))
-            {
-                if (connectionPoolSettings != null)
-                {
-                    if (connectionPoolSettings.PoolSize != 1)
-                        throw new ArgumentOutOfRangeException(nameof(connectionPoolSettings),
-                            "PoolSize must be 1 in session mode!");
-                }
-                else
-                {
-                    connectionPoolSettings = new ConnectionPoolSettings {PoolSize = 1};
-                }
-            }
-
+            connectionSettings ??= new HttpConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
-            _connectionPool = new ConnectionPool(connectionFactory,
-                connectionPoolSettings ?? new ConnectionPoolSettings(), LoggerFactory.CreateLogger<ConnectionPool>());
+            _httpConnection = new HttpConnection(
+                gremlinServer.Uri,
+                messageSerializer,
+                connectionSettings);
         }
 
-        /// <summary>
-        ///     Gets the number of open connections.
-        /// </summary>
-        public int NrConnections => _connectionPool.NrConnections;
-
         /// <inheritdoc />
-        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage, CancellationToken cancellationToken = default)
+        public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
+            CancellationToken cancellationToken = default)
         {
-            using var connection = _connectionPool.GetAvailableConnection();
-            return await connection.SubmitAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
+            return await _httpConnection.SubmitAsync<T>(requestMessage, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         #region IDisposable Support
@@ -238,7 +94,7 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
-                    _connectionPool?.Dispose();
+                    _httpConnection?.Dispose();
                 _disposed = true;
             }
         }

@@ -42,5 +42,10 @@ namespace Gremlin.Net.Structure.IO
         ///     The MIME type for GraphBinary 1.
         /// </summary>
         public const string GraphBinary1MimeType = "application/vnd.graphbinary-v1.0";
+
+        /// <summary>
+        ///     The MIME type for GraphBinary 4.0.
+        /// </summary>
+        public const string GraphBinary4MimeType = "application/vnd.graphbinary-v4.0";
     }
 }

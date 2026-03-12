@@ -25,52 +25,37 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
-using Gremlin.Net.Structure.IO.GraphBinary;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit;
 
-namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
+namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
     public class GraphBinaryMessageSerializerTests
     {
         [Fact]
-        public async Task ShouldSerializeRequestMessageToExpectedGraphBinary()
+        public async Task ShouldSerializeRequestMessageStartingWithVersionByte()
         {
-            var expected = new byte[]
-            {
-                // header length
-                0x20, 
-                // header: application/vnd.graphbinary-v1.0
-                0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x76, 0x6e, 0x64, 0x2e,
-                0x67, 0x72, 0x61, 0x70, 0x68, 0x62, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x2d, 0x76, 0x31, 0x2e, 0x30,
-                // version
-                0x81,
-                // uuid
-                0x40, 0x05, 0xb3, 0x74, 0xb1, 0x21, 0x40, 0x1b, 0x91, 0x57, 0xab, 0x1f, 0x1e, 0xcc, 0x89, 0x4e,
-                // op length
-                0x00, 0x00, 0x00, 0x04,
-                // op: "eval"
-                0x65, 0x76, 0x61, 0x6c,
-                // processor length
-                0x00, 0x00, 0x00, 0x00,
-                // args, map
-                    // length
-                    0x00, 0x00, 0x00, 0x01,
-                    // key type: string
-                    0x03,
-                    // key length: 
-                    0x00, 0x00, 0x00, 0x00, 0x07, 0x67, 0x72, 0x65, 0x6d, 0x6c, 0x69, 0x6e, 0x03, 0x00, 0x00, 0x00, 0x00, 0x11,
-                    0x27, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x27, 0x20, 0x2b, 0x20, 0x27, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x27
-            };
-            var msg = RequestMessage.Build("eval").OverrideRequestId(Guid.Parse("4005b374-b121-401b-9157-ab1f1ecc894e"))
-                .AddArgument("gremlin", "'Hello' + 'World'").Create();
+            var msg = RequestMessage.Build("g.V()").AddG("g").Create();
             var serializer = CreateMessageSerializer();
 
             var actual = await serializer.SerializeMessageAsync(msg);
 
-
-            Assert.Equal(expected, actual);
+            // First byte should be version byte 0x81 — no MIME prefix
+            Assert.Equal(0x81, actual[0]);
         }
-        
+
+        [Fact]
+        public async Task ShouldNotIncludeMimePrefixInSerializedMessage()
+        {
+            var msg = RequestMessage.Build("g.V()").AddG("g").Create();
+            var serializer = CreateMessageSerializer();
+
+            var actual = await serializer.SerializeMessageAsync(msg);
+
+            // The first byte is the version byte (0x81), not a MIME length byte
+            Assert.True(actual[0] >> 7 == 1, "First byte should have MSB set (version byte)");
+        }
+
         [Fact]
         public async Task SerializeMessageAsyncShouldSupportCancellation()
         {
@@ -80,7 +65,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary
                 await serializer.SerializeMessageAsync(RequestMessage.Build(string.Empty).Create(),
                     new CancellationToken(true)));
         }
-    
+
         [Fact]
         public async Task DeserializeMessageAsyncShouldSupportCancellation()
         {

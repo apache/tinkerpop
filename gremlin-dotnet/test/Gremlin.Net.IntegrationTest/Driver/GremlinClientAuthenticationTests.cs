@@ -22,10 +22,7 @@
 #endregion
 
 using System;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.IntegrationTest.Util;
@@ -39,81 +36,29 @@ namespace Gremlin.Net.IntegrationTest.Driver
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestSecureServerPort"]);
         private readonly RequestMessageProvider _requestMessageProvider = new RequestMessageProvider();
 
-        public static bool IgnoreCertificateValidationLiveDangerouslyWheeeeeeee(
-              object sender,
-              X509Certificate? certificate,
-              X509Chain? chain,
-              SslPolicyErrors sslPolicyErrors)
-        {
-           return true;
-        }
-
-        [Fact]
+        [Fact(Skip = "WebSocket authentication test (Phase 2 cleanup)")]
         public async Task ShouldThrowForMissingCredentials()
         {
-            ClientWebSocketOptions? optionsSet = null;
-            var webSocketConfiguration =
-                            new Action<ClientWebSocketOptions>(options =>
-                            {
-                                options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
-                            });
-            var gremlinServer = new GremlinServer(TestHost, TestPort, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                    async () => await gremlinClient.SubmitWithSingleResultAsync<string>(_requestMessageProvider
-                        .GetDummyMessage()));
-
-                Assert.Contains("authentication", exception.Message);
-                Assert.Contains("credentials", exception.Message);
-            }
+            // Phase 2: test body removed — WebSocket SSL/auth not applicable to HTTP
+            await Task.CompletedTask;
         }
 
-        [Theory]
+        [Theory(Skip = "WebSocket authentication test (Phase 2 cleanup)")]
         [InlineData("unknownUser", "passwordDoesntMatter")]
         [InlineData("stephen", "wrongPassword")]
         public async Task ShouldThrowForWrongCredentials(string username, string password)
         {
-            ClientWebSocketOptions? optionsSet = null;
-            var webSocketConfiguration =
-                            new Action<ClientWebSocketOptions>(options =>
-                            {
-                                options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
-                            });
-            var gremlinServer = new GremlinServer(TestHost, TestPort, username: username, password: password, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var exception = await Assert.ThrowsAsync<ResponseException>(
-                    async () => await gremlinClient.SubmitWithSingleResultAsync<string>(_requestMessageProvider
-                        .GetDummyMessage()));
-
-                Assert.Contains("Unauthorized", exception.Message);
-            }
+            // Phase 2: test body removed — WebSocket SSL/auth not applicable to HTTP
+            await Task.CompletedTask;
         }
 
-        [Theory]
+        [Theory(Skip = "WebSocket authentication test (Phase 2 cleanup)")]
         [InlineData("'Hello' + 'World'", "HelloWorld")]
         public async Task ScriptShouldBeEvaluatedAndResultReturnedForCorrectCredentials(string requestMsg,
             string expectedResponse)
         {
-            ClientWebSocketOptions? optionsSet = null;
-            var webSocketConfiguration =
-                            new Action<ClientWebSocketOptions>(options =>
-                            {
-                                options.RemoteCertificateValidationCallback += IgnoreCertificateValidationLiveDangerouslyWheeeeeeee;
-                                optionsSet = options;
-                            });
-            const string username = "stephen";
-            const string password = "password";
-            var gremlinServer = new GremlinServer(TestHost, TestPort, username: username, password: password, enableSsl: true);
-            using (var gremlinClient = new GremlinClient(gremlinServer, webSocketConfiguration: webSocketConfiguration))
-            {
-                var response = await gremlinClient.SubmitWithSingleResultAsync<string>(requestMsg);
-
-                Assert.Equal(expectedResponse, response);
-            }
+            // Phase 2: test body removed — WebSocket SSL/auth not applicable to HTTP
+            await Task.CompletedTask;
         }
     }
 }

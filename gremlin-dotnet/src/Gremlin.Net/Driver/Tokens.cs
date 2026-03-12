@@ -121,5 +121,15 @@ namespace Gremlin.Net.Driver
         ///     authentication mechanism required by the server.
         /// </summary>
         public const string ArgsSasl = "sasl";
+
+        /// <summary>
+        ///     Argument name for the traversal source alias.
+        /// </summary>
+        public const string ArgsG = "g";
+
+        /// <summary>
+        ///     Argument name for bulk results mode.
+        /// </summary>
+        public const string ArgsBulkResults = "bulkResults";
     }
 }
