@@ -123,6 +123,19 @@ namespace Gremlin.Net.Driver
             using var response = await _httpClient.SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
+            // If the HTTP status indicates an error and the response is not GraphBinary
+            // (e.g. a proxy 502 or server 404 returning HTML/plain text), fail fast with
+            // a clear message instead of letting the deserializer throw a confusing parse error.
+            // When the Content-Type matches GraphBinary, fall through to normal deserialization
+            // so the status footer in the GB4 response can surface the application-level error.
+            if (!response.IsSuccessStatusCode &&
+                response.Content.Headers.ContentType?.MediaType != GraphBinaryMimeType)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new HttpRequestException(
+                    $"Gremlin Server returned HTTP {(int)response.StatusCode}: {errorBody}");
+            }
+
             var responseBytes = await ReadResponseBytesAsync(response).ConfigureAwait(false);
 
             var responseMessage = await _serializer.DeserializeMessageAsync(responseBytes, cancellationToken)
@@ -133,7 +146,7 @@ namespace Gremlin.Net.Driver
 
         private static async Task<byte[]> ReadResponseBytesAsync(HttpResponseMessage response)
         {
-            var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
             if (response.Content.Headers.ContentEncoding.Contains("deflate"))
             {
                 using var deflateStream = new DeflateStream(stream, CompressionMode.Decompress);
