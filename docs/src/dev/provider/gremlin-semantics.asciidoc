@@ -1260,7 +1260,9 @@ instance to be applied. `Null` is considered semantically equivalent to an empty
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for edge creation if the `Graph` does not
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label`, and
 `Direction.OUT/IN` do not need to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
-(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
+(i.e. `if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for
+`onCreate` must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values
+(i.e. a `Traversal`).
 
 *Modulation:*
 
@@ -1327,8 +1329,10 @@ instance to be applied. `Null` is considered semantically equivalent to an empty
 
 If `T.id` is used for `searchCreate` or `onCreate`, it may be ignored for vertex creation if the `Graph` does not
 support user supplied identifiers. `onCreate` inherits from `searchCreate` - values for `T.id`, `T.label` do not need
-to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate`
-(i.e. `if (exists(x)) return(x) else create(y)` is not supported).
+to be specified twice. Additionally, `onCreate` cannot override values in `searchCreate` (i.e.
+`if (exists(x)) return(x) else create(y)` is not supported). An important point here is that validation for `onCreate`
+must occur at traversal construction for static values (i.e. a `Map`) and at runtime for dynamic values (i.e. a
+`Traversal`).
 
 *Modulation:*
 

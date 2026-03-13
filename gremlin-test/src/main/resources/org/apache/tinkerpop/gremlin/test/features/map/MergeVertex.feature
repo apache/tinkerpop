@@ -705,30 +705,42 @@ Feature: Step - mergeV()
     And the graph should return 1 for count of "g.V()"
     And the graph should return 1 for count of "g.V(\"1\").has(\"person\",\"name\",\"mike\")"
 
+  # cannot override T.label in onCreate - as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeV_label_override_prohibited
+#    Given the empty graph
+#    And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[label]\": \"b\"}]"
+#    And the traversal of
+#      """
+#      g.mergeV(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
   # cannot override T.label in onCreate
-  Scenario: g_mergeV_label_override_prohibited
+  Scenario: g_mergeV_label_dynamic_override_prohibited
     Given the empty graph
     And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
     And using the parameter xx2 defined as "m[{\"t[label]\": \"b\"}]"
     And the traversal of
       """
-      g.mergeV(xx1).option(onCreate, xx2)
+      g.withSideEffect('x',xx2).mergeV(xx1).option(onCreate, select('x'))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
-  # cannot override T.id in onCreate
-  @UserSuppliedVertexIds
-  Scenario: g_mergeV_id_override_prohibited
-    Given the empty graph
-    And using the parameter xx1 defined as "m[{\"t[id]\": \"1\"}]"
-    And using the parameter xx2 defined as "m[{\"t[id]\": \"2\"}]"
-    And the traversal of
-      """
-      g.mergeV(xx1).option(onCreate, xx2)
-      """
-    When iterated to list
-    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+  # cannot override T.id in onCreate - as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  @UserSuppliedVertexIds
+#  Scenario: g_mergeV_id_override_prohibited
+#    Given the empty graph
+#    And using the parameter xx1 defined as "m[{\"t[id]\": \"1\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[id]\": \"2\"}]"
+#    And the traversal of
+#      """
+#      g.mergeV(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot use hidden namespace for id key
   Scenario: g_mergeV_hidden_id_key_prohibited

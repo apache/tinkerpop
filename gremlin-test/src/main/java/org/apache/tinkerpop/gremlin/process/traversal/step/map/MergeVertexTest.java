@@ -34,8 +34,11 @@ import org.junit.runner.RunWith;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 @RunWith(GremlinProcessRunner.class)
 public abstract class MergeVertexTest extends AbstractGremlinTest {
@@ -55,6 +58,10 @@ public abstract class MergeVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Object, Vertex> get_g_withSideEffectXc_label_person_name_stephenX_withSideEffectXm_label_person_name_stephen_age_19X_mergeVXselectXcXX_optionXonCreate_selectXmXX_option();
 
     public abstract Traversal<Object, Vertex> get_g_withSideEffectXc_label_person_name_markoX_withSideEffectXm_age_19X_mergeVXselectXcXX_optionXonMatch_selectXmXX_option();
+
+    public abstract Traversal<Vertex, Vertex> get_g_mergeV_label_override_prohibited();
+
+    public abstract Traversal<Vertex, Vertex> get_g_mergeV_id_override_prohibited();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -173,6 +180,29 @@ public abstract class MergeVertexTest extends AbstractGremlinTest {
         assertEquals(6, IteratorUtils.count(g.V()));
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_mergeV_label_override_prohibited() {
+        try {
+            get_g_mergeV_label_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    public void g_mergeV_id_override_prohibited() {
+        try {
+            get_g_mergeV_id_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
     public static class Traversals extends MergeVertexTest {
 
         @Override
@@ -217,6 +247,16 @@ public abstract class MergeVertexTest extends AbstractGremlinTest {
             return g.withSideEffect("c", asMap(T.label, "person", "name", "marko")).
                     withSideEffect("m", asMap("age", 19)).
                     mergeV(__.select("c")).option(Merge.onMatch, __.select("m"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_mergeV_label_override_prohibited() {
+            return g.mergeV(asMap(T.label, "a")).option(Merge.onCreate, asMap(T.label, "b"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_mergeV_id_override_prohibited() {
+            return g.mergeV(asMap(T.id, "1")).option(Merge.onCreate, asMap(T.id, "2"));
         }
     }
 }

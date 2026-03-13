@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -64,6 +65,18 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
     public abstract Traversal<Map<Object,Object>, Edge> get_g_injectXlabel_knows_out_marko_in_vadasX_mergeE();
 
     public abstract Traversal<Edge, Edge> get_g_mergeE_with_outV_inV_options();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeE_outV_override_prohibited();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeE_inV_override_prohibited();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeE_label_override_prohibited();
+
+    public abstract Traversal<Edge, Edge> get_g_mergeE_id_override_prohibited();
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
@@ -210,6 +223,79 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
         assertEquals(1, IteratorUtils.count(g.V(1).out("knows").hasId(2)));
     }
 
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited() {
+        try {
+            get_g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited() {
+        try {
+            get_g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeE_outV_override_prohibited() {
+        try {
+            get_g_mergeE_outV_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeE_inV_override_prohibited() {
+        try {
+            get_g_mergeE_inV_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeE_label_override_prohibited() {
+        try {
+            get_g_mergeE_label_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void g_mergeE_id_override_prohibited() {
+        try {
+            get_g_mergeE_id_override_prohibited();
+            fail("Should have thrown an error");
+        } catch (Exception ise) {
+            assertThat(ise.getMessage(), containsString("option(onCreate) cannot override values from merge() argument"));
+        }
+    }
+
     public static class Traversals extends MergeEdgeTest {
 
         @Override
@@ -266,6 +352,44 @@ public abstract class MergeEdgeTest extends AbstractGremlinTest {
             return g.mergeE(asMap(T.label, "knows", Direction.OUT, Merge.outV, Direction.IN, Merge.inV))
                     .option(Merge.outV, asMap(T.id, 1))
                     .option(Merge.inV, asMap(T.id, 2));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited() {
+            return g.mergeE(asMap(T.label, "knows", Direction.OUT, new ReferenceVertex(101))).
+                    option(Merge.onCreate, asMap(T.label, "knows", Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), "created", "Y")).
+                    option(Merge.onMatch, asMap("created", "N"));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited() {
+            return g.mergeE(asMap(Direction.OUT, new ReferenceVertex(101))).
+                    option(Merge.onCreate, asMap(T.label, "knows", Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), "created", "Y")).
+                    option(Merge.onMatch, asMap("created", "N"));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeE_outV_override_prohibited() {
+            return g.mergeE(asMap(Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), T.label, "knows")).
+                    option(Merge.onCreate, asMap(Direction.OUT, new ReferenceVertex(101)));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeE_inV_override_prohibited() {
+            return g.mergeE(asMap(Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), T.label, "knows")).
+                    option(Merge.onCreate, asMap(Direction.IN, new ReferenceVertex(100)));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeE_label_override_prohibited() {
+            return g.mergeE(asMap(Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), T.label, "knows")).
+                    option(Merge.onCreate, asMap(T.label, "likes"));
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_mergeE_id_override_prohibited() {
+            return g.mergeE(asMap(Direction.OUT, new ReferenceVertex(100), Direction.IN, new ReferenceVertex(101), T.label, "knows", T.id, "101")).
+                    option(Merge.onCreate, asMap(T.id, "201"));
         }
     }
 }

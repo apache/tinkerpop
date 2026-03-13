@@ -456,8 +456,8 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[marko].id\", \"D[OUT]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
@@ -470,7 +470,28 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
     And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
 
-  Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated
+  # Tests the case where a edge match triggers onMatch, but still treats this as invalid Gremlin due to onCreate.
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").as("a").
+#        addV("person").property("name", "vadas").as("b").
+#        addE("knows").from("a").to("b").property("created","Y").
+#        addE("knows").from("b").to("a").property("created","Y")
+#      """
+#    And using the parameter xx1 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[vadas].id\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+#    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_error
     Given the empty graph
     And the graph initializer of
       """
@@ -479,12 +500,59 @@ Feature: Step - mergeE()
         addE("knows").from("a").to("b").property("created","Y").
         addE("knows").from("b").to("a").property("created","Y")
       """
-    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas]\"}]"
-    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko]\", \"D[IN]\":\"v[vadas]\",\"created\":\"Y\"}]"
+    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[IN]\":\"v[marko].id\", \"D[OUT]\":\"v[vadas].id\",\"created\":\"Y\"}]"
     And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
     And the traversal of
       """
       g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
+      """
+    When iterated to list
+    Then the result should have a count of 1
+    And the graph should return 2 for count of "g.V()"
+    And the graph should return 2 for count of "g.E()"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"Y\")"
+    And the graph should return 1 for count of "g.E().hasLabel(\"knows\").has(\"created\",\"N\").outV().has(\"name\",\"vadas\")"
+
+  # Tests the case where a edge match triggers onMatch, but still treats this as invalid Gremlin due to onCreate.
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").as("a").
+#        addV("person").property("name", "vadas").as("b").
+#        addE("knows").from("a").to("b").property("created","Y").
+#        addE("knows").from("b").to("a").property("created","Y")
+#      """
+#    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas].id\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+#    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(Merge.onCreate,xx2).option(Merge.onMatch,xx3)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  # Tests the case where a edge match triggers onMatch, so the validation for onCreate never kicks in because the
+  # Map for onCreate is dynamically assigned. we can't know until we resolve that there is a problem. this is a bit of
+  # a latent bug for a user, but they will get a failure at runtime whenever the onCreate branch executes
+  Scenario: g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_dynamic_override_sketchily_allowed
+    Given the empty graph
+    And the graph initializer of
+      """
+      g.addV("person").property("name", "marko").as("a").
+        addV("person").property("name", "vadas").as("b").
+        addE("knows").from("a").to("b").property("created","Y").
+        addE("knows").from("b").to("a").property("created","Y")
+      """
+    And using the parameter xx1 defined as "m[{\"D[OUT]\":\"v[vadas].id\"}]"
+    And using the parameter xx2 defined as "m[{\"t[label]\": \"knows\", \"D[OUT]\":\"v[marko].id\", \"D[IN]\":\"v[vadas].id\",\"created\":\"Y\"}]"
+    And using the parameter xx3 defined as "m[{\"created\":\"N\"}]"
+    And the traversal of
+      """
+      g.withSideEffect('x', xx2).mergeE(xx1).option(Merge.onCreate, select('x')).option(Merge.onMatch,xx3)
       """
     When iterated to list
     Then the result should have a count of 1
@@ -721,7 +789,25 @@ Feature: Step - mergeE()
     And the graph should return 1 for count of "g.V().has(\"name\",\"marko\").out(\"knows\").has(\"name\",\"vadas\")"
 
   # cannot override Direction.OUT in onCreate
-  Scenario: g_mergeE_outV_override_prohibited
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeE_outV_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").
+#        addV("person").property("name", "vadas")
+#      """
+#    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+#    And using the parameter xx2 defined as "m[{\"D[OUT]\" : \"v[vadas].id\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  # cannot override Direction.OUT in onCreate
+  Scenario: g_mergeE_outV_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
@@ -732,13 +818,31 @@ Feature: Step - mergeE()
     And using the parameter xx2 defined as "m[{\"D[OUT]\" : \"v[vadas].id\"}]"
     And the traversal of
       """
-      g.mergeE(xx1).option(onCreate, xx2)
+      g.withSideEffect("x", xx2).mergeE(xx1).option(onCreate, select("x"))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override Direction.IN in onCreate
-  Scenario: g_mergeE_inV_override_prohibited
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeE_inV_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").
+#        addV("person").property("name", "vadas")
+#      """
+#    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+#    And using the parameter xx2 defined as "m[{\"D[IN]\" : \"v[marko].id\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  # cannot override Direction.IN in onCreate
+  Scenario: g_mergeE_inV_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
@@ -749,13 +853,31 @@ Feature: Step - mergeE()
     And using the parameter xx2 defined as "m[{\"D[IN]\" : \"v[marko].id\"}]"
     And the traversal of
       """
-      g.mergeE(xx1).option(onCreate, xx2)
+      g.withSideEffect("x", xx2).mergeE(xx1).option(onCreate, select("x"))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.label in onCreate
-  Scenario: g_mergeE_label_override_prohibited
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  Scenario: g_mergeE_label_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").
+#        addV("person").property("name", "vadas")
+#      """
+#    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[label]\": \"likes\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  # cannot override T.label in onCreate
+  Scenario: g_mergeE_label_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
@@ -766,14 +888,33 @@ Feature: Step - mergeE()
     And using the parameter xx2 defined as "m[{\"t[label]\": \"likes\"}]"
     And the traversal of
       """
-      g.mergeE(xx1).option(onCreate, xx2)
+      g.withSideEffect("x", xx2).mergeE(xx1).option(onCreate, select("x"))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
   # cannot override T.id in onCreate
+  # as of 3.7.6, the error occurs on construction and can't be tested with gherkin
+#  @UserSuppliedEdgeIds
+#  Scenario: g_mergeE_id_override_prohibited
+#    Given the empty graph
+#    And the graph initializer of
+#      """
+#      g.addV("person").property("name", "marko").
+#        addV("person").property("name", "vadas")
+#      """
+#    And using the parameter xx1 defined as "m[{\"D[OUT]\" : \"v[marko].id\", \"D[IN]\" : \"v[vadas].id\", \"t[label]\": \"knows\", \"t[id]\": \"101\"}]"
+#    And using the parameter xx2 defined as "m[{\"t[id]\": \"201\"}]"
+#    And the traversal of
+#      """
+#      g.mergeE(xx1).option(onCreate, xx2)
+#      """
+#    When iterated to list
+#    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
+  # cannot override T.id in onCreate
   @UserSuppliedEdgeIds
-  Scenario: g_mergeE_id_override_prohibited
+  Scenario: g_mergeE_id_dynamic_override_prohibited
     Given the empty graph
     And the graph initializer of
       """
@@ -784,7 +925,7 @@ Feature: Step - mergeE()
     And using the parameter xx2 defined as "m[{\"t[id]\": \"201\"}]"
     And the traversal of
       """
-      g.mergeE(xx1).option(onCreate, xx2)
+      g.withSideEffect("x", xx2).mergeE(xx1).option(onCreate, select("x"))
       """
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"

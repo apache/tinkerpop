@@ -141,6 +141,8 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin<S, C> traversalOption) {
         if (token == Merge.onCreate) {
+            // early swipe at validation if both search and create arguments are static
+            validateStaticNoOverrides(mergeTraversal, traversalOption);
             this.onCreateTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.onMatch) {
             // add a guard rail to ensure that the incoming object is not an Element. this will prevent
@@ -387,6 +389,26 @@ public abstract class MergeStep<S, E, C> extends FlatMapStep<S, E>
     protected abstract Iterator<E> flatMap(final Traverser.Admin<S> traverser);
 
     protected abstract Set getAllowedTokens();
+
+    /**
+     * Tests the search input and create input if they are {@link ConstantTraversal} which implies that they were 
+     * derived from static input. If they both are, we can validate that keys in create input are not overriding
+     * search input.
+     */
+    protected void validateStaticNoOverrides(final Traversal.Admin search, final Traversal.Admin create) {
+        if (search instanceof ConstantTraversal && create instanceof ConstantTraversal) {
+            final Object searchObj = search.next();
+            final Object createObj = create.next();
+
+            if (!(searchObj instanceof Map) || !(createObj instanceof Map)) {
+                return;
+            }
+
+            final Map searchMap = (Map) searchObj;
+            final Map createMap = (Map) createObj;
+            validateNoOverrides(searchMap, createMap);
+        }
+    }
 
     /**
      * Guard rail to ensure that the incoming object is not an {@link Element}.
