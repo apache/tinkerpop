@@ -636,6 +636,18 @@ Feature: Step - mergeV()
     When iterated to list
     Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
 
+  # cannot override T.label in onCreate
+  Scenario: g_withSideEffect_mergeV_label_dynamic_override_prohibited
+    Given the empty graph
+    And using the parameter xx1 defined as "m[{\"t[label]\": \"a\"}]"
+    And using the side effect sideEffect1 defined as "m[{\"t[label]\": \"b\"}]"
+    And the traversal of
+      """
+      g.mergeV(xx1).option(onCreate, select('sideEffect1'))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "option(onCreate) cannot override values from merge() argument"
+
   # cannot override T.id in onCreate
   @UserSuppliedVertexIds
   Scenario: g_mergeV_id_override_prohibited

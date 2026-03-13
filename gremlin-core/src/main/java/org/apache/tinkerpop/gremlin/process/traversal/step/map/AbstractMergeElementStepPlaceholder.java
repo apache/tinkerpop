@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeElementStep.validateStaticNoOverrides;
+
 public abstract class AbstractMergeElementStepPlaceholder<S, E> extends FlatMapStep<S, E> implements MergeStepContract<S, E, Map>, GValueHolder<S, E> {
     protected final boolean isStart;
     protected Map<Object, List<Object>> properties = new HashMap<>();

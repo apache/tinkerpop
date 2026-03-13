@@ -49,6 +49,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeElementStep.validateStaticNoOverrides;
+
 /**
  * Implementation for the {@code mergeV()} step covering both the start step version and the one used mid-traversal.
  */
@@ -128,8 +130,9 @@ public class MergeEdgeStepPlaceholder<S> extends AbstractMergeElementStepPlaceho
     }
 
     @Override
-    public void addChildOption(Merge token, Traversal.Admin traversalOption) {
+    public void addChildOption(final Merge token, final Traversal.Admin traversalOption) {
         if (token == Merge.onCreate) {
+            validateStaticNoOverrides(mergeTraversal, traversalOption);
             setOnCreate(traversalOption);
         } else if (token == Merge.onMatch) {
             setOnMatch(traversalOption);
