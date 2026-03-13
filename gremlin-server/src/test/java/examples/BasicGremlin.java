@@ -29,9 +29,9 @@ import java.util.List;
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 
 public class BasicGremlin {
-    static final String SERVER_HOST = System.getenv().getOrDefault("GREMLIN_SERVER_HOST", "localhost");
-    static final int SERVER_PORT = Integer.parseInt(System.getenv().getOrDefault("GREMLIN_SERVER_PORT", "8182"));
-    static final String VERTEX_LABEL = System.getenv().getOrDefault("VERTEX_LABEL", "person");
+    static final String SERVER_HOST = System.getProperty("GREMLIN_SERVER_HOST", "localhost");
+    static final int SERVER_PORT = Integer.parseInt(System.getProperty("GREMLIN_SERVER_PORT", "8182"));
+    static final String VERTEX_LABEL = System.getProperty("VERTEX_LABEL", "person");
 
     public static void main(String[] args) throws Exception {
         Cluster cluster = Cluster.build(SERVER_HOST).port(SERVER_PORT).create();
