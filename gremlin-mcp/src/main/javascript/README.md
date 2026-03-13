@@ -48,7 +48,25 @@ Your AI assistant gets access to these powerful tools:
 | 📋 **get_graph_schema**     | Schema Discovery | Get complete graph structure with vertices and edges         |
 | ⚡ **run_gremlin_query**    | Query Execution  | Execute any Gremlin traversal query with full syntax support |
 | 🔄 **refresh_schema_cache** | Cache Management | Force immediate refresh of cached schema information         |
+| 🔄 **translate_gremlin_query** | Translation   | Translate a Gremlin query to a target language variant       |
 | 👌 **format_gremlin_query** | Query Formatting | Format a Gremlin query string using gremlint                 |
+
+### Gremlin Query Translation
+
+The `translate_gremlin_query` tool translates a Gremlin query to a target language variant. Supported targets
+are: `canonical`, `javascript`, `python`, `go`, `dotnet`, `java`, `groovy`, and `anonymized`.
+
+The optional `source` parameter describes the dialect of the input. When omitted or set to `auto` (the default),
+the server first applies mechanical normalization and then requests LLM normalization from the MCP client via MCP
+sampling before translating. If the MCP client does not support sampling, the LLM step is skipped and a warning
+is included in the response. Set `source` to `canonical` to skip normalization entirely when the input is already
+in canonical gremlin-language ANTLR format.
+
+### Offline Mode
+
+`GREMLIN_MCP_ENDPOINT` is optional. When not set, graph tools (`get_graph_status`, `get_graph_schema`,
+`run_gremlin_query`, `refresh_schema_cache`) are not registered, but `translate_gremlin_query` and
+`format_gremlin_query` remain fully available.
 
 ## 🚀 Quick Setup
 
@@ -333,7 +351,7 @@ This intelligent enum discovery transforms how AI agents interact with your grap
 ### Basic Configuration
 
 ```bash
-# Required
+# Optional - when not set, graph tools are unavailable but translate and format tools remain active
 GREMLIN_MCP_ENDPOINT="localhost:8182"
 
 # Optional

@@ -30,6 +30,52 @@ complete list of all the modifications that are part of this release.
 
 === Upgrading for Users
 
+==== Gremlin MCP Server
+
+===== Gremlin Query Translation
+
+A `translate_gremlin_query` tool is now available that translates a Gremlin query into a target language variant.
+Supported targets are `canonical`, `javascript`, `python`, `go`, `dotnet`, `java`, `groovy`, and `anonymized`.
+
+The optional `source` parameter describes the dialect of the input. When omitted or set to `auto`, the server
+normalizes the input before translating — first by applying mechanical transformations (stripping language-specific
+prefixes, correcting step casing, etc.) and then by requesting LLM normalization from the MCP client via MCP
+sampling. If the MCP client does not support sampling, the LLM step is skipped gracefully and a warning is included
+in the response. Set `source` to `canonical` to bypass normalization entirely when the input is already in canonical
+gremlin-language ANTLR format.
+
+Some example prompts that will invoke this tool:
+
+[source,text]
+----
+Translate g.V().has('name','Alice').out('knows').values('name') to Python.
+----
+
+[source,text]
+----
+Convert this Go Gremlin traversal to Groovy:
+gremlingo.T__.V().Has("name", "Alice").Out("knows").Values("name")
+----
+
+[source,text]
+----
+I have some Java Gremlin code. Translate it to canonical format so I can review it:
+g.V().has("name", "Alice").out("knows").values("name")
+----
+
+===== Offline Mode
+
+`GREMLIN_MCP_ENDPOINT` is no longer required to start the server. When no endpoint is configured, graph tools
+(`get_graph_status`, `get_graph_schema`, `run_gremlin_query`) are not registered, but the utility tools
+(`translate_gremlin_query`, `format_gremlin_query`) remain fully available. This makes it possible to use the
+Gremlin MCP Server purely as a translation and formatting aid without any graph database:
+
+[source,text]
+----
+Format this Gremlin query for readability:
+g.V().has('name','Alice').out('knows').out('knows').where(neq('Alice')).values('name').dedup()
+----
+
 ==== SLF4j 2.x
 
 TinkerPop has generally upgraded to SLF4j 2.x which brings with it some important changes to log initialization which

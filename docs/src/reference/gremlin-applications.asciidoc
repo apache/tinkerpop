@@ -2351,9 +2351,12 @@ input schema, and a result schema. When connected to a Gremlin MCP server, the a
 * Inspect the server’s health and connection to a Gremlin data source
 * Discover the graph’s schema (labels, properties, relationships, counts)
 * Execute Gremlin traversals
+* Translate Gremlin queries between language variants
+* Format Gremlin queries for readability
 
 The Gremlin MCP server sits alongside Gremlin Server (or any TinkerPop‑compatible endpoint) and forwards tool calls to
-the graph via standard Gremlin traversals.
+the graph via standard Gremlin traversals. The translation and formatting tools are utility tools that work
+independently and do not require a graph connection.
 
 IMPORTANT: This MCP server is designed for development and trusted environments.
 
@@ -2380,6 +2383,7 @@ The Gremlin MCP server exposes these tools:
   properties may be surfaced as enums to encourage valid values in queries.
 * `run_gremlin_query` — Executes an arbitrary Gremlin traversal and returns JSON results.
 * `refresh_schema_cache` — Forces schema discovery to run again when the graph has changed.
+* `translate_gremlin_query` — Translates a Gremlin query to a target language variant with optional normalization.
 * `format_gremlin_query` — Formats a Gremlin query using gremlint.
 
 ==== Schema discovery
@@ -2437,6 +2441,38 @@ g.V().
         limit(1).fold())
 ----
 
+==== Translating traversals
+
+The `translate_gremlin_query` tool translates a Gremlin query from one language variant to another. Supported
+targets are: `canonical`, `javascript`, `python`, `go`, `dotnet`, `java`, `groovy`, and `anonymized`. The
+`canonical` target produces gremlin-language ANTLR format with normalized whitespace and explicit enum names,
+which is useful for validating or standardizing queries before further processing.
+
+The optional `source` parameter controls how the input is pre-processed before translation:
+
+* When omitted or set to `auto` (the default), the server applies mechanical normalization (stripping
+  language-specific prefixes, correcting step casing) and then requests LLM normalization from the MCP client
+  via MCP sampling. This handles input from any dialect without the caller needing to know the source language.
+  If the MCP client does not support sampling, the LLM step is skipped and a `warning` field is included in
+  the response to indicate that the result is based on mechanical normalization only.
+* When set to `canonical`, normalization is skipped entirely and the input is passed directly to the translator.
+  This is the most efficient path when the input is known to be in canonical gremlin-language ANTLR format.
+
+For example, a user could supply this prompt to the assistant:
+
+[source,text]
+----
+Translate this Go traversal to Groovy:
+gremlingo.T__.V().Has("name", "Alice").Out("knows").Values("name")
+----
+
+And the assistant would call `translate_gremlin_query` with `target: "groovy"` and receive:
+
+[source,groovy]
+----
+g.V().has('name', 'Alice').out('knows').values('name')
+----
+
 ==== Executing traversals
 
 When the assistant needs to answer a question, a common sequence is:
@@ -2461,7 +2497,7 @@ endpoint the server should use.
 
 Basic connection settings:
 
-* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`)
+* `GREMLIN_MCP_ENDPOINT` — `host:port` or `host:port/traversal_source` for the target Gremlin Server or compatible endpoint (default traversal source: `g`). Optional — when not set, graph tools are not registered but `translate_gremlin_query` and `format_gremlin_query` remain available.
 * `GREMLIN_MCP_USE_SSL` — set to `true` when TLS is required by the endpoint (default: `false`)
 * `GREMLIN_MCP_USERNAME` / `GREMLIN_PASSWORD` — credentials when authentication is enabled (optional)
 * `GREMLIN_MCP_IDLE_TIMEOUT` — idle connection timeout in seconds (default: `300`)
