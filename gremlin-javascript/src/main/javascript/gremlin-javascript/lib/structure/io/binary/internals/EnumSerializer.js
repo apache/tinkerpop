@@ -48,7 +48,10 @@ export default class EnumSerializer {
   }
 
   canBeUsedFor(value) {
-    return value instanceof EnumValue && (value.typeName === 'Direction' || value.typeName === 'Merge' || value.typeName === 'T');
+    return (
+      value instanceof EnumValue &&
+      (value.typeName === 'Direction' || value.typeName === 'Merge' || value.typeName === 'T')
+    );
   }
 
   serialize(item, fullyQualifiedFormat = true) {

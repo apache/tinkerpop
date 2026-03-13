@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.GValueConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GValueHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
@@ -145,6 +146,7 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     @Override
     public void addChildOption(final Merge token, final Traversal.Admin<S, C> traversalOption) {
         if (token == Merge.onCreate) {
+            validateStaticNoOverrides(mergeTraversal, traversalOption);
             this.onCreateTraversal = this.integrateChild(traversalOption);
         } else if (token == Merge.onMatch) {
             this.onMatchTraversal = this.integrateChild(traversalOption);
@@ -293,7 +295,7 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
     /**
      * Prohibit overrides to the existence criteria (id/label/from/to) in onCreate.
      */
-    protected void validateNoOverrides(final Map<?,?> mergeMap, final Map<?,?> onCreateMap) {
+    public static void validateNoOverrides(final Map<?,?> mergeMap, final Map<?,?> onCreateMap) {
         for (final Map.Entry e : onCreateMap.entrySet()) {
             final Object k = e.getKey();
             final Object v = e.getValue();
@@ -406,5 +408,41 @@ public abstract class MergeElementStep<S, E, C> extends FlatMapStep<S, E>
             return true;
         }
         return false;
+    }
+
+    public static void validateStaticNoOverrides(final Traversal.Admin search, final Traversal.Admin create) {
+        final boolean searchConstLike = search instanceof ConstantTraversal ||
+                search instanceof GValueConstantTraversal;
+        final boolean createConstLike = create instanceof ConstantTraversal ||
+                create instanceof GValueConstantTraversal;
+
+        if (searchConstLike && createConstLike) {
+            Object searchObj;
+            Object createObj;
+
+            if (search instanceof ConstantTraversal) {
+                searchObj = search.next();
+            } else {
+                final GValueConstantTraversal gSearch = (GValueConstantTraversal) search;
+                if (gSearch.isParameterized()) return;
+                searchObj = gSearch.next();
+            }
+
+            if (create instanceof ConstantTraversal) {
+                createObj = create.next();
+            } else {
+                final GValueConstantTraversal gCreate = (GValueConstantTraversal) create;
+                if (gCreate.isParameterized()) return;
+                createObj = gCreate.next();
+            }
+
+            if (!(searchObj instanceof Map) || !(createObj instanceof Map)) {
+                return;
+            }
+
+            final Map searchMap = (Map) searchObj;
+            final Map createMap = (Map) createObj;
+            validateNoOverrides(searchMap, createMap);
+        }
     }
 }

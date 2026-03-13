@@ -124,15 +124,15 @@ export default class SetSerializer {
           throw err;
         }
         cursor = cursor.slice(valueLen);
-        
+
         if (isBulked) {
           if (cursor.length < 8) {
             throw new Error(`{item_${i}}: bulk count is missing`);
           }
-          const bulkCount = cursor.readBigInt64BE();
+          cursor.readBigInt64BE();
           len += 8;
           cursor = cursor.slice(8);
-          
+
           // Set.add is idempotent; bulk count only affects cardinality, not Set membership
           v.add(value);
         } else {

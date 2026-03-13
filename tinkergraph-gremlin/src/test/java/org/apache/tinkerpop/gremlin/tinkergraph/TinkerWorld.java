@@ -112,6 +112,24 @@ public abstract class TinkerWorld implements World {
     }
 
     public static class TinkerGraphParameterizedWorld extends TinkerGraphWorld {
+
+        @Override
+        public void beforeEachScenario(final Scenario scenario) {
+            super.beforeEachScenario(scenario);
+
+            switch (scenario.getName()) {
+                // Parameterized execution can't pass these tests because variables are dynamically determined
+                // and therefore cannot trigger validations at traversal construction...they can only trigger
+                // them at traversal execution. we test these validations both ways under a variety of
+                // configurations so there isn't much need to have more coverage there
+                case "g_mergeEXout_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited":
+                case "g_mergeEXlabel_knows_out_vadasX_optionXonCreate_created_YX_optionXonMatch_created_NX_exists_updated_override_prohibited":
+                    throw new AssumptionViolatedException("Not supported for parameterized tests with GValue");
+                default:
+                    // Do nothing
+            }
+        }
+
         @Override
         public boolean useParametersLiterally() {
             return false;
@@ -246,7 +264,7 @@ public abstract class TinkerWorld implements World {
     public static class NullWorld implements World {
         private TinkerWorld world;
 
-        public NullWorld(TinkerWorld world) { this.world = world; }
+        public NullWorld(final TinkerWorld world) { this.world = world; }
 
         @Override
         public GraphTraversalSource getGraphTraversalSource(final LoadGraphWith.GraphData graphData) {
@@ -305,7 +323,7 @@ public abstract class TinkerWorld implements World {
         }
 
         @Override
-        public void beforeEachScenario(Scenario scenario) {
+        public void beforeEachScenario(final Scenario scenario) {
             this.world.beforeEachScenario(scenario);
 
             switch (scenario.getName()) {

@@ -127,7 +127,7 @@ export default class ArraySerializer {
           throw err;
         }
         cursor = cursor.slice(value_len);
-        
+
         if (isBulked) {
           if (cursor.length < 8) {
             throw new Error(`{item_${i}}: bulk count is missing`);
@@ -135,7 +135,7 @@ export default class ArraySerializer {
           const bulkCount = cursor.readBigInt64BE();
           len += 8;
           cursor = cursor.slice(8);
-          
+
           for (let j = 0n; j < bulkCount; j++) {
             v.push(value);
           }
