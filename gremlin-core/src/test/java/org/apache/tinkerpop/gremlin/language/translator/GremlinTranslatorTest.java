@@ -55,8 +55,8 @@ public class GremlinTranslatorTest {
         }
 
         @Test
-        public void shouldExtractVariablesFromLanguage() {
-            final Translation translation = GremlinTranslator.translate(query, Translator.LANGUAGE);
+        public void shouldExtractVariablesFromCanonical() {
+            final Translation translation = GremlinTranslator.translate(query, Translator.CANONICAL);
             assertEquals(expectedVariables.size(), translation.getParameters().size());
             assertThat(translation.getParameters().toArray(), arrayContainingInAnyOrder(expectedVariables.toArray()));
         }
@@ -1349,8 +1349,8 @@ public class GremlinTranslatorTest {
         }
 
         @Test
-        public void shouldTranslateForLang() {
-            final String translatedQuery = GremlinTranslator.translate(query, Translator.LANGUAGE).getTranslated();
+        public void shouldTranslateForCanonical() {
+            final String translatedQuery = GremlinTranslator.translate(query, Translator.CANONICAL).getTranslated();
             assertEquals(expectedForLang, translatedQuery);
         }
 

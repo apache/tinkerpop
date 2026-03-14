@@ -27,6 +27,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from <<release-3-7-6, 3.7.6>>.
 
+* Deprecated `Translator.LANGUAGE` and preferred `Translator.CANONICAL`.
 * Preserved `BulkSet` when given to 'P'.
 * Fixed bug in Gremlin orderability semantics for `OffsetDateTime`.
 * Fixed bug in Javascript translation for UUID.

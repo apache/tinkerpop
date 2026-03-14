@@ -27,8 +27,16 @@ public enum Translator {
 
     /**
      * Translates to gremlin-language.
+     *
+     * @deprecated As of release 3.8.1, replaced by {@link Translator#CANONICAL}.
      */
+    @Deprecated
     LANGUAGE("Language", TranslateVisitor::new),
+
+    /**
+     * Translates to gremlin-language, the canonical form of Gremlin.
+     */
+    CANONICAL("Canonical", TranslateVisitor::new),
 
     /**
      * Translates to gremlin-language with anonymized arguments.
