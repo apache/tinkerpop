@@ -48,7 +48,7 @@
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
-    "globals": "^15.14.0",
+    "globals": "^17.4.0",
     "jsdoc": "^4.0.5",
     "js-yaml": "^3.14.2",
     "mocha": "^11.7.5",
