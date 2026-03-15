@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "~12.7.0",
-    "@knighted/duel": "^1.0.7",
+    "@knighted/duel": "^4.0.2",
     "@tsconfig/node18": "^18.2.2",
     "@types/readable-stream": "^4.0.10",
     "@types/uuid": "^9.0.8",
