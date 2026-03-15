@@ -616,7 +616,7 @@ public final class StepDefinition {
 
     private Traversal parseGremlin(final String script) {
         // tests the normalizer by running the script from the feature file first
-        final String normalizedGremlin = GremlinTranslator.translate(script, Translator.LANGUAGE).getTranslated();
+        final String normalizedGremlin = GremlinTranslator.translate(script, Translator.CANONICAL).getTranslated();
 
         // parse the Gremlin to a Traversal
         final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(normalizedGremlin));
