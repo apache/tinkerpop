@@ -57,7 +57,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "audit-ci": "^7.1.0",
-    "eslint": "^9.34.0",
+    "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "jest": "^30.0.5",
