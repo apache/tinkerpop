@@ -50,7 +50,7 @@
     "effect": "^3.17.9",
     "gremlin": "^3.7.4",
     "winston": "^3.17.0",
-    "zod": "^3.25.76"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
