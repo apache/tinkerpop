@@ -55,6 +55,17 @@ updates:
     ignore:
       - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
         dependency-name: "*"
+  - package-ecosystem: "npm"
+    directory: "/gremlin-mcp/src/main/javascript"
+    schedule:
+      interval: "monthly"
+    target-branch: "master"
+    labels:
+      - "mcp"
+      - "dependencies"
+    ignore:
+      - update-types: [ "version-update:semver-patch", "version-update:semver-minor" ]
+        dependency-name: "*"
   - package-ecosystem: "gomod"
     directory: "/gremlin-go"
     schedule:
