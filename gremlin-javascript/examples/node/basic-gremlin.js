@@ -21,7 +21,7 @@ const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 
-const serverUrl = process.env.GREMLIN_SERVER_URL || 'ws://localhost:8182/gremlin';
+const serverUrl = process.env.GREMLIN_SERVER_URL || 'http://localhost:8182/gremlin';
 const vertexLabel = process.env.VERTEX_LABEL || 'person';
 
 async function main() {

@@ -26,7 +26,7 @@ let client, clientCrew;
 
 describe('Client', function () {
   before(function () {
-    client = getClient('g');
+    client = getClient('gmodern');
     clientCrew = getClient('gcrew')
     return client.open();
   });
@@ -50,28 +50,20 @@ describe('Client', function () {
           assert.strictEqual(result.first(), 29);
         });
     });
-    it('should send and parse a script with non-native javascript bindings', function () {
-      return client.submit('card.class.simpleName + ":" + card', { card: cardinality.set })
-        .then(function (result) {
-          assert.ok(result);
-          assert.strictEqual(result.first(), 'Cardinality:set');
-        });
-    });
 
     it('should retrieve the attributes', () => {
       return client.submit("g.V().tail()")
         .then(rs => {
           assert.ok(rs.attributes instanceof Map);
-          assert.ok(rs.attributes.get('host'));
         });
     });
 
     it('should skip Vertex properties for request with tokens', function () {
-      return client.submit("g.V(1)", null, {'materializeProperties': 'tokens'})
+      return client.submit('g.with("materializeProperties", "tokens").V(1)')
         .then(function (result) {
           assert.ok(result);
           assert.strictEqual(result.length, 1);
-          const vertex = result.first().object;
+          const vertex = result.first();
           assert.ok(vertex instanceof Vertex);
           assert.ok(vertex.properties.length === 0);
         });
@@ -152,105 +144,18 @@ describe('Client', function () {
       await crewClient.close();
     });
 
-    it('should be able to stream results from the gremlin server', (done) => {
-      const output = [];
-      let calls = 0;
-      const readable = client.stream('g.V().limit(3)', {}, { batchSize: 2 });
-
-      readable.on('data', (data) => {
-        calls += 1;
-        data.toArray().forEach(v => output.push(v))
-      })
-
-      readable.on('end', () => {
-        assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
-        assert.strictEqual(output.length, 3);
-        assert.ok(output[0] instanceof Vertex);
-        done();
-      })
-    });
-
-    it("should be able to iterate stream results async", async () => {
-      const output = [];
-      let calls = 0;
-      const readable = client.stream("g.V().limit(3)", {}, { batchSize: 2 });
-
-      for await (const result of readable) {
-        calls += 1;
-        result.toArray().forEach((v) => output.push(v));
-      }
-
-      assert.strictEqual(calls, 2); // limit of 3 with batchSize of 2 should be two function calls
-      assert.strictEqual(output.length, 3);
-      assert.ok(output[0] instanceof Vertex);
-    });
-
-    it("should get error for malformed requestId for script stream", async () => {
-      try {
-        const readable = client.stream('g.V()', {}, {requestId: 'malformed'});
-        for await (const result of readable) {
-          assert.fail("malformed requestId should throw");
-        }
-      } catch (e) {
-        assert.ok(e);
-        assert.ok(e.message);
-        assert.ok(e.message.includes("is not a valid UUID."));
-      }
-    });
-
-    it("should get error for malformed requestId for script submit", async () => {
-      try {
-        await client.submit('g.V()', {}, {requestId: 'malformed'});
-        assert.fail("malformed requestId should throw");
-      } catch (e) {
-        assert.ok(e);
-        assert.ok(e.message);
-        assert.ok(e.message.includes("is not a valid UUID."));
-      }
-    });
-
-    it("should reject pending traversal promises if connection closes", async () => {
-      const closingClient = getClient('gmodern');
-      await closingClient.open();
-      const timeout = 10000;
-      const startTime = Date.now();
-      let isRejected = false;
-      
-      const pending = async function submitTraversals() {
-        while (Date.now() < startTime + timeout) {
-          try {
-            await closingClient.submit("g.V().tail()");
-          } catch (e) {
-            isRejected = true;
-            return;
-          }
-        }
-      };
-      const pendingPromise = pending();
-
-      await closingClient.close();
-      await pendingPromise;
-      assert.strictEqual(isRejected, true);
-    });
-
-    it("should end streams on traversals if connection closes", async () => {
-      const closingClient = getClient('gmodern');
-      await closingClient.open();
-      let isRejected = false;
-
-      const readable = client.stream('g.V().limit(3)', {}, { batchSize: 2 });
-
-      readable.on('end', () => {
-        isRejected = true;
-      });
-
-      await closingClient.close();
-      for await (const result of readable) {
-        // Consume the stream
-      }
-
-      assert.strictEqual(isRejected, true);
-    });
+    // TODO:: Revisit what it means to close a client in HTTP.
+    // it("should reject pending traversal promises if connection closes", async () => {
+    //   const closingClient = getClient('gmodern');
+    //   await closingClient.open();
+    //
+    //   // verify the client works before closing
+    //   const result = await closingClient.submit("g.V().tail()");
+    //   assert.ok(result);
+    //
+    //   await closingClient.close();
+    //   assert.ok(!closingClient.isOpen());
+    // });
   });
 });
 

@@ -49,7 +49,7 @@ export class GraphTraversalSource {
     public graphTraversalSourceClass: typeof GraphTraversalSource = GraphTraversalSource,
     public graphTraversalClass: typeof GraphTraversal = GraphTraversal,
   ) {
-    const strat = traversalStrategies.strategies.find((ts) => ts.fqcn === 'js:RemoteStrategy');
+    const strat = traversalStrategies.strategies.find((ts) => ts.strategyName === 'RemoteStrategy');
     this.remoteConnection = strat !== undefined ? strat.connection : undefined;
   }
 
@@ -278,14 +278,6 @@ export class GraphTraversalSource {
    * @returns {GraphTraversal}
    */
   mergeE(...args: any[]): GraphTraversal {
-    if (args && args[0]) {
-      if (args[0].get(direction.out) instanceof Vertex) {
-        args[0].set(direction.out, args[0].get(direction.out).id);
-      }
-      if (args[0].get(direction.in) instanceof Vertex) {
-        args[0].set(direction.in, args[0].get(direction.in).id);
-      }
-    }
     const gl = new GremlinLang(this.gremlinLang).addStep('mergeE', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
@@ -458,6 +450,16 @@ export class GraphTraversal extends Traversal {
    */
   as(...args: any[]): this {
     this.gremlinLang.addStep('as', args);
+    return this;
+  }
+
+  /**
+   * Graph traversal asBool method.
+   * @param {...Object} args
+   * @returns {GraphTraversal}
+   */
+  asBool(...args: any[]): this {
+    this.gremlinLang.addStep('asBool', args);
     return this;
   }
 
@@ -1140,14 +1142,6 @@ export class GraphTraversal extends Traversal {
    * @returns {GraphTraversal}
    */
   mergeE(...args: any[]): this {
-    if (args && args[0]) {
-      if (args[0].get(direction.out) instanceof Vertex) {
-        args[0].set(direction.out, args[0].get(direction.out).id);
-      }
-      if (args[0].get(direction.in) instanceof Vertex) {
-        args[0].set(direction.in, args[0].get(direction.in).id);
-      }
-    }
     this.gremlinLang.addStep('mergeE', args);
     return this;
   }

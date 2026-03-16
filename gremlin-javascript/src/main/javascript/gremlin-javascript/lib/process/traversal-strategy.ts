@@ -48,7 +48,7 @@ export class TraversalStrategies {
 
   /** @param {TraversalStrategy} strategy */
   removeStrategy(strategy: TraversalStrategy) {
-    const idx = this.strategies.findIndex((s) => s.fqcn === strategy.fqcn);
+    const idx = this.strategies.findIndex((s) => s.strategyName === strategy.strategyName);
     if (idx !== -1) {
       return this.strategies.splice(idx, 1)[0];
     }
@@ -73,15 +73,16 @@ export type TraversalStrategyConfiguration = any;
 
 export abstract class TraversalStrategy {
   connection?: RemoteConnection;
+  public strategyName: string;
 
   /**
-   * @param {String} fqcn fully qualified class name in Java of the strategy
    * @param {TraversalStrategyConfiguration} configuration for the strategy
    */
   constructor(
-    public fqcn: string,
     public configuration: TraversalStrategyConfiguration = {},
-  ) {}
+  ) {
+    this.strategyName = this.constructor.name;
+  }
 
   /**
    * @abstract
@@ -93,13 +94,13 @@ export abstract class TraversalStrategy {
 
 export class ConnectiveStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy');
+    super();
   }
 }
 
 export class ElementIdStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategy');
+    super();
   }
 }
 
@@ -107,23 +108,20 @@ export class HaltedTraverserStrategy extends TraversalStrategy {
   /**
    * @param {String} haltedTraverserFactory full qualified class name in Java of a {@code HaltedTraverserFactory} implementation
    */
-  constructor(haltedTraverserFactory: string) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.HaltedTraverserStrategy');
-    if (haltedTraverserFactory !== undefined) {
-      this.configuration['haltedTraverserFactory'] = haltedTraverserFactory;
-    }
+  constructor({haltedTraverserFactory = ""}) {
+    super({haltedTraverserFactory: haltedTraverserFactory});
   }
 }
 
 export class MessagePassingReductionStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.MessagePassingReductionStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class OptionsStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.OptionsStrategy', options);
+    super(options);
   }
 }
 
@@ -136,14 +134,14 @@ export class PartitionStrategy extends TraversalStrategy {
    * @param {boolean} [options.includeMetaProperties] determines if meta-properties should be included in partitioning defaulting to false
    */
   constructor(options: TraversalStrategyConfiguration) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy', options);
+    super(options);
   }
 }
 
 export class ProfileStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class SubgraphStrategy extends TraversalStrategy {
@@ -155,7 +153,7 @@ export class SubgraphStrategy extends TraversalStrategy {
    * @param {boolean} [options.checkAdjacentVertices] enables the strategy to apply the {@code vertices} filter to the adjacent vertices of an edge.
    */
   constructor(options: TraversalStrategyConfiguration) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy', options);
+    super(options);
     if (this.configuration.vertices instanceof Traversal) {
       this.configuration.vertices = this.configuration.vertices.gremlinLang;
     }
@@ -174,19 +172,19 @@ export class ProductiveByStrategy extends TraversalStrategy {
    * @param {Array<String>} [options.productiveKeys] set of keys that will always be productive
    */
   constructor(options: TraversalStrategyConfiguration) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProductiveByStrategy', options);
+    super(options);
   }
 }
 
 export class ReferenceElementStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ReferenceElementStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class VertexProgramStrategy extends TraversalStrategy {
   constructor(options: TraversalStrategyConfiguration) {
-    super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.decoration.VertexProgramStrategy', options);
+    super(options);
   }
 }
 
@@ -194,125 +192,122 @@ export class MatchAlgorithmStrategy extends TraversalStrategy {
   /**
    * @param matchAlgorithm
    */
-  constructor(matchAlgorithm: string) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy');
-    if (matchAlgorithm !== undefined) {
-      this.configuration['matchAlgorithm'] = matchAlgorithm;
-    }
+  constructor({matchAlgorithm = ""}) {
+    super({matchAlgorithm: matchAlgorithm});
   }
 }
 
 export class ComputerFinalizationStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.finalization.ComputerFinalizationStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class AdjacentToIncidentStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy');
+    super();
   }
 }
 
 export class FilterRankingStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy');
+    super();
   }
 }
 
 export class ByModulatorOptimizationStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ByModulatorOptimizationStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class IdentityRemovalStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy');
+    super();
   }
 }
 
 export class IncidentToAdjacentStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy');
+    super();
   }
 }
 
 export class InlineFilterStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.InlineFilterStrategy');
+    super();
   }
 }
 
 export class LazyBarrierStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.LazyBarrierStrategy');
+    super();
   }
 }
 
 export class MatchPredicateStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy');
+    super();
   }
 }
 
 export class OrderLimitStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderLimitStrategy');
+    super();
   }
 }
 
 export class PathProcessorStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathProcessorStrategy');
+    super();
   }
 }
 
 export class PathRetractionStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.PathRetractionStrategy');
+    super();
   }
 }
 
 export class CountStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.CountStrategy');
+    super();
   }
 }
 
 export class RepeatUnrollStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RepeatUnrollStrategy');
+    super();
   }
 }
 
 export class GraphFilterStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.optimization.GraphFilterStrategy');
+    super();
   }
 }
 
 export class EarlyLimitStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.EarlyLimitStrategy');
+    super();
   }
 }
 
 export class ComputerVerificationStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class LambdaRestrictionStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy');
+    super();
   }
 }
 
 export class ReadOnlyStrategy extends TraversalStrategy {
   constructor() {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy');
+    super();
   }
 }
 
@@ -321,8 +316,8 @@ export class EdgeLabelVerificationStrategy extends TraversalStrategy {
    * @param {boolean} logWarnings determines if warnings should be written to the logger when verification fails
    * @param {boolean} throwException determines if exceptions should be thrown when verifications fails
    */
-  constructor(logWarnings = false, throwException = false) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EdgeLabelVerificationStrategy', {
+  constructor({logWarnings = false, throwException = false} = {}) {
+    super({
       logWarnings: logWarnings,
       throwException: throwException,
     });
@@ -335,8 +330,8 @@ export class ReservedKeysVerificationStrategy extends TraversalStrategy {
    * @param {boolean} throwException determines if exceptions should be thrown when verifications fails
    * @param {Array<String>} keys the list of reserved keys to verify
    */
-  constructor(logWarnings = false, throwException = false, keys = ['id', 'label']) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy', {
+  constructor({ logWarnings = false, throwException = false, keys = ['id', 'label'] } = {}) {
+    super({
       logWarnings: logWarnings,
       throwException: throwException,
       keys: keys,
@@ -345,17 +340,15 @@ export class ReservedKeysVerificationStrategy extends TraversalStrategy {
 }
 
 export class VertexProgramRestrictionStrategy extends TraversalStrategy {
-    constructor() {
-        super(
-            'org.apache.tinkerpop.gremlin.process.computer.traversal.strategy.verification.VertexProgramRestrictionStrategy',
-        );
-    }
+  constructor() {
+    super();
+  }
 }
 
 export class StandardVerificationStrategy extends TraversalStrategy {
-    constructor() {
-        super('org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy');
-    }
+  constructor() {
+    super();
+  }
 }
 
 export type SeedStrategyOptions = { seed: number };
@@ -366,7 +359,7 @@ export class SeedStrategy extends TraversalStrategy {
    * @param {number} [options.seed] the seed to provide to the random number generator for the traversal
    */
   constructor(options: SeedStrategyOptions) {
-    super('org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SeedStrategy', {
+    super({
       seed: options.seed,
     });
   }

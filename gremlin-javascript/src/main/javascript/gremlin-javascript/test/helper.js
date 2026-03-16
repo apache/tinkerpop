@@ -21,10 +21,8 @@
  * @author Jorge Bay Gondra
  */
 
-import * as utilsJs from '../lib/utils.js';
 import DriverRemoteConnection from '../lib/driver/driver-remote-connection.js';
 import Client from '../lib/driver/client.js';
-import PlainTextSaslAuthenticator from '../lib/driver/auth/plain-text-sasl-authenticator.js';
 
 import jsYaml from 'js-yaml';
 import fs from 'fs';
@@ -50,22 +48,8 @@ export function getConnection(traversalSource) {
   return new DriverRemoteConnection(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
 }
 
-export function getSecureConnectionWithPlainTextSaslAuthenticator(traversalSource, username, password) {
-  const authenticator = new PlainTextSaslAuthenticator(username, password);
-  return new DriverRemoteConnection(serverAuthUrl, {
-    traversalSource,
-    authenticator,
-    rejectUnauthorized: false,
-    mimeType: process.env.CLIENT_MIMETYPE,
-  });
-}
-
 export function getDriverRemoteConnection(url, options) {
   return new DriverRemoteConnection(url, { ...options, mimeType: process.env.CLIENT_MIMETYPE });
-}
-
-export function getDriverRemoteConnectionGraphSON(traversalSource) {
-  return new DriverRemoteConnection(serverUrl, { traversalSource, mimeType: 'application/vnd.gremlin-v3.0+json' });
 }
 
 export function getClient(traversalSource) {
@@ -73,20 +57,7 @@ export function getClient(traversalSource) {
 }
 
 function getMimeTypeFromSocketServerSettings(socketServerSettings) {
-  let mimeType;
-  switch(socketServerSettings.SERIALIZER) {
-    case "GraphSONV2":
-      mimeType = 'application/vnd.gremlin-v2.0+json';
-      break;
-    case "GraphSONV3":
-      mimeType = 'application/vnd.gremlin-v3.0+json';
-      break;
-    case "GraphBinaryV1":
-    default:
-      mimeType = 'application/vnd.graphbinary-v4.0';
-      break;
-  }
-  return mimeType;
+  return 'application/vnd.graphbinary-v4.0';
 }
 
 export function getGremlinSocketServerClient(traversalSource) {

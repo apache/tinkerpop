@@ -94,7 +94,7 @@ export default class GremlinLang {
       return arg.toString();
     }
     if (arg instanceof TraversalStrategy && !(arg instanceof OptionsStrategy)) {
-      const simpleName = arg.fqcn.split('.').pop() || arg.fqcn;
+      const simpleName = arg.strategyName;
       const configEntries = Object.entries(arg.configuration);
       if (configEntries.length === 0) {
         return simpleName;

@@ -29,10 +29,10 @@ const itemDone = Object.freeze({ value: null, done: true });
 const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
 export class Traversal {
-  traversers: Traverser<any>[] | null = null;
+  results: any[] | null = null;
   sideEffects?: any = null;
   private _traversalStrategiesPromise: Promise<void> | null = null;
-  private _traversersIteratorIndex = 0;
+  private _resultsIteratorIndex = 0;
 
   constructor(
     public graph: Graph | null,
@@ -74,10 +74,10 @@ export class Traversal {
   hasNext() {
     return this._applyStrategies().then(
       () =>
-        this.traversers &&
-        this.traversers.length > 0 &&
-        this._traversersIteratorIndex < this.traversers.length &&
-        this.traversers[this._traversersIteratorIndex].bulk > 0,
+        this.results &&
+        this.results.length > 0 &&
+        this._resultsIteratorIndex < this.results.length &&
+        this.results[this._resultsIteratorIndex] instanceof Traverser ? this.results[this._resultsIteratorIndex].bulk > 0 : true,
     );
   }
 
@@ -109,13 +109,21 @@ export class Traversal {
    * @private
    */
   _getNext<T>(): IteratorResult<T, null> {
-    while (this.traversers && this._traversersIteratorIndex < this.traversers.length) {
-      const traverser = this.traversers[this._traversersIteratorIndex];
-      if (traverser.bulk > 0) {
-        traverser.bulk--;
-        return { value: traverser.object, done: false };
+    while (this.results && this._resultsIteratorIndex < this.results.length) {
+      const next = this.results[this._resultsIteratorIndex];
+
+      if (next instanceof Traverser) {
+        if (next.bulk > 0) {
+          next.bulk--;
+          return { value: next.object, done: false };
+        }
       }
-      this._traversersIteratorIndex++;
+
+      this._resultsIteratorIndex++;
+
+      if (!(next instanceof Traverser)) {
+        return { value: next, done: false };
+      }
     }
     return itemDone;
   }

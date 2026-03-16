@@ -20,7 +20,7 @@
 /*
  * GraphBinaryReader v4 response format tests.
  * Tests the reader's ability to parse v4 response format:
- * {version:0x84}{bulked:Byte}{result_data stream}{marker:0xFD 0x00 0x00}{status_code:Int bare}{status_message:nullable}{exception:nullable}
+ * {version:0x81}{bulked:Byte}{result_data stream}{marker:0xFD 0x00 0x00}{status_code:Int bare}{status_message:nullable}{exception:nullable}
  */
 
 import { assert } from 'chai';
@@ -55,9 +55,9 @@ describe('GraphBinaryReader', () => {
       assert.throws(() => reader.readResponse(buffer), /Unsupported version '0'/);
     });
 
-    it('rejects version 0x81', () => {
-      const buffer = Buffer.from([0x81]);
-      assert.throws(() => reader.readResponse(buffer), /Unsupported version '129'/);
+    it('rejects version 0x84', () => {
+      const buffer = Buffer.from([0x84]);
+      assert.throws(() => reader.readResponse(buffer), /Unsupported version '132'/);
     });
 
     it('rejects version 0xFF', () => {
@@ -69,7 +69,7 @@ describe('GraphBinaryReader', () => {
   describe('non-bulked responses', () => {
     it('single value', () => {
       const buffer = Buffer.from([
-        0x84, // version
+        0x81, // version
         0x00, // bulked=false
         0x01, 0x00, 0x00, 0x00, 0x00, 0x43, // fq Int: type_code=0x01, value_flag=0x00, value=67
         0xFD, 0x00, 0x00, // marker
@@ -86,7 +86,7 @@ describe('GraphBinaryReader', () => {
 
     it('multiple values', () => {
       const buffer = Buffer.from([
-        0x84, // version
+        0x81, // version
         0x00, // bulked=false
         0x01, 0x00, 0x00, 0x00, 0x00, 0x43, // fq Int: 67
         0x03, 0x00, 0x00, 0x00, 0x00, 0x05, 0x68, 0x65, 0x6C, 0x6C, 0x6F, // fq String: "hello"
@@ -104,7 +104,7 @@ describe('GraphBinaryReader', () => {
 
     it('empty result', () => {
       const buffer = Buffer.from([
-        0x84, // version
+        0x81, // version
         0x00, // bulked=false
         0xFD, 0x00, 0x00, // marker (no data)
         0x00, 0x00, 0x00, 0xCC, // status_code=204
@@ -122,7 +122,7 @@ describe('GraphBinaryReader', () => {
   describe('bulked responses', () => {
     it('single item with bulk count', () => {
       const buffer = Buffer.from([
-        0x84, // version
+        0x81, // version
         0x01, // bulked=true
         0x01, 0x00, 0x00, 0x00, 0x00, 0x43, // fq Int: 67
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // bare Long bulk=3
@@ -140,7 +140,7 @@ describe('GraphBinaryReader', () => {
 
     it('multiple items with bulk counts', () => {
       const buffer = Buffer.from([
-        0x84, // version
+        0x81, // version
         0x01, // bulked=true
         0x01, 0x00, 0x00, 0x00, 0x00, 0x43, // fq Int: 67
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // bare Long bulk=2
@@ -162,7 +162,7 @@ describe('GraphBinaryReader', () => {
   describe('status codes', () => {
     it('status 403', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x01, 0x93, // status_code=403
         0x01, 0x01 // null message, null exception
@@ -173,7 +173,7 @@ describe('GraphBinaryReader', () => {
 
     it('status 500', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x01, 0xF4, // status_code=500
         0x01, 0x01 // null message, null exception
@@ -186,7 +186,7 @@ describe('GraphBinaryReader', () => {
   describe('nullable status_message', () => {
     it('present message', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x00, 0xC8, // status_code=200
         0x00, // message present flag
@@ -199,7 +199,7 @@ describe('GraphBinaryReader', () => {
 
     it('null message', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x00, 0xC8, // status_code=200
         0x01, // message null flag
@@ -213,7 +213,7 @@ describe('GraphBinaryReader', () => {
   describe('nullable exception', () => {
     it('present exception', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x01, 0xF4, // status_code=500
         0x01, // message null
@@ -226,7 +226,7 @@ describe('GraphBinaryReader', () => {
 
     it('null exception', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker
         0x00, 0x00, 0x00, 0xC8, // status_code=200
         0x01, // message null
@@ -240,7 +240,7 @@ describe('GraphBinaryReader', () => {
   describe('error response', () => {
     it('no result data with error status', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0xFD, 0x00, 0x00, // marker (no data)
         0x00, 0x00, 0x01, 0xF4, // status_code=500
         0x00, // message present
@@ -259,7 +259,7 @@ describe('GraphBinaryReader', () => {
   describe('complex result values', () => {
     it('vertex in result data', () => {
       const buffer = Buffer.from([
-        0x84, 0x00, // version, bulked=false
+        0x81, 0x00, // version, bulked=false
         0x11, 0x00, // fq Vertex: type_code=0x11, value_flag=0x00
         0x01, 0x00, 0x00, 0x00, 0x00, 0x01, // id: fq Int=1
         0x00, 0x00, 0x00, 0x01, // label: bare List length=1

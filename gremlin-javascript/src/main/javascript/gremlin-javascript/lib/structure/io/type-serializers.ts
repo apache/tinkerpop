@@ -253,7 +253,7 @@ export class TraversalStrategySerializer extends TypeSerializer<ts.TraversalStra
 
     return {
       [typeKey]: 'g:' + item.constructor.name,
-      [valueKey]: { ['fqcn']: item.fqcn, ['conf']: conf },
+      [valueKey]: { ['strategyName']: item.strategyName, ['conf']: conf },
     };
   }
 

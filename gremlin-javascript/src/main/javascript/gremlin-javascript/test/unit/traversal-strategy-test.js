@@ -31,7 +31,7 @@ describe('TraversalStrategies', function () {
 
       const c = new OptionsStrategy({x: 123});
       const os = ts.removeStrategy(c);
-      assert.strictEqual(os.fqcn, c.fqcn);
+      assert.strictEqual(os.strategyName, c.strategyName);
       assert.strictEqual(ts.strategies.length, 1);
 
       ts.removeStrategy(new ConnectiveStrategy());

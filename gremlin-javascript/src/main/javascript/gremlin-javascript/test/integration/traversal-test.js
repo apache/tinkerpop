@@ -26,11 +26,12 @@ import { AssertionError } from 'assert';
 import {Edge, Vertex, VertexProperty} from '../../lib/structure/graph.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 import { GraphTraversalSource, GraphTraversal, statics } from '../../lib/process/graph-traversal.js';
-import { SubgraphStrategy, ReadOnlyStrategy, SeedStrategy,HaltedTraverserStrategy, FilterRankingStrategy,
-        OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy } from '../../lib/process/traversal-strategy.js';
+import {
+  SubgraphStrategy, ReadOnlyStrategy, SeedStrategy, HaltedTraverserStrategy, FilterRankingStrategy,
+  OptionsStrategy, ReservedKeysVerificationStrategy, EdgeLabelVerificationStrategy, MatchAlgorithmStrategy
+} from '../../lib/process/traversal-strategy.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 import { getConnection, getDriverRemoteConnection } from '../helper.js';
-import * as helper from '../helper.js';
 const __ = statics;
 
 let connection;
@@ -74,12 +75,12 @@ describe('Traversal', function () {
   });
   describe("#construct", function () {
     it('should not hang if server not present', function() {
-      const g = anon.traversal().with_(getDriverRemoteConnection('ws://localhost:9998/gremlin', {traversalSource: 'g'}));
+      const g = anon.traversal().with_(getDriverRemoteConnection('http://localhost:9998/gremlin', {traversalSource: 'g'}));
       return g.V().toList().then(function() {
         assert.fail("there is no server so an error should have occurred");
       }).catch(function(err) {
         if (err instanceof AssertionError) throw err;
-        assert.strictEqual(err.code, "ECONNREFUSED");
+        assert.ok(err);
       });
     });
   });
@@ -225,15 +226,6 @@ describe('Traversal', function () {
       });
     });
   });
-  describe('lambdas', function() {
-    it('should handle 1-arg lambdas', function() {
-      const g = anon.traversal().with_(connection);
-      return g.V().has('person','name','marko').values('name').map(() => "it.get()[1]").toList().then(function (s) {
-        assert.ok(s);
-        assert.strictEqual(s[0], 'a');
-      })
-    });
-  });
   describe('dsl', function() {
     it('should expose DSL methods', function() {
       const g = anon.traversal(SocialTraversalSource).with_(connection);
@@ -311,7 +303,7 @@ describe('Traversal', function () {
     });
     it('should allow with_(evaluationTimeout,10)', function() {
       const g = anon.traversal().with_(connection).with_('x').with_('evaluationTimeout', 10);
-      return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 598));
+      return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 400));
     });
     it('should allow SeedStrategy', function () {
       const g = anon.traversal().with_(connection).withStrategies(new SeedStrategy({seed: 999999}));
@@ -321,125 +313,124 @@ describe('Traversal', function () {
       }, (err) => assert.fail("tanked: " + err));
     });
     it('should allow without HaltedTraverserStrategy', function() {
-      const c = helper.getDriverRemoteConnectionGraphSON( 'gmodern');
-      const g = anon.traversal().with_(c).withoutStrategies(HaltedTraverserStrategy);
+      const g = anon.traversal().with_(connection).withoutStrategies(HaltedTraverserStrategy);
       return g.V().count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 6);
-        c.close();
       });
     });
     it('should allow with FilterRankingStrategy', function() {
-      const c = helper.getDriverRemoteConnectionGraphSON( 'gmodern');
-      const g = anon.traversal().with_(c).withStrategies(new FilterRankingStrategy());
+      const g = anon.traversal().with_(connection).withStrategies(new FilterRankingStrategy());
       return g.V().out().order().dedup().count().next().then(function (item1) {
         assert.ok(item1);
         assert.strictEqual(item1.value, 4);
-        c.close();
       });
     });
   });
-  describe("should handle tx errors if graph not support tx", function() {
-    it('should throw exception on commit if graph not support tx', async function() {
-      const g = anon.traversal().withRemote(connection);
-      const tx = g.tx();
-      const gtx = tx.begin();
-      const result = await g.V().count().next();
-      assert.strictEqual(6, result.value);
-      try {
-        await tx.commit();
-        assert.fail("should throw error");
-      } catch (err) {
-        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
-      }
-    });
-    it('should throw exception on rollback if graph not support tx', async function() {
-      const g = anon.traversal().withRemote(connection);
-      const tx = g.tx();
-      tx.begin();
-      try {
-        await tx.rollback();
-        assert.fail("should throw error");
-      } catch (err) {
-        assert.strictEqual("Server error: Graph does not support transactions (500)", err.message);
-      }
-    });
-  });
-  describe('support remote transactions - commit', function() {
-    before(function () {
-      txConnection = getConnection('gtx');
-      return txConnection.open();
-    });
-    after(function () {
-      const g = anon.traversal().with_(txConnection);
-      return g.V().drop().iterate().then(() => {
-        return txConnection.close()
-      });
-    });
-    it('should commit a simple transaction', async function () {
-      const g = anon.traversal().with_(txConnection);
-      const tx = g.tx();
-      const gtx = tx.begin();
-      await Promise.all([
-        gtx.addV("person").property("name", "jorge").iterate(),
-        gtx.addV("person").property("name", "josh").iterate()
-      ]);
-
-      let r = await gtx.V().count().next();
-      // assert within the transaction....
-      assert.ok(r);
-      assert.strictEqual(r.value, 2);
-
-      // now commit changes to test outside of the transaction
-      await tx.commit();
-
-      r = await g.V().count().next();
-      assert.ok(r);
-      assert.strictEqual(r.value, 2);
-      // connection closing async, so need to wait
-      while (tx._sessionBasedConnection.isOpen) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
-      assert.ok(!tx._sessionBasedConnection.isOpen);
-    });
-  });
-  describe('support remote transactions - rollback', function() {
-    before(function () {
-
-      txConnection = getConnection('gtx');
-      return txConnection.open();
-    });
-    after(function () {
-      const g = anon.traversal().with_(txConnection);
-      return g.V().drop().iterate().then(() => {
-        return txConnection.close()
-      });
-    });
-    it('should rollback a simple transaction', async function() {
-      const g = anon.traversal().with_(txConnection);
-      const tx = g.tx();
-      const gtx = tx.begin();
-      await Promise.all([
-        gtx.addV("person").property("name", "jorge").iterate(),
-        gtx.addV("person").property("name", "josh").iterate()
-      ]);
-
-      let r = await gtx.V().count().next();
-      // assert within the transaction....
-      assert.ok(r);
-      assert.strictEqual(r.value, 2);
-
-      // now rollback changes to test outside of the transaction
-      await tx.rollback();
-
-      r = await g.V().count().next();
-      assert.ok(r);
-      assert.strictEqual(r.value, 0);
-      // connection closing async, so need to wait
-      while (tx._sessionBasedConnection.isOpen) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
-      assert.ok(!tx._sessionBasedConnection.isOpen);
-    });
-  });
+  //TODO:: Re-enable after tx reimplementation
+  // describe("should handle tx errors if graph not support tx", function() {
+  //   it('should throw exception on commit if graph not support tx', async function() {
+  //     const g = anon.traversal().withRemote(connection);
+  //     const tx = g.tx();
+  //     const gtx = tx.begin();
+  //     const result = await g.V().count().next();
+  //     assert.strictEqual(6, result.value);
+  //     try {
+  //       await tx.commit();
+  //       assert.fail("should throw error");
+  //     } catch (err) {
+  //       assert.strictEqual(err.statusCode, 500);
+  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
+  //     }
+  //   });
+  //   it('should throw exception on rollback if graph not support tx', async function() {
+  //     const g = anon.traversal().withRemote(connection);
+  //     const tx = g.tx();
+  //     tx.begin();
+  //     try {
+  //       await tx.rollback();
+  //       assert.fail("should throw error");
+  //     } catch (err) {
+  //       assert.strictEqual(err.statusCode, 500);
+  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
+  //     }
+  //   });
+  // });
+  // describe('support remote transactions - commit', function() {
+  //   before(function () {
+  //     txConnection = getConnection('gtx');
+  //     return txConnection.open();
+  //   });
+  //   after(function () {
+  //     const g = anon.traversal().with_(txConnection);
+  //     return g.V().drop().iterate().then(() => {
+  //       return txConnection.close()
+  //     });
+  //   });
+  //   it('should commit a simple transaction', async function () {
+  //     const g = anon.traversal().with_(txConnection);
+  //     const tx = g.tx();
+  //     const gtx = tx.begin();
+  //     await Promise.all([
+  //       gtx.addV("person").property("name", "jorge").iterate(),
+  //       gtx.addV("person").property("name", "josh").iterate()
+  //     ]);
+  //
+  //     let r = await gtx.V().count().next();
+  //     // assert within the transaction....
+  //     assert.ok(r);
+  //     assert.strictEqual(r.value, 2);
+  //
+  //     // now commit changes to test outside of the transaction
+  //     await tx.commit();
+  //
+  //     r = await g.V().count().next();
+  //     assert.ok(r);
+  //     assert.strictEqual(r.value, 2);
+  //     // connection closing async, so need to wait
+  //     while (tx._sessionBasedConnection.isOpen) {
+  //       await new Promise(resolve => setTimeout(resolve, 10));
+  //     }
+  //     assert.ok(!tx._sessionBasedConnection.isOpen);
+  //   });
+  // });
+  // describe('support remote transactions - rollback', function() {
+  //   before(function () {
+  //
+  //     txConnection = getConnection('gtx');
+  //     return txConnection.open();
+  //   });
+  //   after(function () {
+  //     const g = anon.traversal().with_(txConnection);
+  //     return g.V().drop().iterate().then(() => {
+  //       return txConnection.close()
+  //     });
+  //   });
+  //   it('should rollback a simple transaction', async function() {
+  //     const g = anon.traversal().with_(txConnection);
+  //     const tx = g.tx();
+  //     const gtx = tx.begin();
+  //     await Promise.all([
+  //       gtx.addV("person").property("name", "jorge").iterate(),
+  //       gtx.addV("person").property("name", "josh").iterate()
+  //     ]);
+  //
+  //     let r = await gtx.V().count().next();
+  //     // assert within the transaction....
+  //     assert.ok(r);
+  //     assert.strictEqual(r.value, 2);
+  //
+  //     // now rollback changes to test outside of the transaction
+  //     await tx.rollback();
+  //
+  //     r = await g.V().count().next();
+  //     assert.ok(r);
+  //     assert.strictEqual(r.value, 0);
+  //     // connection closing async, so need to wait
+  //     while (tx._sessionBasedConnection.isOpen) {
+  //       await new Promise(resolve => setTimeout(resolve, 10));
+  //     }
+  //     assert.ok(!tx._sessionBasedConnection.isOpen);
+  //   });
+  // });
 });

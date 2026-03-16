@@ -34,7 +34,6 @@ import ResponseError from './driver/response-error.js';
 import Client from './driver/client.js';
 import ResultSet from './driver/result-set.js';
 import Authenticator from './driver/auth/authenticator.js';
-import PlainTextSaslAuthenticator from './driver/auth/plain-text-sasl-authenticator.js';
 import AnonymousTraversalSource from './process/anonymous-traversal.js';
 
 export const driver = {
@@ -47,7 +46,6 @@ export const driver = {
   ResultSet,
   auth: {
     Authenticator,
-    PlainTextSaslAuthenticator,
   },
 };
 

@@ -22,7 +22,6 @@ import { Readable } from 'stream';
 import {RequestMessage} from "./request-message.js";
 
 export type RequestOptions = {
-  requestId?: string;
   bindings?: any;
   language?: string;
   accept?: string;
@@ -105,13 +104,19 @@ export default class Client {
   submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
       const requestBuilder = RequestMessage.build(message)
           .addG(this.options.traversalSource || 'g')
-          .addLanguage('gremlin-lang');
+          .addLanguage(requestOptions?.language || 'gremlin-lang');
 
       if (requestOptions?.bindings) {
           requestBuilder.addBindings(requestOptions.bindings);
       }
       if (bindings) {
           requestBuilder.addBindings(bindings);
+      }
+      if (requestOptions?.materializeProperties) {
+        requestBuilder.addMaterializeProperties(requestOptions.materializeProperties)
+      }
+      if (requestOptions?.evaluationTimeout) {
+          requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout)
       }
 
       return this._connection.submit(requestBuilder.create());

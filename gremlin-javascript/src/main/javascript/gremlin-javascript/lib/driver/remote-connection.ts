@@ -101,7 +101,7 @@ export abstract class RemoteConnection {
  */
 export class RemoteTraversal extends Traversal {
   constructor(
-    public traversers: Traverser<any>[],
+    public results: Traverser<any>[],
     public sideEffects?: any[],
   ) {
     super(null, null);
@@ -114,21 +114,18 @@ export class RemoteStrategy extends TraversalStrategy {
    * @param {RemoteConnection} connection
    */
   constructor(public connection: RemoteConnection) {
-    // gave this a fqcn that has a local "js:" prefix since this strategy isn't sent to the server.
-    // this is a sort of local-only strategy that actually executes client side. not sure if this prefix is the
-    // right way to name this or not, but it should have a name to identify it.
-    super('js:RemoteStrategy');
+    super();
   }
 
   /** @override */
   apply(traversal: Traversal) {
-    if (traversal.traversers) {
+    if (traversal.results) {
       return Promise.resolve();
     }
 
     return this.connection.submit(traversal.getGremlinLang()).then(function (remoteTraversal: RemoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
-      traversal.traversers = remoteTraversal.traversers;
+      traversal.results = remoteTraversal.results;
     });
   }
 }

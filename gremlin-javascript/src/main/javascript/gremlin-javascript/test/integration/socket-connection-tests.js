@@ -25,7 +25,7 @@
 import assert from "assert";
 import http from "http";
 import url from "url";
-import * as helper from "../helper.js";
+import Client from '../../lib/driver/client.js';
 
 const testServerPort = 45944;
 const testServer401ResponseBody = 'Invalid credentials provided';
@@ -48,72 +48,26 @@ describe('Connection', function () {
     return server.close();
   });
 
-  describe('#open()', function () {
-    it('should use the ws WebSocket when ws specific options are provided', function () {
-      let globalWebsocketCalls = 0;
-      globalThis.WebSocket = function () {
-        globalWebsocketCalls++;
-      };
-      const wsSpecificOptions = [
-        'headers',
-        'ca',
-        'cert',
-        'pfx',
-        'rejectUnauthorized',
-        'agent',
-        'perMessageDeflate',
-      ];
-      const allOptionTests = wsSpecificOptions.map((wsOption) => {
-        const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`, {
-          [wsOption]: 'this option is set',
-        });
-        return connection.open();
-      });
-      return Promise.allSettled(allOptionTests).then(function () {
-        assert.equal(globalWebsocketCalls, 0, 'global WebSocket should be used when no ws specific options are provided');
-      });
+  describe('#submit()', function () {
+    it('should handle unexpected response errors with body', async function () {
+      const client = new Client(`http://localhost:${testServerPort}/401`, {});
+      try {
+        await client.submit('g.V()');
+        assert.fail('invalid status codes should throw');
+      } catch (err) {
+        assert.ok(err);
+        assert.ok(err.message.indexOf('401') > 0);
+      }
     });
-    it('should use the global WebSocket when options are not provided', function () {
-      let globalWebsocketCalls = 0;
-      globalThis.WebSocket = function () {
-        globalWebsocketCalls++;
-      };
-      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`,
-          {enableUserAgentOnConnect: false}); // Global WebSocket is not compatible with user agent headers
-      return connection
-        .open()
-        .catch(() => {})
-        .finally(function () {
-          assert.equal(globalWebsocketCalls, 1, 'global WebSocket should be used when no ws specific options are provided');
-        });
-    });
-    it('should handle unexpected response errors with body', function () {
-      globalThis.WebSocket = http.WebSocket;
-      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/401`);
-      return connection
-        .open()
-        .then(function () {
-          assert.fail('invalid status codes should throw');
-        })
-        .catch(function (err) {
-          assert.ok(err);
-          assert.ok(err.message.indexOf(401) > 0);
-          assert.ok(err.message.indexOf(testServer401ResponseBody) > 0);
-        });
-    });
-    it('should handle unexpected response errors with no body', function () {
-      globalThis.WebSocket = undefined;
-      const connection = helper.getDriverRemoteConnection(`ws://localhost:${testServerPort}/404`);
-      return connection
-        .open()
-        .then(function () {
-          assert.fail('invalid status codes should throw');
-        })
-        .catch(function (err) {
-          assert.ok(err);
-          assert.ok(err.message.indexOf(404) > 0);
-          assert.ok(err.message.indexOf('body') < 0);
-        });
+    it('should handle unexpected response errors with no body', async function () {
+      const client = new Client(`http://localhost:${testServerPort}/404`, {});
+      try {
+        await client.submit('g.V()');
+        assert.fail('invalid status codes should throw');
+      } catch (err) {
+        assert.ok(err);
+        assert.ok(err.message.indexOf('404') > 0);
+      }
     });
   });
 });

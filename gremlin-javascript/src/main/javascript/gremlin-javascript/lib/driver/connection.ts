@@ -210,10 +210,15 @@ export default class Connection extends EventEmitter {
       try {
         if (reader) {
           const deserialized = reader.readResponse(buffer);
+          const attributes = new Map();
+          if (deserialized.status.exception) {
+            attributes.set('exceptions', deserialized.status.exception);
+            attributes.set('stackTrace', deserialized.status.exception);
+          }
           throw new ResponseError(errorMessage, {
             code: deserialized.status.code,
             message: deserialized.status.message || response.statusText,
-            attributes: deserialized.status.attributes || new Map(),
+            attributes: attributes,
           });
         } else if (contentType === 'application/json') {
           const errorBody = JSON.parse(buffer.toString());
@@ -243,17 +248,22 @@ export default class Connection extends EventEmitter {
     const deserialized = reader.readResponse(buffer);
     
     if (deserialized.status.code && deserialized.status.code !== 200 && deserialized.status.code !== 204 && deserialized.status.code !== 206) {
+      const attributes = new Map();
+      if (deserialized.status.exception) {
+        attributes.set('exceptions', deserialized.status.exception);
+        attributes.set('stackTrace', deserialized.status.exception);
+      }
       throw new ResponseError(
-        `Server returned status ${deserialized.status.code}: ${deserialized.status.message || 'Unknown error'}`,
+        `Server error: ${deserialized.status.message || 'Unknown error'} (${deserialized.status.code})`,
         {
           code: deserialized.status.code,
           message: deserialized.status.message || '',
-          attributes: deserialized.status.attributes || new Map(),
+          attributes: attributes,
         }
       );
     }
 
-    return new ResultSet(deserialized.result.data, deserialized.result.meta || new Map());
+    return new ResultSet(deserialized.result.data, new Map());
   }
 
   /**

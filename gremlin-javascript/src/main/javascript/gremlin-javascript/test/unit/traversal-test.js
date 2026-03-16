@@ -39,7 +39,7 @@ describe('Traversal', function () {
     it('should apply the strategies and return a Promise with the iterator item', function () {
       const strategyMock = {
         apply: function (traversal) {
-          traversal.traversers = [ new Traverser(1, 1), new Traverser(2, 1) ];
+          traversal.results = [ new Traverser(1, 1), new Traverser(2, 1) ];
           return Promise.resolve();
         }
       };
@@ -67,7 +67,7 @@ describe('Traversal', function () {
     it('should support bulk', function () {
       const strategyMock = {
         apply: function (traversal) {
-          traversal.traversers = [ new Traverser(1, 2), new Traverser(2, 1) ];
+          traversal.results = [ new Traverser(1, 2), new Traverser(2, 1) ];
           return Promise.resolve();
         }
       };
@@ -112,7 +112,7 @@ describe('Traversal', function () {
     it('should apply the strategies and return a Promise with an array', function () {
       const strategyMock = {
         apply: function (traversal) {
-          traversal.traversers = [ new Traverser('a', 1), new Traverser('b', 1) ];
+          traversal.results = [ new Traverser('a', 1), new Traverser('b', 1) ];
           return Promise.resolve();
         }
       };
@@ -128,7 +128,7 @@ describe('Traversal', function () {
     it('should return an empty array when traversers is empty', function () {
       const strategyMock = {
         apply: function (traversal) {
-          traversal.traversers = [];
+          traversal.results = [];
           return Promise.resolve();
         }
       };
@@ -144,7 +144,7 @@ describe('Traversal', function () {
     it('should support bulk', function () {
       const strategyMock = {
         apply: function (traversal) {
-          traversal.traversers = [ new Traverser(1, 1), new Traverser(2, 3), new Traverser(3, 2),
+          traversal.results = [ new Traverser(1, 1), new Traverser(2, 3), new Traverser(3, 2),
             new Traverser(4, 1) ];
           return Promise.resolve();
         }
@@ -165,7 +165,7 @@ describe('Traversal', function () {
       const strategyMock = {
         apply: function (traversal) {
           applied = true;
-          traversal.traversers = [ new Traverser('a', 1), new Traverser('b', 1) ];
+          traversal.results = [ new Traverser('a', 1), new Traverser('b', 1) ];
           return Promise.resolve();
         }
       };
