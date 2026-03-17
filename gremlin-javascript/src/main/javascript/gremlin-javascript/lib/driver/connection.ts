@@ -31,6 +31,7 @@ import ResultSet from './result-set.js';
 import {RequestMessage} from "./request-message.js";
 import {Readable} from "stream";
 import ResponseError from './response-error.js';
+import { Traverser } from '../process/traversal.js';
 
 const { DeferredPromise } = utils;
 const { graphBinaryReader, graphBinaryWriter } = ioc;
@@ -263,7 +264,12 @@ export default class Connection extends EventEmitter {
       );
     }
 
-    return new ResultSet(deserialized.result.data, new Map());
+    return new ResultSet(
+      deserialized.result.bulked
+        ? deserialized.result.data.map((item: { v: any; bulk: number }) => new Traverser(item.v, item.bulk))
+        : deserialized.result.data,
+      new Map(),
+    );
   }
 
   /**

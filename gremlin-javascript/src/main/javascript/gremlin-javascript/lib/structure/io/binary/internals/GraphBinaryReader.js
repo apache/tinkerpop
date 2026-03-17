@@ -63,7 +63,7 @@ export default class GraphBinaryReader {
       cursor = cursor.slice(valueLen);
 
       if (bulked) {
-        const { v: bulk, len: bulkLen } = this.ioc.longSerializer.deserialize(cursor, false);
+        const { v: bulk, len: bulkLen } = this.ioc.longSerializer.deserialize(cursor, true);
         cursor = cursor.slice(bulkLen);
         data.push({ v, bulk: Number(bulk) });
       } else {

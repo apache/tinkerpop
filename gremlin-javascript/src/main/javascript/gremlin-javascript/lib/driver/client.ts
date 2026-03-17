@@ -29,7 +29,7 @@ export type RequestOptions = {
   batchSize?: number;
   userAgent?: string;
   materializeProperties?: string;
-  bulkResults?: boolean | string;
+  bulkResults?: boolean;
   params?: Record<string, any>;
 };
 
@@ -85,16 +85,6 @@ export default class Client {
   }
 
   /**
-   * Configuration specific to the current request.
-   * @typedef {Object} RequestOptions
-   * @property {String} requestId - User specified request identifier which must be a UUID.
-   * @property {Number} batchSize - Indicates whether the Power component is present.
-   * @property {String} userAgent - The size in which the result of a request is to be 'batched' back to the client
-   * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
-   * @property {String} materializeProperties - Indicates whether element properties should be returned or not.
-   */
-
-  /**
    * Send a request to the Gremlin Server.
    * @param {string} message The script to send
    * @param {Object|null} [bindings] The script bindings, if any.
@@ -113,10 +103,13 @@ export default class Client {
           requestBuilder.addBindings(bindings);
       }
       if (requestOptions?.materializeProperties) {
-        requestBuilder.addMaterializeProperties(requestOptions.materializeProperties)
+        requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);
       }
       if (requestOptions?.evaluationTimeout) {
-          requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout)
+          requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout);
+      }
+      if (requestOptions?.bulkResults) {
+          requestBuilder.addBulkResults(requestOptions.bulkResults);
       }
 
       return this._connection.submit(requestBuilder.create());
