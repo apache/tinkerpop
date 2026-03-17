@@ -132,6 +132,72 @@ namespace Gremlin.Net.Driver.Messages
             public bool HasField(string key) => _fields.ContainsKey(key);
 
             /// <summary>
+            ///     Sets the evaluation timeout for this request.
+            /// </summary>
+            /// <param name="timeout">The timeout value.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddEvaluationTimeout(object timeout)
+            {
+                _fields[Tokens.ArgsEvalTimeout] = timeout;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the batch size for this request.
+            /// </summary>
+            /// <param name="batchSize">The batch size value.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddBatchSize(object batchSize)
+            {
+                _fields[Tokens.ArgsBatchSize] = batchSize;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the materializeProperties option for this request.
+            /// </summary>
+            /// <param name="materializeProperties">The materializeProperties value (e.g. "all" or "tokens").</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddMaterializeProperties(string materializeProperties)
+            {
+                _fields[Tokens.ArgMaterializeProperties] = materializeProperties;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the user agent for this request.
+            /// </summary>
+            /// <param name="userAgent">The user agent string.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddUserAgent(string userAgent)
+            {
+                _fields[Tokens.ArgsUserAgent] = userAgent;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the bulk results option for this request.
+            /// </summary>
+            /// <param name="bulkResults">The bulk results value.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddBulkResults(object bulkResults)
+            {
+                _fields[Tokens.ArgsBulkResults] = bulkResults;
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the language for this request.
+            /// </summary>
+            /// <param name="language">The language identifier (e.g. "gremlin-lang").</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddLanguage(string language)
+            {
+                _fields[Tokens.ArgsLanguage] = language;
+                return this;
+            }
+
+            /// <summary>
             ///     Creates the <see cref="RequestMessage" /> given the settings provided to the <see cref="Builder" />.
             /// </summary>
             /// <returns>The built <see cref="RequestMessage" />.</returns>

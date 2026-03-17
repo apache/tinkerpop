@@ -39,7 +39,7 @@ namespace Gremlin.Net.UnitTest.Driver
         [Fact]
         public void ShouldCreateClientWithCustomSerializer()
         {
-            var serializer = new GraphBinaryMessageSerializer();
+            var serializer = new GraphBinary4MessageSerializer();
             using var client = new GremlinClient(new GremlinServer(), messageSerializer: serializer);
             // Should not throw
         }

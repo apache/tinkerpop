@@ -159,7 +159,7 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldNotExtractDisallowedOptionsStrategyKeys()
+        public async Task ShouldPassThroughCustomOptionsStrategyKeys()
         {
             RequestMessage? capturedRequest = null;
             var client = CreateCapturingClient(msg => capturedRequest = msg);
@@ -175,7 +175,7 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            Assert.False(capturedRequest!.Fields.ContainsKey("someCustomKey"));
+            Assert.Equal("someValue", capturedRequest!.Fields["someCustomKey"]);
         }
 
         [Fact]

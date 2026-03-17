@@ -81,7 +81,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         public async Task ShouldSerializeViaGraphBinaryMessageSerializer()
         {
             var msg = RequestMessage.Build("g.V()").AddG("g").Create();
-            var serializer = new GraphBinaryMessageSerializer();
+            var serializer = new GraphBinary4MessageSerializer();
 
             var bytes = await serializer.SerializeMessageAsync(msg);
 

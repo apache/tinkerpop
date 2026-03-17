@@ -311,7 +311,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
         // MIME-type framing and the server only accepts GraphBinary 4.0 or GraphSON 4.0 over HTTP).
         public static List<object[]> Serializers => new()
         {
-            new object[] { new GraphBinaryMessageSerializer() }
+            new object[] { new GraphBinary4MessageSerializer() }
         };
 
         [Fact(Skip = "GraphSON 2/3 serializers are not supported over HTTP 4.0 transport")]

@@ -34,9 +34,9 @@ namespace Gremlin.Net.Driver.Messages
         /// </summary>
         /// <param name="bulked">Whether the response contains bulked results.</param>
         /// <param name="result">The deserialized result data.</param>
-        /// <param name="statusCode">The status code from the status footer.</param>
-        /// <param name="statusMessage">Optional status message from the status footer.</param>
-        /// <param name="exception">Optional exception string from the status footer.</param>
+        /// <param name="statusCode">The status code from the GraphBinary response status (after the end-of-stream marker).</param>
+        /// <param name="statusMessage">Optional status message from the GraphBinary response status.</param>
+        /// <param name="exception">Optional exception string from the GraphBinary response status.</param>
         public ResponseMessage(bool bulked, T result, int statusCode,
             string? statusMessage, string? exception)
         {
@@ -58,17 +58,17 @@ namespace Gremlin.Net.Driver.Messages
         public T Result { get; }
 
         /// <summary>
-        ///     Gets the status code from the status footer (200 = success).
+        ///     Gets the status code from the GraphBinary response status (200 = success).
         /// </summary>
         public int StatusCode { get; }
 
         /// <summary>
-        ///     Gets the optional status message from the status footer.
+        ///     Gets the optional status message from the GraphBinary response status.
         /// </summary>
         public string? StatusMessage { get; }
 
         /// <summary>
-        ///     Gets the optional exception string from the status footer.
+        ///     Gets the optional exception string from the GraphBinary response status.
         /// </summary>
         public string? Exception { get; }
     }

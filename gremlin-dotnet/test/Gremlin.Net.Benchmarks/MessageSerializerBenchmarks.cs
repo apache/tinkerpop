@@ -68,7 +68,7 @@ namespace Gremlin.Net.Benchmarks
                 .AddBindings(gremlinLang.Parameters)
                 .Create();
 
-        private static readonly GraphBinaryMessageSerializer BinaryMessageSerializer = new();
+        private static readonly GraphBinary4MessageSerializer BinaryMessageSerializer = new();
 
         [Benchmark]
         public async Task<byte[]> TestWriteEmptyGremlinLangBinary() =>

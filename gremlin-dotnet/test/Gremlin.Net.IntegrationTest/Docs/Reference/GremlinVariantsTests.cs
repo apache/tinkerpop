@@ -81,7 +81,7 @@ var client = new GremlinClient(new GremlinServer("localhost", 8182), loggerFacto
         public void SerializationGraphBinaryTest()
         {
 // tag::serializationBinary[]
-var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinaryMessageSerializer());
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinary4MessageSerializer());
 // end::serializationBinary[]
         }
         

@@ -40,7 +40,7 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 
         public RemoteConnectionFactory(IMessageSerializer? messageSerializer = null)
         {
-            _messageSerializer = messageSerializer ?? new GraphBinaryMessageSerializer();
+            _messageSerializer = messageSerializer ?? new GraphBinary4MessageSerializer();
         }
 
         public IRemoteConnection CreateRemoteConnection(int connectionPoolSize = 2)

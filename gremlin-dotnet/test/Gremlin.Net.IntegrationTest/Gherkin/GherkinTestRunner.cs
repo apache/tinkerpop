@@ -171,7 +171,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         public static IEnumerable<object[]> MessageSerializers =>
             new List<object[]>
             {
-                new object[] {new GraphBinaryMessageSerializer()}
+                new object[] {new GraphBinary4MessageSerializer()}
             };
 
         private void WriteOutput(string line)

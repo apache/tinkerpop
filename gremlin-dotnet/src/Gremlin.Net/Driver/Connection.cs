@@ -46,20 +46,21 @@ namespace Gremlin.Net.Driver
         private readonly HttpClient _httpClient;
         private readonly Uri _uri;
         private readonly IMessageSerializer _serializer;
-        private readonly bool _enableCompression;
-        private readonly bool _enableUserAgentOnConnect;
-        private readonly bool _bulkResults;
+        private readonly ConnectionSettings _settings;
         // Interceptor slot reserved for future spec
         // private readonly IReadOnlyList<Func<HttpRequestMessage, Task>> _interceptors;
 
+        /// <summary>
+        ///     Creates a new HTTP connection. The <see cref="HttpClient"/> is backed by
+        ///     SocketsHttpHandler which manages its own TCP connection pool internally,
+        ///     so a single <see cref="Connection"/> instance handles concurrent requests efficiently.
+        /// </summary>
         public Connection(Uri uri, IMessageSerializer serializer,
             ConnectionSettings settings)
         {
             _uri = uri;
             _serializer = serializer;
-            _enableCompression = settings.EnableCompression;
-            _enableUserAgentOnConnect = settings.EnableUserAgentOnConnect;
-            _bulkResults = settings.BulkResults;
+            _settings = settings;
 
 #if NET6_0_OR_GREATER
             var handler = new SocketsHttpHandler
@@ -84,9 +85,7 @@ namespace Gremlin.Net.Driver
         {
             _uri = uri;
             _serializer = serializer;
-            _enableCompression = settings.EnableCompression;
-            _enableUserAgentOnConnect = settings.EnableUserAgentOnConnect;
-            _bulkResults = settings.BulkResults;
+            _settings = settings;
             _httpClient = httpClient;
         }
 
@@ -103,17 +102,17 @@ namespace Gremlin.Net.Driver
             httpRequest.Content = content;
             httpRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GraphBinaryMimeType));
 
-            if (_enableCompression)
+            if (_settings.EnableCompression)
             {
                 httpRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
             }
 
-            if (_enableUserAgentOnConnect)
+            if (_settings.EnableUserAgentOnConnect)
             {
                 httpRequest.Headers.TryAddWithoutValidation("User-Agent", Utils.UserAgent);
             }
 
-            if (_bulkResults)
+            if (_settings.BulkResults)
             {
                 httpRequest.Headers.Add("bulkResults", "true");
             }
@@ -123,17 +122,21 @@ namespace Gremlin.Net.Driver
             using var response = await _httpClient.SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
 
-            // If the HTTP status indicates an error and the response is not GraphBinary
-            // (e.g. a proxy 502 or server 404 returning HTML/plain text), fail fast with
-            // a clear message instead of letting the deserializer throw a confusing parse error.
-            // When the Content-Type matches GraphBinary, fall through to normal deserialization
-            // so the status footer in the GB4 response can surface the application-level error.
+            // If the HTTP status indicates an error and the response is not GraphBinary,
+            // attempt to read the body as a text error message. The server may respond with
+            // a JSON body containing an error field, or plain text. Only when the Content-Type
+            // is GraphBinary do we fall through to normal deserialization so the status footer
+            // in the GB4 response can surface the application-level error.
             if (!response.IsSuccessStatusCode &&
                 response.Content.Headers.ContentType?.MediaType != GraphBinaryMimeType)
             {
                 var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw new HttpRequestException(
-                    $"Gremlin Server returned HTTP {(int)response.StatusCode}: {errorBody}");
+
+                // Try to extract the "message" field from a JSON error response
+                var errorMessage = TryExtractJsonError(errorBody)
+                    ?? $"Gremlin Server returned HTTP {(int)response.StatusCode}: {errorBody}";
+
+                throw new HttpRequestException(errorMessage);
             }
 
             var responseBytes = await ReadResponseBytesAsync(response).ConfigureAwait(false);
@@ -161,12 +164,31 @@ namespace Gremlin.Net.Driver
 
         private static ResultSet<T> BuildResultSet<T>(ResponseMessage<List<object>> responseMessage)
         {
-            var results = new List<T>();
-            foreach (var item in responseMessage.Result)
+            return new ResultSet<T>(
+                responseMessage.Result.Cast<T>().ToList(),
+                new Dictionary<string, object>());
+        }
+
+        /// <summary>
+        ///     Attempts to extract an error message from a JSON response body.
+        ///     The server sometimes responds with a JSON object containing a "message" field
+        ///     even when it cannot produce a GraphBinary response.
+        /// </summary>
+        private static string? TryExtractJsonError(string body)
+        {
+            try
             {
-                results.Add((T)item);
+                using var doc = System.Text.Json.JsonDocument.Parse(body);
+                if (doc.RootElement.TryGetProperty("message", out var messageProp))
+                {
+                    return messageProp.GetString();
+                }
             }
-            return new ResultSet<T>(results, new Dictionary<string, object>());
+            catch
+            {
+                // Not valid JSON — fall through to raw body
+            }
+            return null;
         }
 
         #region IDisposable Support

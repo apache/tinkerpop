@@ -53,7 +53,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         private static readonly JsonSerializerOptions JsonDeserializingOptions =
             new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         
-        public static ScenarioData ScenarioData { get; set; } = new ScenarioData(new GraphBinaryMessageSerializer());
+        public static ScenarioData ScenarioData { get; set; } = new ScenarioData(new GraphBinary4MessageSerializer());
 
         private static readonly IDictionary<Regex, Func<string, string, object?>> Parsers =
             new Dictionary<string, Func<string, string, object?>>

@@ -30,7 +30,7 @@ using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
-    public class GraphBinaryMessageSerializerTests
+    public class GraphBinary4MessageSerializerTests
     {
         [Fact]
         public async Task ShouldSerializeRequestMessageStartingWithVersionByte()
@@ -75,9 +75,9 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
                 await serializer.DeserializeMessageAsync(Array.Empty<byte>(), new CancellationToken(true)));
         }
 
-        private static GraphBinaryMessageSerializer CreateMessageSerializer()
+        private static GraphBinary4MessageSerializer CreateMessageSerializer()
         {
-            return new GraphBinaryMessageSerializer();
+            return new GraphBinary4MessageSerializer();
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Gremlin.Net.Driver
             ConnectionSettings? connectionSettings = null,
             ILoggerFactory? loggerFactory = null)
         {
-            messageSerializer ??= new GraphBinaryMessageSerializer();
+            messageSerializer ??= new GraphBinary4MessageSerializer();
             connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 

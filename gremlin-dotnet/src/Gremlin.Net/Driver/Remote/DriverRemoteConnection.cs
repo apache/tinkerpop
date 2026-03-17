@@ -43,20 +43,12 @@ namespace Gremlin.Net.Driver.Remote
         private readonly string _traversalSource;
         private readonly ILogger<DriverRemoteConnection> _logger;
 
-        /// <summary>
-        ///     Filter on these keys provided to OptionsStrategy and apply them to the request.
-        /// </summary>
-        private readonly List<string> _allowedKeys = new()
-        {
-            Tokens.ArgsEvalTimeout, Tokens.ArgsBatchSize,
-            Tokens.RequestId, Tokens.ArgsUserAgent,
-            Tokens.ArgMaterializeProperties, Tokens.ArgsBulkResults
-        };
+        // All OptionsStrategy keys are passed through to the request fields.
+        // The server filters out options that don't apply, and this allows
+        // providers to use custom request fields via the Client directly or DRC.
 
         /// <inheritdoc />
-        public bool IsSessionBound => _sessionId != null;
-
-        private readonly string? _sessionId;
+        public bool IsSessionBound => false;
 
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" />.
@@ -85,11 +77,10 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         private DriverRemoteConnection(IGremlinClient client, string traversalSource,
-            string? sessionId = null, ILogger<DriverRemoteConnection>? logger = null)
+            ILogger<DriverRemoteConnection>? logger = null)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _traversalSource = traversalSource ?? throw new ArgumentNullException(nameof(traversalSource));
-            _sessionId = sessionId;
 
             if (logger == null)
             {
@@ -122,10 +113,7 @@ namespace Gremlin.Net.Driver.Remote
             {
                 foreach (var pair in optionsStrategy.Configuration)
                 {
-                    if (_allowedKeys.Contains(pair.Key))
-                    {
-                        requestMsg.AddField(pair.Key, pair.Value);
-                    }
+                    requestMsg.AddField(pair.Key, pair.Value);
                 }
             }
 
@@ -142,10 +130,12 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     Transaction support over HTTP is not yet implemented. This will be addressed in a future release.
+        /// </remarks>
         public RemoteTransaction Tx(GraphTraversalSource g)
         {
-            var session = new DriverRemoteConnection(_client, _traversalSource, sessionId: Guid.NewGuid().ToString(), logger: _logger);
-            return new RemoteTransaction(session, g);
+            throw new NotSupportedException("Transaction support over HTTP is not yet implemented.");
         }
 
         /// <inheritdoc />
