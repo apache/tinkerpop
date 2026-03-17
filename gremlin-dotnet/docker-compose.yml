@@ -54,6 +54,7 @@ services:
       - DOCKER_ENVIRONMENT=true
       - GREMLIN_SERVER_HOST=gremlin-server-test-dotnet
       - GREMLIN_SERVER_PORT=45940
+      - GREMLIN_SECURE_SERVER_PORT=45941
       - VERTEX_LABEL=dotnet-example
     working_dir: /gremlin-dotnet
     command: >

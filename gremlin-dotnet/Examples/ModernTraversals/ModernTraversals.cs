@@ -47,8 +47,8 @@ public class ModernTraversalExample
         var e2 = g.V(1).BothE().Where(OtherV().HasId(2)).ToList(); // (2)
         var v1 = g.V(1).Next();
         var v2 = g.V(2).Next();
-        var e3 = g.V(v1).BothE().Where(OtherV().Is(v2)).ToList(); // (3)
-        var e4 = g.V(v1).OutE().Where(InV().Is(v2)).ToList(); // (4)
+        var e3 = g.V(v1).BothE().Where(OtherV().Id().Is(v2)).ToList(); // (3)
+        var e4 = g.V(v1).OutE().Where(InV().Id().Is(v2)).ToList(); // (4)
         var e5 = g.V(1).OutE().Where(InV().Has(T.Id, Within(2, 3))).ToList(); // (5)
         var e6 = g.V(1).Out().Where(__.In().HasId(6)).ToList(); // (6)
 

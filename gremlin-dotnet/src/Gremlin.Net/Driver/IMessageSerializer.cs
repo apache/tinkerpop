@@ -34,6 +34,13 @@ namespace Gremlin.Net.Driver
     public interface IMessageSerializer
     {
         /// <summary>
+        ///     Gets the MIME type produced by this serializer (e.g.
+        ///     <c>"application/vnd.graphbinary-v4.0"</c>). Used by the driver to set
+        ///     <c>Content-Type</c> and <c>Accept</c> headers automatically.
+        /// </summary>
+        string MimeType { get; }
+
+        /// <summary>
         ///     Serializes a <see cref="RequestMessage"/>.
         /// </summary>
         /// <param name="requestMessage">The <see cref="RequestMessage"/> to serialize.</param>

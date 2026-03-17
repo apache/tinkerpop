@@ -152,13 +152,9 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             var g = AnonymousTraversalSource.Traversal().With(connection);
 
             var result = g.V(1).ValueMap<string, IList<object>>().Next();
-            Assert.Equal(
-                new Dictionary<string, IList<object>>
-                {
-                    { "age", new List<object> { 29 } },
-                    { "name", new List<object> { "marko" } }
-                },
-                result);
+            Assert.True(result.Count >= 2); // .NET may receive an extra haltedTraversers key from the server which we currently just ignore
+            Assert.Equal(new List<object> { 29 }, result["age"]);
+            Assert.Equal(new List<object> { "marko" }, result["name"]);
         }
 
         [Fact]

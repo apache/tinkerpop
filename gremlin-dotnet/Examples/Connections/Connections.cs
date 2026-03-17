@@ -19,20 +19,20 @@ under the License.
 
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure.IO.GraphSON;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
 public class ConnectionExample
 {
     static readonly string ServerHost = Environment.GetEnvironmentVariable("GREMLIN_SERVER_HOST") ?? "localhost";
     static readonly int ServerPort = int.Parse(Environment.GetEnvironmentVariable("GREMLIN_SERVER_PORT") ?? "8182");
+    static readonly int SecureServerPort = int.Parse(Environment.GetEnvironmentVariable("GREMLIN_SECURE_SERVER_PORT") ?? "8183");
     static readonly string VertexLabel = Environment.GetEnvironmentVariable("VERTEX_LABEL") ?? "connection";
 
     static void Main()
     {
         WithRemoteConnection();
         WithConf();
-        WithSerializer();
+        WithBasicAuth();
     }
 
     // Connecting to the server
@@ -48,11 +48,16 @@ public class ConnectionExample
         Console.WriteLine("Vertex count: " + count);
     }
 
-    // Connecting to the server with customized configurations
+    // Connecting to the server with customized connection settings
     static void WithConf()
     {
-        using var remoteConnection = new DriverRemoteConnection(new GremlinClient(
-        new GremlinServer(hostname: ServerHost, port: ServerPort, enableSsl: false, username: "", password: "")), "g");
+        var server = new GremlinServer(ServerHost, ServerPort);
+        var settings = new ConnectionSettings
+        {
+            ConnectionTimeout = TimeSpan.FromSeconds(30),
+        };
+        using var remoteConnection = new DriverRemoteConnection(
+            new GremlinClient(server, connectionSettings: settings), "g");
         var g = Traversal().With(remoteConnection);
 
         var v = g.AddV(VertexLabel).Iterate();
@@ -60,11 +65,13 @@ public class ConnectionExample
         Console.WriteLine("Vertex count: " + count);
     }
 
-    // Specifying a serializer
-    static void WithSerializer()
+    // Connecting with basic authentication using a request interceptor
+    static void WithBasicAuth()
     {
-        var server = new GremlinServer(ServerHost, ServerPort);
-        var client = new GremlinClient(server, new GraphSON3MessageSerializer());
+        var server = new GremlinServer(ServerHost, SecureServerPort, enableSsl: true);
+        var client = new GremlinClient(server,
+            connectionSettings: new ConnectionSettings { SkipCertificateValidation = true },
+            interceptors: new[] { Auth.BasicAuth("stephen", "password") });
         using var remoteConnection = new DriverRemoteConnection(client, "g");
         var g = Traversal().With(remoteConnection);
 

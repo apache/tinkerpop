@@ -158,7 +158,9 @@ var response =
 // tag::submittingScriptsWithAuthentication[]
 var username = "username";
 var password = "password";
-var gremlinServer = new GremlinServer("localhost", 8182, true, username, password);
+var gremlinServer = new GremlinServer("localhost", 8182, enableSsl: true);
+using var gremlinClient = new GremlinClient(gremlinServer,
+    interceptors: new[] { Auth.BasicAuth(username, password) });
 // end::submittingScriptsWithAuthentication[]
         }
         

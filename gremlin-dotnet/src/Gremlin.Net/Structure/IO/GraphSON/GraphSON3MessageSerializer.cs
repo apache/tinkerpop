@@ -28,15 +28,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// </summary>
     public class GraphSON3MessageSerializer : GraphSONMessageSerializer
     {
-        private const string MimeType = SerializationTokens.GraphSON3MimeType;
-        
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphSON3MessageSerializer" /> class with custom serializers.
         /// </summary>
         /// <param name="graphSONReader">The <see cref="GraphSON3Reader"/> used to deserialize from GraphSON.</param>
         /// <param name="graphSONWriter">The <see cref="GraphSON3Writer"/> used to serialize to GraphSON.</param>
         public GraphSON3MessageSerializer(GraphSON3Reader? graphSONReader = null, GraphSON3Writer? graphSONWriter = null)
-            : base(MimeType, graphSONReader ?? new GraphSON3Reader(), graphSONWriter ?? new GraphSON3Writer())
+            : base(SerializationTokens.GraphSON3MimeType, graphSONReader ?? new GraphSON3Reader(), graphSONWriter ?? new GraphSON3Writer())
         {
         }
     }
