@@ -185,6 +185,24 @@ public class Settings {
     public boolean strictTransactionManagement = false;
 
     /**
+     * Time in milliseconds that a transaction can remain idle before it is automatically rolled back.
+     * This prevents resource leaks from abandoned transactions. Default is 600000 (10 minutes).
+     */
+    public long transactionTimeout = 600000L;
+
+    /**
+     * Time in milliseconds to wait for a transaction commit or rollback operation to complete.
+     * Default is 10000 (10 seconds).
+     */
+    public long perGraphCloseTimeout = 10000L;
+
+    /**
+     * Maximum number of concurrent transactions allowed on the server.
+     * Default is 1000.
+     */
+    public int maxConcurrentTransactions = 1000;
+
+    /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
     public String channelizer = HttpChannelizer.class.getName();

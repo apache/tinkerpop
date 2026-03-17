@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.server.handler.HttpRequestIdHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpRequestMessageDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.HttpUserAgentHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
+import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -61,7 +62,8 @@ public class HttpChannelizer extends AbstractChannelizer {
     @Override
     public void init(final ServerGremlinExecutor serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(gremlinExecutor, graphManager, settings);
+        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(
+                gremlinExecutor, graphManager, settings, serverGremlinExecutor.getTransactionManager());
     }
 
     @Override

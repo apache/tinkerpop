@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.handler.TransactionManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class ServerGremlinExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ServerGremlinExecutor.class);
 
     private final GraphManager graphManager;
+    private final TransactionManager transactionManager;
     private final Settings settings;
     private final List<LifeCycleHook> hooks;
 
@@ -197,6 +199,14 @@ public class ServerGremlinExecutor {
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());
+
+        transactionManager = new TransactionManager(
+                scheduledExecutorService,
+                graphManager,
+                settings.transactionTimeout,
+                settings.maxConcurrentTransactions,
+                settings.perGraphCloseTimeout
+        );
     }
 
     private void registerMetrics(final String engineName) {
@@ -234,6 +244,10 @@ public class ServerGremlinExecutor {
 
     public GraphManager getGraphManager() {
         return graphManager;
+    }
+
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
     }
 
     public Settings getSettings() {

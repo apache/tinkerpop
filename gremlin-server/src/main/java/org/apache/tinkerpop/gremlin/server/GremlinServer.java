@@ -293,6 +293,11 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
+            if (serverGremlinExecutor != null) {
+                logger.info("Shutting down TransactionManager");
+                serverGremlinExecutor.getTransactionManager().shutdown();
+            }
+
             // close TraversalSource and Graph instances - there aren't guarantees that closing Graph will close all
             // spawned TraversalSource instances so both should be closed directly and independently.
             if (serverGremlinExecutor != null) {

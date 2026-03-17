@@ -160,12 +160,24 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
             final ByteBuf buffer = request.content();
 
             try {
-                return serializer.deserializeBinaryRequest(buffer);
+                return conditionallyInsertDefaultG(serializer.deserializeBinaryRequest(buffer));
             } catch (Exception e) {
                 throw new SerializationException("Unable to deserialize request using: " + serializer.getClass().getSimpleName(), e);
             }
         }
-        return getRequestMessageFromHttpRequest(request);
+        return conditionallyInsertDefaultG(getRequestMessageFromHttpRequest(request));
+    }
+
+    private RequestMessage conditionallyInsertDefaultG(final RequestMessage requestMessage) {
+        // The RequestMessage should default ARGS_G to "g" according to the HTTP API. However, this won't actually work
+        // if the language is gremlin-groovy since that allows any statement. So, only add in a default if the language
+        // is gremlin-lang.
+        RequestMessage fixedRequestMessage = requestMessage;
+        if ((requestMessage.getFieldOrDefault(Tokens.ARGS_LANGUAGE, "").equals("gremlin-lang")) &&
+                (requestMessage.getField(Tokens.ARGS_G) == null)) {
+            fixedRequestMessage = RequestMessage.from(requestMessage).addG("g").create();
+        }
+        return fixedRequestMessage;
     }
 
     private RequestMessage getRequestMessageFromHttpRequest(final FullHttpRequest request) {
@@ -204,6 +216,9 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
 
         final JsonNode matPropsNode = body.get(Tokens.ARGS_MATERIALIZE_PROPERTIES);
         if (null != matPropsNode) builder.addMaterializeProperties(matPropsNode.asText());
+
+        final JsonNode txIdNode = body.get(Tokens.ARGS_TRANSACTION_ID);
+        if (null != txIdNode) builder.addTransactionId(txIdNode.asText());
 
         return builder.create();
     }

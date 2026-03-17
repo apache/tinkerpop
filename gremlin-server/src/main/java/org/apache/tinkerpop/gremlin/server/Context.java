@@ -56,6 +56,7 @@ public class Context {
     private ScheduledFuture<?> timeoutExecutor = null;
     private boolean timeoutExecutorGrabbed = false;
     private final Object timeoutExecutorLock = new Object();
+    private String transactionId; // initially null for non-transactional requests and begin() calls; set after transaction creation.
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -80,6 +81,7 @@ public class Context {
         this.requestState = requestState;
         this.requestTimeout = determineTimeout();
         this.materializeProperties = determineMaterializeProperties();
+        this.transactionId = requestMessage.getField(Tokens.ARGS_TRANSACTION_ID);
     }
 
     public void setTimeoutExecutor(final ScheduledFuture<?> timeoutExecutor) {
@@ -118,6 +120,15 @@ public class Context {
     public ScheduledExecutorService getScheduledExecutorService() {
         return scheduledExecutorService;
     }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(final String transactionId) {
+        this.transactionId = transactionId;
+    }
+
 
     /**
      * Gets the current request to Gremlin Server.

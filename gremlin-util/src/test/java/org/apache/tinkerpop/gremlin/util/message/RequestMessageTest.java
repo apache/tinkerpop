@@ -123,12 +123,6 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void shouldGetGAsArgOrDefault() {
-        final RequestMessage msg = RequestMessage.build("g").create();
-        assertEquals("b", msg.getFieldOrDefault(Tokens.ARGS_G, "b"));
-    }
-
-    @Test
     public void shouldGetGAsArgAsOptional() {
         final String g = "gmodern";
         final RequestMessage msg = RequestMessage.build("g").addG(g).create();

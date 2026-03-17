@@ -166,6 +166,20 @@ public final class RequestMessage {
         }
 
         /**
+         * Adds a transaction ID to the request message. The transaction ID is used to track
+         * multi-request transactions over HTTP. All requests within a transaction must include
+         * the same transaction ID.
+         *
+         * @param transactionId the unique transaction identifier (typically a UUID)
+         * @return this builder
+         */
+        public Builder addTransactionId(final String transactionId) {
+            Objects.requireNonNull(transactionId, "transactionId argument cannot be null.");
+            this.fields.put(Tokens.ARGS_TRANSACTION_ID, transactionId);
+            return this;
+        }
+
+        /**
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage create() {

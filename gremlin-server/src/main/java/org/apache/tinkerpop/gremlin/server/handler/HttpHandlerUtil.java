@@ -106,16 +106,14 @@ public class HttpHandlerUtil {
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
 
             if (!ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).get()) {
-                final HttpResponse responseHeader = new DefaultHttpResponse(HTTP_1_1, responseMessage.getStatus().getCode());
-                responseHeader.headers().set(TRANSFER_ENCODING, CHUNKED); // Set this to make it "keep alive" eligible.
-                responseHeader.headers().set(HttpHeaderNames.CONTENT_TYPE, ctx.channel().attr(StateKey.SERIALIZER).get().getValue0());
-                ctx.writeAndFlush(responseHeader);
-                ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(true);
+                sendHttpResponse(ctx,
+                        responseMessage.getStatus().getCode(),
+                        HttpHeaderNames.CONTENT_TYPE, ctx.channel().attr(StateKey.SERIALIZER).get().getValue0());
             }
 
             ctx.writeAndFlush(new DefaultHttpContent(ByteBuf));
 
-            sendTrailingHeaders(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
+            sendLastHttpContent(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
         } catch (SerializationException se) {
             logger.warn("Unable to serialize ResponseMessage: {} ", responseMessage);
         }
@@ -147,7 +145,8 @@ public class HttpHandlerUtil {
      * @param statusCode    The status code to include in the trailers.
      * @param exceptionType The type of exception to include in the trailers. Leave blank or null if no error occurred.
      */
-    static void sendTrailingHeaders(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String exceptionType) {
+    static void sendLastHttpContent(final ChannelHandlerContext ctx, final HttpResponseStatus statusCode, final String exceptionType) {
+        // TODO: this might be not sent if exception occurs early so HTTP not properly terminated
         final DefaultLastHttpContent defaultLastHttpContent = new DefaultLastHttpContent();
         defaultLastHttpContent.trailingHeaders().add(SerTokens.TOKEN_CODE, statusCode.code());
         if (exceptionType != null && !exceptionType.isEmpty()) {
@@ -155,5 +154,27 @@ public class HttpHandlerUtil {
         }
 
         ctx.writeAndFlush(defaultLastHttpContent);
+    }
+
+    /**
+     * Sends the initial HTTP response header with the given status and optional header pairs.
+     * Also marks the channel as having sent a response. Headers must be provided as alternating
+     * name/value pairs (e.g. {@code CONTENT_TYPE, "application/json"}).
+     *
+     * @param ctx     The netty channel context.
+     * @param status  The HTTP status code for the response.
+     * @param headers Alternating header name/value pairs to set on the response.
+     * @throws IllegalArgumentException if headers length is not even
+     */
+    static void sendHttpResponse(final ChannelHandlerContext ctx, final HttpResponseStatus status, final CharSequence... headers) {
+        if ((headers.length%2) != 0) throw new IllegalArgumentException("Headers should come in pairs.");
+
+        final HttpResponse responseHeader = new DefaultHttpResponse(HTTP_1_1, status);
+        responseHeader.headers().set(TRANSFER_ENCODING, CHUNKED);
+        for (int i=0; i<headers.length; i+=2) {
+            responseHeader.headers().set(headers[i], headers[i+1]);
+        }
+        ctx.writeAndFlush(responseHeader);
+        ctx.channel().attr(StateKey.HTTP_RESPONSE_SENT).set(true);
     }
 }

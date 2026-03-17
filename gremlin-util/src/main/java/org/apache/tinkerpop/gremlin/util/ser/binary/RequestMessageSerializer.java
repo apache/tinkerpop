@@ -73,6 +73,9 @@ public class RequestMessageSerializer {
             if (fields.containsKey(Tokens.BULK_RESULTS)) {
                 builder.addBulkResults(Boolean.parseBoolean(fields.get(Tokens.BULK_RESULTS).toString()));
             }
+            if (fields.containsKey(Tokens.ARGS_TRANSACTION_ID)) {
+                builder.addTransactionId(fields.get(Tokens.ARGS_TRANSACTION_ID).toString());
+            }
 
             return builder.create();
         } catch (IOException ex) {

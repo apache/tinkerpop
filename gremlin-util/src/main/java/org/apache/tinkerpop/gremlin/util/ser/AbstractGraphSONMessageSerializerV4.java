@@ -338,6 +338,9 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             if (data.containsKey(Tokens.BULK_RESULTS)) {
                 builder.addBulkResults(Boolean.parseBoolean(data.get(Tokens.BULK_RESULTS).toString()));
             }
+            if (data.containsKey(Tokens.ARGS_TRANSACTION_ID)) {
+                builder.addTransactionId(data.get(Tokens.ARGS_TRANSACTION_ID).toString());
+            }
 
             return builder.create();
         }

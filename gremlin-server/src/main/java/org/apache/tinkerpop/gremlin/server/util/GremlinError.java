@@ -144,4 +144,92 @@ public class GremlinError {
         final String message = (t.getMessage() == null) ? t.toString() : t.getMessage();
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "ServerErrorException");
     }
+
+    /**
+     * Creates an error for when a transaction is not found on the server.
+     * This typically occurs when:
+     * <ul>
+     *   <li>The transaction ID was never registered (client didn't call begin)</li>
+     *   <li>The transaction timed out and was automatically rolled back</li>
+     *   <li>The transaction was already committed or rolled back</li>
+     * </ul>
+     *
+     * @param transactionId The transaction ID that was not found
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError transactionNotFound(final String transactionId) {
+        final String message = String.format(
+            "Transaction not found: %s. The transaction may have timed out, already been committed/rolled back, " +
+            "or was never started. Call g.tx().begin() to start a new transaction.", transactionId);
+        return new GremlinError(HttpResponseStatus.NOT_FOUND, message, "TransactionException");
+    }
+
+    /**
+     * Creates an error for when commit or rollback is sent without a transaction ID.
+     *
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError transactionalControlRequiresTransaction() {
+        final String message = "g.tx().commit() and g.tx().rollback() are only allowed in transactional requests.";
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "TransactionException");
+    }
+
+    /**
+     * Creates an error for when a begin request is sent with a user-supplied transaction ID.
+     * The server generates transaction IDs; clients should not provide them on begin.
+     *
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError beginHasTransactionId() {
+        final String message = "Begin transaction request cannot have a user-supplied transactionId";
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "TransactionException");
+    }
+
+    /**
+     * Creates an error for when the maximum number of concurrent transactions is exceeded.
+     *
+     * @param exceededErrorMessage The error message containing a maximum number of concurrent transactions
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError maxTransactionsExceeded(String exceededErrorMessage) {
+        final String message = exceededErrorMessage +
+                " The server has reached its transaction limit. " +
+                "Please wait for existing transactions to complete or increase the server's maxConcurrentTransactions setting.";
+        return new GremlinError(HttpResponseStatus.SERVICE_UNAVAILABLE, message, "TransactionException");
+    }
+
+    /**
+     * Creates an error for when a transaction operation times out.
+     *
+     * @param transactionId The transaction ID that timed out
+     * @param operation The operation that timed out (e.g., "commit", "rollback", "execute")
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError transactionTimeout(final String transactionId, final String operation) {
+        final String message = String.format(
+            "Transaction %s timed out during %s operation. The transaction has been rolled back. " +
+            "Consider increasing the transaction timeout or breaking the operation into smaller parts.",
+            transactionId, operation);
+        return new GremlinError(HttpResponseStatus.GATEWAY_TIMEOUT, message, "TransactionException");
+    }
+
+    /**
+     * Creates an error for when the requested graph does not support transactions.
+     *
+     * @param uoe The exception stating that transactions aren't supported
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError transactionNotSupported(final UnsupportedOperationException uoe) {
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, uoe.getMessage(), "TransactionException");
+    }
+
+    /**
+     * Creates an error for when the transaction couldn't begin.
+     *
+     * @param message The error message (likely from a TransactionException)
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError transactionUnableToStart(final String message) {
+        return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "TransactionException");
+    }
 }
