@@ -25,7 +25,6 @@ import { Buffer } from 'buffer';
 import { EventEmitter } from 'eventemitter3';
 import type { Agent } from 'node:http';
 import ioc from '../structure/io/binary/GraphBinary.js';
-import * as serializer from '../structure/io/graph-serializer.js';
 import * as utils from '../utils.js';
 import ResultSet from './result-set.js';
 import {RequestMessage} from "./request-message.js";
@@ -44,15 +43,14 @@ const responseStatusCode = {
 };
 
 const defaultMimeType = 'application/vnd.graphbinary-v4.0';
-const graphSON2MimeType = 'application/vnd.gremlin-v2.0+json';
 const graphBinaryMimeType = 'application/vnd.graphbinary-v4.0';
 
-type MimeType = typeof defaultMimeType | typeof graphSON2MimeType | typeof graphBinaryMimeType;
+type MimeType = typeof defaultMimeType | typeof graphBinaryMimeType;
 
 export type ConnectionOptions = {
   ca?: string[];
   cert?: string | string[] | Buffer;
-  mimeType?: MimeType;
+  mimeType?: MimeType; //TODO:: Revisit if MimeType should remain configurable
   pfx?: string | Buffer;
   reader?: any;
   rejectUnauthorized?: boolean;
@@ -105,8 +103,8 @@ export default class Connection extends EventEmitter {
      * @type {String}
      */
     this.mimeType = options.mimeType || defaultMimeType;
-    this._reader = options.reader || this.#getDefaultReader(this.mimeType);
-    this._writer = options.writer || this.#getDefaultWriter(this.mimeType);
+    this._reader = options.reader || graphBinaryReader;
+    this._writer = options.writer || graphBinaryWriter;
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
   }
@@ -135,22 +133,6 @@ export default class Connection extends EventEmitter {
     throw new Error('stream() is not yet implemented');
   }
 
-  #getDefaultReader(mimeType: MimeType) {
-    if (mimeType === graphBinaryMimeType) {
-      return graphBinaryReader;
-    }
-
-    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Reader() : new serializer.GraphSONReader();
-  }
-
-  #getDefaultWriter(mimeType: MimeType) {
-    if (mimeType === graphBinaryMimeType) {
-      return graphBinaryWriter;
-    }
-
-    return mimeType === graphSON2MimeType ? new serializer.GraphSON2Writer() : new serializer.GraphSONWriter();
-  }
-
   #getReaderForContentType(contentType: string | null) {
     if (!contentType) {
       return this._reader;
@@ -158,14 +140,6 @@ export default class Connection extends EventEmitter {
 
     if (contentType === graphBinaryMimeType) {
       return graphBinaryReader;
-    }
-
-    if (contentType === graphSON2MimeType) {
-      return new serializer.GraphSON2Reader();
-    }
-
-    if (contentType === defaultMimeType) {
-      return new serializer.GraphSONReader();
     }
 
     return null;
