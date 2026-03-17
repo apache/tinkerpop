@@ -20,9 +20,8 @@ under the License.
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
-const serializer = gremlin.structure.io.graphserializer;
 
-const serverUrl = process.env.GREMLIN_SERVER_URL || 'ws://localhost:8182/gremlin';
+const serverUrl = process.env.GREMLIN_SERVER_URL || 'http://localhost:8182/gremlin';
 const vertexLabel = process.env.VERTEX_LABEL || 'connection';
 
 async function main() {
@@ -47,9 +46,7 @@ async function withRemote() {
 async function withConfigs() {
     // Connecting and customizing configurations
     const dc = new DriverRemoteConnection(serverUrl, {
-        mimeType: 'application/vnd.gremlin-v3.0+json',
-        reader: serializer,
-        writer: serializer,
+        mimeType: 'application/vnd.graphbinary-v4.0',
         rejectUnauthorized: false,
         traversalSource: 'g',
     });

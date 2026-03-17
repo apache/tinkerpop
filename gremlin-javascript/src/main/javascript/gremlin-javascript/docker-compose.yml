@@ -61,13 +61,12 @@ services:
       bash -c "npm config set cache /tmp --global
       && npm ci && npm run test && npm run features-docker 
       && echo 'Running examples'
-      && cd /gremlin-javascript/src/main/javascript/gremlin-javascript && npm ci"
-# TODO:: re-enable example running
-#      && cd /gremlin-javascript/examples/node && npm ci
-#      && node basic-gremlin.js
-#      && node connections.js
-#      && node modern-traversals.js
-#      && echo 'All examples completed successfully'"
+      && cd /gremlin-javascript/src/main/javascript/gremlin-javascript && npm ci
+      && cd /gremlin-javascript/examples/node && npm ci
+      && node basic-gremlin.js
+      && node connections.js
+      && node modern-traversals.js
+      && echo 'All examples completed successfully'"
     depends_on:
       gremlin-server-test-js:
         condition: service_healthy

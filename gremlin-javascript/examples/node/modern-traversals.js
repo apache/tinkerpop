@@ -24,7 +24,7 @@ const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 const p = gremlin.process.P;
 const t = gremlin.process.t;
 
-const serverUrl = process.env.GREMLIN_SERVER_URL || 'ws://localhost:8182/gremlin';
+const serverUrl = process.env.GREMLIN_SERVER_URL || 'http://localhost:8182/gremlin';
 
 async function main() {
     /*

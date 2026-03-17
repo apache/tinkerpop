@@ -19,6 +19,7 @@ under the License.
 
 const gremlin = require('gremlin');
 const traversal = gremlin.process.AnonymousTraversalSource.traversal;
+const __ = gremlin.process.statics;
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection;
 
 const serverUrl = process.env.GREMLIN_SERVER_URL || 'http://localhost:8182/gremlin';
@@ -35,8 +36,8 @@ async function main() {
 
     // Be sure to use a terminating step like next() or iterate() so that the traversal "executes"
     // Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-    await g.V(v1.value).addE('knows').to(v2.value).property('weight',0.75).iterate();
-    await g.V(v1.value).addE('knows').to(v3.value).property('weight',0.75).iterate();
+    await g.V(v1.value).addE('knows').to(__.constant(v2.value)).property('weight',0.75).iterate();
+    await g.V(v1.value).addE('knows').to(__.constant(v3.value)).property('weight',0.75).iterate();
 
     // Retrieve the data from the "marko" vertex
     const marko = await g.V().has(vertexLabel,'name','marko').values('name').toList();
