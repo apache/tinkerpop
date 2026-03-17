@@ -178,7 +178,7 @@ public class ArgumentVisitorTest {
             });
         } else if (clazz.equals(Float.class)) {
             assertParsing(() -> {
-                final GremlinParser.FloatArgumentContext ctx = parser.floatArgument();
+                final GremlinParser.NumericArgumentContext ctx = parser.numericArgument();
                 return antlrToLanguage.argumentVisitor.parseNumber(ctx);
             });
         } else if (clazz.equals(String.class)) {

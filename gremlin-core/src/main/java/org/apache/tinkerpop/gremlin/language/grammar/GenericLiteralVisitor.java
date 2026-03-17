@@ -63,8 +63,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Parse floating literal context and return a floating type number.
      */
-    public Number parseFloating(final GremlinParser.FloatLiteralContext floatLiteral) {
-        return (Number) visitFloatLiteral(floatLiteral);
+    public Number parseNumeric(final GremlinParser.NumericLiteralContext numericLiteral) {
+        return (Number) visitNumericLiteral(numericLiteral);
     }
 
     /**

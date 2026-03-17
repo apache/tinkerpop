@@ -66,8 +66,8 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     /**
      * Wrapper to visit function for float types.
      */
-    public Number parseNumber(final GremlinParser.FloatArgumentContext ctx) {
-        return (Number) visitFloatArgument(ctx);
+    public Number parseNumber(final GremlinParser.NumericArgumentContext ctx) {
+        return (Number) visitNumericArgument(ctx);
     }
 
     /**
@@ -240,9 +240,9 @@ public class ArgumentVisitor extends DefaultGremlinBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitFloatArgument(final GremlinParser.FloatArgumentContext ctx) {
-        if (ctx.floatLiteral() != null) {
-            return antlr.genericVisitor.parseFloating(ctx.floatLiteral());
+    public Object visitNumericArgument(final GremlinParser.NumericArgumentContext ctx) {
+        if (ctx.numericLiteral() != null) {
+            return antlr.genericVisitor.parseNumeric(ctx.numericLiteral());
         } else {
             return visitVariable(ctx.variable());
         }

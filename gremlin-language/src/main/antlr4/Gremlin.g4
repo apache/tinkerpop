@@ -409,7 +409,7 @@ traversalMethod_coalesce
     ;
 
 traversalMethod_coin
-    : 'coin' LPAREN floatArgument RPAREN
+    : 'coin' LPAREN numericArgument RPAREN
     ;
 
 traversalMethod_combine
@@ -668,7 +668,7 @@ traversalMethod_outV
 
 traversalMethod_pageRank
     : 'pageRank' LPAREN RPAREN #traversalMethod_pageRank_Empty
-    | 'pageRank' LPAREN floatArgument RPAREN #traversalMethod_pageRank_double
+    | 'pageRank' LPAREN numericArgument RPAREN #traversalMethod_pageRank_double
     ;
 
 traversalMethod_path
@@ -1486,8 +1486,8 @@ integerArgument
     | variable
     ;
 
-floatArgument
-    : floatLiteral
+numericArgument
+    : numericLiteral
     | variable
     ;
 

@@ -1462,7 +1462,7 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitFloatArgument(final GremlinParser.FloatArgumentContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitNumericArgument(final GremlinParser.NumericArgumentContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
