@@ -33,7 +33,7 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
+    const customClient = new Client('http://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
@@ -47,18 +47,18 @@ describe('Client', function () {
       }
     };
 
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'gCustom', connectOnStartup: false});
+    const customClient = new Client('http://localhost:9321', {traversalSource: 'gCustom', connectOnStartup: false});
     customClient._connection = connectionMock;
     customClient.submit(query)
   });
 
   it('should use default mimeType', function () {
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
+    const customClient = new Client('http://localhost:9321', {traversalSource: 'g', connectOnStartup: false});
     assert.strictEqual(customClient._connection.mimeType, 'application/vnd.graphbinary-v4.0')
   });
 
   it('should use given mimeType', function () {
-    const customClient = new Client('ws://localhost:9321', {traversalSource: 'g', connectOnStartup: false, mimeType: 'application/vnd.gremlin-v2.0+json'});
+    const customClient = new Client('http://localhost:9321', {traversalSource: 'g', connectOnStartup: false, mimeType: 'application/vnd.gremlin-v2.0+json'});
     assert.strictEqual(customClient._connection.mimeType, 'application/vnd.gremlin-v2.0+json')
   });
 });

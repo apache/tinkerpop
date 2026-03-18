@@ -255,7 +255,7 @@ describe('Traversal', function () {
 
 class MockRemoteConnection extends RemoteConnection {
   constructor(bound = false) {
-    super('ws://localhost:9998/gremlin');
+    super('http://localhost:9998/gremlin');
     this._bound = bound;
   }
 
