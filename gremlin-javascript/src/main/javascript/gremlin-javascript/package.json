@@ -30,8 +30,7 @@
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
     "readable-stream": "^4.5.2",
-    "uuid": "^9.0.1",
-    "ws": "^8.16.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@cucumber/cucumber": "~12.7.0",
@@ -39,7 +38,6 @@
     "@tsconfig/node18": "^18.2.2",
     "@types/readable-stream": "^4.0.10",
     "@types/uuid": "^9.0.8",
-    "@types/ws": "^8.5.10",
     "chai": "~4.5.0",
     "chai-string": "~1.5.0",
     "colors": "1.4.0",
