@@ -329,8 +329,13 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             MasterExecutor.processMemory(this.traversalMatrix, memory, toProcessTraversers, completedBarriers);
             // process all results from barriers locally and when elements are touched, put them in remoteActiveTraversers
             MasterExecutor.processTraversers(this.traversal, this.traversalMatrix, toProcessTraversers, remoteActiveTraversers, haltedTraversers, this.haltedTraverserStrategy);
-            // tell parallel barriers that might not have been active in the last round that they are no longer active
-            memory.set(COMPLETED_BARRIERS, completedBarriers);
+            // tell parallel barriers that might not have been active in the last round that they are no longer active.
+            // accumulate all previously-completed barriers: worker clones start with done=false and need done() called
+            // for every barrier ever completed (not just the most recent ones) to prevent stale lazy re-evaluation.
+            // see TINKERPOP-3210 for the lazy cap() re-firing that motivated this change.
+            final Set<String> allCompletedBarriers = new HashSet<>(memory.get(COMPLETED_BARRIERS));
+            allCompletedBarriers.addAll(completedBarriers);
+            memory.set(COMPLETED_BARRIERS, allCompletedBarriers);
             if (!remoteActiveTraversers.isEmpty() ||
                     completedBarriers.stream().map(this.traversalMatrix::getStepById).filter(step -> step instanceof LocalBarrier).findAny().isPresent()) {
                 // send active traversers back to workers

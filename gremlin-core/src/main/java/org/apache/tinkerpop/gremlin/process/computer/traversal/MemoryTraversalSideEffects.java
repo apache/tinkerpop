@@ -57,7 +57,12 @@ public final class MemoryTraversalSideEffects implements TraversalSideEffects {
     @Override
     public void set(final String key, final Object value) {
         this.sideEffects.set(key, value);
-        if (null != this.memory)
+
+        // looks like calls to this method are only permitted during setup/terminate (i.e. masterState)
+        // during worker execution (e.g. cap() firing lazily via a downstream local step), skip the
+        // memory write to avoid IllegalArgumentException from the distributed memory implementation.
+        // see TINKERPOP-3210 for an example of how this fails.
+        if (null != this.memory && this.phase.masterState())
             this.memory.set(key, value);
     }
 

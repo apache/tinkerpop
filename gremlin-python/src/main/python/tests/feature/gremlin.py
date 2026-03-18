@@ -1456,6 +1456,8 @@ world.gremlins = {
     'g_withSideEffectXa_xx1_addAllX_V_aggregateXlocal_aX_byXageX_capXaX': [(lambda g, xx1=None:g.with_side_effect('a',xx1,Operator.add_all).V().aggregate(Scope.local,'a').by('age').cap('a'))], 
     'g_withSideEffectXa_xx1_assignX_V_aggregateXaX_byXageX_capXaX': [(lambda g, xx1=None:g.with_side_effect('a',xx1,Operator.assign).V().aggregate('a').by('age').cap('a'))], 
     'g_withSideEffectXa_xx1_assignX_V_order_byXageX_aggregateXlocal_aX_byXageX_capXaX': [(lambda g, xx1=None:g.with_side_effect('a',xx1,Operator.assign).V().order().by('age').aggregate(Scope.local,'a').by('age').cap('a'))], 
+    'g_V_aggregateXaX_capXaX_unfold_both': [(lambda g:g.V().aggregate('a').cap('a').unfold().both())], 
+    'g_V_aggregateXaX_capXaX_unfold_barrier_both': [(lambda g:g.V().aggregate('a').cap('a').unfold().barrier().both())], 
     'g_V_fail': [(lambda g:g.V().fail())], 
     'g_V_failXmsgX': [(lambda g:g.V().fail('msg'))], 
     'g_V_unionXout_failX': [(lambda g:g.V().union(__.out(),__.fail()))], 

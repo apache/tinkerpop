@@ -576,3 +576,69 @@ Feature: Step - aggregate()
     Then the result should be unordered
       | result |
       | d[35].i |
+
+  Scenario: g_V_repeatXaggregateXaXX_timesX2X_capXaX_unfold
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().repeat(__.aggregate("a")).times(2).cap("a").unfold()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[vadas] |
+      | v[lop] |
+      | v[lop] |
+      | v[josh] |
+      | v[josh] |
+      | v[ripple] |
+      | v[ripple] |
+      | v[peter] |
+      | v[peter] |
+
+  Scenario: g_V_aggregateXaX_capXaX_unfold_both
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate("a").cap("a").unfold().both()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[josh] |
+      | v[josh] |
+      | v[lop] |
+      | v[lop] |
+      | v[lop] |
+      | v[peter] |
+      | v[ripple] |
+
+  Scenario: g_V_aggregateXaX_capXaX_unfold_barrier_both
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().aggregate("a").cap("a").unfold().barrier().both()
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[marko] |
+      | v[marko] |
+      | v[vadas] |
+      | v[josh] |
+      | v[josh] |
+      | v[josh] |
+      | v[lop] |
+      | v[lop] |
+      | v[lop] |
+      | v[peter] |
+      | v[ripple] |

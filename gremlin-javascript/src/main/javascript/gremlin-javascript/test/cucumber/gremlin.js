@@ -1474,6 +1474,8 @@ const gremlins = {
     g_withSideEffectXa_xx1_addAllX_V_aggregateXlocal_aX_byXageX_capXaX: [function({g, xx1}) { return g.withSideEffect("a",xx1,Operator.addAll).V().aggregate(Scope.local,"a").by("age").cap("a") }], 
     g_withSideEffectXa_xx1_assignX_V_aggregateXaX_byXageX_capXaX: [function({g, xx1}) { return g.withSideEffect("a",xx1,Operator.assign).V().aggregate("a").by("age").cap("a") }], 
     g_withSideEffectXa_xx1_assignX_V_order_byXageX_aggregateXlocal_aX_byXageX_capXaX: [function({g, xx1}) { return g.withSideEffect("a",xx1,Operator.assign).V().order().by("age").aggregate(Scope.local,"a").by("age").cap("a") }], 
+    g_V_aggregateXaX_capXaX_unfold_both: [function({g}) { return g.V().aggregate("a").cap("a").unfold().both() }], 
+    g_V_aggregateXaX_capXaX_unfold_barrier_both: [function({g}) { return g.V().aggregate("a").cap("a").unfold().barrier().both() }], 
     g_V_fail: [function({g}) { return g.V().fail() }], 
     g_V_failXmsgX: [function({g}) { return g.V().fail("msg") }], 
     g_V_unionXout_failX: [function({g}) { return g.V().union(__.out(),__.fail()) }], 
