@@ -38,42 +38,21 @@ export class Transaction {
    * @returns {GraphTraversalSource}
    */
   begin(): GraphTraversalSource {
-    if (this._sessionBasedConnection) {
-      throw new Error('Transaction already started on this object');
-    }
-
-    this._sessionBasedConnection = this.g.remoteConnection!.createSession();
-    const traversalStrategy = new TraversalStrategies();
-    traversalStrategy.addStrategy(new RemoteStrategy(this._sessionBasedConnection));
-    return new this.g.graphTraversalSourceClass(
-      this.g.graph,
-      traversalStrategy,
-      new GremlinLang(this.g.gremlinLang),
-      this.g.graphTraversalSourceClass,
-      this.g.graphTraversalClass,
-    );
+    throw new Error ("Transactions are not yet implemented")
   }
 
   /**
    * @returns {Promise}
    */
   commit(): Promise<void> {
-    if (!this._sessionBasedConnection) {
-      throw new Error('Cannot commit a transaction that is not started');
-    }
-
-    return this._sessionBasedConnection.commit().finally(() => this.close());
+    throw new Error ("Transactions are not yet implemented")
   }
 
   /**
    * @returns {Promise}
    */
   rollback(): Promise<void> {
-    if (!this._sessionBasedConnection) {
-      throw new Error('Cannot rollback a transaction that is not started');
-    }
-
-    return this._sessionBasedConnection.rollback().finally(() => this.close());
+    throw new Error ("Transactions are not yet implemented")
   }
 
   /**

@@ -43,10 +43,10 @@ export default class DriverRemoteConnection extends RemoteConnection {
    * @param {String|Array|Buffer} [options.cert] The certificate key.
    * @param {String} [options.mimeType] The mime type to use.
    * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
-   * @param {GraphSONReader} [options.reader] The reader to use.
+   * @param {GraphBinaryReader} [options.reader] The reader to use.
    * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
-   * @param {GraphSONWriter} [options.writer] The writer to use.
+   * @param {GraphBinaryWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
@@ -108,21 +108,6 @@ export default class DriverRemoteConnection extends RemoteConnection {
 
     return this._client.submit(gremlinLang.getGremlin(), null, requestOptions)
       .then((result) => new RemoteTraversal(result.toArray()));
-  }
-
-  override createSession() {
-    if (this.isSessionBound) {
-      throw new Error('Connection is already bound to a session - child sessions are not allowed');
-    }
-
-    // make sure a fresh session is used when starting a new transaction
-    const copiedOptions = Object.assign({}, this.options);
-    copiedOptions.session = utils.getUuid();
-    return new DriverRemoteConnection(this.url, copiedOptions);
-  }
-
-  override get isSessionBound() {
-    return Boolean(this.options.session);
   }
 
   override commit() {

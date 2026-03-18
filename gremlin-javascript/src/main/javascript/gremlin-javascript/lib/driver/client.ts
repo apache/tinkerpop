@@ -85,6 +85,20 @@ export default class Client {
   }
 
   /**
+   * Configuration specific to the current request.
+   * @typedef {Object} RequestOptions
+   * @property {any} bindings - The parameter bindings to apply to the script.
+   * @property {String} language - The language of the script to execute. Defaults to 'gremlin-lang'.
+   * @property {String} accept - The MIME type expected in the response.
+   * @property {Boolean} bulkResults - Indicates whether results should be returned in bulk format.
+   * @property {Object} params - Additional parameters to include with the request.
+   * @property {Number} batchSize - The size in which the result of a request is to be 'batched' back to the client.
+   * @property {String} userAgent - The user agent string to send with the request.
+   * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
+   * @property {String} materializeProperties - Indicates whether element properties should be returned or not.
+   */
+
+  /**
    * Send a request to the Gremlin Server.
    * @param {string} message The script to send
    * @param {Object|null} [bindings] The script bindings, if any.

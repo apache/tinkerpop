@@ -59,7 +59,7 @@ export class GraphTraversalSource {
    */
   tx(): Transaction {
     // you can't do g.tx().begin().tx() - no child transactions
-    if (this.remoteConnection && this.remoteConnection.isSessionBound) {
+    if (this.remoteConnection) {
       throw new Error('This TraversalSource is already bound to a transaction - child transactions are not supported');
     }
 

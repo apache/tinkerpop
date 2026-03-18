@@ -32,6 +32,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed deprecated elements of the Java-based process testing suite: `ProcessStandardSuite`, `ProcessComputerSuite`, `ProcessLimitedSuite` and associated tests.
 * Removed redundant Gremlin Server integration testing: `org.apache.tinkerpop.gremlin.process.*` and related infrastructure.
 * Removed obsolete `gremlin-groovy` translation testing: `ParameterizedGroovyTranslatorProvider` and related infrastructure.
+* Removed deprecated `Graph.traversal()` method in JS in favor of the anonymous `traversal()` function.
 * Replace `Bytecode` with `GremlinLang` & update serialization to GraphBinary 4 for `gremlin-go`.
 * Added `RequestInterceptor` to `gremlin-go` with `auth` reference implementations to replace `authInfo`.
 * Refactored GraphBinary serializers to use `io.Writer` and `io.Reader` instead of `*bytes.Buffer` for streaming capacities.

@@ -127,7 +127,7 @@ export class Builder {
   }
 
   addBinding(key: string, value: any): Builder {
-    Object.assign(this.bindings, {key: value})
+    Object.assign(this.bindings, {[key]: value})
     return this;
   }
 
