@@ -49,9 +49,9 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         [Fact]
         public void ShouldSetGField()
         {
-            var msg = RequestMessage.Build("g.V()").AddG("g").Create();
+            var msg = RequestMessage.Build("g.V()").AddG("customG").Create();
 
-            Assert.Equal("g", msg.Fields[Tokens.ArgsG]);
+            Assert.Equal("customG", msg.Fields[Tokens.ArgsG]);
         }
 
         [Fact]

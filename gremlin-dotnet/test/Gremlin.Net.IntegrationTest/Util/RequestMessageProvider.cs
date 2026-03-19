@@ -27,16 +27,6 @@ namespace Gremlin.Net.IntegrationTest.Util
 {
     internal class RequestMessageProvider
     {
-        public string GetSleepGremlinScript(int sleepTimeInMs)
-        {
-            return "g.inject(1)";
-        }
-
-        public RequestMessage GetSleepMessage(int sleepTimeInMs)
-        {
-            return RequestMessage.Build("g.inject(1)").Create();
-        }
-
         public RequestMessage GetDummyMessage()
         {
             return RequestMessage.Build("g.inject(1)").Create();
