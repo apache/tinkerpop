@@ -49,10 +49,10 @@ export default class Client {
    * @param {String|Array|Buffer} [options.cert] The certificate key.
    * @param {String} [options.mimeType] The mime type to use.
    * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
-   * @param {GraphSONReader} [options.reader] The reader to use.
+   * @param {GraphBinaryReader} [options.reader] The reader to use.
    * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
    * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
-   * @param {GraphSONWriter} [options.writer] The writer to use.
+   * @param {GraphBinaryWriter} [options.writer] The writer to use.
    * @param {Authenticator} [options.authenticator] The authentication handler to use.
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
