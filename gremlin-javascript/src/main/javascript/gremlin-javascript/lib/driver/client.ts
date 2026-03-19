@@ -108,8 +108,10 @@ export default class Client {
   submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
       const requestBuilder = RequestMessage.build(message)
           .addG(this.options.traversalSource || 'g')
-          .addLanguage(requestOptions?.language || 'gremlin-lang');
 
+      if (requestOptions?.language) {
+          requestBuilder.addLanguage(requestOptions.language);
+      }
       if (requestOptions?.bindings) {
           requestBuilder.addBindings(requestOptions.bindings);
       }

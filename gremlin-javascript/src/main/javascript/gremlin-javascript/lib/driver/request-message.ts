@@ -109,7 +109,7 @@ export class RequestMessage {
 export class Builder {
   private readonly gremlin: string;
   private readonly bindings = {};
-  public language?: string;
+  public language: string;
   public timeoutMs?: number;
   public g?: string;
   public materializeProperties?: string;
@@ -118,6 +118,7 @@ export class Builder {
 
   constructor(gremlin: string) {
     this.gremlin = gremlin;
+    this.language = "gremlin-lang";
   }
 
   addLanguage(language: string): Builder {
