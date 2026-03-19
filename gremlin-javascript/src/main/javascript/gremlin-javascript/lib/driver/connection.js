@@ -135,9 +135,12 @@ class Connection extends EventEmitter {
       'perMessageDeflate',
     ]);
     // Check if any `ws` specific options are provided and are non-null / non-undefined
-    const hasWsSpecificOptions = Object.entries(this.options).some(
-      ([key, value]) => wsSpecificOptions.has(key) && ![null, undefined].includes(value),
-    );
+    const hasWsSpecificOptions =
+      Object.entries(this.options).some(
+        ([key, value]) => wsSpecificOptions.has(key) && ![null, undefined].includes(value),
+      ) ||
+      this._enableCompression || // we need to check the presence of this variable and pass this into ws
+      this._enableUserAgentOnConnect; // global websocket will send "node" as user agent by default which doesn't comply with Gremlin
     // Only use the global websocket if we don't have any unsupported options
     const useGlobalWebSocket = !hasWsSpecificOptions && globalThis.WebSocket;
     const WebSocket = useGlobalWebSocket || (await import('ws')).default;

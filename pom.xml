@@ -222,6 +222,8 @@ limitations under the License.
             --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
             --add-opens=java.base/java.net=ALL-UNNAMED
         </jdk17JvmArgs>
+
+        <node.test.version>20</node.test.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
