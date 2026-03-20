@@ -22,8 +22,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
@@ -40,27 +38,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
         private static readonly int TestPort = Convert.ToInt32(ConfigProvider.Configuration["TestServerPort"]);
 
         [Fact]
-        public async Task ShouldUseAliasForTraversalSource()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                var aliasTraversalSource = "g2";
-                var aliases = new Dictionary<string, string> {{aliasTraversalSource, "g"}};
-                var gremlinScript = $"{aliasTraversalSource}.V().count()";
-                var requestMsg =
-                    RequestMessage.Build(Tokens.OpsEval)
-                        .AddArgument(Tokens.ArgsAliases, aliases)
-                        .AddArgument(Tokens.ArgsGremlin, gremlinScript)
-                        .Create();
-
-                var result = await gremlinClient.SubmitWithSingleResultAsync<long>(requestMsg);
-
-                Assert.InRange(result, 0, long.MaxValue);
-            }
-        }
-
-        [Fact]
         public async Task ShouldThrowForInvalidOperation()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);
@@ -72,55 +49,8 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var thrownException =
                     await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync<dynamic>(requestMsg));
 
-                Assert.Contains("MalformedRequest", thrownException.Message);
+                Assert.Contains("Failed to interpret Gremlin query", thrownException.Message);
                 Assert.Contains(ivalidOperationName, thrownException.Message);
-            }
-        }
-
-        [Fact]
-        public async Task ShouldThrowForInvalidProcessor()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                var invalidProcessorName = "invalid";
-                var requestMsg = RequestMessage.Build("").Processor(invalidProcessorName).Create();
-
-                var thrownException =
-                    await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync<dynamic>(requestMsg));
-
-                Assert.Contains("InvalidRequestArguments", thrownException.Message);
-                Assert.Contains(invalidProcessorName, thrownException.Message);
-                Assert.Contains("OpProcessor", thrownException.Message);
-            }
-        }
-
-        [Fact]
-        public async Task ShouldUseSpecifiedEvaluationTimeout()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using (var gremlinClient = new GremlinClient(gremlinServer))
-            {
-                const long timeOutInMs = 1L;
-                const int scriptSleepTimeInMs = 60000;
-                var sleepScript = _requestMessageProvider.GetSleepGremlinScript(scriptSleepTimeInMs);
-
-                var requestMsg =
-                    RequestMessage.Build(Tokens.OpsEval)
-                        .AddArgument(Tokens.ArgsGremlin, sleepScript)
-                        .AddArgument(Tokens.ArgsEvalTimeout, timeOutInMs)
-                        .Create();
-                var evaluationStopWatch = new Stopwatch();
-                evaluationStopWatch.Start();
-
-                var thrownException =
-                    await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
-
-                evaluationStopWatch.Stop();
-                Assert.Contains("ServerTimeout", thrownException.Message);
-                Assert.Contains(timeOutInMs.ToString(), thrownException.Message);
-                Assert.True(evaluationStopWatch.ElapsedMilliseconds < scriptSleepTimeInMs,
-                    $"Elapsed {evaluationStopWatch.ElapsedMilliseconds} > {scriptSleepTimeInMs}");
             }
         }
 
@@ -132,15 +62,14 @@ namespace Gremlin.Net.IntegrationTest.Driver
             {
                 var unknownLanguage = "unknown";
                 var requestMsg =
-                    RequestMessage.Build(Tokens.OpsEval)
-                        .AddArgument(Tokens.ArgsGremlin, "1")
-                        .AddArgument(Tokens.ArgsLanguage, unknownLanguage)
+                    RequestMessage.Build("g.inject(1)")
+                        .AddField(Tokens.ArgsLanguage, unknownLanguage)
                         .Create();
 
                 var thrownException =
                     await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
 
-                Assert.Contains("ServerEvaluationError", thrownException.Message);
+                Assert.Contains("not an available GremlinScript", thrownException.Message);
                 Assert.Contains(unknownLanguage, thrownException.Message);
             }
         }

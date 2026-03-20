@@ -36,35 +36,43 @@ namespace Gremlin.Net.UnitTest.Driver
         {
             var sut = CreateMessageSerializer();
 
-            await Assert.ThrowsAsync<ArgumentNullException>(()=> sut.DeserializeMessageAsync(null!));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.DeserializeMessageAsync(null!));
         }
 
         [Fact]
-        public async Task EmptyArrayDeserializedIntoNull()
+        public async Task EmptyArrayDeserializedIntoEmptyResult()
         {
             var sut = CreateMessageSerializer();
 
             var result = await sut.DeserializeMessageAsync(new byte[0]);
-            
-            Assert.Null(result);
+
+            Assert.NotNull(result);
+            Assert.Empty(result.Result);
+            Assert.Equal(200, result.StatusCode);
         }
 
         [Fact]
-        public async Task EmptyStringDeserializedIntoNull()
+        public async Task EmptyStringDeserializedIntoEmptyResult()
         {
             var sut = CreateMessageSerializer();
             var ofEmpty = Encoding.UTF8.GetBytes("");
 
-            Assert.Null(await sut.DeserializeMessageAsync(ofEmpty));
+            var result = await sut.DeserializeMessageAsync(ofEmpty);
+
+            Assert.NotNull(result);
+            Assert.Empty(result.Result);
         }
 
         [Fact]
-        public async Task JsonNullDeserializedIntoNull()
+        public async Task JsonNullDeserializedIntoEmptyResult()
         {
             var sut = CreateMessageSerializer();
             var ofNull = Encoding.UTF8.GetBytes("null");
 
-            Assert.Null(await sut.DeserializeMessageAsync(ofNull));
+            var result = await sut.DeserializeMessageAsync(ofNull);
+
+            Assert.NotNull(result);
+            Assert.Empty(result.Result);
         }
 
         private static GraphSONMessageSerializer CreateMessageSerializer()

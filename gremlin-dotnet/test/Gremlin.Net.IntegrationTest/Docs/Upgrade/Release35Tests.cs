@@ -23,7 +23,7 @@
 
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure.IO.GraphBinary;
+using Gremlin.Net.Structure.IO.GraphBinary4;
 using Xunit;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 
@@ -35,7 +35,7 @@ namespace Gremlin.Net.IntegrationTest.Docs.Upgrade
         public void GraphBinaryTest()
         {
 // tag::graphBinary[]
-var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinaryMessageSerializer());
+var client = new GremlinClient(new GremlinServer("localhost", 8182), new GraphBinary4MessageSerializer());
 var g = Traversal().With(new DriverRemoteConnection(client));
 // end::graphBinary[]
         }

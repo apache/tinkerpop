@@ -141,9 +141,9 @@ namespace Gremlin.Net.Driver
             Dictionary<string, object>? bindings = null,
             CancellationToken cancellationToken = default)
         {
-            var msgBuilder = RequestMessage.Build(Tokens.OpsEval).AddArgument(Tokens.ArgsGremlin, requestScript);
+            var msgBuilder = RequestMessage.Build(requestScript);
             if (bindings != null)
-                msgBuilder.AddArgument(Tokens.ArgsBindings, bindings);
+                msgBuilder.AddBindings(bindings);
             var msg = msgBuilder.Create();
             return await gremlinClient.SubmitAsync<T>(msg, cancellationToken).ConfigureAwait(false);
         }

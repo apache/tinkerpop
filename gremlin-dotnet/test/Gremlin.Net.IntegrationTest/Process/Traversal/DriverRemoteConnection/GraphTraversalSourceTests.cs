@@ -50,7 +50,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Contains("peter", results);
         }
                 
-        [Fact]
+        // TODO: Groovy lambdas are not supported in the GremlinLang/GraphBinary4 serialization path
+        [Fact(Skip = "Groovy lambdas are not serializable over HTTP 4.0 with GraphBinary4")]
         public void ShouldHandleLambdasInWithSack()
         {
             var connection = _connectionFactory.CreateRemoteConnection();

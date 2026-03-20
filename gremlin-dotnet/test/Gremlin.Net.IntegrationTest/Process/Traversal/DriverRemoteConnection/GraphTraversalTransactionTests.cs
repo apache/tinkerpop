@@ -33,7 +33,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
     {
         private readonly IRemoteConnection _connection = new RemoteConnectionFactory().CreateRemoteConnection("gtx");
 
-        [Fact]
+        // TODO: update after tx is implemented in 4.0
+        [Fact(Skip = "transaction-related tests are disabled until Tx implemented")]
         public async Task ShouldSupportRemoteTransactionsCommit()
         {
             var g = AnonymousTraversalSource.Traversal().With(_connection);
@@ -57,7 +58,8 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Equal(2, count);
         }
         
-        [Fact]
+        // TODO: update after tx is implemented in 4.0
+        [Fact(Skip = "transaction-related tests are disabled until Tx implemented")]
         public async Task ShouldSupportRemoteTransactionsRollback()
         {
             var g = AnonymousTraversalSource.Traversal().With(_connection);

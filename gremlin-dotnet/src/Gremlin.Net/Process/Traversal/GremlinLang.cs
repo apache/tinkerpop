@@ -132,6 +132,21 @@ namespace Gremlin.Net.Process.Traversal
         ///     Gets a value indicating whether this GremlinLang has no content.
         /// </summary>
         public bool IsEmpty => _gremlin.Length == 0;
+        
+        /// <summary>
+        ///     Gets or sets the raw gremlin string content (without the "g" prefix).
+        ///     This is intended for test infrastructure use only, such as prepending
+        ///     source steps like withSideEffect after traversal construction.
+        /// </summary>
+        internal string Gremlin
+        {
+            get => _gremlin.ToString();
+            set
+            {
+                _gremlin.Clear();
+                _gremlin.Append(value);
+            }
+        }
 
         /// <summary>
         ///     Resets the static parameter counter. Intended for test determinism.

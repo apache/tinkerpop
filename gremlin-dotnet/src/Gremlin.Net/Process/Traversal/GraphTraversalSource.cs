@@ -75,8 +75,8 @@ namespace Gremlin.Net.Process.Traversal
             GremlinLang = gremlinLang;
         }
 
-        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies, GremlinLang gremlinLang,
-            IRemoteConnection connection)
+        public GraphTraversalSource(ICollection<ITraversalStrategy> traversalStrategies,
+            GremlinLang gremlinLang, IRemoteConnection connection)
             : this(traversalStrategies.Where(strategy => strategy.GetType() != typeof(RemoteStrategy)).ToList(),
                 gremlinLang)
         {
@@ -369,10 +369,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<Edge, Edge> MergeE(IDictionary<object,object?>? m)
         {
-            if (m != null && m[Direction.Out] is Vertex outV) {
+            if (m != null && m.ContainsKey(Direction.Out) && m[Direction.Out] is Vertex outV) {
                 m[Direction.Out] = outV.Id;
             }
-            if (m != null && m[Direction.In] is Vertex inV) {
+            if (m != null && m.ContainsKey(Direction.In) && m[Direction.In] is Vertex inV) {
                 m[Direction.In] = inV.Id;
             }
             var traversal = new GraphTraversal<Edge, Edge>(TraversalStrategies, GremlinLang.Clone());

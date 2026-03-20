@@ -33,25 +33,12 @@ namespace Gremlin.Net.UnitTest.Process.Remote
     public class RemoteTransactionTests
     {
         [Fact]
-        public void ShouldNotAllowBeginMoreThanOnce()
+        public void ShouldThrowNotSupportedExceptionOnTx()
         {
             var g = AnonymousTraversalSource.Traversal()
                 .With(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
-            var tx = g.Tx();
-            tx.Begin();
 
-            Assert.Throws<InvalidOperationException>(() => tx.Begin());
-        }
-        
-        [Fact]
-        public void ShouldNotSupportChildTransactions()
-        {
-            var g = AnonymousTraversalSource.Traversal()
-                .With(new DriverRemoteConnection(Substitute.For<IGremlinClient>()));
-            var tx = g.Tx();
-            
-            var gtx = tx.Begin();
-            Assert.Throws<InvalidOperationException>(() => gtx.Tx());
+            Assert.Throws<NotSupportedException>(() => g.Tx());
         }
     }
 }
