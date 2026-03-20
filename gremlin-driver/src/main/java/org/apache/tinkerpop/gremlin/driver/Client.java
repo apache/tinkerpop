@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class Client {
+public abstract class Client implements RequestSubmitter, RequestSubmitterAsync {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     public static final String TOO_MANY_IN_FLIGHT_REQUESTS = "Number of active requests (%s) exceeds pool size (%s). " +
@@ -239,6 +239,7 @@ public abstract class Client {
         options.getLanguage().ifPresent(lang -> request.addLanguage(lang));
         options.getMaterializeProperties().ifPresent(mp -> request.addMaterializeProperties(mp));
         options.getBulkResults().ifPresent(bulked -> request.addBulkResults(Boolean.parseBoolean(bulked)));
+        options.getTransactionId().ifPresent(transactionId -> request.addTransactionId(transactionId));
 
         return submitAsync(request.create());
     }
@@ -284,6 +285,13 @@ public abstract class Client {
      */
     public Cluster getCluster() {
         return cluster;
+    }
+
+    protected Host chooseRandomHost() {
+        cluster.init();
+        final List<Host> hosts = new ArrayList<>(cluster.allHosts());
+        final int ix = random.nextInt(hosts.size());
+        return hosts.get(ix);
     }
 
     /**
@@ -356,12 +364,6 @@ public abstract class Client {
             final Host bestHost = possibleHosts.hasNext() ? possibleHosts.next() : chooseRandomHost();
             final ConnectionPool pool = hostConnectionPools.get(bestHost);
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
-        }
-
-        private Host chooseRandomHost() {
-            final List<Host> hosts = new ArrayList<>(cluster.allHosts());
-            final int ix = random.nextInt(hosts.size());
-            return hosts.get(ix);
         }
 
         /**
@@ -560,6 +562,59 @@ public abstract class Client {
         public Client alias(final String graphOrTraversalSource) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             return new AliasClusteredClient(client, graphOrTraversalSource);
+        }
+
+    }
+
+    /**
+     * A {@link Client} that pins all requests to a single {@link Host}. Used internally by transactions
+     * to ensure all requests within a transaction go to the same server.
+     * <p>
+     * This client is not intended to be used directly — obtain a {@link org.apache.tinkerpop.gremlin.structure.Transaction}
+     * via {@link Cluster#transact()} or {@link Cluster#transact(String)} instead.
+     */
+    public static class PinnedClient extends Client {
+        private final ClusteredClient clusteredClient;
+        private final Host pinnedHost;
+        private final AtomicReference<CompletableFuture<Void>> closing = new AtomicReference<>(null);
+
+        PinnedClient(final Cluster cluster) {
+            super(cluster);
+            this.pinnedHost = chooseRandomHost();
+            this.clusteredClient = cluster.connect();
+        }
+
+        public Host getPinnedHost() {
+            return pinnedHost;
+        }
+
+        @Override
+        protected void initializeImplementation() {
+            this.clusteredClient.init();
+            initialized = true;
+        }
+
+        @Override
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            final ConnectionPool pool = clusteredClient.hostConnectionPools.get(pinnedHost);
+            if (pool == null) throw new NoHostAvailableException();
+            return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public boolean isClosing() {
+            return closing.get() != null;
+        }
+
+        /**
+         * Marks this client as closed. The underlying pool is owned by {@link ClusteredClient} and is not closed here.
+         */
+        @Override
+        public synchronized CompletableFuture<Void> closeAsync() {
+            if (closing.get() != null) return closing.get();
+
+            closing.set(clusteredClient.closeAsync());
+            return closing.get();
         }
     }
 }

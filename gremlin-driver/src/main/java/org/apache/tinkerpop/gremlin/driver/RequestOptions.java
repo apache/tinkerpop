@@ -50,6 +50,7 @@ public final class RequestOptions {
     private final String language;
     private final String materializeProperties;
     private final String bulkResults;
+    private final String transactionId;
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
@@ -59,6 +60,7 @@ public final class RequestOptions {
         this.language = builder.language;
         this.materializeProperties = builder.materializeProperties;
         this.bulkResults = builder.bulkResults;
+        this.transactionId = builder.transactionId;
     }
 
     public Optional<String> getG() {
@@ -84,6 +86,8 @@ public final class RequestOptions {
     public Optional<String> getMaterializeProperties() { return Optional.ofNullable(materializeProperties); }
 
     public Optional<String> getBulkResults() { return Optional.ofNullable(bulkResults); }
+
+    public Optional<String> getTransactionId() { return Optional.ofNullable(transactionId); }
 
     public static Builder build() {
         return new Builder();
@@ -125,6 +129,25 @@ public final class RequestOptions {
         private String materializeProperties = null;
         private String language = null;
         private String bulkResults = null;
+        private String transactionId = null;
+
+        /**
+         * Creates a {@link Builder} populated with the values from the provided {@link RequestOptions}.
+         * @param options the options to copy from
+         * @return a {@link Builder} with the copied options
+         */
+        public static Builder from(final RequestOptions options) {
+            final Builder builder = build();
+            builder.graphOrTraversalSource = options.graphOrTraversalSource;
+            builder.parameters = options.parameters;
+            builder.batchSize = options.batchSize;
+            builder.timeout = options.timeout;
+            builder.materializeProperties = options.materializeProperties;
+            builder.language = options.language;
+            builder.bulkResults = options.bulkResults;
+            builder.transactionId = options.transactionId;
+            return builder;
+        }
 
         /**
          * The aliases to set on the request.
@@ -193,6 +216,14 @@ public final class RequestOptions {
          */
         public Builder bulkResults(final boolean bulking) {
             this.bulkResults = String.valueOf(bulking);
+            return this;
+        }
+
+        /**
+         * Sets the transactionId value to be sent on the request.
+         */
+        public Builder transactionId(final String id) {
+            this.transactionId = id;
             return this;
         }
 

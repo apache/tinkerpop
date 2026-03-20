@@ -91,6 +91,13 @@ public final class HttpGremlinRequestEncoder extends MessageToMessageEncoder<Req
             if (bulkResults) {
                 headersMap.put(Tokens.BULK_RESULTS, "true");
             }
+            
+            // Add X-Transaction-Id header to comply with specification's dual transmission (header and body)
+            final String transactionId = requestMessage.getField(Tokens.ARGS_TRANSACTION_ID);
+            if (transactionId != null) {
+                headersMap.put(Tokens.Headers.TRANSACTION_ID, transactionId);
+            }
+            
             HttpRequest gremlinRequest = new HttpRequest(headersMap, requestMessage, uri);
 
             for (final Pair<String, ? extends RequestInterceptor> interceptor : interceptors) {

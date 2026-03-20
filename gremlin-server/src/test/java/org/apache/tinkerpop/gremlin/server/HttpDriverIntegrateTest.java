@@ -210,22 +210,6 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
     }
 
     @Test
-    public void shouldFailToUseSession() {
-        final Cluster cluster = TestClientFactory.build().create();
-        try {
-            final Client client = cluster.connect("shouldFailToUseSession");
-            client.submit("g.inject(2)").all().get();
-            fail("Can't use session with HTTP");
-        } catch (Exception ex) {
-            final Throwable t = ExceptionUtils.getRootCause(ex);
-            // assertEquals("Cannot use sessions or tx() with HttpChannelizer", t.getMessage());
-            assertEquals("not implemented", t.getMessage());
-        } finally {
-            cluster.close();
-        }
-    }
-
-    @Test
     public void shouldDeserializeErrorWithGraphBinary() {
         final Cluster cluster = TestClientFactory.build().create();
         try {

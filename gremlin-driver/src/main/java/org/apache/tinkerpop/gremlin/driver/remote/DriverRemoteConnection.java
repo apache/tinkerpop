@@ -248,15 +248,14 @@ public class DriverRemoteConnection implements RemoteConnection {
     }
 
     /**
-     * Constructs a new {@link DriverRemoteTransaction}. Not yet supported in TinkerPop 4.
+     * Creates a new {@link HttpRemoteTransaction} for executing transactional operations.
+     *
+     * @return A new {@link HttpRemoteTransaction}
      */
-//    @Override
-//    public Transaction tx() {
-//        // todo: not implemented
-//        final DriverRemoteConnection session = new DriverRemoteConnection(
-//                client.getCluster().connect(), remoteTraversalSourceName, true);
-//        return new DriverRemoteTransaction(session);
-//    }
+    @Override
+    public Transaction tx() {
+        return client.getCluster().transact(remoteTraversalSourceName);
+    }
 
     @Override
     public String toString() {

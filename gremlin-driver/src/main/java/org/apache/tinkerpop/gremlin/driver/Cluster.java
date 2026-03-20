@@ -31,7 +31,10 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
+import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
+import org.apache.tinkerpop.gremlin.driver.remote.HttpRemoteTransaction;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
@@ -63,6 +66,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -94,49 +98,31 @@ public final class Cluster {
     }
 
     /**
-     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
-     * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
-     * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
-     * single request.  The transactions are managed by the user and must be committed or rolled-back manually.
-     * <p/>
-     * Note that calling this method does not imply that a connection is made to the server itself at this point.
-     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
-     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
-     * submitted or can be directly initialized via {@link Client#init()}.
-     *
-     * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
-     */
-    public <T extends Client> T connect(final String sessionId) {
-        throw new UnsupportedOperationException("not implemented");
-    }
-
-    /**
-     * Creates a SessionedClient instance to this {@code Cluster}, meaning requests will be routed to
-     * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
-     * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
-     * single request.  If {@code manageTransactions} is set to {@code false} then transactions are managed by the
-     * user and must be committed or rolled-back manually. When set to {@code true} the transaction is committed or
-     * rolled-back at the end of each request.
-     * <p/>
-     * Note that calling this method does not imply that a connection is made to the server itself at this point.
-     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
-     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
-     * submitted or can be directly initialized via {@link Client#init()}.
-     *
-     * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
-     * @param manageTransactions enables auto-transactions when set to true
-     */
-    public <T extends Client> T connect(final String sessionId, final boolean manageTransactions) {
-        throw new UnsupportedOperationException("not implemented");
-    }
-
-    /**
      * Creates a new {@link Client} based on the settings provided.
      */
     public <T extends Client> T connect() {
         final Client client = new Client.ClusteredClient(this);
         manager.trackClient(client);
         return (T) client;
+    }
+
+    /**
+     * Creates a new {@link Transaction} using the server's default traversal source.
+     * The server will bind to "g" by default when no traversal source is specified.
+     */
+    public RemoteTransaction transact() {
+        return transact(null);
+    }
+
+    /**
+     * Creates a new {@link Transaction} bound to the specified graph or traversal source.
+     *
+     * @param graphOrTraversalSource the graph/traversal source alias, or null to use the server default
+     */
+    public RemoteTransaction transact(final String graphOrTraversalSource) {
+        final Client.PinnedClient pinnedClient = new Client.PinnedClient(this);
+        manager.trackClient(pinnedClient);
+        return new HttpRemoteTransaction(pinnedClient, graphOrTraversalSource);
     }
 
     @Override
@@ -363,6 +349,14 @@ public final class Cluster {
      */
     public Collection<Host> allHosts() {
         return Collections.unmodifiableCollection(manager.allHosts());
+    }
+
+    public void trackTransaction(final HttpRemoteTransaction tx) {
+        manager.trackTransaction(tx);
+    }
+
+    public void untrackTransaction(final HttpRemoteTransaction tx) {
+        manager.untrackTransaction(tx);
     }
 
     Factory getFactory() {
@@ -936,6 +930,7 @@ public final class Cluster {
 
     class Manager {
         private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<>();
+        private final Set<HttpRemoteTransaction> openTransactions = ConcurrentHashMap.newKeySet();
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
         private final Factory factory;
@@ -1081,6 +1076,14 @@ public final class Cluster {
             openedClients.add(new WeakReference<>(client));
         }
 
+        void trackTransaction(final HttpRemoteTransaction tx) {
+            openTransactions.add(tx);
+        }
+
+        void untrackTransaction(final HttpRemoteTransaction tx) {
+            openTransactions.remove(tx);
+        }
+
         public Host add(final InetSocketAddress address) {
             final Host newHost = new Host(address, Cluster.this);
             final Host previous = hosts.putIfAbsent(address, newHost);
@@ -1095,6 +1098,17 @@ public final class Cluster {
             // this method is exposed publicly in both blocking and non-blocking forms.
             if (closeFuture.get() != null)
                 return closeFuture.get();
+
+            // best-effort rollback of any open transactions before closing
+            // snapshot to avoid concurrent modification since rollback() calls untrackTransaction()
+            new ArrayList<>(openTransactions).forEach(tx -> {
+                try {
+                    tx.rollback();
+                } catch (Exception e) {
+                    logger.warn("Failed to rollback transaction on cluster close", e);
+                }
+            });
+            openTransactions.clear();
 
             final List<CompletableFuture<Void>> clientCloseFutures = new ArrayList<>(openedClients.size());
             for (WeakReference<Client> openedClient : openedClients) {

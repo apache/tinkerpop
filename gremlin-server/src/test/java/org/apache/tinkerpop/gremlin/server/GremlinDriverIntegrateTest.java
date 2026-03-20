@@ -1093,24 +1093,22 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldCloseAllClientsOnCloseOfCluster() throws Exception {
         final Cluster cluster = TestClientFactory.open();
-        final Client sessionlessOne = cluster.connect();
-        final Client session = cluster.connect("session");
-        final Client sessionlessTwo = cluster.connect();
-        final Client sessionlessThree = cluster.connect();
-        final Client sessionlessFour = cluster.connect();
+        final Client clientOne = cluster.connect();
+        final Client clientTwo = cluster.connect();
+        final Client clientThree = cluster.connect();
+        final Client clientFour = cluster.connect();
 
-        assertEquals(2, sessionlessOne.submit("g.inject(2)").all().get().get(0).getInt());
-        assertEquals(2, session.submit("g.inject(2)").all().get().get(0).getInt());
-        assertEquals(2, sessionlessTwo.submit("g.inject(2)").all().get().get(0).getInt());
-        assertEquals(2, sessionlessThree.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, clientOne.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, clientTwo.submit("g.inject(2)").all().get().get(0).getInt());
+        assertEquals(2, clientThree.submit("g.inject(2)").all().get().get(0).getInt());
         // dont' send anything on the 4th client
 
         // close one of these Clients before the Cluster
-        sessionlessThree.close();
+        clientThree.close();
         cluster.close();
 
         try {
-            sessionlessOne.submit("g.inject(2)").all().get();
+            clientOne.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1119,7 +1117,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            session.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1128,7 +1125,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessTwo.submit("g.inject(2)").all().get();
+            clientTwo.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1137,7 +1134,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessThree.submit("g.inject(2)").all().get();
+            clientThree.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1146,7 +1143,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         try {
-            sessionlessFour.submit("g.inject(2)").all().get();
+            clientFour.submit("g.inject(2)").all().get();
             fail("Should have tossed an exception because cluster was closed");
         } catch (Exception ex) {
             final Throwable root = ExceptionHelper.getRootCause(ex);
@@ -1155,9 +1152,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         // allow call to close() even though closed through cluster
-        sessionlessOne.close();
-        session.close();
-        sessionlessTwo.close();
+        clientOne.close();
+        clientTwo.close();
 
         cluster.close();
     }

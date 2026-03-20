@@ -703,14 +703,19 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * Proxies calls through to the underlying {@link Graph#tx()} or to the {@link RemoteConnection#tx()}.
+     * <p>
+     * When a remote connection is present, this method delegates to the connection's
+     * {@link RemoteConnection#tx()} method, which returns an appropriate transaction
+     * implementation for the remote connection type (e.g., {@code HttpRemoteTransaction}
+     * for HTTP-based connections).
+     *
+     * @return A {@link Transaction} for managing transactional operations
      */
     public Transaction tx() {
         if (null == this.connection)
             return this.graph.tx();
-        else {
-            throw new UnsupportedOperationException("TinkerPop 4 does not yet support remote transactions");
-        }
-
+        else
+            return this.connection.tx();
     }
 
     /**
