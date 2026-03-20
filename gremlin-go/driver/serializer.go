@@ -46,6 +46,15 @@ type GraphBinarySerializer struct {
 // CustomTypeReader user provided function to deserialize custom types
 type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
 
+// CustomTypeWriter user provided function to serialize custom types
+type CustomTypeWriter func(value interface{}, buffer *bytes.Buffer, serializer *graphBinaryTypeSerializer) error
+
+// CustomTypeInfo holds metadata for a registered custom type
+type CustomTypeInfo struct {
+	TypeName string
+	Writer   CustomTypeWriter
+}
+
 type writer func(interface{}, *bytes.Buffer, *graphBinaryTypeSerializer) ([]byte, error)
 type reader func(data *[]byte, i *int) (interface{}, error)
 
@@ -55,6 +64,10 @@ var serializers map[dataType]writer
 // customTypeReaderLock used to synchronize access to the customDeserializers map
 var customTypeReaderLock = sync.RWMutex{}
 var customDeserializers map[string]CustomTypeReader
+
+// customTypeWriterLock used to synchronize access to the customSerializers map
+var customTypeWriterLock = sync.RWMutex{}
+var customSerializers map[reflect.Type]CustomTypeInfo
 
 func init() {
 	initSerializers()
@@ -266,6 +279,7 @@ func (gs GraphBinarySerializer) DeserializeMessage(message []byte) (Response, er
 
 func initSerializers() {
 	serializers = map[dataType]writer{
+		customType:     customTypeWriter,
 		bytecodeType:   bytecodeWriter,
 		stringType:     stringWriter,
 		bigDecimalType: bigDecimalWriter,
@@ -391,4 +405,27 @@ func UnregisterCustomTypeReader(customTypeName string) {
 	customTypeReaderLock.Lock()
 	defer customTypeReaderLock.Unlock()
 	delete(customDeserializers, customTypeName)
+}
+
+// RegisterCustomTypeWriter registers a writer (serializer) for a custom type.
+// The valueType should be the reflect.Type of the custom type (e.g., reflect.TypeOf((*MyType)(nil)))
+// The typeName is the GraphBinary custom type name (e.g., "janusgraph.RelationIdentifier")
+// The writer function should serialize the value into the buffer in GraphBinary custom type format.
+func RegisterCustomTypeWriter(valueType reflect.Type, typeName string, writer CustomTypeWriter) {
+	customTypeWriterLock.Lock()
+	defer customTypeWriterLock.Unlock()
+	if customSerializers == nil {
+		customSerializers = make(map[reflect.Type]CustomTypeInfo)
+	}
+	customSerializers[valueType] = CustomTypeInfo{
+		TypeName: typeName,
+		Writer:   writer,
+	}
+}
+
+// UnregisterCustomTypeWriter unregisters a writer (serializer) for a custom type
+func UnregisterCustomTypeWriter(valueType reflect.Type) {
+	customTypeWriterLock.Lock()
+	defer customTypeWriterLock.Unlock()
+	delete(customSerializers, valueType)
 }

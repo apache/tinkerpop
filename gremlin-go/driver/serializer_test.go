@@ -20,8 +20,11 @@ under the License.
 package gremlingo
 
 import (
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/google/uuid"
@@ -78,6 +81,45 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, map[string]interface{}{}, response.ResponseResult.Meta)
 		assert.NotNil(t, response.ResponseResult.Data)
 	})
+
+	t.Run("test serialized request message w/ custom type", func(t *testing.T) {
+		customType := reflect.TypeOf((*TestCustomType)(nil))
+		typeName := "test.CustomType"
+
+		// Register the custom type writer
+		RegisterCustomTypeWriter(customType, typeName, testCustomTypeWriter)
+		defer UnregisterCustomTypeWriter(customType)
+
+		testValue := &TestCustomType{
+			ID:    12345,
+			Value: "test value",
+		}
+
+		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+		testRequest := request{
+			requestID: u,
+			op:        "eval",
+			processor: "",
+			args:      map[string]interface{}{"gremlin": "g.V().count()", "customArg": testValue},
+		}
+
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		serialized, err := serializer.SerializeMessage(&testRequest)
+
+		assert.Nil(t, err)
+		assert.NotNil(t, serialized)
+
+		// Verify the serialized data contains the custom type name bytes
+		typeNameBytes := []byte(typeName)
+		found := false
+		for i := 0; i <= len(serialized)-len(typeNameBytes); i++ {
+			if bytes.Equal(serialized[i:i+len(typeNameBytes)], typeNameBytes) {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "Expected serialized data to contain custom type name")
+	})
 }
 
 func TestSerializerFailures(t *testing.T) {
@@ -106,6 +148,59 @@ func TestSerializerFailures(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.True(t, isSameErrorCode(newError(err0409GetSerializerToReadUnknownCustomTypeError), err))
 	})
+
+	t.Run("test unregistered custom type writer failure", func(t *testing.T) {
+		type UnregisteredType struct {
+			Value string
+		}
+
+		testValue := &UnregisteredType{Value: "test"}
+
+		var u, _ = uuid.Parse("41d2e28a-20a4-4ab0-b379-d810dede3786")
+		testRequest := request{
+			requestID: u,
+			op:        "eval",
+			processor: "",
+			args:      map[string]interface{}{"gremlin": "g.V().count()", "unregistered": testValue},
+		}
+
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		serialized, err := serializer.SerializeMessage(&testRequest)
+
+		assert.Nil(t, serialized)
+		assert.NotNil(t, err)
+		assert.True(t, isSameErrorCode(newError(err0407GetSerializerToWriteUnknownTypeError), err))
+	})
+}
+
+// TestCustomType is a test custom type for writer tests
+type TestCustomType struct {
+	ID    int64
+	Value string
+}
+
+// testCustomTypeWriter is a writer for the test custom type
+var testCustomTypeWriter = func(value interface{}, buffer *bytes.Buffer, _ *graphBinaryTypeSerializer) error {
+	customValue, ok := value.(*TestCustomType)
+	if !ok {
+		return errors.New("expected *TestCustomType")
+	}
+
+	// Write ID as int64
+	if err := binary.Write(buffer, binary.BigEndian, customValue.ID); err != nil {
+		return err
+	}
+
+	// Write Value as string (length-prefixed)
+	valueBytes := []byte(customValue.Value)
+	if err := binary.Write(buffer, binary.BigEndian, int32(len(valueBytes))); err != nil {
+		return err
+	}
+	if _, err := buffer.Write(valueBytes); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // exampleJanusgraphRelationIdentifierReader this implementation is not complete and is used only for the purposes of testing custom readers
