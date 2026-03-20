@@ -19,22 +19,28 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * A {@code ResultSet} is returned from the submission of a Gremlin script to the server and represents the
  * results provided by the server.  The results from the server are streamed into the {@code ResultSet} and
- * therefore may not be available immediately.  As such, {@code ResultSet} provides access to a a number
+ * therefore may not be available immediately.  As such, {@code ResultSet} provides access to a number
  * of functions that help to work with the asynchronous nature of the data streaming back.  Data from results
  * is stored in an {@link Result} which can be used to retrieve the item once it is on the client side.
  * <p/>
@@ -48,20 +54,18 @@ import java.util.stream.StreamSupport;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ResultSet implements Iterable<Result> {
-    private final ResultQueue resultQueue;
+    private final LinkedBlockingQueue<Result> resultQueue = new LinkedBlockingQueue<>();
+    private final Queue<Pair<CompletableFuture<List<Result>>, Integer>> waiting = new ConcurrentLinkedQueue<>();
+    private final AtomicReference<Throwable> error = new AtomicReference<>();
+    private final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+
     private final ExecutorService executor;
     private final RequestMessage originalRequestMessage;
     private final Host host;
 
-    private final CompletableFuture<Void> readCompleted;
-
-    public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final CompletableFuture<Void> readCompleted, final RequestMessage originalRequestMessage,
-                     final Host host) {
+    public ResultSet(final ExecutorService executor, final RequestMessage originalRequestMessage, final Host host) {
         this.executor = executor;
         this.host = host;
-        this.resultQueue = resultQueue;
-        this.readCompleted = readCompleted;
         this.originalRequestMessage = originalRequestMessage;
     }
 
@@ -94,6 +98,7 @@ public final class ResultSet implements Iterable<Result> {
      * Gets the number of items available on the client.
      */
     public int getAvailableItemCount() {
+        if (error.get() != null) throw new RuntimeException(error.get());
         return resultQueue.size();
     }
 
@@ -114,7 +119,10 @@ public final class ResultSet implements Iterable<Result> {
      * completed and there are less than that number specified available.
      */
     public CompletableFuture<List<Result>> some(final int items) {
-        return resultQueue.await(items);
+        final CompletableFuture<List<Result>> result = new CompletableFuture<>();
+        waiting.add(Pair.with(result, items));
+        tryDrainNextWaiting(false);
+        return result;
     }
 
     /**
@@ -125,6 +133,7 @@ public final class ResultSet implements Iterable<Result> {
      */
     public CompletableFuture<List<Result>> all() {
         return readCompleted.thenApplyAsync(unusedInput -> {
+            if (error.get() != null) throw new RuntimeException(error.get());
             final List<Result> list = new ArrayList<>();
             resultQueue.drainTo(list);
             return list;
@@ -173,5 +182,96 @@ public final class ResultSet implements Iterable<Result> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    // ==================== Methods called by Handlers ====================
+
+    /**
+     * Adds a {@link Result} to the queue which will be later read by consumers.
+     *
+     * @param result a return value from the traversal or script submitted for execution
+     */
+    public void add(final Result result) {
+        this.resultQueue.offer(result);
+        tryDrainNextWaiting(false);
+    }
+
+    /**
+     * Marks the result stream as complete.
+     */
+    public void markComplete() {
+        this.readCompleted.complete(null);
+        this.drainAllWaiting();
+    }
+
+    /**
+     * Marks the result stream as failed with an error.
+     *
+     * @param throwable the error that occurred
+     */
+    public void markError(final Throwable throwable) {
+        error.set(throwable);
+        this.readCompleted.completeExceptionally(throwable);
+        this.drainAllWaiting();
+    }
+
+    /**
+     * Returns the future that completes when reading is done. Used internally
+     * for connection lifecycle management.
+     */
+    CompletableFuture<Void> getReadCompleted() {
+        return readCompleted;
+    }
+
+    // ==================== Internal queue management ====================
+
+    /**
+     * Checks if the queue is empty.
+     */
+    boolean isEmpty() {
+        if (error.get() != null) throw new RuntimeException(error.get());
+        return resultQueue.isEmpty();
+    }
+
+    /**
+     * Drains results to the provided collection.
+     */
+    void drainTo(final Collection<Result> collection) {
+        if (error.get() != null) throw new RuntimeException(error.get());
+        resultQueue.drainTo(collection);
+    }
+
+    /**
+     * Completes the next waiting future if there is one and enough results are available.
+     */
+    private synchronized void tryDrainNextWaiting(final boolean force) {
+        // need to peek because the number of available items needs to be >= the expected size for that future. if not
+        // it needs to keep waiting
+        final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
+        if (nextWaiting != null && (force || (resultQueue.size() >= nextWaiting.getValue1() || readCompleted.isDone()))) {
+            final int items = nextWaiting.getValue1();
+            final CompletableFuture<List<Result>> future = nextWaiting.getValue0();
+            final List<Result> results = new ArrayList<>(items);
+            resultQueue.drainTo(results, items);
+
+            // it's important to check for error here because a future may have already been queued in "waiting" prior
+            // to the first response back from the server. if that happens, any "waiting" futures should be completed
+            // exceptionally otherwise it will look like success.
+            if (null == error.get())
+                future.complete(results);
+            else
+                future.completeExceptionally(error.get());
+
+            waiting.remove(nextWaiting);
+        }
+    }
+
+    /**
+     * Completes all remaining futures.
+     */
+    private void drainAllWaiting() {
+        while (!waiting.isEmpty()) {
+            tryDrainNextWaiting(true);
+        }
     }
 }

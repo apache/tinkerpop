@@ -92,7 +92,7 @@ public interface Channelizer extends ChannelHandler {
         protected Connection connection;
         protected Cluster cluster;
         protected SslHandler sslHandler;
-        private AtomicReference<ResultQueue> pending;
+        private AtomicReference<ResultSet> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
         protected static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";

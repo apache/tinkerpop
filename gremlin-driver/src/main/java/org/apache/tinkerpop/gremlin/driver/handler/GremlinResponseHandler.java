@@ -25,7 +25,7 @@ import io.netty.util.AttributeKey;
 import javax.net.ssl.SSLException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.driver.ResultQueue;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.process.remote.traversal.DefaultRemoteTraverser;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
@@ -42,17 +42,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
 
 /**
- * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
- * as the {@link ResponseMessage} objects are deserialized.
+ * Writes responses to the {@link ResultSet} of a request as the {@link ResponseMessage} objects are deserialized.
  */
 public class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
     public static final AttributeKey<Throwable> INBOUND_SSL_EXCEPTION = AttributeKey.valueOf("inboundSslException");
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
     private static final AttributeKey<ResponseException> CAUGHT_EXCEPTION = AttributeKey.valueOf("caughtException");
-    private final AtomicReference<ResultQueue> pending;
+    private final AtomicReference<ResultSet> pendingResultSet;
 
-    public GremlinResponseHandler(final AtomicReference<ResultQueue> pending) {
-        this.pending = pending;
+    public GremlinResponseHandler(final AtomicReference<ResultSet> pending) {
+        this.pendingResultSet = pending;
     }
 
     @Override
@@ -61,7 +60,7 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // should fire off a close message which will properly release the driver.
         super.channelInactive(ctx);
 
-        final ResultQueue current = pending.getAndSet(null);
+        final ResultSet current = pendingResultSet.getAndSet(null);
         if (current != null) {
             current.markError(new IllegalStateException("Connection to server is no longer active"));
         }
@@ -70,28 +69,28 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     @Override
     protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) {
         final HttpResponseStatus statusCode = response.getStatus() == null ? null : response.getStatus().getCode();
-        final ResultQueue queue = pending.get();
+        final ResultSet resultSet = pendingResultSet.get();
 
         if ((null == statusCode) || (statusCode == HttpResponseStatus.OK)) {
             final List<Object> data = response.getResult().getData();
             final boolean bulked = channelHandlerContext.channel().attr(HttpGremlinResponseStreamDecoder.IS_BULKED).get();
-            // unrolls the collection into individual results to be handled by the queue.
+            // unrolls the collection into individual results to be handled by the ResultSet.
             if (bulked) {
                 for (Iterator<Object> iter = data.iterator(); iter.hasNext(); ) {
                     final Object obj = iter.next();
                     final long bulk = (long) iter.next();
                     DefaultRemoteTraverser<Object> item = new DefaultRemoteTraverser<>(obj, bulk);
-                    queue.add(new Result(item));
+                    resultSet.add(new Result(item));
                 }
             } else {
-                data.forEach(item -> queue.add(new Result(item)));
+                data.forEach(item -> resultSet.add(new Result(item)));
             }
 
         } else {
             // this is a "success" but represents no results otherwise it is an error
             if (statusCode != HttpResponseStatus.NO_CONTENT) {
                 // Save the error because there could be a subsequent HttpContent coming (probably just trailers). All
-                // content should be read first before marking the queue or else this channel might get reused too early.
+                // content should be read first before marking the ResultSet or else this channel might get reused too early.
                 channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).set(
                         new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage(),
                                 response.getStatus().getException())
@@ -101,12 +100,12 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         // Stream is done when the last content signaling response message is read.
         if (LAST_CONTENT_READ_RESPONSE == response) {
-            final ResultQueue resultQueue = pending.getAndSet(null);
-            if (resultQueue != null) {
+            final ResultSet rs = pendingResultSet.getAndSet(null);
+            if (rs != null) {
                 if (null == channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).get()) {
-                    resultQueue.markComplete();
+                    rs.markComplete();
                 } else {
-                    resultQueue.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
+                    rs.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
                 }
             }
         }
@@ -119,8 +118,8 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
         // there are that many failures someone would take notice and hopefully stop the client.
         logger.error("Could not process the response", cause);
 
-        final ResultQueue pendingQueue = pending.getAndSet(null);
-        if (pendingQueue != null) pendingQueue.markError(cause);
+        final ResultSet resultSet = this.pendingResultSet.getAndSet(null);
+        if (resultSet != null) resultSet.markError(cause);
 
         if (ExceptionHelper.getRootCause(cause) instanceof SSLException) {
             // inbound ssl error can happen with tls 1.3 because client certification auth can fail after the handshake completes

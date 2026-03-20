@@ -32,7 +32,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.URI;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +55,7 @@ final class Connection {
 
     private final Channel channel;
     private final URI uri;
-    private final AtomicReference<ResultQueue> pending = new AtomicReference<>();
+    private final AtomicReference<ResultSet> pending = new AtomicReference<>();
     private final Cluster cluster;
     private final Client client;
     private final ConnectionPool pool;
@@ -155,7 +154,7 @@ final class Connection {
         return cluster;
     }
 
-    AtomicReference<ResultQueue> getPending() {
+    AtomicReference<ResultSet> getPending() {
         return pending;
     }
 
@@ -184,9 +183,9 @@ final class Connection {
         return future;
     }
 
-    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultQueueSetup) {
-        // once there is a completed write, then create a traverser for the result set and complete
-        // the promise so that the client knows that that it can start checking for results.
+    public ChannelPromise write(final RequestMessage requestMessage, final CompletableFuture<ResultSet> resultSetFuture) {
+        // once there is a completed write, then create a ResultSet and complete
+        // the promise so that the client knows that it can start checking for results.
         final Connection thisConnection = this;
 
         final ChannelPromise requestPromise = channel.newPromise()
@@ -198,12 +197,11 @@ final class Connection {
 
                         handleConnectionCleanupOnError(thisConnection);
 
-                        cluster.executor().submit(() -> resultQueueSetup.completeExceptionally(f.cause()));
+                        cluster.executor().submit(() -> resultSetFuture.completeExceptionally(f.cause()));
                     } else {
-                        final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
-                        final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
+                        final ResultSet resultSet = new ResultSet(cluster.executor(), requestMessage, pool.host);
 
-                        readCompleted.whenCompleteAsync((v, t) -> {
+                        resultSet.getReadCompleted().whenCompleteAsync((v, t) -> {
                             if (t != null) {
                                 // the callback for when the read failed. a failed read means the request went to the server
                                 // and came back with a server-side error of some sort.  it means the server is responsive
@@ -212,7 +210,7 @@ final class Connection {
                                 logger.debug("Error while processing request on the server {}.", this, t);
                                 handleConnectionCleanupOnError(thisConnection);
                             } else {
-                                // the callback for when the read was successful, meaning that ResultQueue.markComplete()
+                                // the callback for when the read was successful, meaning that ResultSet.markComplete()
                                 // was called
                                 thisConnection.returnToPool();
                             }
@@ -223,15 +221,12 @@ final class Connection {
                             tryShutdown();
                         }, cluster.executor());
 
-                        final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
-                        // pending.put(requestMessage.getRequestId(), handler);
-                        pending.set(handler);
+                        pending.set(resultSet);
 
-                        // resultQueueSetup should only be completed by a worker since the application code might have sync
+                        // resultSetFuture should only be completed by a worker since the application code might have sync
                         // completion stages attached to it which and we do not want the event loop threads to process those
                         // stages.
-                        cluster.executor().submit(() -> resultQueueSetup.complete(
-                                new ResultSet(handler, cluster.executor(), readCompleted, requestMessage, pool.host)));
+                        cluster.executor().submit(() -> resultSetFuture.complete(resultSet));
                     }
                 });
         channel.writeAndFlush(requestMessage, requestPromise);

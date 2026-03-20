@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -39,20 +37,13 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResultSetTest extends AbstractResultQueueTest {
-
-    private ResultSet resultSet;
-
-    @Before
-    public void setupThis() {
-        resultSet = new ResultSet(resultQueue, pool, readCompleted, RequestMessage.build("traversal").create(), null);
-    }
+public class ResultSetTest extends AbstractResultSetTest {
 
     @Test
     public void shouldHaveAllItemsAvailableAsynchronouslyOnReadComplete() throws InterruptedException {
         final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
         assertThat(all.isDone(), is(false));
-        readCompleted.complete(null);
+        resultSet.markComplete();
         // flush all tasks in pool
         pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(all.isDone(), is(true));
@@ -62,7 +53,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
     public void shouldHaveAllItemsAvailableAsynchronouslyOnReadCompleteExceptionally() throws InterruptedException {
         final CompletableFuture<Void> all = resultSet.allItemsAvailableAsync();
         assertThat(all.isDone(), is(false));
-        readCompleted.completeExceptionally(new RuntimeException());
+        resultSet.markError(new RuntimeException());
         // flush all tasks in pool
         pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(all.isDone(), is(true));
@@ -72,7 +63,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
     @Test
     public void shouldHaveAllItemsAvailableOnReadComplete() throws InterruptedException {
         assertThat(resultSet.allItemsAvailable(), is(false));
-        readCompleted.complete(null);
+        resultSet.markComplete();
         // flush all tasks in pool
         pool.awaitTermination(2, TimeUnit.SECONDS);
         assertThat(resultSet.allItemsAvailable(), is(true));
@@ -85,7 +76,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
         final AtomicBoolean atLeastOnce = new AtomicBoolean(false);
         addToQueue(1000, 1, true, true);
-        while (!readCompleted.isDone()) {
+        while (!resultSet.allItemsAvailable()) {
             atLeastOnce.set(true);
             if (!atLeastOnce.get())
                 assertThat(all.isDone(), is(false));
@@ -104,7 +95,7 @@ public class ResultSetTest extends AbstractResultQueueTest {
 
         final AtomicBoolean atLeastOnce = new AtomicBoolean(false);
         addToQueue(1000, 1, true, true);
-        while (!readCompleted.isDone()) {
+        while (!resultSet.allItemsAvailable()) {
             atLeastOnce.set(true);
             if (!atLeastOnce.get())
                 assertThat(resultSet.allItemsAvailable(), is(false));
@@ -117,12 +108,12 @@ public class ResultSetTest extends AbstractResultQueueTest {
     @Test
     public void shouldAwaitEverythingAndFlushOnMarkCompleted() throws Exception {
         final CompletableFuture<List<Result>> future = resultSet.some(4);
-        resultQueue.add(new Result("test1"));
-        resultQueue.add(new Result("test2"));
-        resultQueue.add(new Result("test3"));
+        resultSet.add(new Result("test1"));
+        resultSet.add(new Result("test2"));
+        resultSet.add(new Result("test3"));
 
         assertThat(future.isDone(), is(false));
-        resultQueue.markComplete();
+        resultSet.markComplete();
         assertThat(future.isDone(), is(true));
 
         final List<Result> results = future.get();
@@ -138,12 +129,12 @@ public class ResultSetTest extends AbstractResultQueueTest {
     @Test
     public void shouldGetAllOnlyOnComplete() throws Exception {
         final CompletableFuture<List<Result>> future = resultSet.all();
-        resultQueue.add(new Result("test1"));
-        resultQueue.add(new Result("test2"));
-        resultQueue.add(new Result("test3"));
+        resultSet.add(new Result("test1"));
+        resultSet.add(new Result("test2"));
+        resultSet.add(new Result("test3"));
 
         assertThat(future.isDone(), is(false));
-        resultQueue.markComplete();
+        resultSet.markComplete();
 
         final List<Result> results = future.get();
         assertEquals("test1", results.get(0).getString());
