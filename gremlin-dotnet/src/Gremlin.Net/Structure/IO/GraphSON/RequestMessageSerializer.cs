@@ -33,10 +33,8 @@ namespace Gremlin.Net.Structure.IO.GraphSON
             RequestMessage msg = objectData;
             return new Dictionary<string, dynamic>
             {
-                {"requestId", msg.RequestId},
-                {"op", msg.Operation},
-                {"processor", msg.Processor},
-                {"args", writer.ToDict(msg.Arguments)}
+                {"gremlin", msg.Gremlin},
+                {"fields", writer.ToDict(msg.Fields)}
             };
         }
     }

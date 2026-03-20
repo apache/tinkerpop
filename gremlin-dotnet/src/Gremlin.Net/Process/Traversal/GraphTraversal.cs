@@ -1459,10 +1459,10 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, Edge> MergeE (IDictionary<object,object?>? m)
         {
-            if (m != null && m.TryGetValue(Direction.Out, out var outValue) && outValue is Vertex outV) {
+            if (m != null && m.ContainsKey(Direction.Out) && m[Direction.Out] is Vertex outV) {
                 m[Direction.Out] = outV.Id;
             }
-            if (m != null && m.TryGetValue(Direction.In, out var inValue) && inValue is Vertex inV) {
+            if (m != null && m.ContainsKey(Direction.In) && m[Direction.In] is Vertex inV) {
                 m[Direction.In] = inV.Id;
             }
             GremlinLang.AddStep("mergeE", m);
@@ -1809,7 +1809,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         public GraphTraversal<TStart, TEnd> Property(Cardinality cardinality, IDictionary<object, object> map)
         {
-            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (map == null) return Wrap<TStart, TEnd>(this);
 
             foreach (var entry in map)
             {

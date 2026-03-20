@@ -9,7 +9,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -24,8 +24,6 @@
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Structure.IO.GraphBinary;
-using Gremlin.Net.Structure.IO.GraphSON;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
 using static Gremlin.Net.Process.Traversal.__;
 
@@ -33,29 +31,17 @@ namespace Gremlin.Net.Benchmarks;
 
 public class CompressionBenchmarks
 {
-    public static async Task GraphSONWithoutCompression()
-    {
-        var client = new GremlinClient(new GremlinServer("localhost", 45940), new GraphSON3MessageSerializer(),
-            disableCompression: true);
-        await PerformBenchmarkWithClient(client);
-    }
-    
-    public static async Task GraphSONWithCompression()
-    {
-        var client = new GremlinClient(new GremlinServer("localhost", 45940), new GraphSON3MessageSerializer());
-        await PerformBenchmarkWithClient(client);
-    }
-    
     public static async Task GraphBinaryWithoutCompression()
     {
-        var client = new GremlinClient(new GremlinServer("localhost", 45940), new GraphBinaryMessageSerializer(),
-            disableCompression: true);
+        var client = new GremlinClient(new GremlinServer("localhost", 45940),
+            connectionSettings: new ConnectionSettings { EnableCompression = false });
         await PerformBenchmarkWithClient(client);
     }
-    
+
     public static async Task GraphBinaryWithCompression()
     {
-        var client = new GremlinClient(new GremlinServer("localhost", 45940), new GraphBinaryMessageSerializer());
+        var client = new GremlinClient(new GremlinServer("localhost", 45940),
+            connectionSettings: new ConnectionSettings { EnableCompression = true });
         await PerformBenchmarkWithClient(client);
     }
 

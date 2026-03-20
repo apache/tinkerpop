@@ -30,12 +30,11 @@ namespace Gremlin.Net.UnitTest.Driver
     public class RequestMessageBuilderTests
     {
         [Fact]
-        public void ShouldUseUniqueRequestIds()
+        public void ShouldSetDefaultLanguageField()
         {
-            var firstMsg = RequestMessage.Build(Tokens.OpsEval).Create();
-            var secondMsg = RequestMessage.Build(Tokens.OpsEval).Create();
+            var msg = RequestMessage.Build("g.V()").Create();
 
-            Assert.NotEqual(firstMsg.RequestId, secondMsg.RequestId);
+            Assert.Equal("gremlin-lang", msg.Fields[Tokens.ArgsLanguage]);
         }
     }
 }
