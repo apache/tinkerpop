@@ -51,6 +51,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
+   * @param {RequestInterceptor|RequestInterceptor[]} [options.interceptors] One or more request interceptors to apply before each HTTP request.
    * @constructor
    */
   constructor(url: string, options: ConnectionOptions = {}) {

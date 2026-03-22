@@ -47,6 +47,15 @@ const graphBinaryMimeType = 'application/vnd.graphbinary-v4.0';
 
 type MimeType = typeof defaultMimeType | typeof graphBinaryMimeType;
 
+export type HttpRequest = {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body: Uint8Array;
+};
+
+export type RequestInterceptor = (request: HttpRequest) => HttpRequest | Promise<HttpRequest>;
+
 export type ConnectionOptions = {
   ca?: string[];
   cert?: string | string[] | Buffer;
@@ -59,6 +68,7 @@ export type ConnectionOptions = {
   headers?: Record<string, string | string[]>;
   enableUserAgentOnConnect?: boolean;
   agent?: Agent;
+  interceptors?: RequestInterceptor | RequestInterceptor[];
 };
 
 /**
@@ -74,6 +84,7 @@ export default class Connection extends EventEmitter {
   traversalSource: string;
 
   private readonly _enableUserAgentOnConnect: boolean;
+  private readonly _interceptors: RequestInterceptor[];
 
   /**
    * Creates a new instance of {@link Connection}.
@@ -90,6 +101,7 @@ export default class Connection extends EventEmitter {
    * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
    * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
    * @param {http.Agent} [options.agent] The http.Agent implementation to use.
+   * @param {RequestInterceptor|RequestInterceptor[]} [options.interceptors] One or more request interceptors to apply before each HTTP request.
    * @constructor
    */
   constructor(
@@ -107,6 +119,17 @@ export default class Connection extends EventEmitter {
     this._writer = options.writer || graphBinaryWriter;
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
+
+    const interceptors = options.interceptors;
+    if (typeof interceptors === 'function') {
+      this._interceptors = [interceptors];
+    } else if (Array.isArray(interceptors)) {
+      this._interceptors = interceptors;
+    } else if (interceptors === undefined || interceptors === null) {
+      this._interceptors = [];
+    } else {
+      throw new TypeError('interceptors must be a function, array, or undefined');
+    }
   }
 
   /**
@@ -163,15 +186,22 @@ export default class Connection extends EventEmitter {
         headers[key] = Array.isArray(value) ? value.join(', ') : value;
       });
     }
-    let request = {
+    let httpRequest: HttpRequest = {
+      url: this.url,
       method: 'POST',
       headers,
       body: new Uint8Array(request_buf),
+    };
+
+    for (const interceptor of this._interceptors) {
+      httpRequest = await interceptor(httpRequest);
     }
 
-    // TODO:: add request interceptors
-
-    return fetch(this.url, request);
+    return fetch(httpRequest.url, {
+      method: httpRequest.method,
+      headers: httpRequest.headers,
+      body: httpRequest.body as BodyInit,
+    });
   }
 
   async #handleResponse(response: Response) {

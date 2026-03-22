@@ -32,7 +32,7 @@ import DriverRemoteConnection from './driver/driver-remote-connection.js';
 import ResponseError from './driver/response-error.js';
 import Client from './driver/client.js';
 import ResultSet from './driver/result-set.js';
-import Authenticator from './driver/auth/authenticator.js';
+import { basic, sigv4 } from './driver/auth.js';
 import AnonymousTraversalSource from './process/anonymous-traversal.js';
 
 export const driver = {
@@ -44,7 +44,8 @@ export const driver = {
   Client,
   ResultSet,
   auth: {
-    Authenticator,
+    basic,
+    sigv4,
   },
 };
 

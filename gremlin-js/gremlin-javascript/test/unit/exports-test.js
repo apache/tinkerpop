@@ -70,6 +70,8 @@ describe('API', function () {
     validateConstructor(glvModule.driver, 'DriverRemoteConnection');
     validateConstructor(glvModule.driver, 'Client');
     validateConstructor(glvModule.driver, 'ResultSet');
+    assert.strictEqual(typeof glvModule.driver.auth.basic, 'function');
+    assert.strictEqual(typeof glvModule.driver.auth.sigv4, 'function');
   });
 });
 

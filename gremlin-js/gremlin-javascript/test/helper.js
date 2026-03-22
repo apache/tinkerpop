@@ -56,6 +56,24 @@ export function getClient(traversalSource) {
   return new Client(serverUrl, { traversalSource, mimeType: process.env.CLIENT_MIMETYPE });
 }
 
+export function getAuthenticatedClient(traversalSource, interceptors) {
+  return new Client(serverAuthUrl, {
+    traversalSource,
+    mimeType: process.env.CLIENT_MIMETYPE,
+    rejectUnauthorized: false,
+    interceptors,
+  });
+}
+
+export function getAuthenticatedConnection(traversalSource, interceptors) {
+  return new DriverRemoteConnection(serverAuthUrl, {
+    traversalSource,
+    mimeType: process.env.CLIENT_MIMETYPE,
+    rejectUnauthorized: false,
+    interceptors,
+  });
+}
+
 function getMimeTypeFromSocketServerSettings(socketServerSettings) {
   return 'application/vnd.graphbinary-v4.0';
 }
