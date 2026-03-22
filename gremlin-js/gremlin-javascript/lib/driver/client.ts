@@ -47,7 +47,6 @@ export default class Client {
    * @param {Object} [options] The connection options.
    * @param {Array} [options.ca] Trusted certificates.
    * @param {String|Array|Buffer} [options.cert] The certificate key.
-   * @param {String} [options.mimeType] The mime type to use.
    * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
    * @param {GraphBinaryReader} [options.reader] The reader to use.
    * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.

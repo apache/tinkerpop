@@ -85,6 +85,11 @@ may affect user applications that are upgrading from TinkerPop 3.x. Please see t
 [SLF4j documentation](https://www.slf4j.org/faq.html#changesInVersion200) that explains the differences and how they
 might apply.
 
+==== Configuration changes
+
+* JavaScript GLV
+** `mimeType` setting has been removed. Use `reader` and `writer` options directly to control serialization format.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

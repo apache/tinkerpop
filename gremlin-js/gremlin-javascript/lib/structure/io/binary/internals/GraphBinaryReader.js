@@ -31,6 +31,10 @@ export default class GraphBinaryReader {
     this.ioc = ioc;
   }
 
+  get mimeType() {
+    return 'application/vnd.graphbinary-v4.0';
+  }
+
   readResponse(buffer) {
     if (buffer === undefined || buffer === null) {
       throw new Error('Buffer is missing.');

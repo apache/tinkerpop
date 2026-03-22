@@ -46,7 +46,6 @@ async function withRemote() {
 async function withConfigs() {
     // Connecting and customizing configurations
     const dc = new DriverRemoteConnection(serverUrl, {
-        mimeType: 'application/vnd.graphbinary-v4.0',
         rejectUnauthorized: false,
         traversalSource: 'g',
     });

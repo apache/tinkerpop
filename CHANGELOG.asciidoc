@@ -48,6 +48,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
+* Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.
 * Bumped ANTLR to 4.13.2
 * Bumped SLF4j to 2.0.16.
 * Bumped GMavenPlus to 4.1.1.

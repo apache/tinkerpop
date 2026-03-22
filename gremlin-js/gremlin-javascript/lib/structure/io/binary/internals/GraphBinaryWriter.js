@@ -31,6 +31,10 @@ export default class GraphBinaryWriter {
     this.ioc = ioc;
   }
 
+  get mimeType() {
+    return 'application/vnd.graphbinary-v4.0';
+  }
+
   writeRequest(requestMessage) {
     const fields = new Map();
 
@@ -73,7 +77,7 @@ export default class GraphBinaryWriter {
         this.ioc.mapSerializer.serialize(fields, false),
         this.ioc.stringSerializer.serialize(gremlin, false),
       ];
-      return Buffer.concat(bufs);
+      return new Uint8Array(Buffer.concat(bufs));
     }
 
     // Legacy path: plain object with { gremlin, fields }
@@ -82,6 +86,6 @@ export default class GraphBinaryWriter {
       this.ioc.mapSerializer.serialize(requestMessage.fields || new Map(), false),
       this.ioc.stringSerializer.serialize(requestMessage.gremlin, false),
     ];
-    return Buffer.concat(bufs);
+    return new Uint8Array(Buffer.concat(bufs));
   }
 }

@@ -28,7 +28,6 @@ describe('auth', function () {
         url: 'https://localhost:8182/gremlin',
         method: 'POST',
         headers: {
-          'content-type': 'application/vnd.graphbinary-v4.0',
           'accept': 'application/vnd.graphbinary-v4.0',
         },
         body: new Uint8Array(0),
@@ -70,7 +69,6 @@ describe('auth', function () {
         url: 'https://localhost:8182/gremlin',
         method: 'POST',
         headers: {
-          'content-type': 'application/vnd.graphbinary-v4.0',
           'accept': 'application/vnd.graphbinary-v4.0',
         },
         body: new Uint8Array(Buffer.from('{"gremlin":"g.V()"}')),
