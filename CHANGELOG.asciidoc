@@ -37,6 +37,10 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `RequestInterceptor` to `gremlin-go` with `auth` reference implementations to replace `authInfo`.
 * Refactored GraphBinary serializers to use `io.Writer` and `io.Reader` instead of `*bytes.Buffer` for streaming capacities.
 * Refactored `httpProtocol` and `httpTransport` in `gremlin-go` into single `connection.go` that handles HTTP request and response.
+* Replace `Bytecode` with `GremlinLang` in `gremlin-dotnet`.
+* Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
+* Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
+* Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
 * Bumped ANTLR to 4.13.2
 * Bumped SLF4j to 2.0.16.
 * Bumped GMavenPlus to 4.1.1.
