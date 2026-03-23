@@ -18,11 +18,27 @@
 @StepClassFilter @StepCoin
 Feature: Step - coin()
 
-  Scenario: g_V_coinX1X
+  Scenario: g_V_coinX1_0X
     Given the modern graph
     And the traversal of
       """
       g.V().coin(1.0)
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+      | v[vadas] |
+      | v[lop] |
+      | v[josh] |
+      | v[ripple] |
+      | v[peter]  |
+
+  Scenario: g_V_coinX1X
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().coin(1)
       """
     When iterated to list
     Then the result should be unordered
