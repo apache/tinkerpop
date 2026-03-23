@@ -57,6 +57,9 @@ namespace Gremlin.Net.Structure.IO.GraphSON
         }
 
         /// <inheritdoc />
+        public string MimeType => _mimeType;
+
+        /// <inheritdoc />
         public virtual Task<byte[]> SerializeMessageAsync(RequestMessage requestMessage,
             CancellationToken cancellationToken = default)
         {

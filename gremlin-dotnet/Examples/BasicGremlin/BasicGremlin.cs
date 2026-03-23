@@ -20,6 +20,7 @@ under the License.
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using static Gremlin.Net.Process.Traversal.AnonymousTraversalSource;
+using static Gremlin.Net.Process.Traversal.__;
 
 public class BasicGremlinExample
 {
@@ -40,8 +41,8 @@ public class BasicGremlinExample
 
         // Be sure to use a terminating step like Next() or Iterate() so that the traversal "executes"
         // Iterate() does not return any data and is used to just generate side-effects (i.e. write data to the database)
-        g.V(v1).AddE("knows").To(v2).Property("weight", 0.75).Iterate();
-        g.V(v1).AddE("knows").To(v3).Property("weight", 0.75).Iterate();
+        g.V(v1).AddE("knows").To(Constant(v2)).Property("weight", 0.75).Iterate();
+        g.V(v1).AddE("knows").To(Constant(v3)).Property("weight", 0.75).Iterate();
 
         // Retrieve the data from the "marko" vertex
         var marko = await g.V().Has(VertexLabel, "name", "marko").Values<string>("name").Promise(t => t.Next());

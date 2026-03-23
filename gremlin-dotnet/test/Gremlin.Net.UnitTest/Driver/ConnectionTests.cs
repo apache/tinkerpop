@@ -84,7 +84,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -99,7 +99,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -114,7 +114,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -128,7 +128,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -142,7 +142,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = true };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -157,7 +157,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = false };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -172,7 +172,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableUserAgentOnConnect = true };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -186,7 +186,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableUserAgentOnConnect = false };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -200,7 +200,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { BulkResults = true };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -215,7 +215,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { BulkResults = false };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             await connection.SubmitAsync<object>(CreateTestRequest());
 
@@ -241,7 +241,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, handler) = CreateMockHttpClient(compressedBytes, "deflate");
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings { EnableCompression = true };
-            using var connection = new Connection(TestUri, serializer, settings, httpClient);
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             // Should not throw — decompression should work
             var result = await connection.SubmitAsync<object>(CreateTestRequest());
@@ -255,7 +255,7 @@ namespace Gremlin.Net.UnitTest.Driver
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
-            var connection = new Connection(TestUri, serializer, settings, httpClient);
+            var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
             connection.Dispose();
             // Double dispose should not throw
@@ -267,15 +267,679 @@ namespace Gremlin.Net.UnitTest.Driver
             return RequestMessage.Build("g.V()").AddG("g").Create();
         }
 
-        private static IMessageSerializer CreateMockSerializer()
+        private static IMessageSerializer CreateMockSerializer(
+            string mimeType = SerializationTokens.GraphBinary4MimeType)
         {
             var serializer = Substitute.For<IMessageSerializer>();
+            serializer.MimeType.Returns(mimeType);
             serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(new byte[] { 0x84 }));
             serializer.DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(
                     new ResponseMessage<List<object>>(false, new List<object>(), 200, null, null)));
             return serializer;
+        }
+
+        [Fact]
+        public async Task ShouldCallInterceptorsInOrder()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var callOrder = new List<int>();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx => { callOrder.Add(1); return Task.CompletedTask; },
+                ctx => { callOrder.Add(2); return Task.CompletedTask; },
+                ctx => { callOrder.Add(3); return Task.CompletedTask; },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.Equal(new List<int> { 1, 2, 3 }, callOrder);
+        }
+
+        [Fact]
+        public async Task ShouldPropagateInterceptorException()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var expectedException = new InvalidOperationException("interceptor failed");
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                _ => throw expectedException,
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => connection.SubmitAsync<object>(CreateTestRequest()));
+
+            Assert.Same(expectedException, ex);
+            // HTTP request should not have been sent
+            Assert.Null(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldAllowInterceptorToModifyHeaders()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Headers["Authorization"] = "Basic dGVzdDp0ZXN0";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.True(handler.CapturedRequest!.Headers.Contains("Authorization"));
+            Assert.Equal("Basic dGVzdDp0ZXN0",
+                handler.CapturedRequest.Headers.GetValues("Authorization").First());
+        }
+
+        [Fact]
+        public async Task ShouldSeeEarlierInterceptorModifications()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            string? observedHeader = null;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Headers["X-Custom"] = "first";
+                    return Task.CompletedTask;
+                },
+                ctx =>
+                {
+                    observedHeader = ctx.Headers.ContainsKey("X-Custom") ? ctx.Headers["X-Custom"] : null;
+                    ctx.Headers["X-Custom"] = "second";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient, interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.Equal("first", observedHeader);
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("second",
+                handler.CapturedRequest!.Headers.GetValues("X-Custom").First());
+        }
+
+        [Fact]
+        public async Task ShouldSerializeBeforeInterceptorsWhenRequestSerializerProvided()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            object? observedBody = null;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    observedBody = ctx.Body;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.IsType<byte[]>(observedBody);
+        }
+
+        [Fact]
+        public async Task ShouldPassRequestMessageWhenRequestSerializerIsNull()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            object? observedBody = null;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    observedBody = ctx.Body;
+                    // Serialize the body so the request can proceed
+                    ctx.Body = new byte[] { 0x84 };
+                    ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.IsType<RequestMessage>(observedBody);
+        }
+
+        [Fact]
+        public async Task ShouldThrowWhenBodyIsNotByteArrayAfterInterceptors()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            // No interceptor serializes the body
+            var interceptors = new List<Func<HttpRequestContext, Task>>();
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => connection.SubmitAsync<object>(CreateTestRequest()));
+
+            Assert.Contains("byte[] or HttpContent", ex.Message);
+            Assert.Contains("RequestMessage", ex.Message);
+            // HTTP request should not have been sent
+            Assert.Null(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldSucceedWhenInterceptorSerializesBodyWithNullRequestSerializer()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                async ctx =>
+                {
+                    if (ctx.Body is RequestMessage msg)
+                    {
+                        ctx.Body = await serializer.SerializeMessageAsync(msg);
+                        ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
+                    }
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(result);
+            Assert.NotNull(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldNotSetContentTypeWhenRequestSerializerIsNull()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            bool? hadContentType = null;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    hadContentType = ctx.Headers.ContainsKey("Content-Type");
+                    // Serialize so the request can proceed
+                    ctx.Body = new byte[] { 0x84 };
+                    ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.False(hadContentType, "Content-Type should not be set before interceptors when requestSerializer is null");
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("application/vnd.graphbinary-v4.0",
+                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
+        }
+
+        [Fact]
+        public async Task ShouldWorkWithEmptyInterceptorList()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var interceptors = new List<Func<HttpRequestContext, Task>>();
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(result);
+            Assert.NotNull(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldWorkWithNoInterceptorsParameter()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(result);
+            Assert.NotNull(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldAllowInterceptorToModifyUri()
+        {
+            var altUri = new Uri("http://other-host:9999/gremlin");
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Uri = altUri;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal(altUri, handler.CapturedRequest!.RequestUri);
+        }
+
+        [Fact]
+        public async Task ShouldAllowInterceptorToReplaceBody()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var replacementBody = new byte[] { 0x01, 0x02, 0x03 };
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Body = replacementBody;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            var sentBytes = await handler.CapturedRequest!.Content!.ReadAsByteArrayAsync();
+            Assert.Equal(replacementBody, sentBytes);
+        }
+
+        [Fact]
+        public async Task ShouldStopInterceptorChainOnException()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var secondCalled = false;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                _ => throw new InvalidOperationException("first failed"),
+                _ =>
+                {
+                    secondCalled = true;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => connection.SubmitAsync<object>(CreateTestRequest()));
+
+            Assert.False(secondCalled, "Second interceptor should not run when first throws");
+            Assert.Null(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldSupportAsyncInterceptors()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var interceptorCompleted = false;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                async ctx =>
+                {
+                    // Simulate async work (e.g., fetching a token)
+                    await Task.Delay(1);
+                    ctx.Headers["X-Async-Header"] = "async-value";
+                    interceptorCompleted = true;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.True(interceptorCompleted);
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("async-value",
+                handler.CapturedRequest!.Headers.GetValues("X-Async-Header").First());
+        }
+
+        [Fact]
+        public async Task ShouldAllowInterceptorToReadSerializedBody()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            byte[]? capturedBody = null;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    capturedBody = ctx.Body as byte[];
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(capturedBody);
+            // The mock serializer returns { 0x84 }
+            Assert.Equal(new byte[] { 0x84 }, capturedBody);
+        }
+
+        [Fact]
+        public async Task ShouldWorkWithSingleInterceptor()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var called = false;
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    called = true;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.True(called);
+            Assert.NotNull(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldAllowInterceptorToRemoveHeader()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings { EnableUserAgentOnConnect = true };
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Headers.Remove("User-Agent");
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.False(handler.CapturedRequest!.Headers.Contains("User-Agent"),
+                "Interceptor should be able to remove headers set by Connection");
+        }
+
+        [Fact]
+        public async Task ShouldThrowWhenBodyIsNullAfterInterceptors()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Body = null!;
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => connection.SubmitAsync<object>(CreateTestRequest()));
+
+            Assert.Contains("null", ex.Message);
+            Assert.Null(handler.CapturedRequest);
+        }
+
+        [Fact]
+        public async Task ShouldPreserveMultipleInterceptorHeaderModifications()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Headers["X-First"] = "one";
+                    return Task.CompletedTask;
+                },
+                ctx =>
+                {
+                    ctx.Headers["X-Second"] = "two";
+                    return Task.CompletedTask;
+                },
+                ctx =>
+                {
+                    ctx.Headers["X-Third"] = "three";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("one", handler.CapturedRequest!.Headers.GetValues("X-First").First());
+            Assert.Equal("two", handler.CapturedRequest.Headers.GetValues("X-Second").First());
+            Assert.Equal("three", handler.CapturedRequest.Headers.GetValues("X-Third").First());
+        }
+
+        [Fact]
+        public async Task ShouldAllowCustomContentTypeWhenRequestSerializerIsNull()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Body = new byte[] { 0x01 };
+                    ctx.Headers["Content-Type"] = "application/json";
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("application/json",
+                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
+        }
+
+        [Fact]
+        public async Task ShouldUseResponseSerializerWhenRequestSerializerIsNull()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var requestSerializer = CreateMockSerializer();
+            var responseSerializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                async ctx =>
+                {
+                    if (ctx.Body is RequestMessage msg)
+                    {
+                        ctx.Body = await requestSerializer.SerializeMessageAsync(msg);
+                        ctx.Headers["Content-Type"] = "application/vnd.graphbinary-v4.0";
+                    }
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, responseSerializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            // Verify the response serializer was called for deserialization
+            await responseSerializer.Received(1)
+                .DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
+            // Verify the request serializer was NOT called by Connection (interceptor called it directly)
+            await requestSerializer.DidNotReceive()
+                .DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task ShouldAcceptHttpContentBodyFromInterceptor()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer();
+            var settings = new ConnectionSettings();
+            var contentBytes = new byte[] { 0x01, 0x02, 0x03 };
+
+            var interceptors = new List<Func<HttpRequestContext, Task>>
+            {
+                ctx =>
+                {
+                    ctx.Body = new ByteArrayContent(contentBytes);
+                    return Task.CompletedTask;
+                },
+            };
+
+            using var connection = new Connection(TestUri, null, serializer, settings, httpClient,
+                interceptors);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            var sentBytes = await handler.CapturedRequest!.Content!.ReadAsByteArrayAsync();
+            Assert.Equal(contentBytes, sentBytes);
+        }
+
+        [Fact]
+        public async Task ShouldUseResponseSerializerMimeTypeForAcceptHeader()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var requestSerializer = CreateMockSerializer("application/custom-request");
+            var responseSerializer = CreateMockSerializer("application/custom-response");
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Contains(handler.CapturedRequest!.Headers.Accept,
+                h => h.MediaType == "application/custom-response");
+        }
+
+        [Fact]
+        public async Task ShouldUseRequestSerializerMimeTypeForContentTypeHeader()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var requestSerializer = CreateMockSerializer("application/custom-request");
+            var responseSerializer = CreateMockSerializer("application/custom-response");
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            Assert.Equal("application/custom-request",
+                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
+        }
+
+        [Fact]
+        public async Task ShouldUseDifferentMimeTypesForRequestAndResponseSerializers()
+        {
+            var (httpClient, handler) = CreateMockHttpClient();
+            var requestSerializer = CreateMockSerializer("application/vnd.custom-request-v1.0");
+            var responseSerializer = CreateMockSerializer("application/vnd.custom-response-v2.0");
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, requestSerializer, responseSerializer, settings, httpClient);
+
+            await connection.SubmitAsync<object>(CreateTestRequest());
+
+            Assert.NotNull(handler.CapturedRequest);
+            // Content-Type comes from request serializer
+            Assert.Equal("application/vnd.custom-request-v1.0",
+                handler.CapturedRequest!.Content!.Headers.ContentType!.MediaType);
+            // Accept comes from response serializer
+            Assert.Contains(handler.CapturedRequest.Headers.Accept,
+                h => h.MediaType == "application/vnd.custom-response-v2.0");
         }
 
         /// <summary>

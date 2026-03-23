@@ -57,10 +57,16 @@ namespace Gremlin.Net.Driver.Remote
         /// <param name="port">The port to connect to.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
+        /// <param name="interceptors">
+        ///     An optional list of request interceptors forwarded to the underlying
+        ///     <see cref="GremlinClient" />.
+        /// </param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
-            ILoggerFactory? loggerFactory = null) : this(
-            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory), traversalSource,
+            ILoggerFactory? loggerFactory = null,
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null) : this(
+            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors),
+            traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
         }

@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -44,29 +45,68 @@ namespace Gremlin.Net.Driver
         ///     Initializes a new instance of the <see cref="GremlinClient" /> class for the specified Gremlin Server.
         /// </summary>
         /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
-        /// <param name="messageSerializer">
-        ///     A <see cref="IMessageSerializer" /> instance to serialize messages sent to and received
-        ///     from the server.
+        /// <param name="requestSerializer">
+        ///     A <see cref="IMessageSerializer" /> instance to serialize outgoing request messages.
+        ///     When <c>null</c>, the request body is passed as a <see cref="RequestMessage"/> to
+        ///     interceptors, and an interceptor must serialize it to <c>byte[]</c> and set the
+        ///     <c>Content-Type</c> header. This follows the Python driver's
+        ///     <c>request_serializer=None</c> pattern.
+        /// </param>
+        /// <param name="responseSerializer">
+        ///     A <see cref="IMessageSerializer" /> instance to deserialize incoming response messages.
+        ///     Always required.
         /// </param>
         /// <param name="connectionSettings">The <see cref="ConnectionSettings" /> for the HTTP connection.</param>
         /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
-        // Interceptor slot reserved for future spec:
-        // IReadOnlyList<Func<HttpRequestMessage, Task>>? interceptors = null,
-        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
+        /// <param name="interceptors">
+        ///     An optional list of request interceptors. Each interceptor receives a mutable
+        ///     <see cref="HttpRequestContext" /> and can modify headers, body, URI, and method
+        ///     before the request is sent.
+        /// </param>
+        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? requestSerializer,
+            IMessageSerializer responseSerializer,
             ConnectionSettings? connectionSettings = null,
-            ILoggerFactory? loggerFactory = null)
+            ILoggerFactory? loggerFactory = null,
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
         {
-            messageSerializer ??= new GraphBinary4MessageSerializer();
             connectionSettings ??= new ConnectionSettings();
             LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
             _connection = new Connection(
                 gremlinServer.Uri,
-                messageSerializer,
-                connectionSettings);
+                requestSerializer,
+                responseSerializer,
+                connectionSettings,
+                interceptors);
 
             var logger = LoggerFactory.CreateLogger<GremlinClient>();
             logger.InitializedHttpConnection(gremlinServer.Uri);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GremlinClient" /> class with a single
+        ///     serializer used for both request serialization and response deserialization.
+        ///     This is the backward-compatible convenience constructor.
+        /// </summary>
+        /// <param name="gremlinServer">The <see cref="GremlinServer" /> the requests should be sent to.</param>
+        /// <param name="messageSerializer">
+        ///     A <see cref="IMessageSerializer" /> instance used for both request serialization and
+        ///     response deserialization. Defaults to <see cref="GraphBinary4MessageSerializer"/>.
+        /// </param>
+        /// <param name="connectionSettings">The <see cref="ConnectionSettings" /> for the HTTP connection.</param>
+        /// <param name="loggerFactory">A factory to create loggers. If not provided, then nothing will be logged.</param>
+        /// <param name="interceptors">
+        ///     An optional list of request interceptors.
+        /// </param>
+        public GremlinClient(GremlinServer gremlinServer, IMessageSerializer? messageSerializer = null,
+            ConnectionSettings? connectionSettings = null,
+            ILoggerFactory? loggerFactory = null,
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
+            : this(gremlinServer,
+                  messageSerializer ?? new GraphBinary4MessageSerializer(),
+                  messageSerializer ?? new GraphBinary4MessageSerializer(),
+                  connectionSettings, loggerFactory, interceptors)
+        {
         }
 
         /// <inheritdoc />

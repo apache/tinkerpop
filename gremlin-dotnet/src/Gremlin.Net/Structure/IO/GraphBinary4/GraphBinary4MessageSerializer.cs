@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Structure.IO;
 
 namespace Gremlin.Net.Structure.IO.GraphBinary4
 {
@@ -39,6 +40,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         private readonly GraphBinaryWriter _writer;
         private readonly RequestMessageSerializer _requestSerializer = new RequestMessageSerializer();
         private readonly ResponseMessageSerializer _responseSerializer = new ResponseMessageSerializer();
+
+        /// <inheritdoc />
+        public string MimeType => SerializationTokens.GraphBinary4MimeType;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphBinary4MessageSerializer" /> class

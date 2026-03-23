@@ -84,5 +84,11 @@ namespace Gremlin.Net.Driver
         ///     Gets or sets whether to send the bulkResults: true header on all requests.
         /// </summary>
         public bool BulkResults { get; set; } = false;
+
+        /// <summary>
+        ///     Gets or sets whether to skip SSL certificate validation.
+        ///     Only use for testing with self-signed certificates.
+        /// </summary>
+        public bool SkipCertificateValidation { get; set; } = false;
     }
 }

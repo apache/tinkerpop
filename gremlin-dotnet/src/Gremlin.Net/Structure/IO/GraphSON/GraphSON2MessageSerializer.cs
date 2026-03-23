@@ -28,15 +28,13 @@ namespace Gremlin.Net.Structure.IO.GraphSON
     /// </summary>
     public class GraphSON2MessageSerializer : GraphSONMessageSerializer
     {
-        private const string MimeType = SerializationTokens.GraphSON2MimeType;
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="GraphSON2MessageSerializer" /> class with custom serializers.
         /// </summary>
         /// <param name="graphSONReader">The <see cref="GraphSON2Reader"/> used to deserialize from GraphSON.</param>
         /// <param name="graphSONWriter">The <see cref="GraphSON2Writer"/> used to serialize to GraphSON.</param>
         public GraphSON2MessageSerializer(GraphSON2Reader? graphSONReader = null, GraphSON2Writer? graphSONWriter = null)
-            : base(MimeType, graphSONReader ?? new GraphSON2Reader(), graphSONWriter ?? new GraphSON2Writer())
+            : base(SerializationTokens.GraphSON2MimeType, graphSONReader ?? new GraphSON2Reader(), graphSONWriter ?? new GraphSON2Writer())
         {
         }
     }

@@ -41,26 +41,40 @@ namespace Gremlin.Net.Driver
     /// </summary>
     internal class Connection : IDisposable
     {
-        private const string GraphBinaryMimeType = SerializationTokens.GraphBinary4MimeType;
-
         private readonly HttpClient _httpClient;
         private readonly Uri _uri;
-        private readonly IMessageSerializer _serializer;
+        private readonly IMessageSerializer? _requestSerializer;
+        private readonly IMessageSerializer _responseSerializer;
         private readonly ConnectionSettings _settings;
-        // Interceptor slot reserved for future spec
-        // private readonly IReadOnlyList<Func<HttpRequestMessage, Task>> _interceptors;
+        private readonly IReadOnlyList<Func<HttpRequestContext, Task>> _interceptors;
 
         /// <summary>
         ///     Creates a new HTTP connection. The <see cref="HttpClient"/> is backed by
         ///     SocketsHttpHandler which manages its own TCP connection pool internally,
         ///     so a single <see cref="Connection"/> instance handles concurrent requests efficiently.
         /// </summary>
-        public Connection(Uri uri, IMessageSerializer serializer,
-            ConnectionSettings settings)
+        /// <param name="uri">The Gremlin Server URI.</param>
+        /// <param name="requestSerializer">
+        ///     The serializer for outgoing requests. When non-null, the request body is serialized
+        ///     to <c>byte[]</c> before interceptors run and the <c>Content-Type</c> header is set
+        ///     automatically. When <c>null</c>, the body is passed as a <see cref="RequestMessage"/>
+        ///     and an interceptor is responsible for serializing it to <c>byte[]</c> and setting
+        ///     <c>Content-Type</c>. This follows the Python driver's <c>request_serializer=None</c>
+        ///     pattern.
+        /// </param>
+        /// <param name="responseSerializer">The serializer for incoming responses (always required).</param>
+        /// <param name="settings">Connection settings.</param>
+        /// <param name="interceptors">Optional request interceptors.</param>
+        public Connection(Uri uri, IMessageSerializer? requestSerializer,
+            IMessageSerializer responseSerializer,
+            ConnectionSettings settings,
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
         {
             _uri = uri;
-            _serializer = serializer;
+            _requestSerializer = requestSerializer;
+            _responseSerializer = responseSerializer;
             _settings = settings;
+            _interceptors = interceptors ?? Array.Empty<Func<HttpRequestContext, Task>>();
 
 #if NET6_0_OR_GREATER
             var handler = new SocketsHttpHandler
@@ -70,6 +84,13 @@ namespace Gremlin.Net.Driver
                 ConnectTimeout = settings.ConnectionTimeout,
                 KeepAlivePingTimeout = settings.KeepAliveInterval,
             };
+            if (settings.SkipCertificateValidation)
+            {
+                handler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                };
+            }
             _httpClient = new HttpClient(handler);
 #else
             _httpClient = new HttpClient();
@@ -80,44 +101,96 @@ namespace Gremlin.Net.Driver
         /// <summary>
         ///     Constructor that accepts a pre-configured HttpClient (for testing).
         /// </summary>
-        internal Connection(Uri uri, IMessageSerializer serializer,
-            ConnectionSettings settings, HttpClient httpClient)
+        internal Connection(Uri uri, IMessageSerializer? requestSerializer,
+            IMessageSerializer responseSerializer,
+            ConnectionSettings settings, HttpClient httpClient,
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null)
         {
             _uri = uri;
-            _serializer = serializer;
+            _requestSerializer = requestSerializer;
+            _responseSerializer = responseSerializer;
             _settings = settings;
             _httpClient = httpClient;
+            _interceptors = interceptors ?? Array.Empty<Func<HttpRequestContext, Task>>();
         }
 
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
             CancellationToken cancellationToken = default)
         {
-            var requestBytes = await _serializer.SerializeMessageAsync(requestMessage, cancellationToken)
-                .ConfigureAwait(false);
-
-            using var content = new ByteArrayContent(requestBytes);
-            content.Headers.ContentType = new MediaTypeHeaderValue(GraphBinaryMimeType);
-
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, _uri);
-            httpRequest.Content = content;
-            httpRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GraphBinaryMimeType));
+            // Build HttpRequestContext with default headers
+            var headers = new Dictionary<string, string>();
+            headers["Accept"] = _responseSerializer.MimeType;
 
             if (_settings.EnableCompression)
             {
-                httpRequest.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
+                headers["Accept-Encoding"] = "deflate";
             }
 
             if (_settings.EnableUserAgentOnConnect)
             {
-                httpRequest.Headers.TryAddWithoutValidation("User-Agent", Utils.UserAgent);
+                headers["User-Agent"] = Utils.UserAgent;
             }
 
             if (_settings.BulkResults)
             {
-                httpRequest.Headers.Add("bulkResults", "true");
+                headers["bulkResults"] = "true";
             }
 
-            // Future: apply interceptors here
+            object body;
+            if (_requestSerializer != null)
+            {
+                // Default path: serialize before interceptors
+                var requestBytes = await _requestSerializer.SerializeMessageAsync(requestMessage, cancellationToken)
+                    .ConfigureAwait(false);
+                body = requestBytes;
+                headers["Content-Type"] = _requestSerializer.MimeType;
+            }
+            else
+            {
+                // Interceptor-managed path: body is RequestMessage, interceptor must serialize
+                body = requestMessage;
+            }
+
+            var context = new HttpRequestContext("POST", _uri, headers, body);
+
+            // Apply interceptors in order
+            foreach (var interceptor in _interceptors)
+            {
+                await interceptor(context).ConfigureAwait(false);
+            }
+
+            // Convert HttpRequestContext to HttpRequestMessage
+            using var httpRequest = new HttpRequestMessage(new HttpMethod(context.Method), context.Uri);
+
+            if (context.Body is byte[] bodyBytes)
+            {
+                httpRequest.Content = new ByteArrayContent(bodyBytes);
+            }
+            else if (context.Body is HttpContent httpContent)
+            {
+                httpRequest.Content = httpContent;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "Request body must be byte[] or HttpContent after all interceptors complete, " +
+                    "but found " + (context.Body?.GetType().Name ?? "null") +
+                    ". Either provide a requestSerializer or add an interceptor " +
+                    "that serializes the RequestMessage.");
+            }
+
+            foreach (var header in context.Headers)
+            {
+                // Content-Type must be set on the content headers, not the request headers
+                if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue(header.Value);
+                }
+                else
+                {
+                    httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
 
             using var response = await _httpClient.SendAsync(httpRequest, cancellationToken)
                 .ConfigureAwait(false);
@@ -128,7 +201,7 @@ namespace Gremlin.Net.Driver
             // is GraphBinary do we fall through to normal deserialization so the status footer
             // in the GB4 response can surface the application-level error.
             if (!response.IsSuccessStatusCode &&
-                response.Content.Headers.ContentType?.MediaType != GraphBinaryMimeType)
+                response.Content.Headers.ContentType?.MediaType != _responseSerializer.MimeType)
             {
                 var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -141,7 +214,7 @@ namespace Gremlin.Net.Driver
 
             var responseBytes = await ReadResponseBytesAsync(response).ConfigureAwait(false);
 
-            var responseMessage = await _serializer.DeserializeMessageAsync(responseBytes, cancellationToken)
+            var responseMessage = await _responseSerializer.DeserializeMessageAsync(responseBytes, cancellationToken)
                 .ConfigureAwait(false);
 
             return BuildResultSet<T>(responseMessage);
