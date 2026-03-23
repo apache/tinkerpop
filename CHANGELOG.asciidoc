@@ -59,6 +59,7 @@ This release also includes changes from <<release-3-7-5, 3.7.5>>.
 * Added `DateTime` ontop of the existing 'datetime' grammar.
 * Added `UUID()` and `UUID(value)` to grammar.
 * Deprecated the `UnifiedChannelizer`.
+* Improve performance of `P.setValue()` for large collections with no `GValue`.
 * Fixed bug that caused incorrect results when `tail()` used inside `repeat()`.
 * Modified `TraversalStrategy` construction in Javascript where configurations are now supplied as a `Map` of options.
 * Fixed bug in GraphSON v2 and v3 where full round trip of `TraversalStrategy` implementations was failing.

@@ -127,10 +127,16 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             isCollection = false;
         } else if (value instanceof Collection) {
             isCollection = true;
-            if (((Collection<?>) value).stream().anyMatch(v -> v instanceof GValue)) {
+            final Collection<V> vCollection = (Collection<V>) value;
+
+            // fast path: if no GValues in the collection, use collection directly
+            if (!containsGValue(vCollection)) {
+                if (value instanceof BulkSet) {
+                    this.literals = vCollection;
+                }
+            } else {
                 this.literals = (value instanceof BulkSet) ? new BulkSet<>() : new ArrayList<>();
-                for (Object v : ((Collection<?>) value)) {
-                    // Separate variables and literals
+                for (final Object v : vCollection) {
                     if (v instanceof GValue) {
                         if (((GValue<V>) v).isVariable()) {
                             variables.put(((GValue<V>) v).getName(), ((GValue<V>) v).get());
@@ -141,8 +147,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                         literals.add((V) v);
                     }
                 }
-            } else {
-                literals = (Collection<V>) value; // Retain original collection when possible
             }
         } else {
             isCollection = false;
@@ -222,6 +226,13 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             results.add(GValue.of(entry.getKey(), entry.getValue()));
         }
         return results;
+    }
+
+    private static boolean containsGValue(final Collection<?> collection) {
+        for (final Object o : collection) {
+            if (o instanceof GValue) return true;
+        }
+        return false;
     }
 
     //////////////// statics
