@@ -99,9 +99,9 @@ model['no-prop-edge'] = new Edge(
 model['max-int'] = 2147483647;
 model['min-int'] = -2147483648;
 
-// Long values (lose precision beyond 2^53 in JS)
-model['max-long'] = 9223372036854776000;  // Number, not BigInt
-model['min-long'] = -9223372036854776000;
+// Long values
+model['max-long'] = 9223372036854775807n;
+model['min-long'] = -9223372036854775808n;
 
 // Map values
 const dateKey = new Date(Date.UTC(1970, 0, 1, 0, 24, 41, 295)); // 1481295 ms

@@ -92,12 +92,10 @@ export default class LongSerializer {
       len += 8;
 
       let v = cursor.readBigInt64BE();
-      if (v < Number.MIN_SAFE_INTEGER || v > Number.MAX_SAFE_INTEGER) {
-        // Keeps the same contract as GraphSON LongSerializer — converts to Number (loses precision beyond 2^53).
-        v = parseFloat(v.toString());
-      } else {
+      if (v >= Number.MIN_SAFE_INTEGER && v <= Number.MAX_SAFE_INTEGER) {
         v = Number(v);
       }
+      // Values outside safe integer range stay as BigInt to preserve precision.
 
       return { v, len };
     } catch (err) {

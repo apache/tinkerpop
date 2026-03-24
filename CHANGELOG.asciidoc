@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (NOT OFFICIALLY RELEASED YET)
 
+* Improved number type handling in `gremlin-javascript`: smart GremlinLang type suffixes, `bigint` as BigInteger, and Long deserialization now returns `bigint` for values beyond safe integer range.
 * Added grammar-based `Translator` for `gremlin-javascript` supporting translation to JavaScript, Python, Go, .NET, Java, Groovy, canonical, and anonymized output.
 * Added `translate_gremlin_query` tool to `gremlin-mcp` that translates Gremlin queries to a target language variant, with optional LLM-assisted normalization via MCP sampling for non-canonical input.
 * Modified `gremlin-mcp` to support offline mode where utility tools (translate, format) remain available without a configured `GREMLIN_MCP_ENDPOINT`.

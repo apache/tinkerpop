@@ -43,7 +43,7 @@ describe('GremlinLang', function () {
       // #3
       [g.V().constant(5), 'g.V().constant(5)'],
       // #4
-      [g.V().constant(1.5), 'g.V().constant(1.5)'],
+      [g.V().constant(1.5), 'g.V().constant(1.5D)'],
       // #5
       [g.V().constant('Hello'), "g.V().constant('Hello')"],
       // #6
@@ -117,7 +117,7 @@ describe('GremlinLang', function () {
       // #40
       [g.V().has('runways',P.gt(5)).count(), "g.V().has('runways',gt(5)).count()"],
       // #41
-      [g.V().has('runways',P.lte(5.3)).count(), "g.V().has('runways',lte(5.3)).count()"],
+      [g.V().has('runways',P.lte(5.3)).count(), "g.V().has('runways',lte(5.3D)).count()"],
       // #42
       [g.V().has('code',P.within([123,124])), "g.V().has('code',within([123,124]))"],
       // #43
@@ -137,7 +137,7 @@ describe('GremlinLang', function () {
       // #50
       [g.V('3').choose(__.out().count()).option(0,__.constant('none')).option(1,__.constant('one')).option(2,__.constant('two')), "g.V('3').choose(__.out().count()).option(0,__.constant('none')).option(1,__.constant('one')).option(2,__.constant('two'))"],
       // #51
-      [g.V('3').choose(__.out().count()).option(1.5,__.constant('one and a half')), "g.V('3').choose(__.out().count()).option(1.5,__.constant('one and a half'))"],
+      [g.V('3').choose(__.out().count()).option(1.5,__.constant('one and a half')), "g.V('3').choose(__.out().count()).option(1.5D,__.constant('one and a half'))"],
       // #52
       [g.V().repeat(__.out()).until(__.or(__.loops().is(3),__.has('code','AGR'))).count(), "g.V().repeat(__.out()).until(__.or(__.loops().is(3),__.has('code','AGR'))).count()"],
       // #53
@@ -309,8 +309,38 @@ describe('GremlinLang', function () {
       assert.strictEqual(g.V(new Long('9007199254740993')).getGremlinLang().getGremlin(), 'g.V(9007199254740993L)');
     });
 
+    it('should handle bigint as BigInteger (N suffix)', function () {
+      assert.strictEqual(g.inject(BigInt(5)).getGremlinLang().getGremlin(), 'g.inject(5N)');
+      assert.strictEqual(g.inject(BigInt('9223372036854775807')).getGremlinLang().getGremlin(), 'g.inject(9223372036854775807N)');
+      assert.strictEqual(g.inject(BigInt(10)**BigInt(30)).getGremlinLang().getGremlin(), 'g.inject(1000000000000000000000000000000N)');
+    });
+
+    it('should handle number integer in Int32 range', function () {
+      assert.strictEqual(g.inject(42).getGremlinLang().getGremlin(), 'g.inject(42)');
+    });
+
+    it('should handle number integer beyond Int32 range', function () {
+      assert.strictEqual(g.inject(3000000000).getGremlinLang().getGremlin(), 'g.inject(3000000000L)');
+    });
+
+    it('should handle number at Int32 boundaries', function () {
+      assert.strictEqual(g.inject(2147483647).getGremlinLang().getGremlin(), 'g.inject(2147483647)');
+      assert.strictEqual(g.inject(2147483648).getGremlinLang().getGremlin(), 'g.inject(2147483648L)');
+      assert.strictEqual(g.inject(-2147483648).getGremlinLang().getGremlin(), 'g.inject(-2147483648)');
+      assert.strictEqual(g.inject(-2147483649).getGremlinLang().getGremlin(), 'g.inject(-2147483649L)');
+    });
+
+    it('should handle number float with D suffix', function () {
+      assert.strictEqual(g.inject(3.14).getGremlinLang().getGremlin(), 'g.inject(3.14D)');
+    });
+
     it('should handle NaN', function () {
       assert.strictEqual(g.inject(NaN).getGremlinLang().getGremlin(), 'g.inject(NaN)');
+    });
+
+    it('should handle number at safe integer boundaries', function () {
+      assert.strictEqual(g.inject(9007199254740991).getGremlinLang().getGremlin(), 'g.inject(9007199254740991L)');
+      assert.strictEqual(g.inject(-9007199254740991).getGremlinLang().getGremlin(), 'g.inject(-9007199254740991L)');
     });
 
     it('should handle Infinity', function () {

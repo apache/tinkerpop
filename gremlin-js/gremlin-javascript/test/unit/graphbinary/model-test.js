@@ -174,7 +174,7 @@ function invalidDateComparator(actual, expected) {
 }
 
 describe('GraphBinary v4 Model Tests', () => {
-  // run mode (32 entries)
+  // run mode (31 entries)
   run('pos-biginteger');
   run('neg-biginteger');
   run('empty-binary');
@@ -196,7 +196,6 @@ describe('GraphBinary v4 Model Tests', () => {
   run('no-prop-edge');
   run('max-int');
   run('min-int');
-  run('min-long');
   run('empty-map');
   run('traversal-path');
   run('empty-path');
@@ -208,7 +207,7 @@ describe('GraphBinary v4 Model Tests', () => {
   run('out-direction');
   run('neg-zero-double', negZeroComparator);
 
-  // runWriteRead mode (22 entries)
+  // runWriteRead mode (23 entries)
   runWriteRead('min-byte');
   runWriteRead('max-byte');
   runWriteRead('max-float');
@@ -221,6 +220,7 @@ describe('GraphBinary v4 Model Tests', () => {
   runWriteRead('var-bulklist');
   runWriteRead('empty-bulklist');
   runWriteRead('traversal-edge');
+  runWriteRead('min-long');
   runWriteRead('max-long');
   runWriteRead('var-type-set', setComparator);
   runWriteRead('max-short');

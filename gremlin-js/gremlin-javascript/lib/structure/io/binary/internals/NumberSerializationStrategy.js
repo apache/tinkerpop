@@ -58,11 +58,10 @@ export default class NumberSerializationStrategy {
         // INT32_MIN/MAX
         return this.ioc.intSerializer.serialize(item, fullyQualifiedFormat);
       }
-      // eslint-disable-next-line no-loss-of-precision
-      if (item >= -9223372036854775808 && item < 9223372036854775807) {
-        // INT64_MIN/MAX
+      if (item >= Number.MIN_SAFE_INTEGER && item <= Number.MAX_SAFE_INTEGER) {
         return this.ioc.longSerializer.serialize(item, fullyQualifiedFormat);
       }
+      // Integers outside safe range are huge doubles that only appear integral due to IEEE 754 precision loss
       return this.ioc.doubleSerializer.serialize(item, fullyQualifiedFormat);
     }
 
