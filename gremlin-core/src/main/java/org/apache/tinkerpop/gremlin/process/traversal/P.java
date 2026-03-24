@@ -131,9 +131,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
             // fast path: if no GValues in the collection, use collection directly
             if (!containsGValue(vCollection)) {
-                if (value instanceof BulkSet) {
-                    this.literals = vCollection;
-                }
+                this.literals = vCollection;
             } else {
                 this.literals = (value instanceof BulkSet) ? new BulkSet<>() : new ArrayList<>();
                 for (final Object v : vCollection) {
