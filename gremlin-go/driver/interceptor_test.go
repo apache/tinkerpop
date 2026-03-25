@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,6 +110,44 @@ func TestSigV4AuthWithSerializeInterceptor(t *testing.T) {
 		"Authorization header should use AWS4-HMAC-SHA256 signing algorithm")
 
 	// Body should be valid serialized bytes
+	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
+	assert.Equal(t, byte(0x81), capturedBody[0],
+		"body should start with GraphBinary version byte 0x81")
+}
+
+// TestSigV4Auth_AutoSerializesInChain verifies that SigV4Auth works as the only
+// interceptor — it auto-serializes *RequestMessage before signing.
+func TestSigV4Auth_AutoSerializesInChain(t *testing.T) {
+	var capturedHeaders http.Header
+	var capturedBody []byte
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedHeaders = r.Header.Clone()
+		body, err := io.ReadAll(r.Body)
+		if err == nil {
+			capturedBody = body
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
+
+	mockProvider := &mockCredentialsProvider{
+		accessKey: "MOCK_ID",
+		secretKey: "MOCK_KEY",
+	}
+
+	// Only SigV4Auth — no SerializeRequest() needed
+	conn.AddInterceptor(SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", mockProvider))
+
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V().count()", Fields: map[string]interface{}{}})
+	require.NoError(t, err)
+	_, _ = rs.All()
+
+	assert.NotEmpty(t, capturedHeaders.Get("Authorization"),
+		"SigV4Auth should set Authorization header")
+	assert.Contains(t, capturedHeaders.Get("Authorization"), "AWS4-HMAC-SHA256")
 	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
 	assert.Equal(t, byte(0x81), capturedBody[0],
 		"body should start with GraphBinary version byte 0x81")
@@ -357,7 +396,7 @@ func TestInterceptor_ChainOrder(t *testing.T) {
 }
 
 // TestSigV4Auth_RejectsNonByteBody verifies that SigV4Auth returns an error when Body
-// is not []byte (e.g., an unserialized *RequestMessage).
+// is not []byte and not *RequestMessage (e.g., an io.Reader).
 func TestSigV4Auth_RejectsNonByteBody(t *testing.T) {
 	provider := &mockCredentialsProvider{
 		accessKey: "MOCK_ID",
@@ -370,11 +409,42 @@ func TestSigV4Auth_RejectsNonByteBody(t *testing.T) {
 	req.Headers.Set("Content-Type", graphBinaryMimeType)
 	req.Headers.Set("Accept", graphBinaryMimeType)
 
-	// Set Body to *RequestMessage (not []byte) — SigV4Auth should reject this
+	// Set Body to an unsupported type (not []byte and not *RequestMessage)
+	req.Body = strings.NewReader("not bytes")
+
+	err = interceptor(req)
+	require.Error(t, err, "SigV4Auth should reject non-[]byte, non-*RequestMessage body")
+	assert.Contains(t, err.Error(), "SigV4 signing requires body to be []byte",
+		"error message should indicate SigV4 requires []byte body")
+}
+
+// TestSigV4Auth_AutoSerializesRequestMessage verifies that SigV4Auth automatically
+// serializes *RequestMessage to []byte before signing.
+func TestSigV4Auth_AutoSerializesRequestMessage(t *testing.T) {
+	provider := &mockCredentialsProvider{
+		accessKey: "MOCK_ID",
+		secretKey: "MOCK_KEY",
+	}
+	interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
+
+	req, err := NewHttpRequest("POST", "https://test_url:8182/gremlin")
+	require.NoError(t, err)
+	req.Headers.Set("Content-Type", graphBinaryMimeType)
+	req.Headers.Set("Accept", graphBinaryMimeType)
+
+	// Set Body to *RequestMessage — SigV4Auth should auto-serialize it
 	req.Body = &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
 
 	err = interceptor(req)
-	require.Error(t, err, "SigV4Auth should reject non-[]byte body")
-	assert.Contains(t, err.Error(), "SigV4 signing requires serialized body bytes",
-		"error message should indicate SigV4 requires serialized body bytes")
+	require.NoError(t, err, "SigV4Auth should auto-serialize *RequestMessage")
+
+	// Body should now be []byte (serialized)
+	bodyBytes, ok := req.Body.([]byte)
+	assert.True(t, ok, "Body should be []byte after SigV4Auth auto-serialization")
+	assert.NotEmpty(t, bodyBytes, "serialized body should be non-empty")
+
+	// SigV4 headers should be set
+	assert.NotEmpty(t, req.Headers.Get("Authorization"), "Authorization header should be set")
+	assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"), "X-Amz-Date header should be set")
+	assert.Contains(t, req.Headers.Get("Authorization"), "AWS4-HMAC-SHA256")
 }
