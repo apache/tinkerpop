@@ -35,7 +35,7 @@ services:
       - ${HOME}/.m2:/root/.m2
       - ${ABS_PROJECT_HOME}/gremlin-test/target:/opt/gremlin-test
     healthcheck:
-      test: [ "CMD-SHELL", "apk add curl && curl -X POST -d {\"gremlin\":\"gremlin.inject(1)\"} http://localhost:45940" ]
+      test: [ "CMD-SHELL", "curl -sf -X POST -H 'Content-Type: application/json' -d '{\"gremlin\":\"g.inject(1)\"}' http://localhost:45940" ]
       interval: 30s
       timeout: 10s
       retries: 30
