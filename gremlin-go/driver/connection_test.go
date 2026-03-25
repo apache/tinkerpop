@@ -958,7 +958,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 			connectionTimeout: 100 * time.Millisecond,
 		})
 
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		assert.NoError(t, err) // submit returns nil, error goes to ResultSet
 
 		// All() blocks until stream closes, then we can check error
@@ -979,7 +979,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 			enableCompression:        true,
 		})
 
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 
 		select {
@@ -1003,7 +1003,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 
 		_, _ = rs.All()
@@ -1022,7 +1022,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 
 		_, _ = rs.All()
@@ -1040,7 +1040,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 
 		_, _ = rs.All()
@@ -1061,7 +1061,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 
 		_, _ = rs.All()
@@ -1085,7 +1085,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 			return nil
 		})
 
-		rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 		require.NoError(t, err)
 		_, _ = rs.All()
 
@@ -1281,7 +1281,7 @@ func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
 	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
 	conn.AddInterceptor(BasicAuth("testuser", "testpass"))
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 

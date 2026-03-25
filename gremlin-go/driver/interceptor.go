@@ -93,15 +93,15 @@ func (r *HttpRequest) PayloadHash() string {
 // RequestInterceptor is a function that modifies an HTTP request before it is sent.
 type RequestInterceptor func(*HttpRequest) error
 
-// SerializeRequest returns a RequestInterceptor that serializes the raw *request body
+// SerializeRequest returns a RequestInterceptor that serializes the raw *RequestMessage body
 // to GraphBinary []byte. Place this before auth interceptors (e.g., SigV4Auth) that
 // need the serialized body bytes.
 func SerializeRequest() RequestInterceptor {
 	serializer := newGraphBinarySerializer(nil)
 	return func(req *HttpRequest) error {
-		r, ok := req.Body.(*request)
+		r, ok := req.Body.(*RequestMessage)
 		if !ok {
-			return nil // already serialized or not a *request
+			return nil // already serialized or not a *RequestMessage
 		}
 		data, err := serializer.SerializeMessage(r)
 		if err != nil {

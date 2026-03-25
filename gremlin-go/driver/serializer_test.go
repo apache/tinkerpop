@@ -32,9 +32,9 @@ const mapDataOrder2 = "[129 0 0 0 2 3 0 0 0 0 1 103 3 0 0 0 0 1 103 3 0 0 0 0 8 
 
 func TestSerializer(t *testing.T) {
 	t.Run("test serialized request message", func(t *testing.T) {
-		testRequest := request{
-			gremlin: "g.V().count()",
-			fields:  map[string]interface{}{"g": "g", "language": "gremlin-lang"},
+		testRequest := RequestMessage{
+			Gremlin: "g.V().count()",
+			Fields:  map[string]interface{}{"g": "g", "language": "gremlin-lang"},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		serialized, _ := serializer.SerializeMessage(&testRequest)
@@ -59,9 +59,9 @@ func TestSerializer(t *testing.T) {
 func TestSerializerFailures(t *testing.T) {
 	t.Run("test serialize request fields failure", func(t *testing.T) {
 		invalid := "invalid"
-		testRequest := request{
+		testRequest := RequestMessage{
 			// Invalid pointer type in fields, so should fail
-			fields: map[string]interface{}{"invalidInput": &invalid, "g": "g"},
+			Fields: map[string]interface{}{"invalidInput": &invalid, "g": "g"},
 		}
 		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
 		resp, err := serializer.SerializeMessage(&testRequest)

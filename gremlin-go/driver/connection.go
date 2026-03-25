@@ -118,7 +118,7 @@ func (c *connection) AddInterceptor(interceptor RequestInterceptor) {
 }
 
 // submit sends request and streams results directly to ResultSet
-func (c *connection) submit(req *request) (ResultSet, error) {
+func (c *connection) submit(req *RequestMessage) (ResultSet, error) {
 	rs := newChannelResultSet()
 
 	go c.executeAndStream(req, rs)
@@ -126,7 +126,7 @@ func (c *connection) submit(req *request) (ResultSet, error) {
 	return rs, nil
 }
 
-func (c *connection) executeAndStream(req *request, rs ResultSet) {
+func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 	defer rs.Close()
 
 	// Create HttpRequest for interceptors
@@ -140,10 +140,10 @@ func (c *connection) executeAndStream(req *request, rs ResultSet) {
 	// Set default headers before interceptors
 	c.setHttpRequestHeaders(httpReq)
 
-	// Set Body to the raw *request so interceptors can inspect/modify it
+	// Set Body to the raw *RequestMessage so interceptors can inspect/modify it
 	httpReq.Body = req
 
-	// Apply interceptors — they see *request in Body (pre-serialization).
+	// Apply interceptors — they see *RequestMessage in Body (pre-serialization).
 	// Interceptors may replace Body with []byte, io.Reader, or *http.Request.
 	for _, interceptor := range c.interceptors {
 		if err := interceptor(httpReq); err != nil {
@@ -153,8 +153,8 @@ func (c *connection) executeAndStream(req *request, rs ResultSet) {
 		}
 	}
 
-	// After interceptors, serialize if Body is still *request
-	if r, ok := httpReq.Body.(*request); ok {
+	// After interceptors, serialize if Body is still *RequestMessage
+	if r, ok := httpReq.Body.(*RequestMessage); ok {
 		if c.serializer != nil {
 			data, err := c.serializer.SerializeMessage(r)
 			if err != nil {

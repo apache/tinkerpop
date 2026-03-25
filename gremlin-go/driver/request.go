@@ -19,10 +19,10 @@ under the License.
 
 package gremlingo
 
-// request represents a request to the server.
-type request struct {
-	gremlin string
-	fields  map[string]interface{}
+// RequestMessage represents a request to the server.
+type RequestMessage struct {
+	Gremlin string
+	Fields  map[string]interface{}
 }
 
 // MakeStringRequest creates a request from a Gremlin string query for submission to a Gremlin server.
@@ -45,7 +45,7 @@ type request struct {
 //	serializer := newGraphBinarySerializer(nil)
 //	bytes, _ := serializer.(graphBinarySerializer).SerializeMessage(&req)
 //	// Send bytes over gRPC, HTTP/2, etc.
-func MakeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req request) {
+func MakeStringRequest(stringGremlin string, traversalSource string, requestOptions RequestOptions) (req RequestMessage) {
 	newFields := map[string]interface{}{
 		"language": "gremlin-lang",
 		"g":        traversalSource,
@@ -71,9 +71,9 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
 
-	return request{
-		gremlin: stringGremlin,
-		fields:  newFields,
+	return RequestMessage{
+		Gremlin: stringGremlin,
+		Fields:  newFields,
 	}
 }
 

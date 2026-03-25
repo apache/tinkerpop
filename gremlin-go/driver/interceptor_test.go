@@ -32,7 +32,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestInterceptorReceivesRawRequest verifies that interceptors receive the raw *request
+// TestInterceptorReceivesRawRequest verifies that interceptors receive the raw *RequestMessage
 // object in HttpRequest.Body, not serialized []byte.
 func TestInterceptorReceivesRawRequest(t *testing.T) {
 	// Mock server that accepts the request (we don't care about the response for this test)
@@ -54,23 +54,23 @@ func TestInterceptorReceivesRawRequest(t *testing.T) {
 	})
 
 	// Submit a request with a known gremlin query
-	rs, err := conn.submit(&request{gremlin: "g.V().count()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V().count()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain result set
 
-	assert.Equal(t, reflect.TypeOf((*request)(nil)), capturedBodyType,
-		"interceptor should receive *request in Body, got %v", capturedBodyType)
+	assert.Equal(t, reflect.TypeOf((*RequestMessage)(nil)), capturedBodyType,
+		"interceptor should receive *RequestMessage in Body, got %v", capturedBodyType)
 
-	r, typeAssertOk := capturedBody.(*request)
-	assert.True(t, typeAssertOk, "interceptor should be able to type-assert Body to *request")
+	r, typeAssertOk := capturedBody.(*RequestMessage)
+	assert.True(t, typeAssertOk, "interceptor should be able to type-assert Body to *RequestMessage")
 	if typeAssertOk {
-		assert.Equal(t, "g.V().count()", r.gremlin,
-			"interceptor should be able to read the gremlin field from the raw request")
+		assert.Equal(t, "g.V().count()", r.Gremlin,
+			"interceptor should be able to read the Gremlin field from the raw request")
 	}
 }
 
 // TestSigV4AuthWithSerializeInterceptor verifies that SerializeRequest() + SigV4Auth
-// works in a chain. SerializeRequest converts *request to []byte, then SigV4Auth
+// works in a chain. SerializeRequest converts *RequestMessage to []byte, then SigV4Auth
 // can sign the serialized body.
 func TestSigV4AuthWithSerializeInterceptor(t *testing.T) {
 	var capturedHeaders http.Header
@@ -96,7 +96,7 @@ func TestSigV4AuthWithSerializeInterceptor(t *testing.T) {
 	conn.AddInterceptor(SerializeRequest())
 	conn.AddInterceptor(SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", mockProvider))
 
-	rs, err := conn.submit(&request{gremlin: "g.V().count()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V().count()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 
@@ -134,22 +134,22 @@ func TestMultipleInterceptors_SerializeThenAuth(t *testing.T) {
 
 	// Custom interceptor that modifies the raw request fields
 	conn.AddInterceptor(func(req *HttpRequest) error {
-		r, ok := req.Body.(*request)
+		r, ok := req.Body.(*RequestMessage)
 		if !ok {
-			return fmt.Errorf("expected *request, got %T", req.Body)
+			return fmt.Errorf("expected *RequestMessage, got %T", req.Body)
 		}
 		// Add a custom field to the request
-		r.fields["customField"] = "customValue"
+		r.Fields["customField"] = "customValue"
 		return nil
 	})
 
-	// SerializeRequest converts the modified *request to []byte
+	// SerializeRequest converts the modified *RequestMessage to []byte
 	conn.AddInterceptor(SerializeRequest())
 
 	// BasicAuth adds the Authorization header (works on any body type)
 	conn.AddInterceptor(BasicAuth("admin", "secret"))
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 
@@ -187,7 +187,7 @@ func TestInterceptor_IoReaderBody(t *testing.T) {
 		return nil
 	})
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 
@@ -207,7 +207,7 @@ func TestInterceptor_NilSerializerNoSerialization(t *testing.T) {
 	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
 	conn.serializer = nil // explicitly nil serializer
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 
 	_, _ = rs.All() // drain — this triggers the async executeAndStream
@@ -257,7 +257,7 @@ func TestInterceptor_HttpRequestBody(t *testing.T) {
 		return nil
 	})
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 
@@ -288,7 +288,7 @@ func TestInterceptor_ErrorPropagation(t *testing.T) {
 		return fmt.Errorf("interceptor failed")
 	})
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 
 	_, _ = rs.All() // drain — triggers async executeAndStream
@@ -314,7 +314,7 @@ func TestInterceptor_UnsupportedBodyType(t *testing.T) {
 		return nil
 	})
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 
 	_, _ = rs.All() // drain
@@ -348,7 +348,7 @@ func TestInterceptor_ChainOrder(t *testing.T) {
 		return nil
 	})
 
-	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
 	require.NoError(t, err)
 	_, _ = rs.All() // drain
 
@@ -357,7 +357,7 @@ func TestInterceptor_ChainOrder(t *testing.T) {
 }
 
 // TestSigV4Auth_RejectsNonByteBody verifies that SigV4Auth returns an error when Body
-// is not []byte (e.g., an unserialized *request).
+// is not []byte (e.g., an unserialized *RequestMessage).
 func TestSigV4Auth_RejectsNonByteBody(t *testing.T) {
 	provider := &mockCredentialsProvider{
 		accessKey: "MOCK_ID",
@@ -370,8 +370,8 @@ func TestSigV4Auth_RejectsNonByteBody(t *testing.T) {
 	req.Headers.Set("Content-Type", graphBinaryMimeType)
 	req.Headers.Set("Accept", graphBinaryMimeType)
 
-	// Set Body to *request (not []byte) — SigV4Auth should reject this
-	req.Body = &request{gremlin: "g.V()", fields: map[string]interface{}{}}
+	// Set Body to *RequestMessage (not []byte) — SigV4Auth should reject this
+	req.Body = &RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}}
 
 	err = interceptor(req)
 	require.Error(t, err, "SigV4Auth should reject non-[]byte body")

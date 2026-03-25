@@ -30,7 +30,7 @@ const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
 
 // Serializer interface for serializers.
 type Serializer interface {
-	SerializeMessage(request *request) ([]byte, error)
+	SerializeMessage(request *RequestMessage) ([]byte, error)
 	DeserializeMessage(message []byte) (Response, error)
 }
 
@@ -90,8 +90,8 @@ const versionByte byte = 0x81
 //	// Send bytes over custom transport
 //
 // SerializeMessage serializes a request message into GraphBinary.
-func (gs *GraphBinarySerializer) SerializeMessage(request *request) ([]byte, error) {
-	finalMessage, err := gs.buildMessage(request.gremlin, request.fields)
+func (gs *GraphBinarySerializer) SerializeMessage(request *RequestMessage) ([]byte, error) {
+	finalMessage, err := gs.buildMessage(request.Gremlin, request.Fields)
 	if err != nil {
 		return nil, err
 	}
