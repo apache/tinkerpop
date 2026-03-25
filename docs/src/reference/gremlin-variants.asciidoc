@@ -1928,6 +1928,16 @@ the possibility of `null`.
 [[gremlin-javascript-limitations]]
 === Limitations
 
+* JavaScript's `Number` type is an IEEE 754 double-precision float. `Float`, `Byte`, and `Short` values from the server
+are deserialized as `Number` and lose their original type information.
+* `Long` values outside the safe integer range (|n| > 2^53 - 1) are deserialized as `BigInt` to preserve precision.
+Values within the safe range are deserialized as `Number`. The same server type may produce different JavaScript types.
+* `Number.isInteger(1.0)` is `true` in JavaScript, so the driver cannot distinguish integer values from whole-number
+doubles. `BigDecimal` is not implemented.
+* The driver applies GremlinLang type suffixes automatically based on value characteristics: integers within the 32-bit
+signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
+non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
+suffix (BigInteger).
 * The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
 no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
 `aggregate(local)` and then convert those results to something the client can use locally.
