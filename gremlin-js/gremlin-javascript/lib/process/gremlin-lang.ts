@@ -80,11 +80,9 @@ export default class GremlinLang {
       if (arg === -Infinity) return '-Infinity';
       if (!Number.isInteger(arg)) return String(arg) + 'D';
       if (arg >= -2147483648 && arg <= 2147483647) return String(arg);
-      const s = String(arg);
-      // Values >= 1e21 stringify in scientific notation (e.g. "1.7976931348623157e+308"),
-      // which the Gremlin parser cannot handle with an L suffix — emit D instead.
-      if (s.includes('e') || s.includes('E')) return s + 'D';
-      return s + 'L';
+      // Outside safe integer range, values have lost precision and may exceed Java Long — emit as Double.
+      if (arg > Number.MAX_SAFE_INTEGER || arg < -Number.MAX_SAFE_INTEGER) return String(arg) + 'D';
+      return String(arg) + 'L';
     }
     if (arg instanceof Date) {
       const iso = arg.toISOString();
