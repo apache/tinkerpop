@@ -22,13 +22,13 @@ package gremlingo
 import (
 	"bytes"
 	"compress/zlib"
-	"crypto/sha256"
 	"crypto/tls"
-	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
-	"net/url"
+	"strings"
 	"time"
 )
 
@@ -230,6 +230,28 @@ func (c *connection) executeAndStream(data []byte, rs ResultSet) {
 		}
 	}()
 
+	// If the HTTP status indicates an error and the response is not GraphBinary,
+	// read the body as a text/JSON error message instead of attempting binary
+	// deserialization which would produce cryptic errors.
+	contentType := resp.Header.Get(HeaderContentType)
+	if resp.StatusCode >= 400 && !strings.Contains(contentType, graphBinaryMimeType) {
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			c.logHandler.logf(Error, failedToReceiveResponse, readErr.Error())
+			rs.setError(fmt.Errorf("Gremlin Server returned HTTP %d and failed to read body: %w",
+				resp.StatusCode, readErr))
+			return
+		}
+		errorBody := string(bodyBytes)
+		errorMsg := tryExtractJSONError(errorBody)
+		if errorMsg == "" {
+			errorMsg = fmt.Sprintf("Gremlin Server returned HTTP %d: %s", resp.StatusCode, errorBody)
+		}
+		c.logHandler.logf(Error, failedToReceiveResponse, errorMsg)
+		rs.setError(fmt.Errorf("%s", errorMsg))
+		return
+	}
+
 	reader, zlibReader, err := c.getReader(resp)
 	if err != nil {
 		c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
@@ -306,6 +328,22 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 
 		rs.Channel() <- &Result{obj}
 	}
+}
+
+// tryExtractJSONError attempts to extract an error message from a JSON response body.
+// The server sometimes responds with a JSON object containing a "message" field
+// even when it cannot produce a GraphBinary response.
+func tryExtractJSONError(body string) string {
+	var obj map[string]interface{}
+	if err := json.Unmarshal([]byte(body), &obj); err != nil {
+		return ""
+	}
+	if msg, ok := obj["message"]; ok {
+		if s, ok := msg.(string); ok {
+			return s
+		}
+	}
+	return ""
 }
 
 func (c *connection) close() {
