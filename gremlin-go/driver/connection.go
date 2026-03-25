@@ -29,6 +29,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -53,6 +54,7 @@ type connection struct {
 	logHandler   *logHandler
 	serializer   *GraphBinarySerializer
 	interceptors []RequestInterceptor
+	wg           sync.WaitGroup
 }
 
 // Connection pool defaults aligned with Java driver
@@ -121,7 +123,11 @@ func (c *connection) AddInterceptor(interceptor RequestInterceptor) {
 func (c *connection) submit(req *RequestMessage) (ResultSet, error) {
 	rs := newChannelResultSet()
 
-	go c.executeAndStream(req, rs)
+	c.wg.Add(1)
+	go func() {
+		defer c.wg.Done()
+		c.executeAndStream(req, rs)
+	}()
 
 	return rs, nil
 }
@@ -206,6 +212,10 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 		return
 	}
 	defer func() {
+		// Drain any unread bytes so the connection can be reused gracefully.
+		// Without this, Go's HTTP client sends a TCP RST instead of FIN,
+		// causing "Connection reset by peer" errors on the server.
+		io.Copy(io.Discard, resp.Body)
 		if err := resp.Body.Close(); err != nil {
 			c.logHandler.logf(Debug, failedToCloseResponseBody, err.Error())
 		}
@@ -328,5 +338,6 @@ func tryExtractJSONError(body string) string {
 }
 
 func (c *connection) close() {
+	c.wg.Wait()
 	c.httpClient.CloseIdleConnections()
 }

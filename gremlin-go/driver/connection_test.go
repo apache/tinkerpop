@@ -1093,6 +1093,30 @@ func TestConnectionWithMockServer(t *testing.T) {
 		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Content-Type"))
 		assert.Equal(t, graphBinaryMimeType, interceptorHeaders.Get("Accept"))
 	})
+
+	t.Run("close waits for in-flight requests", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			time.Sleep(200 * time.Millisecond)
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+
+		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
+
+		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.NoError(t, err)
+
+		start := time.Now()
+		conn.close()
+		elapsed := time.Since(start)
+
+		// close() should have waited for the in-flight goroutine
+		assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(150),
+			"close() should wait for in-flight requests to complete")
+
+		// ResultSet should be closed (goroutine finished)
+		_, _ = rs.All()
+	})
 }
 
 // Tests for connection pool configuration settings
