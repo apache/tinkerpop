@@ -30,7 +30,7 @@ import (
 )
 
 func createMockRequest() *HttpRequest {
-	req, _ := NewHttpRequest("POST", "https://localhost:8182/gremlin")
+	req, _ := NewHttpRequest("POST", "https://test_url:8182/gremlin")
 	req.Headers.Set("Content-Type", graphBinaryMimeType)
 	req.Headers.Set("Accept", graphBinaryMimeType)
 	req.Body = []byte(`{"gremlin":"g.V()"}`)
@@ -72,24 +72,24 @@ func (m *mockCredentialsProvider) Retrieve(ctx context.Context) (aws.Credentials
 	}, nil
 }
 
-func TestSigv4Auth(t *testing.T) {
+func TestSigV4Auth(t *testing.T) {
 	t.Run("adds signed headers", func(t *testing.T) {
 		req := createMockRequest()
 		assert.Empty(t, req.Headers.Get("Authorization"))
 		assert.Empty(t, req.Headers.Get("X-Amz-Date"))
 
 		provider := &mockCredentialsProvider{
-			accessKey: "MOCK_ACCESS_KEY",
-			secretKey: "MOCK_SECRET_KEY",
+			accessKey: "MOCK_ID",
+			secretKey: "MOCK_KEY",
 		}
-		interceptor := Sigv4AuthWithCredentials("us-west-2", "neptune-db", provider)
+		interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, req.Headers.Get("X-Amz-Date"))
 		authHeader := req.Headers.Get("Authorization")
-		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential=MOCK_ACCESS_KEY"))
-		assert.Contains(t, authHeader, "us-west-2/neptune-db/aws4_request")
+		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential=MOCK_ID"))
+		assert.Contains(t, authHeader, "gremlin-east-1/tinkerpop-sigv4/aws4_request")
 		assert.Contains(t, authHeader, "Signature=")
 	})
 
@@ -98,17 +98,17 @@ func TestSigv4Auth(t *testing.T) {
 		assert.Empty(t, req.Headers.Get("X-Amz-Security-Token"))
 
 		provider := &mockCredentialsProvider{
-			accessKey:    "MOCK_ACCESS_KEY",
-			secretKey:    "MOCK_SECRET_KEY",
-			sessionToken: "MOCK_SESSION_TOKEN",
+			accessKey:    "MOCK_ID",
+			secretKey:    "MOCK_KEY",
+			sessionToken: "MOCK_TOKEN",
 		}
-		interceptor := Sigv4AuthWithCredentials("us-west-2", "neptune-db", provider)
+		interceptor := SigV4AuthWithCredentials("gremlin-east-1", "tinkerpop-sigv4", provider)
 		err := interceptor(req)
 
 		assert.NoError(t, err)
-		assert.Equal(t, "MOCK_SESSION_TOKEN", req.Headers.Get("X-Amz-Security-Token"))
+		assert.Equal(t, "MOCK_TOKEN", req.Headers.Get("X-Amz-Security-Token"))
 		authHeader := req.Headers.Get("Authorization")
 		assert.True(t, strings.HasPrefix(authHeader, "AWS4-HMAC-SHA256 Credential="))
-		assert.Contains(t, authHeader, "Signature=")
+		assert.Contains(t, authHeader, "gremlin-east-1/tinkerpop-sigv4/aws4_request")
 	})
 }

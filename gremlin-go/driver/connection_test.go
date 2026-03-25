@@ -1261,3 +1261,36 @@ func TestDriverRemoteConnectionSettingsWiring(t *testing.T) {
 		assert.Equal(t, 180*time.Second, transport.IdleConnTimeout)
 	})
 }
+
+// TestConnectionWithMockServer_BasicAuth verifies that BasicAuth interceptor sets the correct
+// Authorization header and the body is still valid serialized bytes.
+func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
+	var capturedAuthHeader string
+	var capturedBody []byte
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedAuthHeader = r.Header.Get("Authorization")
+		body, err := io.ReadAll(r.Body)
+		if err == nil {
+			capturedBody = body
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
+	conn.AddInterceptor(BasicAuth("testuser", "testpass"))
+
+	rs, err := conn.submit(&request{gremlin: "g.V()", fields: map[string]interface{}{}})
+	require.NoError(t, err)
+	_, _ = rs.All() // drain
+
+	// BasicAuth should set Authorization header with base64("testuser:testpass") = "dGVzdHVzZXI6dGVzdHBhc3M="
+	assert.Equal(t, "Basic dGVzdHVzZXI6dGVzdHBhc3M=", capturedAuthHeader,
+		"Authorization header should be Basic base64(testuser:testpass)")
+
+	// Body should still be valid serialized bytes
+	assert.NotEmpty(t, capturedBody, "serialized body should be non-empty with BasicAuth")
+	assert.Equal(t, byte(0x81), capturedBody[0],
+		"body should start with GraphBinary version byte 0x81")
+}

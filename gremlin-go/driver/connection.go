@@ -32,59 +32,6 @@ import (
 	"time"
 )
 
-// Common HTTP header keys
-const (
-	HeaderContentType    = "Content-Type"
-	HeaderAccept         = "Accept"
-	HeaderUserAgent      = "User-Agent"
-	HeaderAcceptEncoding = "Accept-Encoding"
-	HeaderAuthorization  = "Authorization"
-)
-
-// HttpRequest represents an HTTP request that can be modified by interceptors.
-type HttpRequest struct {
-	Method  string
-	URL     *url.URL
-	Headers http.Header
-	Body    []byte
-}
-
-// NewHttpRequest creates a new HttpRequest with the given method and URL.
-func NewHttpRequest(method, rawURL string) (*HttpRequest, error) {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return nil, err
-	}
-	return &HttpRequest{
-		Method:  method,
-		URL:     u,
-		Headers: make(http.Header),
-	}, nil
-}
-
-// ToStdRequest converts HttpRequest to a standard http.Request for signing.
-// Returns nil if the request cannot be created (invalid method or URL).
-func (r *HttpRequest) ToStdRequest() (*http.Request, error) {
-	req, err := http.NewRequest(r.Method, r.URL.String(), bytes.NewReader(r.Body))
-	if err != nil {
-		return nil, err
-	}
-	req.Header = r.Headers
-	return req, nil
-}
-
-// PayloadHash returns the SHA256 hash of the request body for SigV4 signing.
-func (r *HttpRequest) PayloadHash() string {
-	if len(r.Body) == 0 {
-		return "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" // SHA256 of empty string
-	}
-	h := sha256.Sum256(r.Body)
-	return hex.EncodeToString(h[:])
-}
-
-// RequestInterceptor is a function that modifies an HTTP request before it is sent.
-type RequestInterceptor func(*HttpRequest) error
-
 // connectionSettings holds configuration for the connection.
 type connectionSettings struct {
 	tlsConfig                *tls.Config
@@ -174,18 +121,12 @@ func (c *connection) AddInterceptor(interceptor RequestInterceptor) {
 func (c *connection) submit(req *request) (ResultSet, error) {
 	rs := newChannelResultSet()
 
-	data, err := c.serializer.SerializeMessage(req)
-	if err != nil {
-		rs.Close()
-		return rs, err
-	}
-
-	go c.executeAndStream(data, rs)
+	go c.executeAndStream(req, rs)
 
 	return rs, nil
 }
 
-func (c *connection) executeAndStream(data []byte, rs ResultSet) {
+func (c *connection) executeAndStream(req *request, rs ResultSet) {
 	defer rs.Close()
 
 	// Create HttpRequest for interceptors
@@ -195,12 +136,15 @@ func (c *connection) executeAndStream(data []byte, rs ResultSet) {
 		rs.setError(err)
 		return
 	}
-	httpReq.Body = data
 
 	// Set default headers before interceptors
 	c.setHttpRequestHeaders(httpReq)
 
-	// Apply interceptors
+	// Set Body to the raw *request so interceptors can inspect/modify it
+	httpReq.Body = req
+
+	// Apply interceptors — they see *request in Body (pre-serialization).
+	// Interceptors may replace Body with []byte, io.Reader, or *http.Request.
 	for _, interceptor := range c.interceptors {
 		if err := interceptor(httpReq); err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
@@ -209,16 +153,53 @@ func (c *connection) executeAndStream(data []byte, rs ResultSet) {
 		}
 	}
 
-	// Create actual http.Request from HttpRequest
-	req, err := http.NewRequest(httpReq.Method, httpReq.URL.String(), bytes.NewReader(httpReq.Body))
-	if err != nil {
-		c.logHandler.logf(Error, failedToSendRequest, err.Error())
-		rs.setError(err)
+	// After interceptors, serialize if Body is still *request
+	if r, ok := httpReq.Body.(*request); ok {
+		if c.serializer != nil {
+			data, err := c.serializer.SerializeMessage(r)
+			if err != nil {
+				c.logHandler.logf(Error, failedToSendRequest, err.Error())
+				rs.setError(err)
+				return
+			}
+			httpReq.Body = data
+		} else {
+			errMsg := "request body was not serialized; either provide a serializer or add an interceptor that serializes the request"
+			c.logHandler.logf(Error, failedToSendRequest, errMsg)
+			rs.setError(fmt.Errorf("%s", errMsg))
+			return
+		}
+	}
+
+	// Create actual http.Request from HttpRequest based on Body type
+	var httpGoReq *http.Request
+	switch body := httpReq.Body.(type) {
+	case []byte:
+		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), bytes.NewReader(body))
+		if err != nil {
+			c.logHandler.logf(Error, failedToSendRequest, err.Error())
+			rs.setError(err)
+			return
+		}
+		httpGoReq.Header = httpReq.Headers
+	case io.Reader:
+		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), body)
+		if err != nil {
+			c.logHandler.logf(Error, failedToSendRequest, err.Error())
+			rs.setError(err)
+			return
+		}
+		httpGoReq.Header = httpReq.Headers
+	case *http.Request:
+		httpGoReq = body
+	default:
+		errMsg := fmt.Sprintf("unsupported body type after interceptors: %T", body)
+		c.logHandler.logf(Error, failedToSendRequest, errMsg)
+		rs.setError(fmt.Errorf("%s", errMsg))
 		return
 	}
-	req.Header = httpReq.Headers
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(httpGoReq)
 	if err != nil {
 		c.logHandler.logf(Error, failedToSendRequest, err.Error())
 		rs.setError(err)
