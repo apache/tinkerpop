@@ -121,6 +121,7 @@ const (
 func newConnection(handler *logHandler, url string, connSettings *connectionSettings) *connection {
 	var rt http.RoundTripper
 	if connSettings.httpTransport != nil {
+		// user supplied their own transport, so use it
 		rt = connSettings.httpTransport
 	} else {
 		rt = newDefaultTransport(connSettings)
