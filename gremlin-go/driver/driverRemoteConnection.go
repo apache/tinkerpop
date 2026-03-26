@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"net/http"
 	"time"
 
 	"golang.org/x/text/language"
@@ -36,6 +37,18 @@ type DriverRemoteConnectionSettings struct {
 	ConnectionTimeout        time.Duration
 	EnableCompression        bool
 	EnableUserAgentOnConnect bool
+
+	// HTTPTransport is the http.RoundTripper used for Gremlin HTTP requests.
+	//
+	// When set, the driver uses this transport directly. The following settings
+	// are ignored as they configure the driver's default transport:
+	// MaximumConcurrentConnections, MaxIdleConnections, IdleConnectionTimeout,
+	// KeepAliveInterval, TlsConfig, and EnableCompression. Configure these on
+	// your transport directly.
+	//
+	// When nil (the default), the driver creates an http.Transport configured
+	// with the above settings.
+	HTTPTransport http.RoundTripper
 
 	// MaximumConcurrentConnections is the maximum number of concurrent TCP connections
 	// to the Gremlin server. This limits how many requests can be in-flight simultaneously.
@@ -103,6 +116,7 @@ func NewDriverRemoteConnection(
 		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
+		httpTransport:            settings.HTTPTransport,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
