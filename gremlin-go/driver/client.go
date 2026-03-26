@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"crypto/tls"
+	"net/http"
 	"reflect"
 	"time"
 
@@ -60,6 +61,18 @@ type ClientSettings struct {
 	KeepAliveInterval time.Duration
 
 	EnableUserAgentOnConnect bool
+
+	// HTTPTransport is the http.RoundTripper used for Gremlin HTTP requests.
+	//
+	// When set, the driver uses this transport directly. The following settings
+	// are ignored as they configure the driver's default transport:
+	// MaximumConcurrentConnections, MaxIdleConnections, IdleConnectionTimeout,
+	// KeepAliveInterval, TlsConfig, and EnableCompression. Configure these on
+	// your transport directly.
+	//
+	// When nil (the default), the driver creates an http.Transport configured
+	// with the above settings.
+	HTTPTransport http.RoundTripper
 
 	// RequestInterceptors are functions that modify HTTP requests before sending.
 	RequestInterceptors []RequestInterceptor
@@ -105,6 +118,7 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
+		httpTransport:            settings.HTTPTransport,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)
