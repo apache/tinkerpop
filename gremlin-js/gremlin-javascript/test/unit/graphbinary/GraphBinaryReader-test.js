@@ -55,9 +55,9 @@ describe('GraphBinaryReader', () => {
       assert.throws(() => reader.readResponse(buffer), /Unsupported version '0'/);
     });
 
-    it('rejects version 0x84', () => {
-      const buffer = Buffer.from([0x84]);
-      assert.throws(() => reader.readResponse(buffer), /Unsupported version '132'/);
+    it('rejects version 0x81', () => {
+      const buffer = Buffer.from([0x81]);
+      assert.throws(() => reader.readResponse(buffer), /Unsupported version '129'/);
     });
 
     it('rejects version 0xFF', () => {
