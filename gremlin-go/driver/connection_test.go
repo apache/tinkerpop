@@ -1315,6 +1315,6 @@ func TestConnectionWithMockServer_BasicAuth(t *testing.T) {
 
 	// Body should still be valid serialized bytes
 	assert.NotEmpty(t, capturedBody, "serialized body should be non-empty with BasicAuth")
-	assert.Equal(t, byte(0x81), capturedBody[0],
-		"body should start with GraphBinary version byte 0x81")
+	assert.Equal(t, byte(0x84), capturedBody[0],
+		"body should start with GraphBinary version byte 0x84")
 }

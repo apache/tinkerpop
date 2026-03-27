@@ -286,7 +286,7 @@ func TestGraphBinaryDeserializerWithEndOfStreamMarker(t *testing.T) {
 		// - EndOfStream marker
 		// - Status: code(4) + message(nullable) + exception(nullable)
 		data := []byte{
-			0x81, 0x00, // Header: version byte + no bulking
+			0x84, 0x00, // Header: version byte + no bulking
 			0x01, 0x00, 0x00, 0x00, 0x00, 0x2A, // int32 = 42
 			0xfd, 0x00, 0x00, // Marker type + flag + value=0 (EndOfStream)
 			0x00, 0x00, 0x00, 0xC8, // Status code = 200

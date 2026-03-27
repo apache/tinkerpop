@@ -73,7 +73,7 @@ export default class GraphBinaryWriter {
 
       const gremlin = requestMessage.getGremlin();
       const bufs = [
-        Buffer.from([0x81]),
+        Buffer.from([0x84]),
         this.ioc.mapSerializer.serialize(fields, false),
         this.ioc.stringSerializer.serialize(gremlin, false),
       ];
@@ -82,7 +82,7 @@ export default class GraphBinaryWriter {
 
     // Legacy path: plain object with { gremlin, fields }
     const bufs = [
-      Buffer.from([0x81]),
+      Buffer.from([0x84]),
       this.ioc.mapSerializer.serialize(requestMessage.fields || new Map(), false),
       this.ioc.stringSerializer.serialize(requestMessage.gremlin, false),
     ];

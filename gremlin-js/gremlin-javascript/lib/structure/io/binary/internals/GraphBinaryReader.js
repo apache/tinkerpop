@@ -51,7 +51,7 @@ export default class GraphBinaryReader {
 
     // {version} is a Byte representing the protocol version
     const version = cursor[0];
-    if (version !== 0x81) {
+    if (version !== 0x84) {
       throw new Error(`Unsupported version '${version}'.`);
     }
     cursor = cursor.slice(1); // skip version

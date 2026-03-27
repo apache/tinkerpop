@@ -111,8 +111,8 @@ func TestSigV4AuthWithSerializeInterceptor(t *testing.T) {
 
 	// Body should be valid serialized bytes
 	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
-	assert.Equal(t, byte(0x81), capturedBody[0],
-		"body should start with GraphBinary version byte 0x81")
+	assert.Equal(t, byte(0x84), capturedBody[0],
+		"body should start with GraphBinary version byte 0x84")
 }
 
 // TestSigV4Auth_AutoSerializesInChain verifies that SigV4Auth works as the only
@@ -149,8 +149,8 @@ func TestSigV4Auth_AutoSerializesInChain(t *testing.T) {
 		"SigV4Auth should set Authorization header")
 	assert.Contains(t, capturedHeaders.Get("Authorization"), "AWS4-HMAC-SHA256")
 	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
-	assert.Equal(t, byte(0x81), capturedBody[0],
-		"body should start with GraphBinary version byte 0x81")
+	assert.Equal(t, byte(0x84), capturedBody[0],
+		"body should start with GraphBinary version byte 0x84")
 }
 
 // TestMultipleInterceptors_SerializeThenAuth verifies that a custom interceptor can
@@ -198,8 +198,8 @@ func TestMultipleInterceptors_SerializeThenAuth(t *testing.T) {
 
 	// Body should be valid serialized bytes (from SerializeRequest)
 	assert.NotEmpty(t, capturedBody, "body should be non-empty serialized bytes")
-	assert.Equal(t, byte(0x81), capturedBody[0],
-		"body should start with GraphBinary version byte 0x81")
+	assert.Equal(t, byte(0x84), capturedBody[0],
+		"body should start with GraphBinary version byte 0x84")
 }
 
 // TestInterceptor_IoReaderBody verifies that an interceptor can set Body to an io.Reader

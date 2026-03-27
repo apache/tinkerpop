@@ -64,8 +64,7 @@ func newGraphBinarySerializer(handler *logHandler) *GraphBinarySerializer {
 	}
 }
 
-// TODO change for graph binary 4.0 version is finalized
-const versionByte byte = 0x81
+const versionByte byte = 0x84
 
 // SerializeMessage serializes a request message into GraphBinary format.
 //

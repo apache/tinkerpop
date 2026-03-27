@@ -20,7 +20,7 @@
 /*
  * GraphBinaryWriter v4 request format tests.
  * Tests the writer's ability to generate v4 request format:
- * {version:0x81}{fields:Map bare}{gremlin:String bare}
+ * {version:0x84}{fields:Map bare}{gremlin:String bare}
  */
 
 import { assert } from 'chai';
@@ -32,9 +32,9 @@ describe('GraphBinaryWriter', () => {
   const writer = new GraphBinaryWriter(ioc);
 
   describe('version byte', () => {
-    it('first byte is 0x81', () => {
+    it('first byte is 0x84', () => {
       const result = writer.writeRequest({ gremlin: 'g.V()', fields: new Map() });
-      assert.equal(result[0], 0x81);
+      assert.equal(result[0], 0x84);
     });
   });
 
@@ -42,7 +42,7 @@ describe('GraphBinaryWriter', () => {
     it('empty map + bare string', () => {
       const result = writer.writeRequest({ gremlin: 'g.V()', fields: new Map() });
       const expected = Buffer.from([
-        0x81, // version
+        0x84, // version
         0x00, 0x00, 0x00, 0x00, // empty map bare (length=0)
         0x00, 0x00, 0x00, 0x05, // string length=5
         0x67, 0x2E, 0x56, 0x28, 0x29 // "g.V()"
@@ -57,7 +57,7 @@ describe('GraphBinaryWriter', () => {
       fields.set('evaluationTimeout', 1000);
       const result = writer.writeRequest({ gremlin: 'g.V()', fields });
       const expected = Buffer.from([
-        0x81, // version
+        0x84, // version
         0x00, 0x00, 0x00, 0x01, // map length=1
         0x03, 0x00, // key type_code=STRING, value_flag=0x00
         0x00, 0x00, 0x00, 0x11, // key string length=17
@@ -75,7 +75,7 @@ describe('GraphBinaryWriter', () => {
     it('undefined fields defaults to empty map', () => {
       const result = writer.writeRequest({ gremlin: 'g.V()', fields: undefined });
       const expected = Buffer.from([
-        0x81, // version
+        0x84, // version
         0x00, 0x00, 0x00, 0x00, // empty map bare (length=0)
         0x00, 0x00, 0x00, 0x05, // string length=5
         0x67, 0x2E, 0x56, 0x28, 0x29 // "g.V()"
@@ -86,7 +86,7 @@ describe('GraphBinaryWriter', () => {
     it('null fields defaults to empty map', () => {
       const result = writer.writeRequest({ gremlin: 'g.V()', fields: null });
       const expected = Buffer.from([
-        0x81, // version
+        0x84, // version
         0x00, 0x00, 0x00, 0x00, // empty map bare (length=0)
         0x00, 0x00, 0x00, 0x05, // string length=5
         0x67, 0x2E, 0x56, 0x28, 0x29 // "g.V()"
@@ -112,7 +112,7 @@ describe('GraphBinaryWriter', () => {
     it('empty string has length 0', () => {
       const result = writer.writeRequest({ gremlin: '', fields: new Map() });
       const expected = Buffer.from([
-        0x81, // version
+        0x84, // version
         0x00, 0x00, 0x00, 0x00, // empty map bare (length=0)
         0x00, 0x00, 0x00, 0x00 // empty string bare (length=0)
       ]);

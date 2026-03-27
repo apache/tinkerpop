@@ -137,7 +137,7 @@ class GraphBinarySerializersV4(object):
     def finalize_message(self, message):
         ba = bytearray()
 
-        ba.extend(graphbinaryV4.uint8_pack(0x81))
+        ba.extend(graphbinaryV4.uint8_pack(0x84))
         fields = message["fields"]
         ba.extend(self.int_pack(len(fields)))
         for k, v in fields.items():

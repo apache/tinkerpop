@@ -58,7 +58,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final ByteBuf RequestMessageBinaryBuffer1 = Unpooled.wrappedBuffer(new byte[]{
             // flag
-            (byte)0x81,
+            (byte)0x84,
             // uuid
             (byte) 0xd3, (byte) 0xfd, 0x35, 0x40, 0x67, 0x18, 0x46, (byte) 0x87,(byte) 0x95, 0x6b, (byte) 0xc8, 0x61,
             (byte) 0x8a, 0x26, (byte) 0xe3, 0x35,
@@ -72,7 +72,7 @@ public class SerializationBenchmark extends AbstractBenchmarkBase {
 
     private static final ByteBuf RequestMessageBinaryBuffer2 = Unpooled.wrappedBuffer(new byte[]{
             // flag
-            (byte)0x81,
+            (byte)0x84,
             // uuid
             (byte) 0xd3, (byte) 0xfd, 0x35, 0x40, 0x67, 0x18, 0x46, (byte) 0x87,(byte) 0x95, 0x6b, (byte) 0xc8, 0x61,
             (byte) 0x8a, 0x26, (byte) 0xe3, 0x35,
