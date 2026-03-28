@@ -173,7 +173,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case *BigDecimal:
 		return fmt.Sprintf("%vM", v.Value()), nil
 	case time.Time:
-		return fmt.Sprintf("datetime(\"%v\")", v.Format(time.RFC3339)), nil
+		return fmt.Sprintf("datetime(\"%v\")", v.Format("2006-01-02T15:04:05.000Z07:00")), nil // equivalent to time.RFC3339 but with ms precision instead of seconds
 	case cardinality, column, direction, operator, order, pick, pop, barrier, scope, t, merge, gType:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name[:1])+name[1:], v), nil

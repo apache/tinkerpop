@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
 // slowReader simulates a network stream that delivers data in chunks with delays.
@@ -367,6 +368,109 @@ func TestGraphBinaryDeserializerComplexTypes(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, int32(1), v.Id)
 		assert.Equal(t, "person", v.Label)
+	})
+
+	t.Run("round-trip VertexProperty preserves Key field", func(t *testing.T) {
+		original := &VertexProperty{
+			Element: Element{Id: int32(1), Label: "name"},
+			Key:     "name",
+			Value:   "marko",
+		}
+
+		var buf bytes.Buffer
+		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		err := ser.ser.write(original, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buf)
+		val, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		vp := val.(*VertexProperty)
+		assert.Equal(t, "marko", vp.Value)
+		assert.Equal(t, "name", vp.Key, "VertexProperty.Key should survive round-trip")
+	})
+
+	t.Run("round-trip map with T enum keys preserves types", func(t *testing.T) {
+		original := map[interface{}]interface{}{
+			T.Id:    "1",
+			T.Label: "person",
+			"name":  "marko",
+		}
+
+		var buf bytes.Buffer
+		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		err := ser.ser.write(original, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buf)
+		val, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		m := val.(map[interface{}]interface{})
+		assert.Equal(t, "1", m[T.Id], "T.Id key should survive round-trip")
+		assert.Equal(t, "person", m[T.Label], "T.Label key should survive round-trip")
+		assert.Equal(t, "marko", m["name"])
+	})
+
+	t.Run("round-trip map with Direction enum keys preserves types", func(t *testing.T) {
+		original := map[interface{}]interface{}{
+			Direction.Out: "outVertex",
+			Direction.In:  "inVertex",
+		}
+
+		var buf bytes.Buffer
+		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		err := ser.ser.write(original, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buf)
+		val, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		m := val.(map[interface{}]interface{})
+		assert.Equal(t, "outVertex", m[Direction.Out], "Direction.Out key should survive round-trip")
+		assert.Equal(t, "inVertex", m[Direction.In], "Direction.In key should survive round-trip")
+	})
+
+	t.Run("round-trip map with Merge enum keys preserves types", func(t *testing.T) {
+		original := map[interface{}]interface{}{
+			Merge.OnCreate: "created",
+			Merge.OnMatch:  "matched",
+		}
+
+		var buf bytes.Buffer
+		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		err := ser.ser.write(original, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buf)
+		val, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		m := val.(map[interface{}]interface{})
+		assert.Equal(t, "created", m[Merge.OnCreate], "Merge.OnCreate key should survive round-trip")
+		assert.Equal(t, "matched", m[Merge.OnMatch], "Merge.OnMatch key should survive round-trip")
+	})
+
+	t.Run("round-trip map with GType enum keys preserves types", func(t *testing.T) {
+		original := map[interface{}]interface{}{
+			GType.Int:    "integer",
+			GType.String: "string",
+		}
+
+		var buf bytes.Buffer
+		ser := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		err := ser.ser.write(original, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(&buf)
+		val, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+
+		m := val.(map[interface{}]interface{})
+		assert.Equal(t, "integer", m[GType.Int], "GType.Int key should survive round-trip")
+		assert.Equal(t, "string", m[GType.String], "GType.String key should survive round-trip")
 	})
 
 	t.Run("reads list of integers from chunked stream", func(t *testing.T) {

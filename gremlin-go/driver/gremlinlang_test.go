@@ -385,7 +385,7 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00Z\")))",
+			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00.000Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
@@ -481,31 +481,31 @@ func Test_GremlinLang(t *testing.T) {
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC))
 			},
-			equals: "g.V().has(\"date\",datetime(\"2021-02-22T00:00:00Z\"))",
+			equals: "g.V().has(\"date\",datetime(\"2021-02-22T00:00:00.000Z\"))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Within(time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC), time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",within([datetime(\"2021-02-22T00:00:00Z\"),datetime(\"2021-01-01T00:00:00Z\")]))",
+			equals: "g.V().has(\"date\",within([datetime(\"2021-02-22T00:00:00.000Z\"),datetime(\"2021-01-01T00:00:00.000Z\")]))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Between(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",between(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
+			equals: "g.V().has(\"date\",between(datetime(\"2021-01-01T00:00:00.000Z\"),datetime(\"2021-02-22T00:00:00.000Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Inside(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2021, 2, 22, 0, 0, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",inside(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
+			equals: "g.V().has(\"date\",inside(datetime(\"2021-01-01T00:00:00.000Z\"),datetime(\"2021-02-22T00:00:00.000Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().Has("date", P.Gt(time.Date(2021, 1, 1, 9, 30, 0, 0, time.UTC)))
 			},
-			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00Z\")))",
+			equals: "g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00.000Z\")))",
 		},
 		{
 			assert: func(g *GraphTraversalSource) *GraphTraversal {

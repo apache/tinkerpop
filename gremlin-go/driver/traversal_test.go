@@ -396,7 +396,7 @@ func TestTraversal(t *testing.T) {
 
 		// Expect each result to contain a id. No additional items.
 		for _, result := range results {
-			key, ok := result.GetInterface().(map[interface{}]interface{})["id"]
+			key, ok := result.GetInterface().(map[interface{}]interface{})[T.Id]
 			assert.True(t, ok)
 			assert.NotNil(t, key)
 
@@ -417,7 +417,7 @@ func TestTraversal(t *testing.T) {
 
 		// Expect each result to contain a key. No additional items.
 		for _, result := range results {
-			key, ok := result.GetInterface().(map[interface{}]interface{})["key"]
+			key, ok := result.GetInterface().(map[interface{}]interface{})[T.Key]
 			assert.True(t, ok)
 			assert.NotNil(t, key)
 
@@ -438,7 +438,7 @@ func TestTraversal(t *testing.T) {
 
 		// Expect each result to contain a value. No additional items.
 		for _, result := range results {
-			key, ok := result.GetInterface().(map[interface{}]interface{})["value"]
+			key, ok := result.GetInterface().(map[interface{}]interface{})[T.Value]
 			assert.True(t, ok)
 			assert.NotNil(t, key)
 
@@ -459,15 +459,15 @@ func TestTraversal(t *testing.T) {
 
 		// Expect each result to contain an id, key, and value. No additional items.
 		for _, result := range results {
-			id, ok := result.GetInterface().(map[interface{}]interface{})["id"]
+			id, ok := result.GetInterface().(map[interface{}]interface{})[T.Id]
 			assert.True(t, ok)
 			assert.NotNil(t, id)
 
-			key, ok := result.GetInterface().(map[interface{}]interface{})["key"]
+			key, ok := result.GetInterface().(map[interface{}]interface{})[T.Key]
 			assert.True(t, ok)
 			assert.NotNil(t, key)
 
-			value, ok := result.GetInterface().(map[interface{}]interface{})["value"]
+			value, ok := result.GetInterface().(map[interface{}]interface{})[T.Value]
 			assert.True(t, ok)
 			assert.NotNil(t, value)
 

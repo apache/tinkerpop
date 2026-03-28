@@ -254,7 +254,7 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 	case byteBuffer:
 		return d.readByteBuffer()
 	case tType, directionType, mergeType, gTypeType:
-		return d.readEnum()
+		return d.readEnum(dt)
 	default:
 		return nil, newError(err0408GetSerializerToReadUnknownTypeError, dt)
 	}
@@ -479,6 +479,7 @@ func (d *GraphBinaryDeserializer) readVertexProperty() (*VertexProperty, error) 
 	}
 	vp := &VertexProperty{
 		Element: Element{Id: id, Label: label},
+		Key:     label,
 		Value:   value,
 	}
 	vp.Properties = make([]interface{}, 0)
@@ -575,14 +576,29 @@ func (d *GraphBinaryDeserializer) readByteBuffer() (*ByteBuffer, error) {
 	return &ByteBuffer{Data: data}, nil
 }
 
-func (d *GraphBinaryDeserializer) readEnum() (string, error) {
+func (d *GraphBinaryDeserializer) readEnum(dt dataType) (interface{}, error) {
 	if _, err := d.readByte(); err != nil { // type code (string)
-		return "", err
+		return nil, err
 	}
 	if _, err := d.readByte(); err != nil { // null flag
-		return "", err
+		return nil, err
 	}
-	return d.readString()
+	s, err := d.readString()
+	if err != nil {
+		return nil, err
+	}
+	switch dt {
+	case tType:
+		return t(s), nil
+	case directionType:
+		return direction(s), nil
+	case mergeType:
+		return merge(s), nil
+	case gTypeType:
+		return gType(s), nil
+	default:
+		return s, nil
+	}
 }
 
 // ReadStatus reads the response status after the EndOfStream marker.
