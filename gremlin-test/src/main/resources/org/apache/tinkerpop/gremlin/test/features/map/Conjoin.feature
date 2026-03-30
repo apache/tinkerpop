@@ -153,3 +153,29 @@ Feature: Step - conjoin()
     Then the result should be unordered
       | result |
       | 3;three |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXnull_a_null_bX_fold_conjoinXplusX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[null,a,null,b]"
+    And the traversal of
+      """
+      g.inject(xx1).conjoin("+")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | str[a+b] |
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_injectXnull_nullX_conjoinXplusX
+    Given the empty graph
+    And using the parameter xx1 defined as "l[null,null]"
+    And the traversal of
+      """
+      g.inject(xx1).conjoin("+")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | str[] |

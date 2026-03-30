@@ -25,6 +25,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-3-7-7]]
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Fixed conjoin has incorrect null handling.
+
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)
 

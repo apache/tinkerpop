@@ -30,6 +30,35 @@ image::gremlin-zamfir.png[width=185]
 Please see the link:https://github.com/apache/tinkerpop/blob/3.7.7/CHANGELOG.asciidoc#release-3-7-7[changelog] for a
 complete list of all the modifications that are part of this release.
 
+=== Upgrading for Users
+
+==== conjoin() Step Null Handling
+
+The `conjoin()` step previously returned `null` when elements in the incoming list are `null`. This behavior has
+been changed so that `conjoin()` now returns an empty string (`""`) in that case.
+
+[source,groovy]
+----
+// 3.7.6
+gremlin> g.inject([null]).conjoin("-")
+==>null
+gremlin> g.inject([null, null]).conjoin("-")
+==>null
+
+// 3.7.7
+gremlin> g.inject([null]).conjoin("+")
+==>
+gremlin> g.inject([null, null]).conjoin("+")
+==>
+----
+
+Code that checks the result of `conjoin()` for lists that include `null` elements should be updated to check for
+an empty string instead.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3225[TINKERPOP-3225]
+
+
+
 == TinkerPop 3.7.6
 
 *Release Date: April 1, 2026*

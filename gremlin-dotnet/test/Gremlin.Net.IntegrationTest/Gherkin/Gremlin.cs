@@ -633,6 +633,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                {"g_V_out_out_path_byXnameX_conjoinXX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Out().Out().Path().By("name").Conjoin("")}}, 
                {"g_injectXa_null_bX_conjoinXxyzX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Conjoin("xyz")}}, 
                {"g_injectX3_threeX_conjoinX_X", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Conjoin(";")}}, 
+               {"g_injectXnull_a_null_bX_fold_conjoinXplusX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Conjoin("+")}}, 
+               {"g_injectXnull_nullX_conjoinXplusX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.Inject(p["xx1"]).Conjoin("+")}}, 
                {"g_V_connectedComponent_hasXcomponentX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().ConnectedComponent().Has("gremlin.connectedComponentVertexProgram.component")}}, 
                {"g_V_dedup_connectedComponent_hasXcomponentX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().Dedup().ConnectedComponent().Has("gremlin.connectedComponentVertexProgram.component")}}, 
                {"g_V_hasLabelXsoftwareX_connectedComponent_project_byXnameX_byXcomponentX", new List<Func<GraphTraversalSource, IDictionary<string, object>, ITraversal>> {(g,p) =>g.V().HasLabel("software").ConnectedComponent().Project<object>("name","component").By("name").By("gremlin.connectedComponentVertexProgram.component")}}, 
