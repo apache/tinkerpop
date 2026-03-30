@@ -51,7 +51,8 @@ public class ConjoinStepTest extends StepTest {
         assertEquals("5AA8AA10", __.__(new long[] {5L, 8L, 10L}).conjoin("AA").next());
         assertEquals("715", __.__(1).constant(new Long[] {7L, 15L}).conjoin("").next());
         assertEquals("5.5,8.0,10.1", __.__(new double[] {5.5, 8.0, 10.1}).conjoin(",").next());
-        assertNull(__.__(Arrays.asList(null, null)).conjoin(",").next());
+        assertEquals("", __.__(Arrays.asList(null, null)).conjoin(",").next());
+        assertEquals("1", __.__(Arrays.asList(null, 1, null)).conjoin(",").next());
 
         final Set<Integer> set = new LinkedHashSet<>();
         set.add(10); set.add(11); set.add(12);
