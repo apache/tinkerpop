@@ -33,6 +33,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO;
 using NSubstitute;
 using Xunit;
@@ -270,13 +271,20 @@ namespace Gremlin.Net.UnitTest.Driver
         private static IMessageSerializer CreateMockSerializer(
             string mimeType = SerializationTokens.GraphBinary4MimeType)
         {
+            return CreateMockSerializer(new List<object>(), mimeType);
+        }
+
+        private static IMessageSerializer CreateMockSerializer(
+            List<object> results,
+            string mimeType = SerializationTokens.GraphBinary4MimeType)
+        {
             var serializer = Substitute.For<IMessageSerializer>();
             serializer.MimeType.Returns(mimeType);
             serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(new byte[] { 0x84 }));
             serializer.DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(
-                    new ResponseMessage<List<object>>(false, new List<object>(), 200, null, null)));
+                    new ResponseMessage<List<object>>(false, results, 200, null, null)));
             return serializer;
         }
 
@@ -940,6 +948,57 @@ namespace Gremlin.Net.UnitTest.Driver
             // Accept comes from response serializer
             Assert.Contains(handler.CapturedRequest.Headers.Accept,
                 h => h.MediaType == "application/vnd.custom-response-v2.0");
+        }
+
+        [Fact]
+        public async Task ShouldBoxNonTraverserResultsIntoTraversers()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer(new List<object> { "hello", 42 });
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+
+            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+
+            var items = result.ToList();
+            Assert.Equal(2, items.Count);
+            Assert.Equal("hello", items[0].Object);
+            Assert.Equal(1, items[0].Bulk);
+            Assert.Equal(42, items[1].Object);
+            Assert.Equal(1, items[1].Bulk);
+        }
+
+        [Fact]
+        public async Task ShouldNotDoubleBoxTraverserResults()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer(new List<object> { new Traverser("existing", 5) });
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+
+            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+
+            var item = result.Single();
+            Assert.Equal("existing", item.Object);
+            Assert.Equal(5, item.Bulk);
+        }
+
+        [Fact]
+        public async Task ShouldBoxMixedTraverserAndNonTraverserResults()
+        {
+            var (httpClient, _) = CreateMockHttpClient();
+            var serializer = CreateMockSerializer(new List<object> { new Traverser("already", 3), "raw" });
+            var settings = new ConnectionSettings();
+            using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
+
+            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+
+            var items = result.ToList();
+            Assert.Equal(2, items.Count);
+            Assert.Equal("already", items[0].Object);
+            Assert.Equal(3, items[0].Bulk);
+            Assert.Equal("raw", items[1].Object);
+            Assert.Equal(1, items[1].Bulk);
         }
 
         /// <summary>
