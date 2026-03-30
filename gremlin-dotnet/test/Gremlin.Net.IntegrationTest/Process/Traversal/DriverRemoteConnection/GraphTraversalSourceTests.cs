@@ -50,17 +50,6 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
             Assert.Contains("peter", results);
         }
                 
-        // TODO: Groovy lambdas are not supported in the GremlinLang/GraphBinary4 serialization path
-        [Fact(Skip = "Groovy lambdas are not serializable over HTTP 4.0 with GraphBinary4")]
-        public void ShouldHandleLambdasInWithSack()
-        {
-            var connection = _connectionFactory.CreateRemoteConnection();
-            var g = AnonymousTraversalSource.Traversal().With(connection);
 
-            Assert.Equal(24.0, g.WithSack(1.0, (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());                        
-            Assert.Equal(24.0, g.WithSack((ISupplier) Lambda.Groovy("{1.0d}"), (IUnaryOperator) Lambda.Groovy("x -> x + 1")).V().Both().Sack<double>().Sum<double>().Next());
-            Assert.Equal(48.0, g.WithSack(1.0, (IBinaryOperator) Lambda.Groovy("x, y -> x + y + 1")).V().Both().Sack<double>().Sum<double>().Next());                        
-            Assert.Equal(48.0, g.WithSack((ISupplier) Lambda.Groovy("{1.0d}"), (IBinaryOperator) Lambda.Groovy("x, y -> x + y + 1")).V().Both().Sack<double>().Sum<double>().Next());       
-        }
     }
 }

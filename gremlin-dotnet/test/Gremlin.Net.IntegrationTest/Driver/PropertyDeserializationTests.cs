@@ -27,7 +27,6 @@ using Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
 using Gremlin.Net.Structure.IO.GraphBinary4;
-using Gremlin.Net.Structure.IO.GraphSON;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -306,21 +305,9 @@ namespace Gremlin.Net.IntegrationTest.Driver
             Assert.True((element.Properties?.Length ?? 0) == 0);
         }
 
-        // TODO: Remove GraphSON serializer tests entirely once GraphSON support is fully removed from the driver.
-        // GraphSON 2/3 serializers are not compatible with the HTTP 4.0 transport (they use WebSocket-style
-        // MIME-type framing and the server only accepts GraphBinary 4.0 or GraphSON 4.0 over HTTP).
         public static List<object[]> Serializers => new()
         {
             new object[] { new GraphBinary4MessageSerializer() }
         };
-
-        [Fact(Skip = "GraphSON 2/3 serializers are not supported over HTTP 4.0 transport")]
-        public void GraphSONSerializersNotSupportedOverHttp()
-        {
-            // TODO: Remove this test and the GraphSON serializer references when GraphSON is fully removed.
-            // GraphSON2MessageSerializer and GraphSON3MessageSerializer use WebSocket-style MIME-type framing
-            // that is incompatible with the HTTP channelizer. The server only accepts GraphBinary 4.0 or
-            // GraphSON 4.0 (application/json) over HTTP.
-        }
     }
 }

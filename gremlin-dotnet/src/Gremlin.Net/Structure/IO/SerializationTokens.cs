@@ -29,16 +29,6 @@ namespace Gremlin.Net.Structure.IO
     public class SerializationTokens
     {
         /// <summary>
-        ///     The MIME type for GraphSON 2.
-        /// </summary>
-        public const string GraphSON2MimeType = "application/vnd.gremlin-v2.0+json";
-        
-        /// <summary>
-        ///     The MIME type for GraphSON 3.
-        /// </summary>
-        public const string GraphSON3MimeType = "application/vnd.gremlin-v3.0+json";
-
-        /// <summary>
         ///     The MIME type for GraphBinary 4.0.
         /// </summary>
         public const string GraphBinary4MimeType = "application/vnd.graphbinary-v4.0";
