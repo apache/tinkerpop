@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.util.NumberHelper;
 
 import javax.lang.model.SourceVersion;
 import java.io.Serializable;
+import java.util.Date;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.OffsetDateTime;
@@ -138,6 +139,9 @@ public class GremlinLang implements Cloneable, Serializable {
 
         if (arg instanceof OffsetDateTime)
             return String.format("datetime(\"%s\")", format(((OffsetDateTime) arg).toInstant()));
+
+        if (arg instanceof Date)
+            return String.format("datetime(\"%s\")", format(((Date) arg).toInstant()));
 
         if (arg instanceof UUID) {
             return String.format("UUID(\"%s\")", arg);

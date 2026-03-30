@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
@@ -85,6 +86,8 @@ public class GremlinLangTest {
                 {g.inject(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
                         "g.inject(+Infinity,-Infinity)"},
                 {g.inject(DatetimeHelper.parse("2018-03-21T08:35:44.741Z")),
+                        "g.inject(datetime(\"2018-03-21T08:35:44.741Z\"))"},
+                {g.inject(Date.from(DatetimeHelper.parse("2018-03-21T08:35:44.741Z").toInstant())),
                         "g.inject(datetime(\"2018-03-21T08:35:44.741Z\"))"},
                 {g.inject(asMap("age", VertexProperty.Cardinality.list(33))),
                         "g.inject([\"age\":Cardinality.list(33)])"},
