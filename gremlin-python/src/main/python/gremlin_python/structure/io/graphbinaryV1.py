@@ -520,7 +520,13 @@ class SetDeserializer(ListIO):
 
     @classmethod
     def objectify(cls, buff, reader, nullable=True):
-        return set(ListIO.objectify(buff, reader, nullable))
+        the_list = ListIO.objectify(buff, reader, nullable)
+        try:
+            return set(the_list)
+        except TypeError:
+            log.warning("Coercing Set to list as it contains unhashable elements (e.g. dict, list). "
+                        "See TINKERPOP-3232 for more details.")
+            return the_list
 
 
 class MapIO(_GraphBinaryTypeIO):

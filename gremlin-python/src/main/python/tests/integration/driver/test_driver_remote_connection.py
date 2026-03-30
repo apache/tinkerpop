@@ -26,6 +26,7 @@ from gremlin_python.process.traversal import Traverser
 from gremlin_python.process.traversal import TraversalStrategy
 from gremlin_python.process.traversal import Bindings
 from gremlin_python.process.traversal import P, Order, T
+from gremlin_python.process.traversal import Scope
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.structure.graph import Vertex
@@ -142,6 +143,21 @@ class TestDriverRemoteConnection(object):
         # edges have dict-like properties; ensure not empty
         assert p.objects[1].properties is not None and len(p.objects[1].properties) > 0
         assert p.objects[2].properties is not None and len(p.objects[2].properties) > 0
+
+    def test_set_with_unhashable_elements(self, remote_connection):
+        # test that a query returning a Set containing non-hashable elements (maps) can be
+        # deserialized without a TypeError - see TINKERPOP-3232
+        # GraphSON v2 does not have a Set type so it deserializes as list - skip for v2
+        if isinstance(remote_connection._client._message_serializer, GraphSONSerializersV2d0):
+            return
+        g = traversal().withRemote(remote_connection)
+        # g.V().valueMap().dedup(Scope.local) returns a Set of Map results which previously
+        # threw TypeError because Python sets cannot contain unhashable dict elements.
+        # The Set is now coerced to a list when it contains unhashable elements.
+        results = g.V().valueMap().dedup(Scope.local).toList()
+        assert len(results) > 0
+        for r in results:
+            assert isinstance(r, list)
 
     def test_lambda_traversals(self, remote_connection):
         statics.load_statics(globals())

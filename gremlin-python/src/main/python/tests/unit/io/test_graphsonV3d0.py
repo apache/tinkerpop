@@ -86,6 +86,63 @@ class TestGraphSONReader:
         assert x.count("marko") == 1
         assert x.count("josh") == 3
 
+    def test_set_with_unhashable_dict_elements(self):
+        # test that sets containing dicts are coerced to list - see TINKERPOP-3232
+        x = self.graphson_reader.read_object(
+            json.dumps({"@type": "g:Set", "@value": [
+                {"@type": "g:Map", "@value": ["name", "marko", "age", {"@type": "g:Int32", "@value": 29}]},
+                {"@type": "g:Map", "@value": ["name", "josh", "age", {"@type": "g:Int32", "@value": 32}]}
+            ]}))
+        assert isinstance(x, list)
+        assert len(x) == 2
+
+    def test_set_with_unhashable_list_elements(self):
+        # test that sets containing lists are coerced to list - see TINKERPOP-3232
+        x = self.graphson_reader.read_object(
+            json.dumps({"@type": "g:Set", "@value": [
+                {"@type": "g:List", "@value": ["marko", "josh"]},
+                {"@type": "g:List", "@value": ["vadas", "peter"]}
+            ]}))
+        assert isinstance(x, list)
+        assert len(x) == 2
+
+    def test_set_with_unhashable_set_elements(self):
+        # test that sets containing sets are coerced to list - see TINKERPOP-3232
+        x = self.graphson_reader.read_object(
+            json.dumps({"@type": "g:Set", "@value": [
+                {"@type": "g:Set", "@value": ["a", "b"]},
+                {"@type": "g:Set", "@value": ["c", "d"]}
+            ]}))
+        assert isinstance(x, list)
+        assert len(x) == 2
+
+    def test_set_with_mixed_hashable_and_unhashable_elements(self):
+        # test that sets containing a mix of hashable and unhashable elements are coerced to list - see TINKERPOP-3232
+        x = self.graphson_reader.read_object(
+            json.dumps({"@type": "g:Set", "@value": [
+                "marko",
+                {"@type": "g:Map", "@value": ["name", "josh"]},
+                {"@type": "g:Int32", "@value": 42}
+            ]}))
+        assert isinstance(x, list)
+        assert len(x) == 3
+
+    def test_set_with_nested_unhashable_elements(self):
+        # test that sets containing dicts with list values are coerced to list - see TINKERPOP-3232
+        x = self.graphson_reader.read_object(
+            json.dumps({"@type": "g:Set", "@value": [
+                {"@type": "g:Map", "@value": [
+                    "name", "marko",
+                    "langs", {"@type": "g:List", "@value": ["java", "python"]}
+                ]},
+                {"@type": "g:Map", "@value": [
+                    "name", "josh",
+                    "langs", {"@type": "g:List", "@value": ["gremlin"]}
+                ]}
+            ]}))
+        assert isinstance(x, list)
+        assert len(x) == 2
+
     def test_number_input(self):
         x = self.graphson_reader.read_object(json.dumps({
             "@type": "gx:Byte",

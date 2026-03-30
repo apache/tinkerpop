@@ -122,6 +122,48 @@ class TestGraphSONWriter(object):
         output = self.graphbinary_reader.read_object(self.graphbinary_writer.write_object(x))
         assert x == output
 
+    def test_set_with_unhashable_dict_elements(self):
+        # test that sets containing dicts are coerced to list - see TINKERPOP-3232
+        x = [{"name": "marko", "age": 29}, {"name": "josh", "age": 32}]
+        list_payload = self.graphbinary_writer.write_object(x)
+        # patch outer type from list (0x09) to set (0x0b)
+        set_payload = bytearray(list_payload)
+        set_payload[0] = 0x0b
+        output = self.graphbinary_reader.read_object(set_payload)
+        assert isinstance(output, list)
+        assert len(output) == 2
+
+    def test_set_with_unhashable_list_elements(self):
+        # test that sets containing lists are coerced to list - see TINKERPOP-3232
+        list_payload = self.graphbinary_writer.write_object([["marko", "josh"], ["vadas", "peter"]])
+        # the first byte is the DataType for list (0x09), change it to set (0x0b)
+        set_payload = bytearray(list_payload)
+        set_payload[0] = 0x0b
+        output = self.graphbinary_reader.read_object(set_payload)
+        assert isinstance(output, list)
+        assert len(output) == 2
+
+    def test_set_with_mixed_hashable_and_unhashable_elements(self):
+        # test that sets containing a mix of hashable and unhashable elements are coerced to list - see TINKERPOP-3232
+        x = ["marko", {"name": "josh"}, 42]
+        list_payload = self.graphbinary_writer.write_object(x)
+        set_payload = bytearray(list_payload)
+        set_payload[0] = 0x0b
+        output = self.graphbinary_reader.read_object(set_payload)
+        assert isinstance(output, list)
+        assert len(output) == 3
+
+    def test_set_with_nested_unhashable_elements(self):
+        # test that sets containing dicts with list values are coerced to list - see TINKERPOP-3232
+        x = [{"name": "marko", "langs": ["java", "python"]}, {"name": "josh", "langs": ["gremlin"]}]
+        list_payload = self.graphbinary_writer.write_object(x)
+        # patch outer type from list (0x09) to set (0x0b)
+        set_payload = bytearray(list_payload)
+        set_payload[0] = 0x0b
+        output = self.graphbinary_reader.read_object(set_payload)
+        assert isinstance(output, list)
+        assert len(output) == 2
+
     def test_dict(self):
         x = {"yo": "what?",
              "go": "no!",

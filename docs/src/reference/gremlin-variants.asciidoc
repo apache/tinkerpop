@@ -2852,6 +2852,10 @@ is different from JVM languages which produces different `Set` results when thos
 is detected during deserialization, the `Set` is coerced to a `List` so that traversals return consistent
 results within a collection across different languages. If a `Set` is needed then convert `List` results
 to `Set` manually.
+* Traversals that return a `Set` containing non-hashable items, such as `Dictionary`, `Set` and `List`, will be coerced
+into a `List` during deserialization. Python requires set elements to be hashable, for which Gremlin does not. If a
+`Set` is needed, convert elements to hashable equivalents manually (e.g. `dict` to `HashableDict`, `list` to `tuple`,
+`set` to `frozenset`).
 * Gremlin is capable of returning `Dictionary` results that use non-hashable keys (e.g. Dictionary as a key) and Python
 does not support that at a language level. Using GraphSON 3.0 or GraphBinary (after 3.5.0) makes it possible to return
 such results. In all other cases, Gremlin that returns such results will need to be re-written to avoid that sort of

@@ -35,6 +35,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added `SessionedChildClient` that borrows connections from a different `Client` for use with `Sessions`.
 * Added `reuseConnectionsForSessions` to Java GLV settings to decide whether to use `SessionedChildClient` for remote transactions.
 * Added support for Node 22 and 24 alongside Node 20.
+* Deserialize `set` into `list` when it contains non-hashable elements in `gremlin-python`
 * Fixed `cap()` step throwing an error when used mid-traversal in OLAP.
 
 [[release-3-7-5]]

@@ -59,6 +59,15 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3235[TINKERPOP-3235]
 
 Gremlin Javascript now supports Node 22 and 24 alongside Node 20.
 
+==== Python Set Deserialization with Non-Hashable Elements
+
+Traversals that return a `Set` containing non-hashable items (such as `Dictionary`, `Set`, or `List`) previously caused
+a `TypeError` during deserialization in Gremlin-Python. These results are now coerced to a `List` to avoid errors. This
+applies to both GraphSON 3.0 and GraphBinary serialization formats. If a `Set` is needed, convert the `List` results to
+Python hashable types manually (e.g. `dict` to `HashableDict`, `list` to `tuple`, `set` to `frozenset`).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3232[TINKERPOP-3232]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
