@@ -28,7 +28,7 @@ from gremlin_python.statics import SingleByte, short, long, bigint, BigDecimal
 from gremlin_python.structure.graph import Graph, Vertex, Edge, VertexProperty
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 class TestGremlinLang(object):
@@ -469,6 +469,16 @@ class TestGremlinLang(object):
         #118
         tests.append([g.inject(uuid.UUID('9b8d8a9c-61c2-43e5-9cc8-c27b9261290e')),
                       'g.inject(UUID("9b8d8a9c-61c2-43e5-9cc8-c27b9261290e"))'])
+
+        # 119
+        tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone.utc)),
+                      "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00+00:00\"))"])
+        # 120
+        tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone(timedelta(hours=7)))),
+                      "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00+07:00\"))"])
+        # 121
+        tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone(timedelta(hours=-5)))),
+                      "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00-05:00\"))"])
 
         for t in range(len(tests)):
             gremlin_lang = tests[t][0].gremlin_lang.get_gremlin()
