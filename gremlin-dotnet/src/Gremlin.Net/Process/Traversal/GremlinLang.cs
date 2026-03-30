@@ -233,7 +233,7 @@ namespace Gremlin.Net.Process.Traversal
                 return $"{decimalVal.ToString(CultureInfo.InvariantCulture)}M";
 
             if (arg is DateTimeOffset dto)
-                return $"datetime(\"{dto.ToUniversalTime():yyyy-MM-ddTHH:mm:ssZ}\")";
+                return $"datetime(\"{dto.ToUniversalTime():yyyy-MM-ddTHH:mm:ss.fffZ}\")";
 
             if (arg is Guid guid)
                 return $"UUID(\"{guid}\")";

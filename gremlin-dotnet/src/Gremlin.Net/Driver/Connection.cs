@@ -32,6 +32,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
+using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO;
 
 namespace Gremlin.Net.Driver
@@ -237,9 +238,13 @@ namespace Gremlin.Net.Driver
 
         private static ResultSet<T> BuildResultSet<T>(ResponseMessage<List<object>> responseMessage)
         {
-            return new ResultSet<T>(
-                responseMessage.Result.Cast<T>().ToList(),
-                new Dictionary<string, object>());
+            var results = typeof(T) == typeof(Traverser)
+                ? responseMessage.Result
+                    .Select(item => item is Traverser ? item : (object)new Traverser(item))
+                    .Cast<T>().ToList()
+                : responseMessage.Result.Cast<T>().ToList();
+
+            return new ResultSet<T>(results, new Dictionary<string, object>());
         }
 
         /// <summary>

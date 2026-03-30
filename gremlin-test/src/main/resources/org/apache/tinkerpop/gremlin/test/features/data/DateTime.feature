@@ -71,7 +71,7 @@ Feature: Data - DATETIME
     Given the empty graph
     And the graph initializer of
       """
-      g.addV("event").property("datetime", datetime("2023-08-08T00:00:00Z"))
+      g.addV("event").property("datetime", datetime("2023-08-08T12:34:56Z"))
       """
     And the traversal of
       """
@@ -80,7 +80,7 @@ Feature: Data - DATETIME
     When iterated to list
     Then the result should be unordered
       | result |
-      | dt[2023-08-08T00:00:00Z] |
+      | dt[2023-08-08T12:34:56Z] |
 
   @AllowDateTimePropertyValues
   Scenario: g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_chooseXisXeqXdatetimeX2023_08_08XXXX_constantXmatchX_constantXnoMatchXX
@@ -131,9 +131,9 @@ Feature: Data - DATETIME
     Given the empty graph
     And the traversal of
       """
-      g.inject(datetime("2023-08-08T00:00:00Z")).is(P.typeOf(GType.DATETIME)).groupCount()
+      g.inject(datetime("2023-08-08T12:34:56Z")).is(P.typeOf(GType.DATETIME)).groupCount()
       """
     When iterated to list
     Then the result should be unordered
       | result |
-      | m[{"dt[2023-08-08T00:00:00Z]":"d[1].l"}] |
+      | m[{"dt[2023-08-08T12:34:56Z]":"d[1].l"}] |

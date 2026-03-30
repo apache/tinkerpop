@@ -3309,16 +3309,16 @@
         "scenario": "g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_whereXisXgtXdatetimeX2020_01_01XXXX",
         "traversals": [
             {
-                "original": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T00:00:00Z\"))",
-                "language": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T00:00:00Z\"))",
-                "canonical": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T00:00:00Z\"))",
+                "original": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T12:34:56Z\"))",
+                "language": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T12:34:56Z\"))",
+                "canonical": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T12:34:56Z\"))",
                 "anonymized": "g.addV(string0).property(string1, offsetdatetime0)",
-                "dotnet": "g.AddV((string) \"event\").Property(\"datetime\", DateTimeOffset.Parse(\"2023-08-08T00:00Z\"))",
-                "go": "g.AddV(\"event\").Property(\"datetime\", time.Date(2023, 8, 8, 0, 0, 0, 0, time.FixedZone(\"UTC+00:00\", 0)))",
-                "groovy": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T00:00:00Z\"))",
-                "java": "g.addV(\"event\").property(\"datetime\", OffsetDateTime.parse(\"2023-08-08T00:00Z\"))",
-                "javascript": "g.addV(\"event\").property(\"datetime\", new Date('2023-08-08T00:00Z'))",
-                "python": "g.add_v('event').property('datetime', datetime.datetime.fromisoformat('2023-08-08T00:00+00:00'))"
+                "dotnet": "g.AddV((string) \"event\").Property(\"datetime\", DateTimeOffset.Parse(\"2023-08-08T12:34:56Z\"))",
+                "go": "g.AddV(\"event\").Property(\"datetime\", time.Date(2023, 8, 8, 12, 34, 56, 0, time.FixedZone(\"UTC+00:00\", 0)))",
+                "groovy": "g.addV(\"event\").property(\"datetime\", datetime(\"2023-08-08T12:34:56Z\"))",
+                "java": "g.addV(\"event\").property(\"datetime\", OffsetDateTime.parse(\"2023-08-08T12:34:56Z\"))",
+                "javascript": "g.addV(\"event\").property(\"datetime\", new Date('2023-08-08T12:34:56Z'))",
+                "python": "g.add_v('event').property('datetime', datetime.datetime.fromisoformat('2023-08-08T12:34:56+00:00'))"
             },
             {
                 "original": "g.V().values(\"datetime\").is(P.typeOf(GType.DATETIME)).where(__.is(P.gt(datetime(\"2020-01-01T00:00:00Z\"))))",
@@ -3413,16 +3413,16 @@
         "scenario": "g_injectXdatetimeX_isXtypeOfXGType_DATETIMEXX_groupCount",
         "traversals": [
             {
-                "original": "g.inject(datetime(\"2023-08-08T00:00:00Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
-                "language": "g.inject(datetime(\"2023-08-08T00:00:00Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
-                "canonical": "g.inject(datetime(\"2023-08-08T00:00:00Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
+                "original": "g.inject(datetime(\"2023-08-08T12:34:56Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
+                "language": "g.inject(datetime(\"2023-08-08T12:34:56Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
+                "canonical": "g.inject(datetime(\"2023-08-08T12:34:56Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
                 "anonymized": "g.inject(offsetdatetime0).is(P.typeOf(GType.DATETIME)).groupCount()",
-                "dotnet": "g.Inject<object>(DateTimeOffset.Parse(\"2023-08-08T00:00Z\")).Is(P.TypeOf(GType.DateTime)).GroupCount<object>()",
-                "go": "g.Inject(time.Date(2023, 8, 8, 0, 0, 0, 0, time.FixedZone(\"UTC+00:00\", 0))).Is(gremlingo.P.TypeOf(gremlingo.GType.DateTime)).GroupCount()",
-                "groovy": "g.inject(datetime(\"2023-08-08T00:00:00Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
-                "java": "g.inject(OffsetDateTime.parse(\"2023-08-08T00:00Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
-                "javascript": "g.inject(new Date('2023-08-08T00:00Z')).is(P.typeOf(GType.datetime)).groupCount()",
-                "python": "g.inject(datetime.datetime.fromisoformat('2023-08-08T00:00+00:00')).is_(P.type_of(GType.DATETIME)).group_count()"
+                "dotnet": "g.Inject<object>(DateTimeOffset.Parse(\"2023-08-08T12:34:56Z\")).Is(P.TypeOf(GType.DateTime)).GroupCount<object>()",
+                "go": "g.Inject(time.Date(2023, 8, 8, 12, 34, 56, 0, time.FixedZone(\"UTC+00:00\", 0))).Is(gremlingo.P.TypeOf(gremlingo.GType.DateTime)).GroupCount()",
+                "groovy": "g.inject(datetime(\"2023-08-08T12:34:56Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
+                "java": "g.inject(OffsetDateTime.parse(\"2023-08-08T12:34:56Z\")).is(P.typeOf(GType.DATETIME)).groupCount()",
+                "javascript": "g.inject(new Date('2023-08-08T12:34:56Z')).is(P.typeOf(GType.datetime)).groupCount()",
+                "python": "g.inject(datetime.datetime.fromisoformat('2023-08-08T12:34:56+00:00')).is_(P.type_of(GType.DATETIME)).group_count()"
             }
         ]
     },

@@ -470,14 +470,14 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_AddV_test_Property_date_DateTimeOffset()
         {
-            Assert.Equal("g.addV(\"test\").property(\"date\",datetime(\"2021-02-01T09:30:00Z\"))",
+            Assert.Equal("g.addV(\"test\").property(\"date\",datetime(\"2021-02-01T09:30:00.000Z\"))",
                 _g.AddV("test").Property("date", new DateTimeOffset(2021, 2, 1, 9, 30, 0, TimeSpan.Zero)).GremlinLang.GetGremlin());
         }
 
         [Fact]
         public void g_AddV_test_Property_date_DateTimeOffset_midnight()
         {
-            Assert.Equal("g.addV(\"test\").property(\"date\",datetime(\"2021-02-01T00:00:00Z\"))",
+            Assert.Equal("g.addV(\"test\").property(\"date\",datetime(\"2021-02-01T00:00:00.000Z\"))",
                 _g.AddV("test").Property("date", new DateTimeOffset(2021, 2, 1, 0, 0, 0, TimeSpan.Zero)).GremlinLang.GetGremlin());
         }
 
@@ -587,14 +587,14 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_V_Has_date_DateTimeOffset()
         {
-            Assert.Equal("g.V().has(\"date\",datetime(\"2021-02-22T00:00:00Z\"))",
+            Assert.Equal("g.V().has(\"date\",datetime(\"2021-02-22T00:00:00.000Z\"))",
                 _g.V().Has("date", new DateTimeOffset(2021, 2, 22, 0, 0, 0, TimeSpan.Zero)).GremlinLang.GetGremlin());
         }
 
         [Fact]
         public void g_V_Has_date_Within_dates()
         {
-            Assert.Equal("g.V().has(\"date\",within([datetime(\"2021-02-22T00:00:00Z\"),datetime(\"2021-01-01T00:00:00Z\")]))",
+            Assert.Equal("g.V().has(\"date\",within([datetime(\"2021-02-22T00:00:00.000Z\"),datetime(\"2021-01-01T00:00:00.000Z\")]))",
                 _g.V().Has("date", P.Within(
                     new DateTimeOffset(2021, 2, 22, 0, 0, 0, TimeSpan.Zero),
                     new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).GremlinLang.GetGremlin());
@@ -603,7 +603,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_V_Has_date_Between_dates()
         {
-            Assert.Equal("g.V().has(\"date\",between(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
+            Assert.Equal("g.V().has(\"date\",between(datetime(\"2021-01-01T00:00:00.000Z\"),datetime(\"2021-02-22T00:00:00.000Z\")))",
                 _g.V().Has("date", P.Between(
                     new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
                     new DateTimeOffset(2021, 2, 22, 0, 0, 0, TimeSpan.Zero))).GremlinLang.GetGremlin());
@@ -612,7 +612,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_V_Has_date_Inside_dates()
         {
-            Assert.Equal("g.V().has(\"date\",inside(datetime(\"2021-01-01T00:00:00Z\"),datetime(\"2021-02-22T00:00:00Z\")))",
+            Assert.Equal("g.V().has(\"date\",inside(datetime(\"2021-01-01T00:00:00.000Z\"),datetime(\"2021-02-22T00:00:00.000Z\")))",
                 _g.V().Has("date", P.Inside(
                     new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero),
                     new DateTimeOffset(2021, 2, 22, 0, 0, 0, TimeSpan.Zero))).GremlinLang.GetGremlin());
@@ -621,7 +621,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void g_V_Has_date_Gt_DateTimeOffset()
         {
-            Assert.Equal("g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00Z\")))",
+            Assert.Equal("g.V().has(\"date\",gt(datetime(\"2021-01-01T09:30:00.000Z\")))",
                 _g.V().Has("date", P.Gt(new DateTimeOffset(2021, 1, 1, 9, 30, 0, TimeSpan.Zero))).GremlinLang.GetGremlin());
         }
 
