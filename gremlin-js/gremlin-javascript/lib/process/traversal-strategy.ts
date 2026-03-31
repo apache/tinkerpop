@@ -132,8 +132,13 @@ export class PartitionStrategy extends TraversalStrategy {
    * @param options.readPartitions - list of strings representing the partitions to include for reads
    * @param options.includeMetaProperties - determines if meta-properties should be included in partitioning defaulting to false
    */
-  constructor({partitionKey = '', writePartition = '', readPartitions = [], includeMetaProperties = false} = {}) {
-    super({partitionKey, writePartition, readPartitions, includeMetaProperties});
+  constructor({partitionKey, writePartition, readPartitions, includeMetaProperties}: {partitionKey?: string, writePartition?: string, readPartitions?: string[], includeMetaProperties?: boolean} = {}) {
+    const config: Record<string, any> = {};
+    if (partitionKey !== undefined) config.partitionKey = partitionKey;
+    if (writePartition !== undefined) config.writePartition = writePartition;
+    if (readPartitions !== undefined) config.readPartitions = readPartitions;
+    if (includeMetaProperties !== undefined) config.includeMetaProperties = includeMetaProperties;
+    super(config);
   }
 }
 
@@ -151,17 +156,13 @@ export class SubgraphStrategy extends TraversalStrategy {
    * @param options.vertexProperties - traversal to filter vertex properties
    * @param options.checkAdjacentVertices - enables the strategy to apply the `vertices` filter to the adjacent vertices of an edge.
    */
-  constructor({vertices = undefined, edges = undefined, vertexProperties = undefined, checkAdjacentVertices = false} = {}) {
-    super({vertices, edges, vertexProperties, checkAdjacentVertices});
-    if (this.configuration.vertices instanceof Traversal) {
-      this.configuration.vertices = this.configuration.vertices.gremlinLang;
-    }
-    if (this.configuration.edges instanceof Traversal) {
-      this.configuration.edges = this.configuration.edges.gremlinLang;
-    }
-    if (this.configuration.vertexProperties instanceof Traversal) {
-      this.configuration.vertexProperties = this.configuration.vertexProperties.gremlinLang;
-    }
+  constructor({vertices, edges, vertexProperties, checkAdjacentVertices}: {vertices?: any, edges?: any, vertexProperties?: any, checkAdjacentVertices?: boolean} = {}) {
+    const config: Record<string, any> = {};
+    if (vertices !== undefined) config.vertices = vertices instanceof Traversal ? vertices.gremlinLang : vertices;
+    if (edges !== undefined) config.edges = edges instanceof Traversal ? edges.gremlinLang : edges;
+    if (vertexProperties !== undefined) config.vertexProperties = vertexProperties instanceof Traversal ? vertexProperties.gremlinLang : vertexProperties;
+    if (checkAdjacentVertices !== undefined) config.checkAdjacentVertices = checkAdjacentVertices;
+    super(config);
   }
 }
 
