@@ -67,11 +67,11 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.0.0",
     "globals": "^15.14.0",
-    "jsdoc": "^4.0.5",
     "js-yaml": "^3.14.2",
     "mocha": "^11.7.5",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.18",
     "typescript": "^5.4.2"
   },
   "repository": {
@@ -98,7 +98,7 @@
     "features-docker": "npm run features-graphbinary-docker",
     "features-graphbinary-docker": "cross-env NODE_OPTIONS='--loader ts-node/esm' TS_NODE_PROJECT='tsconfig.test.json' CLIENT_MIMETYPE='application/vnd.graphbinary-v4.0' cucumber-js --tags \"not @DataBigDecimal and not @DataBigInt and not @DataUUID and not @DataLong and not @StepWrite\" --import test/cucumber ../gremlin-test/",
     "lint": "eslint --ext .js .",
-    "doc": "jsdoc -r -d doc -R README.md lib/"
+    "doc": "typedoc --out doc --readme README.md --entryPointStrategy expand --entryPoints 'lib/**/*.ts' --tsconfig tsconfig.json --exclude 'lib/language/grammar/**'"
   },
   "engines": {
     "node": ">=22"
