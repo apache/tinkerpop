@@ -30,7 +30,6 @@ export class TraversalStrategies {
   /**
    * Creates a new instance of TraversalStrategies.
    * @param {TraversalStrategies} [parent] The parent strategies from where to clone the values from.
-   * @constructor
    */
   constructor(parent?: TraversalStrategies) {
     if (parent) {
@@ -106,7 +105,7 @@ export class ElementIdStrategy extends TraversalStrategy {
 
 export class HaltedTraverserStrategy extends TraversalStrategy {
   /**
-   * @param {String} haltedTraverserFactory full qualified class name in Java of a {@code HaltedTraverserFactory} implementation
+   * @param {String} haltedTraverserFactory full qualified class name in Java of a `HaltedTraverserFactory` implementation
    */
   constructor({haltedTraverserFactory = ""}) {
     super({haltedTraverserFactory: haltedTraverserFactory});
@@ -127,14 +126,14 @@ export class OptionsStrategy extends TraversalStrategy {
 
 export class PartitionStrategy extends TraversalStrategy {
   /**
-   * @param {Object} [options]
-   * @param {String} [options.partitionKey] name of the property key to partition by
-   * @param {String} [options.writePartition] the value of the currently write partition
-   * @param {Array<String>} [options.readPartitions] list of strings representing the partitions to include for reads
-   * @param {boolean} [options.includeMetaProperties] determines if meta-properties should be included in partitioning defaulting to false
+   * @param options
+   * @param options.partitionKey - name of the property key to partition by
+   * @param options.writePartition - the value of the currently write partition
+   * @param options.readPartitions - list of strings representing the partitions to include for reads
+   * @param options.includeMetaProperties - determines if meta-properties should be included in partitioning defaulting to false
    */
-  constructor(options: TraversalStrategyConfiguration) {
-    super(options);
+  constructor({partitionKey = '', writePartition = '', readPartitions = [], includeMetaProperties = false} = {}) {
+    super({partitionKey, writePartition, readPartitions, includeMetaProperties});
   }
 }
 
@@ -146,14 +145,14 @@ export class ProfileStrategy extends TraversalStrategy {
 
 export class SubgraphStrategy extends TraversalStrategy {
   /**
-   * @param {Object} [options]
-   * @param {GraphTraversal} [options.vertices] name of the property key to partition by
-   * @param {GraphTraversal} [options.edges] the value of the currently write partition
-   * @param {GraphTraversal} [options.vertexProperties] list of strings representing the partitions to include for reads
-   * @param {boolean} [options.checkAdjacentVertices] enables the strategy to apply the {@code vertices} filter to the adjacent vertices of an edge.
+   * @param options
+   * @param options.vertices - traversal to filter vertices
+   * @param options.edges - traversal to filter edges
+   * @param options.vertexProperties - traversal to filter vertex properties
+   * @param options.checkAdjacentVertices - enables the strategy to apply the `vertices` filter to the adjacent vertices of an edge.
    */
-  constructor(options: TraversalStrategyConfiguration) {
-    super(options);
+  constructor({vertices = undefined, edges = undefined, vertexProperties = undefined, checkAdjacentVertices = false} = {}) {
+    super({vertices, edges, vertexProperties, checkAdjacentVertices});
     if (this.configuration.vertices instanceof Traversal) {
       this.configuration.vertices = this.configuration.vertices.gremlinLang;
     }
@@ -168,11 +167,11 @@ export class SubgraphStrategy extends TraversalStrategy {
 
 export class ProductiveByStrategy extends TraversalStrategy {
   /**
-   * @param {Object} [options]
-   * @param {Array<String>} [options.productiveKeys] set of keys that will always be productive
+   * @param options
+   * @param options.productiveKeys - set of keys that will always be productive
    */
-  constructor(options: TraversalStrategyConfiguration) {
-    super(options);
+  constructor({productiveKeys = []} = {}) {
+    super({productiveKeys});
   }
 }
 
@@ -313,8 +312,9 @@ export class ReadOnlyStrategy extends TraversalStrategy {
 
 export class EdgeLabelVerificationStrategy extends TraversalStrategy {
   /**
-   * @param {boolean} logWarnings determines if warnings should be written to the logger when verification fails
-   * @param {boolean} throwException determines if exceptions should be thrown when verifications fails
+   * @param options
+   * @param options.logWarnings - determines if warnings should be written to the logger when verification fails
+   * @param options.throwException - determines if exceptions should be thrown when verifications fails
    */
   constructor({logWarnings = false, throwException = false} = {}) {
     super({
@@ -326,9 +326,10 @@ export class EdgeLabelVerificationStrategy extends TraversalStrategy {
 
 export class ReservedKeysVerificationStrategy extends TraversalStrategy {
   /**
-   * @param {boolean} logWarnings determines if warnings should be written to the logger when verification fails
-   * @param {boolean} throwException determines if exceptions should be thrown when verifications fails
-   * @param {Array<String>} keys the list of reserved keys to verify
+   * @param options
+   * @param options.logWarnings - determines if warnings should be written to the logger when verification fails
+   * @param options.throwException - determines if exceptions should be thrown when verifications fails
+   * @param options.keys - the list of reserved keys to verify
    */
   constructor({ logWarnings = false, throwException = false, keys = ['id', 'label'] } = {}) {
     super({

@@ -113,7 +113,7 @@ export class GraphTraversalSource {
   /**
    * Graph Traversal Source with method.
    * @param {String} key
-   * @param {Object} value if not specified, the value with default to {@code true}
+   * @param {Object} value if not specified, the value with default to `true`
    * @returns {GraphTraversalSource}
    */
   with_(key: string, value: object | undefined = undefined): GraphTraversalSource {

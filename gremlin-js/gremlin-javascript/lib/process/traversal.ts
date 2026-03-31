@@ -255,7 +255,6 @@ class PeerPressure {
 export class P<T1 = any, T2 = any> {
   /**
    * Represents an operation.
-   * @constructor
    */
   constructor(
     public operator: string,
@@ -379,7 +378,6 @@ function createP(operator: string, args: any) {
 export class TextP<T1 = any, T2 = any> {
   /**
    * Represents an operation.
-   * @constructor
    */
   constructor(
     public operator: string,

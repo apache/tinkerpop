@@ -30,9 +30,9 @@ import GremlinLang from './gremlin-lang.js';
  */
 export default class AnonymousTraversalSource {
   /**
-   * Creates a new instance of {@code AnonymousTraversalSource}.
-   * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
-   * @param {Function} [traversalClass] Optional {@code GraphTraversal} constructor.
+   * Creates a new instance of `AnonymousTraversalSource`.
+   * @param {Function} [traversalSourceClass] Optional `GraphTraversalSource` constructor.
+   * @param {Function} [traversalClass] Optional `GraphTraversal` constructor.
    */
   constructor(
     readonly traversalSourceClass?: typeof GraphTraversalSource,
@@ -40,10 +40,10 @@ export default class AnonymousTraversalSource {
   ) {}
 
   /**
-   * Constructs an {@code AnonymousTraversalSource} which will then be configured to spawn a
+   * Constructs an `AnonymousTraversalSource` which will then be configured to spawn a
    * {@link GraphTraversalSource}.
-   * @param {Function} [traversalSourceClass] Optional {@code GraphTraversalSource} constructor.
-   * @param {Function} [traversalClass] Optional {@code GraphTraversalSource} constructor.
+   * @param {Function} [traversalSourceClass] Optional `GraphTraversalSource` constructor.
+   * @param {Function} [traversalClass] Optional `GraphTraversalSource` constructor.
    * @returns {AnonymousTraversalSource}.
    */
   static traversal(traversalSourceClass?: typeof GraphTraversalSource, traversalClass?: typeof GraphTraversal) {

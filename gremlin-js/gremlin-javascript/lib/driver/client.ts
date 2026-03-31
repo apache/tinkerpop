@@ -33,7 +33,7 @@ export type RequestOptions = {
   params?: Record<string, any>;
 };
 
-type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
+export type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
 
 /**
  * A {@link Client} contains methods to send messages to a Gremlin Server.
@@ -44,22 +44,7 @@ export default class Client {
   /**
    * Creates a new instance of {@link Client}.
    * @param {String} url The resource uri.
-   * @param {Object} [options] The connection options.
-   * @param {Array} [options.ca] Trusted certificates.
-   * @param {String|Array|Buffer} [options.cert] The certificate key.
-   * @param {String|Buffer} [options.pfx] The private key, certificate, and CA certs.
-   * @param {GraphBinaryReader} [options.reader] The reader to use.
-   * @param {Boolean} [options.rejectUnauthorized] Determines whether to verify or not the server certificate.
-   * @param {String} [options.traversalSource] The traversal source. Defaults to: 'g'.
-   * @param {GraphBinaryWriter} [options.writer] The writer to use.
-   * @param {Authenticator} [options.authenticator] The authentication handler to use.
-   * @param {Object} [options.headers] An associative array containing the additional header key/values for the initial request.
-   * @param {Boolean} [options.enableUserAgentOnConnect] Determines if a user agent will be sent during connection handshake. Defaults to: true
-   * @param {String} [options.processor] The name of the opProcessor to use, leave it undefined or set 'session' when session mode.
-   * @param {String} [options.session] The sessionId of Client in session mode. Defaults to null means session-less Client.
-   * @param {http.Agent} [options.agent] The http.Agent implementation to use.
-   * @param {RequestInterceptor|RequestInterceptor[]} [options.interceptors] One or more request interceptors to apply before each HTTP request.
-   * @constructor
+   * @param {ClientOptions} [options] The connection options.
    */
   constructor(
     url: string,
