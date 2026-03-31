@@ -539,7 +539,7 @@ result, err := g.V().Out("knows").In("created").ToList()
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <pre><code class="language-groovy">def g = traversal().withRemote(...)
-def l = .out('knows').in('created').toList()
+def l = g.V().out('knows').in('created').toList()
 </code></pre>
                                                 </div>
                                                 <p class="medium black">Example</p>
@@ -624,7 +624,7 @@ def l = .out('knows').in('created').toList()
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <pre><code class="language-java">GraphTraversalSource g = traversal().withRemote(...);
-List<Vertex> l = .out('knows').in('created').toList();</code></pre>
+List<Vertex> l = g.V().out('knows').in('created').toList();</code></pre>
                                                 </div>
                                                 <p class="medium black">Example</p>
                                             </div>
@@ -708,7 +708,7 @@ List<Vertex> l = .out('knows').in('created').toList();</code></pre>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-8 text-center">
                                                 <div class="code-box">
                                                     <pre><code class="language-javascript">const g = traversal().withRemote(...);
-const l = await .out('knows').in('created').toList();</code></pre>
+const l = await g.V().out('knows').in('created').toList();</code></pre>
                                                 </div>
                                                 <p class="medium black">Example</p>
                                             </div>
@@ -833,7 +833,7 @@ const l = await .out('knows').in('created').toList();</code></pre>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <pre><code class="language-csharp">var g = Traversal().WithRemote(...);
-var l = await .Out("knows").In("created").ToList();</code></pre>
+var l = await g.V().Out("knows").In("created").ToList();</code></pre>
                                                 </div>
                                                 <p class="medium black">Example</p>
                                             </div>
@@ -899,7 +899,7 @@ var l = await .Out("knows").In("created").ToList();</code></pre>
                                             <div class="col-md-12 mb-4 mb-lg-0 col-lg-6 text-center">
                                                 <div class="code-box">
                                                     <pre><code class="language-python">g = traversal().withRemote(...);
-l = .both()[1:3].toList()</code></pre>
+l = g.V().both()[1:3].toList()</code></pre>
                                                 </div>
                                                 <p class="medium black">Example</p>
                                             </div>
