@@ -57,9 +57,10 @@ import (
 // The bufio.Reader wrapper provides efficient buffering without affecting the
 // streaming semantics - it simply reduces the number of underlying read syscalls.
 type GraphBinaryDeserializer struct {
-	r   *bufio.Reader
-	buf [8]byte
-	err error // sticky error
+	r      *bufio.Reader
+	buf    [8]byte
+	err    error // sticky error
+	bulked bool  // whether the response stream uses bulked encoding
 }
 
 // GraphBinary flag for bulked list/set
@@ -133,13 +134,24 @@ func (d *GraphBinaryDeserializer) readInt64() (int64, error) {
 }
 
 // ReadHeader reads and validates the GraphBinary response header.
+// The header consists of a version byte and a bulking flag byte (0x00 = not bulked, 0x01 = bulked).
 // This must be called before reading any objects from the stream.
 func (d *GraphBinaryDeserializer) ReadHeader() error {
 	if _, err := d.readByte(); err != nil {
 		return err
 	}
-	_, err := d.readByte()
-	return err
+	flag, err := d.readByte()
+	if err != nil {
+		return err
+	}
+	d.bulked = flag == 0x01
+	return nil
+}
+
+// IsBulked returns whether the response stream uses bulked encoding.
+// This is determined by the header flag read during ReadHeader().
+func (d *GraphBinaryDeserializer) IsBulked() bool {
+	return d.bulked
 }
 
 // ReadFullyQualified reads the next fully-qualified GraphBinary value from the stream.

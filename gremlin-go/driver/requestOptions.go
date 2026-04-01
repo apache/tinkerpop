@@ -20,6 +20,8 @@ under the License.
 package gremlingo
 
 import (
+	"strconv"
+
 	"github.com/google/uuid"
 )
 
@@ -30,6 +32,7 @@ type RequestOptions struct {
 	userAgent             string
 	bindings              map[string]interface{}
 	materializeProperties string
+	bulkResults           string
 }
 
 type RequestOptionsBuilder struct {
@@ -39,6 +42,7 @@ type RequestOptionsBuilder struct {
 	userAgent             string
 	bindings              map[string]interface{}
 	materializeProperties string
+	bulkResults           string
 }
 
 func (builder *RequestOptionsBuilder) SetRequestId(requestId uuid.UUID) *RequestOptionsBuilder {
@@ -71,6 +75,11 @@ func (builder *RequestOptionsBuilder) SetMaterializeProperties(materializeProper
 	return builder
 }
 
+func (builder *RequestOptionsBuilder) SetBulkResults(bulkResults bool) *RequestOptionsBuilder {
+	builder.bulkResults = strconv.FormatBool(bulkResults)
+	return builder
+}
+
 func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}) *RequestOptionsBuilder {
 	if builder.bindings == nil {
 		builder.bindings = make(map[string]interface{})
@@ -88,6 +97,7 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions.userAgent = builder.userAgent
 	requestOptions.bindings = builder.bindings
 	requestOptions.materializeProperties = builder.materializeProperties
+	requestOptions.bulkResults = builder.bulkResults
 
 	return *requestOptions
 }

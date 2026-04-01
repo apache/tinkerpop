@@ -51,4 +51,10 @@ func TestRequest(t *testing.T) {
 			new(RequestOptionsBuilder).SetUserAgent("TestUserAgent").Create())
 		assert.Equal(t, "TestUserAgent", r.Fields["userAgent"])
 	})
+
+	t.Run("Test makeStringRequest() with bulkResults", func(t *testing.T) {
+		r := MakeStringRequest("g.V()", "g",
+			new(RequestOptionsBuilder).SetBulkResults(true).Create())
+		assert.Equal(t, "true", r.Fields["bulkResults"])
+	})
 }

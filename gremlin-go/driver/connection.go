@@ -317,7 +317,23 @@ func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 			return
 		}
 
-		rs.Channel() <- &Result{obj}
+		if d.IsBulked() {
+			bulkObj, err := d.ReadFullyQualified()
+			if err != nil {
+				c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
+				rs.setError(err)
+				return
+			}
+			bulk, ok := bulkObj.(int64)
+			if !ok {
+				c.logHandler.logf(Error, failedToReceiveResponse, "expected int64 bulk count")
+				rs.setError(fmt.Errorf("expected int64 bulk count, got %T", bulkObj))
+				return
+			}
+			rs.Channel() <- &Result{&Traverser{Bulk: bulk, Value: obj}}
+		} else {
+			rs.Channel() <- &Result{obj}
+		}
 	}
 }
 

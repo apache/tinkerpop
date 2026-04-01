@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"sync"
 )
@@ -158,7 +159,19 @@ func (gs *GraphBinarySerializer) DeserializeMessage(message []byte) (Response, e
 		if n == EndOfStream() {
 			break
 		}
-		results = append(results, n)
+		if d.IsBulked() {
+			bulkObj, err := d.ReadFullyQualified()
+			if err != nil {
+				return msg, err
+			}
+			bulk, ok := bulkObj.(int64)
+			if !ok {
+				return msg, fmt.Errorf("expected int64 bulk count, got %T", bulkObj)
+			}
+			results = append(results, &Traverser{Bulk: bulk, Value: n})
+		} else {
+			results = append(results, n)
+		}
 	}
 
 	msg.ResponseResult.Data = results

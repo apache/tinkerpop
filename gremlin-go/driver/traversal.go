@@ -25,17 +25,71 @@ import (
 )
 
 // Traverser is the objects propagating through the traversal.
+// When bulking is enabled, each Traverser wraps a single value with a Bulk count
+// indicating how many times that value appears in the result stream.
 type Traverser struct {
-	bulk  int64
-	value interface{}
+	Bulk  int64
+	Value interface{}
 }
 
 // Traversal is the primary way in which graphs are processed.
 type Traversal struct {
-	graph       *Graph
-	GremlinLang *GremlinLang
-	remote      *DriverRemoteConnection
-	results     ResultSet
+	graph         *Graph
+	GremlinLang   *GremlinLang
+	remote        *DriverRemoteConnection
+	results       ResultSet
+	lastTraverser *Traverser // current traverser being lazily unrolled
+}
+
+// nextValue returns the next individual value, lazily unrolling Traverser bulk counts.
+// This mirrors Java's DriverRemoteTraversal.next() and Python's Traversal.__next__().
+// Returns (value, true, nil) on success, (nil, false, nil) when exhausted,
+// or (nil, false, err) on error.
+func (t *Traversal) nextValue() (interface{}, bool, error) {
+	for {
+		// If we have a traverser with remaining bulk, decrement and return
+		if t.lastTraverser != nil && t.lastTraverser.Bulk > 0 {
+			val := t.lastTraverser.Value
+			t.lastTraverser.Bulk--
+			if t.lastTraverser.Bulk == 0 {
+				t.lastTraverser = nil
+			}
+			return val, true, nil
+		}
+		t.lastTraverser = nil
+
+		// Get next result from the ResultSet
+		results, err := t.GetResultSet()
+		if err != nil {
+			return nil, false, err
+		}
+		if results.IsEmpty() {
+			return nil, false, results.GetError()
+		}
+		result, ok, err := results.One()
+		if err != nil {
+			return nil, false, err
+		}
+		if !ok {
+			return nil, false, nil
+		}
+
+		// If it's a Traverser, start unrolling (loop back for bulk <= 0)
+		if tr, ok := result.Data.(*Traverser); ok {
+			if tr.Bulk <= 0 {
+				continue
+			}
+			val := tr.Value
+			tr.Bulk--
+			if tr.Bulk > 0 {
+				t.lastTraverser = tr
+			}
+			return val, true, nil
+		}
+
+		// Non-traverser result (unbulked response), return directly
+		return result.Data, true, nil
+	}
 }
 
 // ToList returns the result in a list.
@@ -44,11 +98,23 @@ func (t *Traversal) ToList() ([]*Result, error) {
 		return nil, newError(err0901ToListAnonTraversalError)
 	}
 
-	results, err := t.remote.submitGremlinLang(t.GremlinLang)
+	_, err := t.GetResultSet()
 	if err != nil {
 		return nil, err
 	}
-	return results.All()
+
+	var results []*Result
+	for {
+		val, ok, err := t.nextValue()
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			break
+		}
+		results = append(results, &Result{val})
+	}
+	return results, t.results.GetError()
 }
 
 // ToSet returns the results in a set.
@@ -95,6 +161,10 @@ func (t *Traversal) Iterate() <-chan error {
 
 // HasNext returns true if the result is not empty.
 func (t *Traversal) HasNext() (bool, error) {
+	// If we have a traverser with remaining bulk, there are more results
+	if t.lastTraverser != nil && t.lastTraverser.Bulk > 0 {
+		return true, nil
+	}
 	results, err := t.GetResultSet()
 	if err != nil {
 		return false, err
@@ -102,21 +172,24 @@ func (t *Traversal) HasNext() (bool, error) {
 	return !results.IsEmpty(), nil
 }
 
-// Next returns next result.
+// Next returns the next result.
 func (t *Traversal) Next() (*Result, error) {
-	results, err := t.GetResultSet()
+	_, err := t.GetResultSet()
 	if err != nil {
 		return nil, err
 	}
-	if results.IsEmpty() {
-		err = results.GetError()
+	val, ok, err := t.nextValue()
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		err = t.results.GetError()
 		if err != nil {
 			return nil, err
 		}
 		return nil, newError(err0903NextNoResultsLeftError)
 	}
-	result, _, err := results.One()
-	return result, err
+	return &Result{val}, nil
 }
 
 // GetResultSet submits the traversal and returns the ResultSet.

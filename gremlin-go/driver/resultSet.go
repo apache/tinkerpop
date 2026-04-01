@@ -20,7 +20,6 @@ under the License.
 package gremlingo
 
 import (
-	"reflect"
 	"sync"
 )
 
@@ -154,13 +153,7 @@ func (channelResultSet *channelResultSet) addResult(r *Result) {
 	channelResultSet.channelMutex.Lock()
 	if data, ok := r.Data.([]interface{}); ok {
 		for _, v := range data {
-			if reflect.TypeOf(v) == reflect.TypeOf(&Traverser{}) {
-				for i := int64(0); i < (v.(*Traverser)).bulk; i++ {
-					channelResultSet.channel <- &Result{(v.(*Traverser)).value}
-				}
-			} else {
-				channelResultSet.channel <- &Result{v}
-			}
+			channelResultSet.channel <- &Result{v}
 		}
 	} else {
 		channelResultSet.channel <- &Result{r.Data}

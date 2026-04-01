@@ -158,6 +158,37 @@ func TestClient(t *testing.T) {
 		AssertMarkoVertexWithoutProperties(t, result)
 	})
 
+	t.Run("Test client.SubmitWithOptions() with bulkResults", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl,
+			func(settings *ClientSettings) {
+				settings.TlsConfig = testNoAuthTlsConfig
+			})
+		assert.NoError(t, err)
+		assert.NotNil(t, client)
+		defer client.Close()
+
+		resultSet, err := client.SubmitWithOptions("g.inject(1,2,3,2,1)",
+			new(RequestOptionsBuilder).SetBulkResults(true).Create())
+		assert.NoError(t, err)
+		assert.NotNil(t, resultSet)
+		results, err := resultSet.All()
+		assert.NoError(t, err)
+		// With bulkResults=true, the ResultSet contains Traverser objects (one per unique value).
+		// This is consistent with Java, Python, .NET, and JS which all expose Traverser objects
+		// at the ResultSet level when bulking is enabled.
+		totalBulk := int64(0)
+		for _, r := range results {
+			tr, err := r.GetTraverser()
+			if err == nil {
+				totalBulk += tr.Bulk
+			} else {
+				totalBulk++
+			}
+		}
+		assert.Equal(t, int64(5), totalBulk)
+	})
+
 	t.Run("Test deserialization of VertexProperty with properties", func(t *testing.T) {
 		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
 		client, err := NewClient(testNoAuthUrl,

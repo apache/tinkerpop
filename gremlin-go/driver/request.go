@@ -71,6 +71,10 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
 
+	if requestOptions.bulkResults != "" {
+		newFields["bulkResults"] = requestOptions.bulkResults
+	}
+
 	return RequestMessage{
 		Gremlin: stringGremlin,
 		Fields:  newFields,
@@ -85,4 +89,5 @@ var allowedReqArgs = map[string]bool{
 	"requestId":             true,
 	"userAgent":             true,
 	"materializeProperties": true,
+	"bulkResults":           true,
 }

@@ -204,11 +204,13 @@ func (r *Result) GetVertexProperty() (*VertexProperty, error) {
 
 // GetTraverser returns the Result if it is a Traverser, otherwise returns an error.
 func (r *Result) GetTraverser() (*Traverser, error) {
-	res, ok := r.Data.(Traverser)
-	if !ok {
-		return nil, newError(err0607ResultNotTraverserError)
+	if res, ok := r.Data.(*Traverser); ok {
+		return res, nil
 	}
-	return &res, nil
+	if res, ok := r.Data.(Traverser); ok {
+		return &res, nil
+	}
+	return nil, newError(err0607ResultNotTraverserError)
 }
 
 // GetSlice returns the Result if it is a Slice, otherwise returns an error.
