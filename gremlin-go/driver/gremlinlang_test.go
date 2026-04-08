@@ -674,6 +674,12 @@ func Test_GremlinLang(t *testing.T) {
 			},
 			equals: "g.inject(NaN).is(eq(NaN))",
 		},
+		{
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.V().Has("name", "\"marko\n\r\t\b\f\"")
+			},
+			equals: "g.V().has(\"name\",\"\\\"marko\\n\\r\\t\\b\\f\\\"\")",
+		},
 	}
 
 	var testsToRun []test

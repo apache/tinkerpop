@@ -110,16 +110,40 @@ func (gl *GremlinLang) addToGremlin(name string, args ...interface{}) error {
 	return nil
 }
 
+// escapeString escapes a string value for safe embedding in a GremlinLang script.
+func escapeString(s string) string {
+	var sb strings.Builder
+	for _, c := range s {
+		switch c {
+		case '\\':
+			sb.WriteString(`\\`)
+		case '"':
+			sb.WriteString(`\"`)
+		case '\n':
+			sb.WriteString(`\n`)
+		case '\r':
+			sb.WriteString(`\r`)
+		case '\t':
+			sb.WriteString(`\t`)
+		case '\b':
+			sb.WriteString(`\b`)
+		case '\f':
+			sb.WriteString(`\f`)
+		default:
+			sb.WriteRune(c)
+		}
+	}
+	return sb.String()
+}
+
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
 		return "null", nil
 	}
-	// we are concerned with both single and double quotes and %q in fmt only escapes double quotes
-	escapeQuotes := strings.NewReplacer(`'`, `\'`, `"`, `\"`)
 
 	switch v := arg.(type) {
 	case string:
-		return fmt.Sprintf("\"%s\"", escapeQuotes.Replace(v)), nil
+		return fmt.Sprintf("\"%s\"", escapeString(v)), nil
 	case bool:
 		return strconv.FormatBool(v), nil
 	case int8, uint8:
