@@ -606,7 +606,7 @@ world.gremlins = {
     'g_V_out_out_path_byXnameX_conjoinXX': [(lambda g:g.V().out().out().path().by('name').conjoin(''))], 
     'g_injectXa_null_bX_conjoinXxyzX': [(lambda g, xx1=None:g.inject(xx1).conjoin('xyz'))], 
     'g_injectX3_threeX_conjoinX_X': [(lambda g, xx1=None:g.inject(xx1).conjoin(';'))], 
-    'g_injectXnull_a_null_bX_fold_conjoinXplusX': [(lambda g, xx1=None:g.inject(xx1).conjoin('+'))], 
+    'g_injectXnull_a_null_bX_conjoinXplusX': [(lambda g, xx1=None:g.inject(xx1).conjoin('+'))], 
     'g_injectXnull_nullX_conjoinXplusX': [(lambda g, xx1=None:g.inject(xx1).conjoin('+'))], 
     'g_V_connectedComponent_hasXcomponentX': [(lambda g:g.V().connected_component().has('gremlin.connectedComponentVertexProgram.component'))], 
     'g_V_dedup_connectedComponent_hasXcomponentX': [(lambda g:g.V().dedup().connected_component().has('gremlin.connectedComponentVertexProgram.component'))], 

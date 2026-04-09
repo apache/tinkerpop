@@ -624,7 +624,7 @@ const gremlins = {
     g_V_out_out_path_byXnameX_conjoinXX: [function({g}) { return g.V().out().out().path().by("name").conjoin("") }], 
     g_injectXa_null_bX_conjoinXxyzX: [function({g, xx1}) { return g.inject(xx1).conjoin("xyz") }], 
     g_injectX3_threeX_conjoinX_X: [function({g, xx1}) { return g.inject(xx1).conjoin(";") }], 
-    g_injectXnull_a_null_bX_fold_conjoinXplusX: [function({g, xx1}) { return g.inject(xx1).conjoin("+") }], 
+    g_injectXnull_a_null_bX_conjoinXplusX: [function({g, xx1}) { return g.inject(xx1).conjoin("+") }], 
     g_injectXnull_nullX_conjoinXplusX: [function({g, xx1}) { return g.inject(xx1).conjoin("+") }], 
     g_V_connectedComponent_hasXcomponentX: [function({g}) { return g.V().connectedComponent().has("gremlin.connectedComponentVertexProgram.component") }], 
     g_V_dedup_connectedComponent_hasXcomponentX: [function({g}) { return g.V().dedup().connectedComponent().has("gremlin.connectedComponentVertexProgram.component") }], 

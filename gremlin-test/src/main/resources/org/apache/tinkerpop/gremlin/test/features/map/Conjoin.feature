@@ -155,7 +155,7 @@ Feature: Step - conjoin()
       | 3;three |
 
   @GraphComputerVerificationInjectionNotSupported
-  Scenario: g_injectXnull_a_null_bX_fold_conjoinXplusX
+  Scenario: g_injectXnull_a_null_bX_conjoinXplusX
     Given the empty graph
     And using the parameter xx1 defined as "l[null,a,null,b]"
     And the traversal of
