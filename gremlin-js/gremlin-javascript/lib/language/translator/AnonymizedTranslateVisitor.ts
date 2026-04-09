@@ -141,6 +141,18 @@ export default class AnonymizedTranslateVisitor extends TranslateVisitor {
         this.anonymize(ctx, 'String');
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        this.anonymize(ctx, 'Character');
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        this.anonymize(ctx, 'Duration');
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.anonymize(ctx, 'ByteBuffer');
+    }
+
     // ─── Keys — output unquoted (only values are anonymized) ─────────────────
 
     visitNakedKey(ctx: any): void {

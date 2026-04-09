@@ -63,6 +63,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"prop\[(.+)\]", ToProperty},
                 {@"dt\[(.+)\]", ToDateTime},
                 {@"uuid\[(.+)\]", ToUuid},
+                {@"char\[(.)\]", ToChar},
+                {@"dur\[(.+)\]", ToDuration},
+                {@"bin\[(.*)\]", ToBinary},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"M\[(.+)\]", ToMerge},
@@ -539,6 +542,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 return result;
             }
             return null;
+        }
+
+        private static object ToChar(string value, string graphName)
+        {
+            return value[0];
+        }
+
+        private static object ToDuration(string value, string graphName)
+        {
+            var parts = value.Split(',');
+            var seconds = long.Parse(parts[0].Trim());
+            var nanos = int.Parse(parts[1].Trim());
+            var isPositive = parts.Length < 3 || bool.Parse(parts[2].Trim());
+            // TimeSpan has 100-nanosecond tick resolution; sub-100ns values are truncated
+            var ts = TimeSpan.FromSeconds(seconds) + TimeSpan.FromTicks(nanos / 100);
+            return isPositive ? ts : ts.Negate();
+        }
+
+        private static object ToBinary(string base64, string graphName)
+        {
+            return Convert.FromBase64String(base64);
         }
 
         private static Vertex ToVertex(string name, string graphName)

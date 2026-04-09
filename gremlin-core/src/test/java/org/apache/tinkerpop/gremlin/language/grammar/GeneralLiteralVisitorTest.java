@@ -33,6 +33,8 @@ import org.junit.runners.Parameterized;
 
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -51,6 +53,7 @@ import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Generic Literal visitor test
@@ -238,6 +241,11 @@ public class GeneralLiteralVisitorTest {
                     {"'abc\\u2300def'", "abc\u2300def"},
                     {"'\u2300'", "\u2300"},
                     {"'abc\u2300def'", "abc\u2300def"},
+                    // explicit 's' suffix for string literals
+                    {"\"hello\"s", "hello"},
+                    {"'hello's", "hello"},
+                    {"\"\"s", "Empty"},
+                    {"\"a\"s", "a"},
             });
         }
 
@@ -252,6 +260,16 @@ public class GeneralLiteralVisitorTest {
             } else {
                 assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitStringLiteral(ctx));
             }
+        }
+    }
+
+    public static class ValidStringNullableLiteralTest {
+        @Test
+        public void shouldParseStringSuffixAsNullableLiteral() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("\"person\"s"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.StringNullableLiteralContext ctx = parser.stringNullableLiteral();
+            assertEquals("person", new GenericLiteralVisitor(new GremlinAntlrToJava()).visitStringNullableLiteral(ctx));
         }
     }
 
@@ -878,6 +896,153 @@ public class GeneralLiteralVisitorTest {
             final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
             final GremlinParser.TraversalCardinalityContext ctx = parser.traversalCardinality();
             assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitTraversalCardinality(ctx));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidCharacterLiteralTest {
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Character expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"\"a\"c", 'a'},
+                    {"'a'c", 'a'},
+                    {"\"\\\"\"c", '"'},
+                    {"'\\''c", '\''},
+                    {"\"\\\\\"c", '\\'},
+                    {"\"'\"c", '\''},
+                    {"\"\\u00E9\"c", '\u00E9'},
+                    {"'\u00E9'c", '\u00E9'},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.CharacterLiteralContext ctx = parser.characterLiteral();
+            assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitCharacterLiteral(ctx));
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidDurationLiteralTest {
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public Duration expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"Duration(9000, 0)", Duration.ofHours(2).plusMinutes(30)},
+                    {"Duration(0, 0)", Duration.ZERO},
+                    {"Duration(30, 0)", Duration.ofSeconds(30)},
+                    {"Duration(0, 500000000)", Duration.ofMillis(500)},
+                    {"Duration(5415, 0)", Duration.ofHours(1).plusMinutes(30).plusSeconds(15)},
+                    {"Duration(0, 1)", Duration.ofNanos(1)},
+                    {"Duration(1, 500000000)", Duration.ofSeconds(1).plusMillis(500)},
+                    {"Duration(30, 0, false)", Duration.ofSeconds(-30)},
+                    {"Duration(0, 500000000, false)", Duration.ofMillis(-500)},
+                    {"Duration(0, 0, false)", Duration.ZERO},
+                    {"Duration(0, 0, true)", Duration.ZERO},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DurationLiteralContext ctx = parser.durationLiteral();
+            assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDurationLiteral(ctx));
+        }
+    }
+
+    public static class InvalidDurationLiteralTest {
+        @Test
+        public void shouldFailOnNegativeNanos() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Duration(0, -1)"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DurationLiteralContext ctx = parser.durationLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDurationLiteral(ctx);
+                fail("Negative nanos should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("nanoseconds must be between 0 and 999999999"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnNanosOverflow() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Duration(0, 1000000000)"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DurationLiteralContext ctx = parser.durationLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDurationLiteral(ctx);
+                fail("Nanos overflow should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("nanoseconds must be between 0 and 999999999"), Matchers.is(true));
+            }
+        }
+
+        @Test
+        public void shouldFailOnNegativeSeconds() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Duration(-1, 0)"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.DurationLiteralContext ctx = parser.durationLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitDurationLiteral(ctx);
+                fail("Negative seconds should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("seconds must be non-negative"), Matchers.is(true));
+            }
+        }
+    }
+
+    @RunWith(Parameterized.class)
+    public static class ValidBinaryLiteralTest {
+        @Parameterized.Parameter(value = 0)
+        public String script;
+
+        @Parameterized.Parameter(value = 1)
+        public ByteBuffer expected;
+
+        @Parameterized.Parameters(name = "{0}")
+        public static Iterable<Object[]> generateTestParameters() {
+            return Arrays.asList(new Object[][]{
+                    {"Binary(\"AQID\")", ByteBuffer.wrap(new byte[]{1, 2, 3})},
+                    {"Binary(\"\")", ByteBuffer.wrap(new byte[]{})},
+                    {"Binary(\"AA==\")", ByteBuffer.wrap(new byte[]{0})},
+            });
+        }
+
+        @Test
+        public void shouldParse() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(script));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.BinaryLiteralContext ctx = parser.binaryLiteral();
+            assertEquals(expected, new GenericLiteralVisitor(new GremlinAntlrToJava()).visitBinaryLiteral(ctx));
+        }
+    }
+
+    public static class InvalidBinaryLiteralTest {
+        @Test
+        public void shouldFailOnInvalidBase64() {
+            final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString("Binary(\"!!!not-base64\")"));
+            final GremlinParser parser = new GremlinParser(new CommonTokenStream(lexer));
+            final GremlinParser.BinaryLiteralContext ctx = parser.binaryLiteral();
+            try {
+                new GenericLiteralVisitor(new GremlinAntlrToJava()).visitBinaryLiteral(ctx);
+                fail("Invalid Binary/base64 value should have thrown exception");
+            } catch (GremlinParserException gpe) {
+                assertThat(gpe.getMessage().contains("Invalid Binary literal:"), Matchers.is(true));
+            }
         }
     }
 }

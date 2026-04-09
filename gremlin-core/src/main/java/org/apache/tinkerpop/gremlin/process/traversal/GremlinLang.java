@@ -37,6 +37,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Base64;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
@@ -145,6 +148,36 @@ public class GremlinLang implements Cloneable, Serializable {
 
         if (arg instanceof UUID) {
             return String.format("UUID(\"%s\")", arg);
+        }
+
+        if (arg instanceof Character)
+            // escapeJava converts non-ASCII to \\uXXXX form, ensuring the gremlin-lang string
+            // is pure ASCII and avoids encoding issues across different platforms
+            return String.format("\"%s\"c", StringEscapeUtils.escapeJava(arg.toString()));
+
+        if (arg instanceof Duration) {
+            final Duration d = (Duration) arg;
+            final boolean isNegative = d.isNegative();
+            // negate to get magnitude components - Java's Duration stores negative values
+            // with adjusted seconds (e.g. -1.5s is seconds=-2, nanos=500000000)
+            final Duration abs = isNegative ? d.negated() : d;
+            if (isNegative)
+                return String.format("Duration(%d,%d,false)", abs.getSeconds(), abs.getNano());
+            else
+                return String.format("Duration(%d,%d)", abs.getSeconds(), abs.getNano());
+        }
+
+        if (arg instanceof ByteBuffer) {
+            // duplicate() shares the underlying data but gives an independent position cursor,
+            // so reading bytes for base64 encoding doesn't mutate the caller's buffer state
+            final ByteBuffer buf = ((ByteBuffer) arg).duplicate();
+            final byte[] bytes = new byte[buf.remaining()];
+            buf.get(bytes);
+            return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString(bytes));
+        }
+
+        if (arg instanceof byte[]) {
+            return String.format("Binary(\"%s\")", Base64.getEncoder().encodeToString((byte[]) arg));
         }
 
         if (arg instanceof Enum) {

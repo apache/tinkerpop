@@ -30,6 +30,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.
 * Changed `Client.stream()` in `gremlin-javascript` to return an `AsyncGenerator` for direct incremental consumption.
 * Removed `readable-stream` dependency from `gremlin-javascript`.
+* Added `Character`, `Binary`, `Duration` to the `gremlin-lang` grammar, GLVs, and Translators.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)

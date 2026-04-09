@@ -132,6 +132,35 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        final String text = ctx.getText();
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = removeFirstAndLastCharacters(withoutSuffix);
+        sb.append("'").append(inner).append("' as char");
+        return null;
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        final long seconds = Long.parseLong(ctx.integerLiteral(0).getText());
+        final int nanos = Integer.parseInt(ctx.integerLiteral(1).getText());
+        final boolean isPositive = ctx.booleanLiteral() == null ||
+                Boolean.parseBoolean(ctx.booleanLiteral().getText());
+        sb.append(String.format("Duration.ofSeconds(%d, %d)", seconds, nanos));
+        if (!isPositive)
+            sb.append(".negated()");
+        return null;
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        sb.append("ByteBuffer.wrap(Base64.getDecoder().decode(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append("))");
+        return null;
+    }
+
+    @Override
     public Void visitNullLiteral(final GremlinParser.NullLiteralContext ctx) {
         if (ctx.getParent() instanceof GremlinParser.GenericMapNullableArgumentContext) {
             sb.append("null as Map");

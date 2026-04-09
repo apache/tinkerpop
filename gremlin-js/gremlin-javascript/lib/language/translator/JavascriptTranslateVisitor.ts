@@ -185,6 +185,20 @@ export default class JavascriptTranslateVisitor extends TranslateVisitor {
         this.visitStringLiteral(ctx.stringLiteral());
         this.sb.push(')');
     }
+
+    visitCharacterLiteral(_ctx: any): void {
+        throw new TranslatorException('Character literals are not supported in JavaScript');
+    }
+
+    visitDurationLiteral(_ctx: any): void {
+        throw new TranslatorException('Duration literals are not supported in JavaScript');
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push("Buffer.from(");
+        this.visitStringLiteral(ctx.stringLiteral());
+        this.sb.push(",'base64')");
+    }
 }
 
 /**

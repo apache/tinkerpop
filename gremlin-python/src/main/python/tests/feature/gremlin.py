@@ -25,9 +25,11 @@
 
 
 from radish import world
+import base64
 import datetime
 import uuid
-from gremlin_python.statics import long, bigint, bigdecimal, GremlinType
+from datetime import timedelta
+from gremlin_python.statics import long, bigint, bigdecimal, SingleChar, GremlinType
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.strategies import *
 from gremlin_python.process.traversal import TraversalStrategy
@@ -199,6 +201,11 @@ world.gremlins = {
     'g_V_valuesXintX_asNumberXGType_BIGINTX_isXtypeOfXGType_BIGINTXX_project_byXidentityX_byXmathXaddX999XXX': [(lambda g:g.add_v('data').property('int', 50)), (lambda g:g.V().values('int').as_number(GType.BIGINT).is_(P.type_of(GType.BIGINT)).project('original', 'added').by(__.identity()).by(__.math('_ + 999')))], 
     'g_injectX777X_asNumberXGType_BIGINTX_isXtypeOfXGType_BIGINTXX_groupCount': [(lambda g:g.inject(777).as_number(GType.BIGINT).is_(P.type_of(GType.BIGINT)).group_count())], 
     'g_V_valuesXageX_isXtypeOfXGType_BIGINTXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.BIGINT)))], 
+    'g_injectXBinaryXAQIDXX': [(lambda g:g.inject(base64.b64decode('AQID')))], 
+    'g_injectXBinaryXemptyXX': [(lambda g:g.inject(base64.b64decode('')))], 
+    'g_injectXBinaryXAA_eqeqXX': [(lambda g:g.inject(base64.b64decode('AA==')))], 
+    'g_valuesXblobX_isXtypeOfXGType_BINARYXX': [(lambda g:g.add_v('data').property('blob', base64.b64decode('AQID'))), (lambda g:g.V().values('blob').is_(P.type_of(GType.BINARY)))], 
+    'g_injectXBinaryXAQIDXX_isXeqXBinaryXAQIDXXX': [(lambda g:g.inject(base64.b64decode('AQID')).is_(P.eq(base64.b64decode('AQID'))))], 
     'g_V_valuesXintX_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX': [(lambda g:g.add_v('data').property('int', 5)), (lambda g:g.V().values('int').as_number(GType.BYTE).is_(P.type_of(GType.BYTE)))], 
     'g_V_valuesXintX_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX_mathXaddX20XX': [(lambda g:g.add_v('data').property('int', 10)), (lambda g:g.V().values('int').as_number(GType.BYTE).is_(P.type_of(GType.BYTE)).math('_ + 20'))], 
     'g_V_valuesXintX_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX_isXltX10XX': [(lambda g:g.add_v('data').property('int', 7)), (lambda g:g.V().values('int').as_number(GType.BYTE).is_(P.type_of(GType.BYTE)).is_(P.lt(10)))], 
@@ -207,6 +214,11 @@ world.gremlins = {
     'g_V_valuesXintX_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX_chooseXisXeqX12XX_constantXtwelveX_constantXotherXX': [(lambda g:g.add_v('data').property('int', 12)), (lambda g:g.V().values('int').as_number(GType.BYTE).is_(P.type_of(GType.BYTE)).choose(__.is_(P.eq(12)), __.constant('twelve'), __.constant('other')))], 
     'g_injectX15X_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX_groupCount': [(lambda g:g.inject(15).as_number(GType.BYTE).is_(P.type_of(GType.BYTE)).group_count())], 
     'g_V_valuesXageX_isXtypeOfXGType_BYTEXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.BYTE)))], 
+    'g_injectXaX': [(lambda g:g.inject(SingleChar('a')))], 
+    'g_injectXescaped_quoteX': [(lambda g:g.inject(SingleChar('\"')))], 
+    'g_injectXunicodeX': [(lambda g:g.inject(SingleChar('\u00E9')))], 
+    'g_valuesXinitialX_isXtypeOfXGType_CHARXX': [(lambda g:g.add_v('data').property('initial', SingleChar('a'))), (lambda g:g.V().values('initial').is_(P.type_of(GType.CHAR)))], 
+    'g_injectXaX_isXeqXaXX': [(lambda g:g.inject(SingleChar('a')).is_(P.eq(SingleChar('a'))))], 
     'g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX': [(lambda g:g.add_v('event').property('datetime', datetime.datetime.fromisoformat('2023-08-08T00:00+00:00'))), (lambda g:g.V().values('datetime').is_(P.type_of(GType.DATETIME)))], 
     'g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_project_byXidentityX_byXdateAddXDT_dayX1XX': [(lambda g:g.add_v('event').property('datetime', datetime.datetime.fromisoformat('2023-08-08T00:00+00:00'))), (lambda g:g.V().values('datetime').is_(P.type_of(GType.DATETIME)).project('original', 'nextDay').by(__.identity()).by(__.date_add(DT.day, 1)))], 
     'g_V_valuesXdatetimeX_isXtypeOfXGType_DATETIMEXX_dateDiffXdatetimeX2023_08_10XX': [(lambda g:g.add_v('event').property('datetime', datetime.datetime.fromisoformat('2023-08-08T00:00+00:00'))), (lambda g:g.V().values('datetime').is_(P.type_of(GType.DATETIME)).date_diff(datetime.datetime.fromisoformat('2023-08-08T00:00:30+00:00')))], 
@@ -226,6 +238,14 @@ world.gremlins = {
     'g_V_valuesXdoubleX_isXtypeOfXGType_DOUBLEXX_order_byXascX': [(lambda g:g.add_v('data').property('double', 3.2).add_v('data').property('double', 1.8).add_v('data').property('double', 2.5)), (lambda g:g.V().values('double').is_(P.type_of(GType.DOUBLE)).order().by(Order.asc))], 
     'g_injectX5_5dX_isXtypeOfXGType_DOUBLEXX_groupCount': [(lambda g:g.inject(5.5).is_(P.type_of(GType.DOUBLE)).group_count())], 
     'g_V_valuesXageX_isXtypeOfXGType_DOUBLEXX': [(lambda g:g.V().values('age').is_(P.type_of(GType.DOUBLE)))], 
+    'g_injectXDurationX9000_0XX': [(lambda g:g.inject(timedelta(seconds=9000)))], 
+    'g_injectXDurationX0_0XX': [(lambda g:g.inject(timedelta(seconds=0)))], 
+    'g_injectXDurationX0_500000000XX': [(lambda g:g.inject(timedelta(seconds=0,microseconds=500000)))], 
+    'g_injectXDurationX30_0XX': [(lambda g:g.inject(timedelta(seconds=30)))], 
+    'g_injectXDurationX30_0_falseXX': [(lambda g:g.inject(timedelta(seconds=-30)))], 
+    'g_injectXDurationX1_500000000_falseXX': [(lambda g:g.inject(timedelta(seconds=-1,microseconds=-500000)))], 
+    'g_valuesXlengthX_isXtypeOfXGType_DURATIONXX': [(lambda g:g.add_v('data').property('length', timedelta(seconds=9000))), (lambda g:g.V().values('length').is_(P.type_of(GType.DURATION)))], 
+    'g_injectXDurationX9000_0XX_isXgtXDurationX3600_0XXX': [(lambda g:g.inject(timedelta(seconds=9000)).is_(P.gt(timedelta(seconds=3600))))], 
     'g_V_valuesXfloatX_isXtypeOfXGType_FLOATXX': [(lambda g:g.add_v('data').property('float', 2.5)), (lambda g:g.V().values('float').as_number(GType.FLOAT).is_(P.type_of(GType.FLOAT)))], 
     'g_V_valuesXfloatX_isXtypeOfXGType_FLOATXX_mathXmulX2XX': [(lambda g:g.add_v('data').property('float', 3.0)), (lambda g:g.V().values('float').as_number(GType.FLOAT).is_(P.type_of(GType.FLOAT)).math('_ * 2'))], 
     'g_V_valuesXfloatX_isXtypeOfXGType_FLOATXX_isXeqX1_5XX': [(lambda g:g.add_v('data').property('float', 1.5)), (lambda g:g.V().values('float').as_number(GType.FLOAT).is_(P.type_of(GType.FLOAT)).is_(P.eq(1.5)))], 

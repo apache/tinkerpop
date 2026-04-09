@@ -326,8 +326,11 @@ public final class CoreImports {
         CLASS_IMPORTS.add(Lambda.class);
         CLASS_IMPORTS.add(java.util.Date.class);
         CLASS_IMPORTS.add(java.time.OffsetDateTime.class);
+        CLASS_IMPORTS.add(java.time.Duration.class);
+        CLASS_IMPORTS.add(java.nio.ByteBuffer.class);
         CLASS_IMPORTS.add(java.sql.Timestamp.class);
         CLASS_IMPORTS.add(java.util.UUID.class);
+        CLASS_IMPORTS.add(java.util.Base64.class);
         CLASS_IMPORTS.add(GremlinTranslator.class);
         CLASS_IMPORTS.add(Translator.class);
 

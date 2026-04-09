@@ -20,6 +20,7 @@ under the License.
 package gremlingo
 
 import (
+	"encoding/base64"
 	"fmt"
 	"go/token"
 	"math"
@@ -135,6 +136,7 @@ func escapeString(s string) string {
 	}
 	return sb.String()
 }
+
 
 func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	if arg == nil {
@@ -269,6 +271,24 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		return key, nil
 	case uuid.UUID:
 		return fmt.Sprintf("UUID(\"%v\")", v.String()), nil
+	case time.Duration:
+		isNegative := v < 0
+		abs := v
+		if isNegative {
+			abs = -v
+		}
+		totalSeconds := int64(abs / time.Second)
+		nanos := int64(abs % time.Second)
+		if isNegative {
+			return fmt.Sprintf("Duration(%d,%d,false)", totalSeconds, nanos), nil
+		}
+		return fmt.Sprintf("Duration(%d,%d)", totalSeconds, nanos), nil
+	case ByteBuffer:
+		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v.Data)), nil
+	case *ByteBuffer:
+		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v.Data)), nil
+	case []byte:
+		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v)), nil
 	default:
 		switch reflect.TypeOf(arg).Kind() {
 		case reflect.Map:
@@ -577,6 +597,11 @@ func (gl *GremlinLang) convertArgument(arg interface{}) (interface{}, error) {
 		case reflect.Array, reflect.Slice:
 			_, isUUID := arg.(uuid.UUID)
 			if isUUID {
+				return arg, nil
+			}
+			// preserve []byte as-is for Binary literal support
+			_, isByteSlice := arg.([]byte)
+			if isByteSlice {
 				return arg, nil
 			}
 			argList := reflect.ValueOf(arg)

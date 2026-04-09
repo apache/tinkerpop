@@ -290,6 +290,42 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        final String text = ctx.getText();
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = removeFirstAndLastCharacters(withoutSuffix);
+        sb.append("SingleChar('").append(inner).append("')");
+        return null;
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        final long seconds = Long.parseLong(ctx.integerLiteral(0).getText());
+        final int nanos = Integer.parseInt(ctx.integerLiteral(1).getText());
+        final boolean isPositive = ctx.booleanLiteral() == null ||
+                Boolean.parseBoolean(ctx.booleanLiteral().getText());
+        final long totalSeconds = isPositive ? seconds : -seconds;
+        // Python's timedelta has microsecond resolution; sub-microsecond nanos are truncated
+        final long micros = nanos / 1000;
+        if (micros == 0) {
+            sb.append("timedelta(seconds=").append(totalSeconds).append(")");
+        } else {
+            // for negative durations, microseconds must also be negated
+            final long totalMicros = isPositive ? micros : -micros;
+            sb.append("timedelta(seconds=").append(totalSeconds).append(",microseconds=").append(totalMicros).append(")");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        sb.append("base64.b64decode(");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     protected String getCardinalityFunctionClass() {
         return "CardinalityValue";
     }

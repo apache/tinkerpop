@@ -56,6 +56,7 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
     writer.writeLine(
                     'import * as graphTraversalModule from \'../../lib/process/graph-traversal.js\';\n' +
                     'import * as traversalModule from \'../../lib/process/traversal.js\';\n' +
+                    'import { Buffer } from \'buffer\';\n' +
                     'import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy, PartitionStrategy, \n' +
                     '        ReadOnlyStrategy, GraphFilterStrategy, SeedStrategy, SubgraphStrategy, ProductiveByStrategy, \n' +
                     '        LambdaRestrictionStrategy, StandardVerificationStrategy, VertexProgramRestrictionStrategy, \n' +
@@ -102,25 +103,33 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
-            writer.write("    ")
-            writer.write(k)
-            writer.write(": [")
-            def collected = v.collect { GremlinTranslator.translate(it, Translator.JAVASCRIPT) }
-            def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
-            def gremlinItty = collected.iterator()
-            while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()
-                writer.write("function({g")
-                if (!uniqueBindings.isEmpty()) {
-                    writer.write(", ")
-                    writer.write(uniqueBindings.join(", "))
+            try {
+                def collected = v.collect { GremlinTranslator.translate(it, Translator.JAVASCRIPT) }
+                writer.write("    ")
+                writer.write(k)
+                writer.write(": [")
+                def uniqueBindings = collected.collect { it.getParameters() }.flatten().unique()
+                def gremlinItty = collected.iterator()
+                while (gremlinItty.hasNext()) {
+                    def t = gremlinItty.next()
+                    writer.write("function({g")
+                    if (!uniqueBindings.isEmpty()) {
+                        writer.write(", ")
+                        writer.write(uniqueBindings.join(", "))
+                    }
+                    writer.write("}) { return ")
+                    writer.write(t.getTranslated())
+                    writer.write(" }")
+                    if (gremlinItty.hasNext()) writer.write(', ')
                 }
-                writer.write("}) { return ")
-                writer.write(t.getTranslated())
-                writer.write(" }")
-                if (gremlinItty.hasNext()) writer.write(', ')
+                writer.writeLine('], ')
+            } catch (ignored) {
+                // emit a placeholder for scenarios with unsupported literals to keep the file
+                // syntactically valid; the scenario will be skipped at test runtime via tag exclusions
+                writer.write("    ")
+                writer.write(k)
+                writer.writeLine(": [function({g}) { return null }], ")
             }
-            writer.writeLine('], ')
         }
     }
     writer.writeLine('}\n')

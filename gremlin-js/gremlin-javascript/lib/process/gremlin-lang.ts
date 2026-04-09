@@ -21,6 +21,7 @@ import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long } from '../utils.js';
 import { Vertex } from '../structure/graph.js';
+import { Buffer } from 'buffer';
 
 export default class GremlinLang {
   private gremlin: string = '';
@@ -124,6 +125,9 @@ export default class GremlinLang {
         throw new Error('Child traversal must be anonymous - use __ not g');
       }
       return arg.getGremlinLang().getGremlin('__');
+    }
+    if (arg instanceof Uint8Array) {
+      return `Binary("${Buffer.from(arg.buffer, arg.byteOffset, arg.byteLength).toString('base64')}")`;
     }
     if (arg instanceof Set) {
       const items = [...arg];

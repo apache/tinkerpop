@@ -18,11 +18,12 @@
 #
 
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import datetime, timedelta
+import base64
 import json
 import re
 import uuid
-from gremlin_python.statics import long, bigdecimal
+from gremlin_python.statics import long, bigdecimal, SingleChar
 from gremlin_python.structure.graph import Path, Vertex, Graph, Edge, VertexProperty, Property
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
@@ -345,6 +346,17 @@ def _split_by_element(s):
     return results
 
 
+def _parse_duration(dur_str):
+    """Parses a duration from seconds,nanos[,isPositive] format into a timedelta."""
+    parts = dur_str.split(",")
+    seconds = int(parts[0].strip())
+    nanos = int(parts[1].strip())
+    is_positive = len(parts) < 3 or parts[2].strip() == "true"
+    # timedelta has microsecond resolution; sub-microsecond nanos are truncated
+    td = timedelta(seconds=seconds, microseconds=nanos // 1000)
+    return td if is_positive else -td
+
+
 def _convert(val, ctx):
     graph_name = ctx.graph_name
     if isinstance(val, dict):  # convert dictionary keys/values
@@ -366,6 +378,12 @@ def _convert(val, ctx):
     elif isinstance(val, str) and re.match(r"^uuid\[.*\]$", val):  # parse uuid
         name = val[5:-1]  # strip 'uuid[...]' or similar format
         return uuid.UUID(name)
+    elif isinstance(val, str) and re.match(r"^char\[.\]$", val):  # parse char
+        return SingleChar(val[5:-1])
+    elif isinstance(val, str) and re.match(r"^dur\[.*\]$", val):  # parse duration
+        return _parse_duration(val[4:-1])
+    elif isinstance(val, str) and re.match(r"^bin\[.*\]$", val):  # parse binary
+        return base64.b64decode(val[4:-1])
     elif isinstance(val, str) and re.match(r"^d\[NaN\]$", val):  # parse nan
         return float("nan")
     elif isinstance(val, str) and re.match(r"^d\[Infinity\]$", val):  # parse +inf

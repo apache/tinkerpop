@@ -1,4 +1,5 @@
 ////
+////
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -77,6 +78,65 @@ for await (const item of client.stream('g.V()', null)) {
 ----
 
 `Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
+
+==== New Gremlin-Lang Literals
+
+The canonical Gremlin grammar now includes literal syntax for `Character`, `Duration`, and `Binary` types. These
+literals can be used directly in traversals without falling back to parameter serialization.
+
+===== Character
+
+A character literal is a single-character string with a `c` suffix:
+
+[source,text]
+----
+g.V().has("initial","M"c)
+----
+
+NOTE: Character is not supported in gremlin-go or gremlin-javascript.
+
+===== Duration
+
+A duration literal uses seconds and nanoseconds with an optional sign flag:
+
+[source,text]
+----
+Duration(seconds,nanos)
+Duration(seconds,nanos,false)
+----
+
+The first argument is seconds (non-negative integer), the second is nanoseconds (integer, 0 to 999999999). The
+optional third argument is an `isPositive` boolean that defaults to `true` when omitted. Set it to `false` for
+negative durations.
+
+[source,text]
+----
+g.V().has("length",P.gt(Duration(3600,0)))
+----
+
+NOTE: Python's `timedelta` has microsecond resolution, so sub-microsecond nanosecond values are truncated.
+.NET's `TimeSpan` has 100-nanosecond tick resolution, so sub-100ns values are truncated.
+
+NOTE: Duration is not supported in gremlin-javascript.
+
+===== Binary
+
+A binary literal wraps a base64-encoded string:
+
+[source,text]
+----
+Binary("AQID")
+Binary("")
+----
+
+Each GLV maps this to its native byte array type:
+
+[source,text]
+----
+g.V().has("blob",P.eq(Binary("AQID")))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
 
 === Upgrading for Providers
 
