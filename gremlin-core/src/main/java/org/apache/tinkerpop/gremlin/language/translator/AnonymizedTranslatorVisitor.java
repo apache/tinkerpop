@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.language.grammar.GremlinParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -187,4 +189,19 @@ public class AnonymizedTranslatorVisitor extends TranslateVisitor {
 
     @Override
     public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) { return anonymize(ctx, String.class); }
+
+    @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        return anonymize(ctx, Character.class);
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        return anonymize(ctx, Duration.class);
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        return anonymize(ctx, ByteBuffer.class);
+    }
 }

@@ -225,6 +225,34 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        this.sb.push("'");
+        this.sb.push(inner);
+        this.sb.push("'");
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        const seconds = parseInt(ctx.integerLiteral(0).getText(), 10);
+        const nanos = parseInt(ctx.integerLiteral(1).getText(), 10);
+        const isPositive = ctx.booleanLiteral() === null ||
+            ctx.booleanLiteral().getText() === 'true';
+        // Convert to ticks: 1 tick = 100 nanoseconds, 1 second = 10,000,000 ticks
+        const ticks = seconds * 10_000_000 + Math.floor(nanos / 100);
+        this.sb.push(`TimeSpan.FromTicks(${ticks}L)`);
+        if (!isPositive) {
+            this.sb.push('.Negate()');
+        }
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push('Convert.FromBase64String(');
+        this.sb.push(ctx.stringLiteral().getText());
+        this.sb.push(')');
+    }
+
     visitClassType(ctx: any): void {
         this.sb.push('typeof(');
         this.sb.push(ctx.getText());

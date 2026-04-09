@@ -1041,5 +1041,21 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
                 "g.V(\"1\").property(Cardinality.set,\"city\",\"wilmington\").property(Cardinality.set,\"state\",\"delaware\")",
                 _g.V("1").Property(Cardinality.Set, map).GremlinLang.GetGremlin());
         }
+
+        // Character - backslash (not in feature file due to Gherkin escaping issues)
+        [Fact]
+        public void g_Inject_Char_Backslash()
+        {
+            Assert.Equal("g.inject(\"\\\\\"c)",
+                _g.Inject((object)'\\').GremlinLang.GetGremlin());
+        }
+
+        // Character - single quote (no feature equivalent)
+        [Fact]
+        public void g_Inject_Char_SingleQuote()
+        {
+            Assert.Equal("g.inject(\"'\"c)",
+                _g.Inject((object)'\'').GremlinLang.GetGremlin());
+        }
     }
 }

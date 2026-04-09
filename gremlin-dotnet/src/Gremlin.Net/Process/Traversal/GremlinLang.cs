@@ -238,6 +238,22 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is Guid guid)
                 return $"UUID(\"{guid}\")";
 
+            if (arg is char charVal)
+                return $"\"{EscapeJava(charVal.ToString())}\"c";
+
+            if (arg is TimeSpan timeSpan)
+            {
+                // Use integer tick arithmetic to avoid float precision loss
+                var absTicks = Math.Abs(timeSpan.Ticks);
+                var totalSeconds = absTicks / TimeSpan.TicksPerSecond;
+                var nanos = (int)((absTicks % TimeSpan.TicksPerSecond) * 100);
+                return timeSpan < TimeSpan.Zero
+                    ? $"Duration({totalSeconds},{nanos},false)"
+                    : $"Duration({totalSeconds},{nanos})";
+            }
+            if (arg is byte[] byteArray)
+                return $"Binary(\"{Convert.ToBase64String(byteArray)}\")";
+
             if (arg is EnumWrapper enumWrapper)
                 return $"{enumWrapper.EnumName}.{enumWrapper.EnumValue}";
 
@@ -663,7 +679,12 @@ namespace Gremlin.Net.Process.Traversal
                         sb.Append("\\f");
                         break;
                     default:
-                        sb.Append(c);
+                        // escape non-ASCII to \\uXXXX form, ensuring the gremlin-lang string
+                        // is pure ASCII and avoids encoding issues across different platforms
+                        if (c > 0x7E)
+                            sb.Append($"\\u{(int)c:X4}");
+                        else
+                            sb.Append(c);
                         break;
                 }
             }

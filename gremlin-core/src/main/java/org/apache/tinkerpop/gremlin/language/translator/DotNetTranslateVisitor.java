@@ -1182,6 +1182,40 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        // "a"c or 'a'c -> 'a' in C#
+        final String text = ctx.getText();
+        // strip the 'c' suffix to get the quoted character
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        // C# char literals use single quotes
+        final String inner = removeFirstAndLastCharacters(withoutSuffix);
+        sb.append("'").append(inner).append("'");
+        return null;
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        final long seconds = Long.parseLong(ctx.integerLiteral(0).getText());
+        final int nanos = Integer.parseInt(ctx.integerLiteral(1).getText());
+        final boolean isPositive = ctx.booleanLiteral() == null ||
+                Boolean.parseBoolean(ctx.booleanLiteral().getText());
+        // Convert to ticks: 1 tick = 100 nanoseconds, 1 second = 10,000,000 ticks
+        final long ticks = seconds * 10_000_000L + nanos / 100;
+        sb.append(String.format("TimeSpan.FromTicks(%dL)", ticks));
+        if (!isPositive)
+            sb.append(".Negate()");
+        return null;
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        sb.append("Convert.FromBase64String(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalGType(GremlinParser.TraversalGTypeContext ctx) {
         final String[] split = ctx.getText().split("\\.");
         sb.append(processGremlinSymbol(split[0])).append(".");

@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -343,6 +344,35 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         sb.append("uuid.MustParse(");
         visitStringLiteral(ctx.stringLiteral());
         sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        throw new TranslatorException("Character literals are not supported in Go");
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        final long seconds = Long.parseLong(ctx.integerLiteral(0).getText());
+        final int nanos = Integer.parseInt(ctx.integerLiteral(1).getText());
+        final boolean isPositive = ctx.booleanLiteral() == null ||
+                Boolean.parseBoolean(ctx.booleanLiteral().getText());
+        final long totalNanos = seconds * 1_000_000_000L + nanos;
+        sb.append("time.Duration(").append(isPositive ? totalNanos : -totalNanos).append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        final String base64Str = removeFirstAndLastCharacters(ctx.stringLiteral().getText());
+        final byte[] bytes = Base64.getDecoder().decode(base64Str);
+        sb.append("gremlingo.ByteBuffer{Data: []byte{");
+        for (int i = 0; i < bytes.length; i++) {
+            if (i > 0) sb.append(",");
+            sb.append(bytes[i] & 0xFF);
+        }
+        sb.append("}}");
         return null;
     }
 

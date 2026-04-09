@@ -200,6 +200,32 @@ export default class JavaTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        this.sb.push("'");
+        this.sb.push(inner);
+        this.sb.push("'");
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        const seconds = parseInt(ctx.integerLiteral(0).getText(), 10);
+        const nanos = parseInt(ctx.integerLiteral(1).getText(), 10);
+        const isPositive = ctx.booleanLiteral() === null ||
+            ctx.booleanLiteral().getText() === 'true';
+        this.sb.push(`Duration.ofSeconds(${seconds}, ${nanos})`);
+        if (!isPositive) {
+            this.sb.push('.negated()');
+        }
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push('ByteBuffer.wrap(Base64.getDecoder().decode(');
+        this.sb.push(ctx.stringLiteral().getText());
+        this.sb.push('))');
+    }
+
     visitGenericRangeLiteral(_ctx: any): void {
         throw new TranslatorException('Java does not support range literals');
     }

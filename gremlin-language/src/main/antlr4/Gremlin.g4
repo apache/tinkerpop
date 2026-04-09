@@ -1633,6 +1633,9 @@ genericLiteral
     | nestedTraversal
     | terminatedTraversal
     | uuidLiteral
+    | characterLiteral
+    | durationLiteral
+    | binaryLiteral
     | genericMapLiteral
     ;
 
@@ -1659,11 +1662,12 @@ mapEntry
 stringLiteral
     : EmptyStringLiteral
     | NonEmptyStringLiteral
+    | EmptyStringSuffixLiteral
+    | StringSuffixLiteral
     ;
 
 stringNullableLiteral
-    : EmptyStringLiteral
-    | NonEmptyStringLiteral
+    : stringLiteral
     | K_NULL
     ;
 
@@ -1712,6 +1716,18 @@ uuidLiteral
     | K_UUID LPAREN stringLiteral RPAREN
     ;
 
+characterLiteral
+    : CharacterLiteral
+    ;
+
+durationLiteral
+    : K_DURATIONC LPAREN integerLiteral COMMA integerLiteral (COMMA booleanLiteral)? RPAREN
+    ;
+
+binaryLiteral
+    : K_BINARYC LPAREN stringLiteral RPAREN
+    ;
+
 
 nakedKey
     : Identifier
@@ -1753,6 +1769,7 @@ keyword
     | K_BIGINT
     | K_BIGINTU
     | K_BINARY
+    | K_BINARYC
     | K_BINARYU
     | K_BOTH
     | K_BOTHU
@@ -1804,6 +1821,7 @@ keyword
     | K_DROP
     | K_DT
     | K_DURATION
+    | K_DURATIONC
     | K_DURATIONU
     | K_E
     | K_EDGE
@@ -2063,6 +2081,7 @@ K_BIGDECIMALU: 'BIGDECIMAL';
 K_BIGINT: 'bigInt';
 K_BIGINTU: 'BIGINT';
 K_BINARY: 'binary';
+K_BINARYC: 'Binary';
 K_BINARYU: 'BINARY';
 K_BOOLEAN: 'boolean';
 K_BOOLEANU: 'BOOLEAN';
@@ -2114,6 +2133,7 @@ K_DOUBLEU: 'DOUBLE';
 K_DROP: 'drop';
 K_DT: 'DT';
 K_DURATION: 'duration';
+K_DURATIONC: 'Duration';
 K_DURATIONU: 'DURATION';
 K_E: 'E';
 K_EDGE: 'edge';
@@ -2499,6 +2519,26 @@ SignedInfLiteral
     ;
 
 // String Literals
+
+// Character literal is a single character string with a 'c' suffix, modeled after printf's %c.
+// Must appear before NonEmptyStringLiteral for longest-match priority.
+CharacterLiteral
+    : '"' DoubleQuotedStringCharacter '"' 'c'
+    | '\'' SingleQuotedStringCharacter '\'' 'c'
+    ;
+
+// String literal with explicit 's' suffix. The suffix is optional (no suffix defaults to string),
+// but can be used to force string interpretation for single-character values.
+// Must appear before NonEmptyStringLiteral for longest-match priority.
+StringSuffixLiteral
+    : '"' DoubleQuotedStringCharacters '"' 's'
+    | '\'' SingleQuotedStringCharacters '\'' 's'
+    ;
+
+EmptyStringSuffixLiteral
+    : '""' 's'
+    | '\'\'' 's'
+    ;
 
 // String literal is customized since Java only allows double quoted strings where Groovy supports single quoted
 // literals also. A side effect of this is ANTLR will not be able to parse single character string literals with

@@ -79,37 +79,45 @@ radishGremlinFile.withWriter('UTF-8') { Writer writer ->
         if (staticTranslate.containsKey(k)) {
             writer.writeLine(staticTranslate[k])
         } else {
-            writer.write("    ")
-            writer.write("\"")
-            writer.write(k)
-            writer.write("\": {")
-            def collected = v.collect { GremlinTranslator.translate(it, Translator.GO) }
-            def gremlinItty = collected.iterator()
-            while (gremlinItty.hasNext()) {
-                def t = gremlinItty.next()
-                writer.write("func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return ")
-                try {
-                    writer.write(t.getTranslated().
-                            replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
-                            replaceAll("^-v([0-9]+)^-", "p[\"v\$1\"]"). // using ^- to avoid matching on g.io() tests - unexpected side-effect
-                            replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
-                            replaceAll("e([0-9]+)", "p[\"e\$1\"]").
-                            replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
-                            replace("l1", "p[\"l1\"]").
-                            replace("l2", "p[\"l2\"]").
-                            replace("pred1", "p[\"pred1\"]").
-                            replace("c1", "p[\"c1\"]").
-                            replace("c2", "p[\"c2\"]"))
-                } catch (ignored) {
-                    // Putting these in place of not implemented functions
-                    // TODO make sure all is supported
-                    writer.write("nil")
+            try {
+                def collected = v.collect { GremlinTranslator.translate(it, Translator.GO) }
+                writer.write("    ")
+                writer.write("\"")
+                writer.write(k)
+                writer.write("\": {")
+                def gremlinItty = collected.iterator()
+                while (gremlinItty.hasNext()) {
+                    def t = gremlinItty.next()
+                    writer.write("func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return ")
+                    try {
+                        writer.write(t.getTranslated().
+                                replaceAll("xx([0-9]+)", "p[\"xx\$1\"]").
+                                replaceAll("^-v([0-9]+)^-", "p[\"v\$1\"]"). // using ^- to avoid matching on g.io() tests - unexpected side-effect
+                                replaceAll("vid([0-9]+)", "p[\"vid\$1\"]").
+                                replaceAll("e([0-9]+)", "p[\"e\$1\"]").
+                                replaceAll("eid([0-9]+)", "p[\"eid\$1\"]").
+                                replace("l1", "p[\"l1\"]").
+                                replace("l2", "p[\"l2\"]").
+                                replace("pred1", "p[\"pred1\"]").
+                                replace("c1", "p[\"c1\"]").
+                                replace("c2", "p[\"c2\"]"))
+                    } catch (ignored) {
+                        // Putting these in place of not implemented functions
+                        // TODO make sure all is supported
+                        writer.write("nil")
+                    }
+                    writer.write("}")
+                    if (gremlinItty.hasNext())
+                        writer.write(', ')
                 }
-                writer.write("}")
-                if (gremlinItty.hasNext())
-                    writer.write(', ')
+                writer.writeLine('}, ')
+            } catch (ignored) {
+                // emit a placeholder for scenarios with unsupported literals to keep the file
+                // syntactically valid; the scenario will be skipped at test runtime via tag exclusions
+                writer.write("    \"")
+                writer.write(k)
+                writer.writeLine("\": {func(g *gremlingo.GraphTraversalSource, p map[string]interface{}) *gremlingo.GraphTraversal {return nil}}, ")
             }
-            writer.writeLine('}, ')
         }
     }
     writer.writeLine('}\n')

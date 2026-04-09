@@ -17,3 +17,5 @@ test"
 {{a: 123}}
 [Scope.local: 100]
 [Order.asc: 100]
+""c
+"ab"c

@@ -37,6 +37,7 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -128,6 +129,14 @@ public class GremlinLangTest {
                 {g.inject(GValue.of("x", "x")).V(GValue.of("ids", new int[]{1, 2, 3})), "g.inject(x).V(ids)"},
                 {newG().inject(GValue.of(null, "test1"), GValue.of("xx2", "test2")), "g.inject(\"test1\",xx2)"},
                 {newG().inject(new HashSet<>(Arrays.asList(1, 2))), "g.inject({1,2})"},
+                // Character - single quote (no feature equivalent since grammar uses double quotes in feature files)
+                {g.inject('\''), "g.inject(\"'\"c)"},
+				// Character - backslash (not in feature file due to Gherkin escaping issues)
+                {g.inject('\\'), "g.inject(\"\\\\\"c)"},
+                // Binary - byte[] type (distinct from ByteBuffer)
+                {g.inject(new byte[]{1, 2, 3}), "g.inject(Binary(\"AQID\"))"},
+                {g.inject(new byte[]{}), "g.inject(Binary(\"\"))"},
+                {g.inject(new byte[]{0}), "g.inject(Binary(\"AA==\"))"},
         });
     }
 
@@ -167,6 +176,21 @@ public class GremlinLangTest {
 
             assertEquals("g.inject(ids).V(ids)", gremlin.getGremlin());
             assertEquals(value, gremlin.getParameters().get("ids"));
+        }
+    }
+
+    public static class BinaryTests {
+        @Test
+        public void shouldEncodeByteBufferWithPositionOffset() {
+            final ByteBuffer buf = ByteBuffer.allocate(4);
+            buf.put((byte) 0);
+            buf.put((byte) 1);
+            buf.put((byte) 2);
+            buf.put((byte) 3);
+            buf.flip();
+            buf.get(); // advance position by 1, remaining is [1, 2, 3]
+            final String gremlin = g.inject(buf).asAdmin().getGremlinLang().getGremlin();
+            assertEquals("g.inject(Binary(\"AQID\"))", gremlin);
         }
     }
 }

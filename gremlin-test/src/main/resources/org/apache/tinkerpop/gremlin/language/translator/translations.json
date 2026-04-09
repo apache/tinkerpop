@@ -3011,6 +3011,103 @@
         ]
     },
     {
+        "scenario": "g_injectXBinaryXAQIDXX",
+        "traversals": [
+            {
+                "original": "g.inject(Binary(\"AQID\"))",
+                "language": "g.inject(Binary(\"AQID\"))",
+                "canonical": "g.inject(Binary(\"AQID\"))",
+                "anonymized": "g.inject(bytebuffer0)",
+                "dotnet": "g.Inject<object>(Convert.FromBase64String(\"AQID\"))",
+                "go": "g.Inject(gremlingo.ByteBuffer{Data: []byte{1,2,3}})",
+                "groovy": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\")))",
+                "java": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\")))",
+                "javascript": "g.inject(Buffer.from(\"AQID\",'base64'))",
+                "python": "g.inject(base64.b64decode('AQID'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXBinaryXemptyXX",
+        "traversals": [
+            {
+                "original": "g.inject(Binary(\"\"))",
+                "language": "g.inject(Binary(\"\"))",
+                "canonical": "g.inject(Binary(\"\"))",
+                "anonymized": "g.inject(bytebuffer0)",
+                "dotnet": "g.Inject<object>(Convert.FromBase64String(\"\"))",
+                "go": "g.Inject(gremlingo.ByteBuffer{Data: []byte{}})",
+                "groovy": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"\")))",
+                "java": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"\")))",
+                "javascript": "g.inject(Buffer.from(\"\",'base64'))",
+                "python": "g.inject(base64.b64decode(''))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXBinaryXAA_eqeqXX",
+        "traversals": [
+            {
+                "original": "g.inject(Binary(\"AA==\"))",
+                "language": "g.inject(Binary(\"AA==\"))",
+                "canonical": "g.inject(Binary(\"AA==\"))",
+                "anonymized": "g.inject(bytebuffer0)",
+                "dotnet": "g.Inject<object>(Convert.FromBase64String(\"AA==\"))",
+                "go": "g.Inject(gremlingo.ByteBuffer{Data: []byte{0}})",
+                "groovy": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AA==\")))",
+                "java": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AA==\")))",
+                "javascript": "g.inject(Buffer.from(\"AA==\",'base64'))",
+                "python": "g.inject(base64.b64decode('AA=='))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_valuesXblobX_isXtypeOfXGType_BINARYXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"data\").property(\"blob\", Binary(\"AQID\"))",
+                "language": "g.addV(\"data\").property(\"blob\", Binary(\"AQID\"))",
+                "canonical": "g.addV(\"data\").property(\"blob\", Binary(\"AQID\"))",
+                "anonymized": "g.addV(string0).property(string1, bytebuffer0)",
+                "dotnet": "g.AddV((string) \"data\").Property(\"blob\", Convert.FromBase64String(\"AQID\"))",
+                "go": "g.AddV(\"data\").Property(\"blob\", gremlingo.ByteBuffer{Data: []byte{1,2,3}})",
+                "groovy": "g.addV(\"data\").property(\"blob\", ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\")))",
+                "java": "g.addV(\"data\").property(\"blob\", ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\")))",
+                "javascript": "g.addV(\"data\").property(\"blob\", Buffer.from(\"AQID\",'base64'))",
+                "python": "g.add_v('data').property('blob', base64.b64decode('AQID'))"
+            },
+            {
+                "original": "g.V().values(\"blob\").is(P.typeOf(GType.BINARY))",
+                "language": "g.V().values(\"blob\").is(P.typeOf(GType.BINARY))",
+                "canonical": "g.V().values(\"blob\").is(P.typeOf(GType.BINARY))",
+                "anonymized": "g.V().values(string0).is(P.typeOf(GType.BINARY))",
+                "dotnet": "g.V().Values<object>(\"blob\").Is(P.TypeOf(GType.Binary))",
+                "go": "g.V().Values(\"blob\").Is(gremlingo.P.TypeOf(gremlingo.GType.Binary))",
+                "groovy": "g.V().values(\"blob\").is(P.typeOf(GType.BINARY))",
+                "java": "g.V().values(\"blob\").is(P.typeOf(GType.BINARY))",
+                "javascript": "g.V().values(\"blob\").is(P.typeOf(GType.binary))",
+                "python": "g.V().values('blob').is_(P.type_of(GType.BINARY))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXBinaryXAQIDXX_isXeqXBinaryXAQIDXXX",
+        "traversals": [
+            {
+                "original": "g.inject(Binary(\"AQID\")).is(P.eq(Binary(\"AQID\")))",
+                "language": "g.inject(Binary(\"AQID\")).is(P.eq(Binary(\"AQID\")))",
+                "canonical": "g.inject(Binary(\"AQID\")).is(P.eq(Binary(\"AQID\")))",
+                "anonymized": "g.inject(bytebuffer0).is(P.eq(bytebuffer0))",
+                "dotnet": "g.Inject<object>(Convert.FromBase64String(\"AQID\")).Is(P.Eq(Convert.FromBase64String(\"AQID\")))",
+                "go": "g.Inject(gremlingo.ByteBuffer{Data: []byte{1,2,3}}).Is(gremlingo.P.Eq(gremlingo.ByteBuffer{Data: []byte{1,2,3}}))",
+                "groovy": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\"))).is(P.eq(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\"))))",
+                "java": "g.inject(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\"))).is(P.eq(ByteBuffer.wrap(Base64.getDecoder().decode(\"AQID\"))))",
+                "javascript": "g.inject(Buffer.from(\"AQID\",'base64')).is(P.eq(Buffer.from(\"AQID\",'base64')))",
+                "python": "g.inject(base64.b64decode('AQID')).is_(P.eq(base64.b64decode('AQID')))"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_valuesXintX_asNumberXGType_BYTEX_isXtypeOfXGType_BYTEXX",
         "traversals": [
             {
@@ -3215,6 +3312,93 @@
                 "java": "g.V().values(\"age\").is(P.typeOf(GType.BYTE))",
                 "javascript": "g.V().values(\"age\").is(P.typeOf(GType.byte))",
                 "python": "g.V().values('age').is_(P.type_of(GType.BYTE))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXaX",
+        "traversals": [
+            {
+                "original": "g.inject(\"a\"c)",
+                "language": "g.inject(\"a\"c)",
+                "canonical": "g.inject(\"a\"c)",
+                "anonymized": "g.inject(character0)",
+                "dotnet": "g.Inject<object>('a')",
+                "groovy": "g.inject('a' as char)",
+                "java": "g.inject('a')",
+                "python": "g.inject(SingleChar('a'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXescaped_quoteX",
+        "traversals": [
+            {
+                "original": "g.inject(\"\\\"\"c)",
+                "language": "g.inject(\"\\\"\"c)",
+                "canonical": "g.inject(\"\\\"\"c)",
+                "anonymized": "g.inject(character0)",
+                "dotnet": "g.Inject<object>('\\\"')",
+                "groovy": "g.inject('\\\"' as char)",
+                "java": "g.inject('\\\"')",
+                "python": "g.inject(SingleChar('\\\"'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXunicodeX",
+        "traversals": [
+            {
+                "original": "g.inject(\"\\u00E9\"c)",
+                "language": "g.inject(\"\\u00E9\"c)",
+                "canonical": "g.inject(\"\\u00E9\"c)",
+                "anonymized": "g.inject(character0)",
+                "dotnet": "g.Inject<object>('\\u00E9')",
+                "groovy": "g.inject('\\u00E9' as char)",
+                "java": "g.inject('\\u00E9')",
+                "python": "g.inject(SingleChar('\\u00E9'))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_valuesXinitialX_isXtypeOfXGType_CHARXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"data\").property(\"initial\", \"a\"c)",
+                "language": "g.addV(\"data\").property(\"initial\", \"a\"c)",
+                "canonical": "g.addV(\"data\").property(\"initial\", \"a\"c)",
+                "anonymized": "g.addV(string0).property(string1, character0)",
+                "dotnet": "g.AddV((string) \"data\").Property(\"initial\", 'a')",
+                "groovy": "g.addV(\"data\").property(\"initial\", 'a' as char)",
+                "java": "g.addV(\"data\").property(\"initial\", 'a')",
+                "python": "g.add_v('data').property('initial', SingleChar('a'))"
+            },
+            {
+                "original": "g.V().values(\"initial\").is(P.typeOf(GType.CHAR))",
+                "language": "g.V().values(\"initial\").is(P.typeOf(GType.CHAR))",
+                "canonical": "g.V().values(\"initial\").is(P.typeOf(GType.CHAR))",
+                "anonymized": "g.V().values(string0).is(P.typeOf(GType.CHAR))",
+                "dotnet": "g.V().Values<object>(\"initial\").Is(P.TypeOf(GType.Char))",
+                "go": "g.V().Values(\"initial\").Is(gremlingo.P.TypeOf(gremlingo.GType.Char))",
+                "groovy": "g.V().values(\"initial\").is(P.typeOf(GType.CHAR))",
+                "java": "g.V().values(\"initial\").is(P.typeOf(GType.CHAR))",
+                "javascript": "g.V().values(\"initial\").is(P.typeOf(GType.char))",
+                "python": "g.V().values('initial').is_(P.type_of(GType.CHAR))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXaX_isXeqXaXX",
+        "traversals": [
+            {
+                "original": "g.inject(\"a\"c).is(P.eq(\"a\"c))",
+                "language": "g.inject(\"a\"c).is(P.eq(\"a\"c))",
+                "canonical": "g.inject(\"a\"c).is(P.eq(\"a\"c))",
+                "anonymized": "g.inject(character0).is(P.eq(character0))",
+                "dotnet": "g.Inject<object>('a').Is(P.Eq('a'))",
+                "groovy": "g.inject('a' as char).is(P.eq('a' as char))",
+                "java": "g.inject('a').is(P.eq('a'))",
+                "python": "g.inject(SingleChar('a')).is_(P.eq(SingleChar('a')))"
             }
         ]
     },
@@ -3706,6 +3890,146 @@
                 "java": "g.V().values(\"age\").is(P.typeOf(GType.DOUBLE))",
                 "javascript": "g.V().values(\"age\").is(P.typeOf(GType.double))",
                 "python": "g.V().values('age').is_(P.type_of(GType.DOUBLE))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX9000_0XX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(9000, 0))",
+                "language": "g.inject(Duration(9000,0))",
+                "canonical": "g.inject(Duration(9000,0))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(90000000000L))",
+                "go": "g.Inject(time.Duration(9000000000000))",
+                "groovy": "g.inject(Duration.ofSeconds(9000, 0))",
+                "java": "g.inject(Duration.ofSeconds(9000, 0))",
+                "python": "g.inject(timedelta(seconds=9000))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX0_0XX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(0, 0))",
+                "language": "g.inject(Duration(0,0))",
+                "canonical": "g.inject(Duration(0,0))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(0L))",
+                "go": "g.Inject(time.Duration(0))",
+                "groovy": "g.inject(Duration.ofSeconds(0, 0))",
+                "java": "g.inject(Duration.ofSeconds(0, 0))",
+                "python": "g.inject(timedelta(seconds=0))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX0_500000000XX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(0, 500000000))",
+                "language": "g.inject(Duration(0,500000000))",
+                "canonical": "g.inject(Duration(0,500000000))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(5000000L))",
+                "go": "g.Inject(time.Duration(500000000))",
+                "groovy": "g.inject(Duration.ofSeconds(0, 500000000))",
+                "java": "g.inject(Duration.ofSeconds(0, 500000000))",
+                "python": "g.inject(timedelta(seconds=0,microseconds=500000))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX30_0XX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(30, 0))",
+                "language": "g.inject(Duration(30,0))",
+                "canonical": "g.inject(Duration(30,0))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(300000000L))",
+                "go": "g.Inject(time.Duration(30000000000))",
+                "groovy": "g.inject(Duration.ofSeconds(30, 0))",
+                "java": "g.inject(Duration.ofSeconds(30, 0))",
+                "python": "g.inject(timedelta(seconds=30))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX30_0_falseXX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(30, 0, false))",
+                "language": "g.inject(Duration(30,0,false))",
+                "canonical": "g.inject(Duration(30,0,false))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(300000000L).Negate())",
+                "go": "g.Inject(time.Duration(-30000000000))",
+                "groovy": "g.inject(Duration.ofSeconds(30, 0).negated())",
+                "java": "g.inject(Duration.ofSeconds(30, 0).negated())",
+                "python": "g.inject(timedelta(seconds=-30))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX1_500000000_falseXX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(1, 500000000, false))",
+                "language": "g.inject(Duration(1,500000000,false))",
+                "canonical": "g.inject(Duration(1,500000000,false))",
+                "anonymized": "g.inject(duration0)",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(15000000L).Negate())",
+                "go": "g.Inject(time.Duration(-1500000000))",
+                "groovy": "g.inject(Duration.ofSeconds(1, 500000000).negated())",
+                "java": "g.inject(Duration.ofSeconds(1, 500000000).negated())",
+                "python": "g.inject(timedelta(seconds=-1,microseconds=-500000))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_valuesXlengthX_isXtypeOfXGType_DURATIONXX",
+        "traversals": [
+            {
+                "original": "g.addV(\"data\").property(\"length\", Duration(9000, 0))",
+                "language": "g.addV(\"data\").property(\"length\", Duration(9000,0))",
+                "canonical": "g.addV(\"data\").property(\"length\", Duration(9000,0))",
+                "anonymized": "g.addV(string0).property(string1, duration0)",
+                "dotnet": "g.AddV((string) \"data\").Property(\"length\", TimeSpan.FromTicks(90000000000L))",
+                "go": "g.AddV(\"data\").Property(\"length\", time.Duration(9000000000000))",
+                "groovy": "g.addV(\"data\").property(\"length\", Duration.ofSeconds(9000, 0))",
+                "java": "g.addV(\"data\").property(\"length\", Duration.ofSeconds(9000, 0))",
+                "python": "g.add_v('data').property('length', timedelta(seconds=9000))"
+            },
+            {
+                "original": "g.V().values(\"length\").is(P.typeOf(GType.DURATION))",
+                "language": "g.V().values(\"length\").is(P.typeOf(GType.DURATION))",
+                "canonical": "g.V().values(\"length\").is(P.typeOf(GType.DURATION))",
+                "anonymized": "g.V().values(string0).is(P.typeOf(GType.DURATION))",
+                "dotnet": "g.V().Values<object>(\"length\").Is(P.TypeOf(GType.Duration))",
+                "go": "g.V().Values(\"length\").Is(gremlingo.P.TypeOf(gremlingo.GType.Duration))",
+                "groovy": "g.V().values(\"length\").is(P.typeOf(GType.DURATION))",
+                "java": "g.V().values(\"length\").is(P.typeOf(GType.DURATION))",
+                "javascript": "g.V().values(\"length\").is(P.typeOf(GType.duration))",
+                "python": "g.V().values('length').is_(P.type_of(GType.DURATION))"
+            }
+        ]
+    },
+    {
+        "scenario": "g_injectXDurationX9000_0XX_isXgtXDurationX3600_0XXX",
+        "traversals": [
+            {
+                "original": "g.inject(Duration(9000, 0)).is(P.gt(Duration(3600, 0)))",
+                "language": "g.inject(Duration(9000,0)).is(P.gt(Duration(3600,0)))",
+                "canonical": "g.inject(Duration(9000,0)).is(P.gt(Duration(3600,0)))",
+                "anonymized": "g.inject(duration0).is(P.gt(duration1))",
+                "dotnet": "g.Inject<object>(TimeSpan.FromTicks(90000000000L)).Is(P.Gt(TimeSpan.FromTicks(36000000000L)))",
+                "go": "g.Inject(time.Duration(9000000000000)).Is(gremlingo.P.Gt(time.Duration(3600000000000)))",
+                "groovy": "g.inject(Duration.ofSeconds(9000, 0)).is(P.gt(Duration.ofSeconds(3600, 0)))",
+                "java": "g.inject(Duration.ofSeconds(9000, 0)).is(P.gt(Duration.ofSeconds(3600, 0)))",
+                "python": "g.inject(timedelta(seconds=9000)).is_(P.gt(timedelta(seconds=3600)))"
             }
         ]
     },
