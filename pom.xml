@@ -490,6 +490,7 @@ limitations under the License.
                          <exclude>**/.cursor/**</exclude>
                          <exclude>**/.kiro/**</exclude>
                          <exclude>**/.junie/**</exclude>
+                         <exclude>**/.runtime/**</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
