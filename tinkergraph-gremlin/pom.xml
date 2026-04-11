@@ -25,6 +25,20 @@ limitations under the License.
     </parent>
     <artifactId>tinkergraph-gremlin</artifactId>
     <name>Apache TinkerPop :: TinkerGraph Gremlin</name>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Force convergence to the version defined in the parent POM.
+                 The locally installed gremlin-language artifact may carry an older
+                 antlr4-runtime version that was baked in before antlr4.version was
+                 bumped; this entry resolves the DependencyConvergence check. -->
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>${antlr4.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -34,6 +48,11 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr4.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
@@ -51,11 +70,39 @@ limitations under the License.
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr4.version}</version>
+                <executions>
+                    <execution>
+                        <id>antlr-gql</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>
+                                <argument>-package</argument>
+                                <argument>org.apache.tinkerpop.gremlin.tinkergraph.gql</argument>
+                                <argument>-encoding</argument>
+                                <argument>utf-8</argument>
+                            </arguments>
+                            <visitor>true</visitor>
+                            <outputDirectory>${project.build.directory}/generated-sources/antlr4/org/apache/tinkerpop/gremlin/tinkergraph/gql/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
