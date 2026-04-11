@@ -90,4 +90,15 @@ public class WithOptions {
      * Index items using a {@code LinkedHashMap}.
      */
     public static int map = 1;
+
+    //
+    // DeclarativeMatchStep
+    //
+
+    /**
+     * Configures the query language to be used in a declarative match step.
+     *
+     * @since 4.0.0
+     */
+    public static final String queryLanguage = "queryLanguage";
 }
