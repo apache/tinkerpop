@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStepPlaceholder;
@@ -1003,10 +1004,44 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * @return the traversal with an appended {@link MatchStep}.
      * @see <a href="http://tinkerpop.apache.org/docs/${project.version}/reference/#match-step" target="_blank">Reference Documentation - Match Step</a>
      * @since 3.0.0-incubating
+     * @deprecated As of release 4.0.0, replaced by {@link #match(String)} for declarative pattern matching.
      */
+    @Deprecated
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
         this.asAdmin().getGremlinLang().addStep(Symbols.match, matchTraversals);
         return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), ConnectiveStep.Connective.AND, matchTraversals));
+    }
+
+    /**
+     * Map the {@link Traverser} to a result using a declarative query string. The step is a placeholder
+     * that requires a graph provider to register an execution strategy before the traversal can be executed.
+     * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
+     * can be overridden with {@code .with("queryLanguage", value)}.
+     *
+     * @param gqlQuery the declarative query string
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, Optional> match(final String gqlQuery) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.match, gqlQuery);
+        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), gqlQuery, null));
+    }
+
+    /**
+     * Map the {@link Traverser} to a result using a declarative query string with bound parameters.
+     * The step is a placeholder that requires a graph provider to register an execution strategy before
+     * the traversal can be executed. The query language defaults to
+     * {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and can be overridden with
+     * {@code .with("queryLanguage", value)}.
+     *
+     * @param gqlQuery the declarative query string
+     * @param params   the query parameters (may be {@code null})
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public default GraphTraversal<S, Optional> match(final String gqlQuery, final Map<String, Object> params) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.match, gqlQuery, params);
+        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), gqlQuery, params));
     }
 
     /**
