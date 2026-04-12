@@ -655,3 +655,10 @@ class TestGremlinLang(object):
         gremlin = g.inject(outer_pdt).gremlin_lang.get_gremlin()
         # The inner decorated object MUST be dehydrated to its PDT representation
         assert "PDT('com.example.Outer',['child':PDT('com.example.Inner',['val':99]),'count':7])" in gremlin
+
+    def test_match_gql_query_bytecode(self):
+        g = traversal().with_(None)
+        query = 'MATCH (p:person)-[e:knows]->(friend:person)'
+        assert ("g.match('" + query + "')") == g.match(query).gremlin_lang.get_gremlin()
+        params = {'name': 'marko'}
+        assert ("g.match('" + query + "',['name':'marko'])") == g.match(query, params).gremlin_lang.get_gremlin()
