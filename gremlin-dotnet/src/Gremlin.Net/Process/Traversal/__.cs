@@ -985,11 +985,33 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal.
         /// </summary>
+        [Obsolete("As of release 4.0.0, replaced by Match(string) for declarative pattern matching.", false)]
         public static GraphTraversal<object, IDictionary<string, E2>> Match<E2>(params ITraversal[] matchTraversals)
         {
             return matchTraversals is { Length: 0 }
                 ? new GraphTraversal<object, IDictionary<string, E2>>().Match<E2>()
-                : new GraphTraversal<object, IDictionary<string, E2>>().Match<E2>(matchTraversals);            
+                : new GraphTraversal<object, IDictionary<string, E2>>().Match<E2>(matchTraversals);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal
+        ///     using a declarative query string.
+        /// </summary>
+        /// <param name="gqlQuery">The declarative query string.</param>
+        public static GraphTraversal<object, object> Match(string gqlQuery)
+        {
+            return new GraphTraversal<object, object>().Match(gqlQuery);
+        }
+
+        /// <summary>
+        ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal
+        ///     using a declarative query string with bound parameters.
+        /// </summary>
+        /// <param name="gqlQuery">The declarative query string.</param>
+        /// <param name="parameters">The query parameters.</param>
+        public static GraphTraversal<object, object> Match(string gqlQuery, IDictionary<string, object> parameters)
+        {
+            return new GraphTraversal<object, object>().Match(gqlQuery, parameters);
         }
 
         /// <summary>
