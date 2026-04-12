@@ -1381,6 +1381,7 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Adds the match step to this <see cref="GraphTraversal{SType, EType}" />.
         /// </summary>
+        [Obsolete("As of release 4.0.0, replaced by Match(string) for declarative pattern matching.", false)]
         public GraphTraversal<TStart, IDictionary<string, TNewEnd>> Match<TNewEnd> (params ITraversal[] matchTraversals)
         {
             if (matchTraversals == null) throw new ArgumentNullException(nameof(matchTraversals));
@@ -1389,6 +1390,30 @@ namespace Gremlin.Net.Process.Traversal
             args.AddRange(matchTraversals);
             GremlinLang.AddStep("match", args.ToArray());
             return Wrap<TStart, IDictionary<string, TNewEnd>>(this);
+        }
+
+        /// <summary>
+        ///     Adds the match step to this <see cref="GraphTraversal{SType, EType}" /> using a declarative query string.
+        ///     The step requires a graph provider to register an execution strategy before the traversal can be executed.
+        /// </summary>
+        /// <param name="gqlQuery">The declarative query string.</param>
+        public GraphTraversal<TStart, object> Match (string gqlQuery)
+        {
+            GremlinLang.AddStep("match", gqlQuery);
+            return Wrap<TStart, object>(this);
+        }
+
+        /// <summary>
+        ///     Adds the match step to this <see cref="GraphTraversal{SType, EType}" /> using a declarative query string
+        ///     with bound parameters. The step requires a graph provider to register an execution strategy before the
+        ///     traversal can be executed.
+        /// </summary>
+        /// <param name="gqlQuery">The declarative query string.</param>
+        /// <param name="parameters">The query parameters.</param>
+        public GraphTraversal<TStart, object> Match (string gqlQuery, IDictionary<string, object> parameters)
+        {
+            GremlinLang.AddStep("match", gqlQuery, parameters);
+            return Wrap<TStart, object>(this);
         }
 
         /// <summary>

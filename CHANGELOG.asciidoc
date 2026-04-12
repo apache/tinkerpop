@@ -64,6 +64,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
 
+* Added `Match(string)` and `Match(string, IDictionary)` overloads to `gremlin-dotnet` `GraphTraversal`, `GraphTraversalSource`, and `__` for declarative GQL pattern matching. Deprecated the traversal-based `Match(ITraversal[])` overloads in favor of the new string-based API.
 * Improved number type handling in `gremlin-javascript`: smart GremlinLang type suffixes, `bigint` as BigInteger, and Long deserialization now returns `bigint` for values beyond safe integer range.
 * Removed `neo4j-gremlin` module which was deprecated in 3.7.0.
 * Added grammar-based `Translator` for `gremlin-javascript` supporting translation to JavaScript, Python, Go, .NET, Java, Groovy, canonical, and anonymized output.
