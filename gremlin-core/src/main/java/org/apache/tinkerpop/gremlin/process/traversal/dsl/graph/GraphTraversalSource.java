@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStartStepP
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CallStepPlaceholder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStepPlaceholder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MergeEdgeStepPlaceholder;
@@ -666,6 +667,42 @@ public class GraphTraversalSource implements TraversalSource {
         clone.gremlinLang.addStep(GraphTraversal.Symbols.call, service, params, childTraversal);
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new CallStepPlaceholder<>(traversal, true, service, params, childTraversal.asAdmin()));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by executing a declarative GQL pattern match query. The step is a placeholder
+     * that requires a graph provider to register an execution strategy before the traversal can be executed.
+     * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
+     * can be overridden with {@code .with("queryLanguage", value)}.
+     *
+     * @param gqlQuery the declarative query string
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Optional> match(final String gqlQuery) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery);
+        final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, null));
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} by executing a declarative GQL pattern match query with bound parameters.
+     * The step is a placeholder that requires a graph provider to register an execution strategy before the
+     * traversal can be executed. The query language defaults to
+     * {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and can be overridden with
+     * {@code .with("queryLanguage", value)}.
+     *
+     * @param gqlQuery the declarative query string
+     * @param params   the query parameters (may be {@code null})
+     * @return the traversal with an appended {@link DeclarativeMatchStep}.
+     * @since 4.0.0
+     */
+    public <S> GraphTraversal<S, Optional> match(final String gqlQuery, final Map<String, Object> params) {
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery, params);
+        final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, params));
     }
 
     /**
