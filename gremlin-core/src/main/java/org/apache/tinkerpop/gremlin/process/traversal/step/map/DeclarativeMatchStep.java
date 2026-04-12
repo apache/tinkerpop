@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @since 4.0.0
  */
-public final class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implements Configuring {
+public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implements Configuring {
 
     /**
      * The default query language used when none is explicitly set.
