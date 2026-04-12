@@ -458,6 +458,29 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+        sb.append("(");
+        visit(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+        sb.append("(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        sb.append("(IDictionary<string, object>) ");
+        visit(ctx.genericMapArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalMethod_asString_Scope(final GremlinParser.TraversalMethod_asString_ScopeContext ctx) {
         return handleGenerics(ctx);
     }
@@ -823,8 +846,31 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
-    public Void visitTraversalMethod_match(final GremlinParser.TraversalMethod_matchContext ctx) {
+    public Void visitTraversalMethod_match_traversal(final GremlinParser.TraversalMethod_match_traversalContext ctx) {
         return handleGenerics(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_match_string(final GremlinParser.TraversalMethod_match_stringContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+        sb.append("(");
+        visit(ctx.stringLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) {
+        final String step = ctx.getChild(0).getText();
+        sb.append(convertToPascalCase(step));
+        sb.append("(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        sb.append("(IDictionary<string, object>) ");
+        visit(ctx.genericMapArgument());
+        sb.append(")");
+        return null;
     }
 
     @Override

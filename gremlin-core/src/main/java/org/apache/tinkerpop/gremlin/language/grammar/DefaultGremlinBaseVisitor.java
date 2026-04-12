@@ -566,7 +566,15 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	/**
 	 * {@inheritDoc}
 	 */
-	@Override public T visitTraversalMethod_match(final GremlinParser.TraversalMethod_matchContext ctx) { notImplemented(ctx); return null; }
+	@Override public T visitTraversalMethod_match_traversal(final GremlinParser.TraversalMethod_match_traversalContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_match_string(final GremlinParser.TraversalMethod_match_stringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}
 	 */
@@ -1699,4 +1707,12 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * {@inheritDoc}
 	 */
 	@Override public T visitNakedKey(final GremlinParser.NakedKeyContext ctx) { notImplemented(ctx); return null;}
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_match_string(final GremlinParser.TraversalSourceSpawnMethod_match_stringContext ctx) { notImplemented(ctx); return null; }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override public T visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) { notImplemented(ctx); return null; }
 }
