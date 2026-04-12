@@ -90,7 +90,7 @@ public class TinkerGraphMatchStepTest {
 
     @Test
     public void testEmptyGraphProducesNoResults() {
-        final List<Optional> results = g.<Integer>inject(1).match("MATCH (n:Person)").toList();
+        final List<Vertex> results = g.<Integer>inject(1).match("MATCH (n:Person)").<Vertex>select("n").toList();
         assertTrue(results.isEmpty());
     }
 
@@ -98,8 +98,8 @@ public class TinkerGraphMatchStepTest {
     public void testNoMatchingEdgeProducesNoResults() {
         graph.addVertex("Person");
         graph.addVertex("Person");
-        final List<Optional> results =
-                g.<Integer>inject(1).match("MATCH (a:Person)-[:KNOWS]->(b:Person)").toList();
+        final List<Object> results =
+                g.<Integer>inject(1).match("MATCH (a:Person)-[:KNOWS]->(b:Person)").select("a").toList();
         assertTrue(results.isEmpty());
     }
 
@@ -179,8 +179,8 @@ public class TinkerGraphMatchStepTest {
         a.addEdge("KNOWS", b);
 
         // inject(1, 2) produces two input traversers; each should see the same match result
-        final List<Optional> results =
-                g.<Integer>inject(1, 2).match("MATCH (a:Person)-[:KNOWS]->(b:Person)").toList();
+        final List<Object> results =
+                g.<Integer>inject(1, 2).match("MATCH (a:Person)-[:KNOWS]->(b:Person)").select("a").toList();
 
         // One result row per match * two input traversers = 2 output traversers
         assertEquals(2, results.size());
@@ -195,6 +195,7 @@ public class TinkerGraphMatchStepTest {
         g.<Integer>inject(1)
          .match("MATCH (n)")
          .with("queryLanguage", "sparql")
+         .select("n")
          .toList();
     }
 
