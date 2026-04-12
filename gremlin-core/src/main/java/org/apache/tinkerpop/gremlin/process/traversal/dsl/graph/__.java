@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Column;
@@ -44,6 +45,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -449,6 +451,20 @@ public class __ {
      */
     public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... matchTraversals) {
         return __.<A>start().match(matchTraversals);
+    }
+
+    /**
+     * @see GraphTraversal#match(String)
+     */
+    public static <A> GraphTraversal<A, Optional> match(final String gqlQuery) {
+        return __.<A>start().match(gqlQuery);
+    }
+
+    /**
+     * @see GraphTraversal#match(String, Map<String, Object>)
+     */
+    public static <A> GraphTraversal<A, Optional> match(final String gqlQuery, final Map<String, Object> params) {
+        return __.<A>start().match(gqlQuery, params);
     }
 
     /**

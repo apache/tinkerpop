@@ -520,7 +520,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
     visitTraversalMethod_local(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_lTrim_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_map(ctx: any): void { this.handleGenerics(ctx); }
-    visitTraversalMethod_match(ctx: any): void { this.handleGenerics(ctx); }
+    visitTraversalMethod_match_traversal(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_max_Empty(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_max_Scope(ctx: any): void { this.handleGenerics(ctx); }
     visitTraversalMethod_mean_Empty(ctx: any): void { this.handleGenerics(ctx); }
