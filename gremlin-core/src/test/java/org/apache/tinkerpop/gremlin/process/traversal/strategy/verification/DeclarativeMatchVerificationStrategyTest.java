@@ -58,4 +58,54 @@ public class DeclarativeMatchVerificationStrategyTest {
         // should not throw
         traversal.applyStrategies();
     }
+
+    @Test
+    public void shouldThrowWhenMatchIsTerminalInSubTraversal() {
+        // match() inside a local() is still the terminal step of that child traversal —
+        // strategies are applied recursively so verification must fire there too
+        final Traversal.Admin<?, ?> traversal = __.<Object>start()
+                .local(__.match("MATCH (n)"))
+                .asAdmin();
+        final DefaultTraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(DeclarativeMatchVerificationStrategy.instance());
+        traversal.setStrategies(strategies);
+
+        try {
+            traversal.applyStrategies();
+            fail("The strategy should reject match() as the terminal step of a child traversal");
+        } catch (VerificationException ex) {
+            assertThat(ex.getMessage(), containsString("match() cannot be a terminal step"));
+            assertThat(ex.getMessage(), containsString("select()"));
+        }
+    }
+
+    @Test
+    public void shouldPassWhenMatchIsFollowedBySelectInSubTraversal() {
+        final Traversal.Admin<?, ?> traversal = __.<Object>start()
+                .local(__.match("MATCH (n)").select("n"))
+                .asAdmin();
+        final DefaultTraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(DeclarativeMatchVerificationStrategy.instance());
+        traversal.setStrategies(strategies);
+
+        // should not throw
+        traversal.applyStrategies();
+    }
+
+    @Test
+    public void shouldContainOffendingStepAndRemedyInErrorMessage() {
+        final Traversal.Admin<?, ?> traversal = __.<Object>start().match("MATCH (n)").asAdmin();
+        final DefaultTraversalStrategies strategies = new DefaultTraversalStrategies();
+        strategies.addStrategies(DeclarativeMatchVerificationStrategy.instance());
+        traversal.setStrategies(strategies);
+
+        try {
+            traversal.applyStrategies();
+            fail("VerificationException expected");
+        } catch (VerificationException ex) {
+            // The message must identify both the offending step and the remedy
+            assertThat(ex.getMessage(), containsString("match()"));
+            assertThat(ex.getMessage(), containsString("select()"));
+        }
+    }
 }

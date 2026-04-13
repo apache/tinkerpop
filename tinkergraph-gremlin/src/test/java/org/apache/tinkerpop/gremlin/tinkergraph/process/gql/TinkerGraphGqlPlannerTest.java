@@ -355,4 +355,37 @@ public class TinkerGraphGqlPlannerTest {
             if (step.getTargetVariable() != null) bound.add(step.getTargetVariable());
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Disconnected patterns
+    // -------------------------------------------------------------------------
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDisconnectedEdgePatternsThrows() {
+        // Two independent edge patterns with no shared variable — no join possible
+        planner.plan("MATCH (a)-[:E1]->(b), (c)-[:E2]->(d)");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDisconnectedNodePatternsThrows() {
+        // Two independent single-node patterns
+        planner.plan("MATCH (a:Person), (c:Company)");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPartiallyConnectedPatternThrows() {
+        // Three patterns: first two share 'b', but third is independent
+        planner.plan("MATCH (a)-[:E1]->(b), (b)-[:E2]->(c), (x)-[:E3]->(y)");
+    }
+
+    @Test
+    public void testConnectedMultiPatternDoesNotThrow() {
+        // Should not throw: 'b' is shared, making both patterns connected
+        graph.addVertex("Person");
+        graph.addVertex("Person");
+        graph.addVertex("Company");
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+        assertNotNull(plan);
+    }
 }

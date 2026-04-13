@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlExecutor;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlPlanner;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
@@ -75,6 +77,9 @@ public class TinkerGraph extends AbstractTinkerGraph {
 
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
+
+    private volatile TinkerGraphGqlPlanner gqlPlanner;
+    private volatile TinkerGraphGqlExecutor gqlExecutor;
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
@@ -228,6 +233,33 @@ public class TinkerGraph extends AbstractTinkerGraph {
 
     @Override
     public boolean hasEdge(Object id) { return edges.containsKey(id); }
+
+    /**
+     * Returns the shared {@link TinkerGraphGqlPlanner} for this graph instance, creating it
+     * lazily on first access. The planner's compiled-plan cache spans all traversals on this
+     * graph, so identical GQL query strings are compiled only once.
+     */
+    public TinkerGraphGqlPlanner getGqlPlanner() {
+        if (gqlPlanner == null) {
+            synchronized (this) {
+                if (gqlPlanner == null) gqlPlanner = new TinkerGraphGqlPlanner(this);
+            }
+        }
+        return gqlPlanner;
+    }
+
+    /**
+     * Returns the shared {@link TinkerGraphGqlExecutor} for this graph instance, creating it
+     * lazily on first access. The executor is stateless and safe to share across traversals.
+     */
+    public TinkerGraphGqlExecutor getGqlExecutor() {
+        if (gqlExecutor == null) {
+            synchronized (this) {
+                if (gqlExecutor == null) gqlExecutor = new TinkerGraphGqlExecutor(this);
+            }
+        }
+        return gqlExecutor;
+    }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {

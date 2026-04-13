@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlExecutor;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlPlanner;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphCountStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
@@ -71,6 +73,9 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
     private final TinkerTransaction transaction = new TinkerTransaction(this);
+
+    private volatile TinkerGraphGqlPlanner gqlPlanner;
+    private volatile TinkerGraphGqlExecutor gqlExecutor;
 
     private final Map<Object, TinkerElementContainer<TinkerVertex>> vertices = new ConcurrentHashMap<>();
     private final Map<Object, TinkerElementContainer<TinkerEdge>> edges = new ConcurrentHashMap<>();
@@ -309,6 +314,32 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     Map<Object, TinkerElementContainer<TinkerEdge>> getEdges () { return edges; }
+
+    /**
+     * Returns the shared {@link TinkerGraphGqlPlanner} for this graph instance, creating it
+     * lazily on first access.
+     */
+    public TinkerGraphGqlPlanner getGqlPlanner() {
+        if (gqlPlanner == null) {
+            synchronized (this) {
+                if (gqlPlanner == null) gqlPlanner = new TinkerGraphGqlPlanner(this);
+            }
+        }
+        return gqlPlanner;
+    }
+
+    /**
+     * Returns the shared {@link TinkerGraphGqlExecutor} for this graph instance, creating it
+     * lazily on first access.
+     */
+    public TinkerGraphGqlExecutor getGqlExecutor() {
+        if (gqlExecutor == null) {
+            synchronized (this) {
+                if (gqlExecutor == null) gqlExecutor = new TinkerGraphGqlExecutor(this);
+            }
+        }
+        return gqlExecutor;
+    }
 
     @Override
     public TinkerServiceRegistry getServiceRegistry() {

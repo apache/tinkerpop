@@ -448,7 +448,9 @@ public class __ {
 
     /**
      * @see GraphTraversal#match(Traversal[])
+     * @deprecated As of release 4.0.0, replaced by {@link #match(String)} for declarative pattern matching.
      */
+    @Deprecated
     public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... matchTraversals) {
         return __.<A>start().match(matchTraversals);
     }

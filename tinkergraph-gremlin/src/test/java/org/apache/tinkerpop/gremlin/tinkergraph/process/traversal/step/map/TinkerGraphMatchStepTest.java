@@ -31,6 +31,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -197,6 +198,30 @@ public class TinkerGraphMatchStepTest {
          .with("queryLanguage", "sparql")
          .select("n")
          .toList();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNonEmptyParamsThrows() {
+        g.<Integer>inject(1)
+         .match("MATCH (n)", Collections.singletonMap("key", "value"))
+         .select("n")
+         .toList();
+    }
+
+    @Test
+    public void testExplicitGqlQueryLanguageDoesNotThrow() {
+        // "gql" is the DEFAULT_QUERY_LANGUAGE; passing it explicitly must not trigger the
+        // unsupported-language check in processNextStart()
+        final Vertex alice = graph.addVertex("Person");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:Person)")
+                .with("queryLanguage", "gql")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0));
     }
 
     // -------------------------------------------------------------------------

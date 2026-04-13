@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -58,10 +58,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TinkerGraphGqlPlanner {
 
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
     private final Map<String, GqlMatchPlan> planCache = new ConcurrentHashMap<>();
 
-    public TinkerGraphGqlPlanner(final TinkerGraph graph) {
+    public TinkerGraphGqlPlanner(final AbstractTinkerGraph graph) {
         this.graph = graph;
     }
 
@@ -257,6 +257,22 @@ public final class TinkerGraphGqlPlanner {
                     queue.add(targetNode);
                 }
             }
+        }
+
+        // Detect disconnected pattern components: every node in the query must have been
+        // reached by the BFS. If any node was not visited, the query graph has more than one
+        // connected component and the patterns cannot be joined by a shared variable.
+        if (visitOrder.size() < queryGraph.getNodes().size()) {
+            final List<String> unvisited = new ArrayList<>();
+            for (final QueryNode n : queryGraph.getNodes()) {
+                if (!visitOrder.containsKey(n)) {
+                    unvisited.add(n.getVariable() != null ? "(" + n.getVariable() + ")" : "(anonymous)");
+                }
+            }
+            throw new IllegalArgumentException(
+                    "MATCH pattern contains disconnected components — all patterns must share at least " +
+                    "one variable to join them. Unconnected nodes: " + unvisited +
+                    ". Use a shared variable (e.g. MATCH (a)-[:E1]->(b), (b)-[:E2]->(c)) to connect patterns.");
         }
 
         return steps;
