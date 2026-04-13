@@ -55,10 +55,11 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
     private final String gqlQuery;
     private final Map<String, Object> params;
     private String queryLanguage;
+    private final boolean isStart;
 
     /**
-     * Constructs a {@code DeclarativeMatchStep} with the given query and optional parameters,
-     * defaulting the query language to {@link #DEFAULT_QUERY_LANGUAGE}.
+     * Constructs a {@code DeclarativeMatchStep} as a mid-traversal step with the given query and
+     * optional parameters, defaulting the query language to {@link #DEFAULT_QUERY_LANGUAGE}.
      *
      * @param traversal the parent traversal
      * @param gqlQuery  the declarative query string
@@ -66,7 +67,7 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      */
     public DeclarativeMatchStep(final Traversal.Admin traversal, final String gqlQuery,
                                 final Map<String, Object> params) {
-        this(traversal, gqlQuery, params, DEFAULT_QUERY_LANGUAGE);
+        this(traversal, gqlQuery, params, DEFAULT_QUERY_LANGUAGE, false);
     }
 
     /**
@@ -77,13 +78,18 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      * @param gqlQuery      the declarative query string
      * @param params        optional query parameters (may be {@code null})
      * @param queryLanguage the query language identifier (e.g. {@code "gql"})
+     * @param isStart       {@code true} when this step is the first step in the traversal (spawned
+     *                      from a {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource});
+     *                      the step will self-seed rather than pulling from upstream starts
      */
     public DeclarativeMatchStep(final Traversal.Admin traversal, final String gqlQuery,
-                                final Map<String, Object> params, final String queryLanguage) {
+                                final Map<String, Object> params, final String queryLanguage,
+                                final boolean isStart) {
         super(traversal);
         this.gqlQuery = gqlQuery;
         this.params = params;
         this.queryLanguage = queryLanguage;
+        this.isStart = isStart;
     }
 
     /**
@@ -139,6 +145,14 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      */
     public String getQueryLanguage() {
         return this.queryLanguage;
+    }
+
+    /**
+     * Returns {@code true} if this step is the first step in the traversal (spawned from a
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource}).
+     */
+    public boolean isStart() {
+        return this.isStart;
     }
 
     @Override

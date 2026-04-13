@@ -133,6 +133,38 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
     }
 
     @Test
+    public void testSourceSpawnSingleNodePattern() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        graph.addVertex("Company");
+
+        final List<Vertex> results = g.match("MATCH (n:Person)")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(2, results.size());
+        assertTrue(results.contains(alice));
+        assertTrue(results.contains(bob));
+    }
+
+    @Test
+    public void testSourceSpawnEdgePattern() {
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("WORKS_AT", acme);
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.match("MATCH (a:Person)-[:WORKS_AT]->(c:Company)")
+                        .select("a", "c")
+                        .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
     public void testTerminalMatchStepThrowsVerificationException() {
         // TinkerGraphDeclarativeMatchStrategy (ProviderOptimization) runs first and replaces
         // DeclarativeMatchStep with TinkerGraphMatchStep. DeclarativeMatchVerificationStrategy
