@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,9 +67,9 @@ import java.util.Map;
  */
 public final class TinkerGraphGqlExecutor {
 
-    private final TinkerGraph graph;
+    private final AbstractTinkerGraph graph;
 
-    public TinkerGraphGqlExecutor(final TinkerGraph graph) {
+    public TinkerGraphGqlExecutor(final AbstractTinkerGraph graph) {
         this.graph = graph;
     }
 
