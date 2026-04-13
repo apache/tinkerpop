@@ -683,7 +683,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery);
         final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, null));
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, null, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
     }
 
     /**
@@ -702,7 +702,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery, params);
         final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, params));
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, params, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
     }
 
     /**

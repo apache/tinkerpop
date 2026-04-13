@@ -63,6 +63,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     private TinkerGraphGqlPlanner planner;
     private TinkerGraphGqlExecutor executor;
     private GqlMatchPlan plan;
+    private boolean done = false;
 
     /**
      * Constructs a {@code TinkerGraphMatchStep} without pre-injected planner or executor.
@@ -90,7 +91,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
                                 final TinkerGraphGqlPlanner planner,
                                 final TinkerGraphGqlExecutor executor) {
         super(originalStep.getTraversal(), originalStep.getGqlQuery(),
-              originalStep.getParams(), originalStep.getQueryLanguage());
+              originalStep.getParams(), originalStep.getQueryLanguage(), originalStep.isStart());
         originalStep.getLabels().forEach(this::addLabel);
         this.planner = planner;
         this.executor = executor;
@@ -137,6 +138,29 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
         }
         if (plan == null) {
             plan = planner.plan(getGqlQuery());
+        }
+
+        if (isStart()) {
+            // Source-spawn path: no upstream traversers — execute the plan once and generate
+            // a fresh traverser for each result row using the traversal's TraverserGenerator.
+            if (!done) {
+                done = true;
+                final List<Map<String, Element>> rows = executor.execute(plan);
+                for (final Map<String, Element> row : rows) {
+                    final Traverser.Admin<Optional> traverser =
+                            this.getTraversal().getTraverserGenerator().generate(Optional.empty(), (Step) this, 1L);
+                    for (final Map.Entry<String, Element> entry : row.entrySet()) {
+                        if (!entry.getKey().startsWith("$anon")) {
+                            ((Traverser.Admin) traverser).set(entry.getValue());
+                            traverser.addLabels(Collections.singleton(entry.getKey()));
+                        }
+                    }
+                    ((Traverser.Admin) traverser).set(Optional.empty());
+                    outputQueue.add(traverser);
+                }
+            }
+            if (!outputQueue.isEmpty()) return outputQueue.poll();
+            throw FastNoSuchElementException.instance();
         }
 
         while (this.starts.hasNext()) {
@@ -190,6 +214,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
         final TinkerGraphMatchStep<S> clone = (TinkerGraphMatchStep<S>) super.clone();
         clone.outputQueue = new ArrayDeque<>();
         clone.plan = null;
+        clone.done = false;
         return clone;
     }
 
@@ -201,5 +226,6 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     public void reset() {
         super.reset();
         outputQueue.clear();
+        done = false;
     }
 }
