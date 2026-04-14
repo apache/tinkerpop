@@ -97,6 +97,25 @@ When documentation or code refers to a "gremlin-lang string", "canonical Gremlin
 traversal string that conforms to this ANTLR grammar. The `GremlinTranslator` class can convert canonical Gremlin into
 language-specific syntax for any supported GLV (see <<translators, Translating Gremlin>>).
 
+==== String Escaping
+
+When serializing string values into canonical Gremlin, all GLVs escape the following characters so that the resulting
+string is valid within the ANTLR grammar:
+
+[cols="1,1",options="header"]
+|===
+|Character |Escape Sequence
+|\ |\\
+|" |\"
+|newline |\n
+|carriage return |\r
+|tab |\t
+|backspace |\b
+|form feed |\f
+|===
+
+For example, a string value `say "hello"` would be serialized as `"say \"hello\""` in the canonical Gremlin string.
+
 The following sections describe each language variant and driver that is officially TinkerPop a part of the project,
 providing more detailed information about usage, configuration and known limitations.
 
