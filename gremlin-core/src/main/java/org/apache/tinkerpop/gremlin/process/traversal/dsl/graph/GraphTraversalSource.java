@@ -670,10 +670,11 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by executing a declarative GQL pattern match query. The step is a placeholder
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query. The step is a placeholder
      * that requires a graph provider to register an execution strategy before the traversal can be executed.
-     * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
-     * can be overridden with {@code .with("queryLanguage", value)}.
+     * The query language is not prescribed by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly.
      *
      * @param matchQuery the declarative query string
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
@@ -683,15 +684,15 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery);
         final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, null, true));
     }
 
     /**
-     * Spawns a {@link GraphTraversal} by executing a declarative GQL pattern match query with bound parameters.
+     * Spawns a {@link GraphTraversal} by executing a declarative pattern match query with bound parameters.
      * The step is a placeholder that requires a graph provider to register an execution strategy before the
-     * traversal can be executed. The query language defaults to
-     * {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and can be overridden with
-     * {@code .with("queryLanguage", value)}.
+     * traversal can be executed. The query language is not prescribed by the framework; it defaults to
+     * {@code null}, meaning the graph provider will use its native query language. Use
+     * {@code .with("queryLanguage", value)} to specify a language explicitly.
      *
      * @param gqlQuery the declarative query string
      * @param params   the query parameters (may be {@code null})
@@ -702,7 +703,7 @@ public class GraphTraversalSource implements TraversalSource {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery, params);
         final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, params, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, params, null, true));
     }
 
     /**

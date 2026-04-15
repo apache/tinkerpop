@@ -1015,8 +1015,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Map the {@link Traverser} to a result using a declarative query string. The step is a placeholder
      * that requires a graph provider to register an execution strategy before the traversal can be executed.
-     * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
-     * can be overridden with {@code .with("queryLanguage", value)}.
+     * The query language is not prescribed by the framework; it defaults to {@code null}, meaning the graph
+     * provider will use its native query language. Use {@code .with("queryLanguage", value)} to specify a
+     * language explicitly.
      *
      * @param matchQuery the declarative query string
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
@@ -1030,12 +1031,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Map the {@link Traverser} to a result using a declarative query string with bound parameters.
      * The step is a placeholder that requires a graph provider to register an execution strategy before
-     * the traversal can be executed. The query language defaults to
-     * {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and can be overridden with
-     * {@code .with("queryLanguage", value)}.
+     * the traversal can be executed. The query language is not prescribed by the framework; it defaults
+     * to {@code null}, meaning the graph provider will use its native query language. Use
+     * {@code .with("queryLanguage", value)} to specify a language explicitly.
      *
      * @param matchQuery the declarative query string
-     * @param params   the query parameters (may be {@code null})
+     * @param params     the query parameters (may be {@code null})
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */

@@ -33,22 +33,20 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A placeholder step that represents a declarative pattern-matching query (e.g. GQL {@code MATCH}).
+ * A placeholder step that represents a declarative pattern-matching query.
  * This step is not directly executable; a graph provider must register an execution strategy
  * that replaces it with a concrete implementation.
  *
- * <p>The query language can be configured via the {@code with("queryLanguage", value)} modulator.
- * The default query language is {@code "gql"}.</p>
+ * <p>The query language is intentionally unset ({@code null}) by default. Graph providers
+ * accept or reject the query language they receive: a {@code null} value means the user did
+ * not specify a language and the provider should use its native query language; a non-null
+ * value is an explicit hint that the provider may accept or reject. Use the
+ * {@code .with("queryLanguage", value)} modulator to specify a language explicitly.</p>
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @since 4.0.0
  */
 public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implements Configuring {
-
-    /**
-     * The default query language used when none is explicitly set.
-     */
-    public static final String DEFAULT_QUERY_LANGUAGE = "gql";
 
     protected Parameters parameters = new Parameters();
 
@@ -59,7 +57,8 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
 
     /**
      * Constructs a {@code DeclarativeMatchStep} as a mid-traversal step with the given query and
-     * optional parameters, defaulting the query language to {@link #DEFAULT_QUERY_LANGUAGE}.
+     * optional parameters. The query language is left unset ({@code null}); graph providers
+     * treat {@code null} as "use your native language."
      *
      * @param traversal the parent traversal
      * @param gqlQuery  the declarative query string
@@ -67,17 +66,17 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      */
     public DeclarativeMatchStep(final Traversal.Admin traversal, final String gqlQuery,
                                 final Map<String, Object> params) {
-        this(traversal, gqlQuery, params, DEFAULT_QUERY_LANGUAGE, false);
+        this(traversal, gqlQuery, params, null, false);
     }
 
     /**
      * Constructs a {@code DeclarativeMatchStep} with the given query, optional parameters,
-     * and an explicit query language.
+     * query language, and start-step flag.
      *
      * @param traversal     the parent traversal
      * @param gqlQuery      the declarative query string
      * @param params        optional query parameters (may be {@code null})
-     * @param queryLanguage the query language identifier (e.g. {@code "gql"})
+     * @param queryLanguage the query language identifier, or {@code null} if not specified
      * @param isStart       {@code true} when this step is the first step in the traversal (spawned
      *                      from a {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource});
      *                      the step will self-seed rather than pulling from upstream starts

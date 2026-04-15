@@ -210,8 +210,7 @@ public class TinkerGraphMatchStepTest {
 
     @Test
     public void testExplicitGqlQueryLanguageDoesNotThrow() {
-        // "gql" is the DEFAULT_QUERY_LANGUAGE; passing it explicitly must not trigger the
-        // unsupported-language check in processNextStart()
+        // passing the supported language explicitly must not trigger the unsupported-language check
         final Vertex alice = graph.addVertex("Person");
 
         final List<Vertex> results = g.<Integer>inject(1)

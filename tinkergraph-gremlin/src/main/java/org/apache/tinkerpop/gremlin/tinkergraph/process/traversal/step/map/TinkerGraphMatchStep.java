@@ -58,6 +58,12 @@ import java.util.Set;
  */
 public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
 
+    /**
+     * The query language identifier that this step accepts when set explicitly.
+     * {@code null} is also accepted and is treated as a request to use this native language.
+     */
+    public static final String SUPPORTED_QUERY_LANGUAGE = "gql";
+
     private ArrayDeque<Traverser.Admin<Optional>> outputQueue = new ArrayDeque<>();
 
     private TinkerGraphGqlPlanner planner;
@@ -112,9 +118,9 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     @SuppressWarnings("unchecked")
     protected Traverser.Admin<Optional> processNextStart() throws NoSuchElementException {
         final String ql = getQueryLanguage();
-        if (ql != null && !DEFAULT_QUERY_LANGUAGE.equals(ql)) {
+        if (ql != null && !SUPPORTED_QUERY_LANGUAGE.equals(ql)) {
             throw new UnsupportedOperationException(
-                    "TinkerGraphMatchStep only supports query language '" + DEFAULT_QUERY_LANGUAGE +
+                    "TinkerGraphMatchStep only supports query language '" + SUPPORTED_QUERY_LANGUAGE +
                     "', got: " + ql);
         }
 
