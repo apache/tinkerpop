@@ -675,15 +675,15 @@ public class GraphTraversalSource implements TraversalSource {
      * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
      * can be overridden with {@code .with("queryLanguage", value)}.
      *
-     * @param gqlQuery the declarative query string
+     * @param matchQuery the declarative query string
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */
-    public <S> GraphTraversal<S, Optional> match(final String gqlQuery) {
+    public <S> GraphTraversal<S, Optional> match(final String matchQuery) {
         final GraphTraversalSource clone = this.clone();
-        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, gqlQuery);
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery);
         final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
-        return traversal.addStep(new DeclarativeMatchStep<>(traversal, gqlQuery, null, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
+        return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, DeclarativeMatchStep.DEFAULT_QUERY_LANGUAGE, true));
     }
 
     /**

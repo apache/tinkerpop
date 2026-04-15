@@ -458,15 +458,15 @@ public class __ {
     /**
      * @see GraphTraversal#match(String)
      */
-    public static <A> GraphTraversal<A, Optional> match(final String gqlQuery) {
-        return __.<A>start().match(gqlQuery);
+    public static <A> GraphTraversal<A, Optional> match(final String matchQuery) {
+        return __.<A>start().match(matchQuery);
     }
 
     /**
      * @see GraphTraversal#match(String, Map<String, Object>)
      */
-    public static <A> GraphTraversal<A, Optional> match(final String gqlQuery, final Map<String, Object> params) {
-        return __.<A>start().match(gqlQuery, params);
+    public static <A> GraphTraversal<A, Optional> match(final String matchQuery, final Map<String, Object> params) {
+        return __.<A>start().match(matchQuery, params);
     }
 
     /**

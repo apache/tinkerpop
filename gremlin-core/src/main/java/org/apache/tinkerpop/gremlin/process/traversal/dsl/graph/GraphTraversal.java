@@ -1018,13 +1018,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * The query language defaults to {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and
      * can be overridden with {@code .with("queryLanguage", value)}.
      *
-     * @param gqlQuery the declarative query string
+     * @param matchQuery the declarative query string
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Optional> match(final String gqlQuery) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.match, gqlQuery);
-        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), gqlQuery, null));
+    public default GraphTraversal<S, Optional> match(final String matchQuery) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.match, matchQuery);
+        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), matchQuery, null));
     }
 
     /**
@@ -1034,14 +1034,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link DeclarativeMatchStep#DEFAULT_QUERY_LANGUAGE} ({@code "gql"}) and can be overridden with
      * {@code .with("queryLanguage", value)}.
      *
-     * @param gqlQuery the declarative query string
+     * @param matchQuery the declarative query string
      * @param params   the query parameters (may be {@code null})
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */
-    public default GraphTraversal<S, Optional> match(final String gqlQuery, final Map<String, Object> params) {
-        this.asAdmin().getGremlinLang().addStep(Symbols.match, gqlQuery, params);
-        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), gqlQuery, params));
+    public default GraphTraversal<S, Optional> match(final String matchQuery, final Map<String, Object> params) {
+        this.asAdmin().getGremlinLang().addStep(Symbols.match, matchQuery, params);
+        return this.asAdmin().addStep(new DeclarativeMatchStep<>(this.asAdmin(), matchQuery, params));
     }
 
     /**
