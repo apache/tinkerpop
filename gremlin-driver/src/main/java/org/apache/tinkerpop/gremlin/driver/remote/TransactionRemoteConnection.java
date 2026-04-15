@@ -68,6 +68,12 @@ class TransactionRemoteConnection implements RemoteConnection {
             throw new RemoteConnectionException("Transaction is not open");
         }
 
+        if (gremlinLang.containsUnsupportedTypes()) {
+            throw new IllegalArgumentException(String.format(
+                    "GremlinLang contains at least one type [%s] that cannot be represented as text.",
+                    gremlinLang.getUnsupportedType()));
+        }
+
         try {
             // Synchronous submission through transaction
             final ResultSet rs = transaction.submit(gremlinLang.getGremlin(), getRequestOptions(gremlinLang));

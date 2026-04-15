@@ -23,7 +23,7 @@ type RequestOptions struct {
 	evaluationTimeout     int
 	batchSize             int
 	userAgent             string
-	bindings              map[string]interface{}
+	bindingsString        string
 	materializeProperties string
 	bulkResults           *bool
 }
@@ -33,6 +33,7 @@ type RequestOptionsBuilder struct {
 	batchSize             int
 	userAgent             string
 	bindings              map[string]interface{}
+	bindingsString        string
 	materializeProperties string
 	bulkResults           *bool
 }
@@ -53,7 +54,18 @@ func (builder *RequestOptionsBuilder) SetUserAgent(userAgent string) *RequestOpt
 }
 
 func (builder *RequestOptionsBuilder) SetBindings(bindings map[string]interface{}) *RequestOptionsBuilder {
+	if builder.bindingsString != "" {
+		panic("cannot mix SetBindings() with SetBindingsString()")
+	}
 	builder.bindings = bindings
+	return builder
+}
+
+func (builder *RequestOptionsBuilder) SetBindingsString(bindingsString string) *RequestOptionsBuilder {
+	if builder.bindings != nil {
+		panic("cannot mix SetBindingsString() with SetBindings()")
+	}
+	builder.bindingsString = bindingsString
 	return builder
 }
 
@@ -68,6 +80,9 @@ func (builder *RequestOptionsBuilder) SetBulkResults(bulkResults bool) *RequestO
 }
 
 func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}) *RequestOptionsBuilder {
+	if builder.bindingsString != "" {
+		panic("cannot mix AddBinding() with SetBindingsString()")
+	}
 	if builder.bindings == nil {
 		builder.bindings = make(map[string]interface{})
 	}
@@ -81,9 +96,15 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions.evaluationTimeout = builder.evaluationTimeout
 	requestOptions.batchSize = builder.batchSize
 	requestOptions.userAgent = builder.userAgent
-	requestOptions.bindings = builder.bindings
 	requestOptions.materializeProperties = builder.materializeProperties
 	requestOptions.bulkResults = builder.bulkResults
+
+	// convert map bindings to string at creation time, matching Java's RequestOptions.Builder.create()
+	if builder.bindingsString != "" {
+		requestOptions.bindingsString = builder.bindingsString
+	} else if builder.bindings != nil {
+		requestOptions.bindingsString = ConvertParametersToString(builder.bindings)
+	}
 
 	return *requestOptions
 }

@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReservedKeysVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
@@ -921,6 +922,31 @@ public class TinkerGraphTest {
                 addV("person").property(T.id, uuid).iterate();
 
         assertEquals(3, g.V(100, "1000", uuid).count().next().intValue());
+    }
+
+    @Test
+    public void shouldExecuteTraversalWithUnsupportedTypeInEmbeddedMode() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final GraphTraversalSource g = traversal().withEmbedded(graph);
+
+        // use a type that has no gremlin-lang literal representation
+        final Object customValue = new Object();
+        final List<Object> result = g.inject(customValue).toList();
+        assertEquals(1, result.size());
+        assertEquals(customValue, result.get(0));
+    }
+
+    @Test
+    public void shouldExecuteTraversalWithUnsupportedTypeInGValueInEmbeddedMode() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final GraphTraversalSource g = traversal().withEmbedded(graph);
+        graph.addVertex(T.id, 1, T.label, "person");
+
+        // named GValue with an unsupported type as the value works in embedded mode
+        // because the raw object is passed through bindings to the script engine
+        final Object customValue = 1;
+        final long count = g.V(GValue.of("myId", customValue)).count().next();
+        assertEquals(1L, count);
     }
 
     /**

@@ -152,7 +152,7 @@ export default class GremlinLang {
       if (entries.length === 0) return '[:]';
       return '[' + entries.map(([k, v]) => `${this._argAsString(k)}:${this._argAsString(v)}`).join(',') + ']';
     }
-    return String(arg);
+    throw new TypeError(`GremlinLang contains at least one type [${arg?.constructor?.name ?? typeof arg}] that cannot be represented as text.`);
   }
   
   addStep(name: string, args?: any[]): GremlinLang {
@@ -192,5 +192,20 @@ export default class GremlinLang {
       return this.gremlin;
     }
     return prefix + this.gremlin;
+  }
+
+  getParametersAsString(): string {
+    return GremlinLang.convertParametersToString(this.parameters);
+  }
+
+  static convertParametersToString(params: Map<string, any> | null): string {
+    if (params == null || params.size === 0) return '[:]';
+
+    const helper = new GremlinLang();
+    const parts: string[] = [];
+    params.forEach((v, k) => {
+      parts.push(`${helper._argAsString(k)}:${helper._argAsString(v)}`);
+    });
+    return '[' + parts.join(',') + ']';
   }
 }

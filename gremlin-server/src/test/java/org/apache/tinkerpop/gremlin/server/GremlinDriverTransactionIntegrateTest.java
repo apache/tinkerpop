@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.driver.RequestOptions;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -613,5 +614,37 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         gtx.tx().commit();
 
         assertEquals(1L, g.V().hasLabel("val").count().next().longValue());
+    }
+
+    @Test
+    public void shouldRejectTransactionWithUnsupportedType() throws Exception {
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+        final GraphTraversalSource gtx = g.tx().begin();
+        try {
+            gtx.inject(new Thread()).iterate();
+            fail("Expected IllegalArgumentException for unsupported type");
+        } catch (IllegalArgumentException ex) {
+            assertThat(ex.getMessage(), containsString("at least one type"));
+            assertThat(ex.getMessage(), containsString("Thread"));
+            assertThat(ex.getMessage(), containsString("cannot be represented as text"));
+        } finally {
+            gtx.tx().rollback();
+        }
+    }
+
+    @Test
+    public void shouldRejectTransactionWithUnsupportedTypeInGValue() throws Exception {
+        final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster, GTX));
+        final GraphTraversalSource gtx = g.tx().begin();
+        try {
+            gtx.V(GValue.of("x", new Thread())).iterate();
+            fail("Expected exception for unsupported type in GValue parameter");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionHelper.getRootCause(ex);
+            assertThat(inner.getMessage(), containsString("at least one type"));
+            assertThat(inner.getMessage(), containsString("cannot be represented as text"));
+        } finally {
+            gtx.tx().rollback();
+        }
     }
 }

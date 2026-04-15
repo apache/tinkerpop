@@ -95,9 +95,9 @@ export default class DriverRemoteConnection extends RemoteConnection {
       requestOptions.bulkResults = true;
     }
 
-    const params = gremlinLang.getParameters();
-    if (params.size > 0) {
-      requestOptions.params = Object.fromEntries(params);
+    const parametersString = gremlinLang.getParametersAsString();
+    if (parametersString !== '[:]') {
+      requestOptions.bindings = parametersString;
     }
 
     return { gremlin: gremlinLang.getGremlin(), requestOptions };

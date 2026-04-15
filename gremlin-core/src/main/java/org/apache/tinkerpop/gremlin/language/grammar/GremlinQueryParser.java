@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.language.grammar;
 
-import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Map;
+import javax.lang.model.SourceVersion;
 
 /**
  * Parses Gremlin strings to an {@code Object}, typically to a {@link Traversal}.
@@ -44,21 +47,15 @@ public class GremlinQueryParser {
      * Parse Gremlin string using a specified {@link GremlinAntlrToJava} object.
      */
     public static Object parse(final String query, final GremlinVisitor<Object> visitor)  {
-        final CharStream in = CharStreams.fromString(query);
-        final GremlinLexer lexer = new GremlinLexer(in);
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-
+        final GremlinLexer lexer = createLexer(query);
         final CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         // Setup error handler on parser
-        final GremlinParser parser = new GremlinParser(tokens);
+        final GremlinParser parser = createParser(tokens);
         // SLL prediction mode is faster than the LL prediction mode when parsing the grammar,
         // but it does not cover parsing all types of input.  We use the SLL by default, and fallback
         // to LL mode if fails to parse the query.
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
 
         GremlinParser.QueryListContext queryContext;
         try {
@@ -90,5 +87,96 @@ public class GremlinQueryParser {
                     " assuming that it indicates a semantic parse error.", ex);
             throw new GremlinParserException("Failed to interpret Gremlin query: " + ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Parses a gremlin-lang map literal string into a {@code Map<String, Object>} for use as parameters.
+     * <p>
+     * Uses {@link ParameterMapVisitor} to prevent traversal injection and validates that all keys are strings
+     * and no values contain traversals.
+     *
+     * @param parameterMapString the gremlin-lang map literal string (e.g. {@code [x:1,y:"marko"]}) or {@code null}/empty
+     * @return the parsed and validated parameter map
+     * @throws GremlinParserException if parsing fails or validation detects invalid content
+     */
+    public static Map<String, Object> parseParameters(final String parameterMapString) {
+        if (parameterMapString == null || parameterMapString.isEmpty()) {
+            return Map.of();
+        }
+
+        final GremlinParser parser = createParser(parameterMapString);
+        final GremlinParser.GenericMapLiteralContext mapCtx = parser.genericMapLiteral();
+
+        final ParameterMapVisitor visitor = new ParameterMapVisitor(new GremlinAntlrToJava());
+        final Map<Object, Object> rawMap = (Map<Object, Object>) visitor.visitGenericMapLiteral(mapCtx);
+
+        if (rawMap == null) {
+            return Map.of();
+        }
+
+        for (final Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            if (!(entry.getKey() instanceof String)) {
+                throw new GremlinParserException(
+                        String.format("Parameter map keys must be String, found: %s",
+                                entry.getKey() == null ? "null" : entry.getKey().getClass().getSimpleName()));
+            }
+            final String key = (String) entry.getKey();
+            if (!SourceVersion.isIdentifier(key)) {
+                throw new GremlinParserException(
+                        String.format("Parameter map key must be a valid identifier: %s", key));
+            }
+            validateParameterValue(entry.getValue());
+        }
+
+        return (Map<String, Object>) (Map<?, ?>) rawMap;
+    }
+
+    /**
+     * Recursively validates that a parameter value does not contain a {@link Traversal}. Nested validation is needed
+     * because steps like mergeV iterate map values, so a Traversal hiding inside a nested map or collection would still
+     * be dangerous.
+     */
+    private static void validateParameterValue(final Object value) {
+        if (value instanceof Traversal) {
+            throw new GremlinParserException("Traversals are not allowed as parameter values");
+        }
+        if (value instanceof Map) {
+            for (final Map.Entry<?, ?> e : ((Map<?, ?>) value).entrySet()) {
+                validateParameterValue(e.getKey());
+                validateParameterValue(e.getValue());
+            }
+        }
+        if (value instanceof Collection) {
+            for (final Object v : (Collection<?>) value) {
+                validateParameterValue(v);
+            }
+        }
+    }
+
+    /**
+     * Creates a {@link GremlinParser} from the given input string.
+     */
+    private static GremlinParser createParser(final String input) {
+        return createParser(new CommonTokenStream(createLexer(input)));
+    }
+
+    /**
+     * Creates a {@link GremlinParser} from the given {@link GremlinLexer}.
+     */
+    private static GremlinParser createParser(final CommonTokenStream tokens) {
+        final GremlinParser parser = new GremlinParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return parser;
+    }
+
+    /**
+     * Creates a {@link GremlinLexer} from the given input string with error listeners configured.
+     */
+    private static GremlinLexer createLexer(final String input) {
+        final GremlinLexer lexer = new GremlinLexer(CharStreams.fromString(input));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        return lexer;
     }
 }

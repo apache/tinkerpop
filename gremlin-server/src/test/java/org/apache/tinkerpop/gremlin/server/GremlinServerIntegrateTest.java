@@ -535,9 +535,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
         try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
             final Map<String, Object> bindings = new HashMap<>();
-            bindings.put("id", "123");
+            bindings.put("id", "123"); // "id" is invalid for gremlin-groovy, but not gremlin-lang
             final RequestMessage request = RequestMessage.build("g.inject(1,2,3,4,5,6,7,8,9,0)")
-                    .addBindings(bindings).create();
+                    .addBindings(bindings).addLanguage("gremlin-groovy").create();
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
@@ -717,31 +717,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(2, ((Integer) (client.submit(
                     RequestMessage.build("addItUp(1,1)").addLanguage("gremlin-groovy").create()
             ).get(0).getResult().getData()).get(0)).intValue());
-        }
-    }
-
-    @Test
-    public void shouldGarbageCollectPhantomButNotHard() throws Exception {
-        final Cluster cluster = TestClientFactory.open();
-        final Client client = cluster.connect();
-
-        assertEquals(2, client.submit("addItUp(1,1)", groovyRequestOptions).all().join().get(0).getInt());
-        assertEquals(0, client.submit("def subtract(x,y){x-y};subtract(1,1)", groovyRequestOptions).all().join().get(0).getInt());
-        assertEquals(0, client.submit("subtract(1,1)", groovyRequestOptions).all().join().get(0).getInt());
-
-        RequestOptions options = RequestOptions.build()
-                .addParameter(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_PHANTOM)
-                .language("gremlin-groovy")
-                .create();
-        assertEquals(4, client.submit("def multiply(x,y){x*y};multiply(2,2)", options).all().join().get(0).getInt());
-
-        try {
-            client.submit("multiply(2,2)", groovyRequestOptions).all().join().get(0).getInt();
-            fail("Should throw an exception since reference is phantom.");
-        } catch (RuntimeException ignored) {
-
-        } finally {
-            cluster.close();
         }
     }
 
@@ -1154,5 +1129,58 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    @Test
+    public void shouldSubmitWithStringBindingsViaRequestMessage() throws Exception {
+        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
+            final RequestMessage request = RequestMessage.build("g.V(x).out(y).values('name')")
+                    .addBindings("[\"x\":1,\"y\":\"knows\"]").addG("gmodern").create();
+            final List<ResponseMessage> responses = client.submit(request);
+            assertEquals(HttpResponseStatus.OK, responses.get(0).getStatus().getCode());
+            assertEquals("vadas", responses.get(0).getResult().getData().get(0));
+        }
+    }
+
+    @Test
+    public void shouldRejectTraversalInjectionInStringBindings() throws Exception {
+        try (SimpleClient client = TestClientFactory.createSimpleHttpClient()) {
+            final RequestMessage request = RequestMessage.build("g.V(x)")
+                    .addBindings("[x:__.V().drop()]").addG("gmodern").create();
+            final List<ResponseMessage> responses = client.submit(request);
+            assertEquals(HttpResponseStatus.BAD_REQUEST, responses.get(0).getStatus().getCode());
+        }
+    }
+
+    @Test
+    public void shouldReturnUserFriendlyErrorMessageForMalformedParameterStrings() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+
+        // each entry is [malformed input, expected substring in error message]
+        final String[][] cases = {
+                {"[\"x\":",                     "could not be converted into a Map. Query parsing failed at"},
+                {"not a map at all",            "could not be converted into a Map. Query parsing failed at"},
+                {"[\"x\":\"unclosed]",          "could not be converted into a Map. Query parsing failed at"},
+                {"[\"x\":,\"y\":1]",            "could not be converted into a Map. Query parsing failed at"},
+                {"[\"x\":__.V().drop()]",       "Traversals are not allowed"},
+                {"[\"~id\":1]",                 "must be a valid identifier"}
+        };
+
+        for (final String[] testCase : cases) {
+            final ResultSet result = client.submit(
+                    "g.V(x)", RequestOptions.build().addParametersString(testCase[0]).create());
+            try {
+                result.one();
+                fail("Should have failed for malformed parameter string: " + testCase[0]);
+            } catch (Exception e) {
+                assertTrue(ExceptionHelper.getRootCause(e) instanceof ResponseException);
+                final ResponseException re = (ResponseException) ExceptionHelper.getRootCause(e);
+                assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+                assertTrue(re.getMessage().contains(testCase[1]));
+            }
+        }
+
+        cluster.close();
     }
 }

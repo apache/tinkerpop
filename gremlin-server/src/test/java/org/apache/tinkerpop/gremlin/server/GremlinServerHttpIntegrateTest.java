@@ -329,7 +329,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnPOSTWithGremlinQueryStringArgumentWithBindingsAndFunction() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"addItUp(Integer.parseInt(x),Integer.parseInt(y))\",\"language\":\"gremlin-groovy\",\"bindings\":{\"x\":\"10\", \"y\":\"10\"}}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"addItUp(Integer.parseInt(x),Integer.parseInt(y))\",\"language\":\"gremlin-groovy\",\"bindings\":\"[x:\\\"10\\\",y:\\\"10\\\"]\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -596,7 +596,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":{\"x\":10, \"y\":10}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"x+y\", \"bindings\":\"[x:10,y:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -612,7 +612,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":{\"x\":10}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:10]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -628,7 +628,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":{\"x\":10.5}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:10.5]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -644,7 +644,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V(1).out(x).values('name')\", \"bindings\":{\"x\":\"knows\"}, \"g\":\"gmodern\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.V(1).out(x).values('name')\", \"bindings\":\"[x:\\\"knows\\\"]\", \"g\":\"gmodern\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -660,7 +660,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":{\"x\":true}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:true]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -676,7 +676,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":{\"x\":null}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:null]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -692,7 +692,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x).unfold()\", \"bindings\":{\"x\":[1,2,3]}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x).unfold()\", \"bindings\":\"[x:[1,2,3]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -711,7 +711,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":{\"x\":{\"y\":1}}, \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.inject(x)\", \"bindings\":\"[x:[\\\"y\\\":1]]\", \"language\":\"gremlin-groovy\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -1158,7 +1158,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should400OnPOSTWithInvalidRequestArgsWhenInvalidBindingsSupplied() throws Exception {
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
         final ByteBuf serializedRequest = serializer.serializeRequestAsBinary(
-                RequestMessage.build("g.V(id)").addBinding("id", "1").create(),
+                RequestMessage.build("g.V(id)").addBindings("[id:1]").addLanguage("gremlin-groovy").create(),
                 new UnpooledByteBufAllocator(false));
 
         final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -1168,7 +1168,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         httppost.setEntity(new ByteArrayEntity(serializedRequest.array()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
-            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals(400, response.getStatusLine().getStatusCode());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertTrue(node.get("status").get("message").asText().contains("The message supplies one or more invalid parameters key"));

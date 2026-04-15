@@ -30,7 +30,9 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -57,6 +59,7 @@ public class Context {
     private boolean timeoutExecutorGrabbed = false;
     private final Object timeoutExecutorLock = new Object();
     private String transactionId; // initially null for non-transactional requests and begin() calls; set after transaction creation.
+    private Map<String, Object> parameters = new HashMap<>(); // only available after string parameters are parsed by grammar.
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
                    final Settings settings, final GraphManager graphManager,
@@ -129,6 +132,13 @@ public class Context {
         this.transactionId = transactionId;
     }
 
+    public Map<String, Object> getParameters() {
+        return this.parameters;
+    }
+
+    public void setParameters(final Map<String, Object> parameters) {
+        this.parameters = parameters;
+    }
 
     /**
      * Gets the current request to Gremlin Server.

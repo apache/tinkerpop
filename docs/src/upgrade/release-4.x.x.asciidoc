@@ -401,6 +401,31 @@ scriptEngines: {
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-2720[TINKERPOP-2720],
 link:https://issues.apache.org/jira/browse/TINKERPOP-3107[TINKERPOP-3107]
 
+==== `gremlin-lang` based Parameters
+
+Bindings/parameters that are sent as part of the request are now `gremlin-lang` string maps rather than an actual Map
+that would have been serialized based on the serializer used for the request. A side effect of this is that the map key
+must be a valid Java identifier. This means that certain items can no longer be sent like `#jsr223` control flags that
+were used for the `gremlin-groovy` ScriptEngine. Ensure that you are using valid Java identifiers (e.g. start with a
+letter, no spaces, can't use reserved keywords, etc.) for keys.
+
+Since parameters are now text-based gremlin-lang literals, `Traversal` objects can no longer be passed as binding
+values. In previous versions it was possible to pass a traversal as a parameter:
+
+[source,text]
+----
+// 3.x — no longer supported in 4.0
+client.submit("g.V(x)", Map.of("x", __.has("name","marko")));
+----
+
+This pattern is now rejected by the server as a security measure to prevent traversal injection through parameter maps.
+Traversals should be composed directly in the Gremlin query string rather than supplied as parameters.
+
+Parameter maps are also subject to a maximum nesting depth of 32 levels. Deeply nested map or collection structures
+beyond this limit will be rejected with an error.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
+
 === Upgrading for Providers
 
 ==== Graph System Providers

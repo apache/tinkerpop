@@ -100,10 +100,18 @@ export default class Client {
       requestBuilder.addLanguage(requestOptions.language);
     }
     if (requestOptions?.bindings) {
-      requestBuilder.addBindings(requestOptions.bindings);
+          if (typeof requestOptions.bindings === 'string') {
+              requestBuilder.addBindingsString(requestOptions.bindings);
+          } else {
+              requestBuilder.addBindings(requestOptions.bindings);
+          }
     }
     if (bindings) {
-      requestBuilder.addBindings(bindings);
+          if (typeof bindings === 'string') {
+              requestBuilder.addBindingsString(bindings);
+          } else {
+              requestBuilder.addBindings(bindings);
+          }
     }
     if (requestOptions?.materializeProperties) {
       requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);

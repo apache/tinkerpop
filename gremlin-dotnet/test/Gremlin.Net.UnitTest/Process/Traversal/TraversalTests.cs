@@ -230,7 +230,6 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldExtractIdFromVertex()
         {
-            GremlinLang.ResetCounter();
             var g = AnonymousTraversalSource.Traversal().With(null);
 
             // Test basic V() step with mixed ID types

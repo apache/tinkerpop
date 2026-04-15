@@ -59,7 +59,7 @@ public class RequestMessageSerializer {
                 builder.addG(fields.get(SerTokens.TOKEN_G).toString());
             }
             if (fields.containsKey(SerTokens.TOKEN_BINDINGS)) {
-                builder.addBindings((Map<String, Object>) fields.get(SerTokens.TOKEN_BINDINGS));
+                builder.addBindings(fields.get(SerTokens.TOKEN_BINDINGS).toString());
             }
             if (fields.containsKey(Tokens.TIMEOUT_MS)) {
                 builder.addTimeoutMillis(((Number) fields.get(Tokens.TIMEOUT_MS)).longValue());

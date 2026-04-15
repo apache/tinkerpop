@@ -143,7 +143,11 @@ class Client:
         # TODO: bindings is now part of request_options, evaluate the need to keep it separate in python.
         #  Note this bindings parameter only applies to string script submissions
         if isinstance(message, str) and bindings:
-            fields['bindings'] = bindings
+            from gremlin_python.process.traversal import GremlinLang
+            if isinstance(bindings, dict):
+                fields['bindings'] = GremlinLang.convert_parameters_to_string(bindings)
+            else:
+                fields['bindings'] = bindings
 
         if isinstance(message, str):
             log.debug("fields='%s', gremlin='%s'", str(fields), str(message))
@@ -154,14 +158,10 @@ class Client:
             message.fields.update({token: request_options[token] for token in request.Tokens
                                    if token in request_options and token != 'bindings'})
             if 'bindings' in request_options:
-                if 'bindings' in message.fields:
-                    message.fields['bindings'].update(request_options['bindings'])
-                else:
-                    message.fields['bindings'] = request_options['bindings']
-            if 'params' in request_options:
-                if 'bindings' in message.fields:
-                    message.fields['bindings'].update(request_options['params'])
-                else:
-                    message.fields['bindings'] = request_options['params']
+                bindings_val = request_options['bindings']
+                if isinstance(bindings_val, dict):
+                    from gremlin_python.process.traversal import GremlinLang
+                    bindings_val = GremlinLang.convert_parameters_to_string(bindings_val)
+                message.fields['bindings'] = bindings_val
 
         return conn.write(message)

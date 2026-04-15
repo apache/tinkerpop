@@ -435,4 +435,63 @@ describe('GremlinLang', function () {
       assert.strictEqual(g.inject(view).getGremlinLang().getGremlin(), 'g.inject(Binary("AQID"))');
     });
   });
+
+  describe('Unsupported type tests', function () {
+    it('should throw TypeError for unsupported type', function () {
+      class UnsupportedType {}
+      assert.throws(() => {
+        g.inject(new UnsupportedType()).getGremlinLang().getGremlin();
+      }, TypeError);
+    });
+
+    it('should throw TypeError for unsupported type in array', function () {
+      class UnsupportedType {}
+      assert.throws(() => {
+        g.inject([1, new UnsupportedType()]).getGremlinLang().getGremlin();
+      }, TypeError);
+    });
+
+    it('should include type name in error message', function () {
+      class MyCustomType {}
+      assert.throws(() => {
+        g.inject(new MyCustomType()).getGremlinLang().getGremlin();
+      }, /cannot be represented as text/);
+    });
+  });
+
+  describe('convertParametersToString', function () {
+    it('should return [:] for empty map', function () {
+      assert.strictEqual(GremlinLang.convertParametersToString(null), '[:]');
+      assert.strictEqual(GremlinLang.convertParametersToString(new Map()), '[:]');
+    });
+
+    it('should convert basic parameters', function () {
+      const params = new Map([['x', 1]]);
+      const result = GremlinLang.convertParametersToString(params);
+      assert.ok(result.includes("'x':1"));
+    });
+
+    it('should throw TypeError for unsupported type in parameters', function () {
+      class UnsupportedType {}
+      const params = new Map([['x', new UnsupportedType()]]);
+      assert.throws(() => {
+        GremlinLang.convertParametersToString(params);
+      }, TypeError);
+    });
+
+    it('should convert nested list parameter', function () {
+      const params = new Map([['ids', [1, 2, 3]]]);
+      const result = GremlinLang.convertParametersToString(params);
+      assert.ok(result.includes("'ids':[1,2,3]"));
+    });
+
+    it('should convert multiple parameters', function () {
+      const params = new Map([['x', 1], ['name', 'marko']]);
+      const result = GremlinLang.convertParametersToString(params);
+      assert.ok(result.startsWith('['));
+      assert.ok(result.endsWith(']'));
+      assert.ok(result.includes("'x':1"));
+      assert.ok(result.includes("'name':'marko'"));
+    });
+  });
 });

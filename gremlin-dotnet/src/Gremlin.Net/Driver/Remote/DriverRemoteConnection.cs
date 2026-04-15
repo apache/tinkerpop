@@ -112,8 +112,13 @@ namespace Gremlin.Net.Driver.Remote
             gremlinLang.AddG(_traversalSource);
 
             var requestMsg = RequestMessage.Build(gremlinLang.GetGremlin())
-                .AddG(_traversalSource)
-                .AddBindings(gremlinLang.Parameters);
+                .AddG(_traversalSource);
+
+            var parametersString = gremlinLang.GetParametersAsString();
+            if (parametersString != "[:]")
+            {
+                requestMsg.AddBindingsString(parametersString);
+            }
 
             foreach (var optionsStrategy in gremlinLang.OptionsStrategies)
             {

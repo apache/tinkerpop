@@ -20,8 +20,10 @@ under the License.
 package gremlingo
 
 import (
+	"fmt"
 	"math"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -773,4 +775,86 @@ func getArgs(result string) []string {
 	}
 
 	return params
+}
+
+func Test_UnsupportedType(t *testing.T) {
+	t.Run("should panic on unsupported type", func(t *testing.T) {
+		defer func() {
+			r := recover()
+			if r == nil {
+				t.Error("expected panic for unsupported type")
+			}
+			msg := fmt.Sprintf("%v", r)
+			if !strings.Contains(msg, "cannot be represented as text") {
+				t.Errorf("unexpected panic message: %v", msg)
+			}
+		}()
+		gl := NewGremlinLang(nil)
+		gl.argAsString(struct{}{})
+	})
+
+	t.Run("should panic on unsupported type in slice", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic for unsupported type in slice")
+			}
+		}()
+		gl := NewGremlinLang(nil)
+		gl.argAsString([]interface{}{1, struct{}{}})
+	})
+}
+
+func Test_ConvertParametersToString(t *testing.T) {
+	t.Run("should convert empty map", func(t *testing.T) {
+		result := ConvertParametersToString(nil)
+		if result != "[:]" {
+			t.Errorf("expected [:], got %v", result)
+		}
+	})
+
+	t.Run("should convert basic parameters", func(t *testing.T) {
+		params := map[string]interface{}{"x": int32(1)}
+		result := ConvertParametersToString(params)
+		if !strings.Contains(result, "\"x\":1") {
+			t.Errorf("expected parameter string to contain \"x\":1, got %v", result)
+		}
+	})
+
+	t.Run("should panic on unsupported type in parameters", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic for unsupported type in parameters")
+			}
+		}()
+		params := map[string]interface{}{"x": struct{}{}}
+		ConvertParametersToString(params)
+	})
+
+	t.Run("should convert nested list parameter", func(t *testing.T) {
+		params := map[string]interface{}{"ids": []interface{}{int32(1), int32(2), int32(3)}}
+		result := ConvertParametersToString(params)
+		if !strings.Contains(result, "\"ids\":[1,2,3]") {
+			t.Errorf("expected nested list in result, got %v", result)
+		}
+	})
+
+	t.Run("should panic on unsupported type in map value", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic for unsupported type in map value")
+			}
+		}()
+		gl := NewGremlinLang(nil)
+		m := map[interface{}]interface{}{"key": struct{}{}}
+		gl.argAsString(m)
+	})
+
+	t.Run("should panic on unsupported type via RequestOptionsBuilder.Create()", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic for unsupported type in bindings")
+			}
+		}()
+		new(RequestOptionsBuilder).SetBindings(map[string]interface{}{"x": struct{}{}}).Create()
+	})
 }

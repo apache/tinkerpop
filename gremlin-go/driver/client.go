@@ -163,9 +163,12 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
 	requestOptionsBuilder := new(RequestOptionsBuilder)
-	if len(gremlinLang.GetParameters()) > 0 {
-		requestOptionsBuilder.SetBindings(gremlinLang.GetParameters())
+
+	parametersString := gremlinLang.GetParametersAsString()
+	if parametersString != "[:]" {
+		requestOptionsBuilder.SetBindingsString(parametersString)
 	}
+
 	if len(gremlinLang.optionsStrategies) > 0 {
 		requestOptionsBuilder = applyOptionsConfig(requestOptionsBuilder, gremlinLang.optionsStrategies[0].configuration)
 	}
@@ -183,12 +186,14 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interface{}) *RequestOptionsBuilder {
 	builderValue := reflect.ValueOf(builder)
 
-	// Map configuration keys to setter method names
+	// Map configuration keys to setter method names.
+	// "bindings" is intentionally excluded because bindings are handled separately
+	// via SetBindingsString in submitGremlinLang, and including it here would
+	// trigger the mutual exclusion panic between SetBindings and SetBindingsString.
 	setterMap := map[string]string{
 		"evaluationTimeout":     "SetEvaluationTimeout",
 		"batchSize":             "SetBatchSize",
 		"userAgent":             "SetUserAgent",
-		"bindings":              "SetBindings",
 		"materializeProperties": "SetMaterializeProperties",
 		"bulkResults":           "SetBulkResults",
 	}

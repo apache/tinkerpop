@@ -57,25 +57,25 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         [Fact]
         public void ShouldSetBindings()
         {
-            var msg = RequestMessage.Build("g.V(_0)")
-                .AddBinding("_0", 1)
+            var msg = RequestMessage.Build("g.V(x)")
+                .AddBinding("x", 1)
                 .Create();
 
-            var bindings = (Dictionary<string, object>)msg.Fields[Tokens.ArgsBindings];
-            Assert.Equal(1, bindings["_0"]);
+            var bindingsString = (string)msg.Fields[Tokens.ArgsBindings];
+            Assert.Contains("\"x\":1", bindingsString);
         }
 
         [Fact]
         public void ShouldSetMultipleBindings()
         {
-            var bindings = new Dictionary<string, object> { { "_0", 1 }, { "_1", "test" } };
-            var msg = RequestMessage.Build("g.V(_0).has(_1)")
+            var bindings = new Dictionary<string, object> { { "x", 1 }, { "name", "test" } };
+            var msg = RequestMessage.Build("g.V(x).has(name)")
                 .AddBindings(bindings)
                 .Create();
 
-            var resultBindings = (Dictionary<string, object>)msg.Fields[Tokens.ArgsBindings];
-            Assert.Equal(1, resultBindings["_0"]);
-            Assert.Equal("test", resultBindings["_1"]);
+            var bindingsString = (string)msg.Fields[Tokens.ArgsBindings];
+            Assert.Contains("\"x\":1", bindingsString);
+            Assert.Contains("\"name\":\"test\"", bindingsString);
         }
 
         [Fact]
@@ -99,12 +99,21 @@ namespace Gremlin.Net.UnitTest.Driver.Messages
         }
 
         [Fact]
-        public void ShouldIncludeEmptyBindingsWhenNoneAdded()
+        public void ShouldNotContainBindingsWhenNoneAdded()
         {
             var msg = RequestMessage.Build("g.V()").Create();
 
-            var bindings = (Dictionary<string, object>)msg.Fields[Tokens.ArgsBindings];
-            Assert.Empty(bindings);
+            Assert.False(msg.Fields.ContainsKey(Tokens.ArgsBindings));
+        }
+
+        [Fact]
+        public void ShouldSetBindingsString()
+        {
+            var msg = RequestMessage.Build("g.V(x)")
+                .AddBindingsString("[\"x\":1]")
+                .Create();
+
+            Assert.Equal("[\"x\":1]", msg.Fields[Tokens.ArgsBindings]);
         }
     }
 }

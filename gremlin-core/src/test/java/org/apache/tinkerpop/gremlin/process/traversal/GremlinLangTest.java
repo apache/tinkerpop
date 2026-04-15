@@ -38,11 +38,14 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
@@ -52,6 +55,8 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLab
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class GremlinLangTest {
@@ -66,14 +71,14 @@ public class GremlinLangTest {
 
     @Test
     public void doTest() {
-        final String gremlin = traversal.asAdmin().getGremlinLang().getGremlin();
-        assertEquals(expected, gremlin);
+        final GremlinLang gremlinLang = traversal.asAdmin().getGremlinLang();
+        assertEquals(expected, gremlinLang.getGremlin());
+        assertFalse(gremlinLang.containsUnsupportedTypes());
+        assertEquals("", gremlinLang.getUnsupportedType());
     }
 
     private static GraphTraversalSource newG() {
-        final GraphTraversalSource g = traversal().with(EmptyGraph.instance());
-        g.getGremlinLang().reset();
-        return g;
+        return traversal().with(EmptyGraph.instance());
     }
 
     @Parameterized.Parameters(name = "{0}")
@@ -98,8 +103,6 @@ public class GremlinLangTest {
                 {g.V().has(T.label, "person"), "g.V().has(T.label,\"person\")"},
                 {g.addE("knows").from(new DetachedVertex(1, "test1", Collections.emptyList())).to(new DetachedVertex(6, "test2", Collections.emptyList())),
                         "g.addE(\"knows\").from(__.V(1)).to(__.V(6))"},
-                {newG().E(new ReferenceEdge(1, "test label", new ReferenceVertex(1, "v1"), new ReferenceVertex(1, "v1"))),
-                        "g.E(_0)"},
                 {g.V().hasId(P.within(Collections.emptyList())).count(), "g.V().hasId(P.within([])).count()"},
                 {g.V(1).outE().has("weight", P.inside(0.0, 0.6)), "g.V(1).outE().has(\"weight\",P.gt(0.0D).and(P.lt(0.6D)))"},
                 {g.withSack(1.0, Operator.sum).V(1).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack(),
@@ -191,6 +194,406 @@ public class GremlinLangTest {
             buf.get(); // advance position by 1, remaining is [1, 2, 3]
             final String gremlin = g.inject(buf).asAdmin().getGremlinLang().getGremlin();
             assertEquals("g.inject(Binary(\"AQID\"))", gremlin);
+        }
+    }
+
+    public static class ParameterStringTests {
+
+        @Test
+        public void shouldSerializeEmptyParameterMap() {
+            assertEquals("[:]", GremlinLang.convertParametersToString(new HashMap<>()));
+            assertEquals("[:]", GremlinLang.convertParametersToString(null));
+        }
+
+        @Test
+        public void shouldSerializeSingleStringParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("name", "marko");
+            assertEquals("[\"name\":\"marko\"]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeSingleIntegerParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", 1);
+            assertEquals("[\"x\":1]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeLongParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", 1L);
+            assertEquals("[\"x\":1L]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeDoubleParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", 1.5D);
+            assertEquals("[\"x\":1.5D]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeBooleanParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("flag", true);
+            assertEquals("[\"flag\":true]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeNullParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", null);
+            assertEquals("[\"x\":null]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeUuidParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            final UUID uuid = UUID.fromString("bfa9bbe8-c3a3-4017-acc3-cd02dda55e3e");
+            params.put("id", uuid);
+            assertEquals("[\"id\":UUID(\"bfa9bbe8-c3a3-4017-acc3-cd02dda55e3e\")]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeStringWithSpecialCharacters() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", "hello \"world\"");
+            assertEquals("[\"x\":\"hello \\\"world\\\"\"]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeByteParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", (byte) 1);
+            assertEquals("[\"x\":1B]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeShortParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", (short) 1);
+            assertEquals("[\"x\":1S]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeBigIntegerParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", BigInteger.valueOf(123));
+            assertEquals("[\"x\":123N]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeBigDecimalParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", BigDecimal.valueOf(1.5));
+            assertEquals("[\"x\":1.5M]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeFloatParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", 1.5F);
+            assertEquals("[\"x\":1.5F]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeCharacterParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", 'a');
+            assertEquals("[\"x\":\"a\"c]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeDurationParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", Duration.ofHours(2).plusMinutes(30));
+            assertEquals("[\"x\":Duration(9000,0)]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeBinaryParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", ByteBuffer.wrap(new byte[]{1, 2, 3}));
+            assertEquals("[\"x\":Binary(\"AQID\")]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeEnumParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", T.id);
+            assertEquals("[\"x\":T.id]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeGetParametersAsString() {
+            final GraphTraversalSource g2 = newG();
+            final String result = g2.V(GValue.of("x", 1)).
+                    has("name", GValue.of("name", "marko")).
+                    asAdmin().
+                    getGremlinLang().
+                    getParametersAsString();
+            // parameters are in a HashMap so order may vary, just check structure
+            assertTrue(result.startsWith("["));
+            assertTrue(result.endsWith("]"));
+            assertTrue(result, result.contains("\"x\":1"));
+            assertTrue(result, result.contains("\"name\":\"marko\""));
+        }
+
+        @Test
+        public void shouldSerializeOffsetDateTimeParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", DatetimeHelper.parse("2018-03-21T08:35:44.741Z"));
+            assertEquals("[\"x\":datetime(\"2018-03-21T08:35:44.741Z\")]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeDateParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", Date.from(DatetimeHelper.parse("2018-03-21T08:35:44.741Z").toInstant()));
+            assertEquals("[\"x\":datetime(\"2018-03-21T08:35:44.741Z\")]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeMultipleParameters() {
+            // use a LinkedHashMap to guarantee order
+            final Map<String, Object> params = new LinkedHashMap<>();
+            params.put("x", 1);
+            params.put("name", "marko");
+            params.put("flag", true);
+            assertEquals("[\"x\":1,\"name\":\"marko\",\"flag\":true]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeMapValuedParameter() {
+            final Map<String, Object> params = new LinkedHashMap<>();
+            final Map<Object, Object> nested = new LinkedHashMap<>();
+            nested.put(T.label, "person");
+            nested.put("name", "marko");
+            params.put("m", nested);
+            assertEquals("[\"m\":[(T.label):\"person\",\"name\":\"marko\"]]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeListValuedParameter() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", Arrays.asList(1, 2, 3));
+            assertEquals("[\"x\":[1,2,3]]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeSetValuedParameter() {
+            // use a LinkedHashSet to guarantee order
+            final java.util.Set<Integer> set = new java.util.LinkedHashSet<>(Arrays.asList(1, 2));
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", set);
+            assertEquals("[\"x\":{1,2}]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeStringWithBackslash() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", "path\\to\\file");
+            assertEquals("[\"x\":\"path\\\\to\\\\file\"]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldSerializeStringWithUnicode() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", "caf\u00E9");
+            assertEquals("[\"x\":\"caf\\u00E9\"]", GremlinLang.convertParametersToString(params));
+        }
+
+        @Test
+        public void shouldHandleEmptyStringKey() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("", 1);
+            final String result = GremlinLang.convertParametersToString(params);
+            assertEquals("[\"\":1]", result);
+        }
+
+        @Test
+        public void shouldHandleKeyWithSpaces() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("my key", 1);
+            final String result = GremlinLang.convertParametersToString(params);
+            assertEquals("[\"my key\":1]", result);
+        }
+
+        @Test
+        public void shouldHandleNullKey() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put(null, 1);
+            final String result = GremlinLang.convertParametersToString(params);
+            assertEquals("[null:1]", result);
+        }
+
+        @Test
+        public void shouldSerializeUnicodeKey() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("caf\u00e9", 1);
+            assertEquals("[\"caf\\u00E9\":1]", GremlinLang.convertParametersToString(params));
+        }
+    }
+
+    public static class UnsupportedTypeTests {
+
+        /**
+         * A test-only type that will never have gremlin-lang literal support.
+         */
+        private static class UnsupportedType {
+            @Override
+            public String toString() {
+                return "custom-unsupported";
+            }
+        }
+
+        @Test
+        public void shouldMarkUnsupportedTypeAndUseToString() {
+            final UnsupportedType custom = new UnsupportedType();
+            final GremlinLang gremlinLang = g.inject(custom).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+            assertTrue(gremlinLang.getGremlin().contains(custom.toString()));
+        }
+
+        @Test
+        public void shouldNotAddUnsupportedTypeToParameterMap() {
+            final GremlinLang gremlinLang = g.inject(new UnsupportedType()).asAdmin().getGremlinLang();
+            // unsupported type is flagged but not stored in the parameter map
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertTrue(gremlinLang.getParameters().isEmpty());
+        }
+
+        @Test
+        public void shouldRecordLastUnsupportedType() {
+            final GremlinLang gremlinLang = g.inject(new UnsupportedType(), new Thread()).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            // last one wins
+            assertEquals("Thread", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldPropagateFlagFromChildTraversal() {
+            final GremlinLang gremlinLang = g.V().where(__.has("x", P.eq(new UnsupportedType()))).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldNotPropagateFlagFromCleanChildTraversal() {
+            final GremlinLang gremlinLang = g.V().where(__.has("name", "marko")).asAdmin().getGremlinLang();
+            assertFalse(gremlinLang.containsUnsupportedTypes());
+            assertEquals("", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInList() {
+            final GremlinLang gremlinLang = g.inject(Arrays.asList(1, new UnsupportedType())).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInMap() {
+            final Map<String, Object> map = new HashMap<>();
+            map.put("key", new UnsupportedType());
+            final GremlinLang gremlinLang = g.inject(map).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInSet() {
+            final java.util.Set<Object> set = new java.util.LinkedHashSet<>();
+            set.add(1);
+            set.add(new UnsupportedType());
+            final GremlinLang gremlinLang = g.inject(set).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInPredicate() {
+            final GremlinLang gremlinLang = g.V().has("x", P.eq(new UnsupportedType())).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldPreserveUnsupportedTypeOnClone() {
+            final GremlinLang original = g.inject(new UnsupportedType()).asAdmin().getGremlinLang();
+            final GremlinLang cloned = original.clone();
+            assertTrue(cloned.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", cloned.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldPreserveCleanStateOnClone() {
+            final GremlinLang original = g.V(1).asAdmin().getGremlinLang();
+            final GremlinLang cloned = original.clone();
+            assertFalse(cloned.containsUnsupportedTypes());
+            assertEquals("", cloned.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldStillAddGValueToParameterMap() {
+            final GremlinLang gremlinLang = g.V(GValue.of("myId", 1)).asAdmin().getGremlinLang();
+            assertFalse(gremlinLang.containsUnsupportedTypes());
+            assertEquals(1, gremlinLang.getParameters().size());
+            assertEquals(1, gremlinLang.getParameters().get("myId"));
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeForReferenceEdge() {
+            final GremlinLang gremlinLang = newG().E(
+                    new ReferenceEdge(1, "test label", new ReferenceVertex(1, "v1"), new ReferenceVertex(1, "v1")))
+                    .asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("ReferenceEdge", gremlinLang.getUnsupportedType());
+            assertEquals("g.E(e[1][1-test label->1])", gremlinLang.getGremlin());
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInMapKey() {
+            final Map<Object, Object> map = new LinkedHashMap<>();
+            map.put(new UnsupportedType(), "value");
+            final GremlinLang gremlinLang = g.inject(map).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldRejectUnsupportedTypeInConvertParametersToString() {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("x", new UnsupportedType());
+            GremlinLang.convertParametersToString(params);
+        }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void shouldRejectUnsupportedTypeInGValueViaGetParametersAsString() {
+            final GremlinLang gremlinLang = g.V(GValue.of("x", new UnsupportedType())).asAdmin().getGremlinLang();
+            // named GValue stores the raw value in the parameter map without type-checking,
+            // so containsUnsupportedTypes() does not detect it
+            assertFalse(gremlinLang.containsUnsupportedTypes());
+            // the error is caught when the parameter map is serialized
+            gremlinLang.getParametersAsString();
+        }
+
+        @Test
+        public void shouldDetectUnsupportedTypeInUnnamedGValue() {
+            // unnamed GValue (null name) recurses into argAsString(gValue.get()),
+            // which hits the unsupported-type fallback and sets the flag
+            final GremlinLang gremlinLang = g.inject(GValue.of(null, new UnsupportedType())).asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
+        }
+
+        @Test
+        public void shouldPersistFlagAfterSupportedTypeFollows() {
+            final GremlinLang gremlinLang = g.inject(new UnsupportedType(), "hello").asAdmin().getGremlinLang();
+            assertTrue(gremlinLang.containsUnsupportedTypes());
+            assertEquals("UnsupportedType", gremlinLang.getUnsupportedType());
         }
     }
 }

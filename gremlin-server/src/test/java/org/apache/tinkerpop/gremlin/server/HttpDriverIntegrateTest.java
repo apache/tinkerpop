@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.Merge;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.CollectionUtil;
@@ -238,9 +239,8 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
                 fail("Should have thrown exception over bad serialization");
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
-                assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(HttpResponseStatus.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
-                assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
+                assertThat(inner, instanceOf(IllegalArgumentException.class));
+                assertTrue(ex.getMessage().contains("Parameter map contains at least one type [Color] that cannot be represented as text"));
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -550,6 +550,39 @@ public class HttpDriverIntegrateTest extends AbstractGremlinServerIntegrationTes
             assertEquals(4, result.size());
         } catch (Exception ex) {
             throw ex;
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRejectTraversalWithUnsupportedType() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            g.inject(new Thread()).toList();
+            fail("Expected IllegalArgumentException for unsupported type");
+        } catch (IllegalArgumentException ex) {
+            assertThat(ex.getMessage(), containsString("at least one type"));
+            assertThat(ex.getMessage(), containsString("Thread"));
+            assertThat(ex.getMessage(), containsString("cannot be represented as text"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRejectTraversalWithUnsupportedTypeInGValue() {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            g.V(GValue.of("x", new Thread())).toList();
+            fail("Expected exception for unsupported type in GValue parameter");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionHelper.getRootCause(ex);
+            assertThat(inner, instanceOf(IllegalArgumentException.class));
+            assertThat(inner.getMessage(), containsString("at least one type"));
+            assertThat(inner.getMessage(), containsString("cannot be represented as text"));
         } finally {
             cluster.close();
         }

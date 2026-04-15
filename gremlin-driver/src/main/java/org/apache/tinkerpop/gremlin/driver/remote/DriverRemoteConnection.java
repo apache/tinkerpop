@@ -216,6 +216,12 @@ public class DriverRemoteConnection implements RemoteConnection {
 
     @Override
     public <E> CompletableFuture<RemoteTraversal<?, E>> submitAsync(final GremlinLang gremlinLang) throws RemoteConnectionException {
+        if (gremlinLang.containsUnsupportedTypes()) {
+            throw new IllegalArgumentException(String.format(
+                    "GremlinLang contains at least one type [%s] that cannot be represented as text.",
+                    gremlinLang.getUnsupportedType()));
+        }
+
         try {
             gremlinLang.addG(remoteTraversalSourceName);
             return client.submitAsync(gremlinLang.getGremlin(), getRequestOptions(gremlinLang))

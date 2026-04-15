@@ -32,14 +32,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ArrayNode;
-import org.apache.tinkerpop.shaded.jackson.databind.node.ObjectNode;
 import org.javatuples.Pair;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -194,13 +190,7 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         final RequestMessage.Builder builder = RequestMessage.build(scriptNode.asText());
 
         final JsonNode bindingsNode = body.get(Tokens.ARGS_BINDINGS);
-        if (bindingsNode != null && !bindingsNode.isObject())
-            throw new IllegalArgumentException("bindings must be a Map");
-
-        final Map<String, Object> bindings = new HashMap<>();
-        if (bindingsNode != null)
-            bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
-        builder.addBindings(bindings);
+        if (bindingsNode != null) builder.addBindings(bindingsNode.asText());
 
         final JsonNode gNode = body.get(Tokens.ARGS_G);
         if (null != gNode) builder.addG(gNode.asText());
@@ -221,34 +211,5 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         if (null != txIdNode) builder.addTransactionId(txIdNode.asText());
 
         return builder.create();
-    }
-
-    private Object fromJsonNode(final JsonNode node) {
-        if (node.isNull())
-            return null;
-        else if (node.isObject()) {
-            final Map<String, Object> map = new HashMap<>();
-            final ObjectNode objectNode = (ObjectNode) node;
-            final Iterator<String> iterator = objectNode.fieldNames();
-            while (iterator.hasNext()) {
-                String key = iterator.next();
-                map.put(key, fromJsonNode(objectNode.get(key)));
-            }
-            return map;
-        } else if (node.isArray()) {
-            final ArrayNode arrayNode = (ArrayNode) node;
-            final ArrayList<Object> array = new ArrayList<>();
-            for (int i = 0; i < arrayNode.size(); i++) {
-                array.add(fromJsonNode(arrayNode.get(i)));
-            }
-            return array;
-        } else if (node.isFloatingPointNumber())
-            return node.asDouble();
-        else if (node.isIntegralNumber())
-            return node.asLong();
-        else if (node.isBoolean())
-            return node.asBoolean();
-        else
-            return node.asText();
     }
 }

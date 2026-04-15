@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.TimedInterruptTimeoutException;
 import org.apache.tinkerpop.gremlin.jsr223.GremlinScriptEngine;
 import org.apache.tinkerpop.gremlin.language.grammar.GremlinParserException;
+import org.apache.tinkerpop.gremlin.language.grammar.GremlinQueryParser;
 import org.apache.tinkerpop.gremlin.process.traversal.Failure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
@@ -76,7 +77,6 @@ import javax.script.SimpleBindings;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -200,7 +200,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
             try {
                 logger.debug("Processing request containing script [{}] and bindings of [{}] on {}",
                         requestMessage.getFieldOrDefault(Tokens.ARGS_GREMLIN, ""),
-                        requestMessage.getFieldOrDefault(Tokens.ARGS_BINDINGS, Collections.emptyMap()),
+                        requestMessage.getFieldOrDefault(Tokens.ARGS_BINDINGS, "[:]"),
                         Thread.currentThread().getName());
                 if (settings.enableAuditLog) {
                     AuthenticatedUser user = ctx.channel().attr(StateKey.AUTHENTICATED_USER).get();
@@ -243,6 +243,32 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
                 if (gremlinExecutor.getScriptEngineManager().getEngineByName(language) == null) {
                     throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
+                }
+
+                // Guard against bad parameters while trying to parse string-based bindings into a Map<String, Object>
+                if (requestMessage.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
+                    Map<String, Object> bindings = null;
+                    final String bindingsString = (String) requestMessage.getFields().get(Tokens.ARGS_BINDINGS);
+                    try {
+                        bindings = GremlinQueryParser.parseParameters(bindingsString);
+                    } catch (GremlinParserException e) {
+                        throw new ProcessingException(GremlinError.incorrectParameterFormat(bindingsString, e));
+                    }
+
+                    if ("gremlin-groovy".equals(language)) {
+                        final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(
+                                bindings.keySet().iterator(),
+                                INVALID_BINDINGS_KEYS::contains));
+                        if (!badBindings.isEmpty()) {
+                            throw new ProcessingException(GremlinError.binding(badBindings));
+                        }
+                    }
+
+                    if (bindings.size() > settings.maxParameters) {
+                        throw new ProcessingException(GremlinError.binding(bindings.size(), settings.maxParameters));
+                    }
+
+                    requestCtx.setParameters(bindings);
                 }
 
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
@@ -378,23 +404,6 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
 
     private void iterateScriptEvalResult(final Context context, MessageSerializer<?> serializer, final RequestMessage message)
             throws ProcessingException, InterruptedException, ScriptException {
-        if (message.optionalField(Tokens.ARGS_BINDINGS).isPresent()) {
-            final Map bindings = (Map) message.getFields().get(Tokens.ARGS_BINDINGS);
-            if (IteratorUtils.anyMatch(bindings.keySet().iterator(), k -> null == k || !(k instanceof String))) {
-                throw new ProcessingException(GremlinError.binding());
-            }
-
-            final Set<String> badBindings = IteratorUtils.set(IteratorUtils.<String>filter(bindings.keySet().iterator(), INVALID_BINDINGS_KEYS::contains));
-            if (!badBindings.isEmpty()) {
-                throw new ProcessingException(GremlinError.binding(badBindings));
-            }
-
-            // ignore control bindings that get passed in with the "#jsr223" prefix - those aren't used in compilation
-            if (IteratorUtils.count(IteratorUtils.filter(bindings.keySet().iterator(), k -> !k.toString().startsWith("#jsr223"))) > settings.maxParameters) {
-                throw new ProcessingException(GremlinError.binding(bindings.size(), settings.maxParameters));
-            }
-        }
-
         final Map<String, Object> args = message.getFields();
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
@@ -523,7 +532,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final RequestMessage msg = ctx.getRequestMessage();
 
         // add any bindings to override any other supplied
-        Optional.ofNullable((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
+        bindings.putAll(ctx.getParameters());
 
         if (msg.getFields().containsKey(Tokens.ARGS_G)) {
             final String aliased = msg.getField(Tokens.ARGS_G);

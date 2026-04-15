@@ -52,24 +52,21 @@ class TestTraversalStrategies(object):
         ##
         gremlin_script = g.without_strategies(ReadOnlyStrategy()).V().gremlin_lang
         gremlin_instr = gremlin_script.gremlin
-        gremlin_params = gremlin_script.parameters
         assert "withStrategies" in str(gremlin_script)
         assert "ReadOnlyStrategy" in str(gremlin_script)
         assert "IncidentToAdjacentStrategy" in str(gremlin_script)
         assert "withoutStrategies" in str(gremlin_script)
         assert "V()" in str(gremlin_script)
         assert "withStrategies(ReadOnlyStrategy,IncidentToAdjacentStrategy)" == gremlin_instr[1]
-        assert ReadOnlyStrategy() == gremlin_params["_0"]
+        assert "withoutStrategies(ReadOnlyStrategy)" in str(gremlin_script)
         ##
         gremlin_script = g.without_strategies(ReadOnlyStrategy(), LazyBarrierStrategy()).V().gremlin_lang
-        gremlin_params = gremlin_script.parameters
         assert "withStrategies" in str(gremlin_script)
         assert "ReadOnlyStrategy" in str(gremlin_script)
         assert "IncidentToAdjacentStrategy" in str(gremlin_script)
         assert "withoutStrategies" in str(gremlin_script)
         assert "V()" in str(gremlin_script)
-        assert ReadOnlyStrategy() == gremlin_params["_1"]
-        assert LazyBarrierStrategy() == gremlin_params["_2"]
+        assert "withoutStrategies(ReadOnlyStrategy,LazyBarrierStrategy)" in str(gremlin_script)
         ###
         g = traversal().with_(None)
         gremlin_script = g.with_("x", "test").with_("y").gremlin_lang

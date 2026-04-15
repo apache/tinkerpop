@@ -38,7 +38,6 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
         public GremlinLangTests()
         {
-            GremlinLang.ResetCounter();
             _g = new GraphTraversalSource();
         }
 
@@ -817,27 +816,8 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         // --- Python-Only Tests 106-116 ---
 
         [Fact]
-        public void g_E_Edge_renders_as_parameter()
-        {
-            GremlinLang.ResetCounter();
-            var edge = new Edge(2, new Vertex(1), "knows", new Vertex(3));
-            var result = _g.E(edge).GremlinLang.GetGremlin();
-            Assert.Equal("g.E(_0)", result);
-        }
-
-        [Fact]
-        public void g_Inject_VertexProperty_renders_as_parameter()
-        {
-            GremlinLang.ResetCounter();
-            var vp = new VertexProperty(3, "time", "18:00", null);
-            var result = _g.Inject((object)vp).GremlinLang.GetGremlin();
-            Assert.Equal("g.inject(_0)", result);
-        }
-
-        [Fact]
         public void g_Inject_dicts_with_enum_keys()
         {
-            GremlinLang.ResetCounter();
             var dict1 = new Dictionary<object, object> { { "name", "java" } };
             var dict2 = new Dictionary<object, object> { { T.Id, 0 } };
             var dict3 = new Dictionary<object, object>();
@@ -1056,6 +1036,57 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             Assert.Equal("g.inject(\"'\"c)",
                 _g.Inject((object)'\'').GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void Unsupported_type_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => _g.Inject(new object()).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void Unsupported_type_in_list_throws_ArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                _g.Inject((object)new object[] { 1, new object() }).GremlinLang.GetGremlin());
+        }
+
+        [Fact]
+        public void ConvertParametersToString_empty_returns_empty_map()
+        {
+            Assert.Equal("[:]", GremlinLang.ConvertParametersToString(null));
+            Assert.Equal("[:]", GremlinLang.ConvertParametersToString(new Dictionary<string, object>()));
+        }
+
+        [Fact]
+        public void ConvertParametersToString_basic_parameters()
+        {
+            var parameters = new Dictionary<string, object> { { "x", 1 } };
+            var result = GremlinLang.ConvertParametersToString(parameters);
+            Assert.Contains("\"x\":1", result);
+        }
+
+        [Fact]
+        public void ConvertParametersToString_unsupported_type_throws()
+        {
+            var parameters = new Dictionary<string, object> { { "x", new object() } };
+            Assert.Throws<ArgumentException>(() => GremlinLang.ConvertParametersToString(parameters));
+        }
+
+        [Fact]
+        public void ConvertParametersToString_nested_list()
+        {
+            var parameters = new Dictionary<string, object> { { "ids", new object[] { 1, 2, 3 } } };
+            var result = GremlinLang.ConvertParametersToString(parameters);
+            Assert.Contains("\"ids\":[1,2,3]", result);
+        }
+
+        [Fact]
+        public void ConvertParametersToString_escaped_string_value()
+        {
+            var parameters = new Dictionary<string, object> { { "name", "it's a \"test\"" } };
+            var result = GremlinLang.ConvertParametersToString(parameters);
+            Assert.Contains("\"name\":", result);
         }
     }
 }

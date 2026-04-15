@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using System.Threading;
 using Gremlin.Net.Process.Traversal.Strategy;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -44,7 +43,6 @@ namespace Gremlin.Net.Process.Traversal
 
         private StringBuilder _gremlin = new();
         private Dictionary<string, object> _parameters = new();
-        private static int _paramCount;
         private List<OptionsStrategy> _optionsStrategies = new();
 
         /// <summary>
@@ -124,6 +122,32 @@ namespace Gremlin.Net.Process.Traversal
         public Dictionary<string, object> Parameters => _parameters;
 
         /// <summary>
+        ///     Serializes this instance's parameter map to a gremlin-lang map literal string.
+        /// </summary>
+        public string GetParametersAsString() => ConvertParametersToString(_parameters);
+
+        /// <summary>
+        ///     Converts a parameter map to a gremlin-lang map literal string.
+        ///     Throws ArgumentException if any value is an unsupported type.
+        /// </summary>
+        public static string ConvertParametersToString(Dictionary<string, object>? parameters)
+        {
+            if (parameters == null || parameters.Count == 0) return "[:]";
+
+            var helper = new GremlinLang();
+            var sb = new StringBuilder("[");
+            var first = true;
+            foreach (var kvp in parameters)
+            {
+                if (!first) sb.Append(',');
+                sb.Append(helper.ArgAsString(kvp.Key)).Append(':').Append(helper.ArgAsString(kvp.Value));
+                first = false;
+            }
+            sb.Append(']');
+            return sb.ToString();
+        }
+
+        /// <summary>
         ///     Gets the list of extracted OptionsStrategy instances.
         /// </summary>
         public List<OptionsStrategy> OptionsStrategies => _optionsStrategies;
@@ -146,14 +170,6 @@ namespace Gremlin.Net.Process.Traversal
                 _gremlin.Clear();
                 _gremlin.Append(value);
             }
-        }
-
-        /// <summary>
-        ///     Resets the static parameter counter. Intended for test determinism.
-        /// </summary>
-        public static void ResetCounter()
-        {
-            Interlocked.Exchange(ref _paramCount, 0);
         }
 
         private void AddToGremlin(string name, object?[] arguments)
@@ -332,14 +348,8 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is Type type)
                 return type.Name;
 
-            return AsParameter(arg);
-        }
-
-        private string AsParameter(object arg)
-        {
-            var paramName = $"_{Interlocked.Increment(ref _paramCount) - 1}";
-            _parameters[paramName] = arg;
-            return paramName;
+            throw new ArgumentException(
+                $"GremlinLang contains at least one type [{arg.GetType().Name}] that cannot be represented as text.");
         }
 
         private string AsString(P p)

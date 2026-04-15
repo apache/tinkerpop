@@ -245,7 +245,7 @@ def test_client_gremlin_lang_request_options_with_binding(client):
     g = GraphTraversalSource(Graph(), TraversalStrategies())
     # Note that bindings for constructed traversals is done via Parameter only
     t = g.with_('language', 'gremlin-lang').V(GValue('x', [1, 2, 3])).count()
-    request_opts = {'language': 'gremlin-lang', 'params': {'x': [1, 2, 3]}}
+    request_opts = {'language': 'gremlin-lang', 'bindings': {'x': [1, 2, 3]}}
     message = create_basic_request_message(t)
     result_set = client.submit(message, request_options=request_opts)
     assert result_set.all().result()[0] == 3
@@ -253,10 +253,10 @@ def test_client_gremlin_lang_request_options_with_binding(client):
     result_set = client.submit('g.V(x).values("name")', request_options=request_opts)
     assert result_set.all().result()[0] == 'marko'
     # For script submission only, we can also add bindings to request options and they will be applied
-    request_opts['bindings'] = {'y': 4}
-    result_set = client.submit('g.V(y).values("name")', request_options=request_opts)
+    request_opts2 = {'language': 'gremlin-lang', 'bindings': {'y': 4}}
+    result_set = client.submit('g.V(y).values("name")', request_options=request_opts2)
     assert result_set.all().result()[0] == 'josh'
-    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5}, request_options=request_opts)
+    result_set = client.submit('g.V(z).values("name")', bindings={'z': 5})
     assert result_set.all().result()[0] == 'ripple'
 
 

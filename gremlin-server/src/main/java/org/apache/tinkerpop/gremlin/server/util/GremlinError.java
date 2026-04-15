@@ -69,6 +69,13 @@ public class GremlinError {
         return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
     }
 
+    public static GremlinError incorrectParameterFormat(final String parameters, final GremlinParserException gpe) {
+        final String message = String.format(
+                "The provided parameter string \"%s\" could not be converted into a Map. %s",
+                parameters, gpe.getMessage());
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
+
     public static GremlinError binding(final Set<String> badBindings) {
         final String message = String.format("The message supplies one or more invalid parameters key of [%s] - these are reserved names.",
                 badBindings);

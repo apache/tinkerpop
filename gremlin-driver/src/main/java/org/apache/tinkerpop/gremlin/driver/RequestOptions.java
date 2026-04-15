@@ -44,7 +44,7 @@ public final class RequestOptions {
     public static final RequestOptions EMPTY = RequestOptions.build().create();
 
     private final String graphOrTraversalSource;
-    private final Map<String, Object> parameters;
+    private final String parameters;
     private final Integer batchSize;
     private final Long timeout;
     private final String language;
@@ -54,7 +54,7 @@ public final class RequestOptions {
 
     private RequestOptions(final Builder builder) {
         this.graphOrTraversalSource = builder.graphOrTraversalSource;
-        this.parameters = builder.parameters;
+        this.parameters = builder.parametersString;
         this.batchSize = builder.batchSize;
         this.timeout = builder.timeout;
         this.language = builder.language;
@@ -67,7 +67,7 @@ public final class RequestOptions {
         return Optional.ofNullable(graphOrTraversalSource);
     }
 
-    public Optional<Map<String, Object>> getParameters() {
+    public Optional<String> getParameters() {
         return Optional.ofNullable(parameters);
     }
 
@@ -114,16 +114,17 @@ public final class RequestOptions {
         if (builder.bulkResults == null)
             builder.bulkResults(true);
 
-        final Map<String, Object> parameters = gremlinLang.getParameters();
-        if (parameters != null && !parameters.isEmpty()) {
-            parameters.forEach(builder::addParameter);
+        final String parametersString = gremlinLang.getParametersAsString();
+        if (!"[:]".equals(parametersString)) {
+            builder.addParametersString(parametersString);
         }
         return builder.create();
     }
 
     public static final class Builder {
         private String graphOrTraversalSource = null;
-        private Map<String, Object> parameters = null;
+        private Map<String, Object> internalParameters = null;
+        private String parametersString = null;
         private Integer batchSize = null;
         private Long timeout = null;
         private String materializeProperties = null;
@@ -139,7 +140,7 @@ public final class RequestOptions {
         public static Builder from(final RequestOptions options) {
             final Builder builder = build();
             builder.graphOrTraversalSource = options.graphOrTraversalSource;
-            builder.parameters = options.parameters;
+            builder.parametersString = options.parameters;
             builder.batchSize = options.batchSize;
             builder.timeout = options.timeout;
             builder.materializeProperties = options.materializeProperties;
@@ -158,11 +159,17 @@ public final class RequestOptions {
         }
 
         /**
-         * The parameters to pass on the request.
+         * Adds a parameter to the request. The parameter map is converted to a gremlin-lang map literal string when the
+         * request is built. This method accumulates parameters into an internal map which is converted on
+         * {@link #create()}.
+         * <p>
+         * Cannot be mixed with {@link #addParametersString(String)}.
          */
         public Builder addParameter(final String name, final Object value) {
-            if (null == parameters)
-                parameters = new HashMap<>();
+            if (parametersString != null)
+                throw new IllegalStateException("Cannot mix addParameter() with addParametersString()");
+
+            if (internalParameters == null) internalParameters = new HashMap<>();
 
             if (ARGS_G.equals(name)) {
                 this.graphOrTraversalSource = (String) value;
@@ -172,7 +179,21 @@ public final class RequestOptions {
                 this.language = (String) value;
             }
 
-            parameters.put(name, value);
+            internalParameters.put(name, value);
+            return this;
+        }
+
+        /**
+         * Sets the parameters as a pre-formatted gremlin-lang map literal string. This allows users to pass parameters
+         * as a raw gremlin-lang string when using the Client API with a gremlin string.
+         * <p>
+         * Cannot be mixed with {@link #addParameter(String, Object)}.
+         */
+        public Builder addParametersString(final String parametersString) {
+            if (internalParameters != null)
+                throw new IllegalStateException("Cannot mix addParametersString() with addParameter()");
+
+            this.parametersString = parametersString;
             return this;
         }
 
@@ -228,6 +249,10 @@ public final class RequestOptions {
         }
 
         public RequestOptions create() {
+            // if parameters were added via addParameter(), convert the map to a string
+            if (internalParameters != null) {
+                parametersString = GremlinLang.convertParametersToString(internalParameters);
+            }
             return new RequestOptions(this);
         }
     }
