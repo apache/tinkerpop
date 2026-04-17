@@ -25,14 +25,19 @@ import { Graph } from '../structure/graph.js';
 import { TraversalStrategies } from './traversal-strategy.js';
 import GremlinLang from './gremlin-lang.js';
 
-const itemDone = Object.freeze({ value: null, done: true });
+const itemDone: IteratorResult<any, null> = Object.freeze({ value: null, done: true }) as any;
 const asyncIteratorSymbol = Symbol.asyncIterator || Symbol('@@asyncIterator');
 
 export class Traversal {
-  results: any[] | null = null;
+  /** @internal Async results stream set by RemoteStrategy */
+  _resultsStream: AsyncGenerator<any> | null = null;
+  /** @internal Buffered traverser for bulk expansion and hasNext peek */
+  private _currentTraverser: Traverser | null = null;
+  /** Trailing response status from the server, populated after iteration completes. */
+  private _status: { code: number; message: string | null; exception: string | null } | null = null;
   sideEffects?: any = null;
   private _traversalStrategiesPromise: Promise<void> | null = null;
-  private _resultsIteratorIndex = 0;
+  private _done = false;
 
   constructor(
     public graph: Graph | null,
@@ -53,51 +58,70 @@ export class Traversal {
   }
 
   /**
+   * Gets the trailing response status from the server.
+   * Available after the traversal has been fully iterated (via toList(), iterate(), or manual iteration).
+   * Returns null if the traversal has not completed.
+   * @returns {{ code: number, message: string | null, exception: string | null } | null}
+   */
+  getStatus() {
+    return this._status;
+  }
+
+  /**
    * Returns an Array containing the traverser objects.
    * @returns {Promise.<Array>}
    */
-  toList<T>(): Promise<T[]> {
-    return this._applyStrategies().then(() => {
-      const result: T[] = [];
-      let it;
-      while ((it = this._getNext()) && !it.done) {
-        result.push(it.value as T);
-      }
-      return result;
-    });
+  async toList<T>(): Promise<T[]> {
+    await this._applyStrategies();
+    const result: T[] = [];
+    while (true) {
+      const it = await this._getNext<T>();
+      if (it.done) break;
+      result.push(it.value);
+    }
+    return result;
   }
 
   /**
    * Determines if there are any more items to iterate from the traversal.
    * @returns {Promise.<boolean>}
    */
-  hasNext() {
-    return this._applyStrategies().then(
-      () => {
-        if (!this.results || this.results.length <= 0 || this._resultsIteratorIndex >= this.results.length) {
-          return false;
-        }
-        if (this.results[this._resultsIteratorIndex] instanceof Traverser) {
-          return this.results[this._resultsIteratorIndex].bulk > 0 || this._resultsIteratorIndex + 1 < this.results.length;
-        } else {
-          return true;
-        }
+  async hasNext(): Promise<boolean> {
+    await this._applyStrategies();
+
+    // If we have a current traverser with remaining bulk, there's more
+    if (this._currentTraverser && this._currentTraverser.bulk > 0) {
+      return true;
+    }
+
+    if (this._done) return false;
+
+    // Try to pull the next item from the source to check
+    if (this._resultsStream) {
+      const { value, done } = await this._resultsStream.next();
+      if (done) {
+        this._done = true;
+        return false;
       }
-    );
+      // Buffer it as a traverser for the next _getNext() call
+      this._currentTraverser = value instanceof Traverser ? value : new Traverser(value, 1);
+      return true;
+    }
+
+    return false;
   }
 
   /**
    * Iterates all Traverser instances in the traversal.
    * @returns {Promise}
    */
-  iterate() {
+  async iterate(): Promise<void> {
     this.gremlinLang.addStep('discard');
-    return this._applyStrategies().then(() => {
-      let it;
-      while ((it = this._getNext()) && !it.done) {
-        //
-      }
-    });
+    await this._applyStrategies();
+    while (true) {
+      const it = await this._getNext();
+      if (it.done) break;
+    }
   }
 
   /**
@@ -105,31 +129,55 @@ export class Traversal {
    * Returns a promise containing an iterator item.
    * @returns {Promise.<{value, done}>}
    */
-  next<T>(): Promise<IteratorResult<T, null>> {
-    return this._applyStrategies().then(() => this._getNext<T>());
+  async next<T>(): Promise<IteratorResult<T, null>> {
+    await this._applyStrategies();
+    return this._getNext<T>();
   }
 
   /**
-   * Synchronous iterator of traversers including
+   * Pull the next value, handling Traverser bulk expansion.
    * @private
    */
-  _getNext<T>(): IteratorResult<T, null> {
-    while (this.results && this._resultsIteratorIndex < this.results.length) {
-      const next = this.results[this._resultsIteratorIndex];
-
-      if (next instanceof Traverser) {
-        if (next.bulk > 0) {
-          next.bulk--;
-          return { value: next.object, done: false };
+  async _getNext<T>(): Promise<IteratorResult<T, null>> {
+    // Drain current traverser's bulk first
+    if (this._currentTraverser) {
+      if (this._currentTraverser.bulk > 0) {
+        this._currentTraverser.bulk--;
+        const value = this._currentTraverser.object;
+        if (this._currentTraverser.bulk <= 0) {
+          this._currentTraverser = null;
         }
+        return { value, done: false };
       }
-
-      this._resultsIteratorIndex++;
-
-      if (!(next instanceof Traverser)) {
-        return { value: next, done: false };
-      }
+      this._currentTraverser = null;
     }
+
+    // Streaming source path
+    if (this._resultsStream) {
+      if (this._done) return itemDone;
+
+      const { value, done } = await this._resultsStream.next();
+      if (done) {
+        this._done = true;
+        this._status = value ?? null;
+        return itemDone;
+      }
+
+      if (value instanceof Traverser) {
+        if (value.bulk > 0) {
+          value.bulk--;
+          const result = value.object;
+          if (value.bulk > 0) {
+            this._currentTraverser = value;
+          }
+          return { value: result, done: false };
+        }
+        return itemDone;
+      }
+
+      return { value, done: false };
+    }
+
     return itemDone;
   }
 

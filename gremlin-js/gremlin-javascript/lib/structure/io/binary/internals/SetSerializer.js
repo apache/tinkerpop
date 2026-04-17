@@ -64,85 +64,52 @@ export default class SetSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-    let isBulked = false;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      if (fullyQualifiedFormat) {
-        const typeCode = cursor.readUInt8();
-        len++;
-        if (typeCode !== this.ID) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const valueFlag = cursor.readUInt8();
-        len++;
-        if (valueFlag === 1) {
-          return { v: null, len };
-        }
-        if (valueFlag !== 0 && valueFlag !== 2) {
-          throw new Error('unexpected {value_flag}');
-        }
-        isBulked = valueFlag === 2;
-        cursor = cursor.slice(1);
-      }
-
-      let length, lengthLen;
-      try {
-        ({ v: length, len: lengthLen } = this.ioc.intSerializer.deserialize(cursor, false));
-        len += lengthLen;
-      } catch (err) {
-        err.message = '{length}: ' + err.message;
-        throw err;
-      }
-      if (length < 0) {
-        throw new Error('{length} is less than zero');
-      }
-      cursor = cursor.slice(lengthLen);
-
-      const v = new Set();
-      for (let i = 0; i < length; i++) {
-        let value, valueLen;
-        try {
-          ({ v: value, len: valueLen } = this.ioc.anySerializer.deserialize(cursor));
-          len += valueLen;
-        } catch (err) {
-          err.message = `{item_${i}}: ` + err.message;
-          throw err;
-        }
-        cursor = cursor.slice(valueLen);
-
-        if (isBulked) {
-          if (cursor.length < 8) {
-            throw new Error(`{item_${i}}: bulk count is missing`);
-          }
-          cursor.readBigInt64BE();
-          len += 8;
-          cursor = cursor.slice(8);
-
-          // Set.add is idempotent; bulk count only affects cardinality, not Set membership
-          v.add(value);
-        } else {
-          v.add(value);
-        }
-      }
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Async deserialization of set value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - 0x00 for normal, 0x02 for bulked
+   * @param {number} typeCode
+   * @returns {Promise<Set>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const isBulked = valueFlag === 0x02;
+    const length = await this.ioc.intSerializer.deserializeBare(reader);
+    if (length < 0) {
+      throw new Error(`SetSerializer: {length}=${length} is less than zero`);
     }
+
+    const v = new Set();
+    for (let i = 0; i < length; i++) {
+      const value = await this.ioc.anySerializer.deserialize(reader);
+
+      if (isBulked) {
+        // consume the bulk count; Set.add is idempotent so count doesn't matter
+        await reader.readBigInt64BE();
+      }
+
+      v.add(value);
+    }
+
+    return v;
+  }
+
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<Set|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ID) {
+      throw new Error(`SetSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00 && value_flag !== 0x02) {
+      throw new Error(`SetSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

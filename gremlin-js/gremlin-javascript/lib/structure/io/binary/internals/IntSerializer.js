@@ -65,49 +65,42 @@ export default class IntSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * Read a bare int32 value from the StreamReader (no type_code or value_flag).
+   * @param {StreamReader} reader
+   * @returns {Promise<number>}
+   */
+  async deserializeBare(reader) {
+    return await reader.readInt32BE();
+  }
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - already consumed by AnySerializer
+   * @param {number} typeCode
+   * @returns {Promise<number>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    return await reader.readInt32BE();
+  }
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.INT) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      if (cursor.length < 4) {
-        throw new Error('unexpected {value} length');
-      }
-      len += 4;
-
-      const v = cursor.readInt32BE();
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Read a fully-qualified int from the StreamReader (type_code + value_flag + value).
+   * @param {StreamReader} reader
+   * @returns {Promise<number|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.INT) {
+      throw new Error(`IntSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`IntSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

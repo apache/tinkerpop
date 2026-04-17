@@ -21,8 +21,6 @@
  * @author Igor Ostapenko
  */
 
-import { Buffer } from 'buffer';
-
 export default class AnySerializer {
   constructor(ioc) {
     this.ioc = ioc;
@@ -64,25 +62,33 @@ export default class AnySerializer {
     return this.getSerializerCanBeUsedFor(item).serialize(item, fullyQualifiedFormat);
   }
 
-  deserialize(buffer) {
-    // obviously, fullyQualifiedFormat always is true
+  /**
+   * Async deserialization from a StreamReader.
+   * Reads type_code + value_flag, then dispatches to the appropriate serializer's deserializeValue().
+   * @param {StreamReader} reader
+   * @returns {Promise<any>}
+   */
+  async deserialize(reader) {
+    const pos = reader.position;
+    const type_code = await reader.readUInt8();
+    const serializer = this.ioc.serializers[type_code];
+    if (!serializer) {
+      throw new Error(`AnySerializer: unknown {type_code}=0x${type_code.toString(16)} at position ${pos}`);
+    }
+
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00 && value_flag !== 0x02) {
+      throw new Error(`AnySerializer: unexpected {value_flag}=0x${value_flag.toString(16)} at position ${pos}`);
+    }
+
     try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      const type_code = buffer.readUInt8();
-      const serializer = this.ioc.serializers[type_code];
-      if (!serializer) {
-        throw new Error('unknown {type_code}');
-      }
-
-      return serializer.deserialize(buffer);
+      return await serializer.deserializeValue(reader, value_flag, type_code);
     } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, err });
+      err.message = `${serializer.constructor.name}.deserializeValue() at position ${pos}: ${err.message}`;
+      throw err;
     }
   }
 }

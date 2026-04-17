@@ -38,39 +38,13 @@ export default class UnspecifiedNullSerializer {
     return Buffer.from([this.ioc.DataType.UNSPECIFIED_NULL, 0x01]);
   }
 
-  deserialize(buffer) {
-    // fullyQualifiedFormat always is true
-    let len = 0;
-    let cursor = buffer;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      const type_code = cursor.readUInt8();
-      len++;
-      if (type_code !== this.ioc.DataType.UNSPECIFIED_NULL) {
-        throw new Error('unexpected {type_code}');
-      }
-      cursor = cursor.slice(1);
-
-      if (cursor.length < 1) {
-        throw new Error('{value_flag} is missing');
-      }
-      const value_flag = cursor.readUInt8();
-      len++;
-      if (value_flag !== 1) {
-        throw new Error('unexpected {value_flag}');
-      }
-      cursor = cursor.slice(1);
-
-      return { v: null, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
-    }
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - already consumed by AnySerializer (always 0x01 for null)
+   * @returns {Promise<null>}
+   */
+  // eslint-disable-next-line require-await
+  async deserializeValue(reader, valueFlag) {
+    throw new Error('UnspecifiedNull should always have value_flag=0x01');
   }
 }

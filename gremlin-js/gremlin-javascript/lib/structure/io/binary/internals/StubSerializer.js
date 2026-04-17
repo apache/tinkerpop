@@ -24,7 +24,9 @@ export default class StubSerializer {
     this.typeName = typeName;
     this.ioc.serializers[typeCode] = this;
   }
-  deserialize() {
+
+  // eslint-disable-next-line require-await
+  async deserializeValue(reader, valueFlag, typeCode) {
     throw new Error(`${this.typeName} deserialization is not yet implemented`);
   }
 }

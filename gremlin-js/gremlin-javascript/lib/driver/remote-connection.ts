@@ -85,10 +85,11 @@ export abstract class RemoteConnection {
  */
 export class RemoteTraversal extends Traversal {
   constructor(
-    public results: Traverser<any>[],
-    public sideEffects?: any[],
+    source: AsyncGenerator<any>,
+    sideEffects?: any[],
   ) {
     super(null, null);
+    this._resultsStream = source;
   }
 }
 
@@ -103,13 +104,13 @@ export class RemoteStrategy extends TraversalStrategy {
 
   /** @override */
   apply(traversal: Traversal) {
-    if (traversal.results) {
+    if (traversal._resultsStream) {
       return Promise.resolve();
     }
 
     return this.connection.submit(traversal.getGremlinLang()).then(function (remoteTraversal: RemoteTraversal) {
       traversal.sideEffects = remoteTraversal.sideEffects;
-      traversal.results = remoteTraversal.results;
+      traversal._resultsStream = remoteTraversal._resultsStream;
     });
   }
 }

@@ -27,6 +27,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
+* Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.
+* Changed `Client.stream()` in `gremlin-javascript` to return an `AsyncGenerator` for direct incremental consumption.
+* Removed `readable-stream` dependency from `gremlin-javascript`.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)

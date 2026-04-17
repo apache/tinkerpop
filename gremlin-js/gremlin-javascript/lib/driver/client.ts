@@ -18,7 +18,6 @@
  */
 
 import Connection, { ConnectionOptions } from './connection.js';
-import { Readable } from 'stream';
 import {RequestMessage} from "./request-message.js";
 
 export type RequestOptions = {
@@ -70,67 +69,57 @@ export default class Client {
   }
 
   /**
-   * Configuration specific to the current request.
-   * @typedef {Object} RequestOptions
-   * @property {any} bindings - The parameter bindings to apply to the script.
-   * @property {String} language - The language of the script to execute. Defaults to 'gremlin-lang'.
-   * @property {String} accept - The MIME type expected in the response.
-   * @property {Boolean} bulkResults - Indicates whether results should be returned in bulk format.
-   * @property {Object} params - Additional parameters to include with the request.
-   * @property {Number} batchSize - The size in which the result of a request is to be 'batched' back to the client.
-   * @property {String} userAgent - The user agent string to send with the request.
-   * @property {Number} evaluationTimeout - The timeout for the evaluation of the request.
-   * @property {String} materializeProperties - Indicates whether element properties should be returned or not.
-   */
-
-  /**
-   * Send a request to the Gremlin Server.
+   * Send a request to the Gremlin Server and buffer the entire response.
    * @param {string} message The script to send
    * @param {Object|null} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
-   * @returns {Promise}
-   */ //TODO:: tighten return type to Promise<ResultSet>
+   * @returns {Promise<ResultSet>}
+   */
   submit(message: string, bindings: any | null, requestOptions?: RequestOptions): Promise<any> {
-      const requestBuilder = RequestMessage.build(message)
-          .addG(this.options.traversalSource || 'g')
-
-      if (requestOptions?.language) {
-          requestBuilder.addLanguage(requestOptions.language);
-      }
-      if (requestOptions?.bindings) {
-          requestBuilder.addBindings(requestOptions.bindings);
-      }
-      if (bindings) {
-          requestBuilder.addBindings(bindings);
-      }
-      if (requestOptions?.materializeProperties) {
-        requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);
-      }
-      if (requestOptions?.evaluationTimeout) {
-          requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout);
-      }
-      if (requestOptions?.bulkResults) {
-          requestBuilder.addBulkResults(requestOptions.bulkResults);
-      }
-
-      return this._connection.submit(requestBuilder.create());
+    return this._connection.submit(this.#buildRequest(message, bindings, requestOptions));
   }
 
   /**
-   * Send a request to the Gremlin Server and receive a stream for the results.
+   * Send a request to the Gremlin Server and stream results incrementally.
+   * Returns an AsyncGenerator that yields individual result items as they are
+   * deserialized from the response. For bulked responses, yields Traverser objects.
    * @param {string} message The script to send
-   * @param {Object} [bindings] The script bindings, if any.
+   * @param {Object|null} [bindings] The script bindings, if any.
    * @param {RequestOptions} [requestOptions] Configuration specific to the current request.
-   * @returns {ReadableStream}
+   * @returns {AsyncGenerator<any>}
    */
-  //TODO:: Update stream() to mirror submit()
-  stream(message: string, bindings: any, requestOptions?: RequestOptions): Readable {
-      throw new Error("Stream not yet implemented");
+  async *stream(message: string, bindings: any | null, requestOptions?: RequestOptions): AsyncGenerator<any> {
+    return yield* this._connection.stream(this.#buildRequest(message, bindings, requestOptions));
+  }
+
+  #buildRequest(message: string, bindings: any | null, requestOptions?: RequestOptions): RequestMessage {
+    const requestBuilder = RequestMessage.build(message)
+        .addG(this.options.traversalSource || 'g');
+
+    if (requestOptions?.language) {
+      requestBuilder.addLanguage(requestOptions.language);
+    }
+    if (requestOptions?.bindings) {
+      requestBuilder.addBindings(requestOptions.bindings);
+    }
+    if (bindings) {
+      requestBuilder.addBindings(bindings);
+    }
+    if (requestOptions?.materializeProperties) {
+      requestBuilder.addMaterializeProperties(requestOptions.materializeProperties);
+    }
+    if (requestOptions?.evaluationTimeout) {
+      requestBuilder.addTimeoutMillis(requestOptions.evaluationTimeout);
+    }
+    if (requestOptions?.bulkResults) {
+      requestBuilder.addBulkResults(requestOptions.bulkResults);
+    }
+
+    return requestBuilder.create();
   }
 
   /**
    * Closes the underlying connection
-   * send session close request before connection close if session mode
    * @returns {Promise}
    */
   close(): Promise<void> {
@@ -147,7 +136,7 @@ export default class Client {
   }
 
   /**
-   * Removes a previowsly added event listener to the connection
+   * Removes a previously added event listener to the connection
    * @param {String} event The event name that you want to listen to.
    * @param {Function} handler The event handler to be removed.
    */

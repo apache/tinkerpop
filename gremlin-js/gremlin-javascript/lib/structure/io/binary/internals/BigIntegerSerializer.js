@@ -88,65 +88,42 @@ export default class BigIntegerSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.BIGINTEGER) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      // {length}
-      let length, length_len;
-      try {
-        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
-        len += length_len;
-      } catch (err) {
-        err.message = '{length}: ' + err.message;
-        throw err;
-      }
-      if (length < 1) {
-        throw new Error(`{length}=${length} is less than one`);
-      }
-      cursor = cursor.slice(length_len);
-
-      len += length;
-      cursor = cursor.slice(0, length);
-      let v = BigInt(`0x${cursor.toString('hex')}`);
-      const is_sign_bit_set = (cursor[0] & 0x80) === 0x80;
-      if (is_sign_bit_set) {
-        v = BigInt.asIntN(length * 8, v); // now we get expected negative number
-      }
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<bigint>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const length = await this.ioc.intSerializer.deserializeBare(reader);
+    if (length < 1) {
+      throw new Error(`BigIntegerSerializer: {length}=${length} is less than one`);
     }
+    const bytes = await reader.readBytes(length);
+    let v = BigInt(`0x${bytes.toString('hex')}`);
+    const is_sign_bit_set = (bytes[0] & 0x80) === 0x80;
+    if (is_sign_bit_set) {
+      v = BigInt.asIntN(length * 8, v);
+    }
+    return v;
+  }
+
+  /**
+   * @param {StreamReader} reader
+   * @returns {Promise<bigint|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.BIGINTEGER) {
+      throw new Error(`BigIntegerSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`BigIntegerSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

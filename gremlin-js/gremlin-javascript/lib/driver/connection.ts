@@ -25,21 +25,19 @@ import { Buffer } from 'buffer';
 import { EventEmitter } from 'eventemitter3';
 import type { Agent } from 'node:http';
 import ioc from '../structure/io/binary/GraphBinary.js';
+import StreamReader from '../structure/io/binary/internals/StreamReader.js';
 import * as utils from '../utils.js';
 import ResultSet from './result-set.js';
 import {RequestMessage} from "./request-message.js";
-import {Readable} from "stream";
 import ResponseError from './response-error.js';
 import { Traverser } from '../process/traversal.js';
 
-const { DeferredPromise } = utils;
 const { graphBinaryReader, graphBinaryWriter } = ioc;
 
 const responseStatusCode = {
   success: 200,
   noContent: 204,
   partialContent: 206,
-  authenticationChallenge: 407,
 };
 
 export type HttpRequest = {
@@ -115,20 +113,81 @@ export default class Connection extends EventEmitter {
     return Promise.resolve();
   }
 
-  /** @override */
-  submit(request: RequestMessage) {
-    // The user may not want the body to be serialized if they are using an interceptor.
+  /**
+   * Send a request and buffer the entire response. Returns a Promise<ResultSet>.
+   */
+  async submit(request: RequestMessage) {
     const body = this._writer ? this._writer.writeRequest(request) : request;
-    
-    return this.#makeHttpRequest(body)
-        .then((response) => {
-          return this.#handleResponse(response);
-        });
+    const response = await this.#makeHttpRequest(body);
+    return this.#handleResponse(response);
   }
 
-  /** @override */
-  stream(request: RequestMessage): Readable {
-    throw new Error('stream() is not yet implemented');
+  /**
+   * Send a request and stream the response incrementally.
+   * Returns an AsyncGenerator that yields deserialized result items.
+   * For bulked responses, yields Traverser objects.
+   *
+   * In the GraphBinary v4 streaming protocol, the server sends the status after all
+   * result data. If the server encounters an error mid-traversal, values yielded before
+   * the error are valid partial results. A ResponseError is thrown after the last value
+   * has been yielded.
+   *
+   * @param {RequestMessage} request
+   * @returns {AsyncGenerator<any>}
+   */
+  async *stream(request: RequestMessage): AsyncGenerator<any> {
+    const body = this._writer ? this._writer.writeRequest(request) : request;
+    const abortController = new AbortController();
+
+    let response: Response;
+    try {
+      response = await this.#makeHttpRequest(body, abortController.signal);
+    } catch (e: any) {
+      throw new Error(`Stream request failed: ${e.message}`, { cause: e });
+    }
+
+    if (!response.ok) {
+      // For error responses, buffer and parse the error body
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const errorMessage = `Server returned HTTP ${response.status}: ${response.statusText}`;
+      const reader = this.#getReaderForContentType(response.headers.get("Content-Type"));
+
+      if (reader) {
+        try {
+          const deserialized = await reader.readResponse(buffer);
+          throw new ResponseError(errorMessage, {
+            code: deserialized.status.code,
+            message: deserialized.status.message || response.statusText,
+            exception: deserialized.status.exception,
+          });
+        } catch (err) {
+          if (err instanceof ResponseError) throw err;
+        }
+      }
+
+      throw new ResponseError(errorMessage, {
+        code: response.status,
+        message: response.statusText,
+      });
+    }
+
+    if (!response.body) {
+      // 204 No Content — nothing to yield
+      return;
+    }
+
+    const streamReader = StreamReader.fromReadableStream(response.body);
+
+    let completed = false;
+    try {
+      yield* this._reader.readResponseStream(streamReader);
+      completed = true;
+    } finally {
+      if (!completed) {
+        // Consumer broke out early or an error occurred — abort to release the connection
+        abortController.abort();
+      }
+    }
   }
 
   #getReaderForContentType(contentType: string | null) {
@@ -143,7 +202,7 @@ export default class Connection extends EventEmitter {
     return null;
   }
 
-  async #makeHttpRequest(body: any): Promise<Response> {
+  async #makeHttpRequest(body: any, signal?: AbortSignal): Promise<Response> {
     const headers: Record<string, string> = {
       'Accept': this._reader.mimeType
     };
@@ -164,6 +223,7 @@ export default class Connection extends EventEmitter {
         headers[key] = Array.isArray(value) ? value.join(', ') : value;
       });
     }
+
     let httpRequest: HttpRequest = {
       url: this.url,
       method: 'POST',
@@ -183,6 +243,7 @@ export default class Connection extends EventEmitter {
       method: httpRequest.method,
       headers: httpRequest.headers,
       body: httpRequest.body,
+      signal,
     });
   }
 
@@ -196,23 +257,17 @@ export default class Connection extends EventEmitter {
 
       try {
         if (reader) {
-          const deserialized = reader.readResponse(buffer);
-          const attributes = new Map();
-          if (deserialized.status.exception) {
-            attributes.set('exceptions', deserialized.status.exception);
-            attributes.set('stackTrace', deserialized.status.exception);
-          }
+          const deserialized = await reader.readResponse(buffer);
           throw new ResponseError(errorMessage, {
             code: deserialized.status.code,
             message: deserialized.status.message || response.statusText,
-            attributes: attributes,
+            exception: deserialized.status.exception,
           });
         } else if (contentType === 'application/json') {
           const errorBody = JSON.parse(buffer.toString());
           throw new ResponseError(errorMessage, {
             code: response.status,
             message: errorBody.message || errorBody.error || response.statusText,
-            attributes: new Map(),
           });
         }
       } catch (err) {
@@ -224,7 +279,6 @@ export default class Connection extends EventEmitter {
       throw new ResponseError(errorMessage, {
         code: response.status,
         message: response.statusText,
-        attributes: new Map(),
       });
     }
 
@@ -232,20 +286,15 @@ export default class Connection extends EventEmitter {
       throw new Error(`Response Content-Type '${contentType}' does not match the configured reader (expected '${this._reader.mimeType}')`);
     }
 
-    const deserialized = reader.readResponse(buffer);
+    const deserialized = await reader.readResponse(buffer);
     
-    if (deserialized.status.code && deserialized.status.code !== 200 && deserialized.status.code !== 204 && deserialized.status.code !== 206) {
-      const attributes = new Map();
-      if (deserialized.status.exception) {
-        attributes.set('exceptions', deserialized.status.exception);
-        attributes.set('stackTrace', deserialized.status.exception);
-      }
+    if (deserialized.status.code && deserialized.status.code !== responseStatusCode.success && deserialized.status.code !== responseStatusCode.noContent && deserialized.status.code !== responseStatusCode.partialContent) {
       throw new ResponseError(
         `Server error: ${deserialized.status.message || 'Unknown error'} (${deserialized.status.code})`,
         {
           code: deserialized.status.code,
           message: deserialized.status.message || '',
-          attributes: attributes,
+          exception: deserialized.status.exception,
         }
       );
     }

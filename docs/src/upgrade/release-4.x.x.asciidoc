@@ -51,6 +51,39 @@ deserialization in GraphBinary is unchanged. Applications that depend on the `uu
 `gremlin-javascript` brought it in as a transitive dependency should add it directly to their own `package.json`
 if they still need it.
 
+==== JS HTTP Streaming Response Support
+
+The JavaScript driver now supports incremental HTTP streaming. Results are deserialized from the server response as
+they arrive, rather than buffering the entire response before processing.
+
+Traversal API terminal steps (`next()`, `toList()`, `hasNext()`) are now truly incremental. `next()`
+returns the first result as soon as it is deserialized from the wire, without waiting for the full response.
+In 3.x, `next()` waited for all WebSocket frames before returning.
+
+`Client.stream()` now returns an `AsyncGenerator` for direct incremental consumption. This is a breaking change
+from 3.x where `stream()` returned a Node.js `Readable`. The new return type works in both Node.js and browsers:
+
+[source,javascript]
+----
+// 3.x — Readable stream (no longer supported)
+// const stream = client.stream('g.V()');
+// stream.on('data', (resultSet) => { ... });
+
+// 4.0 — AsyncGenerator
+for await (const item of client.stream('g.V()', null)) {
+  console.log(item);
+  if (someCondition) break; // stops reading from the HTTP stream
+}
+----
+
+`Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+==== Graph Driver Providers
+
 == TinkerPop 4.0.0-beta.2
 
 *Release Date: April 1, 2026*

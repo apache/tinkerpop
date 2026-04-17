@@ -67,86 +67,54 @@ export default class ArraySerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-    let isBulked = false;
+  /**
+   * Async deserialization of array value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - 0x00 for normal, 0x02 for bulked
+   * @param {number} typeCode
+   * @returns {Promise<Array>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const isBulked = valueFlag === 0x02;
+    const length = await this.ioc.intSerializer.deserializeBare(reader);
+    if (length < 0) {
+      throw new Error(`ArraySerializer: {length}=${length} is less than zero`);
+    }
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    const v = [];
+    for (let i = 0; i < length; i++) {
+      const value = await this.ioc.anySerializer.deserialize(reader);
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ID) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0 && value_flag !== 2) {
-          throw new Error('unexpected {value_flag}');
-        }
-        isBulked = value_flag === 2;
-        cursor = cursor.slice(1);
-      }
-
-      let length, length_len;
-      try {
-        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
-        len += length_len;
-      } catch (err) {
-        err.message = '{length}: ' + err.message;
-        throw err;
-      }
-      if (length < 0) {
-        throw new Error('{length} is less than zero');
-      }
-      cursor = cursor.slice(length_len);
-
-      const v = [];
-      for (let i = 0; i < length; i++) {
-        let value, value_len;
-        try {
-          ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-          len += value_len;
-        } catch (err) {
-          err.message = `{item_${i}}: ` + err.message;
-          throw err;
-        }
-        cursor = cursor.slice(value_len);
-
-        if (isBulked) {
-          if (cursor.length < 8) {
-            throw new Error(`{item_${i}}: bulk count is missing`);
-          }
-          const bulkCount = cursor.readBigInt64BE();
-          len += 8;
-          cursor = cursor.slice(8);
-
-          for (let j = 0n; j < bulkCount; j++) {
-            v.push(value);
-          }
-        } else {
+      if (isBulked) {
+        const bulkCount = await reader.readBigInt64BE();
+        for (let j = 0n; j < bulkCount; j++) {
           v.push(value);
         }
+      } else {
+        v.push(value);
       }
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
     }
+
+    return v;
+  }
+
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<Array|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ID) {
+      throw new Error(`ArraySerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00 && value_flag !== 0x02) {
+      throw new Error(`ArraySerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

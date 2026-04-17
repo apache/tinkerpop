@@ -17,7 +17,7 @@
  *  under the License.
  */
 
-import { Buffer } from 'buffer';
+export const END_OF_STREAM = Symbol('EndOfStream');
 
 export default class MarkerSerializer {
   constructor(ioc) {
@@ -25,43 +25,36 @@ export default class MarkerSerializer {
     this.ioc.serializers[ioc.DataType.MARKER] = this;
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < (fullyQualifiedFormat ? 3 : 1)) {
-        throw new Error('buffer is too short for marker');
-      }
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.MARKER) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      const value = cursor.readUInt8();
-      len++;
-      if (value !== 0) {
-        throw new Error('unexpected marker value');
-      }
-
-      return { v: 'marker', len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - already consumed by AnySerializer
+   * @returns {Promise<symbol>}
+   */
+  async deserializeValue(reader, valueFlag) {
+    const value = await reader.readUInt8();
+    if (value !== 0) {
+      throw new Error(`unexpected marker value: ${value}`);
     }
+    return END_OF_STREAM;
+  }
+
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<symbol|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.MARKER) {
+      throw new Error(`MarkerSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`MarkerSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag);
   }
 }

@@ -22,6 +22,17 @@
  */
 
 import { Buffer } from 'buffer';
+import StreamReader from './StreamReader.js';
+import { END_OF_STREAM } from './MarkerSerializer.js';
+import { Traverser } from '../../../../process/traversal.js';
+import ResponseError from '../../../../driver/response-error.js';
+
+/** GraphBinary response status codes. */
+const StatusCode = {
+  SUCCESS: 200,
+  NO_CONTENT: 204,
+  PARTIAL_CONTENT: 206,
+};
 
 /**
  * GraphBinary reader.
@@ -35,7 +46,13 @@ export default class GraphBinaryReader {
     return 'application/vnd.graphbinary-v4.0';
   }
 
-  readResponse(buffer) {
+  /**
+   * Read a complete response from a Buffer. Used by the non-streaming submit() path.
+   * Returns the full { status, result } object after reading all data.
+   * @param {Buffer} buffer
+   * @returns {Promise<{status: {code, message, exception}, result: {data: any[], bulked: boolean}}>}
+   */
+  async readResponse(buffer) {
     if (buffer === undefined || buffer === null) {
       throw new Error('Buffer is missing.');
     }
@@ -46,62 +63,125 @@ export default class GraphBinaryReader {
       throw new Error('Buffer is empty.');
     }
 
-    let cursor = buffer;
-    let len;
+    const reader = StreamReader.fromBuffer(buffer);
+    return await this.#readFromReader(reader);
+  }
 
-    // {version} is a Byte representing the protocol version
-    const version = cursor[0];
+  /**
+   * Stream results from a StreamReader, yielding each value as it's deserialized.
+   * Used by the streaming Connection.stream() path.
+   *
+   * Note: In the GraphBinary v4 streaming protocol, the status (including error codes)
+   * is sent *after* all result data. This means values are yielded to the consumer as
+   * they arrive, and a server error is only thrown after all values have been yielded.
+   * Consumers should be aware that partial results may have been processed before a
+   * ResponseError is thrown.
+   *
+   * @param {StreamReader} reader
+   * @returns {AsyncGenerator<any>}
+   */
+  async *readResponseStream(reader) {
+    // {version}
+    const version = await reader.readUInt8();
     if (version !== 0x84) {
       throw new Error(`Unsupported version '${version}'.`);
     }
-    cursor = cursor.slice(1); // skip version
 
-    // {bulked} is a Byte: 0x00 = not bulked, 0x01 = bulked
-    const bulked = cursor[0] === 0x01;
-    cursor = cursor.slice(1);
+    // {bulked}
+    const bulked = (await reader.readUInt8()) === 0x01;
 
-    // {result_data} stream - read values until marker
-    const data = [];
-    while (cursor[0] !== 0xfd) {
-      const { v, len: valueLen } = this.ioc.anySerializer.deserialize(cursor);
-      cursor = cursor.slice(valueLen);
+    // {result_data} stream — yield values until EndOfStream marker
+    while (true) {
+      const value = await this.ioc.anySerializer.deserialize(reader);
+
+      if (value === END_OF_STREAM) {
+        break;
+      }
 
       if (bulked) {
-        const { v: bulk, len: bulkLen } = this.ioc.longSerializer.deserialize(cursor, true);
-        cursor = cursor.slice(bulkLen);
-        data.push({ v, bulk: Number(bulk) });
+        const bulk = await this.ioc.longSerializer.deserialize(reader);
+        yield new Traverser(value, Number(bulk));
       } else {
-        data.push(v);
+        yield value;
       }
     }
 
-    // Skip marker [0xFD, 0x00, 0x00]
-    cursor = cursor.slice(3);
-
-    // {status_code} is an Int bare
-    const { v: code, len: codeLen } = this.ioc.intSerializer.deserialize(cursor, false);
-    cursor = cursor.slice(codeLen);
-
-    // {status_message} is nullable
-    let message = null;
-    if (cursor[0] === 0x00) {
-      cursor = cursor.slice(1);
-      ({ v: message, len } = this.ioc.stringSerializer.deserialize(cursor, false));
-      cursor = cursor.slice(len);
-    } else {
-      cursor = cursor.slice(1); // skip 0x01 null flag
+    // {status_code} {status_message} {exception}
+    const status = await this.#readStatus(reader);
+    if (
+      status.code &&
+      status.code !== StatusCode.SUCCESS &&
+      status.code !== StatusCode.NO_CONTENT &&
+      status.code !== StatusCode.PARTIAL_CONTENT
+    ) {
+      throw new ResponseError(`Server error: ${status.message || 'Unknown error'} (${status.code})`, {
+        code: status.code,
+        message: status.message || '',
+        exception: status.exception,
+      });
     }
 
-    // {exception} is nullable
-    let exception = null;
-    if (cursor[0] === 0x00) {
-      cursor = cursor.slice(1);
-      ({ v: exception } = this.ioc.stringSerializer.deserialize(cursor, false));
+    // Attach status to the generator's return value
+    return status;
+  }
+
+  /**
+   * Internal: read the full response into a collected result (non-streaming).
+   */
+  async #readFromReader(reader) {
+    // {version}
+    const version = await reader.readUInt8();
+    if (version !== 0x84) {
+      throw new Error(`Unsupported version '${version}'.`);
     }
+
+    // {bulked}
+    const bulked = (await reader.readUInt8()) === 0x01;
+
+    // {result_data} — collect all values
+    const data = [];
+    while (true) {
+      const value = await this.ioc.anySerializer.deserialize(reader);
+
+      if (value === END_OF_STREAM) {
+        break;
+      }
+
+      if (bulked) {
+        const bulk = await this.ioc.longSerializer.deserialize(reader);
+        data.push({ v: value, bulk: Number(bulk) });
+      } else {
+        data.push(value);
+      }
+    }
+
+    // {status}
+    const status = await this.#readStatus(reader);
 
     return {
-      status: { code, message, exception },
+      status,
       result: { data, bulked },
     };
+  }
+
+  /**
+   * Read the status block: {code:Int bare}{message:nullable String}{exception:nullable String}
+   */
+  async #readStatus(reader) {
+    const code = await reader.readInt32BE();
+
+    let message = null;
+    const msgFlag = await reader.readUInt8();
+    if (msgFlag === 0x00) {
+      message = await this.ioc.stringSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.STRING);
+    }
+
+    let exception = null;
+    const excFlag = await reader.readUInt8();
+    if (excFlag === 0x00) {
+      exception = await this.ioc.stringSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.STRING);
+    }
+
+    return { code, message, exception };
   }
 }

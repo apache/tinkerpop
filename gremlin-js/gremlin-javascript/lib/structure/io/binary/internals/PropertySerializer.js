@@ -63,79 +63,43 @@ export default class PropertySerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * Async deserialization of property value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<Property>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    // {key} bare string (length + text_value)
+    const key = await this.ioc.stringSerializer.deserializeValue(reader, 0x00, typeCode);
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    // {value} fully qualified
+    const value = await this.ioc.anySerializer.deserialize(reader);
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.PROPERTY) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
+    // {parent} fully qualified (always null in current TinkerPop)
+    await this.ioc.anySerializer.deserialize(reader);
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
+    return new Property(key, value);
+  }
 
-      // {key} is a String value
-      let key, key_len;
-      try {
-        ({ v: key, len: key_len } = this.ioc.stringSerializer.deserialize(cursor, false));
-        len += key_len;
-      } catch (err) {
-        err.message = '{key}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(key_len);
-
-      // {value} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
-      let value, value_len;
-      try {
-        ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += value_len;
-      } catch (err) {
-        err.message = '{value}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(value_len);
-
-      // {parent} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which is either an Edge or VertexProperty.
-      // Note that as TinkerPop currently sends "references" only this value will always be null.
-      let parent_len;
-      try {
-        ({ len: parent_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
-        len += parent_len;
-      } catch (err) {
-        err.message = '{parent}: ' + err.message;
-        throw err;
-      }
-      // TODO: should we verify that parent is null?
-      cursor = cursor.slice(parent_len);
-
-      const v = new Property(key, value);
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<Property|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.PROPERTY) {
+      throw new Error(`PropertySerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`PropertySerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

@@ -24,7 +24,6 @@
 import * as rcModule from './remote-connection.js';
 const RemoteConnection = rcModule.RemoteConnection;
 const RemoteTraversal = rcModule.RemoteTraversal;
-import * as utils from '../utils.js';
 import Client, { RequestOptions } from './client.js';
 import GremlinLang from '../process/gremlin-lang.js';
 import { ConnectionOptions } from './connection.js';
@@ -57,6 +56,14 @@ export default class DriverRemoteConnection extends RemoteConnection {
 
   /** @override */
   submit(gremlinLang: GremlinLang) {
+    const { gremlin, requestOptions } = this.#buildRequestArgs(gremlinLang);
+
+    // Use streaming internally — returns an AsyncGenerator backed RemoteTraversal
+    const generator = this._client.stream(gremlin, null, requestOptions);
+    return Promise.resolve(new RemoteTraversal(generator));
+  }
+
+  #buildRequestArgs(gremlinLang: GremlinLang) {
     gremlinLang.addG(this.options.traversalSource || 'g');
 
     let requestOptions: RequestOptions | undefined = undefined;
@@ -93,8 +100,7 @@ export default class DriverRemoteConnection extends RemoteConnection {
       requestOptions.params = Object.fromEntries(params);
     }
 
-    return this._client.submit(gremlinLang.getGremlin(), null, requestOptions)
-      .then((result) => new RemoteTraversal(result.toArray()));
+    return { gremlin: gremlinLang.getGremlin(), requestOptions };
   }
 
   override commit() {
