@@ -358,13 +358,13 @@ export class GraphTraversalSource {
   }
 
   /**
-   * Spawns a {@link GraphTraversal} by executing a declarative GQL pattern match query.
-   * @param {string} gqlQuery - the declarative query string
+   * Spawns a {@link GraphTraversal} by executing a declarative pattern match query.
+   * @param {string} matchQuery - the declarative query string
    * @param {Record<string, any>} [params] - optional query parameters
    * @returns {GraphTraversal}
    */
-  match(gqlQuery: string, params?: Record<string, any>): GraphTraversal {
-    const args = params !== undefined ? [gqlQuery, params] : [gqlQuery];
+  match(matchQuery: string, params?: Record<string, any>): GraphTraversal {
+    const args = params !== undefined ? [matchQuery, params] : [matchQuery];
     const gl = new GremlinLang(this.gremlinLang).addStep('match', args);
     return new this.graphTraversalClass(this.graph, new TraversalStrategies(this.traversalStrategies), gl);
   }
@@ -1115,17 +1115,17 @@ export class GraphTraversal extends Traversal {
 
   /**
    * Graph traversal match method. Accepts either traversal-based match patterns
-   * (deprecated) or a declarative GQL query string.
-   * @param {string} gqlQuery - declarative GQL query string
+   * (deprecated) or a declarative query string.
+   * @param {string} matchQuery - declarative query string
    * @returns {GraphTraversal}
    */
-  match(gqlQuery: string): this;
+  match(matchQuery: string): this;
   /**
-   * @param {string} gqlQuery - declarative GQL query string
+   * @param {string} matchQuery - declarative query string
    * @param {Record<string, any>} params - query parameters
    * @returns {GraphTraversal}
    */
-  match(gqlQuery: string, params: Record<string, any>): this;
+  match(matchQuery: string, params: Record<string, any>): this;
   /**
    * @deprecated Use match(String) for declarative pattern matching.
    * @param {...any} matchTraversals - traversal-based match patterns

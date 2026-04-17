@@ -43,14 +43,13 @@ import java.util.Set;
  * value is an explicit hint that the provider may accept or reject. Use the
  * {@code .with("queryLanguage", value)} modulator to specify a language explicitly.</p>
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @since 4.0.0
  */
 public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implements Configuring {
 
     protected Parameters parameters = new Parameters();
 
-    private final String gqlQuery;
+    private final String matchQuery;
     private final Map<String, Object> params;
     private String queryLanguage;
     private final boolean isStart;
@@ -60,13 +59,13 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      * optional parameters. The query language is left unset ({@code null}); graph providers
      * treat {@code null} as "use your native language."
      *
-     * @param traversal the parent traversal
-     * @param gqlQuery  the declarative query string
-     * @param params    optional query parameters (may be {@code null})
+     * @param traversal  the parent traversal
+     * @param matchQuery the declarative query string
+     * @param params     optional query parameters (may be {@code null})
      */
-    public DeclarativeMatchStep(final Traversal.Admin traversal, final String gqlQuery,
+    public DeclarativeMatchStep(final Traversal.Admin traversal, final String matchQuery,
                                 final Map<String, Object> params) {
-        this(traversal, gqlQuery, params, null, false);
+        this(traversal, matchQuery, params, null, false);
     }
 
     /**
@@ -74,18 +73,18 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      * query language, and start-step flag.
      *
      * @param traversal     the parent traversal
-     * @param gqlQuery      the declarative query string
+     * @param matchQuery    the declarative query string
      * @param params        optional query parameters (may be {@code null})
      * @param queryLanguage the query language identifier, or {@code null} if not specified
      * @param isStart       {@code true} when this step is the first step in the traversal (spawned
      *                      from a {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource});
      *                      the step will self-seed rather than pulling from upstream starts
      */
-    public DeclarativeMatchStep(final Traversal.Admin traversal, final String gqlQuery,
+    public DeclarativeMatchStep(final Traversal.Admin traversal, final String matchQuery,
                                 final Map<String, Object> params, final String queryLanguage,
                                 final boolean isStart) {
         super(traversal);
-        this.gqlQuery = gqlQuery;
+        this.matchQuery = matchQuery;
         this.params = params;
         this.queryLanguage = queryLanguage;
         this.isStart = isStart;
@@ -98,7 +97,7 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
     @Override
     protected Traverser.Admin<Optional> processNextStart() {
         throw new UnsupportedOperationException(
-                "No GQL execution engine registered for this graph — a provider strategy must replace this step");
+                "No match execution engine registered for this graph - determine if your graph database supports this feature");
     }
 
     /**
@@ -128,8 +127,8 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
     /**
      * Returns the declarative query string passed to this step.
      */
-    public String getGqlQuery() {
-        return this.gqlQuery;
+    public String getMatchQuery() {
+        return this.matchQuery;
     }
 
     /**
@@ -156,6 +155,6 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.gqlQuery, this.queryLanguage);
+        return StringFactory.stepString(this, this.matchQuery, this.queryLanguage);
     }
 }

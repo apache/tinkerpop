@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
  * <p>This strategy is registered as a default verification strategy and is applied recursively
  * to the root traversal and all of its anonymous child traversals.</p>
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @since 4.0.0
  * @example <pre>
  * g.V().match("MATCH (n) RETURN n")              // throws VerificationException

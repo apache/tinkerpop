@@ -96,7 +96,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     public TinkerGraphMatchStep(final DeclarativeMatchStep<S> originalStep,
                                 final TinkerGraphGqlPlanner planner,
                                 final TinkerGraphGqlExecutor executor) {
-        super(originalStep.getTraversal(), originalStep.getGqlQuery(),
+        super(originalStep.getTraversal(), originalStep.getMatchQuery(),
               originalStep.getParams(), originalStep.getQueryLanguage(), originalStep.isStart());
         originalStep.getLabels().forEach(this::addLabel);
         this.planner = planner;
@@ -143,7 +143,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
             executor = new TinkerGraphGqlExecutor(graph);
         }
         if (plan == null) {
-            plan = planner.plan(getGqlQuery());
+            plan = planner.plan(getMatchQuery());
         }
 
         if (isStart()) {

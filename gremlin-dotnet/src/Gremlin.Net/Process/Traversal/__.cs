@@ -997,21 +997,21 @@ namespace Gremlin.Net.Process.Traversal
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal
         ///     using a declarative query string.
         /// </summary>
-        /// <param name="gqlQuery">The declarative query string.</param>
-        public static GraphTraversal<object, object> Match(string gqlQuery)
+        /// <param name="matchQuery">The declarative query string.</param>
+        public static GraphTraversal<object, object> Match(string matchQuery)
         {
-            return new GraphTraversal<object, object>().Match(gqlQuery);
+            return new GraphTraversal<object, object>().Match(matchQuery);
         }
 
         /// <summary>
         ///     Spawns a <see cref="GraphTraversal{SType, EType}" /> and adds the match step to that traversal
         ///     using a declarative query string with bound parameters.
         /// </summary>
-        /// <param name="gqlQuery">The declarative query string.</param>
+        /// <param name="matchQuery">The declarative query string.</param>
         /// <param name="parameters">The query parameters.</param>
-        public static GraphTraversal<object, object> Match(string gqlQuery, IDictionary<string, object> parameters)
+        public static GraphTraversal<object, object> Match(string matchQuery, IDictionary<string, object> parameters)
         {
-            return new GraphTraversal<object, object>().Match(gqlQuery, parameters);
+            return new GraphTraversal<object, object>().Match(matchQuery, parameters);
         }
 
         /// <summary>

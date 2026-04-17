@@ -25,20 +25,6 @@ limitations under the License.
     </parent>
     <artifactId>tinkergraph-gremlin</artifactId>
     <name>Apache TinkerPop :: TinkerGraph Gremlin</name>
-    <dependencyManagement>
-        <dependencies>
-            <!-- Force convergence to the version defined in the parent POM.
-                 The locally installed gremlin-language artifact may carry an older
-                 antlr4-runtime version that was baked in before antlr4.version was
-                 bumped; this entry resolves the DependencyConvergence check. -->
-            <dependency>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-runtime</artifactId>
-                <version>${antlr4.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>

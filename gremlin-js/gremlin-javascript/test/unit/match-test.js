@@ -26,7 +26,7 @@ import GremlinLang from '../../lib/process/gremlin-lang.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
 
-describe('match(String) - declarative GQL pattern matching (ti-70m.13)', function () {
+describe('match(String) - declarative pattern matching (ti-70m.13)', function () {
   describe('GraphTraversalSource#match()', function () {
     it('should generate correct Gremlin for g.match(query)', function () {
       const query = 'MATCH (p:person)-[e:knows]->(friend:person)';

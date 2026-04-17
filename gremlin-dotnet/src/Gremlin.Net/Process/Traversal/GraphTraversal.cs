@@ -1396,10 +1396,10 @@ namespace Gremlin.Net.Process.Traversal
         ///     Adds the match step to this <see cref="GraphTraversal{SType, EType}" /> using a declarative query string.
         ///     The step requires a graph provider to register an execution strategy before the traversal can be executed.
         /// </summary>
-        /// <param name="gqlQuery">The declarative query string.</param>
-        public GraphTraversal<TStart, object> Match (string gqlQuery)
+        /// <param name="matchQuery">The declarative query string.</param>
+        public GraphTraversal<TStart, object> Match (string matchQuery)
         {
-            GremlinLang.AddStep("match", gqlQuery);
+            GremlinLang.AddStep("match", matchQuery);
             return Wrap<TStart, object>(this);
         }
 
@@ -1408,11 +1408,11 @@ namespace Gremlin.Net.Process.Traversal
         ///     with bound parameters. The step requires a graph provider to register an execution strategy before the
         ///     traversal can be executed.
         /// </summary>
-        /// <param name="gqlQuery">The declarative query string.</param>
+        /// <param name="matchQuery">The declarative query string.</param>
         /// <param name="parameters">The query parameters.</param>
-        public GraphTraversal<TStart, object> Match (string gqlQuery, IDictionary<string, object> parameters)
+        public GraphTraversal<TStart, object> Match (string matchQuery, IDictionary<string, object> parameters)
         {
-            GremlinLang.AddStep("match", gqlQuery, parameters);
+            GremlinLang.AddStep("match", matchQuery, parameters);
             return Wrap<TStart, object>(this);
         }
 
