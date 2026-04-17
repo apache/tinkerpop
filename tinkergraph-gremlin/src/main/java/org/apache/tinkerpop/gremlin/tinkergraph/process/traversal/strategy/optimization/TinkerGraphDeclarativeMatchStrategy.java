@@ -39,7 +39,6 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph
  * {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph}.
  * It follows the same pattern as {@link TinkerGraphStepStrategy}.</p>
  *
- * @author Stephen Mallette (http://stephen.genoprime.com)
  * @since 4.0.0
  */
 public final class TinkerGraphDeclarativeMatchStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>

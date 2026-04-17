@@ -236,12 +236,12 @@ class GraphTraversalSource(object):
         traversal.gremlin_lang.add_step("call", *args)
         return traversal
 
-    def match(self, gql_query, params=None):
+    def match(self, match_query, params=None):
         traversal = self.get_graph_traversal()
         if params is not None:
-            traversal.gremlin_lang.add_step("match", gql_query, params)
+            traversal.gremlin_lang.add_step("match", match_query, params)
         else:
-            traversal.gremlin_lang.add_step("match", gql_query)
+            traversal.gremlin_lang.add_step("match", match_query)
         return traversal
 
     def union(self, *args):

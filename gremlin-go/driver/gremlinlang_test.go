@@ -706,14 +706,14 @@ func Test_GremlinLang(t *testing.T) {
 			equals: `g.inject(Binary("AA=="))`,
 		},
 		{
-			name: "GTS Match with GQL string spawn step",
+			name: "GTS Match with query string spawn step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)")
 			},
 			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\")",
 		},
 		{
-			name: "GTS Match with GQL string and params spawn step",
+			name: "GTS Match with query string and params spawn step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.MatchWithParams("MATCH (p:person)-[e:knows]->(friend:person)", map[string]interface{}{"limit": 10})
 			},

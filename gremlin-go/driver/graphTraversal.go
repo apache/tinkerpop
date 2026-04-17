@@ -507,18 +507,18 @@ func (g *GraphTraversal) Match(args ...interface{}) *GraphTraversal {
 	return g
 }
 
-// MatchGql adds a declarative GQL pattern match step to the GraphTraversal. The query language
+// MatchGql adds a declarative pattern match step to the GraphTraversal. The query language
 // defaults to "gql" and can be overridden with .With("queryLanguage", value).
-func (g *GraphTraversal) MatchGql(gqlQuery string) *GraphTraversal {
-	g.GremlinLang.AddStep("match", gqlQuery)
+func (g *GraphTraversal) MatchGql(matchQuery string) *GraphTraversal {
+	g.GremlinLang.AddStep("match", matchQuery)
 	return g
 }
 
-// MatchGqlWithParams adds a declarative GQL pattern match step with bound parameters to the
+// MatchGqlWithParams adds a declarative pattern match step with bound parameters to the
 // GraphTraversal. The query language defaults to "gql" and can be overridden with
 // .With("queryLanguage", value).
-func (g *GraphTraversal) MatchGqlWithParams(gqlQuery string, params map[string]interface{}) *GraphTraversal {
-	g.GremlinLang.AddStep("match", gqlQuery, params)
+func (g *GraphTraversal) MatchGqlWithParams(matchQuery string, params map[string]interface{}) *GraphTraversal {
+	g.GremlinLang.AddStep("match", matchQuery, params)
 	return g
 }
 

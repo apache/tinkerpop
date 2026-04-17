@@ -27,9 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.fail;
 
-/**
- * @author Stephen Mallette (http://stephen.genoprime.com)
- */
 public class DeclarativeMatchVerificationStrategyTest {
 
     @Test
