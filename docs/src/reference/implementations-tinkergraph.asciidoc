@@ -372,3 +372,120 @@ g.V().valueMap()
 <3> Commit the add vertex operation
 <4> Add a second vertex without committing
 <5> Rollback the change
+
+[[tinkergraph-gql]]
+=== Declarative Pattern Matching (GQL)
+
+TinkerGraph includes a built-in implementation of the `match(String)` step that accepts a subset of the
+link:https://www.iso.org/standard/76120.html[ISO GQL] `MATCH` syntax. This allows declarative graph pattern queries
+to be expressed directly against TinkerGraph. The implementation is intentionally minimal to help showcase how `match`
+step can work.
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:knows]->(b:person)").
+  select("a", "b").by("name")
+----
+
+==== Supported Syntax
+
+The following `MATCH` patterns are supported:
+
+[width="100%",cols="2,4",options="header"]
+|=========================================================
+|Pattern |Description
+|`()` |Anonymous node — matches any vertex
+|`(n)` |Named node — binds the matching vertex to variable `n`
+|`(:Label)` |Labeled node — matches vertices with the given label
+|`(n:Label)` |Named and labeled node
+|`-[]->`  |Anonymous directed edge
+|`-[e]->` |Named directed edge — binds the edge to variable `e`
+|`-[:Label]->` |Labeled directed edge
+|`-[e:Label]->` |Named and labeled directed edge
+|`<-[]-`  |Anonymous reverse directed edge
+|`<-[e]-` |Named reverse directed edge
+|`<-[:Label]-` |Labeled reverse directed edge
+|`<-[e:Label]-` |Named and labeled reverse directed edge
+|`-[]-`   |Anonymous undirected edge — matches edges in either direction
+|`-[e]-`  |Named undirected edge
+|`-[:Label]-` |Labeled undirected edge
+|`-[e:Label]-` |Named and labeled undirected edge
+|=========================================================
+
+Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
+name are joined on that variable, which must resolve to the same element across all patterns. Perhaps, most notably,
+there is not `RETURN` clause. `match` will always return the full binding `Map` and any projection must be performed
+with Gremlin steps.
+
+The following examples use the modern toy graph to demonstrate more complex usage patterns.
+
+*Find all software and the person who created it, traversing the edge in reverse*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (s:software)<-[:created]-(p:person)").
+  select("p", "s").by("name")
+----
+
+*Find people who know someone who created software — a two-hop chain across three vertices*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)").
+  select("a", "b", "s").by("name")
+----
+
+*Find pairs of people who co-created the same software, using a shared variable across two patterns*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+  where("a", neq("b")).
+  select("a", "b", "s").by("name")
+----
+
+Note the use of `where` as a mechanism for filtering `match` results.
+
+*Find people connected by a knows relationship in either direction using an undirected edge, binding the edge itself*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[e:knows]-(b:person)").
+  select("a", "e", "b").
+    by("name").by("weight").by("name")
+----
+
+Any of the examples above could be written as a pure Gremlin traversal. The `match()` step becomes arguably preferable
+when the query involves a multi-way join, where several paths must all connect through shared variables, because the
+pattern expresses the shape of the subgraph directly rather than requiring the reader to trace variable bindings
+through a chain of steps.
+
+For example, the following Gremlin traversal using all imperative steps answers the question: "Find people who know
+someone they also co-created software with":
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel("person").as("a").
+    out("created").as("s").
+    in("created").as("b").
+    where("a", neq("b")).
+    where(__.in("knows").where(eq("a"))).
+    select("a", "b", "s").by("name")
+----
+
+and here is the same using `match`:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s), (a)-[:knows]->(b)").
+    select("a", "b", "s").by("name")
+----
+
+The three-way relationship where `a` created `s`, `b` created `s`, and `a` knows `b` is immediately visible as a pattern
+in the `match()` form. In the Gremlin traversal, the reader has to follow the variable threading across `as()`,
+`select()`, and `where()` to reconstruct the same topology.
+
+IMPORTANT: TinkerGraph itself stores labels as plain Java `String` values and places no restrictions on label content.
+However, if a graph contains labels containing spaces, hyphens, or non-ASCII Unicode characters, those labels cannot
+currently be referenced in a GQL `MATCH` query. This is a known limitation of the current grammar and may be addressed
+in a future release.

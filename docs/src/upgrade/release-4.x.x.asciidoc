@@ -612,6 +612,87 @@ For the full specification of how interceptors should behave, see the
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_http_request_interceptor[HTTP Request Interceptor]
 section in the provider documentation.
 
+==== Declarative Pattern Matching
+
+Gremlin has always offered both imperative and declarative styles to writing graph queries. While the imperative style
+has largely dominated examples and usages, the `match` step has always provided a declarative way to express queries.
+The syntax for `match` looked something like this:
+
+[source,text]
+----
+gremlin> g.V().match(__.as("a").hasLabel("person").out("created").hasLabel("software").as("s"),
+......1>             __.as("s").hasLabel("software").in("created").hasLabel("person").as("b")).
+......2>   where("a", neq("b")).
+......3>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+While this approach worked, it was syntactically complex and since `match` took an arbitrary `Traversal` as arguments,
+the declarative style wasn't necessarily enforced well. Moreover, providers found it complicated to optimize `match` as
+a step, which meant that, more often than not, it was more performant to simply write the imperative form of the query,
+which could take advantage of normal optimization patterns. As a result, `match` never really gained a main stream sort
+of usage beyond some fairly narrow use cases.
+
+In TinkerPop 4.0.0, `match` has a new direction. Instead of taking Gremlin traversals to define the match pattern, it
+takes a query string that could technically be any declarative graph query language. Using
+link:https://www.iso.org/standard/76120.html[GQL] as an example, the previous Gremlin query using the old `match` style
+would look like this:
+
+[source,text]
+----
+gremlin> g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+......1>   where("a", neq("b")).
+......2>   select("a", "b", "s").by("name")
+==>[a:marko,b:josh,s:lop]
+==>[a:marko,b:peter,s:lop]
+==>[a:josh,b:marko,s:lop]
+==>[a:josh,b:peter,s:lop]
+==>[a:peter,b:marko,s:lop]
+==>[a:peter,b:josh,s:lop]
+----
+
+With `match` redesigned in this way users have the opportunity to take advantage of the strengths of declarative query
+languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
+Gremlin being both imperative and declarative offers a much more compelling story with this model.
+
+As of this release, TinkerPop does not offer a general purpose processing engine for queries that might be given to
+`match`. It is up to the underlying graph database to offer support for one. While there is no general purpose
+processing engine that can be applied to every graph, TinkerPop does offer limited GQL support with TinkerGraph. It is
+therefore possible to try this functionality while graph providers work toward supporting the new `match` step in their
+TinkerPop 4.0.0 implementations.
+
+=== Upgrading for Providers
+
+==== Graph System Providers
+
+===== match() Support
+
+The new `match(String)` step represents TinkerPop's first explicit extension point for provider-native query languages.
+Graph systems that support a declarative query language can now expose it directly through the standard Gremlin
+traversal API, making the language a first-class citizen of any `g.` chain rather than a parallel API that users have to
+context-switch into.
+
+The mechanism follows the same provider extension pattern used elsewhere in TinkerPop: `gremlin-core` inserts a
+placeholder step (`DeclarativeMatchStep`) into the traversal, and graph providers replace it with a concrete
+implementation via a `ProviderOptimizationStrategy`. The placeholder carries everything the provider needs:
+
+* `getMatchQuery()` — the raw query string as written by the user
+* `getParams()` — the bound parameter map from the `match(String, Map)` overload, or `null`
+* `getQueryLanguage()` — the explicit language hint from `with("queryLanguage", ...)`, or `null` meaning "use your native language"
+* `isStart()` — `true` when the step was invoked as a spawn step on `GraphTraversalSource`
+
+The concrete step must bind each named variable from each result row into the traverser's path history using
+`addLabels()`, so that downstream `select()` steps can retrieve them by name. Anonymous pattern elements must
+not be exposed in the path. The step must declare `TraverserRequirement.LABELED_PATH` in `getRequirements()`.
+
+See `TinkerGraphMatchStep` and `TinkerGraphDeclarativeMatchStrategy` in `tinkergraph-gremlin` for a complete
+reference implementation to study before writing your own.
+
 == TinkerPop 4.0.0-beta.2
 
 *Release Date: April 1, 2026*
