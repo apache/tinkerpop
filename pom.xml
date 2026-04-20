@@ -164,7 +164,7 @@ limitations under the License.
           don't really use guava directly, but there are a lot of jar conflicts around it,
           so centralizing that dependency version here
         -->
-        <guava.version>31.0.1-jre</guava.version>
+        <guava.version>33.6.0-jre</guava.version>
         <!--
           don't think we need guice 7 at the moment - the only difference with 6 is that
           it supports the jakarta.inject namespace which tinkerpop doesn't fuss with
