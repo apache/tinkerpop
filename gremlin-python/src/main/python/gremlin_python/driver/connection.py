@@ -18,25 +18,48 @@ import queue
 from concurrent.futures import Future
 
 from gremlin_python.driver import resultset, useragent
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryReader, DataType, int32_unpack
+from gremlin_python.structure.io.util import Marker
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
 
+class GremlinServerError(Exception):
+    def __init__(self, status):
+        super(GremlinServerError, self).__init__('{0}: {1}'.format(status['code'], status['message']))
+        self.status_code = status['code']
+        self.status_message = status['message']
+        self.status_exception = status['exception']
+
+
 class Connection:
 
-    def __init__(self, url, traversal_source, protocol, transport_factory,
-                 executor, pool, headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False):
+    def __init__(self, url, traversal_source,
+                 executor, pool, request_serializer=None,
+                 response_serializer=None, auth=None, interceptors=None,
+                 headers=None, enable_user_agent_on_connect=True,
+                 bulk_results=False, **transport_kwargs):
+        if callable(interceptors):
+            interceptors = [interceptors]
+        elif not (isinstance(interceptors, tuple)
+                  or isinstance(interceptors, list)
+                  or interceptors is None):
+            raise TypeError("interceptors must be a callable, tuple, list or None")
+
         self._url = url
         self._headers = headers
         self._traversal_source = traversal_source
-        self._protocol = protocol
-        self._transport_factory = transport_factory
+        self._transport_kwargs = transport_kwargs
         self._executor = executor
         self._transport = None
         self._pool = pool
         self._result_set = None
         self._inited = False
+        self._request_serializer = request_serializer
+        self._response_serializer = response_serializer
+        self._auth = auth
+        self._interceptors = interceptors
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         if self._enable_user_agent_on_connect:
             self.__add_header(useragent.userAgentHeader, useragent.userAgent)
@@ -47,14 +70,28 @@ class Connection:
     def connect(self):
         if self._transport:
             self._transport.close()
-        self._transport = self._transport_factory()
+        self._transport = AiohttpHTTPTransport(**self._transport_kwargs)
         self._transport.connect(self._url, self._headers)
-        self._protocol.connection_made(self._transport)
         self._inited = True
 
     def close(self):
         if self._inited:
             self._transport.close()
+
+    def _write_request(self, request_message):
+        accept = str(self._response_serializer.version, encoding='utf-8')
+        message = {
+            'headers': {'accept': accept},
+            'payload': self._request_serializer.serialize_message(request_message)
+                if self._request_serializer is not None else request_message,
+            'auth': self._auth
+        }
+        if self._request_serializer is not None:
+            content_type = str(self._request_serializer.version, encoding='utf-8')
+            message['headers']['content-type'] = content_type
+        for interceptor in self._interceptors or []:
+            message = interceptor(message)
+        self._transport.write(message)
 
     def write(self, request_message):
         if not self._inited:
@@ -63,7 +100,7 @@ class Connection:
         # Create write task
         future = Future()
         future_write = self._executor.submit(
-            self._protocol.write, request_message)
+            self._write_request, request_message)
 
         def cb(f):
             try:
@@ -82,18 +119,57 @@ class Connection:
 
     def _receive(self):
         try:
-            '''
-            GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
-             deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
-            '''
-            self._protocol.data_received_aggregate(self._transport.read(), self._result_set)
-            # re-enable streaming after graphSON removal
-            # self._transport.read(self.stream_chunk)
+            # Check for non-GraphBinary error responses
+            status = getattr(self._transport, 'status_code', None)
+            if status is not None and status >= 400:
+                content_type = getattr(self._transport, 'content_type', '')
+                if 'graphbinary' not in content_type:
+                    body = self._transport.read_body().decode('utf-8', errors='replace')
+                    raise GremlinServerError({
+                        'code': status,
+                        'message': body,
+                        'exception': ''
+                    })
+
+            # 204 No Content
+            if status == 204:
+                return
+
+            stream = self._transport.get_stream()
+            reader = GraphBinaryReader()
+
+            # Read GB response header
+            stream.read(1)  # version byte
+            flags = stream.read(1)[0]
+            bulked = flags == 0x01
+
+            # Deserialize results one at a time into the ResultSet
+            while True:
+                obj = reader.to_object(stream)
+                if obj == Marker.end_of_stream():
+                    break
+                if bulked:
+                    bulk = reader.to_object(stream)
+                    for _ in range(bulk):
+                        self._result_set.stream.put_nowait(obj)
+                else:
+                    self._result_set.stream.put_nowait(obj)
+
+            # Read status after EndOfStream
+            status_code = int32_unpack(stream.read(4))
+            msg_is_null = stream.read(1)[0] == 0x01
+            status_message = '' if msg_is_null else reader.to_object(stream, DataType.string, False)
+            exc_is_null = stream.read(1)[0] == 0x01
+            status_exception = '' if exc_is_null else reader.to_object(stream, DataType.string, False)
+
+            if status_code not in (0, 200, 204):
+                raise GremlinServerError({
+                    'code': status_code,
+                    'message': status_message,
+                    'exception': status_exception
+                })
         finally:
             self._pool.put_nowait(self)
-
-    def stream_chunk(self, chunk_data, read_completed=None, http_req_resp=None):
-        self._protocol.data_received(chunk_data, self._result_set, read_completed, http_req_resp)
 
     def __add_header(self, key, value):
         if self._headers is None:

@@ -21,7 +21,7 @@ import warnings
 import queue
 from concurrent.futures import ThreadPoolExecutor
 
-from gremlin_python.driver import connection, protocol, request, serializer
+from gremlin_python.driver import connection, request, serializer
 
 log = logging.getLogger("gremlinpython")
 
@@ -39,8 +39,7 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 # TODO: remove session, update connection pooling, etc.
 class Client:
 
-    def __init__(self, url, traversal_source, protocol_factory=None,
-                 transport_factory=None, pool_size=None, max_workers=None,
+    def __init__(self, url, traversal_source, pool_size=None, max_workers=None,
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
@@ -53,33 +52,15 @@ class Client:
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._bulk_results = bulk_results
         self._traversal_source = traversal_source
-        if "max_content_length" not in transport_kwargs:
-            transport_kwargs["max_content_length"] = 10 * 1024 * 1024
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
 
         self._auth = auth
         self._response_serializer = response_serializer
+        self._request_serializer = request_serializer
+        self._interceptors = interceptors
 
-        if transport_factory is None:
-            try:
-                from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
-            except ImportError:
-                raise Exception("Please install AIOHTTP or pass "
-                                "custom transport factory")
-            else:
-                def transport_factory():
-                    if self._protocol_factory is None:
-                        self._protocol_factory = protocol_factory
-                    return AiohttpHTTPTransport(**transport_kwargs)
-        self._transport_factory = transport_factory
-
-        if protocol_factory is None:
-            def protocol_factory():
-                return protocol.GremlinServerHTTPProtocol(
-                    request_serializer, response_serializer, auth=self._auth,
-                    interceptors=interceptors)
-        self._protocol_factory = protocol_factory
+        self._transport_kwargs = transport_kwargs
 
         if pool_size is None:
             pool_size = 8
@@ -131,11 +112,16 @@ class Client:
         self._closed = True
 
     def _get_connection(self):
-        protocol = self._protocol_factory()
         return connection.Connection(
-            self._url, self._traversal_source, protocol,
-            self._transport_factory, self._executor, self._pool,
-            headers=self._headers, enable_user_agent_on_connect=self._enable_user_agent_on_connect)
+            self._url, self._traversal_source,
+            self._executor, self._pool,
+            request_serializer=self._request_serializer,
+            response_serializer=self._response_serializer,
+            auth=self._auth, interceptors=self._interceptors,
+            headers=self._headers,
+            enable_user_agent_on_connect=self._enable_user_agent_on_connect,
+            bulk_results=self._bulk_results,
+            **self._transport_kwargs)
 
     def submit(self, message, bindings=None, request_options=None):
         return self.submit_async(message, bindings=bindings, request_options=request_options).result()

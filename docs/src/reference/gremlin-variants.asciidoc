@@ -2678,28 +2678,23 @@ can be passed to the `Client` or `DriverRemoteConnection` instance as keyword ar
 |interceptors |The request interceptors to run after request serialization.|`None`
 |auth |The authentication scheme to use when submitting requests that require authentication. |`None`
 |pool_size |The number of connections used by the pool. |4
-|protocol_factory |A callable that returns an instance of `AbstractBaseProtocol`. |`gremlin_python.driver.protocol.GremlinServerWSProtocol`
-|transport_factory |A callable that returns an instance of `AbstractBaseTransport`. |`gremlin_python.driver.aiohttp.transport.AiohttpTransport`
 |enable_user_agent_on_connect |Enables sending a user agent to the server during connection requests.
 More details can be found in provider docs
 link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#_graph_driver_provider_requirements[here].|True
 |bulk_results |Enables bulking of results on the server. |False
 |=========================================================
 
-Note that the `transport_factory` can allow for additional configuration of the `AiohttpTransport`, which allows
-pass through of the named parameters available in
-link:https://docs.aiohttp.org/en/stable/client_reference.html#aiohttp.ClientSession[AIOHTTP's HTTP ClientSession],
-and the ability to call the api from an event loop:
+Transport options such as SSL and timeouts can be passed as keyword arguments to `Client` or
+`DriverRemoteConnection`. These are forwarded to the underlying `AiohttpHTTPTransport`:
 
 [source,python]
 ----
 import ssl
 ...
 g = traversal().with_(
-  DriverRemoteConnection('http://localhost:8182/gremlin','g',
-                         transport_factory=lambda: AiohttpTransport(timeout=60,
-                                                                    max_line_size=100*1024*1024,
-                                                                    ssl_options=ssl.create_default_context(Purpose.CLIENT_AUTH))))
+  DriverRemoteConnection('https://localhost:8182/gremlin','g',
+                         ssl_options=ssl.create_default_context(),
+                         read_timeout=30))
 ----
 
 [[gremlin-python-strategies]]

@@ -16,9 +16,12 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import queue
 from concurrent.futures import Future
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
+
+_EXHAUSTED = object()
 
 
 class ResultSet:
@@ -45,7 +48,7 @@ class ResultSet:
 
     def __next__(self):
         result = self.one()
-        if not result:
+        if result is _EXHAUSTED:
             raise StopIteration
         return result
 
@@ -62,11 +65,14 @@ class ResultSet:
 
     def one(self):
         while not self.done.done():
-            if not self.stream.empty():
-                return self.stream.get_nowait()
+            try:
+                return self.stream.get(timeout=0.1)
+            except queue.Empty:
+                pass
         if not self.stream.empty():
             return self.stream.get_nowait()
-        return self.done.result()
+        self.done.result()
+        return _EXHAUSTED
 
     def all(self):
         future = Future()
@@ -79,7 +85,7 @@ class ResultSet:
             else:
                 results = []
                 while not self.stream.empty():
-                    results += self.stream.get_nowait()
+                    results.append(self.stream.get_nowait())
                 future.set_result(results)
 
         self.done.add_done_callback(cb)

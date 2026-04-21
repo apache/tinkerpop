@@ -21,7 +21,6 @@ import uuid
 import pytest
 
 from datetime import datetime, timedelta, timezone
-from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.statics import *
 
@@ -110,9 +109,6 @@ def test_uuid(remote_connection):
 
 
 def test_short(remote_connection):
-    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
-        return
-
     g = traversal().with_(remote_connection)
     num = short(1111)
     resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('short', num).to_list()
@@ -126,9 +122,6 @@ def test_short(remote_connection):
 
 
 def test_bigint_positive(remote_connection):
-    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
-        return
-
     g = traversal().with_(remote_connection)
     big = bigint(0x1000_0000_0000_0000_0000)
     resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigint', big).to_list()
@@ -142,9 +135,6 @@ def test_bigint_positive(remote_connection):
 
 
 def test_bigint_negative(remote_connection):
-    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
-        return
-
     g = traversal().with_(remote_connection)
     big = bigint(-0x1000_0000_0000_0000_0000)
     resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigint', big).to_list()
@@ -158,9 +148,6 @@ def test_bigint_negative(remote_connection):
 
 
 def test_bigdecimal(remote_connection):
-    if not isinstance(remote_connection._client.response_serializer(), GraphBinarySerializersV4):
-        return
-
     g = traversal().with_(remote_connection)
     bigdecimal = BigDecimal(10, 235)
     resp = g.with_('language', 'gremlin-lang').add_v('test_vertex').property('bigdecimal', bigdecimal).to_list()

@@ -31,8 +31,8 @@ __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitqui
 
 class DriverRemoteConnection(RemoteConnection):
 
-    def __init__(self, url, traversal_source="g", protocol_factory=None,
-                 transport_factory=None, pool_size=None, max_workers=None,
+    def __init__(self, url, traversal_source="g",
+                 pool_size=None, max_workers=None,
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
@@ -40,8 +40,6 @@ class DriverRemoteConnection(RemoteConnection):
         log.info("Creating DriverRemoteConnection with url '%s'", str(url))
         self.__url = url
         self.__traversal_source = traversal_source
-        self.__protocol_factory = protocol_factory
-        self.__transport_factory = transport_factory
         self.__pool_size = pool_size
         self.__max_workers = max_workers
         self.__auth = auth
@@ -53,8 +51,6 @@ class DriverRemoteConnection(RemoteConnection):
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
         self._client = client.Client(url, traversal_source,
-                                     protocol_factory=protocol_factory,
-                                     transport_factory=transport_factory,
                                      pool_size=pool_size,
                                      max_workers=max_workers,
                                      request_serializer=request_serializer,
@@ -77,8 +73,7 @@ class DriverRemoteConnection(RemoteConnection):
         gremlin_lang.add_g(self._traversal_source)
         result_set = self._client.submit(gremlin_lang.get_gremlin(),
                                          request_options=self.extract_request_options(gremlin_lang))
-        results = result_set.all().result()
-        return RemoteTraversal(iter(results))
+        return RemoteTraversal(result_set)
 
     def submitAsync(self, message, bindings=None, request_options=None):
         warnings.warn(
@@ -97,8 +92,7 @@ class DriverRemoteConnection(RemoteConnection):
         def cb(f):
             try:
                 result_set = f.result()
-                results = result_set.all().result()
-                future.set_result(RemoteTraversal(iter(results)))
+                future.set_result(RemoteTraversal(result_set))
             except Exception as e:
                 future.set_exception(e)
 
