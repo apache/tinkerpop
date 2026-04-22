@@ -29,10 +29,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlExecut
 import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlPlanner;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
-import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -64,11 +62,13 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      */
     public static final String SUPPORTED_QUERY_LANGUAGE = "gql";
 
-    private ArrayDeque<Traverser.Admin<Optional>> outputQueue = new ArrayDeque<>();
-
     private TinkerGraphGqlPlanner planner;
     private TinkerGraphGqlExecutor executor;
     private GqlMatchPlan plan;
+    // Lazy row source: one iterator per spawn execution or per incoming mid-traversal traverser.
+    private Iterator<Element[]> rowIterator = null;
+    // For mid-traversal: the upstream traverser whose rows rowIterator is currently serving.
+    private Traverser.Admin<S> currentStart = null;
     private boolean done = false;
 
     /**
@@ -131,10 +131,6 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
                     "pass null or an empty map until parameter support is implemented");
         }
 
-        if (!outputQueue.isEmpty()) {
-            return outputQueue.poll();
-        }
-
         // Ensure planner and executor are available. When injected by the strategy they are
         // graph-level singletons; otherwise fall back to per-step lazy initialisation.
         if (planner == null) {
@@ -147,55 +143,63 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
         }
 
         if (isStart()) {
-            // Source-spawn path: no upstream traversers — execute the plan once and generate
-            // a fresh traverser for each result row using the traversal's TraverserGenerator.
+            // Spawn path: no upstream traversers. Pull rows lazily from the row iterator —
+            // one row per processNextStart() call — so downstream limit() pays only for what
+            // it consumes.
             if (!done) {
+                if (rowIterator == null)
+                    rowIterator = executor.execute(plan);
+                if (rowIterator.hasNext())
+                    return rowToSpawnTraverser(rowIterator.next(), plan);
                 done = true;
-                final List<Map<String, Element>> rows = executor.execute(plan);
-                for (final Map<String, Element> row : rows) {
-                    final Traverser.Admin<Optional> traverser =
-                            this.getTraversal().getTraverserGenerator().generate(Optional.empty(), (Step) this, 1L);
-                    for (final Map.Entry<String, Element> entry : row.entrySet()) {
-                        if (!entry.getKey().startsWith("$anon")) {
-                            ((Traverser.Admin) traverser).set(entry.getValue());
-                            traverser.addLabels(Collections.singleton(entry.getKey()));
-                        }
-                    }
-                    ((Traverser.Admin) traverser).set(Optional.empty());
-                    outputQueue.add(traverser);
-                }
             }
-            if (!outputQueue.isEmpty()) return outputQueue.poll();
             throw FastNoSuchElementException.instance();
         }
 
-        while (this.starts.hasNext()) {
-            final Traverser.Admin<S> start = this.starts.next();
-            final List<Map<String, Element>> rows = executor.execute(plan);
+        // Mid-traversal path: pull rows lazily per incoming traverser.
+        while (true) {
+            if (rowIterator != null && rowIterator.hasNext())
+                return rowToSplitTraverser(rowIterator.next(), plan, currentStart);
 
-            for (final Map<String, Element> row : rows) {
-                @SuppressWarnings("unchecked")
-                final Traverser.Admin<Optional> split =
-                        (Traverser.Admin<Optional>) start.split(Optional.empty(), (Step) this);
-                for (final Map.Entry<String, Element> entry : row.entrySet()) {
-                    if (!entry.getKey().startsWith("$anon")) {
-                        // Temporarily set the traverser value to the bound element so that
-                        // addLabels() records it as a new labeled path entry, then restore
-                        // the traverser value to Optional.empty() once all bindings are added.
-                        ((Traverser.Admin) split).set(entry.getValue());
-                        split.addLabels(Collections.singleton(entry.getKey()));
-                    }
-                }
-                ((Traverser.Admin) split).set(Optional.empty());
-                outputQueue.add(split);
-            }
+            // Current row iterator exhausted — advance to the next incoming traverser.
+            if (!this.starts.hasNext()) throw FastNoSuchElementException.instance();
+            currentStart = this.starts.next();
+            rowIterator = executor.execute(plan);
+        }
+    }
 
-            if (!outputQueue.isEmpty()) {
-                return outputQueue.poll();
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Traverser.Admin<Optional> rowToSpawnTraverser(final Element[] row, final GqlMatchPlan plan) {
+        final Traverser.Admin<Optional> traverser =
+                this.getTraversal().getTraverserGenerator().generate(Optional.empty(), (Step) this, 1L);
+        bindRow(row, plan, (Traverser.Admin) traverser);
+        return traverser;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Traverser.Admin<Optional> rowToSplitTraverser(final Element[] row, final GqlMatchPlan plan,
+                                                           final Traverser.Admin<S> start) {
+        final Traverser.Admin<Optional> split =
+                (Traverser.Admin<Optional>) start.split(Optional.empty(), (Step) this);
+        bindRow(row, plan, (Traverser.Admin) split);
+        return split;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void bindRow(final Element[] row, final GqlMatchPlan plan,
+                         final Traverser.Admin traverser) {
+        final String[] variables = plan.getVariables();
+        for (int i = 0; i < variables.length; i++) {
+            final String var = variables[i];
+            if (!var.startsWith("$anon") && row[i] != null) {
+                // Temporarily set the traverser value to the bound element so that
+                // addLabels() records it as a new labeled path entry, then restore
+                // the traverser value to Optional.empty() once all bindings are added.
+                traverser.set(row[i]);
+                traverser.addLabels(Collections.singleton(var));
             }
         }
-
-        throw FastNoSuchElementException.instance();
+        traverser.set(Optional.empty());
     }
 
     /**
@@ -218,20 +222,22 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     @SuppressWarnings("unchecked")
     public TinkerGraphMatchStep<S> clone() {
         final TinkerGraphMatchStep<S> clone = (TinkerGraphMatchStep<S>) super.clone();
-        clone.outputQueue = new ArrayDeque<>();
+        clone.rowIterator = null;
+        clone.currentStart = null;
         clone.plan = null;
         clone.done = false;
         return clone;
     }
 
     /**
-     * Clears the output queue on reset. The planner, executor, and compiled plan are
-     * preserved so the plan cache survives a traversal reset.
+     * Resets lazy row state. The planner, executor, and compiled plan are preserved so the
+     * QueryGraph cache survives a traversal reset.
      */
     @Override
     public void reset() {
         super.reset();
-        outputQueue.clear();
+        rowIterator = null;
+        currentStart = null;
         done = false;
     }
 }
