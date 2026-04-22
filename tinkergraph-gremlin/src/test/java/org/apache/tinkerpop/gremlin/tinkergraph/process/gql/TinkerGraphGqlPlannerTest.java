@@ -207,10 +207,15 @@ public class TinkerGraphGqlPlannerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testPlanCachingReturnsSameInstance() {
+    public void testPlanCachingReturnsSameStructure() {
+        // The QueryGraph is cached; each call returns a freshly compiled GqlMatchPlan so that
+        // seed selection always reflects current graph state. Two calls with the same string
+        // must therefore produce equivalent (not necessarily identical) plans.
         final GqlMatchPlan first = planner.plan("MATCH (n:Person)-[:KNOWS]->(m:Person)");
         final GqlMatchPlan second = planner.plan("MATCH (n:Person)-[:KNOWS]->(m:Person)");
-        assertSame("Same query string must return the cached plan instance", first, second);
+        assertEquals("Same query string must produce the same seed variable", first.getSeedVariable(), second.getSeedVariable());
+        assertEquals("Same query string must produce the same seed label", first.getSeedLabel(), second.getSeedLabel());
+        assertEquals("Same query string must produce the same steps", first.getSteps().toString(), second.getSteps().toString());
     }
 
     @Test

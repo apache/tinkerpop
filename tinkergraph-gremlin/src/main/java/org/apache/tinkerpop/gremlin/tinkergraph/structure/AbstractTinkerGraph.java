@@ -167,6 +167,36 @@ public abstract class AbstractTinkerGraph implements Graph {
     public abstract int getEdgesCount();
 
     /**
+     * Returns the number of vertices with the given label. A {@code null} label returns the
+     * total vertex count. The default implementation does a full vertex scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    public long getVerticesCountByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        long count = 0;
+        final Iterator<Vertex> it = vertices();
+        while (it.hasNext()) {
+            if (label.equals(it.next().label())) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Returns the number of edges with the given label. A {@code null} label returns the
+     * total edge count. The default implementation does a full edge scan; subclasses that
+     * maintain a label index should override this for O(1) performance.
+     */
+    public long getEdgesCountByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        long count = 0;
+        final Iterator<Edge> it = edges();
+        while (it.hasNext()) {
+            if (label.equals(it.next().label())) count++;
+        }
+        return count;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public abstract boolean hasEdge(final Object id);
