@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Executes a {@link GqlMatchPlan} against a {@link TinkerGraph} using a DFS backtracking
@@ -95,7 +96,9 @@ public final class TinkerGraphGqlExecutor {
             final Vertex seed = seedVertices.next();
             final Map<String, Element> bindings = new HashMap<>();
             bindings.put(plan.getSeedVariable(), seed);
-            extend(bindings, plan.getSteps(), 0, results);
+            // Use a mutable copy of the step list so the DAG executor can remove/restore
+            // steps in place without allocation per recursive call.
+            extend(bindings, new ArrayList<>(plan.getSteps()), results);
         }
 
         return Collections.unmodifiableList(results);
@@ -141,25 +144,41 @@ public final class TinkerGraphGqlExecutor {
     // -------------------------------------------------------------------------
 
     /**
-     * Recursively extends the current partial match by processing {@code steps[index]}.
-     * When all steps have been consumed ({@code index == steps.size()}), the complete
-     * binding map is added to {@code results}.
+     * Recursively extends the current partial match using a DAG-aware step selection.
      *
-     * @param bindings     the current partial binding map (not modified; a copy is made for each candidate)
-     * @param steps        the full ordered list of extension steps from the plan
-     * @param index        the index of the next step to process
-     * @param results      accumulator for complete matches
+     * <p>Rather than advancing through a fixed depth index, this method finds the first
+     * step in {@code remaining} whose anchor variable is already bound, executes it, and
+     * recurses with that step temporarily removed. The preferred order within {@code remaining}
+     * (BFS order from the planner) serves as the tiebreaker when multiple steps are eligible,
+     * preserving the same execution order as the previous chain-based implementation while
+     * leaving the door open for future adaptive reordering policies.</p>
+     *
+     * @param bindings  current partial bindings (mutated and restored for backtracking)
+     * @param remaining steps not yet executed; modified in place and restored on unwind
+     * @param results   accumulator for complete matches
      */
     private void extend(final Map<String, Element> bindings,
-                        final List<ExtensionStep> steps,
-                        final int index,
+                        final List<ExtensionStep> remaining,
                         final List<Map<String, Element>> results) {
-        if (index == steps.size()) {
+        if (remaining.isEmpty()) {
             results.add(new HashMap<>(bindings));
             return;
         }
 
-        final ExtensionStep step = steps.get(index);
+        // Find the first eligible step: anchor variable already bound.
+        int chosenIdx = -1;
+        for (int i = 0; i < remaining.size(); i++) {
+            if (bindings.containsKey(remaining.get(i).getAnchorVariable())) {
+                chosenIdx = i;
+                break;
+            }
+        }
+        if (chosenIdx < 0) {
+            // No eligible step — partial match is unsatisfiable; backtrack.
+            return;
+        }
+
+        final ExtensionStep step = remaining.remove(chosenIdx);
         final Vertex anchor = (Vertex) bindings.get(step.getAnchorVariable());
 
         // Retrieve candidate edges from the anchor, filtered by edge label if present
@@ -187,24 +206,26 @@ public final class TinkerGraphGqlExecutor {
                     continue;
                 }
                 // Constraint satisfied — no need to rebind; recurse with unchanged bindings
-                extendWithEdge(bindings, edge, step.getEdgeVariable(), null, null, steps, index, results);
+                extendWithEdge(bindings, edge, step.getEdgeVariable(), null, null, remaining, results);
             } else {
-                extendWithEdge(bindings, edge, step.getEdgeVariable(), target, targetVar, steps, index, results);
+                extendWithEdge(bindings, edge, step.getEdgeVariable(), target, targetVar, remaining, results);
             }
         }
+
+        // Restore the chosen step so the caller's remaining list is unmodified on return.
+        remaining.add(chosenIdx, step);
     }
 
     /**
-     * Creates a new binding map that adds the edge (and optionally the target vertex)
-     * to the current bindings, then recurses to the next step.
+     * Adds the edge (and optionally the target vertex) to a new binding map copied from
+     * {@code bindings}, then recurses to the next eligible step.
      */
     private void extendWithEdge(final Map<String, Element> bindings,
                                  final Edge edge,
                                  final String edgeVar,
                                  final Vertex target,
                                  final String targetVar,
-                                 final List<ExtensionStep> steps,
-                                 final int index,
+                                 final List<ExtensionStep> remaining,
                                  final List<Map<String, Element>> results) {
         final boolean needsNewMap = (edgeVar != null) || (targetVar != null && target != null);
         final Map<String, Element> next = needsNewMap ? new HashMap<>(bindings) : bindings;
@@ -216,7 +237,7 @@ public final class TinkerGraphGqlExecutor {
             next.put(targetVar, target);
         }
 
-        extend(next, steps, index + 1, results);
+        extend(next, remaining, results);
     }
 
     // -------------------------------------------------------------------------

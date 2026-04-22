@@ -309,6 +309,22 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
     }
 
     @Override
+    public long getVerticesCountByLabel(final String label) {
+        if (label == null) return getVerticesCount();
+        return vertices.values().stream()
+                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .count();
+    }
+
+    @Override
+    public long getEdgesCountByLabel(final String label) {
+        if (label == null) return getEdgesCount();
+        return edges.values().stream()
+                .filter(c -> c.get() != null && label.equals(c.get().label()))
+                .count();
+    }
+
+    @Override
     public boolean hasEdge(Object id) {
         return null != edge(id);
     }

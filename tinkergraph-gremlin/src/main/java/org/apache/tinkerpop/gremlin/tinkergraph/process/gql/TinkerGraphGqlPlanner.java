@@ -19,14 +19,13 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -38,18 +37,19 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>Algorithm</h3>
  * <ol>
- *   <li><strong>Seed selection</strong> — each {@link QueryNode} is scored by calling
- *       {@link TinkerGraph#vertices()} and counting vertices that match its label constraint
- *       (or using {@link TinkerGraph#getVerticesCount()} when the node has no label). The
- *       node with the fewest matching vertices is chosen as the seed; ties are broken by
- *       list order.</li>
+ *   <li><strong>Seed selection</strong> — each {@link QueryNode} is scored via
+ *       {@link AbstractTinkerGraph#getVerticesCountByLabel} (O(1) for {@link TinkerGraph},
+ *       scan-based for transactional graphs). The node with the fewest matching vertices is
+ *       chosen as the seed; ties are broken by list order. Seed selection is recomputed on
+ *       every call so that graph mutations are always reflected.</li>
  *   <li><strong>Plan compilation</strong> — a BFS is performed over the {@link QueryGraph}
- *       starting from the seed node. For each edge encountered, one {@link ExtensionStep} is
- *       emitted. The BFS ordering guarantees that every step's anchor variable is bound before
- *       the step executes. Anonymous nodes (no variable name) receive synthetic variable names
- *       with a {@code $anon} prefix so the executor can track their bindings.</li>
- *   <li><strong>Plan caching</strong> — compiled plans are cached keyed by the original GQL
- *       query string. Repeated calls with the same string return the cached plan in O(1).</li>
+ *       starting from the seed node. Within each BFS node, edges are sorted by edge-label
+ *       density (ascending via {@link AbstractTinkerGraph#getEdgesCountByLabel}) so that
+ *       rarer edge labels produce extension steps earlier in the plan, pruning the DFS sooner.
+ *       Anonymous nodes receive synthetic variable names with a {@code $anon} prefix.</li>
+ *   <li><strong>Parse caching</strong> — the parsed {@link QueryGraph} is cached keyed by
+ *       the original GQL query string. Seed selection and step ordering are recomputed each
+ *       call using live counts, avoiding stale plans after mutations.</li>
  * </ol>
  *
  * <p>This planner is the primary optimization surface for TinkerGraph GQL execution. Future
@@ -59,22 +59,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TinkerGraphGqlPlanner {
 
     private final AbstractTinkerGraph graph;
-    private final Map<String, GqlMatchPlan> planCache = new ConcurrentHashMap<>();
+    // Cache only the parsed QueryGraph — mutation-independent, safe to reuse forever.
+    // Seed selection and step ordering are recomputed on every call using live label counts.
+    private final Map<String, QueryGraph> queryGraphCache = new ConcurrentHashMap<>();
 
     public TinkerGraphGqlPlanner(final AbstractTinkerGraph graph) {
         this.graph = graph;
     }
 
     /**
-     * Returns a {@link GqlMatchPlan} for the given GQL MATCH string, compiling and caching
-     * on first access.
+     * Returns a {@link GqlMatchPlan} for the given GQL MATCH string. The parsed
+     * {@link QueryGraph} is cached; seed selection and step ordering are recomputed
+     * each call from live label-count data so that graph mutations are always reflected.
      *
      * @param gqlMatchString a GQL MATCH expression (e.g. {@code "MATCH (a:Person)-[:KNOWS]->(b)"})
      * @return the compiled execution plan
      * @throws IllegalArgumentException if the string cannot be parsed
      */
     public GqlMatchPlan plan(final String gqlMatchString) {
-        return planCache.computeIfAbsent(gqlMatchString, q -> compile(QueryGraph.parse(q)));
+        final QueryGraph queryGraph = queryGraphCache.computeIfAbsent(gqlMatchString, QueryGraph::parse);
+        return compile(queryGraph);
     }
 
     /**
@@ -117,16 +121,7 @@ public final class TinkerGraphGqlPlanner {
     }
 
     private long countMatchingVertices(final QueryNode node) {
-        final String label = node.getLabel();
-        if (label == null) {
-            return graph.getVerticesCount();
-        }
-        long count = 0;
-        final Iterator<Vertex> it = graph.vertices();
-        while (it.hasNext()) {
-            if (label.equals(it.next().label())) count++;
-        }
-        return count;
+        return graph.getVerticesCountByLabel(node.getLabel());
     }
 
     // -------------------------------------------------------------------------
@@ -167,9 +162,9 @@ public final class TinkerGraphGqlPlanner {
      * <p>Back edges (both endpoints already visited) are still emitted as steps so the
      * executor can verify the join constraint against the already-bound variable.
      */
-    private static List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
-                                                   final QueryNode seed,
-                                                   final Map<QueryNode, String> effectiveVars) {
+    private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
+                                           final QueryNode seed,
+                                           final Map<QueryNode, String> effectiveVars) {
         final List<ExtensionStep> steps = new ArrayList<>();
 
         // visitOrder tracks the BFS discovery sequence; used to pick the anchor for back-edges
@@ -185,15 +180,23 @@ public final class TinkerGraphGqlPlanner {
             final QueryNode current = queue.poll();
             final int currentOrder = visitOrder.get(current);
 
+            // Collect edges touching current, sort by edge-label density (ascending) so that
+            // rarer edge labels produce extension steps earlier in the plan, pruning the DFS
+            // search space sooner.
+            final List<QueryEdge> eligible = new ArrayList<>();
             for (final QueryEdge edge : queryGraph.getEdges()) {
-                if (processedEdges.contains(edge)) continue;
+                if (!processedEdges.contains(edge) &&
+                        (edge.getSource() == current || edge.getTarget() == current)) {
+                    eligible.add(edge);
+                }
+            }
+            eligible.sort(Comparator.comparingLong(e -> graph.getEdgesCountByLabel(e.getLabel())));
+
+            for (final QueryEdge edge : eligible) {
+                processedEdges.add(edge);
 
                 final boolean isSource = edge.getSource() == current;
                 final boolean isTarget = edge.getTarget() == current;
-
-                if (!isSource && !isTarget) continue;
-
-                processedEdges.add(edge);
 
                 final QueryNode anchor;
                 final QueryNode targetNode;
