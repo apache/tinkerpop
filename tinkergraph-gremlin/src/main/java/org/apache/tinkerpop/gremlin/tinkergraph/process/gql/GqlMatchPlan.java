@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The compiled physical execution plan for a GQL MATCH query. A {@code GqlMatchPlan} is an
@@ -40,12 +41,28 @@ public final class GqlMatchPlan {
     private final String seedVariable;
     private final String seedLabel;
     private final List<ExtensionStep> steps;
+    /**
+     * Maps every variable name (including {@code $anon*} synthetics) to its slot index in
+     * the {@code Element[]} binding array used by the executor. Seed variable is always at
+     * index 0; subsequent indices follow step order (edge variable before target variable
+     * for each step).
+     */
+    private final Map<String, Integer> variableIndex;
+    /**
+     * Inverse of {@code variableIndex}: index → variable name. Used by
+     * {@code TinkerGraphMatchStep} to iterate result rows without an extra map lookup.
+     */
+    private final String[] variables;
 
     public GqlMatchPlan(final String seedVariable, final String seedLabel,
-                        final List<ExtensionStep> steps) {
+                        final List<ExtensionStep> steps,
+                        final Map<String, Integer> variableIndex,
+                        final String[] variables) {
         this.seedVariable = seedVariable;
         this.seedLabel = seedLabel;
         this.steps = Collections.unmodifiableList(steps);
+        this.variableIndex = variableIndex;
+        this.variables = variables;
     }
 
     /**
@@ -68,6 +85,29 @@ public final class GqlMatchPlan {
      */
     public List<ExtensionStep> getSteps() {
         return steps;
+    }
+
+    /** Returns the index of the seed variable in the binding array. Always 0. */
+    public int getSeedVariableIndex() {
+        return 0;
+    }
+
+    /** Returns the binding-array index for the given variable name. */
+    public int getIndex(final String variableName) {
+        return variableIndex.get(variableName);
+    }
+
+    /** Returns the total number of variables (= binding array length). */
+    public int getVariableCount() {
+        return variables.length;
+    }
+
+    /**
+     * Returns the variable name at each binding-array index. Used by
+     * {@code TinkerGraphMatchStep} to iterate result rows by index.
+     */
+    public String[] getVariables() {
+        return variables;
     }
 
     /**

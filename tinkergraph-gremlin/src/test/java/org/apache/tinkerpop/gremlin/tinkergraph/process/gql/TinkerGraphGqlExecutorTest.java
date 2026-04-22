@@ -26,6 +26,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,29 +59,55 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Test helper: materialise lazy iterator into a List<Map<String,Element>>
+    // -------------------------------------------------------------------------
+
+    /**
+     * Drains the lazy result iterator into a list of named-variable maps, mirroring the
+     * old List<Map> API so that existing assertions can be reused without change.
+     * Entries whose variable name starts with {@code $anon} are excluded (anonymous nodes).
+     */
+    private List<Map<String, Element>> materialize(final Iterator<Element[]> iter,
+                                                    final GqlMatchPlan plan) {
+        final String[] variables = plan.getVariables();
+        final List<Map<String, Element>> rows = new ArrayList<>();
+        while (iter.hasNext()) {
+            final Element[] row = iter.next();
+            final Map<String, Element> map = new LinkedHashMap<>();
+            for (int i = 0; i < variables.length; i++) {
+                if (!variables[i].startsWith("$anon") && row[i] != null)
+                    map.put(variables[i], row[i]);
+            }
+            rows.add(map);
+        }
+        return rows;
+    }
+
+    private List<Map<String, Element>> execute(final String query) {
+        final GqlMatchPlan plan = planner.plan(query);
+        return materialize(executor.execute(plan), plan);
+    }
+
+    // -------------------------------------------------------------------------
     // Empty / no-match cases
     // -------------------------------------------------------------------------
 
     @Test
     public void testEmptyGraphReturnsNoResults() {
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
-        assertTrue(results.isEmpty());
+        assertTrue(execute("MATCH (n:Person)").isEmpty());
     }
 
     @Test
     public void testSingleNodeNoLabelMatch() {
-        final Vertex v = graph.addVertex("Person");
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Animal)");
-        assertTrue(executor.execute(plan).isEmpty());
+        graph.addVertex("Person");
+        assertTrue(execute("MATCH (n:Animal)").isEmpty());
     }
 
     @Test
     public void testEdgePatternNoMatchWhenNoEdges() {
         graph.addVertex("Person");
         graph.addVertex("Person");
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:KNOWS]->(b:Person)");
-        assertTrue(executor.execute(plan).isEmpty());
+        assertTrue(execute("MATCH (a:Person)-[:KNOWS]->(b:Person)").isEmpty());
     }
 
     // -------------------------------------------------------------------------
@@ -91,8 +120,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex bob = graph.addVertex("Person");
         graph.addVertex("Company");
 
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (n:Person)");
 
         assertEquals(2, results.size());
         final List<Element> found = results.stream()
@@ -103,12 +131,9 @@ public class TinkerGraphGqlExecutorTest {
 
     @Test
     public void testSingleNodeWithoutLabel() {
-        final Vertex v1 = graph.addVertex("Person");
-        final Vertex v2 = graph.addVertex("Company");
-
-        final GqlMatchPlan plan = planner.plan("MATCH (n)");
-        final List<Map<String, Element>> results = executor.execute(plan);
-        assertEquals(2, results.size());
+        graph.addVertex("Person");
+        graph.addVertex("Company");
+        assertEquals(2, execute("MATCH (n)").size());
     }
 
     // -------------------------------------------------------------------------
@@ -119,15 +144,13 @@ public class TinkerGraphGqlExecutorTest {
     public void testSingleOutEdgeWithLabel() {
         final Vertex alice = graph.addVertex("Person");
         final Vertex acme = graph.addVertex("Company");
-        final Edge e = alice.addEdge("WORKS_AT", acme);
+        alice.addEdge("WORKS_AT", acme);
 
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:WORKS_AT]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)");
 
         assertEquals(1, results.size());
-        final Map<String, Element> row = results.get(0);
-        assertEquals(alice, row.get("a"));
-        assertEquals(acme, row.get("c"));
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(acme, results.get(0).get("c"));
     }
 
     @Test
@@ -135,9 +158,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex alice = graph.addVertex("Person");
         final Vertex acme = graph.addVertex("Company");
         acme.addEdge("WORKS_AT", alice);  // reversed — acme→alice
-
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:WORKS_AT]->(c:Company)");
-        assertTrue(executor.execute(plan).isEmpty());
+        assertTrue(execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)").isEmpty());
     }
 
     @Test
@@ -146,9 +167,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex bob = graph.addVertex("Person");
         alice.addEdge("KNOWS", bob);  // alice→bob, so bob<-KNOWS-alice
 
-        // MATCH (a)<-[:KNOWS]-(b) means a is the in-vertex of KNOWS
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)<-[:KNOWS]-(b:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)<-[:KNOWS]-(b:Person)");
 
         assertEquals(1, results.size());
         assertEquals(bob, results.get(0).get("a"));
@@ -162,11 +181,7 @@ public class TinkerGraphGqlExecutorTest {
         alice.addEdge("KNOWS", bob);
 
         // Undirected matches both directions
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:KNOWS]-(b:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
-
-        // One edge, but both (alice,bob) and (bob,alice) should match
-        assertEquals(2, results.size());
+        assertEquals(2, execute("MATCH (a:Person)-[:KNOWS]-(b:Person)").size());
     }
 
     @Test
@@ -175,14 +190,12 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex acme = graph.addVertex("Company");
         final Edge e = alice.addEdge("WORKS_AT", acme);
 
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[r:WORKS_AT]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[r:WORKS_AT]->(c:Company)");
 
         assertEquals(1, results.size());
-        final Map<String, Element> row = results.get(0);
-        assertEquals(e, row.get("r"));
-        assertEquals(alice, row.get("a"));
-        assertEquals(acme, row.get("c"));
+        assertEquals(e, results.get(0).get("r"));
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(acme, results.get(0).get("c"));
     }
 
     @Test
@@ -191,8 +204,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex acme = graph.addVertex("Company");
         alice.addEdge("WORKS_AT", acme);
 
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (a:Person)-[]->(c:Company)");
 
         assertEquals(1, results.size());
         assertFalse(results.get(0).containsKey("r")); // no edge variable
@@ -203,9 +215,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex alice = graph.addVertex("Person");
         final Vertex acme = graph.addVertex("Company");
         alice.addEdge("LIKES", acme);  // different label
-
-        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:WORKS_AT]->(c:Company)");
-        assertTrue(executor.execute(plan).isEmpty());
+        assertTrue(execute("MATCH (a:Person)-[:WORKS_AT]->(c:Company)").isEmpty());
     }
 
     // -------------------------------------------------------------------------
@@ -220,15 +230,13 @@ public class TinkerGraphGqlExecutorTest {
         alice.addEdge("KNOWS", bob);
         bob.addEdge("WORKS_AT", acme);
 
-        final GqlMatchPlan plan = planner.plan(
+        final List<Map<String, Element>> results = execute(
                 "MATCH (a:Person)-[:KNOWS]->(b:Person)-[:WORKS_AT]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
 
         assertEquals(1, results.size());
-        final Map<String, Element> row = results.get(0);
-        assertEquals(alice, row.get("a"));
-        assertEquals(bob, row.get("b"));
-        assertEquals(acme, row.get("c"));
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+        assertEquals(acme, results.get(0).get("c"));
     }
 
     @Test
@@ -241,12 +249,8 @@ public class TinkerGraphGqlExecutorTest {
         carol.addEdge("KNOWS", bob);
         bob.addEdge("WORKS_AT", acme);
 
-        final GqlMatchPlan plan = planner.plan(
-                "MATCH (a:Person)-[:KNOWS]->(b:Person)-[:WORKS_AT]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
-
         // Both alice and carol know bob, who works at acme
-        assertEquals(2, results.size());
+        assertEquals(2, execute("MATCH (a:Person)-[:KNOWS]->(b:Person)-[:WORKS_AT]->(c:Company)").size());
     }
 
     // -------------------------------------------------------------------------
@@ -262,12 +266,9 @@ public class TinkerGraphGqlExecutorTest {
         alice.addEdge("WORKS_AT", acme);
         bob.addEdge("WORKS_AT", acme);
 
-        // b must be both the target of KNOWS and the source of WORKS_AT
-        final GqlMatchPlan plan = planner.plan(
+        final List<Map<String, Element>> results = execute(
                 "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
-        final List<Map<String, Element>> results = executor.execute(plan);
 
-        // Only alice→bob→acme matches (alice doesn't know itself as a KNOWS target for alice)
         assertEquals(1, results.size());
         assertEquals(alice, results.get(0).get("a"));
         assertEquals(bob, results.get(0).get("b"));
@@ -277,10 +278,9 @@ public class TinkerGraphGqlExecutorTest {
     @Test
     public void testSelfLoopPattern() {
         final Vertex alice = graph.addVertex("Person");
-        alice.addEdge("SELF", alice);  // self-loop
+        alice.addEdge("SELF", alice);
 
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)-[:SELF]->(n:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final List<Map<String, Element>> results = execute("MATCH (n:Person)-[:SELF]->(n:Person)");
 
         assertEquals(1, results.size());
         assertEquals(alice, results.get(0).get("n"));
@@ -291,9 +291,7 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex alice = graph.addVertex("Person");
         final Vertex bob = graph.addVertex("Person");
         alice.addEdge("SELF", bob);  // alice → bob, not self-loop
-
-        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)-[:SELF]->(n:Person)");
-        assertTrue(executor.execute(plan).isEmpty());
+        assertTrue(execute("MATCH (n:Person)-[:SELF]->(n:Person)").isEmpty());
     }
 
     // -------------------------------------------------------------------------
@@ -309,9 +307,8 @@ public class TinkerGraphGqlExecutorTest {
         b.addEdge("BC", c);
         c.addEdge("CA", a);
 
-        final GqlMatchPlan plan = planner.plan(
+        final List<Map<String, Element>> results = execute(
                 "MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)");
-        final List<Map<String, Element>> results = executor.execute(plan);
 
         assertEquals(1, results.size());
         assertEquals(a, results.get(0).get("a"));
@@ -327,27 +324,31 @@ public class TinkerGraphGqlExecutorTest {
         a.addEdge("AB", b);
         b.addEdge("BC", c);
         // Missing c→a edge
-
-        final GqlMatchPlan plan = planner.plan(
-                "MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)");
-        assertTrue(executor.execute(plan).isEmpty());
+        assertTrue(execute("MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)").isEmpty());
     }
 
     // -------------------------------------------------------------------------
-    // Result immutability
+    // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 
     @Test
-    public void testResultIsUnmodifiable() {
+    public void testResultRowsAreIndependentSnapshots() {
+        // Verify that the Element[] arrays returned by the iterator are independent copies —
+        // modifying one does not corrupt another (backtracking correctness).
+        graph.addVertex("Person");
         graph.addVertex("Person");
         final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
-        final List<Map<String, Element>> results = executor.execute(plan);
+        final Iterator<Element[]> iter = executor.execute(plan);
 
-        try {
-            results.add(new java.util.HashMap<>());
-            fail("Expected UnsupportedOperationException");
-        } catch (UnsupportedOperationException ex) {
-            // expected
-        }
+        final Element[] first = iter.next();
+        final Element first0 = first[0];
+        // Corrupt the first row's array
+        first[0] = null;
+
+        // Second row must be unaffected
+        assertTrue(iter.hasNext());
+        final Element[] second = iter.next();
+        assertNotNull(second[0]);
+        assertNotSame(first, second);
     }
 }

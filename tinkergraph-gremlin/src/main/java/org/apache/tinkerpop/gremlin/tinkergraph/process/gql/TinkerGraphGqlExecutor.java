@@ -24,16 +24,15 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.NoSuchElementException;
 
 /**
- * Executes a {@link GqlMatchPlan} against a {@link TinkerGraph} using a DFS backtracking
+ * Executes a {@link GqlMatchPlan} against a TinkerGraph using a DFS backtracking
  * pattern matching algorithm.
  *
  * <h3>Algorithm</h3>
@@ -41,30 +40,26 @@ import java.util.Set;
  *   <li><strong>Seed iteration</strong> — vertices are scanned from the graph, filtered by the
  *       seed label (if present). Each matching vertex is bound to the seed variable and used
  *       as the starting point for DFS extension.</li>
- *   <li><strong>DFS extension</strong> — {@link #extend} is called recursively with the current
- *       binding map and the remaining {@link ExtensionStep} list. Each step:
- *       <ul>
- *         <li>Looks up the anchor vertex by its variable name in the current bindings.</li>
- *         <li>Calls {@link Vertex#edges(Direction, String...)} on the anchor to get candidate
- *             edges, optionally filtered by the step's edge label.</li>
- *         <li>For each candidate edge, determines the target vertex from the opposite end.</li>
- *         <li>Applies the target label constraint (if set) and the equality constraint (if the
- *             target variable is already bound in the current row).</li>
- *         <li>If all constraints pass, adds the edge and target vertex to a new binding map
- *             and recurses with the remaining steps.</li>
- *       </ul>
- *   </li>
- *   <li><strong>Result collection</strong> — when all steps have been consumed, the complete
- *       binding map is copied into the result list.</li>
+ *   <li><strong>DFS extension</strong> — {@link #extend} is called recursively with a shared
+ *       {@code Element[]} binding array. Steps are selected from the remaining list using DAG
+ *       eligibility (anchor variable already bound), with BFS order as the tiebreaker. Bindings
+ *       are set in the array before recursing and cleared (set to {@code null}) on backtrack,
+ *       avoiding any per-candidate HashMap allocation.</li>
+ *   <li><strong>Result emission</strong> — when all steps are consumed, a shallow clone of the
+ *       binding array is added to the per-seed buffer.</li>
+ *   <li><strong>Lazy delivery</strong> — {@link #execute} returns an {@code Iterator} that
+ *       advances the DFS one seed vertex at a time. Results for a seed are buffered in an
+ *       {@code ArrayDeque} and drained before the next seed is processed, so callers that apply
+ *       an early termination (e.g. {@code limit()}) pay only for the work they consume.</li>
  * </ol>
  *
- * <p>Variable reuse across patterns is handled naturally: if the target variable is already
- * bound, the candidate target must equal the existing binding (equality constraint). This
- * enables pattern joins such as
+ * <p>Variable reuse across patterns is handled by the equality constraint: if the target
+ * variable is already non-null in the binding array, the candidate target must equal the
+ * existing binding. This enables multi-pattern joins such as
  * {@code MATCH (a)-[:KNOWS]->(b), (b)-[:WORKS_AT]->(c)} where {@code b} is shared.
  *
- * <p>This is a pure Java implementation using only the direct {@link TinkerGraph} and
- * {@link Vertex} APIs — no Gremlin traversal machinery is involved.
+ * <p>This is a pure Java implementation using only the direct TinkerGraph and {@link Vertex}
+ * APIs — no Gremlin traversal machinery is involved.
  */
 public final class TinkerGraphGqlExecutor {
 
@@ -75,33 +70,43 @@ public final class TinkerGraphGqlExecutor {
     }
 
     /**
-     * Executes the given plan against the graph and returns all matching result rows.
+     * Returns a lazy {@link Iterator} of result rows. Each row is an {@code Element[]} whose
+     * indices correspond to the variable index defined in the {@link GqlMatchPlan}; use
+     * {@link GqlMatchPlan#getVariables()} to map indices back to variable names.
      *
-     * <p>Each result row is a {@link Map} from variable name to the matching {@link Element}
-     * (either a {@link Vertex} or an {@link Edge}). Anonymous seed nodes (variables starting
-     * with {@code $anon}) are included in the map but are typically filtered out by callers.
+     * <p>The iterator advances the DFS one seed vertex at a time. Results for a given seed
+     * are fully computed before the iterator moves to the next seed, so memory usage is
+     * bounded by the maximum number of results a single seed vertex can produce.
      *
      * @param plan the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
-     * @return an unmodifiable list of binding maps; empty if no matches are found
+     * @return a lazy iterator of binding arrays; empty if the plan has no seed
      */
-    public List<Map<String, Element>> execute(final GqlMatchPlan plan) {
+    public Iterator<Element[]> execute(final GqlMatchPlan plan) {
         if (plan.getSeedVariable() == null) {
-            return Collections.emptyList();
+            return Collections.emptyIterator();
         }
 
-        final List<Map<String, Element>> results = new ArrayList<>();
         final Iterator<Vertex> seedVertices = seedIterator(plan.getSeedLabel());
+        final ArrayDeque<Element[]> buffer = new ArrayDeque<>();
 
-        while (seedVertices.hasNext()) {
-            final Vertex seed = seedVertices.next();
-            final Map<String, Element> bindings = new HashMap<>();
-            bindings.put(plan.getSeedVariable(), seed);
-            // Use a mutable copy of the step list so the DAG executor can remove/restore
-            // steps in place without allocation per recursive call.
-            extend(bindings, new ArrayList<>(plan.getSteps()), results);
-        }
+        return new Iterator<Element[]>() {
+            @Override
+            public boolean hasNext() {
+                while (buffer.isEmpty() && seedVertices.hasNext()) {
+                    final Vertex seed = seedVertices.next();
+                    final Element[] bindings = new Element[plan.getVariableCount()];
+                    bindings[plan.getSeedVariableIndex()] = seed;
+                    extend(bindings, plan, new ArrayList<>(plan.getSteps()), buffer);
+                }
+                return !buffer.isEmpty();
+            }
 
-        return Collections.unmodifiableList(results);
+            @Override
+            public Element[] next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return buffer.poll();
+            }
+        };
     }
 
     // -------------------------------------------------------------------------
@@ -113,7 +118,6 @@ public final class TinkerGraphGqlExecutor {
         if (label == null) {
             return all;
         }
-        // Filter by label without pulling all vertices into a collection
         return new Iterator<Vertex>() {
             private Vertex next = advance();
 
@@ -125,10 +129,7 @@ public final class TinkerGraphGqlExecutor {
                 return null;
             }
 
-            @Override
-            public boolean hasNext() {
-                return next != null;
-            }
+            @Override public boolean hasNext() { return next != null; }
 
             @Override
             public Vertex next() {
@@ -144,118 +145,92 @@ public final class TinkerGraphGqlExecutor {
     // -------------------------------------------------------------------------
 
     /**
-     * Recursively extends the current partial match using a DAG-aware step selection.
+     * Recursively extends the current partial match using DAG-aware step selection and
+     * array-based bindings with in-place backtracking.
      *
-     * <p>Rather than advancing through a fixed depth index, this method finds the first
-     * step in {@code remaining} whose anchor variable is already bound, executes it, and
-     * recurses with that step temporarily removed. The preferred order within {@code remaining}
-     * (BFS order from the planner) serves as the tiebreaker when multiple steps are eligible,
-     * preserving the same execution order as the previous chain-based implementation while
-     * leaving the door open for future adaptive reordering policies.</p>
+     * <p>The first eligible step — one whose anchor variable slot is non-null in
+     * {@code bindings} — is removed from {@code remaining}, executed over its candidate edges,
+     * and restored to {@code remaining} before returning. New variable bindings are written
+     * directly into the shared {@code bindings} array and cleared on unwind, avoiding any
+     * HashMap allocation during the DFS.</p>
      *
-     * @param bindings  current partial bindings (mutated and restored for backtracking)
-     * @param remaining steps not yet executed; modified in place and restored on unwind
-     * @param results   accumulator for complete matches
+     * @param bindings  shared binding array (index → Element); mutated in place, backtracked on unwind
+     * @param plan      the compiled plan supplying the variable index
+     * @param remaining steps not yet executed; modified in place and restored on return
+     * @param results   buffer into which complete binding-array snapshots are added
      */
-    private void extend(final Map<String, Element> bindings,
-                        final List<ExtensionStep> remaining,
-                        final List<Map<String, Element>> results) {
+    private void extend(final Element[] bindings, final GqlMatchPlan plan,
+                        final List<ExtensionStep> remaining, final ArrayDeque<Element[]> results) {
         if (remaining.isEmpty()) {
-            results.add(new HashMap<>(bindings));
+            results.add(bindings.clone());
             return;
         }
 
-        // Find the first eligible step: anchor variable already bound.
+        // Find first eligible step: anchor slot is non-null.
         int chosenIdx = -1;
         for (int i = 0; i < remaining.size(); i++) {
-            if (bindings.containsKey(remaining.get(i).getAnchorVariable())) {
+            if (bindings[plan.getIndex(remaining.get(i).getAnchorVariable())] != null) {
                 chosenIdx = i;
                 break;
             }
         }
         if (chosenIdx < 0) {
-            // No eligible step — partial match is unsatisfiable; backtrack.
+            // No eligible step — partial match is unsatisfiable at this point; backtrack.
             return;
         }
 
         final ExtensionStep step = remaining.remove(chosenIdx);
-        final Vertex anchor = (Vertex) bindings.get(step.getAnchorVariable());
+        final Vertex anchor = (Vertex) bindings[plan.getIndex(step.getAnchorVariable())];
 
-        // Retrieve candidate edges from the anchor, filtered by edge label if present
-        final Iterator<Edge> candidates;
-        if (step.getEdgeLabel() != null) {
-            candidates = anchor.edges(step.getDirection(), step.getEdgeLabel());
-        } else {
-            candidates = anchor.edges(step.getDirection());
-        }
+        final Iterator<Edge> candidates = step.getEdgeLabel() != null
+                ? anchor.edges(step.getDirection(), step.getEdgeLabel())
+                : anchor.edges(step.getDirection());
+
+        // Resolve binding-array indices for this step's variables once (outside the loop).
+        final int edgeIdx    = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
+        final int targetIdx  = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
 
         while (candidates.hasNext()) {
             final Edge edge = candidates.next();
             final Vertex target = targetVertex(anchor, edge, step.getDirection());
 
-            // Apply target label constraint
-            if (step.getTargetLabel() != null && !step.getTargetLabel().equals(target.label())) {
+            if (step.getTargetLabel() != null && !step.getTargetLabel().equals(target.label()))
                 continue;
-            }
 
-            // Apply equality constraint: if the target variable is already bound, the
-            // candidate target must be the same element
-            final String targetVar = step.getTargetVariable();
-            if (targetVar != null && bindings.containsKey(targetVar)) {
-                if (!bindings.get(targetVar).equals(target)) {
-                    continue;
+            if (targetIdx >= 0 && bindings[targetIdx] != null) {
+                // Equality constraint: target variable already bound — candidate must match.
+                if (!bindings[targetIdx].equals(target)) continue;
+
+                // Bind edge (if named), recurse, unbind.
+                if (edgeIdx >= 0) {
+                    bindings[edgeIdx] = edge;
+                    extend(bindings, plan, remaining, results);
+                    bindings[edgeIdx] = null;
+                } else {
+                    extend(bindings, plan, remaining, results);
                 }
-                // Constraint satisfied — no need to rebind; recurse with unchanged bindings
-                extendWithEdge(bindings, edge, step.getEdgeVariable(), null, null, remaining, results);
             } else {
-                extendWithEdge(bindings, edge, step.getEdgeVariable(), target, targetVar, remaining, results);
+                // New bindings: write, recurse, clear.
+                if (edgeIdx   >= 0) bindings[edgeIdx]   = edge;
+                if (targetIdx >= 0) bindings[targetIdx]  = target;
+                extend(bindings, plan, remaining, results);
+                if (edgeIdx   >= 0) bindings[edgeIdx]   = null;
+                if (targetIdx >= 0) bindings[targetIdx]  = null;
             }
         }
 
-        // Restore the chosen step so the caller's remaining list is unmodified on return.
         remaining.add(chosenIdx, step);
-    }
-
-    /**
-     * Adds the edge (and optionally the target vertex) to a new binding map copied from
-     * {@code bindings}, then recurses to the next eligible step.
-     */
-    private void extendWithEdge(final Map<String, Element> bindings,
-                                 final Edge edge,
-                                 final String edgeVar,
-                                 final Vertex target,
-                                 final String targetVar,
-                                 final List<ExtensionStep> remaining,
-                                 final List<Map<String, Element>> results) {
-        final boolean needsNewMap = (edgeVar != null) || (targetVar != null && target != null);
-        final Map<String, Element> next = needsNewMap ? new HashMap<>(bindings) : bindings;
-
-        if (edgeVar != null) {
-            next.put(edgeVar, edge);
-        }
-        if (targetVar != null && target != null) {
-            next.put(targetVar, target);
-        }
-
-        extend(next, remaining, results);
     }
 
     // -------------------------------------------------------------------------
     // Direction-aware target vertex resolution
     // -------------------------------------------------------------------------
 
-    /**
-     * Returns the "other end" vertex of the edge relative to the anchor. For an
-     * {@code OUT} step, the anchor is the out-vertex so the target is the in-vertex,
-     * and vice versa. For {@code BOTH}, the end that is not the anchor is the target.
-     */
     private static Vertex targetVertex(final Vertex anchor, final Edge edge, final Direction direction) {
         switch (direction) {
-            case OUT:
-                return edge.inVertex();
-            case IN:
-                return edge.outVertex();
-            default: // BOTH
+            case OUT:  return edge.inVertex();
+            case IN:   return edge.outVertex();
+            default:   // BOTH
                 final Vertex out = edge.outVertex();
                 return out.equals(anchor) ? edge.inVertex() : out;
         }

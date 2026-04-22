@@ -87,8 +87,8 @@ public final class TinkerGraphGqlPlanner {
     GqlMatchPlan compile(final QueryGraph queryGraph) {
         final List<QueryNode> nodes = queryGraph.getNodes();
         if (nodes.isEmpty()) {
-            // Empty pattern — no-op plan; executor should produce zero results
-            return new GqlMatchPlan(null, null, Collections.emptyList());
+            return new GqlMatchPlan(null, null, Collections.emptyList(),
+                    Collections.emptyMap(), new String[0]);
         }
 
         // Assign effective variable names before any planning so anonymous nodes are trackable
@@ -100,7 +100,21 @@ public final class TinkerGraphGqlPlanner {
         // BFS-order the edges into ExtensionSteps
         final List<ExtensionStep> steps = buildSteps(queryGraph, seed, effectiveVars);
 
-        return new GqlMatchPlan(effectiveVars.get(seed), seed.getLabel(), steps);
+        // Build the variable index: seed first (index 0), then edgeVar/targetVar per step.
+        // Uses LinkedHashMap to keep insertion order for the inverse array.
+        final Map<String, Integer> variableIndex = new java.util.LinkedHashMap<>();
+        final String seedVar = effectiveVars.get(seed);
+        variableIndex.put(seedVar, 0);
+        for (final ExtensionStep step : steps) {
+            if (step.getEdgeVariable() != null && !variableIndex.containsKey(step.getEdgeVariable()))
+                variableIndex.put(step.getEdgeVariable(), variableIndex.size());
+            if (step.getTargetVariable() != null && !variableIndex.containsKey(step.getTargetVariable()))
+                variableIndex.put(step.getTargetVariable(), variableIndex.size());
+        }
+        final String[] variables = variableIndex.keySet().toArray(new String[0]);
+
+        return new GqlMatchPlan(seedVar, seed.getLabel(), steps,
+                Collections.unmodifiableMap(variableIndex), variables);
     }
 
     // -------------------------------------------------------------------------
