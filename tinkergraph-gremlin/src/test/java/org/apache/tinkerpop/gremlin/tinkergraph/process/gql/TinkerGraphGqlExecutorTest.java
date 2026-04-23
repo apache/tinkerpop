@@ -503,6 +503,99 @@ public class TinkerGraphGqlExecutorTest {
         assertEquals(bob, results.get(0).get("b"));
     }
 
+    // -------------------------------------------------------------------------
+    // Property filters: vertex index integration
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testIndexedLiteralFilterUsesIndex() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice'})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedParamFilterUsesIndex() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $n})", Collections.singletonMap("n", "Alice"));
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedFilterNoMatch() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:Person {name: 'Nobody'})").isEmpty());
+    }
+
+    @Test
+    public void testIndexedFilterMissingParamFallsBackToScan() {
+        // $n not in params — index cannot be used; full scan applies; no vertex matches null
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:Person {name: $n})", Collections.emptyMap()).isEmpty());
+    }
+
+    @Test
+    public void testMostSelectiveIndexPredicateChosen() {
+        // Two indexed keys: 'name' is more selective (1 match) than 'role' (4 matches).
+        // The executor should use 'name' for the index lookup and return exactly 1 result.
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        graph.createIndex("role", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+
+        for (int i = 0; i < 3; i++) {
+            final Vertex v = graph.addVertex("Person");
+            v.property("name", "Person" + i);
+            v.property("role", "employee");
+        }
+        final Vertex target = graph.addVertex("Person");
+        target.property("name", "Alice");
+        target.property("role", "employee");
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "Alice");
+        params.put("role", "employee");
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $name, role: $role})", params);
+        assertEquals(1, results.size());
+        assertEquals(target, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIndexedSeedWithEdgePattern() {
+        graph.createIndex("name", org.apache.tinkerpop.gremlin.structure.Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", carol);
+
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {name: 'Alice'})-[:KNOWS]->(b:Person)");
+        assertEquals(2, results.size());
+        assertTrue(results.stream().allMatch(r -> alice.equals(r.get("a"))));
+    }
+
     @Test
     public void testPropertyFilterOnSeedAndTarget() {
         final Vertex alice = graph.addVertex("Person");
