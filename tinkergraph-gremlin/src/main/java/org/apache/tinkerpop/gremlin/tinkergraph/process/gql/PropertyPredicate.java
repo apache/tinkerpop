@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.Objects;
 
@@ -86,7 +88,36 @@ public final class PropertyPredicate {
     public boolean test(final Element element, final Map<String, Object> params) {
         final Object expected = paramName != null ? params.get(paramName) : literalValue;
         final Object actual = element.property(key).isPresent() ? element.value(key) : null;
-        return Objects.equals(actual, expected);
+        return numericAwareEquals(actual, expected);
+    }
+
+    static boolean numericAwareEquals(final Object a, final Object b) {
+        if (Objects.equals(a, b)) return true;
+        if (!(a instanceof Number) || !(b instanceof Number)) return false;
+        if (isNaN(a) && isNaN(b)) return true;
+        if (isNaN(a) || isNaN(b)) return false;
+        if (isInfinite(a) && isInfinite(b)) return ((Number) a).doubleValue() == ((Number) b).doubleValue();
+        if (isInfinite(a) || isInfinite(b)) return false;
+        try {
+            return toComparableBigDecimal((Number) a).compareTo(toComparableBigDecimal((Number) b)) == 0;
+        } catch (final NumberFormatException | ArithmeticException e) {
+            return false;
+        }
+    }
+
+    private static boolean isNaN(final Object v) {
+        return (v instanceof Double && ((Double) v).isNaN()) || (v instanceof Float && ((Float) v).isNaN());
+    }
+
+    private static boolean isInfinite(final Object v) {
+        return (v instanceof Double && ((Double) v).isInfinite()) || (v instanceof Float && ((Float) v).isInfinite());
+    }
+
+    private static BigDecimal toComparableBigDecimal(final Number n) {
+        if (n instanceof BigDecimal) return (BigDecimal) n;
+        if (n instanceof BigInteger) return new BigDecimal((BigInteger) n);
+        if (n instanceof Double || n instanceof Float) return new BigDecimal(n.doubleValue());
+        return BigDecimal.valueOf(n.longValue());
     }
 
     /** Returns the property key this predicate applies to. */

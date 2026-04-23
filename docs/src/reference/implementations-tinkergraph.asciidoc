@@ -513,16 +513,14 @@ The right-hand side of each predicate can be a literal value or a parameter refe
 [width="100%",cols="2,4",options="header"]
 |=========================================================
 |Value form |Description
-|`'string'` |String literal enclosed in single quotes
-|`42`       |Integer literal (resolved as a `Long` value at match time)
-|`3.14`     |Floating-point literal (resolved as a `Double` value at match time)
+|`'text'` / `"text"` |String literal (single- or double-quoted; Java escape sequences supported: `\n`, `\t`, `\\`, etc.)
+|`42`       |Integer literal — defaults to `Integer` if the value fits, otherwise `Long` or `BigInteger`. Type suffixes: `29i` (Integer), `30l` (Long), `5b` (Byte), `1000s` (Short), `999n` (BigInteger).
+|`3.14`     |Floating-point literal — defaults to `Double`. Type suffixes: `3.14f` (Float), `1.5d` (Double), `1.99m` (BigDecimal).
 |`true` / `false` |Boolean literal (case-insensitive)
+|`null`     |Matches vertices where the property is absent
+|`NaN` / `Infinity` / `+Infinity` / `-Infinity` |Special floating-point values
 |`$name`    |Parameter reference — resolved from the params map supplied to `match(String, Map)` at execution time
 |=========================================================
-
-NOTE: Literal numeric types are fixed at parse time. An integer literal produces a `Long` and a float literal produces
-a `Double`. If the stored property has a different numeric type (e.g. `Integer`), the equality test will not match
-even if the numeric value is the same. Use a parameter reference and pass a value of the correct type in those cases.
 
 *Find the co-creators of a specific piece of software using a node filter*
 

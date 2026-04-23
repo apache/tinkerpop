@@ -137,6 +137,55 @@ public class GqlGrammarTest {
                 // ── Property filters: case-insensitive boolean keywords ───────────────
                 {"MATCH (n:Person {active: TRUE})"},
                 {"MATCH (n:Person {active: False})"},
+
+                // ── Property filters: signed numeric literals ─────────────────────────
+                {"MATCH (n {balance: -100})"},
+                {"MATCH (n {offset: +42})"},
+                {"MATCH (n {temperature: -3.14})"},
+                {"MATCH (n {delta: +0.5})"},
+
+                // ── Property filters: integer type suffixes ───────────────────────────
+                {"MATCH (n {age: 29i})"},       // Integer
+                {"MATCH (n {count: 100l})"},    // Long
+                {"MATCH (n {count: 100L})"},    // Long (uppercase suffix)
+                {"MATCH (n {small: 5b})"},      // Byte
+                {"MATCH (n {medium: 1000s})"},  // Short
+                {"MATCH (n {big: 999999999999n})"},  // BigInteger
+                // Signed with suffix
+                {"MATCH (n {delta: -1i})"},
+                {"MATCH (n {delta: +1L})"},
+
+                // ── Property filters: float type suffixes ─────────────────────────────
+                {"MATCH (n {weight: 3.14f})"},   // Float
+                {"MATCH (n {weight: 3.14F})"},   // Float (uppercase)
+                {"MATCH (n {score: 9.5d})"},     // Double explicit
+                {"MATCH (n {price: 1.99m})"},    // BigDecimal
+                // Integer-form with float suffix
+                {"MATCH (n {rating: 5f})"},      // Float from integer-form
+                {"MATCH (n {rating: -2d})"},     // Double from integer-form, signed
+
+                // ── Property filters: double-quoted strings ───────────────────────────
+                {"MATCH (n:Person {name: \"Alice\"})"},
+                {"MATCH (n {x: \"hello world\"})"},
+                // Empty strings
+                {"MATCH (n {tag: ''})"},
+                {"MATCH (n {tag: \"\"})"},
+
+                // ── Property filters: escape sequences ────────────────────────────────
+                {"MATCH (n {path: 'C:\\\\Users\\\\test'})"},   // backslash escape
+                {"MATCH (n {greeting: 'say \\\"hi\\\"'})"},    // quote inside single-quoted
+                {"MATCH (n {nl: 'line1\\nline2'})"},            // newline escape
+                {"MATCH (n {tab: 'col1\\tcol2'})"},             // tab escape
+
+                // ── Property filters: null literal ────────────────────────────────────
+                {"MATCH (n {name: null})"},
+                {"MATCH (n:Person {nickname: null})"},
+
+                // ── Property filters: NaN and Infinity ────────────────────────────────
+                {"MATCH (n {score: NaN})"},
+                {"MATCH (n {limit: Infinity})"},
+                {"MATCH (n {limit: +Infinity})"},
+                {"MATCH (n {limit: -Infinity})"},
         });
     }
 

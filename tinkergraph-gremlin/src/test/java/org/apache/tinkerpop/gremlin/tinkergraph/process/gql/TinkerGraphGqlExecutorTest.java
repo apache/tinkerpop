@@ -618,6 +618,155 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Gremlin-compatible literal types
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testIntegerLiteralDefaultsToInteger() {
+        // Unsuffixed integer literal must produce Integer (not Long) to match
+        // the type stored by graph implementations that use Integer for counts/ages.
+        final Vertex v = graph.addVertex("person");
+        v.property("age", 29);  // stored as Integer
+        final Vertex other = graph.addVertex("person");
+        other.property("age", 30);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {age: 29})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIntegerSuffixI() {
+        final Vertex v = graph.addVertex("item");
+        v.property("count", 5);  // Integer
+        final List<Map<String, Element>> results = execute("MATCH (n:item {count: 5i})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testIntegerSuffixL() {
+        final Vertex v = graph.addVertex("item");
+        v.property("count", 999999999999L);  // Long
+        final List<Map<String, Element>> results = execute("MATCH (n:item {count: 999999999999l})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeIntegerLiteral() {
+        final Vertex v = graph.addVertex("account");
+        v.property("balance", -100);  // stored as Integer
+        final Vertex other = graph.addVertex("account");
+        other.property("balance", 50);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:account {balance: -100})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testFloatSuffixF() {
+        final Vertex v = graph.addVertex("item");
+        v.property("weight", 3.14f);  // Float
+        final List<Map<String, Element>> results = execute("MATCH (n:item {weight: 3.14f})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeFloatLiteral() {
+        final Vertex v = graph.addVertex("sensor");
+        v.property("temperature", -1.5);  // Double
+        final Vertex other = graph.addVertex("sensor");
+        other.property("temperature", 20.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:sensor {temperature: -1.5})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testDoubleQuotedStringLiteral() {
+        final Vertex v = graph.addVertex("person");
+        v.property("name", "Alice");
+        final Vertex other = graph.addVertex("person");
+        other.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {name: \"Alice\"})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testStringWithEscapeSequence() {
+        final Vertex v = graph.addVertex("item");
+        v.property("desc", "line1\nline2");
+        final Vertex other = graph.addVertex("item");
+        other.property("desc", "plain");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {desc: 'line1\\nline2'})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNullLiteralMatchesAbsentProperty() {
+        // null predicate should match vertices where the property is absent.
+        final Vertex noName = graph.addVertex("person");
+        final Vertex withName = graph.addVertex("person");
+        withName.property("name", "Alice");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:person {name: null})");
+        assertEquals(1, results.size());
+        assertEquals(noName, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNullLiteralDoesNotMatchPresentProperty() {
+        final Vertex v = graph.addVertex("person");
+        v.property("name", "Alice");
+
+        assertTrue(execute("MATCH (n:person {name: null})").isEmpty());
+    }
+
+    @Test
+    public void testNanLiteralMatchesNanProperty() {
+        final Vertex v = graph.addVertex("sensor");
+        v.property("reading", Double.NaN);
+        final Vertex other = graph.addVertex("sensor");
+        other.property("reading", 1.0);
+
+        // NaN == NaN via Objects.equals on same Double.NaN constant
+        final List<Map<String, Element>> results = execute("MATCH (n:sensor {reading: NaN})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testInfinityLiteralMatchesInfinityProperty() {
+        final Vertex v = graph.addVertex("node");
+        v.property("limit", Double.POSITIVE_INFINITY);
+        final Vertex other = graph.addVertex("node");
+        other.property("limit", 1000.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:node {limit: Infinity})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testNegativeInfinityLiteral() {
+        final Vertex v = graph.addVertex("node");
+        v.property("limit", Double.NEGATIVE_INFINITY);
+        graph.addVertex("node").property("limit", 0.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:node {limit: -Infinity})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    // -------------------------------------------------------------------------
     // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 
