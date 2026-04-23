@@ -621,6 +621,67 @@ public class TinkerGraphGqlExecutorTest {
     // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // Equality constraint short-circuit
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testParallelEdgesWithAnonymousEdgeAndBoundTargetProduceOneResult() {
+        // Multigraph: two parallel KNOWS edges from alice to bob. Pattern has a shared
+        // variable (b) so the second step's target is already bound when evaluated.
+        // The anonymous edge short-circuit must produce exactly one result, not two.
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", bob); // parallel edge
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+        assertEquals(acme, results.get(0).get("c"));
+    }
+
+    @Test
+    public void testParallelEdgesWithNamedEdgeAndBoundTargetProduceOneResultPerEdge() {
+        // When the edge IS named, each parallel edge is a distinct result.
+        final Vertex alice = graph.addVertex("Person");
+        final Vertex bob = graph.addVertex("Person");
+        final Vertex acme = graph.addVertex("Company");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", bob); // parallel edge
+        bob.addEdge("WORKS_AT", acme);
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:Person)-[r:KNOWS]->(b:Person), (b)-[:WORKS_AT]->(c:Company)");
+        assertEquals(2, results.size());
+        assertEquals(2, results.stream().map(row -> row.get("r")).distinct().count());
+    }
+
+    @Test
+    public void testTriangleWithParallelClosingEdgeProducesOneResult() {
+        // Triangle pattern — the closing edge triggers the equality constraint path.
+        // Parallel edges on the closing edge must not produce duplicates.
+        final Vertex a = graph.addVertex("A");
+        final Vertex b = graph.addVertex("B");
+        final Vertex c = graph.addVertex("C");
+        a.addEdge("AB", b);
+        b.addEdge("BC", c);
+        c.addEdge("CA", a);
+        c.addEdge("CA", a); // parallel closing edge
+
+        final List<Map<String, Element>> results = execute(
+                "MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)");
+        assertEquals(1, results.size());
+    }
+
+    // -------------------------------------------------------------------------
+    // Lazy delivery: each row is an independent array snapshot
+    // -------------------------------------------------------------------------
+
     @Test
     public void testResultRowsAreIndependentSnapshots() {
         // Verify that the Element[] arrays returned by the iterator are independent copies —
