@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The logical graph structure produced by parsing a GQL MATCH clause. A {@code QueryGraph}
@@ -166,6 +167,8 @@ public final class QueryGraph {
             label = null;
         }
 
+        final List<PropertyPredicate> predicates = extractPredicates(contents);
+
         if (var != null) {
             // Reuse existing node with this variable name. If the same variable appears
             // with different label constraints (e.g. MATCH (n:Person)-[:K]->(n:Animal)),
@@ -179,16 +182,48 @@ public final class QueryGraph {
                 }
                 return existing;
             }
-            final QueryNode n = new QueryNode(var, label);
+            final QueryNode n = new QueryNode(var, label, predicates);
             nodesByVar.put(var, n);
             nodes.add(n);
             return n;
         } else {
             // Anonymous node — always a new instance
-            final QueryNode n = new QueryNode(null, label);
+            final QueryNode n = new QueryNode(null, label, predicates);
             nodes.add(n);
             return n;
         }
+    }
+
+    private static List<PropertyPredicate> extractPredicates(
+            final GQLParser.ElementPatternFillerContext ctx) {
+        if (ctx.propertyFilter() == null) return Collections.emptyList();
+        return ctx.propertyFilter().propertyPair().stream()
+                .map(pair -> {
+                    final String key = pair.propertyKey().IDENTIFIER().getText();
+                    final GQLParser.PropertyValueContext valCtx = pair.propertyValue();
+                    if (valCtx.paramRef() != null) {
+                        final String paramName = valCtx.paramRef().IDENTIFIER().getText();
+                        return PropertyPredicate.ofParam(key, paramName);
+                    }
+                    return PropertyPredicate.ofLiteral(key, parseLiteral(valCtx.literal()));
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static Object parseLiteral(final GQLParser.LiteralContext ctx) {
+        if (ctx.STRING_LITERAL() != null) {
+            final String raw = ctx.STRING_LITERAL().getText();
+            return raw.substring(1, raw.length() - 1); // strip surrounding single quotes
+        }
+        if (ctx.FLOAT_LITERAL() != null) {
+            return Double.parseDouble(ctx.FLOAT_LITERAL().getText());
+        }
+        if (ctx.INTEGER_LITERAL() != null) {
+            return Long.parseLong(ctx.INTEGER_LITERAL().getText());
+        }
+        if (ctx.K_TRUE() != null) return Boolean.TRUE;
+        if (ctx.K_FALSE() != null) return Boolean.FALSE;
+        throw new IllegalStateException("Unrecognised literal: " + ctx.getText());
     }
 
     private static String extractEdgeVariable(final GQLParser.EdgePatternContext ctx) {

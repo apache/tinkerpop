@@ -28,8 +28,12 @@
  *   - Reverse directed edges:       <-[e:Label]-  or  <-[:Label]-  or  <-[e]-  or  <-[]-
  *   - Undirected edges:             -[e:Label]-   or  -[:Label]-   or  -[e]-   or  -[]-
  *   - Multiple comma-separated path patterns in a single MATCH clause
+ *   - Inline property filters on nodes: (n:Label {key: 'value', count: 42, flag: true, x: $param})
  *
- * Out of scope: WHERE clause, RETURN, property filters, path quantifiers.
+ * Supported property value types: string literals (single-quoted), integer literals,
+ * float literals, boolean literals (true/false), and parameter references ($name).
+ *
+ * Out of scope: WHERE clause, RETURN, path quantifiers.
  */
 grammar GQL;
 
@@ -62,22 +66,22 @@ pathPattern
     ;
 
 /**
- * A node pattern: parenthesised element with optional variable and label.
+ * A node pattern: parenthesised element with optional variable, label, and property filter.
  *
- * Examples: ()  (n)  (:Person)  (n:Person)
+ * Examples: ()  (n)  (:Person)  (n:Person)  (n:Person {name: 'Alice'})  (n {age: $age})
  */
 nodePattern
     : LPAREN elementPatternFiller RPAREN
     ;
 
 /**
- * Shared inner content for both node and edge patterns:
- * an optional variable name followed by an optional label.
+ * Shared inner content for node patterns:
+ * an optional variable name, an optional label, and an optional property filter map.
  *
- * Examples: (empty)  n  :Label  n:Label
+ * Examples: (empty)  n  :Label  n:Label  n:Label {key: value}
  */
 elementPatternFiller
-    : elementVariable? labelSpec?
+    : elementVariable? labelSpec? propertyFilter?
     ;
 
 /**
@@ -87,6 +91,60 @@ elementPatternFiller
  */
 labelSpec
     : COLON labelName
+    ;
+
+/**
+ * An inline property filter map: a comma-separated list of key-value pairs
+ * enclosed in curly braces.
+ *
+ * Example: {name: 'Alice', age: 30, active: true, score: $minScore}
+ */
+propertyFilter
+    : LBRACE propertyPair (COMMA propertyPair)* RBRACE
+    ;
+
+/**
+ * A single key-value predicate within a property filter.
+ *
+ * Example: name: 'Alice'
+ */
+propertyPair
+    : propertyKey COLON propertyValue
+    ;
+
+/**
+ * The property key (always an identifier).
+ */
+propertyKey
+    : IDENTIFIER
+    ;
+
+/**
+ * A property value: either a literal or a parameter reference.
+ */
+propertyValue
+    : literal
+    | paramRef
+    ;
+
+/**
+ * Literal value types: string, integer, float, or boolean.
+ */
+literal
+    : STRING_LITERAL
+    | INTEGER_LITERAL
+    | FLOAT_LITERAL
+    | K_TRUE
+    | K_FALSE
+    ;
+
+/**
+ * A parameter reference: a dollar sign followed by an identifier.
+ *
+ * Example: $personName
+ */
+paramRef
+    : DOLLAR IDENTIFIER
     ;
 
 /**
@@ -143,9 +201,12 @@ labelName
 // ─── Lexer Rules ─────────────────────────────────────────────────────────────
 
 /**
- * MATCH keyword — case-insensitive.
+ * Keywords — must be declared before IDENTIFIER so they take precedence
+ * when the input matches both.
  */
 K_MATCH : [Mm][Aa][Tt][Cc][Hh] ;
+K_TRUE  : [Tt][Rr][Uu][Ee] ;
+K_FALSE : [Ff][Aa][Ll][Ss][Ee] ;
 
 /**
  * Two-character operators must be declared before the single DASH token
@@ -161,9 +222,29 @@ LPAREN   : '(' ;
 RPAREN   : ')' ;
 LBRACKET : '[' ;
 RBRACKET : ']' ;
+LBRACE   : '{' ;
+RBRACE   : '}' ;
 DASH     : '-' ;
 COLON    : ':' ;
 COMMA    : ',' ;
+DOLLAR   : '$' ;
+
+/**
+ * String literal: single-quoted, any characters except newline or unescaped quote.
+ * Escape sequences are not supported in this minimal grammar.
+ */
+STRING_LITERAL : '\'' (~['\r\n])* '\'' ;
+
+/**
+ * Float literal: digits with a decimal point. Must be declared before INTEGER_LITERAL
+ * so that ANTLR's maximal-munch rule prefers the longer token for inputs like "3.14".
+ */
+FLOAT_LITERAL : [0-9]+ '.' [0-9]* ;
+
+/**
+ * Integer literal: one or more decimal digits.
+ */
+INTEGER_LITERAL : [0-9]+ ;
 
 /**
  * Identifiers: used for both variable names and label names.

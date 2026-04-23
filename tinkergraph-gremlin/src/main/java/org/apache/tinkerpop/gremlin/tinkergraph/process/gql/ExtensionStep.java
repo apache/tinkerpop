@@ -20,6 +20,10 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A single join step in a compiled {@link GqlMatchPlan}. An {@code ExtensionStep} describes
  * how to extend a partial match by traversing one edge from an already-bound vertex
@@ -39,6 +43,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
  *   <li>{@code edgeVariable} — optional variable name to which the matching edge is bound</li>
  *   <li>{@code targetLabel} — optional label constraint on the target vertex</li>
  *   <li>{@code targetVariable} — optional variable name to which the target vertex is bound</li>
+ *   <li>{@code targetPredicates} — property equality predicates on the target vertex,
+ *       derived from the inline filter map on the corresponding {@link QueryNode}</li>
  * </ul>
  */
 public final class ExtensionStep {
@@ -49,10 +55,12 @@ public final class ExtensionStep {
     private final String edgeVariable;
     private final String targetLabel;
     private final String targetVariable;
+    private final List<PropertyPredicate> targetPredicates;
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
-                         final String targetLabel, final String targetVariable) {
+                         final String targetLabel, final String targetVariable,
+                         final List<PropertyPredicate> targetPredicates) {
         if (anchorVariable == null) throw new IllegalArgumentException("anchorVariable must not be null");
         this.anchorVariable = anchorVariable;
         this.edgeLabel = edgeLabel;
@@ -60,6 +68,16 @@ public final class ExtensionStep {
         this.edgeVariable = edgeVariable;
         this.targetLabel = targetLabel;
         this.targetVariable = targetVariable;
+        this.targetPredicates = targetPredicates.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(targetPredicates));
+    }
+
+    public ExtensionStep(final String anchorVariable, final String edgeLabel,
+                         final Direction direction, final String edgeVariable,
+                         final String targetLabel, final String targetVariable) {
+        this(anchorVariable, edgeLabel, direction, edgeVariable, targetLabel, targetVariable,
+             Collections.emptyList());
     }
 
     /**
@@ -104,6 +122,14 @@ public final class ExtensionStep {
         return targetVariable;
     }
 
+    /**
+     * Property equality predicates that the target vertex must satisfy, derived from
+     * the inline filter map on the target {@link QueryNode}. Empty if no filter was specified.
+     */
+    public List<PropertyPredicate> getTargetPredicates() {
+        return targetPredicates;
+    }
+
     @Override
     public String toString() {
         return "ExtensionStep{anchor=" + anchorVariable +
@@ -111,6 +137,7 @@ public final class ExtensionStep {
                (edgeLabel != null ? ":" + edgeLabel : "") +
                ", dir=" + direction +
                ", target=" + (targetVariable != null ? targetVariable : "_") +
-               (targetLabel != null ? ":" + targetLabel : "") + "}";
+               (targetLabel != null ? ":" + targetLabel : "") +
+               (targetPredicates.isEmpty() ? "" : ", filters=" + targetPredicates) + "}";
     }
 }

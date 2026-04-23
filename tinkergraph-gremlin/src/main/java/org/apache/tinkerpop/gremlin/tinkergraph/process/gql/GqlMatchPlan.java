@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +33,15 @@ import java.util.Map;
  * variable is bound before the step executes. The executor iterates these steps to perform
  * DFS backtracking pattern matching.
  *
- * <p>The seed node is described by {@link #getSeedVariable()} and {@link #getSeedLabel()}.
- * The executor binds the seed variable first (iterating all vertices matching the seed label)
- * before processing the ordered extension steps.
+ * <p>The seed node is described by {@link #getSeedVariable()}, {@link #getSeedLabel()}, and
+ * {@link #getSeedPredicates()}. The executor binds the seed variable first (iterating all
+ * vertices matching the seed label and property predicates) before processing the extension steps.
  */
 public final class GqlMatchPlan {
 
     private final String seedVariable;
     private final String seedLabel;
+    private final List<PropertyPredicate> seedPredicates;
     private final List<ExtensionStep> steps;
     /**
      * Maps every variable name (including {@code $anon*} synthetics) to its slot index in
@@ -57,12 +59,23 @@ public final class GqlMatchPlan {
     public GqlMatchPlan(final String seedVariable, final String seedLabel,
                         final List<ExtensionStep> steps,
                         final Map<String, Integer> variableIndex,
-                        final String[] variables) {
+                        final String[] variables,
+                        final List<PropertyPredicate> seedPredicates) {
         this.seedVariable = seedVariable;
         this.seedLabel = seedLabel;
+        this.seedPredicates = seedPredicates.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(seedPredicates));
         this.steps = Collections.unmodifiableList(steps);
         this.variableIndex = variableIndex;
         this.variables = variables;
+    }
+
+    public GqlMatchPlan(final String seedVariable, final String seedLabel,
+                        final List<ExtensionStep> steps,
+                        final Map<String, Integer> variableIndex,
+                        final String[] variables) {
+        this(seedVariable, seedLabel, steps, variableIndex, variables, Collections.emptyList());
     }
 
     /**
@@ -78,6 +91,15 @@ public final class GqlMatchPlan {
      */
     public String getSeedLabel() {
         return seedLabel;
+    }
+
+    /**
+     * Returns property equality predicates on the seed node derived from its inline filter
+     * map. The executor applies these when iterating seed candidates. Empty if no filter
+     * was specified on the seed node.
+     */
+    public List<PropertyPredicate> getSeedPredicates() {
+        return seedPredicates;
     }
 
     /**
@@ -121,6 +143,7 @@ public final class GqlMatchPlan {
     public String toString() {
         return "GqlMatchPlan{seed=" + seedVariable +
                (seedLabel != null ? ":" + seedLabel : "") +
+               (seedPredicates.isEmpty() ? "" : " " + seedPredicates) +
                ", steps=" + steps + "}";
     }
 }

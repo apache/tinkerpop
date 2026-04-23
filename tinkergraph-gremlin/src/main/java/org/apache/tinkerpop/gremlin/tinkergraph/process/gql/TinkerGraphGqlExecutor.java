@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -38,13 +39,14 @@ import java.util.NoSuchElementException;
  * <h3>Algorithm</h3>
  * <ol>
  *   <li><strong>Seed iteration</strong> — vertices are scanned from the graph, filtered by the
- *       seed label (if present). Each matching vertex is bound to the seed variable and used
- *       as the starting point for DFS extension.</li>
+ *       seed label and seed property predicates (if present). Each matching vertex is bound to
+ *       the seed variable and used as the starting point for DFS extension.</li>
  *   <li><strong>DFS extension</strong> — {@link #extend} is called recursively with a shared
  *       {@code Element[]} binding array. Steps are selected from the remaining list using DAG
- *       eligibility (anchor variable already bound), with BFS order as the tiebreaker. Bindings
- *       are set in the array before recursing and cleared (set to {@code null}) on backtrack,
- *       avoiding any per-candidate HashMap allocation.</li>
+ *       eligibility (anchor variable already bound), with BFS order as the tiebreaker. Target
+ *       property predicates are applied after the label check. Bindings are set in the array
+ *       before recursing and cleared (set to {@code null}) on backtrack, avoiding any
+ *       per-candidate HashMap allocation.</li>
  *   <li><strong>Result emission</strong> — when all steps are consumed, a shallow clone of the
  *       binding array is added to the per-seed buffer.</li>
  *   <li><strong>Lazy delivery</strong> — {@link #execute} returns an {@code Iterator} that
@@ -58,6 +60,10 @@ import java.util.NoSuchElementException;
  * existing binding. This enables multi-pattern joins such as
  * {@code MATCH (a)-[:KNOWS]->(b), (b)-[:WORKS_AT]->(c)} where {@code b} is shared.
  *
+ * <p>Property predicates (from inline filter maps or parameter references) are evaluated
+ * during seed and target vertex filtering. Parameter values are resolved from the {@code params}
+ * map passed to {@link #execute(GqlMatchPlan, Map)}.
+ *
  * <p>This is a pure Java implementation using only the direct TinkerGraph and {@link Vertex}
  * APIs — no Gremlin traversal machinery is involved.
  */
@@ -70,6 +76,17 @@ public final class TinkerGraphGqlExecutor {
     }
 
     /**
+     * Returns a lazy {@link Iterator} of result rows using an empty params map.
+     * Equivalent to {@code execute(plan, Collections.emptyMap())}.
+     *
+     * @param plan the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
+     * @return a lazy iterator of binding arrays; empty if the plan has no seed
+     */
+    public Iterator<Element[]> execute(final GqlMatchPlan plan) {
+        return execute(plan, Collections.emptyMap());
+    }
+
+    /**
      * Returns a lazy {@link Iterator} of result rows. Each row is an {@code Element[]} whose
      * indices correspond to the variable index defined in the {@link GqlMatchPlan}; use
      * {@link GqlMatchPlan#getVariables()} to map indices back to variable names.
@@ -78,15 +95,18 @@ public final class TinkerGraphGqlExecutor {
      * are fully computed before the iterator moves to the next seed, so memory usage is
      * bounded by the maximum number of results a single seed vertex can produce.
      *
-     * @param plan the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
+     * @param plan   the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
+     * @param params the parameter bindings for {@code $name} references in property predicates;
+     *               may be empty if the query contains no parameter references
      * @return a lazy iterator of binding arrays; empty if the plan has no seed
      */
-    public Iterator<Element[]> execute(final GqlMatchPlan plan) {
+    public Iterator<Element[]> execute(final GqlMatchPlan plan, final Map<String, Object> params) {
         if (plan.getSeedVariable() == null) {
             return Collections.emptyIterator();
         }
 
-        final Iterator<Vertex> seedVertices = seedIterator(plan.getSeedLabel());
+        final Iterator<Vertex> seedVertices = seedIterator(plan.getSeedLabel(),
+                plan.getSeedPredicates(), params);
         final ArrayDeque<Element[]> buffer = new ArrayDeque<>();
 
         return new Iterator<Element[]>() {
@@ -96,7 +116,7 @@ public final class TinkerGraphGqlExecutor {
                     final Vertex seed = seedVertices.next();
                     final Element[] bindings = new Element[plan.getVariableCount()];
                     bindings[plan.getSeedVariableIndex()] = seed;
-                    extend(bindings, plan, new ArrayList<>(plan.getSteps()), buffer);
+                    extend(bindings, plan, params, new ArrayList<>(plan.getSteps()), buffer);
                 }
                 return !buffer.isEmpty();
             }
@@ -113,18 +133,19 @@ public final class TinkerGraphGqlExecutor {
     // Seed vertex iteration
     // -------------------------------------------------------------------------
 
-    private Iterator<Vertex> seedIterator(final String label) {
+    private Iterator<Vertex> seedIterator(final String label,
+                                          final List<PropertyPredicate> predicates,
+                                          final Map<String, Object> params) {
         final Iterator<Vertex> all = graph.vertices();
-        if (label == null) {
-            return all;
-        }
         return new Iterator<Vertex>() {
             private Vertex next = advance();
 
             private Vertex advance() {
                 while (all.hasNext()) {
                     final Vertex v = all.next();
-                    if (label.equals(v.label())) return v;
+                    if (label != null && !label.equals(v.label())) continue;
+                    if (!matchesPredicates(v, predicates, params)) continue;
+                    return v;
                 }
                 return null;
             }
@@ -156,10 +177,12 @@ public final class TinkerGraphGqlExecutor {
      *
      * @param bindings  shared binding array (index → Element); mutated in place, backtracked on unwind
      * @param plan      the compiled plan supplying the variable index
+     * @param params    parameter bindings for predicate resolution
      * @param remaining steps not yet executed; modified in place and restored on return
      * @param results   buffer into which complete binding-array snapshots are added
      */
     private void extend(final Element[] bindings, final GqlMatchPlan plan,
+                        final Map<String, Object> params,
                         final List<ExtensionStep> remaining, final ArrayDeque<Element[]> results) {
         if (remaining.isEmpty()) {
             results.add(bindings.clone());
@@ -187,14 +210,17 @@ public final class TinkerGraphGqlExecutor {
                 : anchor.edges(step.getDirection());
 
         // Resolve binding-array indices for this step's variables once (outside the loop).
-        final int edgeIdx    = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
-        final int targetIdx  = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
+        final int edgeIdx   = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
+        final int targetIdx = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
 
         while (candidates.hasNext()) {
             final Edge edge = candidates.next();
             final Vertex target = targetVertex(anchor, edge, step.getDirection());
 
             if (step.getTargetLabel() != null && !step.getTargetLabel().equals(target.label()))
+                continue;
+
+            if (!matchesPredicates(target, step.getTargetPredicates(), params))
                 continue;
 
             if (targetIdx >= 0 && bindings[targetIdx] != null) {
@@ -204,22 +230,35 @@ public final class TinkerGraphGqlExecutor {
                 // Bind edge (if named), recurse, unbind.
                 if (edgeIdx >= 0) {
                     bindings[edgeIdx] = edge;
-                    extend(bindings, plan, remaining, results);
+                    extend(bindings, plan, params, remaining, results);
                     bindings[edgeIdx] = null;
                 } else {
-                    extend(bindings, plan, remaining, results);
+                    extend(bindings, plan, params, remaining, results);
                 }
             } else {
                 // New bindings: write, recurse, clear.
                 if (edgeIdx   >= 0) bindings[edgeIdx]   = edge;
                 if (targetIdx >= 0) bindings[targetIdx]  = target;
-                extend(bindings, plan, remaining, results);
+                extend(bindings, plan, params, remaining, results);
                 if (edgeIdx   >= 0) bindings[edgeIdx]   = null;
                 if (targetIdx >= 0) bindings[targetIdx]  = null;
             }
         }
 
         remaining.add(chosenIdx, step);
+    }
+
+    // -------------------------------------------------------------------------
+    // Predicate evaluation
+    // -------------------------------------------------------------------------
+
+    private static boolean matchesPredicates(final Element element,
+                                             final List<PropertyPredicate> predicates,
+                                             final Map<String, Object> params) {
+        for (final PropertyPredicate p : predicates) {
+            if (!p.test(element, params)) return false;
+        }
+        return true;
     }
 
     // -------------------------------------------------------------------------

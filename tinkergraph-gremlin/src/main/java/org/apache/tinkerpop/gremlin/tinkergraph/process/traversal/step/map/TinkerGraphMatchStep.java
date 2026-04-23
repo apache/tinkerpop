@@ -111,8 +111,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      * is always obtained from the planner's cache so identical query strings cost only a map
      * lookup after the first compilation.</p>
      *
-     * @throws UnsupportedOperationException if the query language is non-null and not "gql",
-     *                                       or if non-empty query parameters are supplied
+     * @throws UnsupportedOperationException if the query language is non-null and not "gql"
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -125,11 +124,8 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
         }
 
         final java.util.Map<String, Object> params = getParams();
-        if (params != null && !params.isEmpty()) {
-            throw new UnsupportedOperationException(
-                    "TinkerGraphMatchStep does not yet support query parameters — " +
-                    "pass null or an empty map until parameter support is implemented");
-        }
+        final java.util.Map<String, Object> resolvedParams =
+                (params != null && !params.isEmpty()) ? params : java.util.Collections.emptyMap();
 
         // Ensure planner and executor are available. When injected by the strategy they are
         // graph-level singletons; otherwise fall back to per-step lazy initialisation.
@@ -148,7 +144,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
             // it consumes.
             if (!done) {
                 if (rowIterator == null)
-                    rowIterator = executor.execute(plan);
+                    rowIterator = executor.execute(plan, resolvedParams);
                 if (rowIterator.hasNext())
                     return rowToSpawnTraverser(rowIterator.next(), plan);
                 done = true;
@@ -164,7 +160,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
             // Current row iterator exhausted — advance to the next incoming traverser.
             if (!this.starts.hasNext()) throw FastNoSuchElementException.instance();
             currentStart = this.starts.next();
-            rowIterator = executor.execute(plan);
+            rowIterator = executor.execute(plan, resolvedParams);
         }
     }
 
