@@ -28,10 +28,18 @@
  *   - Reverse directed edges:       <-[e:Label]-  or  <-[:Label]-  or  <-[e]-  or  <-[]-
  *   - Undirected edges:             -[e:Label]-   or  -[:Label]-   or  -[e]-   or  -[]-
  *   - Multiple comma-separated path patterns in a single MATCH clause
- *   - Inline property filters on nodes: (n:Label {key: 'value', count: 42, flag: true, x: $param})
+ *   - Inline property filters on nodes: (n:Label {key: 'value', count: 42i, flag: true, x: $param})
  *
- * Supported property value types: string literals (single-quoted), integer literals,
- * float literals, boolean literals (true/false), and parameter references ($name).
+ * Property value literal types align with Gremlin's type system:
+ *   Strings:  single-quoted 'text' or double-quoted "text", Java escape sequences supported
+ *   Integers: optional sign, decimal digits, optional suffix (b/B=Byte, s/S=Short, i/I=Integer,
+ *             l/L=Long, n/N=BigInteger); no suffix defaults to smallest fitting type
+ *   Floats:   decimal-point form or integer-form with suffix (f/F=Float, d/D=Double, m/M=BigDecimal);
+ *             no suffix defaults to Double
+ *   Booleans: true/false (case-insensitive)
+ *   Null:     null
+ *   Special:  NaN, Infinity, +Infinity, -Infinity
+ *   Params:   $name (resolved from the params map at execution time)
  *
  * Out of scope: WHERE clause, RETURN, path quantifiers.
  */
@@ -97,7 +105,7 @@ labelSpec
  * An inline property filter map: a comma-separated list of key-value pairs
  * enclosed in curly braces.
  *
- * Example: {name: 'Alice', age: 30, active: true, score: $minScore}
+ * Example: {name: 'Alice', age: 30i, active: true, score: $minScore}
  */
 propertyFilter
     : LBRACE propertyPair (COMMA propertyPair)* RBRACE
@@ -128,14 +136,20 @@ propertyValue
     ;
 
 /**
- * Literal value types: string, integer, float, or boolean.
+ * Literal value types, aligned with Gremlin's GenericLiteralVisitor type system.
+ * FLOAT_LITERAL must precede INTEGER_LITERAL in ANTLR alternatives so that the
+ * lexer-level maximal-munch already resolved the token type correctly.
  */
 literal
     : STRING_LITERAL
-    | INTEGER_LITERAL
     | FLOAT_LITERAL
+    | INTEGER_LITERAL
     | K_TRUE
     | K_FALSE
+    | K_NULL
+    | K_NAN
+    | SIGNED_INFINITY
+    | K_INFINITY
     ;
 
 /**
@@ -203,17 +217,22 @@ labelName
 /**
  * Keywords — must be declared before IDENTIFIER so they take precedence
  * when the input matches both.
+ * K_MATCH stays case-insensitive (ISO GQL keyword convention).
+ * Numeric special-value keywords use exact case to match Gremlin's grammar.
  */
-K_MATCH : [Mm][Aa][Tt][Cc][Hh] ;
-K_TRUE  : [Tt][Rr][Uu][Ee] ;
-K_FALSE : [Ff][Aa][Ll][Ss][Ee] ;
+K_MATCH    : [Mm][Aa][Tt][Cc][Hh] ;
+K_TRUE     : [Tt][Rr][Uu][Ee] ;
+K_FALSE    : [Ff][Aa][Ll][Ss][Ee] ;
+K_NULL     : 'null' ;
+K_NAN      : 'NaN' ;
+K_INFINITY : 'Infinity' ;
 
 /**
  * Two-character operators must be declared before the single DASH token
  * so that ANTLR4's maximal-munch rule chooses the longer match.
  */
-ARROW    : '->' ;   // directed edge tail
-LARROW   : '<-' ;   // reverse directed edge head
+ARROW  : '->' ;   // directed edge tail
+LARROW : '<-' ;   // reverse directed edge head
 
 /**
  * Single-character punctuation.
@@ -230,21 +249,54 @@ COMMA    : ',' ;
 DOLLAR   : '$' ;
 
 /**
- * String literal: single-quoted, any characters except newline or unescaped quote.
- * Escape sequences are not supported in this minimal grammar.
+ * Signed infinity: +Infinity or -Infinity.
+ * Declared after ARROW/LARROW so that -> and <- are preferred, and before
+ * INTEGER_LITERAL/FLOAT_LITERAL so the sign is consumed as part of this token.
+ * Maximal-munch selects this 9-char token over DASH(1) + K_INFINITY(8).
  */
-STRING_LITERAL : '\'' (~['\r\n])* '\'' ;
+SIGNED_INFINITY : [+-] 'Infinity' ;
 
 /**
- * Float literal: digits with a decimal point. Must be declared before INTEGER_LITERAL
- * so that ANTLR's maximal-munch rule prefers the longer token for inputs like "3.14".
+ * String literal: single-quoted or double-quoted, supporting Java-style escape sequences.
+ * Escape sequences: \b \t \n \f \r \" \' \\ plus octal and unicode (\uXXXX).
  */
-FLOAT_LITERAL : [0-9]+ '.' [0-9]* ;
+STRING_LITERAL
+    : '\'' SqStringChar* '\''
+    | '"'  DqStringChar* '"'
+    ;
+
+fragment SqStringChar : ~['\\\r\n] | EscapeSeq ;
+fragment DqStringChar : ~["\\\r\n] | EscapeSeq ;
+
+fragment EscapeSeq
+    : '\\' [btnfr"'\\]
+    | '\\' [0-7] ([0-7] [0-7]?)?
+    | '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+    ;
+
+fragment HexDigit : [0-9a-fA-F] ;
 
 /**
- * Integer literal: one or more decimal digits.
+ * Float literal: decimal-point form or integer-digits with float type suffix.
+ * Must be declared before INTEGER_LITERAL so that ANTLR's maximal-munch rule
+ * picks the longer token for "3.14" and "29f" over just "3" and "29".
+ *
+ * Type suffix (case-insensitive): f/F=Float, d/D=Double, m/M=BigDecimal.
+ * No suffix on decimal-point form defaults to Double.
+ * Optional leading sign (+/-).
  */
-INTEGER_LITERAL : [0-9]+ ;
+FLOAT_LITERAL
+    : [+-]? [0-9]+ '.' [0-9]* [fFdDmM]?   // decimal form: 3.14  -1.5f  2.
+    | [+-]? [0-9]+             [fFdDmM]     // integer-digits + float suffix: 29f  -1d
+    ;
+
+/**
+ * Integer literal: optional sign, decimal digits, optional type suffix.
+ * Mirrors Gremlin's IntegerTypeSuffix: b/B=Byte, s/S=Short, i/I=Integer,
+ * l/L=Long, n/N=BigInteger.  No suffix: smallest fitting type
+ * (Integer first, then Long, then BigInteger — matching Gremlin's default).
+ */
+INTEGER_LITERAL : [+-]? [0-9]+ [bBsSnNiIlL]? ;
 
 /**
  * Identifiers: used for both variable names and label names.

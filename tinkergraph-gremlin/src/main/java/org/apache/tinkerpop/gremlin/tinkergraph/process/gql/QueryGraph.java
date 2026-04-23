@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.tinkergraph.gql.GQLLexer;
 import org.apache.tinkerpop.gremlin.tinkergraph.gql.GQLParser;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -213,17 +215,104 @@ public final class QueryGraph {
     private static Object parseLiteral(final GQLParser.LiteralContext ctx) {
         if (ctx.STRING_LITERAL() != null) {
             final String raw = ctx.STRING_LITERAL().getText();
-            return raw.substring(1, raw.length() - 1); // strip surrounding single quotes
+            // Strip surrounding single or double quotes, then unescape.
+            return unescapeString(raw.substring(1, raw.length() - 1));
         }
         if (ctx.FLOAT_LITERAL() != null) {
-            return Double.parseDouble(ctx.FLOAT_LITERAL().getText());
+            final String text = ctx.FLOAT_LITERAL().getText();
+            final char last = Character.toLowerCase(text.charAt(text.length() - 1));
+            // Strip the type suffix (if any) before parsing.
+            final String num = Character.isLetter(last) ? text.substring(0, text.length() - 1) : text;
+            if (last == 'm') return new BigDecimal(num);
+            if (last == 'f') return Float.parseFloat(num);
+            return Double.parseDouble(num);   // 'd' suffix or no suffix → Double
         }
         if (ctx.INTEGER_LITERAL() != null) {
-            return Long.parseLong(ctx.INTEGER_LITERAL().getText());
+            final String text = ctx.INTEGER_LITERAL().getText();
+            final char last = Character.toLowerCase(text.charAt(text.length() - 1));
+            final String num = Character.isLetter(last) ? text.substring(0, text.length() - 1) : text;
+            switch (last) {
+                case 'b': return Byte.parseByte(num);
+                case 's': return Short.parseShort(num);
+                case 'i': return Integer.parseInt(num);
+                case 'l': return Long.parseLong(num);
+                case 'n':
+                    // BigInteger does not accept a leading '+'.
+                    final String bigNum = num.startsWith("+") ? num.substring(1) : num;
+                    return new BigInteger(bigNum);
+            }
+            // No type suffix: match Gremlin's default — smallest fitting type.
+            try { return Integer.parseInt(text); }
+            catch (final NumberFormatException e1) {
+                try { return Long.parseLong(text); }
+                catch (final NumberFormatException e2) {
+                    final String s = text.startsWith("+") ? text.substring(1) : text;
+                    return new BigInteger(s);
+                }
+            }
         }
-        if (ctx.K_TRUE() != null) return Boolean.TRUE;
+        if (ctx.K_TRUE()  != null) return Boolean.TRUE;
         if (ctx.K_FALSE() != null) return Boolean.FALSE;
+        if (ctx.K_NULL()  != null) return null;
+        if (ctx.K_NAN()   != null) return Double.NaN;
+        if (ctx.K_INFINITY() != null) return Double.POSITIVE_INFINITY;
+        if (ctx.SIGNED_INFINITY() != null) {
+            return ctx.SIGNED_INFINITY().getText().charAt(0) == '-'
+                   ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        }
         throw new IllegalStateException("Unrecognised literal: " + ctx.getText());
+    }
+
+    /**
+     * Applies Java-style escape sequences to a string that has already had its
+     * surrounding quotes removed. Handles: \b \t \n \f \r \" \' \\,
+     * octal escapes, and four-hex-digit unicode escapes.
+     */
+    private static String unescapeString(final String s) {
+        if (s.indexOf('\\') < 0) return s; // fast path: nothing to unescape
+        final StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            final char c = s.charAt(i);
+            if (c != '\\' || i + 1 >= s.length()) {
+                sb.append(c);
+                continue;
+            }
+            final char next = s.charAt(++i);
+            switch (next) {
+                case 'b':  sb.append('\b'); break;
+                case 't':  sb.append('\t'); break;
+                case 'n':  sb.append('\n'); break;
+                case 'f':  sb.append('\f'); break;
+                case 'r':  sb.append('\r'); break;
+                case '"':  sb.append('"');  break;
+                case '\'': sb.append('\''); break;
+                case '\\': sb.append('\\'); break;
+                case 'u':
+                    if (i + 4 < s.length()) {
+                        sb.append((char) Integer.parseInt(s.substring(i + 1, i + 5), 16));
+                        i += 4;
+                    } else {
+                        sb.append('\\').append(next);
+                    }
+                    break;
+                default:
+                    if (next >= '0' && next <= '7') {
+                        int val = next - '0';
+                        if (i + 1 < s.length() && s.charAt(i + 1) >= '0' && s.charAt(i + 1) <= '7') {
+                            val = val * 8 + (s.charAt(++i) - '0');
+                            if (next <= '3' && i + 1 < s.length()
+                                    && s.charAt(i + 1) >= '0' && s.charAt(i + 1) <= '7') {
+                                val = val * 8 + (s.charAt(++i) - '0');
+                            }
+                        }
+                        sb.append((char) val);
+                    } else {
+                        sb.append('\\').append(next);
+                    }
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     private static String extractEdgeVariable(final GQLParser.EdgePatternContext ctx) {

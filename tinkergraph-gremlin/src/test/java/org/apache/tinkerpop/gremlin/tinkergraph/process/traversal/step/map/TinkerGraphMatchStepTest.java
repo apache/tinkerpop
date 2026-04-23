@@ -317,4 +317,55 @@ public class TinkerGraphMatchStepTest {
 
         assertTrue(results.isEmpty());
     }
+
+    @Test
+    public void testIntegerLiteralMatchesIntegerTypedProperty() {
+        // Verifies that unsuffixed integer literals produce Integer (not Long),
+        // matching the default type used by graph implementations for small values.
+        final Vertex young = graph.addVertex("person");
+        young.property("age", 29);   // stored as Integer
+        final Vertex old = graph.addVertex("person");
+        old.property("age", 32);
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {age: 29})")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(young, results.get(0));
+    }
+
+    @Test
+    public void testDoubleQuotedStringFilter() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("person");
+        bob.property("name", "Bob");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {name: \"Alice\"})")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0));
+    }
+
+    @Test
+    public void testNullLiteralMatchesAbsentProperty() {
+        final Vertex noNick = graph.addVertex("person");
+        noNick.property("name", "Alice");
+        final Vertex withNick = graph.addVertex("person");
+        withNick.property("name", "Bob");
+        withNick.property("nickname", "Bobby");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {nickname: null})")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(noNick, results.get(0));
+    }
 }
