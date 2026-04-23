@@ -2706,6 +2706,20 @@ g.match("MATCH (a:person)-[:knows]->(b:person)").
     select("a", "b").by("name")
 ----
 
+The `match(String, Map)` overload accepts a params map whose values are resolved against `$name` references
+embedded in the query string. This is the recommended approach when filter values originate outside the query
+itself, because the query string stays constant and the provider can cache the parsed form:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (p:person {name: $who})-[:knows]->(f:person)",
+        ["who": "marko"]).
+  select("p", "f").by("name")
+----
+
+The syntax for inline property filters (`{key: value}`) and the full set of supported literal types are
+provider-specific. See <<tinkergraph-gql>> for the complete syntax supported by TinkerGraph's built-in GQL engine.
+
 *Additional References*
 
 link:++https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html#match(java.lang.String)++[`match(String)`]
