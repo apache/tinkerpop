@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,8 +85,12 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     private List<Map<String, Element>> execute(final String query) {
+        return execute(query, Collections.emptyMap());
+    }
+
+    private List<Map<String, Element>> execute(final String query, final Map<String, Object> params) {
         final GqlMatchPlan plan = planner.plan(query);
-        return materialize(executor.execute(plan), plan);
+        return materialize(executor.execute(plan, params), plan);
     }
 
     // -------------------------------------------------------------------------
@@ -325,6 +330,198 @@ public class TinkerGraphGqlExecutorTest {
         b.addEdge("BC", c);
         // Missing c→a edge
         assertTrue(execute("MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Lazy delivery: each row is an independent array snapshot
+    // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // Property filters: literal values
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testStringLiteralFilterMatchesSingleVertex() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice'})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testStringLiteralFilterNoMatch() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        assertTrue(execute("MATCH (n:Person {name: 'Charlie'})").isEmpty());
+    }
+
+    @Test
+    public void testIntegerLiteralFilter() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("age", 30L);
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("age", 25L);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {age: 30})");
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testFloatLiteralFilter() {
+        final Vertex a = graph.addVertex("Item");
+        a.property("score", 9.5);
+        final Vertex b = graph.addVertex("Item");
+        b.property("score", 8.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Item {score: 9.5})");
+        assertEquals(1, results.size());
+        assertEquals(a, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBooleanTrueLiteralFilter() {
+        final Vertex active = graph.addVertex("Person");
+        active.property("active", true);
+        final Vertex inactive = graph.addVertex("Person");
+        inactive.property("active", false);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {active: true})");
+        assertEquals(1, results.size());
+        assertEquals(active, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBooleanFalseLiteralFilter() {
+        final Vertex active = graph.addVertex("Person");
+        active.property("active", true);
+        final Vertex inactive = graph.addVertex("Person");
+        inactive.property("active", false);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {active: false})");
+        assertEquals(1, results.size());
+        assertEquals(inactive, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testMultiPropertyLiteralFilter() {
+        final Vertex alice30 = graph.addVertex("Person");
+        alice30.property("name", "Alice");
+        alice30.property("age", 30L);
+        final Vertex alice25 = graph.addVertex("Person");
+        alice25.property("name", "Alice");
+        alice25.property("age", 25L);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:Person {name: 'Alice', age: 30})");
+        assertEquals(1, results.size());
+        assertEquals(alice30, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testPropertyFilterMissingPropertyNoMatch() {
+        // Vertex has no 'name' property — predicate must not match
+        graph.addVertex("Person");
+        assertTrue(execute("MATCH (n:Person {name: 'Alice'})").isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: parameter references
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testStringParamFilter() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+
+        final Map<String, Object> params = Collections.singletonMap("n", "Alice");
+        final List<Map<String, Element>> results = execute("MATCH (p:Person {name: $n})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("p"));
+    }
+
+    @Test
+    public void testParamFilterNoMatch() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+
+        final Map<String, Object> params = Collections.singletonMap("n", "Charlie");
+        assertTrue(execute("MATCH (p:Person {name: $n})", params).isEmpty());
+    }
+
+    @Test
+    public void testMissingParamYieldsNoMatch() {
+        // $n not in params map — resolves to null, property is non-null → no match
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        assertTrue(execute("MATCH (p:Person {name: $n})", Collections.emptyMap()).isEmpty());
+    }
+
+    @Test
+    public void testMultiParamFilter() {
+        final Vertex alice30 = graph.addVertex("Person");
+        alice30.property("name", "Alice");
+        alice30.property("age", 30L);
+        final Vertex alice25 = graph.addVertex("Person");
+        alice25.property("name", "Alice");
+        alice25.property("age", 25L);
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("name", "Alice");
+        params.put("age", 30L);
+        final List<Map<String, Element>> results =
+                execute("MATCH (n:Person {name: $name, age: $age})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice30, results.get(0).get("n"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: on target vertex in edge patterns
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testPropertyFilterOnTargetVertex() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        alice.addEdge("KNOWS", carol);
+
+        final Map<String, Object> params = Collections.singletonMap("name", "Bob");
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person)-[:KNOWS]->(b:Person {name: $name})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+    }
+
+    @Test
+    public void testPropertyFilterOnSeedAndTarget() {
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("Person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("Person");
+        carol.property("name", "Carol");
+        alice.addEdge("KNOWS", bob);
+        carol.addEdge("KNOWS", bob);
+
+        final Map<String, Object> params = new java.util.HashMap<>();
+        params.put("src", "Alice");
+        params.put("dst", "Bob");
+        final List<Map<String, Element>> results =
+                execute("MATCH (a:Person {name: $src})-[:KNOWS]->(b:Person {name: $dst})", params);
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
     }
 
     // -------------------------------------------------------------------------

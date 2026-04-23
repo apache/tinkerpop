@@ -107,6 +107,36 @@ public class GqlGrammarTest {
                 {"Match (n:Actor)-[r:ACTED_IN]->(f:Film)"},
                 {"MATCH (n)-[:KNOWS]->(m:Person)"},
                 {"mAtCh ()-[]-()"},
+
+                // ── Property filters: single property, all literal types ───────────────
+                {"MATCH (n:Person {name: 'Alice'})"},
+                {"MATCH (n:Person {age: 30})"},
+                {"MATCH (n:Person {score: 9.5})"},
+                {"MATCH (n:Person {active: true})"},
+                {"MATCH (n:Person {active: false})"},
+                // Property filter without label
+                {"MATCH (n {name: 'Alice'})"},
+                // Anonymous node with property filter
+                {"MATCH ({name: 'Alice'})"},
+
+                // ── Property filters: multiple properties ─────────────────────────────
+                {"MATCH (n:Person {name: 'Alice', age: 30})"},
+                {"MATCH (n:Person {name: 'Alice', active: true, score: 9.5})"},
+
+                // ── Property filters: parameter references ────────────────────────────
+                {"MATCH (n:Person {name: $personName})"},
+                {"MATCH (n:Person {name: $name, age: $age})"},
+                // Mixed literal and param
+                {"MATCH (n:Person {name: $name, active: true})"},
+
+                // ── Property filters: in path patterns ────────────────────────────────
+                {"MATCH (a:Person {name: 'Alice'})-[:KNOWS]->(b:Person)"},
+                {"MATCH (a:Person)-[:KNOWS]->(b:Person {name: $name})"},
+                {"MATCH (a:Person {name: $a})-[:KNOWS]->(b:Person {name: $b})"},
+
+                // ── Property filters: case-insensitive boolean keywords ───────────────
+                {"MATCH (n:Person {active: TRUE})"},
+                {"MATCH (n:Person {active: False})"},
         });
     }
 
@@ -139,12 +169,6 @@ public class GqlGrammarTest {
     @Test
     public void shouldRejectAbbreviatedUndirectedEdge() {
         assertThrows(ParseCancellationException.class, () -> parse("MATCH (n)--(m)"));
-    }
-
-    @Test
-    public void shouldRejectPropertyFilter() {
-        // Property maps {key: value} are explicitly out of scope
-        assertThrows(ParseCancellationException.class, () -> parse("MATCH (n {name: 'Alice'})"));
     }
 
     @Test

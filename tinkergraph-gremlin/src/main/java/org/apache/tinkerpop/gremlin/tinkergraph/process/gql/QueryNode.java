@@ -18,19 +18,33 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Represents a vertex pattern element in a GQL MATCH clause. A node may have an optional
- * variable name for result binding and an optional label constraint for filtering.
- * Both fields are nullable: an anonymous node {@code ()} has neither variable nor label.
+ * variable name for result binding, an optional label constraint for filtering, and an
+ * optional list of property predicates from an inline filter map.
+ * All fields are nullable/empty: an anonymous node {@code ()} has neither variable nor label.
  */
 public final class QueryNode {
 
     private final String variable;
     private final String label;
+    private final List<PropertyPredicate> predicates;
 
-    public QueryNode(final String variable, final String label) {
+    public QueryNode(final String variable, final String label,
+                     final List<PropertyPredicate> predicates) {
         this.variable = variable;
         this.label = label;
+        this.predicates = predicates.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(predicates));
+    }
+
+    public QueryNode(final String variable, final String label) {
+        this(variable, label, Collections.emptyList());
     }
 
     /**
@@ -47,11 +61,20 @@ public final class QueryNode {
         return label;
     }
 
+    /**
+     * Returns the property predicates parsed from the inline filter map, or an empty list
+     * if no property filter was specified.
+     */
+    public List<PropertyPredicate> getPredicates() {
+        return predicates;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("(");
         if (variable != null) sb.append(variable);
         if (label != null) sb.append(':').append(label);
+        if (!predicates.isEmpty()) sb.append(' ').append(predicates);
         sb.append(')');
         return sb.toString();
     }

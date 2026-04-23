@@ -200,12 +200,16 @@ public class TinkerGraphMatchStepTest {
          .toList();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testNonEmptyParamsThrows() {
-        g.<Integer>inject(1)
-         .match("MATCH (n)", Collections.singletonMap("key", "value"))
-         .select("n")
-         .toList();
+    @Test
+    public void testNonEmptyParamsDoesNotThrow() {
+        // params are now fully supported — passing a param that isn't referenced in the query
+        // is harmless; the query simply returns results as if no filter were applied
+        graph.addVertex("Person");
+        final List<Object> results = g.<Integer>inject(1)
+                .match("MATCH (n:Person)", Collections.singletonMap("unused", "value"))
+                .<Object>select("n")
+                .toList();
+        assertEquals(1, results.size());
     }
 
     @Test
@@ -239,5 +243,78 @@ public class TinkerGraphMatchStepTest {
         // select("n") should work — the named variable is accessible
         assertEquals(1, bound.size());
         assertNotNull(bound.get(0));
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filters: integration tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testLiteralPropertyFilterBindsMatchingVertex() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("person");
+        bob.property("name", "Bob");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {name: 'Alice'})")
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0));
+    }
+
+    @Test
+    public void testParamPropertyFilterBindsMatchingVertex() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("person");
+        bob.property("name", "Bob");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {name: $personName})",
+                       Collections.singletonMap("personName", "Alice"))
+                .<Vertex>select("n")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0));
+    }
+
+    @Test
+    public void testParamFilterWithEdgePattern() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("person");
+        bob.property("name", "Bob");
+        final Vertex carol = graph.addVertex("person");
+        carol.property("name", "Carol");
+        alice.addEdge("knows", bob);
+        alice.addEdge("knows", carol);
+
+        final List<Map<String, Vertex>> results = g.<Integer>inject(1)
+                .match("MATCH (a:person {name: 'Alice'})-[:knows]->(b:person {name: $dst})",
+                       Collections.singletonMap("dst", "Bob"))
+                .<Vertex>select("a", "b")
+                .toList();
+
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("a"));
+        assertEquals(bob, results.get(0).get("b"));
+    }
+
+    @Test
+    public void testPropertyFilterNoMatchReturnsEmpty() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+
+        final List<Vertex> results = g.<Integer>inject(1)
+                .match("MATCH (n:person {name: $name})",
+                       Collections.singletonMap("name", "NoSuchPerson"))
+                .<Vertex>select("n")
+                .toList();
+
+        assertTrue(results.isEmpty());
     }
 }

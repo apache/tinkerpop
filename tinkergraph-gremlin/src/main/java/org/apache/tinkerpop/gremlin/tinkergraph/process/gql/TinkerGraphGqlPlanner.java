@@ -114,7 +114,7 @@ public final class TinkerGraphGqlPlanner {
         final String[] variables = variableIndex.keySet().toArray(new String[0]);
 
         return new GqlMatchPlan(seedVar, seed.getLabel(), steps,
-                Collections.unmodifiableMap(variableIndex), variables);
+                Collections.unmodifiableMap(variableIndex), variables, seed.getPredicates());
     }
 
     // -------------------------------------------------------------------------
@@ -267,7 +267,8 @@ public final class TinkerGraphGqlPlanner {
                         stepDir,
                         edge.getVariable(),
                         targetNode.getLabel(),
-                        effectiveVars.get(targetNode)));
+                        effectiveVars.get(targetNode),
+                        targetNode.getPredicates()));
 
                 if (!visitOrder.containsKey(targetNode)) {
                     visitOrder.put(targetNode, visitCounter++);
