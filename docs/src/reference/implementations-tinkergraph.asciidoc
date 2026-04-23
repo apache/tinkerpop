@@ -398,6 +398,9 @@ The following `MATCH` patterns are supported:
 |`(n)` |Named node — binds the matching vertex to variable `n`
 |`(:Label)` |Labeled node — matches vertices with the given label
 |`(n:Label)` |Named and labeled node
+|`(n {key: 'value'})` |Inline property filter — matches vertices where property `key` equals the literal value
+|`(n:Label {key: 'value'})` |Named, labeled, and filtered node — combines a label constraint with a property filter
+|`(n {key: $param})` |Parameter reference — value is resolved from the params map supplied to `match(String, Map)` at execution time
 |`-[]->`  |Anonymous directed edge
 |`-[e]->` |Named directed edge — binds the edge to variable `e`
 |`-[:Label]->` |Labeled directed edge
@@ -489,3 +492,74 @@ IMPORTANT: TinkerGraph itself stores labels as plain Java `String` values and pl
 However, if a graph contains labels containing spaces, hyphens, or non-ASCII Unicode characters, those labels cannot
 currently be referenced in a GQL `MATCH` query. This is a known limitation of the current grammar and may be addressed
 in a future release.
+
+==== Property Filters
+
+Node patterns can carry inline property filters that constrain which vertices are matched. Filters are written as a
+comma-separated list of `key: value` pairs inside curly braces immediately after the label (or variable, or node
+opening parenthesis):
+
+[source,text]
+----
+MATCH (p:person {name: 'marko'})
+MATCH (p:person {name: 'marko', age: 29})
+----
+
+Multiple predicates in the same filter are ANDed: all predicates must hold for a vertex to match. All predicates are
+equality tests; range or inequality tests are not yet part of the supported grammar.
+
+The right-hand side of each predicate can be a literal value or a parameter reference:
+
+[width="100%",cols="2,4",options="header"]
+|=========================================================
+|Value form |Description
+|`'string'` |String literal enclosed in single quotes
+|`42`       |Integer literal (resolved as a `Long` value at match time)
+|`3.14`     |Floating-point literal (resolved as a `Double` value at match time)
+|`true` / `false` |Boolean literal (case-insensitive)
+|`$name`    |Parameter reference — resolved from the params map supplied to `match(String, Map)` at execution time
+|=========================================================
+
+NOTE: Literal numeric types are fixed at parse time. An integer literal produces a `Long` and a float literal produces
+a `Double`. If the stored property has a different numeric type (e.g. `Integer`), the equality test will not match
+even if the numeric value is the same. Use a parameter reference and pass a value of the correct type in those cases.
+
+*Find the co-creators of a specific piece of software using a node filter*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (p:person {name: 'josh'})-[:created]->(s:software)").
+  select("s").by("name")
+----
+
+Property filters can appear on any node in the pattern, including intermediate and target nodes:
+
+*Find software co-created with 'lop', filtering both the start and end vertices*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:created]->(s:software {name: 'lop'}), (b:person)-[:created]->(s)").
+  where("a", neq("b")).
+  select("a", "b").by("name")
+----
+
+==== Parameterized Queries
+
+When a filter value is not known until execution time — for example, because it comes from user input or an outer
+traversal — supply it as a parameter reference (`$name`) in the query string and pass the actual value in the
+params map using the `match(String, Map)` overload:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
+        ["personName": "marko"]).
+  select("p", "f").by("name")
+----
+
+The same query string can be reused with different parameter maps without re-parsing (the parsed query graph is
+cached internally). If a referenced parameter name is absent from the map at execution time, the predicate
+evaluates to `false` and no vertices match that filter.
+
+When TinkerGraph has a vertex index on a filtered property key (created via `createIndex`), the executor
+automatically uses the index for the seed vertex lookup, reducing the initial scan to only those vertices whose
+indexed property matches the filter value.
