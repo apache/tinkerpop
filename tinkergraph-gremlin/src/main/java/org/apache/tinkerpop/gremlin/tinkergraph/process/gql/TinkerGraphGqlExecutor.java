@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Executes a {@link GqlMatchPlan} against a TinkerGraph using a DFS backtracking
@@ -133,9 +136,50 @@ public final class TinkerGraphGqlExecutor {
     // Seed vertex iteration
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns an iterator over seed vertex candidates. When the graph has a vertex index and
+     * at least one seed predicate's key is indexed with a resolvable value (literal or present
+     * param), the most selective such predicate is used for an O(result-set) index lookup
+     * instead of a full vertex scan. The label constraint and all remaining predicates are
+     * applied as a post-filter over the index results. Falls back to a full scan when no
+     * usable indexed predicate exists.
+     */
     private Iterator<Vertex> seedIterator(final String label,
                                           final List<PropertyPredicate> predicates,
                                           final Map<String, Object> params) {
+        // Attempt index-based lookup if any seed predicate key is indexed.
+        if (!predicates.isEmpty()) {
+            final Set<String> indexedKeys = graph.getIndexedKeys(Vertex.class);
+            if (!indexedKeys.isEmpty()) {
+                PropertyPredicate bestPredicate = null;
+                Object bestValue = null;
+                long bestCount = Long.MAX_VALUE;
+
+                for (final PropertyPredicate p : predicates) {
+                    if (!indexedKeys.contains(p.getKey())) continue;
+                    final Object value = p.isParamRef() ? params.get(p.getParamName()) : p.getLiteralValue();
+                    if (value == null) continue; // param absent — cannot use index
+                    final long count = TinkerIndexHelper.countVertexIndex(graph, p.getKey(), value);
+                    if (count < bestCount) {
+                        bestCount = count;
+                        bestPredicate = p;
+                        bestValue = value;
+                    }
+                }
+
+                if (bestPredicate != null) {
+                    final List<TinkerVertex> candidates =
+                            TinkerIndexHelper.queryVertexIndex(graph, bestPredicate.getKey(), bestValue);
+                    return candidates.stream()
+                            .filter(v -> label == null || label.equals(v.label()))
+                            .filter(v -> matchesPredicates(v, predicates, params))
+                            .map(v -> (Vertex) v)
+                            .iterator();
+                }
+            }
+        }
+
+        // Full scan fallback: filter by label and all predicates.
         final Iterator<Vertex> all = graph.vertices();
         return new Iterator<Vertex>() {
             private Vertex next = advance();
