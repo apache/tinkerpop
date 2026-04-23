@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,9 @@ import java.util.Set;
  *       eligibility (anchor variable already bound), with BFS order as the tiebreaker. Target
  *       property predicates are applied after the label check. Bindings are set in the array
  *       before recursing and cleared (set to {@code null}) on backtrack, avoiding any
- *       per-candidate HashMap allocation.</li>
+ *       per-candidate HashMap allocation. When the traversed edge is anonymous, a per-step
+ *       {@code HashSet} deduplicates parallel edges to the same target vertex so that
+ *       multigraph parallel edges do not produce duplicate result rows.</li>
  *   <li><strong>Result emission</strong> — when all steps are consumed, a shallow clone of the
  *       binding array is added to the per-seed buffer.</li>
  *   <li><strong>Lazy delivery</strong> — {@link #execute} returns an {@code Iterator} that
@@ -257,6 +260,11 @@ public final class TinkerGraphGqlExecutor {
         final int edgeIdx   = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
         final int targetIdx = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
 
+        // When the edge is anonymous, parallel edges between the same two vertices are
+        // indistinguishable as bindings.  Track visited targets so we recurse at most once
+        // per distinct target vertex via this step.
+        final Set<Vertex> seenAnonymousTargets = edgeIdx < 0 ? new HashSet<>() : null;
+
         while (candidates.hasNext()) {
             final Edge edge = candidates.next();
             final Vertex target = targetVertex(anchor, edge, step.getDirection());
@@ -271,15 +279,24 @@ public final class TinkerGraphGqlExecutor {
                 // Equality constraint: target variable already bound — candidate must match.
                 if (!bindings[targetIdx].equals(target)) continue;
 
-                // Bind edge (if named), recurse, unbind.
                 if (edgeIdx >= 0) {
+                    // Named edge: each parallel edge from anchor to the bound target is a
+                    // distinct binding — iterate all of them.
                     bindings[edgeIdx] = edge;
                     extend(bindings, plan, params, remaining, results);
                     bindings[edgeIdx] = null;
                 } else {
+                    // Anonymous edge: one matching edge is sufficient to establish
+                    // connectivity. Break after the first — additional parallel edges
+                    // to the same bound target would produce duplicate results.
                     extend(bindings, plan, params, remaining, results);
+                    break;
                 }
             } else {
+                // Anonymous edge: parallel edges to the same target vertex yield identical
+                // bindings — skip if this target was already reached via an earlier parallel edge.
+                if (seenAnonymousTargets != null && !seenAnonymousTargets.add(target)) continue;
+
                 // New bindings: write, recurse, clear.
                 if (edgeIdx   >= 0) bindings[edgeIdx]   = edge;
                 if (targetIdx >= 0) bindings[targetIdx]  = target;
