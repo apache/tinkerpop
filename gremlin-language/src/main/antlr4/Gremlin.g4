@@ -123,10 +123,12 @@ traversalSourceSpawnMethod_addV
 
 traversalSourceSpawnMethod_E
     : K_E LPAREN genericArgumentVarargs RPAREN
+    | K_E LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_V
     : K_V LPAREN genericArgumentVarargs RPAREN
+    | K_V LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_inject
@@ -313,10 +315,12 @@ traversalMethod
 
 traversalMethod_V
     : K_V LPAREN genericArgumentVarargs RPAREN
+    | K_V LPAREN nestedTraversal RPAREN
     ;
 
 traversalMethod_E
     : K_E LPAREN genericArgumentVarargs RPAREN
+    | K_E LPAREN nestedTraversal RPAREN
     ;
 
 traversalMethod_addE
@@ -547,10 +551,13 @@ traversalMethod_has
     : K_HAS LPAREN stringNullableLiteral RPAREN #traversalMethod_has_String
     | K_HAS LPAREN stringNullableLiteral COMMA genericArgument RPAREN #traversalMethod_has_String_Object
     | K_HAS LPAREN stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_P
+    | K_HAS LPAREN stringNullableLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_Traversal
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA genericArgument RPAREN #traversalMethod_has_String_String_Object
     | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA traversalPredicate RPAREN #traversalMethod_has_String_String_P
+    | K_HAS LPAREN stringNullableArgument COMMA stringNullableLiteral COMMA nestedTraversal RPAREN #traversalMethod_has_String_String_Traversal
     | K_HAS LPAREN traversalT COMMA genericArgument RPAREN #traversalMethod_has_T_Object
     | K_HAS LPAREN traversalT COMMA traversalPredicate RPAREN #traversalMethod_has_T_P
+    | K_HAS LPAREN traversalT COMMA nestedTraversal RPAREN #traversalMethod_has_T_Traversal
     ;
 
 traversalMethod_hasId
@@ -767,9 +774,12 @@ traversalMethod_properties
 
 traversalMethod_property
     : K_PROPERTY LPAREN traversalCardinality COMMA genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Cardinality_Object_Object_Object
+    | K_PROPERTY LPAREN traversalCardinality COMMA genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_property_Cardinality_Object_Traversal
     | K_PROPERTY LPAREN traversalCardinality COMMA genericMapNullableArgument RPAREN # traversalMethod_property_Cardinality_Object
     | K_PROPERTY LPAREN genericLiteral COMMA genericArgument (COMMA genericArgumentVarargs)? RPAREN #traversalMethod_property_Object_Object_Object
+    | K_PROPERTY LPAREN genericLiteral COMMA nestedTraversal RPAREN #traversalMethod_property_Object_Traversal
     | K_PROPERTY LPAREN genericMapNullableArgument RPAREN # traversalMethod_property_Object
+    | K_PROPERTY LPAREN nestedTraversal RPAREN #traversalMethod_property_Traversal
     ;
 
 traversalMethod_propertyMap
@@ -1187,10 +1197,12 @@ traversalBiFunction
 
 traversalPredicate_eq
     : (K_P DOT K_EQ | K_EQ) LPAREN genericArgument RPAREN
+    | (K_P DOT K_EQ | K_EQ) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_neq
     : (K_P DOT K_NEQ | K_NEQ) LPAREN genericArgument RPAREN
+    | (K_P DOT K_NEQ | K_NEQ) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_typeOf
@@ -1200,40 +1212,49 @@ traversalPredicate_typeOf
 
 traversalPredicate_lt
     : (K_P DOT K_LT | K_LT) LPAREN genericArgument RPAREN
+    | (K_P DOT K_LT | K_LT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_lte
     : (K_P DOT K_LTE | K_LTE) LPAREN genericArgument RPAREN
+    | (K_P DOT K_LTE | K_LTE) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_gt
     : (K_P DOT K_GT | K_GT) LPAREN genericArgument RPAREN
+    | (K_P DOT K_GT | K_GT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_gte
     : (K_P DOT K_GTE | K_GTE) LPAREN genericArgument RPAREN
+    | (K_P DOT K_GTE | K_GTE) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_inside
     : (K_P DOT K_INSIDE | K_INSIDE) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_INSIDE | K_INSIDE) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_outside
     : (K_P DOT K_OUTSIDE | K_OUTSIDE) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_OUTSIDE | K_OUTSIDE) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_between
     : (K_P DOT K_BETWEEN | K_BETWEEN) LPAREN genericArgument COMMA genericArgument RPAREN
+    | (K_P DOT K_BETWEEN | K_BETWEEN) LPAREN nestedTraversal COMMA nestedTraversal RPAREN
     ;
 
 traversalPredicate_within
     : (K_P DOT K_WITHIN | K_WITHIN) LPAREN RPAREN
     | (K_P DOT K_WITHIN | K_WITHIN) LPAREN genericArgumentVarargs RPAREN
+    | (K_P DOT K_WITHIN | K_WITHIN) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_without
     : (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN RPAREN
     | (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN genericArgumentVarargs RPAREN
+    | (K_P DOT K_WITHOUT | K_WITHOUT) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_not
@@ -1242,26 +1263,32 @@ traversalPredicate_not
 
 traversalPredicate_containing
     : (K_TEXTP DOT K_CONTAINING | K_CONTAINING) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_CONTAINING | K_CONTAINING) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notContaining
     : (K_TEXTP DOT K_NOTCONTAINING | K_NOTCONTAINING) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTCONTAINING | K_NOTCONTAINING) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_startingWith
     : (K_TEXTP DOT K_STARTINGWITH | K_STARTINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_STARTINGWITH | K_STARTINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notStartingWith
     : (K_TEXTP DOT K_NOTSTARTINGWITH | K_NOTSTARTINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTSTARTINGWITH | K_NOTSTARTINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_endingWith
     : (K_TEXTP DOT K_ENDINGWITH | K_ENDINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_ENDINGWITH | K_ENDINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_notEndingWith
     : (K_TEXTP DOT K_NOTENDINGWITH | K_NOTENDINGWITH) LPAREN stringArgument RPAREN
+    | (K_TEXTP DOT K_NOTENDINGWITH | K_NOTENDINGWITH) LPAREN nestedTraversal RPAREN
     ;
 
 traversalPredicate_regex

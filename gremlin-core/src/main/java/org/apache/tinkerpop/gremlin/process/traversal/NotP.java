@@ -70,6 +70,22 @@ public class NotP<V> extends P<V> {
         return new NotP<>(this.originalP.clone());
     }
 
+    @Override
+    public boolean hasTraversal() {
+        return super.hasTraversal() || this.originalP.hasTraversal();
+    }
+
+    @Override
+    public boolean isResolvedEmpty() {
+        return this.originalP.isResolvedEmpty();
+    }
+
+    @Override
+    public void resolve(final Traverser.Admin<?> traverser) {
+        super.resolve(traverser);
+        this.originalP.resolve(traverser);
+    }
+
     /**
      * A NotPBiPredicate wraps a PBiPredicate and represents its negation.
      */

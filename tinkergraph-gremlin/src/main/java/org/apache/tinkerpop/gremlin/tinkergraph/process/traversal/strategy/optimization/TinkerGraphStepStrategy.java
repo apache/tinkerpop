@@ -54,8 +54,15 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasStep || currentStep instanceof NoOpBarrierStep) {
                 if (currentStep instanceof HasStep) {
-                    List<HasContainer> hasContainers = ((HasContainerHolder) currentStep).getHasContainers();
-                    for (HasContainer hasContainer : hasContainers) {
+                    final List<HasContainer> hasContainers = ((HasContainerHolder) currentStep).getHasContainers();
+
+                    // skip folding if any HasContainer holds a child traversal — its value
+                    // is dynamic (resolved per-traverser) and cannot be pushed into TinkerGraphStep
+                    if (hasContainers.stream().anyMatch(HasContainer::hasTraversal)) {
+                        break;
+                    }
+
+                    for (final HasContainer hasContainer : hasContainers) {
                         if (!GraphStep.processHasContainerIds(tinkerGraphStep, hasContainer))
                             tinkerGraphStep.addHasContainer(hasContainer);
                     }
