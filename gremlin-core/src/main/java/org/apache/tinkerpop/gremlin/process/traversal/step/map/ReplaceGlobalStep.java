@@ -65,6 +65,14 @@ public final class ReplaceGlobalStep<S, E> extends ScalarMapStep<S, E> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
+    public String getOldChar() {
+        return this.oldChar;
+    }
+
+    public String getNewChar() {
+        return this.newChar;
+    }
+
     @Override
     public int hashCode() {
         int result = super.hashCode();
