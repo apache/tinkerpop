@@ -270,6 +270,13 @@ try {
 The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
 block on the async stream internally.
 
+==== Streaming Response Deserialization in gremlin-driver
+
+The Java driver now deserializes HTTP responses incrementally, delivering results to the `ResultSet` as they arrive
+rather than buffering the entire response. This is only supported with the default GraphBinary serializer; custom
+`MessageSerializer` implementations will use a non-streaming pipeline that buffers the full response before
+deserialization.
+
 ==== More Secure Gremlin Server
 
 Previous versions of Gremlin Server relied on a Gremlin-flavored Groovy `ScriptEngine` for basic server initialization,

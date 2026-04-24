@@ -70,8 +70,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -381,6 +384,10 @@ public final class Cluster {
 
     ScheduledExecutorService connectionScheduler() {
         return manager.connectionScheduler;
+    }
+
+    ExecutorService streamingReaderPool() {
+        return manager.streamingReaderPool;
     }
 
     Settings.ConnectionPoolSettings connectionPoolSettings() {
@@ -956,6 +963,12 @@ public final class Cluster {
          */
         private final ScheduledThreadPoolExecutor connectionScheduler;
 
+        /**
+         * Cached thread pool for streaming response reader threads. One thread per active streaming response,
+         * bounded implicitly by the connection pool size.
+         */
+        private final ExecutorService streamingReaderPool;
+
         private final int nioPoolSize;
         private final int workerPoolSize;
         private final int port;
@@ -1022,6 +1035,10 @@ public final class Cluster {
             // if all the possible jobs the driver allows for go to a single thread pool.
             this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
+
+            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize,
+                    60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-stream-reader-%d").build());
 
             validationRequest = () -> RequestMessage.build(builder.validationRequest);
         }
@@ -1133,6 +1150,7 @@ public final class Cluster {
                 executor.shutdown();
                 hostScheduler.shutdown();
                 connectionScheduler.shutdown();
+                streamingReaderPool.shutdownNow();
                 closeIt.complete(null);
             });
 
