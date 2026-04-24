@@ -37,22 +37,22 @@ import java.util.stream.Collectors;
 
 /**
  * The logical graph structure produced by parsing a GQL MATCH clause. A {@code QueryGraph}
- * holds the complete set of {@link QueryNode} and {@link QueryEdge} objects that represent
+ * holds the complete set of {@link QueryVertex} and {@link QueryEdge} objects that represent
  * the pattern to match, preserving the variable-identity relationships across multiple
  * comma-separated path patterns.
  *
  * <p>Variable identity is enforced: if the same variable name appears in multiple patterns,
- * the corresponding {@link QueryNode} instances are shared (reference-equal) in the
+ * the corresponding {@link QueryVertex} instances are shared (reference-equal) in the
  * resulting graph.
  *
  * <p>Use {@link #parse(String)} to construct a {@code QueryGraph} from a GQL MATCH string.
  */
 public final class QueryGraph {
 
-    private final List<QueryNode> nodes;
+    private final List<QueryVertex> nodes;
     private final List<QueryEdge> edges;
 
-    private QueryGraph(final List<QueryNode> nodes, final List<QueryEdge> edges) {
+    private QueryGraph(final List<QueryVertex> nodes, final List<QueryEdge> edges) {
         this.nodes = Collections.unmodifiableList(nodes);
         this.edges = Collections.unmodifiableList(edges);
     }
@@ -60,7 +60,7 @@ public final class QueryGraph {
     /**
      * Returns the ordered list of all nodes in this pattern graph.
      */
-    public List<QueryNode> getNodes() {
+    public List<QueryVertex> getNodes() {
         return nodes;
     }
 
@@ -113,12 +113,12 @@ public final class QueryGraph {
     /**
      * Builds a {@code QueryGraph} by walking the given ANTLR parse tree rooted at a
      * {@code matchClause} context. Shared variable names across patterns are resolved
-     * to the same {@link QueryNode} instance.
+     * to the same {@link QueryVertex} instance.
      */
     static QueryGraph fromParseTree(final GQLParser.MatchClauseContext ctx) {
         // nodes keyed by variable name for deduplication; anonymous nodes are always distinct
-        final Map<String, QueryNode> nodesByVar = new LinkedHashMap<>();
-        final List<QueryNode> nodes = new ArrayList<>();
+        final Map<String, QueryVertex> nodesByVar = new LinkedHashMap<>();
+        final List<QueryVertex> nodes = new ArrayList<>();
         final List<QueryEdge> edges = new ArrayList<>();
 
         for (final GQLParser.PathPatternContext patternCtx : ctx.graphPattern().pathPattern()) {
@@ -126,12 +126,12 @@ public final class QueryGraph {
             final List<GQLParser.EdgePatternContext> edgeCtxs = patternCtx.edgePattern();
 
             // Build the first node in this chain
-            QueryNode current = resolveNode(nodeCtxs.get(0), nodesByVar, nodes);
+            QueryVertex current = resolveNode(nodeCtxs.get(0), nodesByVar, nodes);
 
             // Walk the (edgePattern nodePattern)* chain
             for (int i = 0; i < edgeCtxs.size(); i++) {
                 final GQLParser.EdgePatternContext edgeCtx = edgeCtxs.get(i);
-                final QueryNode next = resolveNode(nodeCtxs.get(i + 1), nodesByVar, nodes);
+                final QueryVertex next = resolveNode(nodeCtxs.get(i + 1), nodesByVar, nodes);
 
                 final String edgeVar = extractEdgeVariable(edgeCtx);
                 final String edgeLabel = extractEdgeLabel(edgeCtx);
@@ -149,9 +149,9 @@ public final class QueryGraph {
     // Private helpers
     // -------------------------------------------------------------------------
 
-    private static QueryNode resolveNode(final GQLParser.NodePatternContext ctx,
-                                         final Map<String, QueryNode> nodesByVar,
-                                         final List<QueryNode> nodes) {
+    private static QueryVertex resolveNode(final GQLParser.NodePatternContext ctx,
+                                         final Map<String, QueryVertex> nodesByVar,
+                                         final List<QueryVertex> nodes) {
         final GQLParser.ElementPatternFillerContext contents = ctx.elementPatternFiller();
         final String var;
         final String label;
@@ -176,7 +176,7 @@ public final class QueryGraph {
             // with different label constraints (e.g. MATCH (n:Person)-[:K]->(n:Animal)),
             // reject it — a variable must refer to a single consistent node type.
             if (nodesByVar.containsKey(var)) {
-                final QueryNode existing = nodesByVar.get(var);
+                final QueryVertex existing = nodesByVar.get(var);
                 if (label != null && !label.equals(existing.getLabel())) {
                     throw new IllegalArgumentException(
                             "Variable '" + var + "' is used with conflicting label constraints: '"
@@ -184,13 +184,13 @@ public final class QueryGraph {
                 }
                 return existing;
             }
-            final QueryNode n = new QueryNode(var, label, predicates);
+            final QueryVertex n = new QueryVertex(var, label, predicates);
             nodesByVar.put(var, n);
             nodes.add(n);
             return n;
         } else {
             // Anonymous node — always a new instance
-            final QueryNode n = new QueryNode(null, label, predicates);
+            final QueryVertex n = new QueryVertex(null, label, predicates);
             nodes.add(n);
             return n;
         }

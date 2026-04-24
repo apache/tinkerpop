@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>Algorithm</h3>
  * <ol>
- *   <li><strong>Seed selection</strong> — each {@link QueryNode} is scored via
+ *   <li><strong>Seed selection</strong> — each {@link QueryVertex} is scored via
  *       {@link AbstractTinkerGraph#getVerticesCountByLabel} (O(1) for {@link TinkerGraph},
  *       scan-based for transactional graphs). The node with the fewest matching vertices is
  *       chosen as the seed; ties are broken by list order. Seed selection is recomputed on
@@ -85,17 +85,17 @@ public final class TinkerGraphGqlPlanner {
      * Compiles a {@link QueryGraph} into a {@link GqlMatchPlan}. Package-private for testing.
      */
     GqlMatchPlan compile(final QueryGraph queryGraph) {
-        final List<QueryNode> nodes = queryGraph.getNodes();
+        final List<QueryVertex> nodes = queryGraph.getNodes();
         if (nodes.isEmpty()) {
             return new GqlMatchPlan(null, null, Collections.emptyList(),
                     Collections.emptyMap(), new String[0]);
         }
 
         // Assign effective variable names before any planning so anonymous nodes are trackable
-        final Map<QueryNode, String> effectiveVars = assignEffectiveVariables(nodes);
+        final Map<QueryVertex, String> effectiveVars = assignEffectiveVariables(nodes);
 
         // Select the seed node: lowest cardinality wins
-        final QueryNode seed = selectSeed(nodes);
+        final QueryVertex seed = selectSeed(nodes);
 
         // BFS-order the edges into ExtensionSteps
         final List<ExtensionStep> steps = buildSteps(queryGraph, seed, effectiveVars);
@@ -121,10 +121,10 @@ public final class TinkerGraphGqlPlanner {
     // Seed selection
     // -------------------------------------------------------------------------
 
-    private QueryNode selectSeed(final List<QueryNode> nodes) {
-        QueryNode best = null;
+    private QueryVertex selectSeed(final List<QueryVertex> nodes) {
+        QueryVertex best = null;
         long bestCount = Long.MAX_VALUE;
-        for (final QueryNode node : nodes) {
+        for (final QueryVertex node : nodes) {
             final long count = countMatchingVertices(node);
             if (count < bestCount) {
                 bestCount = count;
@@ -134,7 +134,7 @@ public final class TinkerGraphGqlPlanner {
         return best;
     }
 
-    private long countMatchingVertices(final QueryNode node) {
+    private long countMatchingVertices(final QueryVertex node) {
         return graph.getVerticesCountByLabel(node.getLabel());
     }
 
@@ -148,15 +148,15 @@ public final class TinkerGraphGqlPlanner {
      * Uses identity-based map so distinct anonymous nodes are treated independently even if
      * they happen to share the same label.
      */
-    private static Map<QueryNode, String> assignEffectiveVariables(final List<QueryNode> nodes) {
-        final Map<QueryNode, String> vars = new IdentityHashMap<>();
+    private static Map<QueryVertex, String> assignEffectiveVariables(final List<QueryVertex> nodes) {
+        final Map<QueryVertex, String> vars = new IdentityHashMap<>();
         int anonCounter = 0;
-        for (final QueryNode node : nodes) {
+        for (final QueryVertex node : nodes) {
             if (node.getVariable() != null) {
                 vars.put(node, node.getVariable());
             }
         }
-        for (final QueryNode node : nodes) {
+        for (final QueryVertex node : nodes) {
             if (node.getVariable() == null) {
                 vars.put(node, "$anon" + anonCounter++);
             }
@@ -177,13 +177,13 @@ public final class TinkerGraphGqlPlanner {
      * executor can verify the join constraint against the already-bound variable.
      */
     private List<ExtensionStep> buildSteps(final QueryGraph queryGraph,
-                                           final QueryNode seed,
-                                           final Map<QueryNode, String> effectiveVars) {
+                                           final QueryVertex seed,
+                                           final Map<QueryVertex, String> effectiveVars) {
         final List<ExtensionStep> steps = new ArrayList<>();
 
         // visitOrder tracks the BFS discovery sequence; used to pick the anchor for back-edges
-        final Map<QueryNode, Integer> visitOrder = new IdentityHashMap<>();
-        final Queue<QueryNode> queue = new ArrayDeque<>();
+        final Map<QueryVertex, Integer> visitOrder = new IdentityHashMap<>();
+        final Queue<QueryVertex> queue = new ArrayDeque<>();
         final Set<QueryEdge> processedEdges = Collections.newSetFromMap(new IdentityHashMap<>());
 
         visitOrder.put(seed, 0);
@@ -191,7 +191,7 @@ public final class TinkerGraphGqlPlanner {
         int visitCounter = 1;
 
         while (!queue.isEmpty()) {
-            final QueryNode current = queue.poll();
+            final QueryVertex current = queue.poll();
             final int currentOrder = visitOrder.get(current);
 
             // Collect edges touching current, sort by edge-label density (ascending) so that
@@ -212,8 +212,8 @@ public final class TinkerGraphGqlPlanner {
                 final boolean isSource = edge.getSource() == current;
                 final boolean isTarget = edge.getTarget() == current;
 
-                final QueryNode anchor;
-                final QueryNode targetNode;
+                final QueryVertex anchor;
+                final QueryVertex targetNode;
                 final Direction stepDir;
 
                 if (isSource && isTarget) {
@@ -222,7 +222,7 @@ public final class TinkerGraphGqlPlanner {
                     targetNode = current;
                     stepDir = edge.getDirection();
                 } else if (isSource) {
-                    final QueryNode other = edge.getTarget();
+                    final QueryVertex other = edge.getTarget();
                     if (!visitOrder.containsKey(other)) {
                         // Forward edge: current → other
                         anchor = current;
@@ -241,7 +241,7 @@ public final class TinkerGraphGqlPlanner {
                         }
                     }
                 } else { // isTarget
-                    final QueryNode other = edge.getSource();
+                    final QueryVertex other = edge.getSource();
                     if (!visitOrder.containsKey(other)) {
                         // Forward edge (reversed): current ← other → emit as current traverses back
                         anchor = current;
@@ -282,7 +282,7 @@ public final class TinkerGraphGqlPlanner {
         // connected component and the patterns cannot be joined by a shared variable.
         if (visitOrder.size() < queryGraph.getNodes().size()) {
             final List<String> unvisited = new ArrayList<>();
-            for (final QueryNode n : queryGraph.getNodes()) {
+            for (final QueryVertex n : queryGraph.getNodes()) {
                 if (!visitOrder.containsKey(n)) {
                     unvisited.add(n.getVariable() != null ? "(" + n.getVariable() + ")" : "(anonymous)");
                 }
