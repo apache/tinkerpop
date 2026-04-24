@@ -23,18 +23,18 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a vertex pattern element in a GQL MATCH clause. A node may have an optional
+ * Represents a vertex pattern element in a GQL MATCH clause. A vertex may have an optional
  * variable name for result binding, an optional label constraint for filtering, and an
  * optional list of property predicates from an inline filter map.
- * All fields are nullable/empty: an anonymous node {@code ()} has neither variable nor label.
+ * All fields are nullable/empty: an anonymous vertex {@code ()} has neither variable nor label.
  */
-public final class QueryNode {
+public final class QueryVertex {
 
     private final String variable;
     private final String label;
     private final List<PropertyPredicate> predicates;
 
-    public QueryNode(final String variable, final String label,
+    public QueryVertex(final String variable, final String label,
                      final List<PropertyPredicate> predicates) {
         this.variable = variable;
         this.label = label;
@@ -43,19 +43,19 @@ public final class QueryNode {
                 : Collections.unmodifiableList(new ArrayList<>(predicates));
     }
 
-    public QueryNode(final String variable, final String label) {
+    public QueryVertex(final String variable, final String label) {
         this(variable, label, Collections.emptyList());
     }
 
     /**
-     * Returns the variable name bound to this node, or {@code null} if anonymous.
+     * Returns the variable name bound to this vertex, or {@code null} if anonymous.
      */
     public String getVariable() {
         return variable;
     }
 
     /**
-     * Returns the label constraint for this node, or {@code null} if unconstrained.
+     * Returns the label constraint for this vertex, or {@code null} if unconstrained.
      */
     public String getLabel() {
         return label;

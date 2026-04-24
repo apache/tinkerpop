@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 
 /**
  * Represents an edge pattern element in a GQL MATCH clause. An edge connects a source
- * {@link QueryNode} to a target {@link QueryNode} with an optional variable name, optional
+ * {@link QueryVertex} to a target {@link QueryVertex} with an optional variable name, optional
  * label constraint, and a traversal direction.
  *
  * <p>Direction semantics follow the GQL arrow notation:
@@ -37,11 +37,11 @@ public final class QueryEdge {
     private final String variable;
     private final String label;
     private final Direction direction;
-    private final QueryNode source;
-    private final QueryNode target;
+    private final QueryVertex source;
+    private final QueryVertex target;
 
     public QueryEdge(final String variable, final String label, final Direction direction,
-                     final QueryNode source, final QueryNode target) {
+                     final QueryVertex source, final QueryVertex target) {
         this.variable = variable;
         this.label = label;
         this.direction = direction;
@@ -72,16 +72,16 @@ public final class QueryEdge {
     }
 
     /**
-     * Returns the source (left-hand) node of this edge pattern.
+     * Returns the source (left-hand) vertex of this edge pattern.
      */
-    public QueryNode getSource() {
+    public QueryVertex getSource() {
         return source;
     }
 
     /**
-     * Returns the target (right-hand) node of this edge pattern.
+     * Returns the target (right-hand) vertex of this edge pattern.
      */
-    public QueryNode getTarget() {
+    public QueryVertex getTarget() {
         return target;
     }
 

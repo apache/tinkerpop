@@ -44,7 +44,7 @@ import java.util.List;
  *   <li>{@code targetLabel} — optional label constraint on the target vertex</li>
  *   <li>{@code targetVariable} — optional variable name to which the target vertex is bound</li>
  *   <li>{@code targetPredicates} — property equality predicates on the target vertex,
- *       derived from the inline filter map on the corresponding {@link QueryNode}</li>
+ *       derived from the inline filter map on the corresponding {@link QueryVertex}</li>
  * </ul>
  */
 public final class ExtensionStep {
@@ -124,7 +124,7 @@ public final class ExtensionStep {
 
     /**
      * Property equality predicates that the target vertex must satisfy, derived from
-     * the inline filter map on the target {@link QueryNode}. Empty if no filter was specified.
+     * the inline filter map on the target {@link QueryVertex}. Empty if no filter was specified.
      */
     public List<PropertyPredicate> getTargetPredicates() {
         return targetPredicates;

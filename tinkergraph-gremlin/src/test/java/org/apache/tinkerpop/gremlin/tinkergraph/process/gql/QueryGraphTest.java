@@ -37,7 +37,7 @@ public class QueryGraphTest {
         final QueryGraph g = QueryGraph.parse("MATCH ()");
         assertEquals(1, g.getNodes().size());
         assertEquals(0, g.getEdges().size());
-        final QueryNode n = g.getNodes().get(0);
+        final QueryVertex n = g.getNodes().get(0);
         assertNull(n.getVariable());
         assertNull(n.getLabel());
     }
@@ -46,7 +46,7 @@ public class QueryGraphTest {
     public void testVariableOnlyNode() {
         final QueryGraph g = QueryGraph.parse("MATCH (n)");
         assertEquals(1, g.getNodes().size());
-        final QueryNode n = g.getNodes().get(0);
+        final QueryVertex n = g.getNodes().get(0);
         assertEquals("n", n.getVariable());
         assertNull(n.getLabel());
     }
@@ -55,7 +55,7 @@ public class QueryGraphTest {
     public void testLabelOnlyNode() {
         final QueryGraph g = QueryGraph.parse("MATCH (:Person)");
         assertEquals(1, g.getNodes().size());
-        final QueryNode n = g.getNodes().get(0);
+        final QueryVertex n = g.getNodes().get(0);
         assertNull(n.getVariable());
         assertEquals("Person", n.getLabel());
     }
@@ -64,7 +64,7 @@ public class QueryGraphTest {
     public void testVariableAndLabelNode() {
         final QueryGraph g = QueryGraph.parse("MATCH (n:Person)");
         assertEquals(1, g.getNodes().size());
-        final QueryNode n = g.getNodes().get(0);
+        final QueryVertex n = g.getNodes().get(0);
         assertEquals("n", n.getVariable());
         assertEquals("Person", n.getLabel());
     }
@@ -194,10 +194,10 @@ public class QueryGraphTest {
         assertEquals(3, g.getNodes().size());
         assertEquals(2, g.getEdges().size());
 
-        // Verify that 'b' is the same QueryNode instance in both edges
+        // Verify that 'b' is the same QueryVertex instance in both edges
         final QueryEdge e1 = g.getEdges().get(0);
         final QueryEdge e2 = g.getEdges().get(1);
-        assertSame("Variable 'b' must resolve to the same QueryNode", e1.getTarget(), e2.getSource());
+        assertSame("Variable 'b' must resolve to the same QueryVertex", e1.getTarget(), e2.getSource());
     }
 
     @Test
