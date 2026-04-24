@@ -275,7 +275,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 // failures that follow this will show up in the response body instead.
                 sendHttpResponse(ctx, OK, createResponseHeaders(ctx, serializer, requestCtx).toArray(CharSequence[]::new));
                 sendHttpContents(ctx, requestCtx);
-                sendLastHttpContent(ctx, HttpResponseStatus.OK, "");
+                // Skip if writeError() already terminated the response (e.g., serialization error in makeChunk).
+                // Sending a second LastHttpContent would corrupt the HTTP framing on keep-alive connections.
+                if (requestCtx.getRequestState() != RequestState.ERROR) {
+                    sendLastHttpContent(ctx, HttpResponseStatus.OK, "");
+                }
             } catch (Throwable t) {
                 writeError(requestCtx, formErrorResponseMessage(t, requestMessage), serializer.getValue1());
             } finally {
@@ -753,19 +757,21 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                         ctx.setRequestState(STREAMING);
                         return serializer.writeHeader(responseMessage, nettyContext.alloc());
                     }
-                    ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessage.build()
+                    final ByteBuf fullResponse = serializer.serializeResponseAsBinary(ResponseMessage.build()
                             .result(aggregate)
                             .bulked(bulking)
                             .code(HttpResponseStatus.OK)
                             .create(), nettyContext.alloc());
+                    ctx.setRequestState(FINISHED);
+                    return fullResponse;
 
                 case STREAMING:
                     return serializer.writeChunk(aggregate, nettyContext.alloc());
                 case FINISHING:
+                    final ByteBuf footer = serializer.writeFooter(responseMessage, nettyContext.alloc());
                     ctx.setRequestState(FINISHED);
-                    return serializer.writeFooter(responseMessage, nettyContext.alloc());
+                    return footer;
             }
 
             return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());

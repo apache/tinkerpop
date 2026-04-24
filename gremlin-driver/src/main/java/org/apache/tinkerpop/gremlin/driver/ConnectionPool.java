@@ -525,6 +525,7 @@ final class ConnectionPool {
         while (head != null) {
             // try to borrow connection
             if (!head.isDead() && !head.isBorrowed().get() && head.isBorrowed().compareAndSet(false, true)) {
+                head.resetReturned();
                 available = head;
                 break;
             }

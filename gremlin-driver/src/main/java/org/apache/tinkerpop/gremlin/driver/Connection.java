@@ -67,6 +67,14 @@ final class Connection {
      */
     private final AtomicBoolean isBorrowed = new AtomicBoolean(false);
     /**
+     * Prevents returnToPool() from being called more than once per borrow cycle.
+     */
+    private final AtomicBoolean returned = new AtomicBoolean(false);
+
+    void resetReturned() {
+        returned.set(false);
+    }
+    /**
      * This boolean guards the replace of the connection and ensures that it only occurs once.
      */
     public final AtomicBoolean isBeingReplaced = new AtomicBoolean(false);
@@ -201,7 +209,7 @@ final class Connection {
                     } else {
                         final ResultSet resultSet = new ResultSet(cluster.executor(), requestMessage, pool.host);
 
-                        resultSet.getReadCompleted().whenCompleteAsync((v, t) -> {
+                        resultSet.getReadCompleted().whenComplete((v, t) -> {
                             if (t != null) {
                                 // the callback for when the read failed. a failed read means the request went to the server
                                 // and came back with a server-side error of some sort.  it means the server is responsive
@@ -209,17 +217,13 @@ final class Connection {
                                 // write operation.
                                 logger.debug("Error while processing request on the server {}.", this, t);
                                 handleConnectionCleanupOnError(thisConnection);
-                            } else {
-                                // the callback for when the read was successful, meaning that ResultSet.markComplete()
-                                // was called
-                                thisConnection.returnToPool();
                             }
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt
                             // the shutdown if the returned result cleared up the last pending message and unblocked
                             // the close.
                             tryShutdown();
-                        }, cluster.executor());
+                        });
 
                         pending.set(resultSet);
 
@@ -234,7 +238,8 @@ final class Connection {
         return requestPromise;
     }
 
-    private void returnToPool() {
+    void returnToPool() {
+        if (!returned.compareAndSet(false, true)) return;
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
@@ -244,7 +249,7 @@ final class Connection {
     }
 
     private void handleConnectionCleanupOnError(final Connection thisConnection) {
-        if (thisConnection.isDead()) {
+        if (thisConnection.isDead() || (thisConnection.channel != null && !thisConnection.channel.isOpen())) {
             if (pool != null) pool.replaceConnection(thisConnection);
         } else {
             thisConnection.returnToPool();
@@ -259,7 +264,7 @@ final class Connection {
      * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
      * shutdown if the returned result cleared up the last pending message.
      */
-    private void tryShutdown() {
+    void tryShutdown() {
         if (isClosing() && isOkToClose())
             shutdown(closeFuture.get());
     }
