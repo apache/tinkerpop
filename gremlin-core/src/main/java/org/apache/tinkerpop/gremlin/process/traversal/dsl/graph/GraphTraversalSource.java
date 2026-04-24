@@ -538,6 +538,22 @@ public class GraphTraversalSource implements TraversalSource {
     }
 
     /**
+     * Spawns a {@link GraphTraversal} starting with vertices whose IDs are resolved from a child traversal.
+     * This form will throw an {@link IllegalStateException} at runtime because there is no traverser context
+     * available to evaluate the child traversal as a start step.
+     *
+     * @param traversal the child traversal that produces vertex IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Vertex, Vertex> V(final Traversal<?, ?> traversal) {
+        if (null == traversal) return V(new Object[]{ null });
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.V, traversal);
+        final GraphTraversal.Admin<Vertex, Vertex> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Vertex.class, true, traversal.asAdmin()));
+    }
+
+    /**
      * Spawns a {@link GraphTraversal} starting with all edges or some subset of edges as specified by their unique
      * identifier.
      *
@@ -556,6 +572,22 @@ public class GraphTraversalSource implements TraversalSource {
             step = new GraphStep<>(traversal, Edge.class, true, ids);
         }
         return traversal.addStep(step);
+    }
+
+    /**
+     * Spawns a {@link GraphTraversal} starting with edges whose IDs are resolved from a child traversal.
+     * This form will throw an {@link IllegalStateException} at runtime because there is no traverser context
+     * available to evaluate the child traversal as a start step.
+     *
+     * @param traversal the child traversal that produces edge IDs
+     * @since 4.0.0
+     */
+    public GraphTraversal<Edge, Edge> E(final Traversal<?, ?> traversal) {
+        if (null == traversal) return E(new Object[]{ null });
+        final GraphTraversalSource clone = this.clone();
+        clone.gremlinLang.addStep(GraphTraversal.Symbols.E, traversal);
+        final GraphTraversal.Admin<Edge, Edge> traversalAdmin = new DefaultGraphTraversal<>(clone);
+        return traversalAdmin.addStep(new GraphStep<>(traversalAdmin, Edge.class, true, traversal.asAdmin()));
     }
 
     /**

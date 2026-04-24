@@ -287,7 +287,11 @@ public class GremlinLang implements Cloneable, Serializable {
         final StringBuilder sb = new StringBuilder();
         if (p instanceof TextP) {
             sb.append("TextP.").append(p.getPredicateName()).append("(");
-            sb.append(argAsString(p.getValue()));
+            if (p.hasTraversal()) {
+                sb.append(argAsString(p.getTraversalValue()));
+            } else {
+                sb.append(argAsString(p.getValue()));
+            }
         } else if (p instanceof ConnectiveP) {
             // ConnectiveP gets some special handling because it's reduced to and(P, P, P) and we want it
             // generated the way it was written which was P.and(P).and(P)
@@ -307,6 +311,10 @@ public class GremlinLang implements Cloneable, Serializable {
         } else if (p instanceof NotP) {
             sb.append("P.not(");
             sb.append(argAsString(p.negate())); // Wrap internal P in `P.not(%s)`
+        } else if (p.hasTraversal()) {
+            // Traversal-bearing predicate: serialize as P.op(traversalGremlinLang)
+            sb.append("P.").append(p.getPredicateName()).append("(");
+            sb.append(argAsString(p.getTraversalValue()));
         } else {
             sb.append("P.").append(p.getPredicateName()).append("(");
             sb.append(argAsString(p.getValue()));

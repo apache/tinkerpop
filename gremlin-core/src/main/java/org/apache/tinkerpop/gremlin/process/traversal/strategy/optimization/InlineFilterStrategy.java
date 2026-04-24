@@ -114,6 +114,10 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
     ///////////////////////////
 
     private static boolean processHasStep(final HasStep<?> step, final Traversal.Admin<?, ?> traversal) {
+        if (step.getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) return false;
+        if (step.getPreviousStep() instanceof HasStep) {
+            if (((HasStep<?>) step.getPreviousStep()).getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) return false;
+        }
         if (step.getPreviousStep() instanceof HasStep) {
             final HasStep<?> previousStep = (HasStep<?>) step.getPreviousStep();
             final List<HasContainer> hasContainers = new ArrayList<>(step.getHasContainers());
@@ -221,6 +225,11 @@ public final class InlineFilterStrategy extends AbstractTraversalStrategy<Traver
             InlineFilterStrategy.instance().apply(childTraversal);
             for (final Step<?, ?> childStep : childTraversal.getSteps()) {
                 if (childStep instanceof HasStep) {
+                    // Skip optimization if any HasContainer has a traversal-bearing predicate
+                    if (((HasStep<?>) childStep).getHasContainers().stream().anyMatch(HasContainer::hasTraversal)) {
+                        process = false;
+                        break;
+                    }
                     P p = null;
                     for (final HasContainer hasContainer : ((HasStep<?>) childStep).getHasContainers()) {
                         if (null == key)

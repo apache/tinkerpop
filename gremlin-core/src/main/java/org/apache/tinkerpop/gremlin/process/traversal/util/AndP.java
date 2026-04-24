@@ -57,6 +57,15 @@ public final class AndP<V> extends ConnectiveP<V> {
     }
 
     @Override
+    public boolean isResolvedEmpty() {
+        // AND short-circuits: if any child resolved empty, the conjunction cannot be satisfied
+        for (final P<V> p : this.predicates) {
+            if (p.hasTraversal() && p.isResolvedEmpty()) return true;
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "and(" + StringFactory.removeEndBrackets(this.predicates) + ")";
     }
