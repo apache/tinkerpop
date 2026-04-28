@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
  */
 public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex, E> implements GValueHolder<Vertex, E>, VertexStepContract<E> {
 
+    protected Parameters withConfiguration = new Parameters();
     private GValue<String>[] edgeLabels;
     private Direction direction;
     private final Class<E> returnClass;
@@ -124,18 +126,20 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
         VertexStepPlaceholder<?> that = (VertexStepPlaceholder<?>) o;
         return Objects.equals(sortEdgeLabels(edgeLabels), sortEdgeLabels(that.edgeLabels)) &&
                 direction == that.direction &&
-                Objects.equals(returnClass, that.returnClass);
+                Objects.equals(returnClass, that.returnClass) &&
+                Objects.equals(withConfiguration, that.withConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), sortEdgeLabels(edgeLabels), direction, returnClass);
+        return Objects.hash(super.hashCode(), sortEdgeLabels(edgeLabels), direction, returnClass, withConfiguration);
     }
 
     @Override
     public VertexStepPlaceholder<E> clone() {
         VertexStepPlaceholder<E> clone = (VertexStepPlaceholder<E>) super.clone();
         clone.direction = this.direction;
+        clone.withConfiguration = this.withConfiguration.clone();
         clone.edgeLabels = new GValue[this.edgeLabels.length];
         for (int i = 0; i < this.edgeLabels.length; i++) {
             clone.edgeLabels[i] = this.edgeLabels[i].clone();
@@ -154,6 +158,8 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
                 .map(String.class::cast)
                 .toArray(String[]::new));
         TraversalHelper.copyLabels(this, step, false);
+        this.withConfiguration.getRaw().forEach((key, values) ->
+                values.forEach(value -> step.configure(key, value)));
         return step;
     }
 
@@ -179,6 +185,16 @@ public class VertexStepPlaceholder<E extends Element> extends FlatMapStep<Vertex
     @Override
     public void close() throws Exception {
         closeIterator();
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.withConfiguration.set(null, keyValues);
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.withConfiguration;
     }
 
     /**
