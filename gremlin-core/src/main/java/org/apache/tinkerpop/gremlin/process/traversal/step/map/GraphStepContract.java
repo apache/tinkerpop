@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GraphComputing;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -27,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing, AutoCloseable {
+public interface GraphStepContract<S, E extends Element> extends Step<S, E>, GraphComputing, Configuring, AutoCloseable {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.

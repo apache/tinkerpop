@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Configuring;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -29,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public interface VertexStepContract<E extends Element> extends Step<Vertex, E>, AutoCloseable {
+public interface VertexStepContract<E extends Element> extends Step<Vertex, E>, Configuring, AutoCloseable {
 
     /**
      * Concrete implementations of this contract that can be referenced as TinkerPop implementations.

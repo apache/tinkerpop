@@ -27,6 +27,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 
 This release also includes changes from prior 3.7.x releases.
 
+* Add missing `Configuring` interface to `GraphStepPlaceholder` and `VertexStepPlaceholder`
+
 [[release-3-8-1]]
 === TinkerPop 3.8.1 (Release Date: April 1, 2026)
 

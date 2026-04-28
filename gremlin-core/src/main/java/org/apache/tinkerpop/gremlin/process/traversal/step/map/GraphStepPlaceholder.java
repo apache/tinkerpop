@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValueHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -37,6 +38,7 @@ import java.util.Set;
 
 public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, E> implements GValueHolder<S, E>, GraphStepContract<S, E> {
 
+    protected Parameters withConfiguration = new Parameters();
     protected final Class<E> returnClass;
     protected GValue<?>[] ids;
     private final boolean isStart;
@@ -121,12 +123,13 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         return isStart == that.isStart &&
                 onGraphComputer == that.onGraphComputer &&
                 Objects.equals(returnClass, that.returnClass) &&
-                Objects.deepEquals(ids, that.ids);
+                Objects.deepEquals(ids, that.ids) &&
+                Objects.equals(withConfiguration, that.withConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), returnClass, Arrays.hashCode(ids), isStart, onGraphComputer);
+        return Objects.hash(super.hashCode(), returnClass, Arrays.hashCode(ids), isStart, onGraphComputer, withConfiguration);
     }
 
     @Override
@@ -138,6 +141,8 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
         }
 
         TraversalHelper.copyLabels(this, step, false);
+        this.withConfiguration.getRaw().forEach((key, values) ->
+                values.forEach(value -> step.configure(key, value)));
         return step;
     }
 
@@ -175,10 +180,21 @@ public class GraphStepPlaceholder<S, E extends Element> extends AbstractStep<S, 
     public GraphStepPlaceholder<S, E> clone() {
         GraphStepPlaceholder<S, E> clone = (GraphStepPlaceholder<S, E>) super.clone();
         clone.onGraphComputer = this.onGraphComputer;
+        clone.withConfiguration = this.withConfiguration.clone();
         clone.ids = new GValue<?>[this.ids.length];
         for (int i = 0; i < this.ids.length; i++) {
             clone.ids[i] = this.ids[i].clone();
         }
         return clone;
+    }
+
+    @Override
+    public void configure(final Object... keyValues) {
+        this.withConfiguration.set(null, keyValues);
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.withConfiguration;
     }
 }
