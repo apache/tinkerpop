@@ -5,7 +5,8 @@ description: >
   testing, or contributing to TinkerPop's graph computing framework and its
   multi-language Gremlin ecosystem (Java, Python, JavaScript, .NET, Go).
   Covers coding conventions, build recipes, test evaluation, documentation,
-  development environment setup, and Gremlin MCP server usage.
+  development environment setup, Gremlin MCP server usage, and beads (bd) —
+  the agent planning and persistent memory system used by TinkerPop maintainers.
 license: Apache-2.0
 compatibility: Requires Java 11+, Maven 3.5.3+, Docker. Individual GLVs may need Python, Node.js, .NET SDK, or Go.
 metadata:
@@ -134,6 +135,10 @@ When changes affect behavior, APIs, or user-visible features:
 - Don't invent project policies, version numbers, or release names.
 - Don't remove or weaken tests to "fix" failures; adjust the implementation or test
   data instead.
+- Don't run `bd dolt push` — pushing to DoltHub is a maintainer action performed after
+  PRs merge, not during active development.
+- Don't close a beads issue when a PR is submitted — close it only after the PR merges
+  to the target branch.
 
 If uncertain about the impact of a change, prefer to make a minimal patch, add comments
 for reviewers, and ask for clarification.
@@ -156,3 +161,4 @@ For deeper, task-specific guidance, see the reference files in this skill:
 - [Go GLV](references/build-go.md) — build, test, Docker setup
 - [Documentation](references/documentation.md) — AsciiDoc generation, website
 - [Gremlin MCP Server](references/gremlin-mcp.md) — translation, formatting, querying via MCP
+- [Beads Workflow](references/beads-workflow.md) — agent planning, persistent memory, TinkerPop-specific conventions and DoltHub push policy

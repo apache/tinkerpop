@@ -1038,3 +1038,80 @@ resources.  That file gets copied to the `target/test-classes` on build and sure
 are then configured to point at that area of the file system for those configuration files. The XML files
 can be edited to fine tune control of the log output, but generally speaking the current configuration is likely
 best for everyone's general purposes, so if changes are made please revert them prior to commit.
+
+[[beads]]
+== Using Beads
+
+link:https://github.com/steveyegge/beads[Beads] (`bd`) is an agent planning, execution, and
+long-term memory system that TinkerPop is trialing as part of its AI-assisted development
+workflow. *Use of beads is optional for committers at this time.* It is primarily intended for
+committers who work with AI coding agents such as link:https://www.anthropic.com/claude-code[Claude Code],
+link:https://kiro.dev/[Kiro], or link:https://junie.jetbrains.com/[Junie], and want a structured way to
+plan, track, and preserve the reasoning behind their work.
+
+=== Intent
+
+Traditional development workflows capture the final output — code, tests, documentation — but
+discard the thinking that produced it. Beads addresses this by structuring decisions as a
+persistent graph. Each bead represents a unit of work or an open design question, and the
+accumulated graph of beads becomes a traversable record of what was decided, why, and what
+alternatives were rejected. For AI agents, this means future sessions can access the path of
+decisions that led to the current state rather than re-deriving intent from the code alone.
+
+Beads are backed by a shared DoltHub database at
+link:https://www.dolthub.com/repositories/tinkerpop/tinkerbeads[tinkerpop/tinkerbeads], making
+the graph of decisions visible across contributors and sessions.
+
+=== Workflow
+
+Because beads usage is optional, the agent does not load beads context automatically. Once the
+`tinkerpop-dev` skill is active, the committer opts in by telling the agent to use beads:
+
+----
+Use beads.
+----
+
+The agent will then read the beads workflow reference and use beads to structure the session:
+creating issues for planned work before writing any code, capturing design decisions and
+alternatives as the work evolves, and closing issues as commits are approved. Sessions where
+the committer does not give this instruction will proceed without beads involvement.
+
+From the committer's perspective this means:
+
+* *At session start* — invoke the `tinkerpop-dev` skill, then say "Use beads" to opt in.
+  The agent will check for available work and propose a plan using beads.
+* *During work* — the agent creates and updates beads as it goes. The committer reviews and
+  guides this, the same way they review the code changes themselves.
+* *At commit time* — the agent will include the relevant bead ID(s) in the commit message.
+  The committer reviews and approves the commit message before it lands. The agent then closes
+  the associated bead(s).
+* *At merge time* — the operator pushes the accumulated bead state to DoltHub (see below).
+
+This workflow is deliberate: beads are closed locally as work commits, but the shared DoltHub
+database only reflects that state after a PR has merged. This keeps the canonical shared
+record aligned with accepted work rather than in-flight changes.
+
+=== Operator Responsibilities
+
+Operators (typically PMC members or active committers managing the shared database) are
+responsible for two actions that contributors do not perform:
+
+* *Pushing to DoltHub* — after a batch of PRs has merged, the operator runs
+  `bd dolt pull && bd dolt push` to publish the closed state of beads to the shared
+  `tinkerpop/tinkerbeads` database.
+
+* *JIRA linking* — when a JIRA ticket is associated with work tracked in beads, the operator
+  supplies the ticket identifier to the agent, which records it against the relevant bead.
+
+=== Setup
+
+Contributors wishing to use beads run the bootstrap script from the repository root:
+
+[source,bash]
+----
+bin/beads-bootstrap.sh
+----
+
+This requires `bd` and `dolt` to be installed and valid DoltHub credentials (`dolt login`).
+Full workflow guidance for AI agents is in `.claude/skills/tinkerpop-dev/references/beads-workflow.md`.
+
