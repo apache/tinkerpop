@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
@@ -359,6 +360,55 @@ public class TinkerGraphGqlPlannerTest {
             assertTrue(bound.contains(step.getAnchorVariable()));
             if (step.getTargetVariable() != null) bound.add(step.getTargetVariable());
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Property filter selectivity: seed selection and step cost
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testIndexedPropertyFilterNarrowsSeedSelection() {
+        // 10 Person vertices, only 1 named "Alice"; 5 Company vertices.
+        // Without a property filter: Company (5) would beat Person (10) and be the seed.
+        // With {name: 'Alice'} on Person and an index, Person's effective count = 1 < 5,
+        // so the filtered Person node should win as seed.
+        graph.createIndex("name", Vertex.class);
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        for (int i = 0; i < 9; i++) graph.addVertex("Person");
+        for (int i = 0; i < 5; i++) graph.addVertex("Company");
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person {name: 'Alice'})-[:KNOWS]->(c:Company)");
+
+        assertEquals("Indexed property filter should make filtered Person the lowest-cost seed",
+                "a", plan.getSeedVariable());
+        assertEquals("Person", plan.getSeedLabel());
+    }
+
+    @Test
+    public void testStepEstimatedCostReflectsIndexedPropertyFilter() {
+        // Root is a unique label (count=1) so it becomes the seed.
+        // The step targets Person {name: 'Alice'}, which has count=1 via the index.
+        // With 10 FOLLOWS edges, estimatedCost = min(10 edges, 1 index hit) = 1.
+        // Without the index the cost would be min(10 edges, 10 persons) = 10.
+        graph.createIndex("name", Vertex.class);
+        final Vertex root = graph.addVertex("Root");
+        final Vertex alice = graph.addVertex("Person");
+        alice.property("name", "Alice");
+        for (int i = 0; i < 9; i++) {
+            root.addEdge("FOLLOWS", graph.addVertex("Person")); // 9 unfiltered Persons
+        }
+        root.addEdge("FOLLOWS", alice); // 10 FOLLOWS edges total
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (r:Root)-[:FOLLOWS]->(p:Person {name: 'Alice'})");
+
+        assertEquals("r", plan.getSeedVariable());
+        final ExtensionStep step = plan.getSteps().get(0);
+        assertEquals("p", step.getTargetVariable());
+        assertTrue("estimatedCost should be reduced by the indexed property filter to ≤ 1",
+                step.getEstimatedCost() <= 1L);
     }
 
     // -------------------------------------------------------------------------

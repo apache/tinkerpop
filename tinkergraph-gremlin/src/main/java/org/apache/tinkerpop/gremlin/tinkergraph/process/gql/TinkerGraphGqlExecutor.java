@@ -216,11 +216,14 @@ public final class TinkerGraphGqlExecutor {
      * Recursively extends the current partial match using DAG-aware step selection and
      * array-based bindings with in-place backtracking.
      *
-     * <p>The first eligible step — one whose anchor variable slot is non-null in
-     * {@code bindings} — is removed from {@code remaining}, executed over its candidate edges,
-     * and restored to {@code remaining} before returning. New variable bindings are written
-     * directly into the shared {@code bindings} array and cleared on unwind, avoiding any
-     * HashMap allocation during the DFS.</p>
+     * <p>Among all steps in {@code remaining} whose anchor variable slot is non-null in
+     * {@code bindings} (simultaneously eligible steps), the one with the lowest
+     * {@link ExtensionStep#selectivityRatio()} is chosen first, with
+     * {@link ExtensionStep#getEstimatedCost()} as a tiebreaker. This combines adaptive
+     * runtime reordering (learned from observed hits/attempts ratios) with the planner's
+     * static property-aware cost estimate. New variable bindings are written directly into
+     * the shared {@code bindings} array and cleared on unwind, avoiding any HashMap
+     * allocation during the DFS.</p>
      *
      * @param bindings  shared binding array (index → Element); mutated in place, backtracked on unwind
      * @param plan      the compiled plan supplying the variable index
@@ -236,12 +239,23 @@ public final class TinkerGraphGqlExecutor {
             return;
         }
 
-        // Find first eligible step: anchor slot is non-null.
+        // Find the best eligible step: anchor slot non-null, lowest selectivityRatio() first,
+        // estimatedCost as tiebreaker. This implements both static (planner-cost) and adaptive
+        // (observed hits/attempts) step ordering when multiple DAG steps are simultaneously eligible.
         int chosenIdx = -1;
+        double chosenRatio = Double.MAX_VALUE;
+        long chosenCost = Long.MAX_VALUE;
         for (int i = 0; i < remaining.size(); i++) {
-            if (bindings[plan.getIndex(remaining.get(i).getAnchorVariable())] != null) {
+            final ExtensionStep candidate = remaining.get(i);
+            if (bindings[plan.getIndex(candidate.getAnchorVariable())] == null) continue;
+            final double ratio = candidate.selectivityRatio();
+            final long cost = candidate.getEstimatedCost();
+            if (chosenIdx < 0
+                    || ratio < chosenRatio
+                    || (ratio == chosenRatio && cost < chosenCost)) {
                 chosenIdx = i;
-                break;
+                chosenRatio = ratio;
+                chosenCost = cost;
             }
         }
         if (chosenIdx < 0) {
@@ -250,6 +264,7 @@ public final class TinkerGraphGqlExecutor {
         }
 
         final ExtensionStep step = remaining.remove(chosenIdx);
+        step.recordAttempt();
         final Vertex anchor = (Vertex) bindings[plan.getIndex(step.getAnchorVariable())];
 
         final Iterator<Edge> candidates = step.getEdgeLabel() != null
@@ -283,12 +298,14 @@ public final class TinkerGraphGqlExecutor {
                     // Named edge: each parallel edge from anchor to the bound target is a
                     // distinct binding — iterate all of them.
                     bindings[edgeIdx] = edge;
+                    step.recordHit();
                     extend(bindings, plan, params, remaining, results);
                     bindings[edgeIdx] = null;
                 } else {
                     // Anonymous edge: one matching edge is sufficient to establish
                     // connectivity. Break after the first — additional parallel edges
                     // to the same bound target would produce duplicate results.
+                    step.recordHit();
                     extend(bindings, plan, params, remaining, results);
                     break;
                 }
@@ -300,6 +317,7 @@ public final class TinkerGraphGqlExecutor {
                 // New bindings: write, recurse, clear.
                 if (edgeIdx   >= 0) bindings[edgeIdx]   = edge;
                 if (targetIdx >= 0) bindings[targetIdx]  = target;
+                step.recordHit();
                 extend(bindings, plan, params, remaining, results);
                 if (edgeIdx   >= 0) bindings[edgeIdx]   = null;
                 if (targetIdx >= 0) bindings[targetIdx]  = null;
