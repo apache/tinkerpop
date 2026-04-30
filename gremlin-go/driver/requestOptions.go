@@ -21,12 +21,9 @@ package gremlingo
 
 import (
 	"strconv"
-
-	"github.com/google/uuid"
 )
 
 type RequestOptions struct {
-	requestID             uuid.UUID
 	evaluationTimeout     int
 	batchSize             int
 	userAgent             string
@@ -36,18 +33,12 @@ type RequestOptions struct {
 }
 
 type RequestOptionsBuilder struct {
-	requestID             uuid.UUID
 	evaluationTimeout     int
 	batchSize             int
 	userAgent             string
 	bindings              map[string]interface{}
 	materializeProperties string
 	bulkResults           string
-}
-
-func (builder *RequestOptionsBuilder) SetRequestId(requestId uuid.UUID) *RequestOptionsBuilder {
-	builder.requestID = requestId
-	return builder
 }
 
 func (builder *RequestOptionsBuilder) SetEvaluationTimeout(evaluationTimeout int) *RequestOptionsBuilder {
@@ -91,7 +82,6 @@ func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}
 func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions := new(RequestOptions)
 
-	requestOptions.requestID = builder.requestID
 	requestOptions.evaluationTimeout = builder.evaluationTimeout
 	requestOptions.batchSize = builder.batchSize
 	requestOptions.userAgent = builder.userAgent

@@ -20,18 +20,12 @@ under the License.
 package gremlingo
 
 import (
-	"github.com/google/uuid"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestOptions(t *testing.T) {
-	t.Run("Test RequestOptionsBuilder with custom requestID", func(t *testing.T) {
-		requestId := uuid.New()
-		r := new(RequestOptionsBuilder).SetRequestId(requestId).Create()
-		assert.Equal(t, requestId, r.requestID)
-	})
 	t.Run("Test RequestOptionsBuilder with custom evaluationTimeout", func(t *testing.T) {
 		r := new(RequestOptionsBuilder).SetEvaluationTimeout(1234).Create()
 		assert.Equal(t, 1234, r.evaluationTimeout)

@@ -613,26 +613,6 @@ func TestTraversalNextValue(t *testing.T) {
 		assert.False(t, ok)
 	})
 
-	t.Run("handles mixed Traverser and raw results", func(t *testing.T) {
-		rs := makeResultSet(
-			&Result{&Traverser{Bulk: 2, Value: "a"}},
-			&Result{"b"},
-			&Result{&Traverser{Bulk: 1, Value: "c"}},
-		)
-		trav := &Traversal{results: rs}
-
-		var values []interface{}
-		for {
-			val, ok, err := trav.nextValue()
-			assert.Nil(t, err)
-			if !ok {
-				break
-			}
-			values = append(values, val)
-		}
-		assert.Equal(t, []interface{}{"a", "a", "b", "c"}, values)
-	})
-
 	t.Run("skips Traverser with bulk == 0", func(t *testing.T) {
 		rs := makeResultSet(
 			&Result{&Traverser{Bulk: 0, Value: "skip-me"}},

@@ -185,7 +185,6 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 
 	// Map configuration keys to setter method names
 	setterMap := map[string]string{
-		"requestId":             "SetRequestId",
 		"evaluationTimeout":     "SetEvaluationTimeout",
 		"batchSize":             "SetBatchSize",
 		"userAgent":             "SetUserAgent",

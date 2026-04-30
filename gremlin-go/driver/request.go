@@ -86,7 +86,6 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 var allowedReqArgs = map[string]bool{
 	"evaluationTimeout":     true,
 	"batchSize":             true,
-	"requestId":             true,
 	"userAgent":             true,
 	"materializeProperties": true,
 	"bulkResults":           true,
