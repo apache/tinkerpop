@@ -828,6 +828,86 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Adaptive step ordering: selectivityRatio() and estimatedCost
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testAdaptiveCountersUpdateAfterExecution() {
+        // After execution the step's attempts and hits counters must be non-zero,
+        // confirming that recordAttempt/recordHit are wired correctly.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Person)-[:KNOWS]->(b:Person)");
+        executor.execute(plan).forEachRemaining(row -> {}); // drain fully
+
+        // The plan has one extension step; it must have been invoked at least once.
+        final ExtensionStep step = plan.getSteps().get(0);
+        final double ratio = step.selectivityRatio();
+        assertTrue("selectivityRatio must be positive", ratio > 0.0);
+        assertTrue("selectivityRatio must be finite", Double.isFinite(ratio));
+    }
+
+    @Test
+    public void testMultipleEligibleStepsProduceCorrectResultsRegardlessOfOrder() {
+        // Two independent branches from the seed: seed -[:A]-> x and seed -[:B]-> y.
+        // Both steps are simultaneously eligible after the seed is bound.
+        // The executor must try them in some order and produce all combinations.
+        final Vertex seed = graph.addVertex("Hub");
+        final Vertex x1   = graph.addVertex("X");
+        final Vertex x2   = graph.addVertex("X");
+        final Vertex y1   = graph.addVertex("Y");
+        seed.addEdge("A", x1);
+        seed.addEdge("A", x2);
+        seed.addEdge("B", y1);
+
+        // MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y) — s is shared, both steps eligible once s is bound
+        final List<Map<String, Element>> results = execute(
+                "MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y)");
+
+        // 2 x-candidates × 1 y-candidate = 2 result rows
+        assertEquals(2, results.size());
+        results.forEach(r -> {
+            assertEquals(seed, r.get("s"));
+            assertEquals(y1, r.get("y"));
+            assertTrue(r.get("x").equals(x1) || r.get("x").equals(x2));
+        });
+    }
+
+    @Test
+    public void testHighlySelectiveStepChosenFirstAdaptively() {
+        // After several executions, the step that produces fewer results per attempt should
+        // converge to a lower selectivityRatio and be preferred.
+        final Vertex seed = graph.addVertex("Hub");
+        final Vertex y = graph.addVertex("Y");
+        seed.addEdge("B", y);
+        for (int i = 0; i < 10; i++) {
+            seed.addEdge("A", graph.addVertex("X"));
+        }
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Hub)-[:A]->(x:X), (s)-[:B]->(y:Y)");
+
+        // Execute multiple times so the adaptive counters accumulate.
+        for (int i = 0; i < 5; i++) {
+            executor.execute(plan).forEachRemaining(row -> {});
+        }
+
+        // The B-step produces 1 hit per attempt (ratio ≈ 1.0);
+        // the A-step produces 10 hits per attempt (ratio > 1.0).
+        // After convergence, B-step's ratio < A-step's ratio.
+        ExtensionStep stepA = null, stepB = null;
+        for (final ExtensionStep s : plan.getSteps()) {
+            if ("A".equals(s.getEdgeLabel())) stepA = s;
+            if ("B".equals(s.getEdgeLabel())) stepB = s;
+        }
+        assertNotNull(stepA);
+        assertNotNull(stepB);
+        assertTrue("B-step (1 hit/attempt) should have lower selectivityRatio than A-step (10 hits/attempt)",
+                stepB.selectivityRatio() < stepA.selectivityRatio());
+    }
+
+    // -------------------------------------------------------------------------
     // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 

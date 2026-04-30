@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -135,7 +137,39 @@ public final class TinkerGraphGqlPlanner {
     }
 
     private long countMatchingVertices(final QueryVertex node) {
-        return graph.getVerticesCountByLabel(node.getLabel());
+        return estimateCardinality(node.getLabel(), node.getPredicates());
+    }
+
+    /**
+     * Estimates the number of vertices matching the given label and predicates.
+     * Uses the vertex label count index as the base, then narrows with the most selective
+     * indexed literal predicate (O(1) via TinkerGraph's property index).
+     */
+    private long estimateCardinality(final String label, final List<PropertyPredicate> predicates) {
+        long count = graph.getVerticesCountByLabel(label);
+        if (!predicates.isEmpty()) {
+            final Set<String> indexedKeys = graph.getIndexedKeys(Vertex.class);
+            if (!indexedKeys.isEmpty()) {
+                for (final PropertyPredicate p : predicates) {
+                    if (!indexedKeys.contains(p.getKey()) || p.isParamRef()) continue;
+                    final Object value = p.getLiteralValue();
+                    if (value == null) continue;
+                    count = Math.min(count, TinkerIndexHelper.countVertexIndex(graph, p.getKey(), value));
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Estimates the cost of traversing an extension step. Bounded by both the edge label
+     * density and the estimated cardinality of the target vertex set (incorporating any
+     * indexed property predicates on the target node).
+     */
+    private long estimateStepCost(final QueryEdge edge, final QueryVertex targetNode) {
+        final long edgeCost = graph.getEdgesCountByLabel(edge.getLabel());
+        final long targetCost = estimateCardinality(targetNode.getLabel(), targetNode.getPredicates());
+        return Math.min(edgeCost, targetCost);
     }
 
     // -------------------------------------------------------------------------
@@ -268,7 +302,8 @@ public final class TinkerGraphGqlPlanner {
                         edge.getVariable(),
                         targetNode.getLabel(),
                         effectiveVars.get(targetNode),
-                        targetNode.getPredicates()));
+                        targetNode.getPredicates(),
+                        estimateStepCost(edge, targetNode)));
 
                 if (!visitOrder.containsKey(targetNode)) {
                     visitOrder.put(targetNode, visitCounter++);
