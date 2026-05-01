@@ -352,6 +352,27 @@ public class TinkerGraphMatchStepTest {
         assertEquals(alice, results.get(0));
     }
 
+    // -------------------------------------------------------------------------
+    // reset() re-reads live graph state
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testResetAllowsFreshResultsAfterGraphMutation() {
+        // First execution: no Person vertices — empty result.
+        final List<Object> first = g.<Integer>inject(1)
+                .match("MATCH (n:Person)").<Object>select("n").toList();
+        assertTrue(first.isEmpty());
+
+        // Mutate the graph: add a Person.
+        final Vertex alice = graph.addVertex("Person");
+
+        // Second execution on a new traversal (which creates a fresh step): must see alice.
+        final List<Object> second = g.<Integer>inject(1)
+                .match("MATCH (n:Person)").<Object>select("n").toList();
+        assertEquals(1, second.size());
+        assertEquals(alice, second.get(0));
+    }
+
     @Test
     public void testNullLiteralMatchesAbsentProperty() {
         final Vertex noNick = graph.addVertex("person");

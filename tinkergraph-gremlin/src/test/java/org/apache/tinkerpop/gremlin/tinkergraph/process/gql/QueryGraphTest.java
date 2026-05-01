@@ -263,4 +263,29 @@ public class QueryGraphTest {
         assertEquals(1, g.getNodes().size());
         assertEquals("Person", g.getNodes().get(0).getLabel());
     }
+
+    // -------------------------------------------------------------------------
+    // Node / edge variable name conflicts
+    // -------------------------------------------------------------------------
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEdgeVarConflictingWithNodeVarThrows() {
+        // 'a' is introduced as a node variable first, then reused as an edge variable.
+        QueryGraph.parse("MATCH (a:Person)-[a:KNOWS]->(b:Person)");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNodeVarConflictingWithEdgeVarThrows() {
+        // 'e' is introduced as an edge variable first, then reused as a node variable.
+        QueryGraph.parse("MATCH (a:Person)-[e:KNOWS]->(e:Person)");
+    }
+
+    @Test
+    public void testDistinctNodeAndEdgeVariablesAreAllowed() {
+        // 'r' is only used as an edge variable — no conflict.
+        final QueryGraph g = QueryGraph.parse("MATCH (a:Person)-[r:KNOWS]->(b:Person)");
+        assertEquals(2, g.getNodes().size());
+        assertEquals(1, g.getEdges().size());
+        assertEquals("r", g.getEdges().get(0).getVariable());
+    }
 }

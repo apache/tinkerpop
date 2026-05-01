@@ -288,6 +288,12 @@ public final class TinkerGraphGqlExecutor {
             if (!matchesPredicates(edge, step.getEdgePredicates(), params))
                 continue;
 
+            // Enforce edge equality constraint: if the edge variable is already bound (from a
+            // prior pattern that reuses the same variable name), the candidate edge must be
+            // the same object.
+            if (edgeIdx >= 0 && bindings[edgeIdx] != null && !bindings[edgeIdx].equals(edge))
+                continue;
+
             final Vertex target = targetVertex(anchor, edge, step.getDirection());
 
             if (step.getTargetLabel() != null && !step.getTargetLabel().equals(target.label()))
@@ -296,37 +302,39 @@ public final class TinkerGraphGqlExecutor {
             if (!matchesPredicates(target, step.getTargetPredicates(), params))
                 continue;
 
+            // Track whether we are writing the edge binding ourselves (vs. it already being set).
+            final boolean writeEdge = edgeIdx >= 0 && bindings[edgeIdx] == null;
+
             if (targetIdx >= 0 && bindings[targetIdx] != null) {
                 // Equality constraint: target variable already bound — candidate must match.
                 if (!bindings[targetIdx].equals(target)) continue;
 
-                if (edgeIdx >= 0) {
-                    // Named edge: each parallel edge from anchor to the bound target is a
-                    // distinct binding — iterate all of them.
+                if (writeEdge) {
+                    // Named edge not yet bound: bind, recurse, clear.
                     bindings[edgeIdx] = edge;
                     step.recordHit();
                     extend(bindings, plan, params, remaining, results);
                     bindings[edgeIdx] = null;
                 } else {
+                    // Edge already bound (equality checked above) or anonymous edge.
                     // Anonymous edge: one matching edge is sufficient to establish
-                    // connectivity. Break after the first — additional parallel edges
-                    // to the same bound target would produce duplicate results.
+                    // connectivity — break after the first.
                     step.recordHit();
                     extend(bindings, plan, params, remaining, results);
-                    break;
+                    if (edgeIdx < 0) break;
                 }
             } else {
                 // Anonymous edge: parallel edges to the same target vertex yield identical
                 // bindings — skip if this target was already reached via an earlier parallel edge.
                 if (seenAnonymousTargets != null && !seenAnonymousTargets.add(target)) continue;
 
-                // New bindings: write, recurse, clear.
-                if (edgeIdx   >= 0) bindings[edgeIdx]   = edge;
-                if (targetIdx >= 0) bindings[targetIdx]  = target;
+                // New target binding (and edge binding if not yet set): write, recurse, clear.
+                if (writeEdge)      bindings[edgeIdx]  = edge;
+                if (targetIdx >= 0) bindings[targetIdx] = target;
                 step.recordHit();
                 extend(bindings, plan, params, remaining, results);
-                if (edgeIdx   >= 0) bindings[edgeIdx]   = null;
-                if (targetIdx >= 0) bindings[targetIdx]  = null;
+                if (writeEdge)      bindings[edgeIdx]  = null;
+                if (targetIdx >= 0) bindings[targetIdx] = null;
             }
         }
 

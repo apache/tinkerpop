@@ -116,7 +116,10 @@ public final class GqlMatchPlan {
 
     /** Returns the binding-array index for the given variable name. */
     public int getIndex(final String variableName) {
-        return variableIndex.get(variableName);
+        final Integer idx = variableIndex.get(variableName);
+        if (idx == null)
+            throw new IllegalArgumentException("Unknown variable in GQL plan: '" + variableName + "'");
+        return idx;
     }
 
     /** Returns the total number of variables (= binding array length). */

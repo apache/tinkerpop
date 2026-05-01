@@ -226,14 +226,17 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     /**
-     * Resets lazy row state. The planner, executor, and compiled plan are preserved so the
-     * QueryGraph cache survives a traversal reset.
+     * Resets lazy row state. The planner and executor singletons are preserved so the
+     * QueryGraph parse cache survives a traversal reset, but the compiled {@link GqlMatchPlan}
+     * is cleared so that seed selection is recomputed from live label counts on the next
+     * execution — ensuring graph mutations between resets are reflected.
      */
     @Override
     public void reset() {
         super.reset();
         rowIterator = null;
         currentStart = null;
+        plan = null;
         done = false;
     }
 }
