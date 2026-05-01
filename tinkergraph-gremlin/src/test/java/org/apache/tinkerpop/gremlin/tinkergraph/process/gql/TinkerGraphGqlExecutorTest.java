@@ -989,6 +989,57 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Reused edge variable equality constraint
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testReusedEdgeVariableAcrossPatternsEnforcesEquality() {
+        // MATCH (a)-[r:LOOP]->(a) — self-loop where 'r' connects 'a' to itself.
+        // A non-loop edge and a self-loop exist. Only the self-loop satisfies the equality
+        // constraint that anchor and target are both bound to 'a'.
+        final Vertex x = graph.addVertex("Node");
+        final Vertex y = graph.addVertex("Node");
+        final Edge selfLoop = x.addEdge("LOOP", x);
+        x.addEdge("LOOP", y); // non-loop — must not match MATCH (a)-[r:LOOP]->(a)
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:Node)-[r:LOOP]->(a:Node)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Only the self-loop satisfies the equality constraint on 'a'", 1, results.size());
+        final int rIdx = plan.getIndex("r");
+        assertEquals(selfLoop, results.get(0)[rIdx]);
+    }
+
+    @Test
+    public void testReusedEdgeVariableInMultiPatternEnforcesEquality() {
+        // MATCH (a)-[r:E]->(b), (b)-[r:E]->(c)
+        // 'r' cannot be the same edge for both traversals because they start from different
+        // anchors. The result should be empty.
+        final Vertex a = graph.addVertex("N");
+        final Vertex b = graph.addVertex("N");
+        final Vertex c = graph.addVertex("N");
+        a.addEdge("E", b);
+        b.addEdge("E", c);
+
+        final GqlMatchPlan plan = planner.plan("MATCH (a:N)-[r:E]->(b:N), (b)-[r:E]->(c:N)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("No single edge can connect a→b and b→c simultaneously", results.isEmpty());
+    }
+
+    // -------------------------------------------------------------------------
+    // GqlMatchPlan.getIndex() unknown variable
+    // -------------------------------------------------------------------------
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetIndexUnknownVariableThrowsIllegalArgument() {
+        final GqlMatchPlan plan = planner.plan("MATCH (n:Person)");
+        plan.getIndex("doesNotExist");
+    }
+
+    // -------------------------------------------------------------------------
     // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 

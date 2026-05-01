@@ -120,6 +120,8 @@ public final class QueryGraph {
         final Map<String, QueryVertex> nodesByVar = new LinkedHashMap<>();
         final List<QueryVertex> nodes = new ArrayList<>();
         final List<QueryEdge> edges = new ArrayList<>();
+        // Track edge variable names to detect node/edge variable name conflicts.
+        final java.util.Set<String> edgeVarNames = new java.util.HashSet<>();
 
         for (final GQLParser.PathPatternContext patternCtx : ctx.graphPattern().pathPattern()) {
             final List<GQLParser.NodePatternContext> nodeCtxs = patternCtx.nodePattern();
@@ -134,6 +136,12 @@ public final class QueryGraph {
                 final QueryVertex next = resolveNode(nodeCtxs.get(i + 1), nodesByVar, nodes);
 
                 final String edgeVar = extractEdgeVariable(edgeCtx);
+                if (edgeVar != null) {
+                    if (nodesByVar.containsKey(edgeVar))
+                        throw new IllegalArgumentException(
+                                "Variable '" + edgeVar + "' is used as both a node variable and an edge variable");
+                    edgeVarNames.add(edgeVar);
+                }
                 final String edgeLabel = extractEdgeLabel(edgeCtx);
                 final Direction dir = extractDirection(edgeCtx);
                 final List<PropertyPredicate> edgePredicates = extractEdgePredicates(edgeCtx);
@@ -141,6 +149,13 @@ public final class QueryGraph {
                 edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next, edgePredicates));
                 current = next;
             }
+        }
+
+        // Validate that no node variable was introduced after an edge variable with the same name.
+        for (final String nodeVar : nodesByVar.keySet()) {
+            if (edgeVarNames.contains(nodeVar))
+                throw new IllegalArgumentException(
+                        "Variable '" + nodeVar + "' is used as both a node variable and an edge variable");
         }
 
         return new QueryGraph(nodes, edges);
