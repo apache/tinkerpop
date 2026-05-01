@@ -405,14 +405,18 @@ The following `MATCH` patterns are supported:
 |`-[e]->` |Named directed edge — binds the edge to variable `e`
 |`-[:Label]->` |Labeled directed edge
 |`-[e:Label]->` |Named and labeled directed edge
+|`-[e:Label {key: 'value'}]->` |Named, labeled directed edge with an inline property filter — matches only edges where the property equals the literal value
+|`-[e:Label {key: $param}]->` |Named, labeled directed edge with a parameter reference — value resolved from the params map at execution time
 |`<-[]-`  |Anonymous reverse directed edge
 |`<-[e]-` |Named reverse directed edge
 |`<-[:Label]-` |Labeled reverse directed edge
 |`<-[e:Label]-` |Named and labeled reverse directed edge
+|`<-[e:Label {key: 'value'}]-` |Named, labeled reverse directed edge with an inline property filter
 |`-[]-`   |Anonymous undirected edge — matches edges in either direction
 |`-[e]-`  |Named undirected edge
 |`-[:Label]-` |Labeled undirected edge
 |`-[e:Label]-` |Named and labeled undirected edge
+|`-[e:Label {key: 'value'}]-` |Named, labeled undirected edge with an inline property filter
 |=========================================================
 
 Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
@@ -495,18 +499,18 @@ in a future release.
 
 ==== Property Filters
 
-Node patterns can carry inline property filters that constrain which vertices are matched. Filters are written as a
-comma-separated list of `key: value` pairs inside curly braces immediately after the label (or variable, or node
-opening parenthesis):
+Both node and edge patterns can carry inline property filters. Filters are written as a comma-separated list of
+`key: value` pairs inside curly braces immediately after the label (or variable, or the opening delimiter):
 
 [source,text]
 ----
 MATCH (p:person {name: 'marko'})
 MATCH (p:person {name: 'marko', age: 29})
+MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)
 ----
 
-Multiple predicates in the same filter are ANDed: all predicates must hold for a vertex to match. All predicates are
-equality tests; range or inequality tests are not yet part of the supported grammar.
+Multiple predicates in the same filter are ANDed: all predicates must hold for the element to match. All predicates
+are equality tests; range or inequality tests are not yet part of the supported grammar.
 
 The right-hand side of each predicate can be a literal value or a parameter reference:
 
@@ -517,7 +521,7 @@ The right-hand side of each predicate can be a literal value or a parameter refe
 |`42`       |Integer literal — defaults to `Integer` if the value fits, otherwise `Long` or `BigInteger`. Type suffixes: `29i` (Integer), `30l` (Long), `5b` (Byte), `1000s` (Short), `999n` (BigInteger).
 |`3.14`     |Floating-point literal — defaults to `Double`. Type suffixes: `3.14f` (Float), `1.5d` (Double), `1.99m` (BigDecimal).
 |`true` / `false` |Boolean literal (case-insensitive)
-|`null`     |Matches vertices where the property is absent
+|`null`     |Matches elements where the property is absent
 |`NaN` / `Infinity` / `+Infinity` / `-Infinity` |Special floating-point values
 |`$name`    |Parameter reference — resolved from the params map supplied to `match(String, Map)` at execution time
 |=========================================================
@@ -541,6 +545,20 @@ g.match("MATCH (a:person)-[:created]->(s:software {name: 'lop'}), (b:person)-[:c
   select("a", "b").by("name")
 ----
 
+Edge patterns support the same filter syntax. The filter is applied to the edge itself before the target vertex is
+resolved, so only edges whose properties satisfy the predicate contribute to the result.
+
+The modern graph's `knows` edges carry a `weight` property, making it a natural example:
+
+*Find high-weight knows relationships, binding the filtered edge*
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)").
+  select("a", "e", "b").
+    by("name").by("weight").by("name")
+----
+
 ==== Parameterized Queries
 
 When a filter value is not known until execution time — for example, because it comes from user input or an outer
@@ -555,8 +573,8 @@ g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
 ----
 
 The same query string can be reused with different parameter maps without re-parsing (the parsed query graph is
-cached internally). If a referenced parameter name is absent from the map at execution time, the predicate
-evaluates to `false` and no vertices match that filter.
+cached in an LRU cache bounded to 1,000 entries). If a referenced parameter name is absent from the map at
+execution time, the predicate evaluates to `false` and no vertices match that filter.
 
 When TinkerGraph has a vertex index on a filtered property key (created via `createIndex`), the executor
 automatically uses the index for the seed vertex lookup, reducing the initial scan to only those vertices whose
