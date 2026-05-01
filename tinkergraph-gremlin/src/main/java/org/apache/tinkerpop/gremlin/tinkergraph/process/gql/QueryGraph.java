@@ -136,8 +136,9 @@ public final class QueryGraph {
                 final String edgeVar = extractEdgeVariable(edgeCtx);
                 final String edgeLabel = extractEdgeLabel(edgeCtx);
                 final Direction dir = extractDirection(edgeCtx);
+                final List<PropertyPredicate> edgePredicates = extractEdgePredicates(edgeCtx);
 
-                edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next));
+                edges.add(new QueryEdge(edgeVar, edgeLabel, dir, current, next, edgePredicates));
                 current = next;
             }
         }
@@ -313,6 +314,12 @@ public final class QueryGraph {
             }
         }
         return sb.toString();
+    }
+
+    private static List<PropertyPredicate> extractEdgePredicates(final GQLParser.EdgePatternContext ctx) {
+        final GQLParser.ElementPatternFillerContext filler = getEdgeFiller(ctx);
+        if (filler == null) return Collections.emptyList();
+        return extractPredicates(filler);
     }
 
     private static String extractEdgeVariable(final GQLParser.EdgePatternContext ctx) {

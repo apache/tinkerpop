@@ -20,10 +20,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Represents an edge pattern element in a GQL MATCH clause. An edge connects a source
  * {@link QueryVertex} to a target {@link QueryVertex} with an optional variable name, optional
- * label constraint, and a traversal direction.
+ * label constraint, a traversal direction, and optional property predicates on the edge itself.
  *
  * <p>Direction semantics follow the GQL arrow notation:
  * <ul>
@@ -39,14 +43,24 @@ public final class QueryEdge {
     private final Direction direction;
     private final QueryVertex source;
     private final QueryVertex target;
+    private final List<PropertyPredicate> predicates;
 
     public QueryEdge(final String variable, final String label, final Direction direction,
-                     final QueryVertex source, final QueryVertex target) {
+                     final QueryVertex source, final QueryVertex target,
+                     final List<PropertyPredicate> predicates) {
         this.variable = variable;
         this.label = label;
         this.direction = direction;
         this.source = source;
         this.target = target;
+        this.predicates = predicates.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(predicates));
+    }
+
+    public QueryEdge(final String variable, final String label, final Direction direction,
+                     final QueryVertex source, final QueryVertex target) {
+        this(variable, label, direction, source, target, Collections.emptyList());
     }
 
     /**
@@ -85,6 +99,13 @@ public final class QueryEdge {
         return target;
     }
 
+    /**
+     * Returns the property equality predicates on this edge, or an empty list if none were specified.
+     */
+    public List<PropertyPredicate> getPredicates() {
+        return predicates;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -96,6 +117,7 @@ public final class QueryEdge {
         }
         if (variable != null) sb.append(variable);
         if (label != null) sb.append(':').append(label);
+        if (!predicates.isEmpty()) sb.append(' ').append(predicates);
         if (direction == Direction.OUT) {
             sb.append("]->");
         } else {

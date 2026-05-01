@@ -62,6 +62,7 @@ public final class ExtensionStep {
     private final String edgeLabel;
     private final Direction direction;
     private final String edgeVariable;
+    private final List<PropertyPredicate> edgePredicates;
     private final String targetLabel;
     private final String targetVariable;
     private final List<PropertyPredicate> targetPredicates;
@@ -72,6 +73,7 @@ public final class ExtensionStep {
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
+                         final List<PropertyPredicate> edgePredicates,
                          final String targetLabel, final String targetVariable,
                          final List<PropertyPredicate> targetPredicates,
                          final long estimatedCost) {
@@ -80,6 +82,9 @@ public final class ExtensionStep {
         this.edgeLabel = edgeLabel;
         this.direction = direction;
         this.edgeVariable = edgeVariable;
+        this.edgePredicates = edgePredicates.isEmpty()
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(new ArrayList<>(edgePredicates));
         this.targetLabel = targetLabel;
         this.targetVariable = targetVariable;
         this.targetPredicates = targetPredicates.isEmpty()
@@ -91,16 +96,25 @@ public final class ExtensionStep {
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
                          final String targetLabel, final String targetVariable,
+                         final List<PropertyPredicate> targetPredicates,
+                         final long estimatedCost) {
+        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
+             targetLabel, targetVariable, targetPredicates, estimatedCost);
+    }
+
+    public ExtensionStep(final String anchorVariable, final String edgeLabel,
+                         final Direction direction, final String edgeVariable,
+                         final String targetLabel, final String targetVariable,
                          final List<PropertyPredicate> targetPredicates) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, targetLabel, targetVariable,
-             targetPredicates, Long.MAX_VALUE);
+        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
+             targetLabel, targetVariable, targetPredicates, Long.MAX_VALUE);
     }
 
     public ExtensionStep(final String anchorVariable, final String edgeLabel,
                          final Direction direction, final String edgeVariable,
                          final String targetLabel, final String targetVariable) {
-        this(anchorVariable, edgeLabel, direction, edgeVariable, targetLabel, targetVariable,
-             Collections.emptyList());
+        this(anchorVariable, edgeLabel, direction, edgeVariable, Collections.emptyList(),
+             targetLabel, targetVariable, Collections.emptyList(), Long.MAX_VALUE);
     }
 
     /** The variable name of the already-bound vertex used as the starting point for this step. */
@@ -121,6 +135,14 @@ public final class ExtensionStep {
     /** The variable name to which the matching edge is bound, or {@code null}. */
     public String getEdgeVariable() {
         return edgeVariable;
+    }
+
+    /**
+     * Property equality predicates that the traversed edge must satisfy. Empty if no filter was
+     * specified on the edge pattern element.
+     */
+    public List<PropertyPredicate> getEdgePredicates() {
+        return edgePredicates;
     }
 
     /** The label constraint on the target vertex, or {@code null} for any label. */
