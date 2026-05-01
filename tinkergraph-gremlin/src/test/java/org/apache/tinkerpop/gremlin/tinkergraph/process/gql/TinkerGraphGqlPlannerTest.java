@@ -226,6 +226,11 @@ public class TinkerGraphGqlPlannerTest {
         assertNotSame(plan1, plan2);
     }
 
+    @Test
+    public void testCacheMaxSizeConstantIsDefined() {
+        assertTrue("PLAN_CACHE_MAX_SIZE must be positive", TinkerGraphGqlPlanner.PLAN_CACHE_MAX_SIZE > 0);
+    }
+
     // -------------------------------------------------------------------------
     // Anonymous nodes
     // -------------------------------------------------------------------------
