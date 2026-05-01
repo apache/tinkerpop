@@ -908,6 +908,87 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
+    // Edge property filter evaluation
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testEdgePropertyFilterLiteralFiltersResults() {
+        // Two KNOWS edges: one with weight=1.0, one with weight=0.5.
+        // The filter [e:KNOWS {weight: 0.5}] should return only the low-weight edge.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge highWeight = a.addEdge("KNOWS", b);
+        highWeight.property("weight", 1.0);
+        final Edge lowWeight = a.addEdge("KNOWS", c);
+        lowWeight.property("weight", 0.5);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: 0.5}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Only the edge with weight=0.5 should match", 1, results.size());
+        final Element[] row = results.get(0);
+        final int eIdx = plan.getIndex("e");
+        assertEquals(lowWeight, row[eIdx]);
+    }
+
+    @Test
+    public void testEdgePropertyFilterExcludesAllWhenNoMatch() {
+        // KNOWS edge has weight=0.8 — filter for weight=0.1 matches nothing.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Edge edge = a.addEdge("KNOWS", b);
+        edge.property("weight", 0.8);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: 0.1}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("Filter matching no edge should return no results", results.isEmpty());
+    }
+
+    @Test
+    public void testEdgePropertyFilterWithParamRef() {
+        // Parameterized edge filter: [e:KNOWS {weight: $w}]
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        final Edge heavy = a.addEdge("KNOWS", b);
+        heavy.property("weight", 2.0);
+        final Edge light = a.addEdge("KNOWS", c);
+        light.property("weight", 0.1);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[e:KNOWS {weight: $w}]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan, Collections.singletonMap("w", 2.0)).forEachRemaining(results::add);
+
+        assertEquals(1, results.size());
+        final int eIdx = plan.getIndex("e");
+        assertEquals(heavy, results.get(0)[eIdx]);
+    }
+
+    @Test
+    public void testEdgeFilterDoesNotAffectUnfilteredEdges() {
+        // When no edge filter is specified, both edges match.
+        final Vertex a = graph.addVertex("Person");
+        final Vertex b = graph.addVertex("Person");
+        final Vertex c = graph.addVertex("Person");
+        a.addEdge("KNOWS", b);
+        a.addEdge("KNOWS", c);
+
+        final GqlMatchPlan plan = planner.plan(
+                "MATCH (a:Person)-[:KNOWS]->(b:Person)");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("Without an edge filter both edges match", 2, results.size());
+    }
+
+    // -------------------------------------------------------------------------
     // Lazy delivery: each row is an independent array snapshot
     // -------------------------------------------------------------------------
 

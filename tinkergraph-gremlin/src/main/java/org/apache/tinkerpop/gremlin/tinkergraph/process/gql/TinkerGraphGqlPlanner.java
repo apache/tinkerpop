@@ -23,6 +23,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Compiles a {@link QueryGraph} into an executable {@link GqlMatchPlan} for TinkerGraph.
@@ -50,7 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *       rarer edge labels produce extension steps earlier in the plan, pruning the DFS sooner.
  *       Anonymous nodes receive synthetic variable names with a {@code $anon} prefix.</li>
  *   <li><strong>Parse caching</strong> — the parsed {@link QueryGraph} is cached keyed by
- *       the original GQL query string. Seed selection and step ordering are recomputed each
+ *       the original GQL query string in a Caffeine LRU cache bounded by
+ *       {@link #PLAN_CACHE_MAX_SIZE}. Seed selection and step ordering are recomputed each
  *       call using live counts, avoiding stale plans after mutations.</li>
  * </ol>
  *
@@ -60,10 +63,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class TinkerGraphGqlPlanner {
 
+    /** Maximum number of distinct GQL query strings whose parsed {@link QueryGraph} is retained. */
+    static final int PLAN_CACHE_MAX_SIZE = 1_000;
+
     private final AbstractTinkerGraph graph;
-    // Cache only the parsed QueryGraph — mutation-independent, safe to reuse forever.
+    // Cache only the parsed QueryGraph — mutation-independent, safe to reuse across calls.
     // Seed selection and step ordering are recomputed on every call using live label counts.
-    private final Map<String, QueryGraph> queryGraphCache = new ConcurrentHashMap<>();
+    // Bounded to PLAN_CACHE_MAX_SIZE entries via Caffeine LRU eviction.
+    private final Cache<String, QueryGraph> queryGraphCache = Caffeine.newBuilder()
+            .maximumSize(PLAN_CACHE_MAX_SIZE)
+            .build();
 
     public TinkerGraphGqlPlanner(final AbstractTinkerGraph graph) {
         this.graph = graph;
@@ -79,7 +88,7 @@ public final class TinkerGraphGqlPlanner {
      * @throws IllegalArgumentException if the string cannot be parsed
      */
     public GqlMatchPlan plan(final String gqlMatchString) {
-        final QueryGraph queryGraph = queryGraphCache.computeIfAbsent(gqlMatchString, QueryGraph::parse);
+        final QueryGraph queryGraph = queryGraphCache.get(gqlMatchString, QueryGraph::parse);
         return compile(queryGraph);
     }
 
@@ -300,6 +309,7 @@ public final class TinkerGraphGqlPlanner {
                         edge.getLabel(),
                         stepDir,
                         edge.getVariable(),
+                        edge.getPredicates(),
                         targetNode.getLabel(),
                         effectiveVars.get(targetNode),
                         targetNode.getPredicates(),

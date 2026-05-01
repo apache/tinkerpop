@@ -67,8 +67,10 @@ import java.util.Set;
  * {@code MATCH (a)-[:KNOWS]->(b), (b)-[:WORKS_AT]->(c)} where {@code b} is shared.
  *
  * <p>Property predicates (from inline filter maps or parameter references) are evaluated
- * during seed and target vertex filtering. Parameter values are resolved from the {@code params}
- * map passed to {@link #execute(GqlMatchPlan, Map)}.
+ * during seed iteration, edge traversal, and target vertex filtering. Edge predicates are checked
+ * immediately after each candidate edge is retrieved and before the target vertex is resolved,
+ * which prunes the search space before computing the target. Parameter values are resolved from
+ * the {@code params} map passed to {@link #execute(GqlMatchPlan, Map)}.
  *
  * <p>This is a pure Java implementation using only the direct TinkerGraph and {@link Vertex}
  * APIs — no Gremlin traversal machinery is involved.
@@ -282,6 +284,10 @@ public final class TinkerGraphGqlExecutor {
 
         while (candidates.hasNext()) {
             final Edge edge = candidates.next();
+
+            if (!matchesPredicates(edge, step.getEdgePredicates(), params))
+                continue;
+
             final Vertex target = targetVertex(anchor, edge, step.getDirection());
 
             if (step.getTargetLabel() != null && !step.getTargetLabel().equals(target.label()))
