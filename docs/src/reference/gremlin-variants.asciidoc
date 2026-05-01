@@ -1810,57 +1810,41 @@ timeouts will be interpreted as a sum of all timeouts identified in the script f
 
 ==== Streaming Results
 
-IMPORTANT: 4.0.0-beta.2 Release - `client.stream()` is not yet implemented for the HTTP driver and will throw an error if
-called. This functionality is planned for a future release.
+`client.submit()` buffers the entire response before returning a `ResultSet`. When working with larger result sets it
+may be beneficial to process results incrementally as they are deserialized from the server response.
 
-The Gremlin JavaScript driver receives results according to the `batchSize` parameter on the per-request settings or the
-`resultIterationBatchSize` value configured for the Gremlin server. When submitting scripts the default behavior is to
-wait for the entire result set to be returned from a query before allowing any processing on the result set.
-
-The following examples assume that you have 100 vertices in your graph.
+`client.stream()` returns an `AsyncGenerator` that yields individual result items as they arrive, without waiting for
+the full response.
 
 [source,javascript]
 ----
-const result = await client.submit("g.V()");
-console.log(result.toArray()); // 100 - all the vertices in your graph
+for await (const item of client.stream('g.V()', null)) {
+  console.log(item);
+}
 ----
 
-When working with larger result sets it may be beneficial for memory management to process each chunk of data as it is returned from the gremlin server. The Gremlin JavaScript driver can return a readable stream instead of waiting for the entire result set to be loaded.
+Breaking out of the loop aborts the underlying HTTP request, releasing the connection immediately:
 
 [source,javascript]
 ----
-
-const readable =  client.stream("g.V()", {}, { batchSize: 25 });
-
-readable.on('data', (data) => {
-  console.log(data.toArray()); // 25 vertices
-})
-
-readable.on('error', (error) => {
-  console.log(error); // errors returned from gremlin server
-})
-
-readable.on('end', () => {
-  console.log('query complete'); // when the end event is received then all the results have been processed
-})
+for await (const item of client.stream('g.V()', null)) {
+  console.log(item);
+  if (someCondition) break; // stops reading from the HTTP stream
+}
 ----
 
-Readable streams can also be consumed using asynchronous iteration:
-
+`client.stream()` accepts the same parameters as `client.submit()`: a script string, optional bindings, and optional
+per-request settings.
 
 [source,javascript]
 ----
-
-const readable = client.stream("g.V()", {}, { batchSize: 25 });
-
 try {
-  for await (const result of readable) {
-    console.log('data', result.toArray()); // 25 vertices
+  for await (const item of client.stream('g.V().has("age", gt(age))', { age: 30 }, { evaluationTimeout: 5000 })) {
+    console.log(item);
   }
 } catch (err) {
-  console.log(err);
+  console.error(err); // ResponseError from the server
 }
-
 ----
 
 [[gremlin-javascript-dsl]]

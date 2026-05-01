@@ -150,19 +150,26 @@ export default class Connection extends EventEmitter {
       // For error responses, buffer and parse the error body
       const buffer = Buffer.from(await response.arrayBuffer());
       const errorMessage = `Server returned HTTP ${response.status}: ${response.statusText}`;
-      const reader = this.#getReaderForContentType(response.headers.get("Content-Type"));
+      const contentType = response.headers.get("Content-Type");
+      const reader = this.#getReaderForContentType(contentType);
 
-      if (reader) {
-        try {
+      try {
+        if (reader) {
           const deserialized = await reader.readResponse(buffer);
           throw new ResponseError(errorMessage, {
             code: deserialized.status.code,
             message: deserialized.status.message || response.statusText,
             exception: deserialized.status.exception,
           });
-        } catch (err) {
-          if (err instanceof ResponseError) throw err;
+        } else if (contentType === 'application/json') {
+          const errorBody = JSON.parse(buffer.toString());
+          throw new ResponseError(errorMessage, {
+            code: response.status,
+            message: errorBody.message || errorBody.error || response.statusText,
+          });
         }
+      } catch (err) {
+        if (err instanceof ResponseError) throw err;
       }
 
       throw new ResponseError(errorMessage, {
