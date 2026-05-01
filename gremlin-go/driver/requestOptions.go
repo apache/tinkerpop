@@ -19,17 +19,13 @@ under the License.
 
 package gremlingo
 
-import (
-	"strconv"
-)
-
 type RequestOptions struct {
 	evaluationTimeout     int
 	batchSize             int
 	userAgent             string
 	bindings              map[string]interface{}
 	materializeProperties string
-	bulkResults           string
+	bulkResults           *bool
 }
 
 type RequestOptionsBuilder struct {
@@ -38,7 +34,7 @@ type RequestOptionsBuilder struct {
 	userAgent             string
 	bindings              map[string]interface{}
 	materializeProperties string
-	bulkResults           string
+	bulkResults           *bool
 }
 
 func (builder *RequestOptionsBuilder) SetEvaluationTimeout(evaluationTimeout int) *RequestOptionsBuilder {
@@ -67,7 +63,7 @@ func (builder *RequestOptionsBuilder) SetMaterializeProperties(materializeProper
 }
 
 func (builder *RequestOptionsBuilder) SetBulkResults(bulkResults bool) *RequestOptionsBuilder {
-	builder.bulkResults = strconv.FormatBool(bulkResults)
+	builder.bulkResults = &bulkResults
 	return builder
 }
 

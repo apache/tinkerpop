@@ -19,6 +19,8 @@ under the License.
 
 package gremlingo
 
+import "strconv"
+
 // RequestMessage represents a request to the server.
 type RequestMessage struct {
 	Gremlin string
@@ -71,8 +73,8 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		newFields["materializeProperties"] = requestOptions.materializeProperties
 	}
 
-	if requestOptions.bulkResults != "" {
-		newFields["bulkResults"] = requestOptions.bulkResults
+	if requestOptions.bulkResults != nil {
+		newFields["bulkResults"] = strconv.FormatBool(*requestOptions.bulkResults)
 	}
 
 	return RequestMessage{

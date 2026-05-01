@@ -172,7 +172,7 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 
 	// default bulkResults to true when using DRC through request options
 	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options
-	if requestOptionsBuilder.bulkResults == "" {
+	if requestOptionsBuilder.bulkResults == nil {
 		requestOptionsBuilder.SetBulkResults(true)
 	}
 
