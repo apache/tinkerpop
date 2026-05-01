@@ -216,8 +216,12 @@ Some connection options can also be set on individual requests made through the 
 results, err := g.With("evaluationTimeout", 500).V().Out("knows").ToList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `userAgent` and
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent` and
 `evaluationTimeout`.
+
+NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
+to optimize result transfer. This does not apply to direct `Client.Submit()` calls, where `bulkResults` must be
+set explicitly if desired.
 
 anchor:go-imports[]
 [[gremlin-go-imports]]
@@ -351,7 +355,7 @@ options := new(RequestOptionsBuilder).
 resultSet, err := client.SubmitWithOptions("g.V(x).count()", options)
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
 `evaluationTimeout` and `materializeProperties`.
 `RequestOptions` may also contain a map of variable `bindings` to be applied to the supplied
 traversal string.
@@ -813,8 +817,12 @@ GraphTraversalSource g = traversal().with(conf);
 List<Vertex> vertices = g.with(Tokens.ARGS_EVAL_TIMEOUT, 500L).V().out("knows").toList()
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
 `materializeProperties` and `evaluationTimeout`. Use of `Tokens` to reference these options is preferred.
+
+NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
+to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
+set explicitly if desired.
 
 anchor:java-imports[]
 [[gremlin-java-imports]]
@@ -1590,6 +1598,10 @@ const vertices = await g.with_('evaluationTimeout', 500).V().out('knows').toList
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
 `bulkResults`, `materializeProperties` and `evaluationTimeout`.
 
+NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
+to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
+set explicitly if desired.
+
 [[gremlin-javascript-imports]]
 === Common Imports
 
@@ -2124,9 +2136,13 @@ For instance to set request timeout to 500 milliseconds:
 var l = g.With(Tokens.ArgsEvalTimeout, 500).V().Out("knows").Count().ToList();
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`,
 `materializeProperties`, and `evaluationTimeout`. These options are available as constants on the
 `Gremlin.Net.Driver.Tokens` class.
+
+NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `true` per-request
+to optimize result transfer. This does not apply to direct `GremlinClient.SubmitAsync()` calls, where `bulkResults`
+must be set explicitly if desired.
 
 [[gremlin-dotnet-imports]]
 === Common Imports
@@ -2270,7 +2286,7 @@ feature is to set a per-request override to the `evaluationTimeout` so that it o
 include::../../../gremlin-dotnet/test/Gremlin.Net.IntegrationTest/Docs/Reference/GremlinVariantsTests.cs[tags=submittingScriptsWithTimeout]
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `userAgent`, `materializeProperties`
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `userAgent`, `materializeProperties`
 and `evaluationTimeout`. These options are available as constants on the `Gremlin.Net.Driver.Tokens` class.
 
 ==== Request Interceptors
@@ -2582,6 +2598,10 @@ vertices = g.with_('evaluationTimeout', 500).V().out('knows').to_list()
 The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `language`,
 `materializeProperties`, `userAgent`, and `evaluationTimeout`.
 
+NOTE: When submitting traversals through `DriverRemoteConnection`, `bulkResults` defaults to `True` per-request
+to optimize result transfer. This does not apply to direct `Client.submit()` calls, where `bulkResults` must be
+set explicitly if desired.
+
 anchor:python-imports[]
 [[gremlin-python-imports]]
 === Common Imports
@@ -2808,7 +2828,7 @@ request.
 result_set = client.submit('g.V().repeat(both()).times(100)', request_options={'evaluationTimeout': 5000})
 ----
 
-The following options are allowed on a per-request basis in this fashion: `batchSize`, `requestId`, `userAgent`,
+The following options are allowed on a per-request basis in this fashion: `batchSize`, `bulkResults`, `requestId`, `userAgent`,
 `materializeProperties` and `evaluationTimeout` (formerly `scriptEvaluationTimeout` which is also supported but now deprecated).
 
 IMPORTANT: The preferred method for setting a per-request timeout for scripts is demonstrated above, but those familiar

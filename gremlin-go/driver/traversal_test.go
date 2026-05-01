@@ -542,6 +542,131 @@ func TestTraversal(t *testing.T) {
 	})
 }
 
+func TestTraversalNextValue(t *testing.T) {
+	// Helper to create a closed ResultSet pre-populated with results.
+	makeResultSet := func(results ...*Result) ResultSet {
+		rs := newChannelResultSetCapacity(len(results) + 1).(*channelResultSet)
+		for _, r := range results {
+			rs.channel <- r
+		}
+		rs.channelMutex.Lock()
+		rs.closed = true
+		close(rs.channel)
+		rs.channelMutex.Unlock()
+		return rs
+	}
+
+	t.Run("unrolls Traverser with bulk > 1", func(t *testing.T) {
+		rs := makeResultSet(
+			&Result{&Traverser{Bulk: 3, Value: "marko"}},
+		)
+		trav := &Traversal{results: rs}
+
+		var values []interface{}
+		for {
+			val, ok, err := trav.nextValue()
+			assert.Nil(t, err)
+			if !ok {
+				break
+			}
+			values = append(values, val)
+		}
+		assert.Equal(t, []interface{}{"marko", "marko", "marko"}, values)
+	})
+
+	t.Run("unrolls Traverser with bulk == 1", func(t *testing.T) {
+		rs := makeResultSet(
+			&Result{&Traverser{Bulk: 1, Value: 42}},
+		)
+		trav := &Traversal{results: rs}
+
+		val, ok, err := trav.nextValue()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, 42, val)
+
+		// Should be exhausted
+		_, ok, err = trav.nextValue()
+		assert.Nil(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("handles raw non-Traverser results", func(t *testing.T) {
+		rs := makeResultSet(
+			&Result{"hello"},
+			&Result{int32(99)},
+		)
+		trav := &Traversal{results: rs}
+
+		val, ok, err := trav.nextValue()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "hello", val)
+
+		val, ok, err = trav.nextValue()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, int32(99), val)
+
+		_, ok, err = trav.nextValue()
+		assert.Nil(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("skips Traverser with bulk == 0", func(t *testing.T) {
+		rs := makeResultSet(
+			&Result{&Traverser{Bulk: 0, Value: "skip-me"}},
+			&Result{&Traverser{Bulk: 1, Value: "keep-me"}},
+		)
+		trav := &Traversal{results: rs}
+
+		val, ok, err := trav.nextValue()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "keep-me", val)
+
+		_, ok, err = trav.nextValue()
+		assert.Nil(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("empty ResultSet returns not-ok", func(t *testing.T) {
+		rs := makeResultSet()
+		trav := &Traversal{results: rs}
+
+		_, ok, err := trav.nextValue()
+		assert.Nil(t, err)
+		assert.False(t, ok)
+	})
+
+	t.Run("HasNext returns true when lastTraverser has remaining bulk", func(t *testing.T) {
+		rs := makeResultSet(
+			&Result{&Traverser{Bulk: 3, Value: "x"}},
+		)
+		trav := &Traversal{results: rs}
+
+		// Consume first value to set lastTraverser
+		val, ok, err := trav.nextValue()
+		assert.Nil(t, err)
+		assert.True(t, ok)
+		assert.Equal(t, "x", val)
+
+		// HasNext should return true from lastTraverser (bulk=2 remaining)
+		hasNext, err := trav.HasNext()
+		assert.Nil(t, err)
+		assert.True(t, hasNext)
+
+		// Drain remaining
+		trav.nextValue() // bulk 2->1
+		trav.nextValue() // bulk 1->0, lastTraverser cleared
+
+		// Now should be empty
+		hasNext, err = trav.HasNext()
+		assert.Nil(t, err)
+		assert.False(t, hasNext)
+	})
+}
+
 func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 	// No authentication integration test with graphs loaded and alias configured server
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)

@@ -376,8 +376,11 @@ func TestConnection(t *testing.T) {
 		var names []string
 		for _, res := range allResults {
 			assert.NotNil(t, res)
-			vp, err := res.GetVertexProperty()
-			assert.Nil(t, err)
+			// DRC defaults bulkResults=true, so results should be Traverser-wrapped.
+			tr, ok := res.Data.(*Traverser)
+			assert.True(t, ok, "expected *Traverser from DRC path with bulkResults=true, got %T", res.Data)
+			vp, ok := tr.Value.(*VertexProperty)
+			assert.True(t, ok)
 			names = append(names, vp.Value.(string))
 		}
 		assert.True(t, sortAndCompareTwoStringSlices(names, testNames))
@@ -774,6 +777,35 @@ func TestConnection(t *testing.T) {
 			assert.True(t, ok)
 			assert.Greater(t, len(props), 0)
 		}
+	})
+
+	t.Run("Test bulkResults with DRC request option", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// bulkResults is defaulted to true in submitGremlinLang, results should still be correct
+		results, err := g.Inject(1, 2, 3, 2, 1).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 5, len(results))
+	})
+
+	t.Run("Test bulkResults with explicit With option", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+
+		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
+		defer g.remoteConnection.Close()
+
+		// explicitly set bulkResults to true via With
+		results, err := g.With("bulkResults", true).Inject(1, 2, 3, 2, 1).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 5, len(results))
+
+		// explicitly set bulkResults to false via With
+		results, err = g.With("bulkResults", false).Inject(1, 2, 3, 2, 1).ToList()
+		assert.Nil(t, err)
+		assert.Equal(t, 5, len(results))
 	})
 }
 

@@ -379,4 +379,29 @@ func TestResult(t *testing.T) {
 		res := r.IsNil()
 		assert.True(t, res)
 	})
+
+	t.Run("Test Result.GetTraverser() with pointer", func(t *testing.T) {
+		tr := &Traverser{Bulk: 3, Value: "marko"}
+		r := Result{tr}
+		res, err := r.GetTraverser()
+		assert.Nil(t, err)
+		assert.Equal(t, int64(3), res.Bulk)
+		assert.Equal(t, "marko", res.Value)
+	})
+
+	t.Run("Test Result.GetTraverser() with value", func(t *testing.T) {
+		tr := Traverser{Bulk: 1, Value: 42}
+		r := Result{tr}
+		res, err := r.GetTraverser()
+		assert.Nil(t, err)
+		assert.Equal(t, int64(1), res.Bulk)
+		assert.Equal(t, 42, res.Value)
+	})
+
+	t.Run("Test Result.GetTraverser() error expected", func(t *testing.T) {
+		r := Result{"not a traverser"}
+		res, err := r.GetTraverser()
+		assert.Nil(t, res)
+		assert.Error(t, err)
+	})
 }

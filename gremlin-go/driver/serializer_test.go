@@ -54,6 +54,71 @@ func TestSerializer(t *testing.T) {
 		assert.Equal(t, "OK", response.ResponseStatus.message)
 		assert.Equal(t, []interface{}{int32(0)}, response.ResponseResult.Data)
 	})
+
+	t.Run("test deserialized bulked response message", func(t *testing.T) {
+		// Build a bulked response: version=0x84, bulked=0x01,
+		// value: int32(7) [type=0x01, flag=0x00, value=0x00000007],
+		// bulk: int64(3) [type=0x02, flag=0x00, value=0x0000000000000003],
+		// EndOfStream marker [0xFD, 0x00, 0x00],
+		// status code 200 [0x00, 0x00, 0x00, 0xC8],
+		// null message [0x01], null exception [0x01]
+		responseByteArray := []byte{
+			0x84, 0x01, // version, bulked=true
+			0x01, 0x00, 0x00, 0x00, 0x00, 0x07, // int32(7)
+			0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, // int64(3) bulk count
+			0xFD, 0x00, 0x00, // EndOfStream marker
+			0x00, 0x00, 0x00, 0xC8, // status code 200
+			0x01, // null message
+			0x01, // null exception
+		}
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		response, err := serializer.DeserializeMessage(responseByteArray)
+		assert.Nil(t, err)
+		assert.Equal(t, uint32(200), response.ResponseStatus.code)
+
+		// Bulked response should produce a single Traverser with Bulk=3, Value=int32(7)
+		data, ok := response.ResponseResult.Data.([]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, 1, len(data))
+		tr, ok := data[0].(*Traverser)
+		assert.True(t, ok)
+		assert.Equal(t, int64(3), tr.Bulk)
+		assert.Equal(t, int32(7), tr.Value)
+	})
+
+	t.Run("test deserialized bulked response with multiple values", func(t *testing.T) {
+		// Bulked response with two values:
+		// int32(1) with bulk 2, int32(3) with bulk 1
+		responseByteArray := []byte{
+			0x84, 0x01, // version, bulked=true
+			0x01, 0x00, 0x00, 0x00, 0x00, 0x01, // int32(1)
+			0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // int64(2) bulk count
+			0x01, 0x00, 0x00, 0x00, 0x00, 0x03, // int32(3)
+			0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // int64(1) bulk count
+			0xFD, 0x00, 0x00, // EndOfStream marker
+			0x00, 0x00, 0x00, 0xC8, // status code 200
+			0x01, // null message
+			0x01, // null exception
+		}
+		serializer := newGraphBinarySerializer(newLogHandler(&defaultLogger{}, Error, language.English))
+		response, err := serializer.DeserializeMessage(responseByteArray)
+		assert.Nil(t, err)
+		assert.Equal(t, uint32(200), response.ResponseStatus.code)
+
+		data, ok := response.ResponseResult.Data.([]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, 2, len(data))
+
+		tr0, ok := data[0].(*Traverser)
+		assert.True(t, ok)
+		assert.Equal(t, int64(2), tr0.Bulk)
+		assert.Equal(t, int32(1), tr0.Value)
+
+		tr1, ok := data[1].(*Traverser)
+		assert.True(t, ok)
+		assert.Equal(t, int64(1), tr1.Bulk)
+		assert.Equal(t, int32(3), tr1.Value)
+	})
 }
 
 func TestSerializerFailures(t *testing.T) {

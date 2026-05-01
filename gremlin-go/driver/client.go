@@ -170,6 +170,12 @@ func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, er
 		requestOptionsBuilder = applyOptionsConfig(requestOptionsBuilder, gremlinLang.optionsStrategies[0].configuration)
 	}
 
+	// default bulkResults to true when using DRC through request options
+	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options
+	if requestOptionsBuilder.bulkResults == nil {
+		requestOptionsBuilder.SetBulkResults(true)
+	}
+
 	request := MakeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
 	return client.conn.submit(&request)
 }
@@ -179,12 +185,12 @@ func applyOptionsConfig(builder *RequestOptionsBuilder, config map[string]interf
 
 	// Map configuration keys to setter method names
 	setterMap := map[string]string{
-		"requestId":             "SetRequestId",
 		"evaluationTimeout":     "SetEvaluationTimeout",
 		"batchSize":             "SetBatchSize",
 		"userAgent":             "SetUserAgent",
 		"bindings":              "SetBindings",
 		"materializeProperties": "SetMaterializeProperties",
+		"bulkResults":           "SetBulkResults",
 	}
 
 	for key, value := range config {
