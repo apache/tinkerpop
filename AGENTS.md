@@ -30,9 +30,14 @@ Apache TinkerPop is licensed under Apache License 2.0. Contributions must meet t
 unlicensed snippets, and Stack Overflow / blog / forum excerpts whose licensing is unclear. Reimplement from 
 specifications, standards, or Apache-compatible sources (see the ASF 3rd Party Licensing Policy).
 * *Every new source file needs the ASF license header.* See `bin/asf-license-header.txt` for the canonical form.
-* *Attribute generated work in commits.* When AI tooling authored a non-trivial portion of a change, add a trailer to 
-the commit message, for example: `Assisted-by: AGENT_NAME:MODEL_VERSION [TOOL1] [TOOL2]`. This aligns with the ASF's 
-recommendation on AI provenance tracking.
+* *Attribute generated work in commits.* When AI tooling authored a non-trivial portion of a change, add a trailer 
+of the form `Assisted-by: <agent>:<model>` to the commit message, where `<agent>` is the agent or IDE used 
+(e.g. `Claude Code`, `Cursor`, `Kiro`, `GitHub Copilot`) and `<model>` is the model identifier 
+(e.g. `claude-opus-4-7`, `gpt-5`). Append a bracketed entry per additional auxiliary tool (e.g. `[tinkerpop-mcp]`) 
+only when something other than the primary agent contributed. For example, 
+`Assisted-by: Claude Code:claude-opus-4-7`, `Assisted-by: Cursor:gpt-5`, or 
+`Assisted-by: Claude Code:claude-opus-4-7 [tinkerpop-mcp]`. This aligns with the ASF's recommendation on AI 
+provenance tracking.
 * *The contributor remains responsible for what they submit.* Review generated output for licensing, correctness, and 
 style before committing.
 
