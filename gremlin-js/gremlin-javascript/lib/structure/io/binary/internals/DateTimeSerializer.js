@@ -74,88 +74,64 @@ export default class DateTimeSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<Date>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    // 18 bytes: year(4) + month(1) + day(1) + nanos(8) + utcOffset(4)
+    const buf = await reader.readBytes(18);
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    let offset = 0;
+    const year = buf.readInt32BE(offset);
+    offset += 4;
+    const month = buf.readUInt8(offset);
+    offset += 1;
+    const day = buf.readUInt8(offset);
+    offset += 1;
+    const nanos = buf.readBigInt64BE(offset);
+    offset += 8;
+    const utcOffset = buf.readInt32BE(offset);
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ID) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
+    // Convert nanos to time components
+    const hours = Number(nanos / 3_600_000_000_000n);
+    const remainingNanos = nanos % 3_600_000_000_000n;
+    const minutes = Number(remainingNanos / 60_000_000_000n);
+    const remainingNanos2 = remainingNanos % 60_000_000_000n;
+    const seconds = Number(remainingNanos2 / 1_000_000_000n);
+    const millis = Number((remainingNanos2 % 1_000_000_000n) / 1_000_000n);
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      if (cursor.length < 18) {
-        throw new Error('unexpected {value} length');
-      }
-      len += 18;
-
-      let offset = 0;
-
-      // Read year (Int32BE)
-      const year = cursor.readInt32BE(offset);
-      offset += 4;
-
-      // Read month (UInt8, 1-based)
-      const month = cursor.readUInt8(offset);
-      offset += 1;
-
-      // Read day (UInt8, 1-based)
-      const day = cursor.readUInt8(offset);
-      offset += 1;
-
-      // Read nanoseconds since midnight (BigInt64BE)
-      const nanos = cursor.readBigInt64BE(offset);
-      offset += 8;
-
-      // Read UTC offset in seconds (Int32BE) - JS Date cannot represent non-zero offsets
-      const utcOffset = cursor.readInt32BE(offset);
-      offset += 4;
-
-      // Convert nanos to time components
-      const hours = Number(nanos / 3_600_000_000_000n);
-      const remainingNanos = nanos % 3_600_000_000_000n;
-      const minutes = Number(remainingNanos / 60_000_000_000n);
-      const remainingNanos2 = remainingNanos % 60_000_000_000n;
-      const seconds = Number(remainingNanos2 / 1_000_000_000n);
-      const millis = Number((remainingNanos2 % 1_000_000_000n) / 1_000_000n);
-
-      const v = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds, millis));
-      // Date.UTC treats years 0-99 as 1900-1999, correct it
-      if (year >= 0 && year <= 99) {
-        v.setUTCFullYear(year);
-      }
-      // Adjust for non-zero UTC offset (JS Date is always UTC internally)
-      if (utcOffset !== 0) {
-        v.setTime(v.getTime() - utcOffset * 1000);
-      }
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+    const v = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds, millis));
+    // Date.UTC treats years 0-99 as 1900-1999, correct it
+    if (year >= 0 && year <= 99) {
+      v.setUTCFullYear(year);
     }
+    // Adjust for non-zero UTC offset (JS Date is always UTC internally)
+    if (utcOffset !== 0) {
+      v.setTime(v.getTime() - utcOffset * 1000);
+    }
+
+    return v;
+  }
+
+  /**
+   * @param {StreamReader} reader
+   * @returns {Promise<Date|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ID) {
+      throw new Error(`DateTimeSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`DateTimeSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

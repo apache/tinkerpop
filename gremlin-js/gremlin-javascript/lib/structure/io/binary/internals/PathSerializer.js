@@ -59,65 +59,40 @@ export default class PathSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * Async deserialization of path value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<Path>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    // {labels} fully qualified list
+    const labels = await this.ioc.anySerializer.deserialize(reader);
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    // {objects} fully qualified list
+    const objects = await this.ioc.anySerializer.deserialize(reader);
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.PATH) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
+    return new Path(labels, objects);
+  }
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      let labels, labels_len;
-      try {
-        ({ v: labels, len: labels_len } = this.ioc.listSerializer.deserialize(cursor));
-        len += labels_len;
-      } catch (err) {
-        err.message = '{labels}: ' + err.message;
-        throw err;
-      }
-      // TODO: should we check content of labels to make sure it's List< Set<String> > ?
-      cursor = cursor.slice(labels_len);
-
-      let objects, objects_len;
-      try {
-        ({ v: objects, len: objects_len } = this.ioc.listSerializer.deserialize(cursor));
-        len += objects_len;
-      } catch (err) {
-        err.message = '{objects}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(objects_len);
-
-      const v = new Path(labels, objects);
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<Path|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.PATH) {
+      throw new Error(`PathSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`PathSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

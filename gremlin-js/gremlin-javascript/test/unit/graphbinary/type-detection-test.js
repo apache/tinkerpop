@@ -28,6 +28,7 @@ import { assert } from 'chai';
 import { Vertex, Edge, Property, VertexProperty, Path } from '../../../lib/structure/graph.js';
 import { direction, t, merge } from '../../../lib/process/traversal.js';
 import ioc, { DataType } from '../../../lib/structure/io/binary/GraphBinary.js';
+import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
 const { anySerializer } = ioc;
 
@@ -73,11 +74,11 @@ describe('Type Detection Tests', () => {
       assert.strictEqual(anySerializer.serialize(-Infinity)[0], DataType.DOUBLE);
     });
 
-    it('-0 → DOUBLE (0x07) preserving sign', () => {
+    it('-0 → DOUBLE (0x07) preserving sign', async () => {
       const result = anySerializer.serialize(-0);
       assert.strictEqual(result[0], DataType.DOUBLE);
-      const deserialized = anySerializer.deserialize(result);
-      assert.isTrue(Object.is(deserialized.v, -0));
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(result));
+      assert.isTrue(Object.is(deserialized, -0));
     });
 
     it('BigInt within Int64 range → BIGINTEGER (0x23)', () => {
@@ -280,52 +281,52 @@ describe('Type Detection Tests', () => {
   });
 
   describe('Round-trip extras', () => {
-    it('nested collections', () => {
+    it('nested collections', async () => {
       const value = [1, [2, 3], new Map([['a', [4]]])];
       const serialized = anySerializer.serialize(value);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.deepStrictEqual(deserialized.v, value);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.deepStrictEqual(deserialized, value);
     });
 
-    it('empty containers', () => {
+    it('empty containers', async () => {
       const values = [[], new Set(), new Map(), ''];
-      values.forEach(value => {
+      for (const value of values) {
         const serialized = anySerializer.serialize(value);
-        const deserialized = anySerializer.deserialize(serialized);
-        assert.deepStrictEqual(deserialized.v, value);
-      });
+        const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+        assert.deepStrictEqual(deserialized, value);
+      }
     });
 
-    it('JS-specific label construction survives round-trip', () => {
+    it('JS-specific label construction survives round-trip', async () => {
       const vertex = new Vertex(123, 'person');
       const serialized = anySerializer.serialize(vertex);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.strictEqual(deserialized.v.label, 'person');
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.label, 'person');
     });
 
-    it('Unicode strings', () => {
+    it('Unicode strings', async () => {
       const value = '🚀 Hello 世界';
       const serialized = anySerializer.serialize(value);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.strictEqual(deserialized.v, value);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized, value);
     });
 
-    it('boundary integers', () => {
+    it('boundary integers', async () => {
       const values = [0, -1, 1];
-      values.forEach(value => {
+      for (const value of values) {
         const serialized = anySerializer.serialize(value);
-        const deserialized = anySerializer.deserialize(serialized);
-        assert.strictEqual(deserialized.v, value);
-      });
+        const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+        assert.strictEqual(deserialized, value);
+      }
     });
 
-    it('NaN round-trip', () => {
+    it('NaN round-trip', async () => {
       const serialized = anySerializer.serialize(NaN);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.isTrue(Number.isNaN(deserialized.v));
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.isTrue(Number.isNaN(deserialized));
     });
 
-    it('complex nested structure', () => {
+    it('complex nested structure', async () => {
       const value = new Map([
         ['numbers', [1, 2.5, BigInt(123)]],
         ['sets', new Set(['a', 'b'])],
@@ -333,65 +334,65 @@ describe('Type Detection Tests', () => {
         ['nested', new Map([['inner', [true, false, null]]])]
       ]);
       const serialized = anySerializer.serialize(value);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.deepStrictEqual(deserialized.v, value);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.deepStrictEqual(deserialized, value);
     });
 
-    it('mixed type array', () => {
+    it('mixed type array', async () => {
       const value = [1, 'string', true, null, new Date(0), Buffer.from('test')];
       const serialized = anySerializer.serialize(value);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.strictEqual(deserialized.v.length, value.length);
-      assert.strictEqual(deserialized.v[0], 1);
-      assert.strictEqual(deserialized.v[1], 'string');
-      assert.strictEqual(deserialized.v[2], true);
-      assert.strictEqual(deserialized.v[3], null);
-      assert.deepStrictEqual(deserialized.v[4], new Date(0));
-      assert.isTrue(Buffer.isBuffer(deserialized.v[5]));
-      assert.isTrue(deserialized.v[5].equals(Buffer.from('test')));
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.length, value.length);
+      assert.strictEqual(deserialized[0], 1);
+      assert.strictEqual(deserialized[1], 'string');
+      assert.strictEqual(deserialized[2], true);
+      assert.strictEqual(deserialized[3], null);
+      assert.deepStrictEqual(deserialized[4], new Date(0));
+      assert.isTrue(Buffer.isBuffer(deserialized[5]));
+      assert.isTrue(deserialized[5].equals(Buffer.from('test')));
     });
 
-    it('graph elements with properties', () => {
+    it('graph elements with properties', async () => {
       const vertex = new Vertex(1, ['person'], [new VertexProperty(1, ['name'], 'marko')]);
       const serialized = anySerializer.serialize(vertex);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.strictEqual(deserialized.v.id, 1);
-      assert.strictEqual(deserialized.v.label, 'person');
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.strictEqual(deserialized.id, 1);
+      assert.strictEqual(deserialized.label, 'person');
     });
 
-    it('path with multiple labels', () => {
+    it('path with multiple labels', async () => {
       const path = new Path([new Set(['a']), new Set(['b', 'c'])], [1, 2]);
       const serialized = anySerializer.serialize(path);
-      const deserialized = anySerializer.deserialize(serialized);
-      assert.deepStrictEqual(deserialized.v.labels, path.labels);
-      assert.deepStrictEqual(deserialized.v.objects, path.objects);
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+      assert.deepStrictEqual(deserialized.labels, path.labels);
+      assert.deepStrictEqual(deserialized.objects, path.objects);
     });
 
-    it('large numbers', () => {
+    it('large numbers', async () => {
       const values = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, 2n**100n];
-      values.forEach(value => {
+      for (const value of values) {
         const serialized = anySerializer.serialize(value);
-        const deserialized = anySerializer.deserialize(serialized);
-        assert.strictEqual(deserialized.v, value);
-      });
+        const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+        assert.strictEqual(deserialized, value);
+      }
     });
 
-    it('special float values', () => {
+    it('special float values', async () => {
       const values = [Infinity, -Infinity];
-      values.forEach(value => {
+      for (const value of values) {
         const serialized = anySerializer.serialize(value);
-        const deserialized = anySerializer.deserialize(serialized);
-        assert.strictEqual(deserialized.v, value);
-      });
+        const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+        assert.strictEqual(deserialized, value);
+      }
     });
 
-    it('enum values', () => {
+    it('enum values', async () => {
       const values = [direction.out, direction.in, direction.both, t.id, t.key, t.label, t.value, merge.onCreate, merge.onMatch, merge.outV, merge.inV];
-      values.forEach(value => {
+      for (const value of values) {
         const serialized = anySerializer.serialize(value);
-        const deserialized = anySerializer.deserialize(serialized);
-        assert.strictEqual(deserialized.v, value);
-      });
+        const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(serialized));
+        assert.strictEqual(deserialized, value);
+      }
     });
   });
 });

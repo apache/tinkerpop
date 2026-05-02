@@ -59,9 +59,7 @@ describe('DriverRemoteConnection', function () {
         .catch(function (err) {
           assert.ok(err);
           assert.ok(err.statusCode === 400);
-          assert.ok(err.statusAttributes);
-          assert.ok(err.statusAttributes.has('exceptions'));
-          assert.ok(err.statusAttributes.has('stackTrace'));
+          assert.ok(err.statusException);
         });
     });
     it('should iterate ordered results', async function () {

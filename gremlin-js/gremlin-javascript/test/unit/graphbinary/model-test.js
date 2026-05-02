@@ -29,10 +29,11 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { model } from './model.js';
 import ioc from '../../../lib/structure/io/binary/GraphBinary.js';
+import StreamReader from '../../../lib/structure/io/binary/internals/StreamReader.js';
 
 const { anySerializer } = ioc;
 
-const gbinDir = 'gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary/';
+const gbinDir = '../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io/graphbinary/';
 const searchPattern = 'gremlin-javascript/src/main';
 const thisFile = fileURLToPath(import.meta.url);
 const defaultDir = thisFile.substring(0, thisFile.indexOf(searchPattern));
@@ -48,9 +49,9 @@ function run(name, comparator = assertEqual) {
     const fileBytes = readGbinFile(name);
     const modelValue = model[name];
 
-    it('deserialize .gbin matches model', () => {
-      const result = anySerializer.deserialize(fileBytes);
-      comparator(result.v, modelValue);
+    it('deserialize .gbin matches model', async () => {
+      const result = await anySerializer.deserialize(StreamReader.fromBuffer(fileBytes));
+      comparator(result, modelValue);
     });
 
     it('serialize model matches .gbin bytes', () => {
@@ -58,16 +59,17 @@ function run(name, comparator = assertEqual) {
       assert.deepStrictEqual(serialized, fileBytes);
     });
 
-    it('round-trip serialize(deserialize(fileBytes)) matches .gbin', () => {
-      const deserialized = anySerializer.deserialize(fileBytes);
-      const reserialized = anySerializer.serialize(deserialized.v);
+    it('round-trip serialize(deserialize(fileBytes)) matches .gbin', async () => {
+      const deserialized = await anySerializer.deserialize(StreamReader.fromBuffer(fileBytes));
+      const reserialized = anySerializer.serialize(deserialized);
       assert.deepStrictEqual(reserialized, fileBytes);
     });
 
-    it('length tracking', () => {
+    it('length tracking', async () => {
       const garbageBytes = Buffer.concat([fileBytes, Buffer.from([0xFF])]);
-      const result = anySerializer.deserialize(garbageBytes);
-      assert.strictEqual(result.len, fileBytes.length);
+      const reader = StreamReader.fromBuffer(garbageBytes);
+      await anySerializer.deserialize(reader);
+      assert.strictEqual(reader.position, fileBytes.length);
     });
   });
 }
@@ -78,21 +80,26 @@ function runWriteRead(name, comparator = assertEqual) {
     const fileBytes = readGbinFile(name);
     const modelValue = model[name];
 
-    it('deserialize .gbin matches model', () => {
-      const result = anySerializer.deserialize(fileBytes);
-      comparator(result.v, modelValue);
+    it('deserialize .gbin matches model', async () => {
+      const result = await anySerializer.deserialize(StreamReader.fromBuffer(fileBytes));
+      comparator(result, modelValue);
     });
 
-    it('double round-trip idempotency', () => {
-      const firstRoundTrip = anySerializer.deserialize(anySerializer.serialize(modelValue));
-      const secondRoundTrip = anySerializer.deserialize(anySerializer.serialize(firstRoundTrip.v));
-      comparator(firstRoundTrip.v, secondRoundTrip.v);
+    it('double round-trip idempotency', async () => {
+      const firstRoundTrip = await anySerializer.deserialize(
+        StreamReader.fromBuffer(anySerializer.serialize(modelValue)),
+      );
+      const secondRoundTrip = await anySerializer.deserialize(
+        StreamReader.fromBuffer(anySerializer.serialize(firstRoundTrip)),
+      );
+      comparator(firstRoundTrip, secondRoundTrip);
     });
 
-    it('length tracking', () => {
+    it('length tracking', async () => {
       const garbageBytes = Buffer.concat([fileBytes, Buffer.from([0xFF])]);
-      const result = anySerializer.deserialize(garbageBytes);
-      assert.strictEqual(result.len, fileBytes.length);
+      const reader = StreamReader.fromBuffer(garbageBytes);
+      await anySerializer.deserialize(reader);
+      assert.strictEqual(reader.position, fileBytes.length);
     });
   });
 }
@@ -103,15 +110,16 @@ function runRead(name, comparator = assertEqual) {
     const fileBytes = readGbinFile(name);
     const modelValue = model[name];
 
-    it('deserialize .gbin matches model', () => {
-      const result = anySerializer.deserialize(fileBytes);
-      comparator(result.v, modelValue);
+    it('deserialize .gbin matches model', async () => {
+      const result = await anySerializer.deserialize(StreamReader.fromBuffer(fileBytes));
+      comparator(result, modelValue);
     });
 
-    it('length tracking', () => {
+    it('length tracking', async () => {
       const garbageBytes = Buffer.concat([fileBytes, Buffer.from([0xFF])]);
-      const result = anySerializer.deserialize(garbageBytes);
-      assert.strictEqual(result.len, fileBytes.length);
+      const reader = StreamReader.fromBuffer(garbageBytes);
+      await anySerializer.deserialize(reader);
+      assert.strictEqual(reader.position, fileBytes.length);
     });
   });
 }

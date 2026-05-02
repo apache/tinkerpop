@@ -24,14 +24,14 @@
 export default class ResponseError extends Error {
   statusCode: number;
   statusMessage: string;
-  statusAttributes: Map<string, string>;
+  statusException: string | null;
 
   constructor(
     message: string,
     responseStatus: {
       code: ResponseError['statusCode'];
       message: ResponseError['statusMessage'];
-      attributes: ResponseError['statusAttributes'];
+      exception?: ResponseError['statusException'];
     },
   ) {
     super(message);
@@ -48,8 +48,8 @@ export default class ResponseError extends Error {
     this.statusMessage = responseStatus.message;
 
     /**
-     * Gets the server status attributes as a Map (may contain provider specific status information).
+     * Gets the server exception string (v4 protocol).
      */
-    this.statusAttributes = responseStatus.attributes || {};
+    this.statusException = responseStatus.exception ?? null;
   }
 }

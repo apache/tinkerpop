@@ -61,60 +61,43 @@ export default class UuidSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true, nullable = false) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<string>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const bytes = await reader.readBytes(16);
+    return (
+      bytes.subarray(0, 4).toString('hex') +
+      '-' +
+      bytes.subarray(4, 6).toString('hex') +
+      '-' +
+      bytes.subarray(6, 8).toString('hex') +
+      '-' +
+      bytes.subarray(8, 10).toString('hex') +
+      '-' +
+      bytes.subarray(10, 16).toString('hex')
+    );
+  }
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.UUID) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-      }
-      if (fullyQualifiedFormat || nullable) {
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      if (cursor.length < 16) {
-        throw new Error('unexpected {value} length');
-      }
-      len += 16;
-
-      // Example: 2075278D-F624-4B2B-960D-25D374D57C04
-      const v =
-        cursor.slice(0, 4).toString('hex') +
-        '-' +
-        cursor.slice(4, 6).toString('hex') +
-        '-' +
-        cursor.slice(6, 8).toString('hex') +
-        '-' +
-        cursor.slice(8, 10).toString('hex') +
-        '-' +
-        cursor.slice(10, 16).toString('hex');
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * @param {StreamReader} reader
+   * @returns {Promise<string|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.UUID) {
+      throw new Error(`UuidSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`UuidSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

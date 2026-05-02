@@ -72,66 +72,57 @@ export default class EnumSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      let typeName;
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code === this.ioc.DataType.DIRECTION) {
-          typeName = 'Direction';
-        } else if (type_code === this.ioc.DataType.MERGE) {
-          typeName = 'Merge';
-        } else if (type_code === this.ioc.DataType.T) {
-          typeName = 'T';
-        } else {
-          throw new Error(`unexpected {type_code}=${type_code}`);
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      let elementName, elementName_len;
-      try {
-        ({ v: elementName, len: elementName_len } = this.ioc.stringSerializer.deserialize(cursor, true));
-        len += elementName_len;
-      } catch (err) {
-        err.message = 'elementName: ' + err.message;
-        throw err;
-      }
-
-      let v;
-      if (typeName) {
-        v = this.types[typeName].enum[elementName];
-      } else {
-        v = new EnumValue(undefined, elementName);
-      }
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Resolve the type_code (already read by AnySerializer) to a typeName.
+   * Called by AnySerializer before dispatching.
+   */
+  _typeNameForCode(type_code) {
+    if (type_code === this.ioc.DataType.DIRECTION) {
+      return 'Direction';
     }
+    if (type_code === this.ioc.DataType.MERGE) {
+      return 'Merge';
+    }
+    if (type_code === this.ioc.DataType.T) {
+      return 'T';
+    }
+    return undefined;
+  }
+
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag - already consumed by AnySerializer
+   * @param {number} typeCode - the type_code byte already read by AnySerializer
+   * @returns {Promise<EnumValue>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const typeName = this._typeNameForCode(typeCode);
+    // elementName is a fully-qualified String (type_code + value_flag + length + text)
+    const elementName = await this.ioc.stringSerializer.deserialize(reader);
+
+    if (typeName) {
+      return this.types[typeName].enum[elementName];
+    }
+    return new EnumValue(undefined, elementName);
+  }
+
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<EnumValue|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (!this._typeNameForCode(type_code)) {
+      throw new Error(`EnumSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`EnumSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

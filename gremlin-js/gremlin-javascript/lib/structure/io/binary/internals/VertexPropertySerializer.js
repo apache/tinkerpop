@@ -72,105 +72,50 @@ export default class VertexPropertySerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * Async deserialization of vertex property value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<VertexProperty>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    // {id} fully qualified
+    const id = await this.ioc.anySerializer.deserialize(reader);
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    // {label} bare list, extract first element
+    const labelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
+    const label = Array.isArray(labelList) && labelList.length > 0 ? labelList[0] : labelList;
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.VERTEXPROPERTY) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
+    // {value} fully qualified
+    const value = await this.ioc.anySerializer.deserialize(reader);
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
+    // {parent} fully qualified (always null in current TinkerPop)
+    await this.ioc.anySerializer.deserialize(reader);
 
-      // {id} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
-      let id, id_len;
-      try {
-        ({ v: id, len: id_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += id_len;
-      } catch (err) {
-        err.message = '{id}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(id_len);
+    // {properties} fully qualified
+    const properties = await this.ioc.anySerializer.deserialize(reader);
 
-      // {label} is a List value
-      let label, label_len;
-      try {
-        ({ v: label, len: label_len } = this.ioc.listSerializer.deserialize(cursor, false));
-        label = Array.isArray(label) && label.length > 0 ? label[0] : label;
-        len += label_len;
-      } catch (err) {
-        err.message = '{label}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(label_len);
+    return new VertexProperty(id, label, value, properties || []);
+  }
 
-      // {value} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value}
-      let value, value_len;
-      try {
-        ({ v: value, len: value_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += value_len;
-      } catch (err) {
-        err.message = '{value}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(value_len);
-
-      // {parent} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which contains the parent Vertex.
-      // Note that as TinkerPop currently send "references" only, this value will always be null.
-      let parent_len;
-      try {
-        ({ len: parent_len } = this.ioc.unspecifiedNullSerializer.deserialize(cursor));
-        len += parent_len;
-      } catch (err) {
-        err.message = '{parent}: ' + err.message;
-        throw err;
-      }
-      // TODO: should we verify that parent is null?
-      cursor = cursor.slice(parent_len);
-
-      // {properties} is a fully qualified typed value composed of {type_code}{type_info}{value_flag}{value} which contains properties. Note that as TinkerPop currently send "references" only, this value will always be null.
-      let properties, properties_len;
-      try {
-        ({ v: properties, len: properties_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += properties_len;
-      } catch (err) {
-        err.message = '{properties}: ' + err.message;
-        throw err;
-      }
-      // TODO: should we verify that properties is null?
-      cursor = cursor.slice(properties_len);
-
-      // null properties are deserialized into empty lists
-      const vp_props = properties ? properties : [];
-      const v = new VertexProperty(id, label, value, vp_props);
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<VertexProperty|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.VERTEXPROPERTY) {
+      throw new Error(`VertexPropertySerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`VertexPropertySerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

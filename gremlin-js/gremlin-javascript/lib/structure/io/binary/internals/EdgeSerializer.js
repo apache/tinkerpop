@@ -89,130 +89,67 @@ export default class EdgeSerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
+  /**
+   * Async deserialization of edge value bytes from a StreamReader.
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<Edge>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    // {id} fully qualified
+    const id = await this.ioc.anySerializer.deserialize(reader);
 
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
+    // {label} bare list, extract first element
+    const labelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
+    const label = Array.isArray(labelList) && labelList.length > 0 ? labelList[0] : labelList;
 
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.EDGE) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
+    // {inVId} fully qualified
+    const inVId = await this.ioc.anySerializer.deserialize(reader);
 
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
+    // {inVLabel} bare list, extract first element
+    const inVLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
+    const inVLabel = Array.isArray(inVLabelList) && inVLabelList.length > 0 ? inVLabelList[0] : inVLabelList;
 
-      let id, id_len;
-      try {
-        ({ v: id, len: id_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += id_len;
-      } catch (err) {
-        err.message = '{id}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(id_len);
+    // {outVId} fully qualified
+    const outVId = await this.ioc.anySerializer.deserialize(reader);
 
-      let label, label_len;
-      try {
-        ({ v: label, len: label_len } = this.ioc.listSerializer.deserialize(cursor, false));
-        label = Array.isArray(label) && label.length > 0 ? label[0] : label;
-        len += label_len;
-      } catch (err) {
-        err.message = '{label}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(label_len);
+    // {outVLabel} bare list, extract first element
+    const outVLabelList = await this.ioc.listSerializer.deserializeValue(reader, 0x00, this.ioc.DataType.LIST);
+    const outVLabel = Array.isArray(outVLabelList) && outVLabelList.length > 0 ? outVLabelList[0] : outVLabelList;
 
-      let inVId, inVId_len;
-      try {
-        ({ v: inVId, len: inVId_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += inVId_len;
-      } catch (err) {
-        err.message = '{inVId}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(inVId_len);
+    // {parent} fully qualified (always null in current TinkerPop)
+    await this.ioc.anySerializer.deserialize(reader);
 
-      let inVLabel, inVLabel_len;
-      try {
-        ({ v: inVLabel, len: inVLabel_len } = this.ioc.listSerializer.deserialize(cursor, false));
-        inVLabel = Array.isArray(inVLabel) && inVLabel.length > 0 ? inVLabel[0] : inVLabel;
-        len += inVLabel_len;
-      } catch (err) {
-        err.message = '{inVLabel}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(inVLabel_len);
+    // {properties} fully qualified
+    const properties = await this.ioc.anySerializer.deserialize(reader);
 
-      let outVId, outVId_len;
-      try {
-        ({ v: outVId, len: outVId_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += outVId_len;
-      } catch (err) {
-        err.message = '{outVId}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(outVId_len);
+    return new Edge(
+      id,
+      new Vertex(outVId, outVLabel, null),
+      label,
+      new Vertex(inVId, inVLabel, null),
+      properties || [],
+    );
+  }
 
-      let outVLabel, outVLabel_len;
-      try {
-        ({ v: outVLabel, len: outVLabel_len } = this.ioc.listSerializer.deserialize(cursor, false));
-        outVLabel = Array.isArray(outVLabel) && outVLabel.length > 0 ? outVLabel[0] : outVLabel;
-        len += outVLabel_len;
-      } catch (err) {
-        err.message = '{outVLabel}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(outVLabel_len);
-
-      let parent_len;
-      try {
-        ({ len: parent_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += parent_len;
-      } catch (err) {
-        err.message = '{parent}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(parent_len);
-
-      let properties, properties_len;
-      try {
-        ({ v: properties, len: properties_len } = this.ioc.anySerializer.deserialize(cursor));
-        len += properties_len;
-      } catch (err) {
-        err.message = '{properties}: ' + err.message;
-        throw err;
-      }
-      cursor = cursor.slice(properties_len);
-
-      // null properties are deserialized into empty lists
-      const edge_props = properties ? properties : [];
-
-      const v = new Edge(id, new Vertex(outVId, outVLabel, null), label, new Vertex(inVId, inVLabel, null), edge_props);
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * Async fully-qualified deserialization from a StreamReader.
+   * @param {StreamReader} reader
+   * @returns {Promise<Edge|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.EDGE) {
+      throw new Error(`EdgeSerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
     }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`EdgeSerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }

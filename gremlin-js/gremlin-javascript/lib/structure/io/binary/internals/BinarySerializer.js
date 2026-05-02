@@ -64,62 +64,39 @@ export default class BinarySerializer {
     return Buffer.concat(bufs);
   }
 
-  deserialize(buffer, fullyQualifiedFormat = true) {
-    let len = 0;
-    let cursor = buffer;
-
-    try {
-      if (buffer === undefined || buffer === null || !(buffer instanceof Buffer)) {
-        throw new Error('buffer is missing');
-      }
-      if (buffer.length < 1) {
-        throw new Error('buffer is empty');
-      }
-
-      if (fullyQualifiedFormat) {
-        const type_code = cursor.readUInt8();
-        len++;
-        if (type_code !== this.ioc.DataType.BINARY) {
-          throw new Error('unexpected {type_code}');
-        }
-        cursor = cursor.slice(1);
-
-        if (cursor.length < 1) {
-          throw new Error('{value_flag} is missing');
-        }
-        const value_flag = cursor.readUInt8();
-        len++;
-        if (value_flag === 1) {
-          return { v: null, len };
-        }
-        if (value_flag !== 0) {
-          throw new Error('unexpected {value_flag}');
-        }
-        cursor = cursor.slice(1);
-      }
-
-      let length, length_len;
-      try {
-        ({ v: length, len: length_len } = this.ioc.intSerializer.deserialize(cursor, false));
-        len += length_len;
-      } catch (err) {
-        err.message = '{length}: ' + err.message;
-        throw err;
-      }
-      if (length < 0) {
-        throw new Error('{length} is less than zero');
-      }
-      cursor = cursor.slice(length_len);
-
-      if (cursor.length < length) {
-        throw new Error(`{value}: unexpected actual {value} length=${cursor.length} when {length}=${length}`);
-      }
-      const v = cursor.slice(0, length);
-      len += length;
-
-      return { v, len };
-    } catch (err) {
-      throw this.ioc.utils.des_error({ serializer: this, args: arguments, cursor, err });
+  /**
+   * @param {StreamReader} reader
+   * @param {number} valueFlag
+   * @param {number} typeCode
+   * @returns {Promise<Buffer>}
+   */
+  async deserializeValue(reader, valueFlag, typeCode) {
+    const length = await this.ioc.intSerializer.deserializeBare(reader);
+    if (length < 0) {
+      throw new Error(`BinarySerializer: {length}=${length} is less than zero`);
     }
+    if (length === 0) {
+      return Buffer.alloc(0);
+    }
+    return reader.readBytes(length);
+  }
+
+  /**
+   * @param {StreamReader} reader
+   * @returns {Promise<Buffer|null>}
+   */
+  async deserialize(reader) {
+    const type_code = await reader.readUInt8();
+    if (type_code !== this.ioc.DataType.BINARY) {
+      throw new Error(`BinarySerializer: unexpected {type_code}=0x${type_code.toString(16)}`);
+    }
+    const value_flag = await reader.readUInt8();
+    if (value_flag === 0x01) {
+      return null;
+    }
+    if (value_flag !== 0x00) {
+      throw new Error(`BinarySerializer: unexpected {value_flag}=0x${value_flag.toString(16)}`);
+    }
+    return this.deserializeValue(reader, value_flag, type_code);
   }
 }
