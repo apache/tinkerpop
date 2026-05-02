@@ -24,18 +24,23 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
+import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -140,6 +145,38 @@ public class MessageSerializerTest {
         final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
+    }
+
+    @Test
+    public void shouldDeserializeRequestWithIntegerNumericFields() throws SerializationException, IOException {
+        // Simulates what happens when a client (e.g., JavaScript) serializes timeoutMs and batchSize
+        // as GraphBinary INT (4 bytes) instead of LONG/INT. The server must handle both numeric widths.
+        final GraphBinaryWriter writer = new GraphBinaryWriter();
+        final GraphBinaryReader reader = new GraphBinaryReader();
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final RequestMessageSerializer requestSerializer = new RequestMessageSerializer();
+
+        // Build a fields map with Integer values (as a JS client would produce for INT32-range values)
+        final Map<String, Object> fields = new HashMap<>();
+        fields.put(SerTokens.TOKEN_LANGUAGE, "gremlin-lang");
+        fields.put(Tokens.TIMEOUT_MS, 5000);          // Integer, not Long
+        fields.put(Tokens.ARGS_BATCH_SIZE, 64);        // Integer, not Long (though normally int)
+
+        final String gremlin = "g.V()";
+
+        // Manually write the GraphBinary request buffer with Integer-typed numeric fields
+        final ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
+        final org.apache.tinkerpop.gremlin.structure.io.Buffer buffer = bufferFactory.create(byteBuf);
+        buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
+        writer.writeValue(fields, buffer, false);
+        writer.writeValue(gremlin, buffer, false);
+
+        final RequestMessage deserialized = requestSerializer.readValue(byteBuf, reader);
+        assertEquals(5000L, (long) deserialized.getField(Tokens.TIMEOUT_MS));
+        assertEquals(64, (int) deserialized.getField(Tokens.ARGS_BATCH_SIZE));
+        assertEquals(gremlin, deserialized.getGremlin());
+
+        byteBuf.release();
     }
 
     private static void assertResponseEquals(ResponseMessage expected, ResponseMessage actual) {

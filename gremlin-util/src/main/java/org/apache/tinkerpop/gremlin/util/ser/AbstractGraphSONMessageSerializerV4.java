@@ -333,7 +333,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                 builder.addMaterializeProperties(data.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
             }
             if (data.containsKey(Tokens.ARGS_BATCH_SIZE)) {
-                builder.addChunkSize((int) data.get(Tokens.ARGS_BATCH_SIZE));
+                builder.addChunkSize(((Number) data.get(Tokens.ARGS_BATCH_SIZE)).intValue());
             }
             if (data.containsKey(Tokens.BULK_RESULTS)) {
                 builder.addBulkResults(Boolean.parseBoolean(data.get(Tokens.BULK_RESULTS).toString()));

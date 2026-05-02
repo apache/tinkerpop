@@ -62,13 +62,13 @@ public class RequestMessageSerializer {
                 builder.addBindings((Map<String, Object>) fields.get(SerTokens.TOKEN_BINDINGS));
             }
             if (fields.containsKey(Tokens.TIMEOUT_MS)) {
-                builder.addTimeoutMillis((long) fields.get(Tokens.TIMEOUT_MS));
+                builder.addTimeoutMillis(((Number) fields.get(Tokens.TIMEOUT_MS)).longValue());
             }
             if (fields.containsKey(Tokens.ARGS_MATERIALIZE_PROPERTIES)) {
                 builder.addMaterializeProperties(fields.get(Tokens.ARGS_MATERIALIZE_PROPERTIES).toString());
             }
             if (fields.containsKey(Tokens.ARGS_BATCH_SIZE)) {
-                builder.addChunkSize((int) fields.get(Tokens.ARGS_BATCH_SIZE));
+                builder.addChunkSize(((Number) fields.get(Tokens.ARGS_BATCH_SIZE)).intValue());
             }
             if (fields.containsKey(Tokens.BULK_RESULTS)) {
                 builder.addBulkResults(Boolean.parseBoolean(fields.get(Tokens.BULK_RESULTS).toString()));

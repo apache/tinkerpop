@@ -303,7 +303,7 @@ describe('Traversal', function () {
     });
     it('should allow with_(evaluationTimeout,10)', function() {
       const g = anon.traversal().with_(connection).with_('x').with_('evaluationTimeout', 10);
-      return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 400));
+      return g.V().repeat(__.both()).iterate().then(() => assert.fail("should have tanked"), (err) => assert.strictEqual(err.statusCode, 500));
     });
     it('should allow SeedStrategy', function () {
       const g = anon.traversal().with_(connection).withStrategies(new SeedStrategy({seed: 999999}));
