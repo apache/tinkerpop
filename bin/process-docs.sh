@@ -55,12 +55,17 @@ echo "Installing gremlin-docs extension..."
 mvn install -f gremlin-docs/pom.xml -DskipTests -Denforcer.skip=true -q
 
 GREMLIN_SERVER_PID=""
+GEPHI_MOCK_PID=""
 
 function cleanup() {
     if [ -n "${GREMLIN_SERVER_PID}" ]; then
         echo "Stopping Gremlin Server (PID ${GREMLIN_SERVER_PID})..."
         kill ${GREMLIN_SERVER_PID} 2>/dev/null
         wait ${GREMLIN_SERVER_PID} 2>/dev/null
+    fi
+    if [ -n "${GEPHI_MOCK_PID}" ]; then
+        kill ${GEPHI_MOCK_PID} 2>/dev/null
+        wait ${GEPHI_MOCK_PID} 2>/dev/null
     fi
     # clean up conf/hadoop from console home if we created it
     if [ -n "${CONSOLE_HOME}" ] && [ -d "${CONSOLE_HOME}/conf/hadoop" ]; then
@@ -83,8 +88,11 @@ if [ "${DRYRUN}" = "false" ]; then
     echo "Using console: ${CONSOLE_HOME}"
 
     # install plugins needed for doc examples
+    # NOTE: neo4j-gremlin is excluded by default because its Spark jars conflict with
+    # spark-gremlin on the classpath. Neo4j examples will fall back to dry-run output.
+    # The old AWK pipeline handled this by swapping plugins per-document.
     PLUGIN_DIR="${CONSOLE_HOME}/ext"
-    plugins=("hadoop-gremlin" "spark-gremlin" "neo4j-gremlin" "sparql-gremlin")
+    plugins=("hadoop-gremlin" "spark-gremlin" "sparql-gremlin")
     for pluginName in "${plugins[@]}"; do
         if [ ! -d "${PLUGIN_DIR}/${pluginName}" ]; then
             echo "Installing plugin: ${pluginName}..."
@@ -150,6 +158,12 @@ if [ "${DRYRUN}" = "false" ]; then
     # (the console process runs with CONSOLE_HOME as its working directory)
     mkdir -p "${CONSOLE_HOME}/conf/hadoop"
     cp "${PROJECT_ROOT}"/hadoop-gremlin/conf/* "${CONSOLE_HOME}/conf/hadoop/" 2>/dev/null || true
+
+    # start Gephi mock server for Gephi plugin examples (listens on port 8080)
+    if ! nc -z localhost 8080 2>/dev/null; then
+        "${PROJECT_ROOT}/bin/gephi-mock.py" > /dev/null 2>&1 &
+        GEPHI_MOCK_PID=$!
+    fi
 
     HADOOP_LIBS="${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib"
     ASCIIDOC_ATTRS="${ASCIIDOC_ATTRS} -Dasciidoctor.attributes.gremlin-docs-console-home=${CONSOLE_HOME}"

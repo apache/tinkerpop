@@ -120,16 +120,19 @@ an issue when working with SNAPSHOT dependencies.
 [[documentation-environment]]
 === Documentation Environment
 
-Documentation is generated using the `gremlin-docs` AsciidoctorJ extension, which executes Gremlin code blocks in an
-embedded script engine during the Asciidoctor rendering phase. No external Gremlin Server, Hadoop cluster, or Gremlin
-Console distribution is required. The scripts should work on Mac and Linux.
+Documentation is generated using the `gremlin-docs` AsciidoctorJ extension, which delegates Gremlin code block
+execution to a real Gremlin Console process and generates language variant tabs via the ANTLR-based
+`GremlinTranslator`. The scripts should work on Mac and Linux.
+
+For a full build with live Gremlin execution, the Gremlin Console and Gremlin Server distributions must be built first:
 
 [source,text]
+mvn clean install -pl :gremlin-server,:gremlin-console -am -DskipTests
 bin/process-docs.sh
 
 Documentation is generated to the `target/docs` directory. Use `bin/process-docs.sh --dry-run` to skip Gremlin
-execution for faster builds when only checking layout. It is also possible to generate documentation locally with
-Docker. `docker/build.sh -d`.
+execution for faster builds when only checking layout — this mode does not require the Console or Server distributions.
+It is also possible to generate documentation locally with Docker. `docker/build.sh -d`.
 
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:

@@ -1,0 +1,56 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<script>
+// Intercept highlight.js to preserve callout markers in code blocks.
+//
+// Asciidoctor generates <i class="conum" data-value="N"></i><b>(N)</b> inside
+// <code> blocks. highlight.js destroys these when it re-processes the innerHTML.
+// Setting ignoreUnescapedHTML:true prevents this, but we must configure hljs
+// BEFORE highlightAll() is called.
+//
+// This docinfo-footer script runs before Asciidoctor's own highlight.js scripts.
+// Since hljs hasn't loaded yet, we define a property trap on window.hljs that
+// calls configure() as soon as highlight.js assigns itself.
+(function() {
+    var realHljs = null;
+    Object.defineProperty(window, 'hljs', {
+        configurable: true,
+        get: function() { return realHljs; },
+        set: function(val) {
+            realHljs = val;
+            if (val && typeof val.configure === 'function') {
+                val.configure({ignoreUnescapedHTML: true});
+            }
+            // Replace the property with a plain value so further access is normal
+            Object.defineProperty(window, 'hljs', {
+                configurable: true, writable: true, enumerable: true,
+                value: val
+            });
+        }
+    });
+})();
+
+// After highlight.js runs, hide the "(N)" fallback <b> elements next to callout
+// markers. The .conum CSS renders the <i> as a black circle, but the <b>(N)</b>
+// text fallback may not be hidden if highlight.js inserted <span> wrappers that
+// break the ".conum + b" adjacent-sibling CSS selector.
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('pre code b').forEach(function(b) {
+        if (/^\(\d+\)$/.test(b.textContent.trim())) {
+            b.style.display = 'none';
+        }
+    });
+});
+</script>
