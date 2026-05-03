@@ -60,12 +60,12 @@ GEPHI_MOCK_PID=""
 function cleanup() {
     if [ -n "${GREMLIN_SERVER_PID}" ]; then
         echo "Stopping Gremlin Server (PID ${GREMLIN_SERVER_PID})..."
-        kill ${GREMLIN_SERVER_PID} 2>/dev/null
-        wait ${GREMLIN_SERVER_PID} 2>/dev/null
+        kill ${GREMLIN_SERVER_PID} 2>/dev/null || true
+        wait ${GREMLIN_SERVER_PID} 2>/dev/null || true
     fi
     if [ -n "${GEPHI_MOCK_PID}" ]; then
-        kill ${GEPHI_MOCK_PID} 2>/dev/null
-        wait ${GEPHI_MOCK_PID} 2>/dev/null
+        kill ${GEPHI_MOCK_PID} 2>/dev/null || true
+        wait ${GEPHI_MOCK_PID} 2>/dev/null || true
     fi
     # clean up conf/hadoop from console home if we created it
     if [ -n "${CONSOLE_HOME}" ] && [ -d "${CONSOLE_HOME}/conf/hadoop" ]; then
