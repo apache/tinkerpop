@@ -1047,6 +1047,14 @@ limitations under the License.
                                 <artifactId>commons-text</artifactId>
                                 <version>1.15.0</version>
                             </dependency>
+                            <!-- Rouge syntax highlighter requires SnakeYAML 1.x for JRuby's
+                                 Psych YAML extension. The project uses SnakeYAML 2.0 which has
+                                 incompatible API changes. This override is scoped to the plugin. -->
+                            <dependency>
+                                <groupId>org.yaml</groupId>
+                                <artifactId>snakeyaml</artifactId>
+                                <version>1.33</version>
+                            </dependency>
                         </dependencies>
                         <executions>
                             <execution>
@@ -1078,9 +1086,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1107,9 +1113,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1136,9 +1140,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1165,9 +1167,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1194,9 +1194,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1223,9 +1221,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1252,9 +1248,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1281,9 +1275,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1308,9 +1300,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1336,9 +1326,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1364,9 +1352,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1391,9 +1377,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>highlightjs</source-highlighter>
-                                        <highlightjsdir>https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0</highlightjsdir>
-                                        <highlightjs-languages>groovy</highlightjs-languages>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
