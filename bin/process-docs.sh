@@ -18,96 +18,64 @@
 # under the License.
 #
 
-pushd "$(dirname $0)/.." > /dev/null
+# Builds TinkerPop documentation using the gremlin-docs AsciidoctorJ extension.
+# This bypasses the old AWK preprocessing pipeline and processes [gremlin-*] blocks
+# directly during Asciidoctor rendering.
+#
+# Usage:
+#   bin/process-docs-new.sh              # full build with live gremlin execution
+#   bin/process-docs-new.sh --dry-run    # skip gremlin execution (fast, for layout checks)
 
-NOCLEAN=
+set -e
 
-DRYRUN=
-DRYRUN_DOCS=
-FULLRUN_DOCS=
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "${PROJECT_ROOT}"
 
-makeAbsPaths () {
-  for doc in $(tr ',' $'\n' <<< "$1"); do
-    if [ -d $doc ]; then
-      for d in $(find "$doc" -name "*.asciidoc"); do
-        echo $(cd $(dirname "$d") && pwd -P)/$(basename "$d")
-      done
-    else
-      echo $(cd $(dirname "$doc") && pwd -P)/$(basename "$doc")
-    fi
-  done | paste -sd ',' -
-}
+TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | sed -e 's/.*<version>//' -e 's/<\/version>.*//')
 
-while [[ $# -gt 0 ]]
-do
-  key="$1"
-  case $key in
-    -n|--noClean)
-      NOCLEAN=1
-      shift
-      ;;
-    -d|--dryRun)
-      DRYRUN=1
-      shift
-      if [[ $# -gt 0 ]] && [[ $1 != -* ]]; then
-        DRYRUN_DOCS=$(makeAbsPaths "$1")
-        shift
-      else
-        DRYRUN_DOCS="*"
-      fi
-      ;;
-    -f|--fullRun)
-      DRYRUN=1
-      DRYRUN_DOCS=${DRYRUN_DOCS:-"*"}
-      shift
-      FULLRUN_DOCS=$(makeAbsPaths "$1")
-      shift
-      ;;
-    *)
-      # unknown option
-      shift
-      ;;
-  esac
+if [ -z "${TP_VERSION}" ]; then
+    echo "ERROR: Could not determine TinkerPop version from pom.xml"
+    exit 1
+fi
+
+ASCIIDOC_ATTRS=""
+if [ "$1" = "--dry-run" ]; then
+    ASCIIDOC_ATTRS="-Dasciidoctor.attributes.gremlin-docs-dryrun=true"
+    echo "Dry-run mode: gremlin blocks will not be executed"
+fi
+
+echo "Building docs for TinkerPop ${TP_VERSION}..."
+echo "Source: docs/src/"
+echo "Output: target/docs/htmlsingle/"
+
+# build and install the gremlin-docs extension (not part of the main reactor)
+echo "Installing gremlin-docs extension..."
+mvn install -f gremlin-docs/pom.xml -DskipTests -Denforcer.skip=true -q
+
+# copy static assets that live outside docs/src/ into the staging area
+# (Maven's copy-docs-to-work-area handles docs/src/ itself)
+mkdir -p target/doc-source
+cp -r docs/static target/doc-source/ 2>/dev/null || true
+cp -r docs/stylesheets target/doc-source/ 2>/dev/null || true
+
+# set up conf/hadoop so GraphFactory.open('conf/hadoop/...') resolves during build
+mkdir -p conf/hadoop
+cp hadoop-gremlin/conf/* conf/hadoop/ 2>/dev/null || true
+
+# run asciidoctor with the gremlin-docs extension, pointing at raw sources
+mvn process-resources \
+    -Dasciidoc \
+    -Drat.skip=true \
+    ${ASCIIDOC_ATTRS}
+
+# clean up
+rm -rf conf/hadoop
+rmdir conf 2>/dev/null || true
+
+# post-process: replace version placeholder
+echo "Post-processing: replacing x.y.z with ${TP_VERSION}..."
+find target/docs/htmlsingle -name '*.html' | while IFS= read -r f; do
+    sed "s/x\.y\.z/${TP_VERSION}/g" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
 done
 
-if [ -z ${NOCLEAN} ]; then
-  rm -rf ~/.groovy/grapes/org.apache.tinkerpop/
-  if hash hadoop 2> /dev/null; then
-    hadoop fs -rm -r "hadoop-gremlin-*-libs" > /dev/null 2>&1
-  fi
-fi
-
-if [ ${DRYRUN} ] && [ "${DRYRUN_DOCS}" == "*" ] && [ -z "${FULLRUN_DOCS}" ]; then
-
-  mkdir -p target/postprocess-asciidoc/tmp
-  cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
-  cp -R docs/src/. target/postprocess-asciidoc/
-  ec=$?
-
-else
-
-  GEPHI_MOCK=
-
-  trap cleanup EXIT
-
-  function cleanup() {
-    [ ${GEPHI_MOCK} ] && kill ${GEPHI_MOCK}
-  }
-
-  nc -z localhost 8080 || (
-    bin/gephi-mock.py > /dev/null 2>&1 &
-    GEPHI_MOCK=$!
-  )
-
-  docs/preprocessor/preprocess.sh "${DRYRUN_DOCS}" "${FULLRUN_DOCS}"
-  ec=$?
-fi
-
-if [ $ec -eq 0 ]; then
-  mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
-  ec=$?
-fi
-
-popd > /dev/null
-
-exit ${ec}
+echo "Done. Output in target/docs/htmlsingle/"

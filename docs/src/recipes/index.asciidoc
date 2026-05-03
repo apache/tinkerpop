@@ -123,25 +123,12 @@ included in the `index.asciidoc` with an entry like this: `include::my-recipe.as
 Documentation should be generated locally for review prior to submitting a pull request. TinkerPop documentation is
 "live" in that it is bound to a specific version when generated. Furthermore, code examples (those that are
 `gremlin-groovy` based) are executed at document generation time with the results written directly into the output.
-The following command will generate the documentation with:
+The following command will generate the documentation:
 
 [source,shell]
 bin/process-docs.sh
 
-The generated documentation can be found at `target/docs/htmlsingle/recipes`. This process can be long on the first
-run of the documentation as it is generating all of the documentation locally (e.g. reference documentation,
-tutorials, etc). To generate just the recipes, follow this process:
-
-[source,shell]
-bin/process-docs.sh -f docs/src/recipes
-
-The `bin/process-docs.sh` approach requires that Hadoop is installed. To avoid that prerequisite, try using Docker:
-
-[source,shell]
-docker/build.sh -d
-
-The downside to using Docker is that the process will take longer as each run will require the entire documentation set
-to be generated.
+The generated documentation can be found at `target/docs/htmlsingle/recipes`.
 
 The final step to submitting a recipe is to issue a link:https://help.github.com/articles/using-pull-requests/[pull request through GitHub].
 It is helpful to prefix the name of the pull request with the JIRA issue number, so that TinkerPop's automation between

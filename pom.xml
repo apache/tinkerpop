@@ -956,14 +956,12 @@ limitations under the License.
             </activation>
 
             <properties>
-                <!-- When using the gremlin-docs AsciidoctorJ extension, point directly at docs/src
-                     by passing -Dasciidoc.source.dir=docs/src on the command line. The old preprocessor
-                     pipeline writes to target/postprocess-asciidoc which remains the default. -->
-                <asciidoc.source.dir>${project.basedir}/target/postprocess-asciidoc</asciidoc.source.dir>
+                <!-- The source asciidocs. The gremlin-docs AsciidoctorJ extension processes
+                     [gremlin-*] code blocks during rendering. Override with -Dasciidoc.source.dir
+                     to point at a different source directory. -->
+                <asciidoc.source.dir>${project.basedir}/docs/src</asciidoc.source.dir>
 
-                <!-- once code processing is over, the documents are basically ready for the formatter and are
-                     copied by way of the maven-resources-plugin to asciidoc.input.dir where they will be processed
-                     by the asciidoctor plugin -->
+                <!-- Staging area where docs are copied before asciidoctor processes them -->
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
 
                 <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
