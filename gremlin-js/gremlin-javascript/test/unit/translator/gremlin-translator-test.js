@@ -269,7 +269,8 @@ describe('GoTranslateVisitor', function () {
       ['g.V().hasNext()', 'g.V().HasNext()'],
       ['g.V().tryNext()', 'g.V().TryNext()'],
       ['g.V().next()', 'g.V().Next()'],
-      ['g.V().next(2)', 'g.V().Next(2)'],
+      // next(n) → NextN(n) since Go does not support method overloading
+      ['g.V().next(2)', 'g.V().NextN(2)'],
       // transaction steps — PascalCase
       ['g.tx().begin()', 'g.Tx().Begin()'],
       ['g.tx().commit()', 'g.Tx().Commit()'],

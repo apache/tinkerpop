@@ -1376,7 +1376,7 @@ public class GremlinTranslatorTest {
                             null,
                             "g.V().next(number0)",
                             "g.V().Next(2)",
-                            "g.V().Next(2)",
+                            "g.V().NextN(2)",
                             null,
                             null,
                             null,
