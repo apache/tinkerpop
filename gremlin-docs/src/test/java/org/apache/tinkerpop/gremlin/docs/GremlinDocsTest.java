@@ -25,46 +25,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-public class GremlinExecutorTest {
-
-    @Test
-    public void shouldExecuteSimpleTraversal() throws Exception {
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            executor.initGraph("modern");
-            final String output = executor.execute(Arrays.asList("g.V().count()"));
-            assertTrue(output.contains("gremlin> g.V().count()"));
-            assertTrue(output.contains("==>6"));
-        }
-    }
-
-    @Test
-    public void shouldMaintainStateBetweenExecutions() throws Exception {
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            executor.initGraph("modern");
-            executor.execute(Arrays.asList("x = g.V().has('name','marko').next()"));
-
-            // "existing" should reuse the graph and bindings
-            executor.initGraph("existing");
-            final String output = executor.execute(Arrays.asList("x.value('name')"));
-            assertTrue(output.contains("==>marko"));
-        }
-    }
-
-    @Test
-    public void shouldExecuteMultipleLines() throws Exception {
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            executor.initGraph("modern");
-            final String output = executor.execute(Arrays.asList(
-                    "g.V().has('name','marko').values('name')",
-                    "g.V().has('name','marko').out('knows').values('name')"
-            ));
-            assertTrue(output.contains("==>marko"));
-            assertTrue(output.contains("==>josh"));
-            assertTrue(output.contains("==>vadas"));
-        }
-    }
+public class GremlinDocsTest {
 
     @Test
     public void shouldExtractTranslatableLines() {
@@ -74,10 +42,30 @@ public class GremlinExecutorTest {
                 "// this is a comment",
                 "g.V().count()"
         );
-        final List<String> result = GremlinExecutor.extractTranslatableLines(lines);
+        final List<String> result = ConsoleExecutor.extractTranslatableLines(lines);
         assertEquals(2, result.size());
         assertEquals("g.V().has('name','marko').\nout('knows').values('name')", result.get(0));
         assertEquals("g.V().count()", result.get(1));
+    }
+
+    @Test
+    public void shouldDetectContinuationLines() {
+        assertThat(ConsoleExecutor.isContinuationLine("g.V().", "g.V()."), is(true));
+        assertThat(ConsoleExecutor.isContinuationLine("has('name','marko')", "g.V().\nhas('name','marko')"), is(false));
+        assertThat(ConsoleExecutor.isContinuationLine("map{", "map{"), is(true));
+        assertThat(ConsoleExecutor.isContinuationLine("[1,", "[1,"), is(true));
+    }
+
+    @Test
+    public void shouldSkipConsoleCommandsInExtraction() {
+        final List<String> lines = Arrays.asList(
+                ":remote connect tinkerpop.server conf/remote.yaml",
+                ":> g.V().count()",
+                "g.V().count()"
+        );
+        final List<String> result = ConsoleExecutor.extractTranslatableLines(lines);
+        assertEquals(1, result.size());
+        assertEquals("g.V().count()", result.get(0));
     }
 
     @Test
@@ -92,7 +80,6 @@ public class GremlinExecutorTest {
         assertTrue(translations.containsKey(Translator.DOTNET));
         assertTrue(translations.containsKey(Translator.GO));
 
-        // python should use snake_case
         assertTrue(translations.get(Translator.PYTHON).contains("has("));
         assertTrue(translations.get(Translator.PYTHON).contains("out("));
     }
@@ -106,36 +93,15 @@ public class GremlinExecutorTest {
         final Map<Translator, String> translations = VariantTranslator.translateBlock(statements);
 
         assertFalse(translations.isEmpty());
-        // each translation should contain both statements
         for (final String code : translations.values()) {
             assertTrue(code.contains("\n"));
         }
     }
 
     @Test
-    public void shouldInitEmptyGraph() throws Exception {
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            executor.initGraph(null);
-            final String output = executor.execute(Arrays.asList("g.V().count()"));
-            assertTrue(output.contains("==>0"));
-        }
-    }
-
-    @Test
-    public void shouldInitEmptyStringGraph() throws Exception {
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            executor.initGraph("");
-            final String output = executor.execute(Arrays.asList("g.V().count()"));
-            assertTrue(output.contains("==>0"));
-        }
-    }
-
-    @Test
     public void shouldSkipUntranslatableStatements() {
-        // lambdas can't be translated
         final Map<Translator, String> translations = VariantTranslator.translateStatement(
                 "g.V().filter{it.get().label() == 'person'}");
-        // should either be empty or have partial results — not throw
         assertNotNull(translations);
     }
 }

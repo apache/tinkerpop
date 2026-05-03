@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * AsciidoctorJ {@link Treeprocessor} that processes {@code [gremlin-groovy,modern]} code blocks
  * in TinkerPop documentation. For each such block, it:
  * <ol>
- *   <li>Executes the Gremlin code in an embedded {@link GremlinExecutor} and captures console output</li>
+ *   <li>Executes the Gremlin code via a {@link ConsoleExecutor} (real Gremlin Console process) and captures console output</li>
  *   <li>Translates the canonical Gremlin to all language variants via {@link VariantTranslator}</li>
  *   <li>Wraps the console output and translations in a tabbed UI with proper AST listing blocks
  *       so Asciidoctor applies syntax highlighting via CodeRay</li>
@@ -54,15 +54,25 @@ public class GremlinTreeProcessor extends Treeprocessor {
     @Override
     public Document process(final Document document) {
         final boolean dryRun = document.hasAttribute("gremlin-docs-dryrun");
+        final String consoleHome = document.hasAttribute("gremlin-docs-console-home")
+                ? document.getAttribute("gremlin-docs-console-home").toString()
+                : null;
+        final String hadoopLibs = document.hasAttribute("gremlin-docs-hadoop-libs")
+                ? document.getAttribute("gremlin-docs-hadoop-libs").toString()
+                : null;
 
-        try (final GremlinExecutor executor = new GremlinExecutor()) {
-            processNode(document, executor, dryRun);
+        if (dryRun || consoleHome == null) {
+            processNode(document, null, true);
+        } else {
+            try (final ConsoleExecutor executor = new ConsoleExecutor(consoleHome, hadoopLibs)) {
+                processNode(document, executor, false);
+            }
         }
 
         return document;
     }
 
-    private void processNode(final StructuralNode node, final GremlinExecutor executor, final boolean dryRun) {
+    private void processNode(final StructuralNode node, final ConsoleExecutor executor, final boolean dryRun) {
         final List<StructuralNode> blocks = node.getBlocks();
         if (blocks == null || blocks.isEmpty()) return;
 
@@ -85,26 +95,25 @@ public class GremlinTreeProcessor extends Treeprocessor {
      * Asciidoctor will syntax-highlight.
      */
     private int processGremlinBlock(final StructuralNode parent, final int index,
-                                     final Block block, final GremlinExecutor executor,
+                                     final Block block, final ConsoleExecutor executor,
                                      final boolean dryRun) {
         final Matcher m = GREMLIN_STYLE.matcher(block.getStyle());
         if (!m.matches()) return index;
 
         final String lang = m.group(1);
         final String graph = getGraphAttribute(block);
-        final boolean hadoop = isHadoopBlock(block);
         final List<String> lines = block.getLines();
 
-        log.info("Processing [gremlin-{},{}{}] block ({} lines)", lang,
-                graph != null ? graph : "", hadoop ? ",hadoop" : "", lines.size());
+        log.info("Processing [gremlin-{},{}] block ({} lines)", lang,
+                graph != null ? graph : "", lines.size());
 
         // execute the gremlin code
         String consoleOutput;
-        if (dryRun || isConsoleCommandBlock(lines)) {
+        if (dryRun || executor == null) {
             consoleOutput = formatDryRun(lines);
         } else {
             try {
-                executor.initGraph(graph, hadoop);
+                executor.initGraph(graph);
                 consoleOutput = executor.execute(lines);
             } catch (final Exception e) {
                 log.error("Failed to execute gremlin block", e);
@@ -117,7 +126,7 @@ public class GremlinTreeProcessor extends Treeprocessor {
         tabs.add(new TabEntry("console", "groovy", consoleOutput));
 
         // translate to language variants (available on 4.0+ with ANTLR-based translator)
-        final List<String> translatableLines = GremlinExecutor.extractTranslatableLines(lines);
+        final List<String> translatableLines = ConsoleExecutor.extractTranslatableLines(lines);
         if (!translatableLines.isEmpty()) {
             final Map<Translator, String> translations = VariantTranslator.translateBlock(translatableLines);
             for (final Map.Entry<Translator, String> entry : translations.entrySet()) {
@@ -316,17 +325,6 @@ public class GremlinTreeProcessor extends Treeprocessor {
         return attr.toString();
     }
 
-    /**
-     * Checks if a gremlin block has the "hadoop" attribute, e.g. {@code [gremlin-groovy,modern,hadoop]}.
-     * The "hadoop" flag appears as the third positional attribute.
-     */
-    private boolean isHadoopBlock(final Block block) {
-        final Map<String, Object> attrs = block.getAttributes();
-        Object attr = attrs.get("3");
-        if (attr == null) attr = attrs.get(3);
-        return "hadoop".equals(attr != null ? attr.toString() : null);
-    }
-
     private String getSourceLanguage(final Block block) {
         // For [source,LANG], asciidoctor may store the language in "language" attr,
         // attribute "1" (which may contain "source"), or attribute "2".
@@ -341,21 +339,6 @@ public class GremlinTreeProcessor extends Treeprocessor {
         final Object attr1 = attrs.get("1");
         if (attr1 != null && !"source".equals(attr1.toString())) return attr1.toString();
         return null;
-    }
-
-    /**
-     * Detects blocks that contain console commands ({@code :remote}, {@code :>},
-     * {@code :submit}) which cannot be executed in an embedded engine. These are rendered
-     * as static code blocks with {@code gremlin>} prompts.
-     */
-    private static boolean isConsoleCommandBlock(final List<String> lines) {
-        for (final String line : lines) {
-            final String trimmed = line.trim();
-            if (trimmed.startsWith(":remote") || trimmed.startsWith(":>") || trimmed.startsWith(":submit")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static String formatDryRun(final List<String> lines) {

@@ -19,12 +19,12 @@
 #
 
 # Builds TinkerPop documentation using the gremlin-docs AsciidoctorJ extension.
-# This bypasses the old AWK preprocessing pipeline and processes [gremlin-*] blocks
-# directly during Asciidoctor rendering.
+# The extension delegates Gremlin code execution to a real Gremlin Console process,
+# then generates language variant tabs via the ANTLR-based GremlinTranslator.
 #
 # Usage:
-#   bin/process-docs-new.sh              # full build with live gremlin execution
-#   bin/process-docs-new.sh --dry-run    # skip gremlin execution (fast, for layout checks)
+#   bin/process-docs.sh              # full build with live gremlin execution
+#   bin/process-docs.sh --dry-run    # skip gremlin execution (fast, for layout checks)
 
 set -e
 
@@ -39,7 +39,9 @@ if [ -z "${TP_VERSION}" ]; then
 fi
 
 ASCIIDOC_ATTRS=""
+DRYRUN=false
 if [ "$1" = "--dry-run" ]; then
+    DRYRUN=true
     ASCIIDOC_ATTRS="-Dasciidoctor.attributes.gremlin-docs-dryrun=true"
     echo "Dry-run mode: gremlin blocks will not be executed"
 fi
@@ -52,25 +54,118 @@ echo "Output: target/docs/htmlsingle/"
 echo "Installing gremlin-docs extension..."
 mvn install -f gremlin-docs/pom.xml -DskipTests -Denforcer.skip=true -q
 
+GREMLIN_SERVER_PID=""
+
+function cleanup() {
+    if [ -n "${GREMLIN_SERVER_PID}" ]; then
+        echo "Stopping Gremlin Server (PID ${GREMLIN_SERVER_PID})..."
+        kill ${GREMLIN_SERVER_PID} 2>/dev/null
+        wait ${GREMLIN_SERVER_PID} 2>/dev/null
+    fi
+    # clean up conf/hadoop from console home if we created it
+    if [ -n "${CONSOLE_HOME}" ] && [ -d "${CONSOLE_HOME}/conf/hadoop" ]; then
+        rm -rf "${CONSOLE_HOME}/conf/hadoop"
+    fi
+}
+
+trap cleanup EXIT
+
+if [ "${DRYRUN}" = "false" ]; then
+    # locate the console distribution (must be built already via mvn install -pl :gremlin-console -am)
+    CONSOLE_HOME=$(ls -d "${PROJECT_ROOT}"/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone 2>/dev/null | head -1)
+
+    if [ -z "${CONSOLE_HOME}" ] || [ ! -d "${CONSOLE_HOME}" ]; then
+        echo "ERROR: Gremlin Console distribution not found."
+        echo "Build it first: mvn clean install -pl :gremlin-console -am -DskipTests"
+        exit 1
+    fi
+
+    echo "Using console: ${CONSOLE_HOME}"
+
+    # install plugins needed for doc examples
+    PLUGIN_DIR="${CONSOLE_HOME}/ext"
+    plugins=("hadoop-gremlin" "spark-gremlin" "neo4j-gremlin" "sparql-gremlin")
+    for pluginName in "${plugins[@]}"; do
+        if [ ! -d "${PLUGIN_DIR}/${pluginName}" ]; then
+            echo "Installing plugin: ${pluginName}..."
+            pushd "${CONSOLE_HOME}" > /dev/null
+            bin/gremlin.sh -e <(echo ":install org.apache.tinkerpop ${pluginName} ${TP_VERSION}") 2>/dev/null || true
+            popd > /dev/null
+        else
+            echo "Plugin already installed: ${pluginName}"
+        fi
+    done
+
+    # activate plugins in plugins.txt if not already present
+    for pluginName in "${plugins[@]}"; do
+        # derive class name: hadoop-gremlin -> HadoopGremlinPlugin
+        className=""
+        for part in $(tr '-' '\n' <<< "${pluginName}"); do
+            className="${className}$(tr '[:lower:]' '[:upper:]' <<< "${part:0:1}")${part:1}"
+        done
+        pluginClassFile=$(find . -name "${className}Plugin.java" 2>/dev/null | head -1)
+        if [ -n "${pluginClassFile}" ]; then
+            pluginClass=$(sed -e 's@.*src/main/java/@@' -e 's/\.java$//' <<< "${pluginClassFile}" | tr '/' '.')
+            if ! grep -q "${pluginClass}" "${PLUGIN_DIR}/plugins.txt" 2>/dev/null; then
+                echo "${pluginClass}" >> "${PLUGIN_DIR}/plugins.txt"
+            fi
+        fi
+    done
+
+    # start Gremlin Server for remote connection examples
+    SERVER_HOME=$(ls -d "${PROJECT_ROOT}"/gremlin-server/target/apache-tinkerpop-gremlin-server-*-standalone 2>/dev/null | head -1)
+    if [ -n "${SERVER_HOME}" ] && [ -d "${SERVER_HOME}" ]; then
+        # check for port conflict before starting
+        if nc -z localhost 8182 2>/dev/null; then
+            echo "ERROR: Port 8182 is already in use. Stop the process using it before building docs."
+            exit 1
+        fi
+
+        echo "Starting Gremlin Server..."
+        mkdir -p target/docs-logs
+        pushd "${SERVER_HOME}" > /dev/null
+        bin/gremlin-server.sh conf/gremlin-server-modern.yaml > "${PROJECT_ROOT}/target/docs-logs/gremlin-server.log" 2>&1 &
+        GREMLIN_SERVER_PID=$!
+        popd > /dev/null
+
+        # wait for server to be ready (up to 30 seconds)
+        echo -n "Waiting for Gremlin Server on port 8182"
+        for i in $(seq 1 30); do
+            if nc -z localhost 8182 2>/dev/null; then
+                echo " ready."
+                break
+            fi
+            echo -n "."
+            sleep 1
+        done
+        if ! nc -z localhost 8182 2>/dev/null; then
+            echo " WARNING: Gremlin Server may not have started. Remote connection examples may fail."
+        fi
+    else
+        echo "WARNING: Gremlin Server distribution not found. Remote connection examples will fail."
+        echo "Build it first: mvn clean install -pl :gremlin-server -am -DskipTests"
+    fi
+
+    # set up conf/hadoop inside the console home so GraphFactory.open('conf/hadoop/...') resolves
+    # (the console process runs with CONSOLE_HOME as its working directory)
+    mkdir -p "${CONSOLE_HOME}/conf/hadoop"
+    cp "${PROJECT_ROOT}"/hadoop-gremlin/conf/* "${CONSOLE_HOME}/conf/hadoop/" 2>/dev/null || true
+
+    HADOOP_LIBS="${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib"
+    ASCIIDOC_ATTRS="${ASCIIDOC_ATTRS} -Dasciidoctor.attributes.gremlin-docs-console-home=${CONSOLE_HOME}"
+    ASCIIDOC_ATTRS="${ASCIIDOC_ATTRS} -Dasciidoctor.attributes.gremlin-docs-hadoop-libs=${HADOOP_LIBS}"
+fi
+
 # copy static assets that live outside docs/src/ into the staging area
-# (Maven's copy-docs-to-work-area handles docs/src/ itself)
 mkdir -p target/doc-source
 cp -r docs/static target/doc-source/ 2>/dev/null || true
 cp -r docs/stylesheets target/doc-source/ 2>/dev/null || true
 
-# set up conf/hadoop so GraphFactory.open('conf/hadoop/...') resolves during build
-mkdir -p conf/hadoop
-cp hadoop-gremlin/conf/* conf/hadoop/ 2>/dev/null || true
-
-# run asciidoctor with the gremlin-docs extension, pointing at raw sources
+# run asciidoctor with the gremlin-docs extension
 mvn process-resources \
     -Dasciidoc \
     -Drat.skip=true \
     ${ASCIIDOC_ATTRS}
-
-# clean up
-rm -rf conf/hadoop
-rmdir conf 2>/dev/null || true
 
 # post-process: replace version placeholder
 echo "Post-processing: replacing x.y.z with ${TP_VERSION}..."
