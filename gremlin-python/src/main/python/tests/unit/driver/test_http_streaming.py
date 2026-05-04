@@ -440,7 +440,9 @@ class TestBulkedResponse:
     """
     Tests for bulked response handling. When the server sends a bulked response
     (flags byte 0x01), each result object is followed by a fully-qualified long
-    bulk count. The client expands each object by its count into the ResultSet.
+    bulk count. The client preserves the bulk count as a Traverser object and
+    lets the traversal iteration layer expand it lazily, matching the behavior
+    of the other GLVs.
     """
 
     def _make_connection(self, response_bytes):
@@ -461,29 +463,34 @@ class TestBulkedResponse:
             items.append(conn._result_set.stream.get_nowait())
         return items
 
-    def test_bulked_results_expanded(self):
-        """Each item should appear bulk_count times."""
+    def _as_pairs(self, traversers):
+        """Convert a list of Traversers into (object, bulk) tuples for assertion."""
+        from gremlin_python.process.traversal import Traverser
+        return [(t.object, t.bulk) if isinstance(t, Traverser) else t for t in traversers]
+
+    def test_bulked_results_preserve_traverser(self):
+        """Each item should be wrapped in a Traverser with its bulk count."""
         conn = self._make_connection(build_gb_bulked_response([("a", 3), ("b", 2)]))
         conn._receive()
-        assert self._drain(conn) == ["a", "a", "a", "b", "b"]
+        assert self._as_pairs(self._drain(conn)) == [("a", 3), ("b", 2)]
 
     def test_bulked_single_counts(self):
-        """Bulk count of 1 behaves like non-bulked."""
+        """Bulk count of 1 still produces a Traverser, not a bare value."""
         conn = self._make_connection(build_gb_bulked_response([("x", 1), ("y", 1)]))
         conn._receive()
-        assert self._drain(conn) == ["x", "y"]
+        assert self._as_pairs(self._drain(conn)) == [("x", 1), ("y", 1)]
 
     def test_bulked_large_count(self):
-        """Single item with large bulk count expands correctly."""
+        """Large bulk counts are preserved as-is, not expanded."""
         conn = self._make_connection(build_gb_bulked_response([("z", 100)]))
         conn._receive()
-        assert self._drain(conn) == ["z"] * 100
+        assert self._as_pairs(self._drain(conn)) == [("z", 100)]
 
     def test_bulked_mixed_types(self):
         """Bulking works with different value types."""
         conn = self._make_connection(build_gb_bulked_response([(42, 2), ("hello", 1)]))
         conn._receive()
-        assert self._drain(conn) == [42, 42, "hello"]
+        assert self._as_pairs(self._drain(conn)) == [(42, 2), ("hello", 1)]
 
     def test_bulked_empty_response(self):
         """Bulked response with no items leaves queue empty."""
@@ -492,7 +499,7 @@ class TestBulkedResponse:
         assert conn._result_set.stream.empty()
 
     def test_non_bulked_ignores_flags(self):
-        """When flags byte is 0x00, no bulk count is read."""
+        """When flags byte is 0x00, no bulk count is read and bare values are queued."""
         conn = self._make_connection(build_gb_response([1, 2, 3]))
         conn._receive()
         assert self._drain(conn) == [1, 2, 3]
@@ -1047,7 +1054,11 @@ class TestEarlyConsumption:
         assert early + rest == items
 
     def test_early_consumption_with_bulked_response(self):
-        """Early consumption works correctly with bulked results."""
+        """Early consumption works correctly with bulked results.
+
+        Bulked responses yield Traverser objects from the ResultSet; the
+        traversal iteration layer is responsible for lazily expanding them.
+        """
         import threading
 
         bulked_items = [("x", 10), ("y", 10), ("z", 10)]
@@ -1055,6 +1066,7 @@ class TestEarlyConsumption:
 
         from gremlin_python.driver.connection import Connection
         from gremlin_python.driver.resultset import ResultSet
+        from gremlin_python.process.traversal import Traverser
         import time
 
         class SlowByteStream:
@@ -1091,12 +1103,14 @@ class TestEarlyConsumption:
         t.start()
 
         first = rs.one()
-        assert first == "x"
+        assert isinstance(first, Traverser)
+        assert first.object == "x" and first.bulk == 10
 
         rest = list(rs)
         t.join(timeout=10)
 
-        assert [first] + rest == ["x"] * 10 + ["y"] * 10 + ["z"] * 10
+        all_traversers = [first] + rest
+        assert [(tr.object, tr.bulk) for tr in all_traversers] == bulked_items
 
 
 # ===========================================================================

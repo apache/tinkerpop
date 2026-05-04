@@ -19,6 +19,7 @@ from concurrent.futures import Future
 
 from gremlin_python.driver import resultset, useragent
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+from gremlin_python.process.traversal import Traverser
 from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryReader, DataType, int32_unpack
 from gremlin_python.structure.io.util import Marker
 
@@ -150,8 +151,7 @@ class Connection:
                     break
                 if bulked:
                     bulk = reader.to_object(stream)
-                    for _ in range(bulk):
-                        self._result_set.stream.put_nowait(obj)
+                    self._result_set.stream.put_nowait(Traverser(obj, bulk))
                 else:
                     self._result_set.stream.put_nowait(obj)
 
@@ -162,7 +162,7 @@ class Connection:
             exc_is_null = stream.read(1)[0] == 0x01
             status_exception = '' if exc_is_null else reader.to_object(stream, DataType.string, False)
 
-            if status_code not in (0, 200, 204):
+            if status_code not in (200, 204):
                 raise GremlinServerError({
                     'code': status_code,
                     'message': status_message,
