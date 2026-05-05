@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -83,12 +85,17 @@ public final class PropertyPredicate {
      *
      * @param element the graph element to test
      * @param params  the parameter bindings from {@code match(String, Map)}; may be empty
-     * @return {@code true} if the element's property value equals the expected value
+     * @return {@code true} if any of the element's values for the key equal the expected value,
+     *         or if the property is absent and the expected value is {@code null}
      */
     public boolean test(final Element element, final Map<String, Object> params) {
         final Object expected = paramName != null ? params.get(paramName) : literalValue;
-        final Object actual = element.property(key).isPresent() ? element.value(key) : null;
-        return numericAwareEquals(actual, expected);
+        final Iterator<? extends Property<?>> props = element.properties(key);
+        if (!props.hasNext()) return expected == null;
+        while (props.hasNext()) {
+            if (numericAwareEquals(props.next().value(), expected)) return true;
+        }
+        return false;
     }
 
     static boolean numericAwareEquals(final Object a, final Object b) {

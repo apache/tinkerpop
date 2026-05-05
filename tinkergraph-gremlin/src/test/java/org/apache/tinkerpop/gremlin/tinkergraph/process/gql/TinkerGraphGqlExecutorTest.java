@@ -1063,4 +1063,36 @@ public class TinkerGraphGqlExecutorTest {
         assertNotNull(second[0]);
         assertNotSame(first, second);
     }
+
+    // -------------------------------------------------------------------------
+    // Multi-property (list cardinality) predicate evaluation
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testMultiPropertyAnyValueMatches() {
+        // A vertex with list cardinality on 'lang' should match if any value equals the predicate.
+        final Vertex v = graph.addVertex("Software");
+        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "java");
+        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'groovy'})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertEquals("vertex with 'groovy' among its lang values must match", 1, results.size());
+    }
+
+    @Test
+    public void testMultiPropertyNoMatchWhenValueAbsent() {
+        // A vertex with list cardinality on 'lang' must not match a value not in its list.
+        final Vertex v = graph.addVertex("Software");
+        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "java");
+        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'python'})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan).forEachRemaining(results::add);
+
+        assertTrue("vertex without 'python' in its lang values must not match", results.isEmpty());
+    }
 }
