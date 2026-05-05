@@ -19,9 +19,6 @@ from concurrent.futures import Future
 
 from gremlin_python.driver import resultset, useragent
 from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
-from gremlin_python.process.traversal import Traverser
-from gremlin_python.structure.io.graphbinaryV4 import GraphBinaryReader, DataType, int32_unpack
-from gremlin_python.structure.io.util import Marker
 
 __author__ = 'David M. Brown (davebshow@gmail.com)'
 
@@ -120,11 +117,13 @@ class Connection:
 
     def _receive(self):
         try:
-            # Check for non-GraphBinary error responses
+            # Surface error responses whose Content-Type doesn't match the
+            # configured response serializer (e.g. plain-text 5xx).
             status = getattr(self._transport, 'status_code', None)
+            response_content_type = str(self._response_serializer.version, encoding='utf-8')
             if status is not None and status >= 400:
                 content_type = getattr(self._transport, 'content_type', '')
-                if 'graphbinary' not in content_type:
+                if response_content_type not in content_type:
                     body = self._transport.read_body().decode('utf-8', errors='replace')
                     raise GremlinServerError({
                         'code': status,
@@ -136,38 +135,11 @@ class Connection:
             if status == 204:
                 return
 
+            # Stream items through the configured response serializer; it
+            # raises GremlinServerError if the response ends with a non-success status.
             stream = self._transport.get_stream()
-            reader = GraphBinaryReader()
-
-            # Read GB response header
-            stream.read(1)  # version byte
-            flags = stream.read(1)[0]
-            bulked = flags == 0x01
-
-            # Deserialize results one at a time into the ResultSet
-            while True:
-                obj = reader.to_object(stream)
-                if obj == Marker.end_of_stream():
-                    break
-                if bulked:
-                    bulk = reader.to_object(stream)
-                    self._result_set.stream.put_nowait(Traverser(obj, bulk))
-                else:
-                    self._result_set.stream.put_nowait(obj)
-
-            # Read status after EndOfStream
-            status_code = int32_unpack(stream.read(4))
-            msg_is_null = stream.read(1)[0] == 0x01
-            status_message = '' if msg_is_null else reader.to_object(stream, DataType.string, False)
-            exc_is_null = stream.read(1)[0] == 0x01
-            status_exception = '' if exc_is_null else reader.to_object(stream, DataType.string, False)
-
-            if status_code not in (200, 204):
-                raise GremlinServerError({
-                    'code': status_code,
-                    'message': status_message,
-                    'exception': status_exception
-                })
+            for obj in self._response_serializer.deserialize_response_stream(stream):
+                self._result_set.stream.put_nowait(obj)
         finally:
             self._pool.put_nowait(self)
 

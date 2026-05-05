@@ -38,6 +38,7 @@ import pytest
 
 from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
+from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.structure.io.graphbinaryV4 import (
     GraphBinaryWriter, GraphBinaryReader, DataType,
     int32_pack, uint8_pack, int8_pack,
@@ -298,6 +299,7 @@ class TestConnectionStreamingReceive:
         from gremlin_python.driver.connection import Connection
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -448,6 +450,7 @@ class TestBulkedResponse:
     def _make_connection(self, response_bytes):
         from gremlin_python.driver.connection import Connection
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -635,6 +638,7 @@ class TestStreamingEdgeCases:
         from gremlin_python.driver.connection import Connection
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -709,6 +713,7 @@ class TestStreamingEdgeCases:
         from gremlin_python.driver.connection import Connection
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -734,6 +739,7 @@ class TestStreamingEdgeCases:
         from gremlin_python.driver.connection import Connection
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -794,6 +800,7 @@ class TestStreamingDelivery:
 
         from gremlin_python.driver.connection import Connection
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -838,6 +845,7 @@ class TestStreamingDelivery:
 
         from gremlin_python.driver.connection import Connection
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         conn._result_set = MagicMock()
         conn._result_set.stream = queue.Queue()
@@ -982,6 +990,7 @@ class TestEarlyConsumption:
         response = build_gb_response(items)
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         rs = ResultSet(queue.Queue())
         conn._result_set = rs
@@ -1081,6 +1090,7 @@ class TestEarlyConsumption:
                 return self._buf.read(n)
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._pool = queue.Queue()
         rs = ResultSet(queue.Queue())
         conn._result_set = rs
@@ -1132,6 +1142,7 @@ class TestConnectionWriteRequest:
             response_serializer = GraphBinarySerializersV4()
 
         conn = Connection.__new__(Connection)
+        conn._response_serializer = GraphBinarySerializersV4()
         conn._request_serializer = request_serializer
         conn._response_serializer = response_serializer
         conn._auth = auth
