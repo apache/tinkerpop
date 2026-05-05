@@ -31,16 +31,14 @@ import java.util.List;
 public final class QueryVertex {
 
     private final String variable;
-    private final String label;
+    private String label;
     private final List<PropertyPredicate> predicates;
 
     public QueryVertex(final String variable, final String label,
                      final List<PropertyPredicate> predicates) {
         this.variable = variable;
         this.label = label;
-        this.predicates = predicates.isEmpty()
-                ? Collections.emptyList()
-                : Collections.unmodifiableList(new ArrayList<>(predicates));
+        this.predicates = new ArrayList<>(predicates);
     }
 
     public QueryVertex(final String variable, final String label) {
@@ -66,7 +64,17 @@ public final class QueryVertex {
      * if no property filter was specified.
      */
     public List<PropertyPredicate> getPredicates() {
-        return predicates;
+        return Collections.unmodifiableList(predicates);
+    }
+
+    /**
+     * Merges constraints from a later occurrence of this variable into the existing vertex.
+     * If {@code newLabel} is non-null and the current label is null, the label is refined.
+     * Callers must have already verified there is no label conflict before invoking this.
+     */
+    void merge(final String newLabel, final List<PropertyPredicate> newPredicates) {
+        if (newLabel != null && this.label == null) this.label = newLabel;
+        this.predicates.addAll(newPredicates);
     }
 
     @Override

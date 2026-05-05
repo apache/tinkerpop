@@ -188,16 +188,17 @@ public final class QueryGraph {
         final List<PropertyPredicate> predicates = extractPredicates(contents);
 
         if (var != null) {
-            // Reuse existing node with this variable name. If the same variable appears
-            // with different label constraints (e.g. MATCH (n:Person)-[:K]->(n:Animal)),
-            // reject it — a variable must refer to a single consistent node type.
+            // Reuse existing node with this variable name. A later occurrence may refine
+            // an unlabeled variable with a label, or add predicates — both are merged.
+            // Conflicting labels (both non-null and different) are rejected.
             if (nodesByVar.containsKey(var)) {
                 final QueryVertex existing = nodesByVar.get(var);
-                if (label != null && !label.equals(existing.getLabel())) {
+                if (existing.getLabel() != null && label != null && !label.equals(existing.getLabel())) {
                     throw new IllegalArgumentException(
                             "Variable '" + var + "' is used with conflicting label constraints: '"
                             + existing.getLabel() + "' vs '" + label + "'");
                 }
+                existing.merge(label, predicates);
                 return existing;
             }
             final QueryVertex n = new QueryVertex(var, label, predicates);
