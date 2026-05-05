@@ -264,6 +264,37 @@ public class QueryGraphTest {
         assertEquals("Person", g.getNodes().get(0).getLabel());
     }
 
+    @Test
+    public void testNodePredicatesMergedAcrossPatterns() {
+        // Both predicate sets must be present on the resolved vertex.
+        final QueryGraph g = QueryGraph.parse(
+                "MATCH (n {age: 29})-[:KNOWS]->(m), (n {name: 'marko'})");
+        final QueryVertex n = g.getNodes().stream()
+                .filter(v -> "n".equals(v.getVariable())).findFirst()
+                .orElseThrow(AssertionError::new);
+        assertEquals(2, n.getPredicates().size());
+        assertTrue(n.getPredicates().stream().anyMatch(p -> "age".equals(p.getKey())));
+        assertTrue(n.getPredicates().stream().anyMatch(p -> "name".equals(p.getKey())));
+    }
+
+    @Test
+    public void testNodeLabelRefinedFromUnlabeledToLabeled() {
+        // Second occurrence adds a label to a previously unlabeled variable.
+        final QueryGraph g = QueryGraph.parse("MATCH (n)-[:KNOWS]->(m), (n:Person)");
+        assertEquals(2, g.getNodes().size());
+        final QueryVertex n = g.getNodes().get(0);
+        assertEquals("n", n.getVariable());
+        assertEquals("Person", n.getLabel());
+    }
+
+    @Test
+    public void testNodeLabelPreservedWhenSecondOccurrenceUnlabeled() {
+        // First occurrence carries the label; second is bare — label must survive.
+        final QueryGraph g = QueryGraph.parse("MATCH (n:Person)-[:KNOWS]->(m), (n)");
+        final QueryVertex n = g.getNodes().get(0);
+        assertEquals("Person", n.getLabel());
+    }
+
     // -------------------------------------------------------------------------
     // Node / edge variable name conflicts
     // -------------------------------------------------------------------------
@@ -288,4 +319,5 @@ public class QueryGraphTest {
         assertEquals(1, g.getEdges().size());
         assertEquals("r", g.getEdges().get(0).getVariable());
     }
+
 }
