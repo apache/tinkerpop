@@ -200,6 +200,16 @@ public class TinkerGraphMatchStepTest {
          .toList();
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void testQueryLanguageIsCaseSensitiveUppercaseGQLFails() {
+        // "GQL" is not the same as "gql" — the check is case-sensitive.
+        g.<Integer>inject(1)
+         .match("MATCH (n)")
+         .with("queryLanguage", "GQL")
+         .select("n")
+         .toList();
+    }
+
     @Test
     public void testNonEmptyParamsDoesNotThrow() {
         // params are now fully supported — passing a param that isn't referenced in the query
@@ -210,6 +220,22 @@ public class TinkerGraphMatchStepTest {
                 .<Object>select("n")
                 .toList();
         assertEquals(1, results.size());
+    }
+
+    @Test
+    public void testNullParamsEquivalentToNoParams() {
+        // match("...", null) must behave identically to match("...") — null is treated as
+        // an empty params map throughout the execution path.
+        graph.addVertex("Person");
+        final List<Object> withNull = g.<Integer>inject(1)
+                .match("MATCH (n:Person)", (Map<String, Object>) null)
+                .<Object>select("n")
+                .toList();
+        final List<Object> withoutParams = g.<Integer>inject(1)
+                .match("MATCH (n:Person)")
+                .<Object>select("n")
+                .toList();
+        assertEquals(withoutParams.size(), withNull.size());
     }
 
     @Test
