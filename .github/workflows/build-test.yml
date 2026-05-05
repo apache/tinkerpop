@@ -301,13 +301,6 @@ jobs:
           EXCLUDE="${EXCLUDE_MODULES/,-:gremlin-python},$EXCLUDE_FOR_GLV"
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl gremlin-python
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-reports-${{ matrix.python-version }}
-          path: gremlin-python/target/python3/python-reports/
-          if-no-files-found: ignore
   dotnet:
     name: .NET
     timeout-minutes: 20
