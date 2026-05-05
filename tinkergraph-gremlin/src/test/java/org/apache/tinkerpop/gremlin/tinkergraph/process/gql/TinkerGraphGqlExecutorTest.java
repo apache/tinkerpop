@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 
+import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
@@ -1072,8 +1075,8 @@ public class TinkerGraphGqlExecutorTest {
     public void testMultiPropertyAnyValueMatches() {
         // A vertex with list cardinality on 'lang' should match if any value equals the predicate.
         final Vertex v = graph.addVertex("Software");
-        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "java");
-        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "groovy");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
 
         final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'groovy'})");
         final List<Element[]> results = new ArrayList<>();
@@ -1086,13 +1089,52 @@ public class TinkerGraphGqlExecutorTest {
     public void testMultiPropertyNoMatchWhenValueAbsent() {
         // A vertex with list cardinality on 'lang' must not match a value not in its list.
         final Vertex v = graph.addVertex("Software");
-        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "java");
-        v.property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality.list, "lang", "groovy");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
 
         final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: 'python'})");
         final List<Element[]> results = new ArrayList<>();
         executor.execute(plan).forEachRemaining(results::add);
 
         assertTrue("vertex without 'python' in its lang values must not match", results.isEmpty());
+    }
+
+    @Test
+    public void testMultiPropertyNullValueMatchesNullPredicate() {
+        // When a vertex has a null value among its list-cardinality properties, a {key: null}
+        // predicate should match (any-value semantics apply to null too).
+        final BaseConfiguration config = new BaseConfiguration();
+        config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
+        final TinkerGraph nullGraph = TinkerGraph.open(config);
+        try {
+            final TinkerGraphGqlPlanner nullPlanner = new TinkerGraphGqlPlanner(nullGraph);
+            final TinkerGraphGqlExecutor nullExecutor = new TinkerGraphGqlExecutor(nullGraph);
+
+            final Vertex v = nullGraph.addVertex("Item");
+            v.property(VertexProperty.Cardinality.list, "tag", "java");
+            v.property(VertexProperty.Cardinality.list, "tag", null);
+
+            final GqlMatchPlan plan = nullPlanner.plan("MATCH (n:Item {tag: null})");
+            final List<Element[]> results = new ArrayList<>();
+            nullExecutor.execute(plan).forEachRemaining(results::add);
+
+            assertEquals("vertex with null among its tag values must match {tag: null}", 1, results.size());
+        } finally {
+            nullGraph.close();
+        }
+    }
+
+    @Test
+    public void testParamBindingWithMultiProperty() {
+        // A $param reference predicate must use any-value-matches semantics for list cardinality.
+        final Vertex v = graph.addVertex("Software");
+        v.property(VertexProperty.Cardinality.list, "lang", "java");
+        v.property(VertexProperty.Cardinality.list, "lang", "groovy");
+
+        final GqlMatchPlan plan = planner.plan("MATCH (s:Software {lang: $lang})");
+        final List<Element[]> results = new ArrayList<>();
+        executor.execute(plan, Collections.singletonMap("lang", "groovy")).forEachRemaining(results::add);
+
+        assertEquals("param predicate must match against any value in a list-cardinality property", 1, results.size());
     }
 }
