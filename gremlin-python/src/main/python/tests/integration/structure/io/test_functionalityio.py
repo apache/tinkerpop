@@ -42,7 +42,6 @@ def test_vertex_without_properties(remote_connection):
     vertex = g.with_('materializeProperties', 'tokens').V(1).next()
     assert vertex.id == 1
     assert vertex.label == 'person'
-    # empty array for GraphBinary and missing field for GraphSON
     assert vertex.properties is None or len(vertex.properties) == 0
 
 
@@ -61,7 +60,6 @@ def test_edge_without_properties(remote_connection):
     edge = g.with_('materializeProperties', 'tokens').E(7).next()
     assert edge.id == 7
     assert edge.label == 'knows'
-    # empty array for GraphBinary and missing field for GraphSON
     assert edge.properties is None or len(edge.properties) == 0
 
 

@@ -81,11 +81,6 @@ def choose_graph(step, graph_name):
     if not step.context.ignore:
         step.context.ignore = "AllowNullPropertyValues" in tagset
 
-    # ignore if we're not using graphbinary - graphson isn't implemented since that support was
-    # meant to be temporary only. remove this entire check once that removal happens.
-    if not step.context.ignore and not world.config.user_data["serializer"] == "application/vnd.graphbinary-v4.0":
-        step.context.ignore = "StepSubgraph" in tagset
-
     if not step.context.ignore:
         step.context.ignore = "StepTree" in tagset
     if not step.context.ignore:

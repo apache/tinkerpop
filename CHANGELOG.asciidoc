@@ -36,6 +36,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `max_content_length` from `gremlin-python` driver (no longer applicable with streaming deserialization).
 * Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
 * Removed `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` from `gremlin-python`, merging protocol logic into `Connection`.
+* Removed `GraphSONSerializersV4` and the `gremlin_python.structure.io.graphsonV4` module from `gremlin-python`. GraphBinary is the only supported wire format.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)

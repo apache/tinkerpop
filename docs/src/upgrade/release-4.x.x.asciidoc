@@ -162,7 +162,7 @@ The following internal APIs have changed:
   to accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()`
   and `all()` APIs are unaffected and remain the recommended way to collect results.
 
-==== Python Driver Simplification — Removed Abstract Base Classes and Protocol Layer
+==== Python Driver Simplification — Removed GraphSON, Abstract Base Classes, and Protocol Layer
 
 The `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` classes have been removed from
 `gremlin-python`. The protocol layer's request-building logic (serialization, headers, interceptors, auth) has been
@@ -170,6 +170,11 @@ merged directly into `Connection`. The driver now uses `AiohttpHTTPTransport` di
 interface.
 
 `GremlinServerError` has moved from `gremlin_python.driver.protocol` to `gremlin_python.driver.connection`:
+
+The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
+GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
+`GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
+`GraphBinarySerializersV4` (the default `request_serializer` and `response_serializer`):
 
 [source,python]
 ----

@@ -17,70 +17,12 @@
 # under the License.
 #
 
-import logging
-
-try:
-    import ujson as json
-    if int(json.__version__[0]) < 2:
-        logging.warning("Detected ujson version below 2.0.0. This is not recommended as precision may be lost.")
-except ImportError:
-    import json
-
 from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.process.traversal import Traverser
-from gremlin_python.structure.io import graphbinaryV4, graphsonV4
+from gremlin_python.structure.io import graphbinaryV4
 from gremlin_python.structure.io.util import Marker
 
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
-
-"""
-GraphSONV4
-"""
-
-class GraphSONSerializersV4(object):
-    """
-    Message serializer for GraphSON. Allow users to pass custom reader,
-    writer, and version kwargs for custom serialization. Otherwise,
-    use current GraphSON version as default.
-    """
-
-    # KEEP TRACK OF CURRENT DEFAULTS
-    DEFAULT_READER_CLASS = graphsonV4.GraphSONReader
-    DEFAULT_WRITER_CLASS = graphsonV4.GraphSONWriter
-    DEFAULT_VERSION = b"application/vnd.gremlin-v4.0+json"
-
-    def __init__(self, reader=None, writer=None, version=None):
-        if not version:
-            version = self.DEFAULT_VERSION
-        self._version = version
-        if not reader:
-            reader = self.DEFAULT_READER_CLASS()
-        self._graphson_reader = reader
-        if not writer:
-            writer = self.DEFAULT_WRITER_CLASS()
-        self._graphson_writer = writer
-
-    @property
-    def version(self):
-        """Read only property"""
-        return self._version
-
-    def serialize_message(self, request_message):
-        message = self.build_message(request_message.fields, request_message.gremlin)
-        return message
-
-    def build_message(self, fields, gremlin):
-        message = {
-            'gremlin': gremlin  # gremlin wil always be a gremlin lang string script
-        }
-        for k, v in fields.items():
-            message[k] = self._graphson_writer.to_dict(v)
-        return self.finalize_message(message)
-
-    def finalize_message(self, message):
-        message = json.dumps(message)
-        return message
-
 
 """
 GraphBinaryV4
