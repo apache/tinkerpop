@@ -283,15 +283,14 @@ class TestTransportGetStream:
 
 class TestConnectionStreamingReceive:
     """
-    Tests for Connection._receive() streaming implementation.
-
-    The streaming _receive() should:
-    - Read the GB response header (version + flags)
-    - Loop reading objects via GraphBinaryReader.to_object() until end-of-stream
-    - Push each individual item into result_set.stream (not as a list)
-    - Read the status trailer after end-of-stream
-    - Raise GremlinServerError on non-success status codes
-    - Handle bulked results by expanding items according to bulk count
+    End-to-end tests for Connection._receive() with the built-in
+    GraphBinarySerializersV4 wired in as the response serializer. The actual
+    GraphBinary parsing lives in
+    GraphBinarySerializersV4.deserialize_response_stream(); _receive() drives
+    the loop, pushes each yielded item into result_set.stream, and surfaces
+    any GremlinServerError the serializer raises from the trailing status.
+    See TestCustomResponseSerializer for the contract a custom serializer
+    must satisfy.
     """
 
     def _make_connection_with_stream(self, response_bytes):
@@ -1121,6 +1120,106 @@ class TestEarlyConsumption:
 
         all_traversers = [first] + rest
         assert [(tr.object, tr.bulk) for tr in all_traversers] == bulked_items
+
+
+# ===========================================================================
+# Custom response serializer dispatch
+# ===========================================================================
+
+class TestCustomResponseSerializer:
+    """
+    Verify that Connection._receive dispatches through whatever response
+    serializer the user supplies, rather than hardcoding GraphBinary parsing.
+    A custom serializer just needs a ``version`` attribute (its negotiated
+    Content-Type) and a ``deserialize_response_stream(stream)`` generator.
+    """
+
+    class FakeSerializer:
+        """Minimal stand-in for a user-supplied response serializer."""
+        version = b"application/x-fake"
+
+        def __init__(self, items=(), error=None):
+            self._items = list(items)
+            self._error = error
+            self.received_stream = None
+
+        def deserialize_response_stream(self, stream):
+            self.received_stream = stream
+            for item in self._items:
+                yield item
+            if self._error is not None:
+                raise self._error
+
+    def _make_connection(self, serializer, status_code=200,
+                         content_type=None, body=b''):
+        from gremlin_python.driver.connection import Connection
+
+        conn = Connection.__new__(Connection)
+        conn._response_serializer = serializer
+        conn._pool = queue.Queue()
+        conn._result_set = MagicMock()
+        conn._result_set.stream = queue.Queue()
+        conn._transport = MagicMock()
+        conn._transport.status_code = status_code
+        conn._transport.content_type = (
+            content_type if content_type is not None
+            else str(serializer.version, encoding='utf-8'))
+        conn._transport.get_stream.return_value = io.BytesIO(body)
+        conn._transport.read_body.return_value = body
+        return conn
+
+    def test_receive_dispatches_to_custom_serializer(self):
+        """Items yielded by the custom serializer end up in the result queue in order."""
+        serializer = self.FakeSerializer(items=["alpha", 2, {"k": "v"}])
+        conn = self._make_connection(serializer)
+
+        conn._receive()
+
+        items = []
+        while not conn._result_set.stream.empty():
+            items.append(conn._result_set.stream.get_nowait())
+        assert items == ["alpha", 2, {"k": "v"}]
+
+    def test_receive_passes_transport_stream_to_serializer(self):
+        """The serializer receives the exact stream returned by transport.get_stream()."""
+        serializer = self.FakeSerializer()
+        conn = self._make_connection(serializer, body=b'\x00\x01\x02')
+
+        conn._receive()
+
+        assert serializer.received_stream is conn._transport.get_stream.return_value
+
+    def test_receive_propagates_serializer_errors(self):
+        """An exception raised inside the custom serializer surfaces to the caller."""
+        boom = GremlinServerError({'code': 500, 'message': 'boom', 'exception': ''})
+        serializer = self.FakeSerializer(items=["one"], error=boom)
+        conn = self._make_connection(serializer)
+
+        with pytest.raises(GremlinServerError) as exc_info:
+            conn._receive()
+        assert exc_info.value.status_code == 500
+
+    def test_receive_uses_serializer_version_for_content_type_check(self):
+        """
+        On a 4xx/5xx response with a Content-Type that does NOT match the custom
+        serializer's version, _receive should raise GremlinServerError with the
+        body text rather than handing the body to the serializer.
+        """
+        serializer = self.FakeSerializer(items=["should not be yielded"])
+        conn = self._make_connection(
+            serializer,
+            status_code=503,
+            content_type='text/plain',
+            body=b'Service Unavailable')
+
+        with pytest.raises(GremlinServerError) as exc_info:
+            conn._receive()
+
+        assert exc_info.value.status_code == 503
+        assert 'Service Unavailable' in str(exc_info.value)
+        # Serializer must NOT have been invoked on a non-matching response.
+        assert serializer.received_stream is None
+        assert conn._result_set.stream.empty()
 
 
 # ===========================================================================

@@ -31,7 +31,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Changed `Client.stream()` in `gremlin-javascript` to return an `AsyncGenerator` for direct incremental consumption.
 * Removed `readable-stream` dependency from `gremlin-javascript`.
 * Added `Character`, `Binary`, `Duration` to the `gremlin-lang` grammar, GLVs, and Translators.
-* Refactored `gremlin-python` receive path to stream GraphBinary results directly from HTTP response, bypassing protocol/serializer layers.
+* Refactored `gremlin-python` receive path to stream results directly from the HTTP response through the configured `response_serializer`.
 * Replaced `read()` with `get_stream()` on `AbstractBaseTransport` in `gremlin-python` for streaming deserialization.
 * Removed `max_content_length` from `gremlin-python` driver (no longer applicable with streaming deserialization).
 * Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
