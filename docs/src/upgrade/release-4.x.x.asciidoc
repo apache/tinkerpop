@@ -154,10 +154,7 @@ The following internal APIs have changed:
 - `max_content_length` is no longer supported. Response size limits should be configured server-side via
   `maxRequestContentLength`.
 - The built-in response serializer is `GraphBinarySerializersV4`. The receive path dispatches through the
-  configured `response_serializer`, so a custom serializer can be supplied by implementing `version` (the
-  Content-Type negotiated in the `Accept` header) and `deserialize_response_stream(stream)` — a generator
-  that reads the response body and yields each result item, raising `GremlinServerError` if the response
-  ends with a non-success status.
+  configured `response_serializer`.
 - `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result`
   to accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()`
   and `all()` APIs are unaffected and remain the recommended way to collect results.
