@@ -135,17 +135,6 @@ namespace Gremlin.Net.IntegrationTest.Driver
         }
 
         [Fact]
-        public async Task ShouldReturnResponseAttributes()
-        {
-            var gremlinServer = new GremlinServer(TestHost, TestPort);
-            using var gremlinClient = new GremlinClient(gremlinServer);
-            var requestMsg = _requestMessageProvider.GetDummyMessage();
-            var resultSet = await gremlinClient.SubmitAsync<int>(requestMsg);
-
-            Assert.NotNull(resultSet.StatusAttributes);
-        }
-
-        [Fact]
         public async Task ShouldThrowOnExecutionOfSimpleInvalidScript()
         {
             var gremlinServer = new GremlinServer(TestHost, TestPort);

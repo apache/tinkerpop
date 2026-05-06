@@ -243,15 +243,6 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task StatusAttributesShouldDefaultToEmptyDictionary()
-        {
-            await using var resultSet = CreateResultSet(new List<int>());
-
-            Assert.NotNull(resultSet.StatusAttributes);
-            Assert.Empty(resultSet.StatusAttributes);
-        }
-
-        [Fact]
         public void DisposeShouldNotThrowWhenCalledSynchronously()
         {
             var resultSet = CreateResultSet(new List<int> { 1, 2, 3 });

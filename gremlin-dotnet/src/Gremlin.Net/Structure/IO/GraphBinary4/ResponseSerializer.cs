@@ -35,7 +35,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
     ///     as it is deserialized from the stream. After the Marker, reads the status
     ///     footer and throws <see cref="ResponseException"/> if the status code is not 200.
     /// </summary>
-    public class ResponseMessageSerializer
+    public class ResponseSerializer
     {
         /// <summary>
         ///     Reads a streaming GraphBinary 4.0 response, yielding each result object

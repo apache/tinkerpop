@@ -77,7 +77,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             stream.Position = 0;
 
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -137,7 +137,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             stream.Position = 0;
 
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -199,7 +199,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             try
             {
@@ -239,7 +239,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -302,7 +302,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             stream.Position = 0;
 
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             try
             {

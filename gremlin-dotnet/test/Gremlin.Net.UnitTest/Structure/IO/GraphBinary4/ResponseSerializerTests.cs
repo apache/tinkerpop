@@ -31,7 +31,7 @@ using Xunit;
 
 namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 {
-    public class ResponseMessageSerializerTests
+    public class ResponseSerializerTests
     {
         [Fact]
         public async Task ShouldDeserializeNonBulkedResponse()
@@ -60,7 +60,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -102,7 +102,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -144,7 +144,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var ex = await Assert.ThrowsAsync<ResponseException>(async () =>
             {
@@ -168,7 +168,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             await Assert.ThrowsAsync<IOException>(async () =>
             {
@@ -210,7 +210,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
@@ -244,7 +244,7 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
 
             stream.Position = 0;
             var reader = new GraphBinaryReader();
-            var serializer = new ResponseMessageSerializer();
+            var serializer = new ResponseSerializer();
 
             var results = new List<object>();
             await foreach (var item in serializer.ReadStreamingAsync(stream, reader))

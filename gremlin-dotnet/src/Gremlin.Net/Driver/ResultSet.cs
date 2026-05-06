@@ -42,15 +42,9 @@ namespace Gremlin.Net.Driver
         private readonly ChannelReader<object> _channelReader;
         private readonly CancellationTokenSource _disposeCts;
         private readonly Task _backgroundTask;
-        private int _enumerated; // 0 = not yet, 1 = already enumerated
-        private int _disposed;   // 0 = not yet, 1 = already disposed
-
-        /// <summary>
-        ///     Gets the status attributes from the gremlin response.
-        ///     Only available after all results have been consumed.
-        /// </summary>
-        public IReadOnlyDictionary<string, object> StatusAttributes { get; internal set; }
-            = new Dictionary<string, object>();
+        // int rather than bool because Interlocked.CompareExchange does not support bool
+        private int _enumerated;
+        private int _disposed;
 
         /// <summary>
         ///     Initializes a new <see cref="ResultSet{T}"/> backed by a channel, a cancellation

@@ -39,7 +39,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         private readonly GraphBinaryReader _reader;
         private readonly GraphBinaryWriter _writer;
         private readonly RequestMessageSerializer _requestSerializer = new RequestMessageSerializer();
-        private readonly ResponseMessageSerializer _responseSerializer = new ResponseMessageSerializer();
+        private readonly ResponseSerializer _responseSerializer = new ResponseSerializer();
 
         /// <inheritdoc />
         public string MimeType => SerializationTokens.GraphBinary4MimeType;
