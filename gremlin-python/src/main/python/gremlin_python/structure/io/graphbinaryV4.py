@@ -150,10 +150,11 @@ class GraphBinaryReader(object):
             self.deserializers.update(deserializer_map)
 
     def read_object(self, b):
+        if b is None:
+            return None
         if isinstance(b, bytearray):
             return self.to_object(io.BytesIO(b))
-        elif isinstance(b, io.BufferedIOBase):
-            return self.to_object(b)
+        return self.to_object(b)
 
     def to_object(self, buff, data_type=None, nullable=True):
         if data_type is None:

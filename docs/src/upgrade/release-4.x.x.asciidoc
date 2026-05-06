@@ -138,6 +138,83 @@ g.V().has("blob",P.eq(Binary("AQID")))
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
 
+==== Python HTTP Streaming Response Support
+
+The Python driver now streams results directly from the HTTP response body through the configured
+`response_serializer`. Results are available to the caller as they arrive from the server, rather than waiting for
+the full response to be buffered in memory. This improves memory efficiency for large result sets and reduces
+time-to-first-result.
+
+Traversal API terminal steps (`next()`, `to_list()`, `has_next()`) are now truly incremental. `next()` returns the
+first result as soon as it is deserialized from the wire, without waiting for the full response. In 3.x, `next()`
+waited for all data to be buffered before returning.
+
+The following internal APIs have changed:
+
+- `max_content_length` is no longer supported. Response size limits should be configured server-side via
+  `maxRequestContentLength`.
+- The built-in response serializer is `GraphBinarySerializersV4`. The receive path dispatches through the
+  configured `response_serializer`.
+- `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result`
+  to accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()`
+  and `all()` APIs are unaffected and remain the recommended way to collect results.
+
+==== Python Driver Simplification — Removed GraphSON, Abstract Base Classes, and Protocol Layer
+
+The `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` classes have been removed from
+`gremlin-python`. The protocol layer's request-building logic (serialization, headers, interceptors, auth) has been
+merged directly into `Connection`. The driver now uses `AiohttpHTTPTransport` directly without an abstract transport
+interface.
+
+`GremlinServerError` has moved from `gremlin_python.driver.protocol` to `gremlin_python.driver.connection`:
+
+The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
+GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
+`GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
+`GraphBinarySerializersV4` (the default `request_serializer` and `response_serializer`):
+
+[source,python]
+----
+# Before
+from gremlin_python.driver.protocol import GremlinServerError
+
+# After
+from gremlin_python.driver.connection import GremlinServerError
+----
+
+The `protocol_factory` and `transport_factory` parameters have been removed from `Client`,
+`DriverRemoteConnection`, and `Connection`. Users who were passing a custom `protocol_factory` should use the
+`request_serializer`, `response_serializer`, `auth`, and `interceptors` parameters directly instead — these cover
+all functionality that `GremlinServerHTTPProtocol` previously provided.
+
+Transport options like SSL and timeouts are now passed as keyword arguments directly:
+
+[source,python]
+----
+# Before
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+Client(url, 'g', transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ctx, read_timeout=30))
+
+# After
+Client(url, 'g', ssl_options=ctx, read_timeout=30)
+----
+
+The `Connection` constructor signature has changed. The `protocol` and `transport_factory` positional arguments have
+been removed. Transport kwargs are forwarded to `AiohttpHTTPTransport` internally:
+
+[source,python]
+----
+# Before
+Connection(url, traversal_source, protocol, transport_factory, executor, pool)
+
+# After
+Connection(url, traversal_source, executor, pool,
+           request_serializer=None, response_serializer=None,
+           auth=None, interceptors=None, **transport_kwargs)
+----
+
+Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

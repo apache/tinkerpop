@@ -29,9 +29,7 @@ from gremlin_python.driver import serializer
 from gremlin_python.driver.client import Client
 from gremlin_python.driver.connection import Connection
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.driver.protocol import GremlinServerHTTPProtocol
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
-from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.auth import basic, sigv4
 
 """HTTP server testing variables"""
@@ -50,14 +48,14 @@ Tests below are for the HTTP server with GraphBinaryV4
 """
 @pytest.fixture
 def connection(request):
-    protocol = GremlinServerHTTPProtocol(
-        GraphBinarySerializersV4(), GraphBinarySerializersV4(),
-        auth=basic('stephen', 'password'))
     executor = concurrent.futures.ThreadPoolExecutor(5)
     pool = queue.Queue()
     try:
-        conn = Connection(anonymous_url, 'gmodern', protocol,
-                          lambda: AiohttpHTTPTransport(), executor, pool)
+        conn = Connection(anonymous_url, 'gmodern',
+                          executor, pool,
+                          request_serializer=GraphBinarySerializersV4(),
+                          response_serializer=GraphBinarySerializersV4(),
+                          auth=basic('stephen', 'password'))
     except OSError:
         executor.shutdown()
         pytest.skip('Gremlin Server is not running')
@@ -93,7 +91,7 @@ def authenticated_client(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             client = Client(basic_url, 'gmodern',
                             auth=basic('stephen', 'password'),
-                            transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
+                            ssl_options=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:
@@ -111,19 +109,12 @@ def graphbinary_serializer_v4(request):
     return GraphBinarySerializersV4()
 
 
-@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
+@pytest.fixture
 def remote_connection(request):
     try:
-        if request.param == 'graphbinaryv4':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                                 request_serializer=serializer.GraphBinarySerializersV4(),
-                                                 response_serializer=serializer.GraphBinarySerializersV4())
-        elif request.param == 'graphsonv4':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
-                                                 request_serializer=serializer.GraphSONSerializersV4(),
-                                                 response_serializer=serializer.GraphSONSerializersV4())
-        else:
-            raise ValueError("Invalid serializer option - " + request.param)
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern',
+                                             request_serializer=serializer.GraphBinarySerializersV4(),
+                                             response_serializer=serializer.GraphBinarySerializersV4())
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -134,17 +125,10 @@ def remote_connection(request):
         return remote_conn
 
 
-@pytest.fixture(params=['graphbinaryv4','graphsonv4'])
+@pytest.fixture
 def remote_connection_crew(request):
     try:
-        if request.param == 'graphbinaryv4':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew')
-        elif request.param == 'graphsonv4':
-            remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew',
-                                                 request_serializer=serializer.GraphSONSerializersV4(),
-                                                 response_serializer=serializer.GraphSONSerializersV4())
-        else:
-            raise ValueError("Invalid serializer option - " + request.param)
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gcrew')
     except OSError:
         pytest.skip('Gremlin Server is not running')
     else:
@@ -165,7 +149,7 @@ def remote_connection_authenticated(request):
             ssl_opts.verify_mode = ssl.CERT_NONE
             remote_conn = DriverRemoteConnection(basic_url, 'gmodern',
                                                  auth=basic('stephen', 'password'),
-                                                 transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
+                                                 ssl_options=ssl_opts)
         else:
             raise ValueError("Invalid authentication option - " + request.param)
     except OSError:

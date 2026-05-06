@@ -16,30 +16,3 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import abc
-
-__author__ = 'David M. Brown (davebshow@gmail.com)'
-
-
-class AbstractBaseTransport(metaclass=abc.ABCMeta):
-
-    @abc.abstractmethod
-    def connect(self, url, headers=None):
-        pass
-
-    @abc.abstractmethod
-    def write(self, message):
-        pass
-
-    @abc.abstractmethod
-    def read(self):
-        pass
-
-    @abc.abstractmethod
-    def close(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def closed(self):
-        pass

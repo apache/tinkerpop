@@ -16,8 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import json
-
 import aiohttp
 import asyncio
 import sys
@@ -26,14 +24,27 @@ if sys.version_info >= (3, 11):
     import asyncio as async_timeout
 else:
     import async_timeout
-from aiohttp import ClientPayloadError
-from gremlin_python.driver.protocol import GremlinServerError
-from gremlin_python.driver.transport import AbstractBaseTransport
 
 __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
-class AiohttpHTTPTransport(AbstractBaseTransport):
+class AiohttpSyncStream:
+    """Wraps aiohttp's async StreamReader as a synchronous file-like object.
+    read(n) blocks until exactly n bytes are available from the HTTP response."""
+
+    def __init__(self, response, loop, read_timeout):
+        self._response = response
+        self._loop = loop
+        self._read_timeout = read_timeout
+
+    def read(self, n):
+        async def _read():
+            async with async_timeout.timeout(self._read_timeout):
+                return await self._response.content.readexactly(n)
+        return self._loop.run_until_complete(_read())
+
+
+class AiohttpHTTPTransport:
     nest_asyncio_applied = False
 
     def __init__(self, call_from_event_loop=None, read_timeout=None, write_timeout=None, **kwargs):
@@ -59,10 +70,9 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         self._aiohttp_kwargs = kwargs
         self._write_timeout = write_timeout
         self._read_timeout = read_timeout
-        if "max_content_length" in self._aiohttp_kwargs:
-            self._max_content_len = self._aiohttp_kwargs.pop("max_content_length")
-        else:
-            self._max_content_len = 10 * 1024 * 1024
+        # max_content_length is no longer enforced with streaming deserialization, but pop it
+        # to prevent it from leaking to aiohttp as an unknown kwarg
+        self._aiohttp_kwargs.pop("max_content_length", None)
         if "ssl_options" in self._aiohttp_kwargs:
             self._ssl_context = self._aiohttp_kwargs.pop("ssl_options")
             self._enable_ssl = True
@@ -105,61 +115,30 @@ class AiohttpHTTPTransport(AbstractBaseTransport):
         # Execute the async write synchronously.
         self._loop.run_until_complete(async_write())
 
-    def read(self, stream_chunk=None):
-        if not stream_chunk:
-            '''
-            GraphSON does not support streaming deserialization, we are aggregating data and bypassing streamed
-             deserialization while GraphSON is enabled for testing. Remove after GraphSON is removed.
-            '''
-            async def async_read():
-                async with async_timeout.timeout(self._read_timeout):
-                    data_buffer = b""
-                    async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
-                        try:
-                            data_buffer += data
-                        except ClientPayloadError:
-                            # server disconnect during streaming will cause ClientPayLoadError from aiohttp
-                            raise GremlinServerError({'code': 500,
-                                                      'message': 'Server disconnected - please try to reconnect',
-                                                      'exception': ClientPayloadError})
-                    if self._max_content_len and len(
-                            data_buffer) > self._max_content_len:
-                        raise Exception(f'Response size {len(data_buffer)} exceeds limit {self._max_content_len} bytes')
-                    if self._http_req_resp.headers.get('content-type') == 'application/json':
-                        message = json.loads(data_buffer.decode('utf-8'))
-                        err = message.get('message')
-                        raise Exception(f'Server disconnected with error message: "{err}" - please try to reconnect')
-                    return data_buffer
-            return self._loop.run_until_complete(async_read())
-            # raise Exception('missing handling of streamed responses to protocol')
+    def get_stream(self):
+        """Returns a synchronous file-like object for the HTTP response body."""
+        return AiohttpSyncStream(self._http_req_resp, self._loop, self._read_timeout)
 
-        # Inner function to perform async read.
-        async def async_read():
-            # TODO: potentially refactor to just use streaming and remove transport/protocol
+    @property
+    def content_type(self):
+        """Returns the Content-Type header of the HTTP response."""
+        if self._http_req_resp is not None:
+            return self._http_req_resp.headers.get('content-type', '')
+        return ''
+
+    @property
+    def status_code(self):
+        """Returns the HTTP status code of the response."""
+        if self._http_req_resp is not None:
+            return self._http_req_resp.status
+        return None
+
+    def read_body(self):
+        """Read the entire HTTP response body as bytes."""
+        async def _read():
             async with async_timeout.timeout(self._read_timeout):
-                read_completed = False
-                # aiohttp streaming may not iterate through one whole chunk if it's too large, need to buffer it
-                data_buffer = b""
-                async for data, end_of_http_chunk in self._http_req_resp.content.iter_chunks():
-                    try:
-                        data_buffer += data
-                        if end_of_http_chunk:
-                            if self._max_content_len and len(
-                                    data_buffer) > self._max_content_len:
-                                raise Exception(  # TODO: do we need proper exception class for this?
-                                    f'Response size {len(data_buffer)} exceeds limit {self._max_content_len} bytes')
-                            stream_chunk(data_buffer, read_completed, self._http_req_resp.ok)
-                            data_buffer = b""
-                    except ClientPayloadError:
-                        # server disconnect during streaming will cause ClientPayLoadError from aiohttp
-                        # TODO: double check during refactoring
-                        raise GremlinServerError({'code': 500,
-                                                  'message': 'Server disconnected - please try to reconnect',
-                                                  'exception': ClientPayloadError})
-                read_completed = True
-                stream_chunk(data_buffer, read_completed, self._http_req_resp.ok)
-
-        return self._loop.run_until_complete(async_read())
+                return await self._http_req_resp.read()
+        return self._loop.run_until_complete(_read())
 
     def close(self):
         # Inner function to perform async close.

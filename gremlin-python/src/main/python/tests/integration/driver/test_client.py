@@ -23,7 +23,7 @@ import uuid
 
 import pytest
 from gremlin_python.driver.client import Client
-from gremlin_python.driver.protocol import GremlinServerError
+from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.driver.request import RequestMessage
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 from gremlin_python.process.graph_traversal import __, GraphTraversalSource
@@ -54,22 +54,6 @@ def test_connection(connection):
     assert len(results) == 6
     assert isinstance(results, list)
     assert results_set.done.done()
-
-# TODO: revisit after max_content_length definition/implementation is updated
-def test_client_message_too_big(client):
-    try:
-        client = Client(test_no_auth_url, 'g', max_content_length=1024)
-        client.submit("g.inject(' ').repeat(concat(' ')).times(1234)").all().result()
-        assert False
-    except Exception as ex:
-        assert ex.args[0].startswith('Response size') \
-               and ex.args[0].endswith('exceeds limit 1024 bytes')
-
-        # confirm the client instance is still usable and not closed
-        assert ["test"] == client.submit("g.inject('test')").all().result()
-    finally:
-        client.close()
-
 
 def test_client_large_result(client):
     result_set = client.submit("[\" \".repeat(200000), \" \".repeat(100000)]", request_options={'language': 'gremlin-groovy'}).all().result()
@@ -173,7 +157,7 @@ def test_client_close_all_connection_in_pool(client):
 
 def test_client_side_timeout_set_for_aiohttp(client):
     client = Client(test_no_auth_url, 'gmodern',
-                    transport_factory=lambda: AiohttpHTTPTransport(read_timeout=1, write_timeout=1))
+                    read_timeout=1, write_timeout=1)
 
     try:
         # should fire an exception
@@ -283,7 +267,7 @@ def test_iterate_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 6
 
 
@@ -367,10 +351,10 @@ def test_multi_thread_pool(client):
     for t in threads:
         t.join(5)
 
-    assert len(results[0][0]) == 6
-    assert results[1][0][0] == 6
-    assert len(results[2][0]) == 6
-    assert results[3][0][0] == 6
+    assert len(results[0]) == 6
+    assert results[1][0] == 6
+    assert len(results[2]) == 6
+    assert results[3][0] == 6
 
 
 def test_client_gremlin_lang_with_short(client):
@@ -381,7 +365,7 @@ def test_client_gremlin_lang_with_short(client):
     result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1
 
 
@@ -393,7 +377,7 @@ def test_client_gremlin_lang_with_long(client):
     result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1
 
 
@@ -405,7 +389,7 @@ def test_client_gremlin_lang_with_bigint(client):
     result_set = client.submit(message, request_options=request_opts)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1
 
 
@@ -416,7 +400,7 @@ def test_big_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1
 
     t = g.V().limit(10)
@@ -424,7 +408,7 @@ def test_big_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 10
 
     t = g.V().limit(100)
@@ -432,7 +416,7 @@ def test_big_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 100
 
     t = g.V().limit(1000)
@@ -440,7 +424,7 @@ def test_big_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1000
 
     t = g.V().limit(10000)
@@ -448,7 +432,7 @@ def test_big_result_set(client):
     result_set = client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 10000
 
 
@@ -459,7 +443,7 @@ def test_big_result_set_secure(authenticated_client):
     result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1
 
     t = g.V().limit(10)
@@ -467,7 +451,7 @@ def test_big_result_set_secure(authenticated_client):
     result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 10
 
     t = g.V().limit(100)
@@ -475,7 +459,7 @@ def test_big_result_set_secure(authenticated_client):
     result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 100
 
     t = g.V().limit(1000)
@@ -483,7 +467,7 @@ def test_big_result_set_secure(authenticated_client):
     result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 1000
 
     t = g.V().limit(10000)
@@ -491,7 +475,7 @@ def test_big_result_set_secure(authenticated_client):
     result_set = authenticated_client.submit(message)
     results = []
     for result in result_set:
-        results += result
+        results.append(result)
     assert len(results) == 10000
 
 
@@ -569,4 +553,4 @@ def test_response_serializer_never_None():
 
 def test_serializer_and_interceptor_forwarded(client_with_interceptor):
     result = client_with_interceptor.submit("g.inject(1)").next()
-    assert [2] == result # interceptor changes request to g.inject(2)
+    assert 2 == result # interceptor changes request to g.inject(2)
