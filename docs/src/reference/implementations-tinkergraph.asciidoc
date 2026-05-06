@@ -492,10 +492,46 @@ The three-way relationship where `a` created `s`, `b` created `s`, and `a` knows
 in the `match()` form. In the Gremlin traversal, the reader has to follow the variable threading across `as()`,
 `select()`, and `where()` to reconstruct the same topology.
 
-IMPORTANT: TinkerGraph itself stores labels as plain Java `String` values and places no restrictions on label content.
-However, if a graph contains labels containing spaces, hyphens, or non-ASCII Unicode characters, those labels cannot
-currently be referenced in a GQL `MATCH` query. This is a known limitation of the current grammar and may be addressed
-in a future release.
+IMPORTANT: TinkerGraph stores labels, variable names, and property keys as plain Java `String` values with no
+restrictions on content. However, because the GQL grammar is identifier-based, any label, variable name, or property
+key that contains spaces, hyphens, or non-ASCII Unicode characters cannot currently be referenced in a `MATCH` query.
+For example, `MATCH (n:my-label)` and `MATCH (n {my-key: 1})` are not parseable; use simple alphanumeric identifiers
+instead. This is a known limitation of the current grammar and may be addressed in a future release.
+
+==== Variable Reuse and Multi-Pattern Joins
+
+When the same variable appears in multiple comma-separated patterns it acts as a join key: every element bound to
+that variable must be the same graph element across all patterns. This is the primary mechanism for expressing
+multi-way joins in a single `MATCH` clause.
+
+Variable names must be unique within a single element role — a name that refers to a node in one pattern cannot
+refer to an edge in another pattern:
+
+[source,text]
+----
+// Valid: 's' joins two vertex patterns on a shared software vertex
+MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)
+
+// Valid: same variable, same label — second occurrence is a bare reference that adds nothing
+MATCH (n:person)-[:knows]->(m:person), (n:person)
+
+// Invalid: 'n' is labeled :Person in the first pattern and :Animal in the second
+MATCH (n:Person)-[:KNOWS]->(m), (n:Animal)
+
+// Invalid: 'r' is used as an edge variable in one pattern and a node variable in another
+MATCH (a)-[r:KNOWS]->(b), (r:person)
+----
+
+When a variable appears in a later pattern without a label (a bare reference such as `(n)` or `(n {age: 29})`),
+any label already assigned to that variable from an earlier pattern is preserved. Predicates from all occurrences
+are merged — the element must satisfy every predicate across all patterns in which the variable appears.
+
+[source,text]
+----
+// 'n' already carries :Person from the first pattern; the bare (n {age: 29}) adds only the predicate
+MATCH (n:Person)-[:KNOWS]->(m), (n {age: 29})
+// equivalent to: MATCH (n:Person {age: 29})-[:KNOWS]->(m)
+----
 
 ==== Property Filters
 
@@ -573,9 +609,51 @@ g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
 ----
 
 The same query string can be reused with different parameter maps without re-parsing (the parsed query graph is
-cached in an LRU cache bounded to 1,000 entries). If a referenced parameter name is absent from the map at
-execution time, the predicate evaluates to `false` and no vertices match that filter.
+cached in an LRU cache bounded to 1,000 entries). The table below summarises edge-case parameter behaviours:
+
+[width="100%",cols="3,3",options="header"]
+|=========================================================
+|Situation |Result
+|Parameter key present, non-null value |Predicate tests the element property against the supplied value
+|Parameter key present, `null` value |Predicate passes only for elements where the property is absent
+|Parameter key absent from the map |Predicate always fails — no element matches that filter
+|Numeric type mismatch (e.g. `Integer` 29 vs `Long` 29) |Values are compared numerically; `29` (Integer) equals `29L` (Long)
+|=========================================================
 
 When TinkerGraph has a vertex index on a filtered property key (created via `createIndex`), the executor
 automatically uses the index for the seed vertex lookup, reducing the initial scan to only those vertices whose
-indexed property matches the filter value.
+indexed property matches the filter value. This is especially effective when the parameterized query pattern is
+constant but the parameter values change across calls — the query graph is parsed and cached once, and each
+invocation performs an index-backed seed lookup:
+
+[source,groovy]
+----
+graph.createIndex("name", Vertex.class)   // <1>
+names = ["marko", "josh", "peter", "vadas"]
+names.collect { name ->
+    g.match("MATCH (p:person {name: \$who})-[:knows]->(f:person)",
+            ["who": name]).
+      select("p", "f").by("name").toList()
+}
+----
+<1> Create the index once at graph setup time; all subsequent `match()` calls referencing `{name: $who}` use it automatically.
+
+==== Unsupported Features
+
+The current GQL engine supports a minimal subset of the ISO GQL `MATCH` syntax. The following features are
+recognized in the specification but not yet implemented:
+
+[width="100%",cols="2,4",options="header"]
+|=========================================================
+|Feature |Notes
+|`WHERE` clause |Post-match filtering within the `MATCH` string is not supported. Use Gremlin's `where()` step after `match()` instead.
+|`RETURN` clause |Projection within the `MATCH` string is not supported. Use `select()` after `match()` to project named variables.
+|Inequality / range predicates |Only equality tests (`{key: value}`) are supported. Expressions such as `n.age > 30` or `n.name STARTS WITH 'A'` are not yet part of the grammar.
+|Variable-length paths |Quantified path patterns such as `(a)-[:KNOWS*1..3]->(b)` are not supported.
+|Multiple labels per element |`(n:Person:Employee)` — assigning more than one label to a node pattern — is not supported. Each node pattern accepts at most one label.
+|`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
+|Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar aggregation functions are not part of the supported grammar.
+|=========================================================
+
+In the meantime, equivalent behaviour for `WHERE` and `RETURN` can be expressed using the standard Gremlin step
+vocabulary (`where()`, `select()`, `filter()`, `group()`, etc.).

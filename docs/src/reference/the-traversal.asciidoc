@@ -2696,8 +2696,10 @@ g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)")
     select("a", "b").by("name")
 ----
 
-The query language can be specified explicitly with `with()`. When omitted, the graph system uses its native
-or default language:
+The query language can be specified explicitly with `with("queryLanguage", ...)`. When omitted, the graph system
+uses its native or default language. The accepted values and whether the check is case-sensitive are
+*provider-defined*. For example, TinkerGraph accepts `"gql"` (lowercase, case-sensitive) — passing `"GQL"` throws
+an `UnsupportedOperationException`. Consult your graph system's documentation for the values it accepts:
 
 [gremlin-groovy,modern]
 ----
