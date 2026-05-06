@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,10 +53,16 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="byte"/>.</returns>
-        public static async Task<byte> ReadByteAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async ValueTask<byte> ReadByteAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             var readBuffer = new byte[1];
-            await stream.ReadAsync(readBuffer, 0, 1, cancellationToken).ConfigureAwait(false);
+            var bytesRead = await stream.ReadAsync(readBuffer.AsMemory(0, 1), cancellationToken)
+                .ConfigureAwait(false);
+            if (bytesRead == 0)
+            {
+                throw new IOException("Unexpected end of stream");
+            }
             return readBuffer[0];
         }
 
@@ -77,7 +84,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="sbyte"/>.</returns>
-        public static async Task<sbyte> ReadSByteAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async ValueTask<sbyte> ReadSByteAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             return (sbyte)await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -91,8 +99,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static async Task WriteIntAsync(this Stream stream, int value,
             CancellationToken cancellationToken = default)
         {
-            var bytes = BitConverter.GetBytes(value);
-            await stream.WriteAsync(new[] { bytes[3], bytes[2], bytes[1], bytes[0] }, 0, 4, cancellationToken).ConfigureAwait(false);
+            var bytes = new byte[4];
+            BinaryPrimitives.WriteInt32BigEndian(bytes, value);
+            await stream.WriteAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -101,11 +110,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="int"/>.</returns>
-        public static async Task<int> ReadIntAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async ValueTask<int> ReadIntAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             var bytes = new byte[4];
-            await stream.ReadAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
-            return BitConverter.ToInt32(new []{bytes[3], bytes[2], bytes[1], bytes[0]}, 0);
+            await stream.ReadExactlyAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
+            return BinaryPrimitives.ReadInt32BigEndian(bytes);
         }
 
         /// <summary>
@@ -117,10 +127,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static async Task WriteLongAsync(this Stream stream, long value,
             CancellationToken cancellationToken = default)
         {
-            var bytes = BitConverter.GetBytes(value);
-            await stream
-                .WriteAsync(new[] { bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0] }, 0,
-                    8, cancellationToken).ConfigureAwait(false);
+            var bytes = new byte[8];
+            BinaryPrimitives.WriteInt64BigEndian(bytes, value);
+            await stream.WriteAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -129,12 +138,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="long"/>.</returns>
-        public static async Task<long> ReadLongAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async ValueTask<long> ReadLongAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             var bytes = new byte[8];
-            await stream.ReadAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
-            return BitConverter.ToInt64(
-                new[] {bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]}, 0);
+            await stream.ReadExactlyAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
+            return BinaryPrimitives.ReadInt64BigEndian(bytes);
         }
 
         /// <summary>
@@ -146,9 +155,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static async Task WriteFloatAsync(this Stream stream, float value,
             CancellationToken cancellationToken = default)
         {
-            var bytes = BitConverter.GetBytes(value);
-            await stream.WriteAsync(new[] { bytes[3], bytes[2], bytes[1], bytes[0] }, 0, 4, cancellationToken)
-                .ConfigureAwait(false);
+            var bytes = new byte[4];
+            BinaryPrimitives.WriteSingleBigEndian(bytes, value);
+            await stream.WriteAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -157,12 +166,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="float"/>.</returns>
-        public static async Task<float> ReadFloatAsync(this Stream stream,
+        public static async ValueTask<float> ReadFloatAsync(this Stream stream,
             CancellationToken cancellationToken = default)
         {
             var bytes = new byte[4];
-            await stream.ReadAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
-            return BitConverter.ToSingle(new []{bytes[3], bytes[2], bytes[1], bytes[0]}, 0);
+            await stream.ReadExactlyAsync(bytes, 0, 4, cancellationToken).ConfigureAwait(false);
+            return BinaryPrimitives.ReadSingleBigEndian(bytes);
         }
 
         /// <summary>
@@ -174,10 +183,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static async Task WriteDoubleAsync(this Stream stream, double value,
             CancellationToken cancellationToken = default)
         {
-            var bytes = BitConverter.GetBytes(value);
-            await stream
-                .WriteAsync(new[] {bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]}, 0,
-                    8, cancellationToken).ConfigureAwait(false);
+            var bytes = new byte[8];
+            BinaryPrimitives.WriteDoubleBigEndian(bytes, value);
+            await stream.WriteAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -186,13 +194,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="double"/>.</returns>
-        public static async Task<double> ReadDoubleAsync(this Stream stream,
+        public static async ValueTask<double> ReadDoubleAsync(this Stream stream,
             CancellationToken cancellationToken = default)
         {
             var bytes = new byte[8];
-            await stream.ReadAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
-            return BitConverter.ToDouble(
-                new[] {bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]}, 0);
+            await stream.ReadExactlyAsync(bytes, 0, 8, cancellationToken).ConfigureAwait(false);
+            return BinaryPrimitives.ReadDoubleBigEndian(bytes);
         }
 
         /// <summary>
@@ -204,8 +211,9 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static async Task WriteShortAsync(this Stream stream, short value,
             CancellationToken cancellationToken = default)
         {
-            var bytes = BitConverter.GetBytes(value);
-            await stream.WriteAsync(new[] { bytes[1], bytes[0] }, 0, 2, cancellationToken).ConfigureAwait(false);
+            var bytes = new byte[2];
+            BinaryPrimitives.WriteInt16BigEndian(bytes, value);
+            await stream.WriteAsync(bytes, 0, 2, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -214,12 +222,12 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="short"/>.</returns>
-        public static async Task<short> ReadShortAsync(this Stream stream,
+        public static async ValueTask<short> ReadShortAsync(this Stream stream,
             CancellationToken cancellationToken = default)
         {
             var bytes = new byte[2];
-            await stream.ReadAsync(bytes, 0, 2, cancellationToken).ConfigureAwait(false);
-            return BitConverter.ToInt16(new []{bytes[1], bytes[0]}, 0);
+            await stream.ReadExactlyAsync(bytes, 0, 2, cancellationToken).ConfigureAwait(false);
+            return BinaryPrimitives.ReadInt16BigEndian(bytes);
         }
 
         /// <summary>
@@ -240,7 +248,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="stream">The <see cref="Stream"/> to read from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="bool"/>.</returns>
-        public static async Task<bool> ReadBoolAsync(this Stream stream, CancellationToken cancellationToken = default)
+        public static async ValueTask<bool> ReadBoolAsync(this Stream stream,
+            CancellationToken cancellationToken = default)
         {
             var b = await stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
             return b switch
@@ -270,11 +279,11 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         /// <param name="count">The number of bytes to read.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
         /// <returns>The read <see cref="T:byte[]"/>.</returns>
-        public static async Task<byte[]> ReadAsync(this Stream stream, int count,
+        public static async ValueTask<byte[]> ReadAsync(this Stream stream, int count,
             CancellationToken cancellationToken = default)
         {
             var buffer = new byte[count];
-            await stream.ReadAsync(buffer, 0, count, cancellationToken).ConfigureAwait(false);
+            await stream.ReadExactlyAsync(buffer, 0, count, cancellationToken).ConfigureAwait(false);
             return buffer;
         }
     }

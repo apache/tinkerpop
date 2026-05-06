@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
@@ -37,7 +38,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [InlineData("test")]
         public void ShouldReturnAvailableTraverserObjWhenNextIsCalled(object traverserObj)
         {
-            var traversal = new TestTraversal(new List<object?> {traverserObj});
+            var traversal = new TestTraversal(new List<object?> { traverserObj });
 
             var actualObj = traversal.Next();
 
@@ -45,21 +46,37 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 
             Assert.Null(traversal.Next());
         }
+
         [Theory]
         [InlineData(1)]
         [InlineData("test")]
         public void ShouldCheckHasNext(object traverserObj)
         {
-            var traversal = new TestTraversal(new List<object?> {traverserObj});
+            var traversal = new TestTraversal(new List<object?> { traverserObj });
 
             Assert.True(traversal.HasNext());
             Assert.True(traversal.HasNext());
-            
+
             var actualObj = traversal.Next();
             Assert.Equal(traverserObj, actualObj);
-            
+
             Assert.False(traversal.HasNext());
             Assert.False(traversal.HasNext());
+        }
+
+        [Fact]
+        public void ShouldReturnAllResultObjsWhenToListIsCalled()
+        {
+            var objs = new List<object?>(20);
+            for (var i = 0; i < 20; i++)
+                objs.Add(i);
+            var traversal = new TestTraversal(objs);
+
+            var traversedObjs = traversal.ToList();
+
+            Assert.Equal(objs.Count, traversedObjs.Count);
+            for (var i = 0; i < objs.Count; i++)
+                Assert.Equal(objs[i], traversedObjs[i]);
         }
 
         [Theory]
@@ -92,7 +109,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldDrainAllTraversersWhenIterateIsCalled()
         {
-            var someObjs = new List<object?> {1, 2, 3};
+            var someObjs = new List<object?> { 1, 2, 3 };
             var traversal = new TestTraversal(someObjs);
 
             var drainedTraversal = traversal.Iterate();
@@ -104,7 +121,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         public void ShouldReturnNullWhenNextIsCalledAndNoTraverserIsAvailable()
         {
             var expectedFirstObj = 1;
-            var traversal = new TestTraversal(new List<object?> {expectedFirstObj});
+            var traversal = new TestTraversal(new List<object?> { expectedFirstObj });
 
             var actualFirstObj = traversal.Next();
             var actualSecondObj = traversal.Next();
@@ -116,27 +133,18 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldReturnTraversalsTraverserWhenNextTraverserIsCalled()
         {
-            var someObjs = new List<object?> {1, 2, 3};
+            var someObjs = new List<object?> { 1, 2, 3 };
             var traversal = new TestTraversal(someObjs);
 
             var traverser = traversal.NextTraverser();
 
-            Assert.Equal(traversal.Traversers!.First(), traverser);
-        }
-
-        [Fact]
-        public void ShouldThrowNotSupportedExceptionWhenResetIsCalled()
-        {
-            var someObjs = new List<object?> {1, 2, 3};
-            var traversal = new TestTraversal(someObjs);
-
-            Assert.Throws<NotSupportedException>(() => traversal.Reset());
+            Assert.Equal(someObjs[0], traverser.Object);
         }
 
         [Fact]
         public void ShouldReturnAllTraverserObjsWhenToListIsCalled()
         {
-            var expectedObjs = new List<object?> {1, 2, 3};
+            var expectedObjs = new List<object?> { 1, 2, 3 };
             var traversal = new TestTraversal(expectedObjs);
 
             var traversedObjs = traversal.ToList();
@@ -147,7 +155,7 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldReturnAllTraverserObjWithoutDuplicatesWhenToSetIsCalled()
         {
-            var traverserObjs = new List<object?> {1, 1, 2, 3};
+            var traverserObjs = new List<object?> { 1, 1, 2, 3 };
             var traversal = new TestTraversal(traverserObjs);
 
             var traversedObjSet = traversal.ToSet();
@@ -160,8 +168,8 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         public void ShouldApplyStrategiesWhenNextIsCalledAndNoTraversersPresent()
         {
             const int expectedObj = 531;
-            var testStrategy = new TestTraversalStrategy(new List<Traverser> {new Traverser(expectedObj)});
-            var testTraversal = new TestTraversal(new List<ITraversalStrategy> {testStrategy});
+            var testStrategy = new TestTraversalStrategy(new List<Traverser> { new Traverser(expectedObj) });
+            var testTraversal = new TestTraversal(new List<ITraversalStrategy> { testStrategy });
 
             var actualObj = testTraversal.Next();
 
@@ -171,14 +179,52 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void ShouldBeUnfoldTraverserBulksWhenToListIsCalled()
         {
-            var objs = new List<object?> {1, 2, 3};
-            var bulks = new List<long> {3, 2, 1};
+            var objs = new List<object?> { 1, 2, 3 };
+            var bulks = new List<long> { 3, 2, 1 };
             var traversal = new TestTraversal(objs, bulks);
 
             var traversedObjs = traversal.ToList();
 
             var expectedObjs = UnfoldBulks(objs, bulks);
             Assert.Equal(expectedObjs, traversedObjs);
+        }
+
+        [Fact]
+        public async Task ShouldDisposeAsyncCleanUpProperly()
+        {
+            var someObjs = new List<object?> { 1, 2, 3 };
+            var traversal = new TestTraversal(someObjs);
+
+            // Consume one element to initialize the enumerator
+            traversal.Next();
+
+            // DisposeAsync should complete without error
+            await traversal.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task ShouldMoveNextAsyncReturnFalseWhenEmpty()
+        {
+            var traversal = new TestTraversal(new List<object?>());
+
+            var hasMore = await traversal.MoveNextAsync();
+
+            Assert.False(hasMore);
+        }
+
+        [Fact]
+        public async Task ShouldMoveNextAsyncIterateAllElements()
+        {
+            var objs = new List<object?> { 1, 2, 3 };
+            var traversal = new TestTraversal(objs);
+            var results = new List<object?>();
+
+            while (await traversal.MoveNextAsync())
+            {
+                results.Add(traversal.Current);
+            }
+
+            Assert.Equal(objs, results);
         }
 
         [Fact]
@@ -222,6 +268,53 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var mergeEMid = g.Inject("foo").MergeE(mergeMap2);
             Assert.Equal(1, mergeMap2[Direction.Out]);
             Assert.Equal(2, mergeMap2[Direction.In]);
+        }
+
+        [Fact]
+        public async Task ShouldUnfoldBulksViaMoveNextAsync()
+        {
+            var objs = new List<object?> { "a", "b" };
+            var bulks = new List<long> { 2, 1 };
+            var traversal = new TestTraversal(objs, bulks);
+
+            var results = new List<object?>();
+            while (await traversal.MoveNextAsync())
+            {
+                results.Add(traversal.Current);
+            }
+
+            // "a" with bulk 2 should yield "a", "a"; "b" with bulk 1 should yield "b"
+            Assert.Equal(new List<object?> { "a", "a", "b" }, results);
+        }
+
+        [Fact]
+        public async Task ShouldReturnCurrentObjectAsUntypedValue()
+        {
+            var traversal = new TestTraversal(new List<object?> { 42 });
+
+            await traversal.MoveNextAsync();
+
+            Assert.Equal(42, traversal.CurrentObject);
+        }
+
+        [Fact]
+        public async Task ShouldDisposeAsyncBeforeAnyIteration()
+        {
+            var traversal = new TestTraversal(new List<object?> { 1, 2, 3 });
+
+            // DisposeAsync before any iteration should not throw
+            await traversal.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task ShouldIterateAsyncDrainAllResults()
+        {
+            var traversal = new TestTraversal(new List<object?> { 1, 2, 3 });
+
+            var result = await traversal.IterateAsync();
+
+            // After IterateAsync, MoveNextAsync should return false
+            Assert.False(await result.MoveNextAsync());
         }
     }
 }

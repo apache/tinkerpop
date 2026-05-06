@@ -66,12 +66,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         }
 
         /// <inheritdoc />
-        public async Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
+        public IAsyncEnumerable<object> DeserializeMessageAsync(Stream stream,
             CancellationToken cancellationToken = default)
         {
-            using var stream = new MemoryStream(message);
-            return await _responseSerializer.ReadValueAsync(stream, _reader, cancellationToken)
-                .ConfigureAwait(false);
+            return _responseSerializer.ReadStreamingAsync(stream, _reader, cancellationToken);
         }
     }
 }

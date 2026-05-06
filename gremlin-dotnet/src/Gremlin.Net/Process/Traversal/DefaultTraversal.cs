@@ -36,13 +36,15 @@ namespace Gremlin.Net.Process.Traversal
     /// </summary>
     public abstract class DefaultTraversal<TStart, TEnd> : ITraversal<TStart, TEnd>
     {
-        private IEnumerator<Traverser>? _traverserEnumerator;
+        private IAsyncEnumerator<Traverser>? _traverserEnumerator;
+        private bool _nextAvailable;
+        private bool _fetchedNext;
 
         /// <summary>
         ///     Gets the <see cref="Traversal.GremlinLang" /> representation of this traversal.
         /// </summary>
         public abstract GremlinLang GremlinLang { get; }
-        
+
         /// <summary>
         ///     Determines if this traversal was spawned anonymously or not.
         /// </summary>
@@ -51,73 +53,162 @@ namespace Gremlin.Net.Process.Traversal
         /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
-        public IEnumerable<Traverser>? Traversers { get; set; }
-
-        ITraversal ITraversal.Iterate()
-        {
-            return Iterate();
-        }
+        public IAsyncEnumerable<Traverser>? Traversers { get; set; }
 
         /// <summary>
         ///     Gets or sets the <see cref="ITraversalStrategy" /> strategies of this traversal.
         /// </summary>
         protected ICollection<ITraversalStrategy> TraversalStrategies { get; set; } = new List<ITraversalStrategy>();
 
-        private IEnumerator<Traverser> TraverserEnumerator
+        private IAsyncEnumerator<Traverser> TraverserEnumerator
             => _traverserEnumerator ??= GetTraverserEnumerator();
 
-        private bool _nextAvailable;
-        private bool _fetchedNext;
+        /// <inheritdoc />
+        public TEnd? Current => GetCurrent<TEnd>();
 
         /// <inheritdoc />
-        public void Dispose()
-        {
-        }
+        public object? CurrentObject => GetValue();
 
         /// <inheritdoc />
-        public bool MoveNext()
+        public async ValueTask<bool> MoveNextAsync()
         {
-            var more = MoveNextInternal();            
+            var more = await MoveNextInternalAsync().ConfigureAwait(false);
             _fetchedNext = false;
             return more;
         }
-        
-        private bool MoveNextInternal()
+
+        private async ValueTask<bool> MoveNextInternalAsync()
         {
             if (_fetchedNext) return _nextAvailable;
 
             if (!_nextAvailable || TraverserEnumerator.Current?.Bulk == 0)
             {
-                _nextAvailable = TraverserEnumerator.MoveNext();
+                _nextAvailable = await TraverserEnumerator.MoveNextAsync()
+                    .ConfigureAwait(false);
             }
             if (!_nextAvailable) return false;
-            
+
             var currentTraverser = TraverserEnumerator.Current;
             if (currentTraverser?.Bulk >= 1)
             {
                 currentTraverser.Bulk--;
             }
-
             return true;
         }
 
-        /// <summary>
-        ///     Reset is not supported.
-        /// </summary>
-        /// <exception cref="NotSupportedException">Thrown always as this operation is not supported.</exception>
-        public void Reset()
+        /// <inheritdoc />
+        public bool HasNext()
         {
-            throw new NotSupportedException();
+            var more = MoveNextInternalAsync().AsTask().WaitUnwrap();
+            _fetchedNext = true;
+            return more;
         }
 
-        /// <inheritdoc />
-        public TEnd? Current => GetCurrent<TEnd>();
+        /// <summary>
+        ///     Gets the next result from the traversal.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public TEnd? Next()
+        {
+            MoveNextAsync().AsTask().WaitUnwrap();
+            return Current;
+        }
 
-        object? IEnumerator.Current => GetCurrent();
+        /// <summary>
+        ///     Gets the next n-number of results from the traversal.
+        /// </summary>
+        /// <param name="amount">The number of results to get.</param>
+        /// <returns>The n-results.</returns>
+        public IEnumerable<TEnd?> Next(int amount)
+        {
+            for (var i = 0; i < amount; i++)
+                yield return Next();
+        }
+
+        /// <summary>
+        ///     Puts all the results into a <see cref="IList{T}" />.
+        /// </summary>
+        /// <returns>The results in a list.</returns>
+        public IList<TEnd?> ToList()
+        {
+            var objs = new List<TEnd?>();
+            while (MoveNextAsync().AsTask().WaitUnwrap())
+                objs.Add(Current);
+            return objs;
+        }
+
+        /// <summary>
+        ///     Puts all the results into a <see cref="HashSet{T}" />.
+        /// </summary>
+        /// <returns>The results in a set.</returns>
+        public ISet<TEnd?> ToSet()
+        {
+            var objs = new HashSet<TEnd?>();
+            while (MoveNextAsync().AsTask().WaitUnwrap())
+                objs.Add(Current);
+            return objs;
+        }
+
+        /// <summary>
+        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
+        /// </summary>
+        /// <returns>The fully drained traversal.</returns>
+        public ITraversal<TStart, TEnd> Iterate()
+        {
+            GremlinLang.AddStep("discard");
+            IterateAsync().WaitUnwrap();
+            return this;
+        }
+
+        /// <summary>
+        ///     Iterates all <see cref="Traverser" /> instances in the traversal asynchronously.
+        /// </summary>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <returns>The fully drained traversal.</returns>
+        public async Task<ITraversal<TStart, TEnd>> IterateAsync(
+            CancellationToken cancellationToken = default)
+        {
+            while (await MoveNextAsync().ConfigureAwait(false)) { }
+            return this;
+        }
+
+        ITraversal ITraversal.Iterate() => Iterate();
+
+        /// <summary>
+        ///     Gets the next <see cref="Traverser" />.
+        /// </summary>
+        /// <returns>The next <see cref="Traverser" />.</returns>
+        public Traverser NextTraverser()
+        {
+            TraverserEnumerator.MoveNextAsync().AsTask().WaitUnwrap();
+            return TraverserEnumerator.Current;
+        }
+
+        /// <summary>
+        ///     Starts a promise to execute a function on the current traversal that will be completed in the future.
+        /// </summary>
+        /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
+        /// <param name="callback">The function to execute on the current traversal.</param>
+        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
+        /// <returns>The result of the executed <paramref name="callback" />.</returns>
+        public async Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback,
+            CancellationToken cancellationToken = default)
+        {
+            await ApplyStrategiesAsync(cancellationToken).ConfigureAwait(false);
+            return callback(this);
+        }
+
+        /// <summary>
+        ///     Disposes the async enumerator used by this traversal.
+        /// </summary>
+        public ValueTask DisposeAsync()
+        {
+            return _traverserEnumerator?.DisposeAsync() ?? ValueTask.CompletedTask;
+        }
 
         private TReturn? GetCurrent<TReturn>()
         {
-            var value = GetCurrent();
+            var value = GetValue();
             var returnType = typeof(TReturn);
             if (value == null || value.GetType() == returnType)
             {
@@ -127,14 +218,13 @@ namespace Gremlin.Net.Process.Traversal
             return (TReturn) GetValue(returnType, value);
         }
 
-        private object? GetCurrent()
+        private object? GetValue()
         {
-            // Use dynamic to object to prevent runtime dynamic conversion evaluation
             return TraverserEnumerator.Current?.Object;
         }
 
         /// <summary>
-        /// Gets the value, converting to the expected type when necessary and supported. 
+        ///     Converts a value to the expected type when necessary and supported.
         /// </summary>
         [return: NotNullIfNotNull("value")]
         private static object? GetValue(Type type, object? value)
@@ -170,16 +260,16 @@ namespace Gremlin.Net.Process.Traversal
             return value;
         }
 
-        private IEnumerator<Traverser> GetTraverserEnumerator()
+        private IAsyncEnumerator<Traverser> GetTraverserEnumerator()
         {
             if (Traversers == null)
                 ApplyStrategies();
             if (Traversers == null)
             {
                 throw new InvalidOperationException(
-                    $"Cannot enumerate the traversal as there are no {nameof(Traversers)}. Maybe a strategy needs to be added.");
+                    $"Cannot enumerate the traversal as there are no {nameof(Traversers)}.");
             }
-            return Traversers.GetEnumerator();
+            return Traversers.GetAsyncEnumerator();
         }
 
         private void ApplyStrategies()
@@ -192,96 +282,6 @@ namespace Gremlin.Net.Process.Traversal
         {
             foreach (var strategy in TraversalStrategies)
                 await strategy.ApplyAsync(this, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <inheritdoc />
-        public bool HasNext()
-        {
-            var more = MoveNextInternal();            
-            _fetchedNext = true;
-            return more;
-        }
-
-        /// <summary>
-        ///     Gets the next result from the traversal.
-        /// </summary>
-        /// <returns>The result.</returns>
-        public TEnd? Next()
-        {
-            MoveNext();
-            return Current;
-        }
-
-        /// <summary>
-        ///     Gets the next n-number of results from the traversal.
-        /// </summary>
-        /// <param name="amount">The number of results to get.</param>
-        /// <returns>The n-results.</returns>
-        public IEnumerable<TEnd?> Next(int amount)
-        {
-            for (var i = 0; i < amount; i++)
-                yield return Next();
-        }
-
-        /// <summary>
-        ///     Iterates all <see cref="Traverser" /> instances in the traversal.
-        /// </summary>
-        /// <returns>The fully drained traversal.</returns>
-        public ITraversal<TStart, TEnd> Iterate()
-        {
-            GremlinLang.AddStep("discard");
-            while (MoveNext())
-            {
-            }
-            return this;
-        }
-
-        /// <summary>
-        ///     Gets the next <see cref="Traverser" />.
-        /// </summary>
-        /// <returns>The next <see cref="Traverser" />.</returns>
-        public Traverser NextTraverser()
-        {
-            TraverserEnumerator.MoveNext();
-            return TraverserEnumerator.Current;
-        }
-
-        /// <summary>
-        ///     Puts all the results into a <see cref="List{T}" />.
-        /// </summary>
-        /// <returns>The results in a list.</returns>
-        public IList<TEnd?> ToList()
-        {
-            var objs = new List<TEnd?>();
-            while (MoveNext())
-                objs.Add(Current);
-            return objs;
-        }
-
-        /// <summary>
-        ///     Puts all the results into a <see cref="HashSet{T}" />.
-        /// </summary>
-        /// <returns>The results in a set.</returns>
-        public ISet<TEnd?> ToSet()
-        {
-            var objs = new HashSet<TEnd?>();
-            while (MoveNext())
-                objs.Add(Current);
-            return objs;
-        }
-
-        /// <summary>
-        ///     Starts a promise to execute a function on the current traversal that will be completed in the future.
-        /// </summary>
-        /// <typeparam name="TReturn">The return type of the <paramref name="callback" />.</typeparam>
-        /// <param name="callback">The function to execute on the current traversal.</param>
-        /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
-        /// <returns>The result of the executed <paramref name="callback" />.</returns>
-        public async Task<TReturn> Promise<TReturn>(Func<ITraversal<TStart, TEnd>, TReturn> callback,
-            CancellationToken cancellationToken = default)
-        {
-            await ApplyStrategiesAsync(cancellationToken).ConfigureAwait(false);
-            return callback(this);
         }
     }
 }

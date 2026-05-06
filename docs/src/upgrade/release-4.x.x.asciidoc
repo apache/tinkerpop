@@ -215,6 +215,62 @@ Connection(url, traversal_source, executor, pool,
 
 Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
 
+==== Runtime Upgrades
+
+The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`). .NET 6 reached end-of-life in
+November 2024; .NET 8 is the current LTS release.
+
+==== .NET HTTP Streaming Response Support
+
+The .NET driver (`Gremlin.Net`) now uses streaming deserialization, results are deserialized incrementally from the
+HTTP response stream as bytes arrive over the network, rather than buffering the entire response before processing.
+This reduces memory usage and latency for large result sets.
+
+The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) is unchanged — these methods block
+internally on the async stream, so existing traversal code works without modification.
+
+`ResultSet<T>` no longer implements `IReadOnlyCollection<T>`. It now implements `IAsyncEnumerable<T>`, backed by a
+`Channel<T>` that receives items from a background deserialization task. Users who access `ResultSet<T>` directly
+via `GremlinClient.SubmitAsync<T>()` will need to update their code:
+
+[source,csharp]
+----
+// 3.x — ResultSet was IReadOnlyCollection<T>
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var count = resultSet.Count;              // no longer available
+foreach (var item in resultSet) { }       // no longer available
+
+// 4.0 — ResultSet is IAsyncEnumerable<T>
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var list = await resultSet.ToListAsync(); // materialize if you need Count
+await foreach (var item in resultSet) { } // async iteration
+----
+
+The `IMessageSerializer` interface has also changed: `DeserializeMessageAsync` now accepts a `Stream` and returns
+`IAsyncEnumerable<object>` instead of accepting `byte[]` and returning `Task<ResponseMessage<List<object>>>`.
+Custom serializer implementations will need to be updated. The `ResponseMessage<T>` type has been removed.
+
+With streaming, server errors (`ResponseException`) are now thrown during result iteration rather than during
+`SubmitAsync`. Code that catches `ResponseException` around `SubmitAsync` should be updated to catch around the
+result consumption instead:
+
+[source,csharp]
+----
+// 3.x — exception thrown during SubmitAsync
+try {
+    var resultSet = await client.SubmitAsync<int>("invalid");
+} catch (ResponseException ex) { ... }
+
+// 4.0 — exception thrown during iteration
+var resultSet = await client.SubmitAsync<int>("invalid");
+try {
+    var list = await resultSet.ToListAsync();
+} catch (ResponseException ex) { ... }
+----
+
+The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
+block on the async stream internally.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

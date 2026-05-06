@@ -106,10 +106,10 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
     public class SingleTypeSerializer<T> : SimpleTypeSerializer<T>
     {
         private readonly Func<T, Stream, CancellationToken, Task> _writeFunc;
-        private readonly Func<Stream, CancellationToken, Task<T>> _readFunc;
+        private readonly Func<Stream, CancellationToken, ValueTask<T>> _readFunc;
 
         internal SingleTypeSerializer(DataType dataType, Func<T, Stream, CancellationToken, Task> writeFunc,
-            Func<Stream, CancellationToken, Task<T>> readFunc)
+            Func<Stream, CancellationToken, ValueTask<T>> readFunc)
             : base(dataType)
         {
             _writeFunc = writeFunc;

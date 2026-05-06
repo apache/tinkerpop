@@ -63,8 +63,9 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var requestMsg = "g.inject(1,2,3,4,5,6,7,8,9,10)";
 
                 var response = await gremlinClient.SubmitAsync<int>(requestMsg);
+                var results = await response.ToListAsync();
 
-                Assert.Equal(10, response.Count);
+                Assert.Equal(10, results.Count);
             }
         }
 
@@ -92,7 +93,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var requestMsg = "invalid";
 
                 var exception =
-                    await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
+                    await Assert.ThrowsAsync<ResponseException>(async () =>
+                    {
+                        var resultSet = await gremlinClient.SubmitAsync<object>(requestMsg);
+                        await resultSet.ToListAsync();
+                    });
 
                 Assert.Equal(typeof(ResponseException), exception.GetType());
                 Assert.Contains("Failed to interpret Gremlin query", exception.Message);
@@ -110,7 +115,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
             {
                 var response = await gremlinClient.SubmitAsync<int>(requestMessage);
 
-                Assert.Equal(expectedResult, response);
+                Assert.Equal(expectedResult, await response.ToListAsync());
             }
         }
 
@@ -125,7 +130,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
 
                 var response = await gremlinClient.SubmitAsync<int>(requestMsg);
 
-                Assert.Equal(expectedResult, response);
+                Assert.Equal(expectedResult, await response.ToListAsync());
             }
         }
 
@@ -148,7 +153,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
             {
                 var invalidRequestScript = "invalid";
 
-                await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(invalidRequestScript));
+                await Assert.ThrowsAsync<ResponseException>(async () =>
+                {
+                    var resultSet = await gremlinClient.SubmitAsync<object>(invalidRequestScript);
+                    await resultSet.ToListAsync();
+                });
             }
         }
 

@@ -21,6 +21,7 @@
 
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Exceptions;
@@ -37,7 +38,6 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
         {
             // Build a response: version(0x84) + bulked(0x00) + int value 42 + marker + status footer
             using var stream = new MemoryStream();
-            var writer = new GraphBinaryWriter();
 
             // Version byte
             await stream.WriteByteAsync(0x84);
@@ -62,14 +62,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var reader = new GraphBinaryReader();
             var serializer = new ResponseMessageSerializer();
 
-            var result = await serializer.ReadValueAsync(stream, reader);
+            var results = new List<object>();
+            await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+            {
+                results.Add(item);
+            }
 
-            Assert.False(result.Bulked);
-            Assert.Single(result.Result);
-            Assert.Equal(42, result.Result[0]);
-            Assert.Equal(200, result.StatusCode);
-            Assert.Null(result.StatusMessage);
-            Assert.Null(result.Exception);
+            Assert.Single(results);
+            Assert.Equal(42, results[0]);
         }
 
         [Fact]
@@ -104,11 +104,14 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var reader = new GraphBinaryReader();
             var serializer = new ResponseMessageSerializer();
 
-            var result = await serializer.ReadValueAsync(stream, reader);
+            var results = new List<object>();
+            await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+            {
+                results.Add(item);
+            }
 
-            Assert.True(result.Bulked);
-            Assert.Single(result.Result);
-            var traverser = Assert.IsType<Traverser>(result.Result[0]);
+            Assert.Single(results);
+            var traverser = Assert.IsType<Traverser>(results[0]);
             Assert.Equal("hello", (string)traverser.Object);
             Assert.Equal(3L, traverser.Bulk);
         }
@@ -143,8 +146,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var reader = new GraphBinaryReader();
             var serializer = new ResponseMessageSerializer();
 
-            var ex = await Assert.ThrowsAsync<ResponseException>(
-                () => serializer.ReadValueAsync(stream, reader));
+            var ex = await Assert.ThrowsAsync<ResponseException>(async () =>
+            {
+                await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+                {
+                    // Should not yield any items before throwing
+                }
+            });
 
             Assert.Equal(500, ex.StatusCode);
             Assert.Equal("Server error", ex.Message);
@@ -162,8 +170,13 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var reader = new GraphBinaryReader();
             var serializer = new ResponseMessageSerializer();
 
-            await Assert.ThrowsAsync<IOException>(
-                () => serializer.ReadValueAsync(stream, reader));
+            await Assert.ThrowsAsync<IOException>(async () =>
+            {
+                await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+                {
+                    // Should throw before yielding any items
+                }
+            });
         }
 
         [Fact]
@@ -199,12 +212,47 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var reader = new GraphBinaryReader();
             var serializer = new ResponseMessageSerializer();
 
-            var result = await serializer.ReadValueAsync(stream, reader);
+            var results = new List<object>();
+            await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+            {
+                results.Add(item);
+            }
 
-            Assert.Equal(3, result.Result.Count);
-            Assert.Equal(1, result.Result[0]);
-            Assert.Equal(2, result.Result[1]);
-            Assert.Equal(3, result.Result[2]);
+            Assert.Equal(3, results.Count);
+            Assert.Equal(1, results[0]);
+            Assert.Equal(2, results[1]);
+            Assert.Equal(3, results[2]);
+        }
+
+        [Fact]
+        public async Task ShouldDeserializeEmptyResultSet()
+        {
+            using var stream = new MemoryStream();
+
+            // Version byte
+            await stream.WriteByteAsync(0x84);
+            // Bulked = false
+            await stream.WriteByteAsync(0x00);
+            // Marker immediately after bulked flag (no results)
+            await stream.WriteByteAsync(0xFD);
+            await stream.WriteByteAsync(0x00); // value_flag
+            await stream.WriteByteAsync(0x00); // marker value
+            // Status footer: 200, null, null
+            await stream.WriteIntAsync(200);
+            await stream.WriteByteAsync(0x01);
+            await stream.WriteByteAsync(0x01);
+
+            stream.Position = 0;
+            var reader = new GraphBinaryReader();
+            var serializer = new ResponseMessageSerializer();
+
+            var results = new List<object>();
+            await foreach (var item in serializer.ReadStreamingAsync(stream, reader))
+            {
+                results.Add(item);
+            }
+
+            Assert.Empty(results);
         }
     }
 }

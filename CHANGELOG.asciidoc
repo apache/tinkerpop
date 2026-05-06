@@ -67,6 +67,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
+* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`. 
+* Target framework for `gremlin-dotnet` updated to `net8.0`.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
 * Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.
 * Bumped ANTLR to 4.13.2

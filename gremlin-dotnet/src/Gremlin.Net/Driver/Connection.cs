@@ -25,10 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process;
@@ -77,7 +77,6 @@ namespace Gremlin.Net.Driver
             _settings = settings;
             _interceptors = interceptors ?? Array.Empty<Func<HttpRequestContext, Task>>();
 
-#if NET6_0_OR_GREATER
             var handler = new SocketsHttpHandler
             {
                 PooledConnectionIdleTimeout = settings.IdleConnectionTimeout,
@@ -93,10 +92,6 @@ namespace Gremlin.Net.Driver
                 };
             }
             _httpClient = new HttpClient(handler);
-#else
-            _httpClient = new HttpClient();
-            _httpClient.Timeout = settings.ConnectionTimeout;
-#endif
         }
 
         /// <summary>
@@ -115,10 +110,17 @@ namespace Gremlin.Net.Driver
             _interceptors = interceptors ?? Array.Empty<Func<HttpRequestContext, Task>>();
         }
 
+        /// <summary>
+        ///     Submits a <see cref="RequestMessage"/> to the server and returns a streaming
+        ///     <see cref="ResultSet{T}"/> whose background task owns the HTTP response lifetime.
+        /// </summary>
+        /// <typeparam name="T">The type of the expected result elements.</typeparam>
+        /// <param name="requestMessage">The request to send.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>A <see cref="ResultSet{T}"/> that streams results as they arrive.</returns>
         public async Task<ResultSet<T>> SubmitAsync<T>(RequestMessage requestMessage,
             CancellationToken cancellationToken = default)
         {
-            // Build HttpRequestContext with default headers
             var headers = new Dictionary<string, string>();
             headers["Accept"] = _responseSerializer.MimeType;
 
@@ -140,7 +142,6 @@ namespace Gremlin.Net.Driver
             object body;
             if (_requestSerializer != null)
             {
-                // Default path: serialize before interceptors
                 var requestBytes = await _requestSerializer.SerializeMessageAsync(requestMessage, cancellationToken)
                     .ConfigureAwait(false);
                 body = requestBytes;
@@ -148,103 +149,146 @@ namespace Gremlin.Net.Driver
             }
             else
             {
-                // Interceptor-managed path: body is RequestMessage, interceptor must serialize
                 body = requestMessage;
             }
 
             var context = new HttpRequestContext("POST", _uri, headers, body);
 
-            // Apply interceptors in order
             foreach (var interceptor in _interceptors)
             {
                 await interceptor(context).ConfigureAwait(false);
             }
 
-            // Convert HttpRequestContext to HttpRequestMessage
-            using var httpRequest = new HttpRequestMessage(new HttpMethod(context.Method), context.Uri);
-
-            if (context.Body is byte[] bodyBytes)
+            // The HttpResponseMessage is NOT disposed here — ownership transfers to
+            // StreamingResponseContext via the background task.
+            HttpResponseMessage response;
+            using (var httpRequest = new HttpRequestMessage(new HttpMethod(context.Method), context.Uri))
             {
-                httpRequest.Content = new ByteArrayContent(bodyBytes);
-            }
-            else if (context.Body is HttpContent httpContent)
-            {
-                httpRequest.Content = httpContent;
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "Request body must be byte[] or HttpContent after all interceptors complete, " +
-                    "but found " + (context.Body?.GetType().Name ?? "null") +
-                    ". Either provide a requestSerializer or add an interceptor " +
-                    "that serializes the RequestMessage.");
-            }
-
-            foreach (var header in context.Headers)
-            {
-                // Content-Type must be set on the content headers, not the request headers
-                if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                if (context.Body is byte[] bodyBytes)
                 {
-                    httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue(header.Value);
+                    httpRequest.Content = new ByteArrayContent(bodyBytes);
+                }
+                else if (context.Body is HttpContent httpContent)
+                {
+                    httpRequest.Content = httpContent;
                 }
                 else
                 {
-                    httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    throw new InvalidOperationException(
+                        "Request body must be byte[] or HttpContent after all interceptors complete, " +
+                        "but found " + (context.Body?.GetType().Name ?? "null") +
+                        ". Either provide a requestSerializer or add an interceptor " +
+                        "that serializes the RequestMessage.");
                 }
+
+                foreach (var header in context.Headers)
+                {
+                    if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                    {
+                        httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue(header.Value);
+                    }
+                    else
+                    {
+                        httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
+                }
+
+                response = await _httpClient.SendAsync(httpRequest,
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
-            using var response = await _httpClient.SendAsync(httpRequest, cancellationToken)
-                .ConfigureAwait(false);
-
-            // If the HTTP status indicates an error and the response is not GraphBinary,
-            // attempt to read the body as a text error message. The server may respond with
-            // a JSON body containing an error field, or plain text. Only when the Content-Type
-            // is GraphBinary do we fall through to normal deserialization so the status footer
-            // in the GB4 response can surface the application-level error.
             if (!response.IsSuccessStatusCode &&
                 response.Content.Headers.ContentType?.MediaType != _responseSerializer.MimeType)
             {
-                var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                using (response)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                // Try to extract the "message" field from a JSON error response
-                var errorMessage = TryExtractJsonError(errorBody)
-                    ?? $"Gremlin Server returned HTTP {(int)response.StatusCode}: {errorBody}";
+                    // Try to extract the "message" field from a JSON error response
+                    var errorMessage = TryExtractJsonError(errorBody)
+                        ?? $"Gremlin Server returned HTTP {(int)response.StatusCode}: {errorBody}";
 
-                throw new HttpRequestException(errorMessage);
+                    throw new HttpRequestException(errorMessage);
+                }
             }
 
-            var responseBytes = await ReadResponseBytesAsync(response).ConfigureAwait(false);
-
-            var responseMessage = await _responseSerializer.DeserializeMessageAsync(responseBytes, cancellationToken)
-                .ConfigureAwait(false);
-
-            return BuildResultSet<T>(responseMessage);
-        }
-
-        private static async Task<byte[]> ReadResponseBytesAsync(HttpResponseMessage response)
-        {
-            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            if (response.Content.Headers.ContentEncoding.Contains("deflate"))
+            StreamingResponseContext? streamingContext = null;
+            CancellationTokenSource? disposeCts = null;
+            CancellationTokenSource? linkedCts = null;
+            try
             {
-                using var deflateStream = new DeflateStream(stream, CompressionMode.Decompress);
-                using var ms = new MemoryStream();
-                await deflateStream.CopyToAsync(ms).ConfigureAwait(false);
-                return ms.ToArray();
+                var contentStream = await response.Content.ReadAsStreamAsync()
+                    .ConfigureAwait(false);
+                DeflateStream? deflateStream = null;
+                if (response.Content.Headers.ContentEncoding.Contains("deflate"))
+                {
+                    deflateStream = new DeflateStream(contentStream, CompressionMode.Decompress);
+                }
+                streamingContext = new StreamingResponseContext(
+                    response, contentStream, deflateStream);
+
+                var resultStream = _responseSerializer.DeserializeMessageAsync(
+                    streamingContext.Stream, cancellationToken);
+
+                var channel = Channel.CreateUnbounded<object>(
+                    new UnboundedChannelOptions { SingleWriter = true });
+                disposeCts = new CancellationTokenSource();
+                linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken, disposeCts.Token);
+
+                var capturedLinkedCts = linkedCts;
+                var capturedStreamingContext = streamingContext;
+
+                var backgroundTask = Task.Run(async () =>
+                {
+                    // Note: ResponseException from the status footer is propagated after
+                    // all result items have been yielded, so consumers will see all results
+                    // before the exception if the status code is non-200.
+                    try
+                    {
+                        await foreach (var item in resultStream
+                            .WithCancellation(capturedLinkedCts.Token).ConfigureAwait(false))
+                        {
+                            await channel.Writer.WriteAsync(item, capturedLinkedCts.Token)
+                                .ConfigureAwait(false);
+                        }
+                        channel.Writer.Complete();
+                    }
+                    catch (Exception ex)
+                    {
+                        channel.Writer.Complete(ex);
+                    }
+                    finally
+                    {
+                        capturedLinkedCts.Dispose();
+                        capturedStreamingContext.Dispose();
+                    }
+                }, CancellationToken.None);
+
+                // Ownership transferred to background task — prevent catch block from
+                // double-disposing.
+                linkedCts = null;
+                streamingContext = null;
+
+                return new ResultSet<T>(channel.Reader, disposeCts, backgroundTask);
             }
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-            return memoryStream.ToArray();
-        }
-
-        private static ResultSet<T> BuildResultSet<T>(ResponseMessage<List<object>> responseMessage)
-        {
-            var results = typeof(T) == typeof(Traverser)
-                ? responseMessage.Result
-                    .Select(item => item is Traverser ? item : (object)new Traverser(item))
-                    .Cast<T>().ToList()
-                : responseMessage.Result.Cast<T>().ToList();
-
-            return new ResultSet<T>(results, new Dictionary<string, object>());
+            catch
+            {
+                linkedCts?.Dispose();
+                // If streamingContext was not yet created, the response is not yet owned
+                // by it and must be disposed separately.
+                if (streamingContext == null)
+                {
+                    response.Dispose();
+                }
+                else
+                {
+                    streamingContext.Dispose();
+                }
+                disposeCts?.Dispose();
+                throw;
+            }
         }
 
         /// <summary>

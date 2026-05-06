@@ -22,18 +22,22 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Driver.Remote
 {
+    /// <summary>
+    ///     A traversal returned from a remote Gremlin Server submission, wrapping a
+    ///     <see cref="ResultSet{T}"/> of <see cref="Traverser"/> instances.
+    /// </summary>
     internal class DriverRemoteTraversal<TStart, TEnd> : DefaultTraversal<TStart, TEnd>
     {
-        public DriverRemoteTraversal(IEnumerable<Traverser> traversers)
+        public DriverRemoteTraversal(ResultSet<Traverser> resultSet)
         {
-            Traversers = traversers;
+            Traversers = resultSet;
         }
 
+        /// <inheritdoc />
         public override GremlinLang GremlinLang => throw new NotSupportedException("Remote traversals do not have GremlinLang");
     }
 }

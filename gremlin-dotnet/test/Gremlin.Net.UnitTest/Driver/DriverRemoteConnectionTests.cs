@@ -208,8 +208,11 @@ namespace Gremlin.Net.UnitTest.Driver
                 .Returns(callInfo =>
                 {
                     capture(callInfo.Arg<RequestMessage>());
+                    var channel = System.Threading.Channels.Channel.CreateUnbounded<object>();
+                    channel.Writer.Complete();
+                    var cts = new CancellationTokenSource();
                     var emptyResult = new ResultSet<Traverser>(
-                        new List<Traverser>(), new Dictionary<string, object>());
+                        channel.Reader, cts, Task.CompletedTask);
                     return Task.FromResult(emptyResult);
                 });
             return client;

@@ -21,49 +21,134 @@
 
 #endregion
 
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Gremlin.Net.Driver
 {
     /// <summary>
-    ///     A ResultSet is returned from the submission of a Gremlin script to the server and represents the results
-    ///     provided by the server. ResultSet includes enumerable data and status attributes.
+    ///     A streaming ResultSet returned from the submission of a Gremlin request.
+    ///     Implements <see cref="IAsyncEnumerable{T}"/>; so consumers can iterate results as they
+    ///     arrive from the server via <c>await foreach</c>.
+    ///     Single-consumer only — calling GetAsyncEnumerator a second time throws
+    ///     InvalidOperationException.
     /// </summary>
     /// <typeparam name="T">Type of the result elements</typeparam>
-    public sealed class ResultSet<T> : IReadOnlyCollection<T>
+    public sealed class ResultSet<T> : IAsyncEnumerable<T>, IAsyncDisposable, IDisposable
     {
-        private readonly IReadOnlyCollection<T> _data;
+        private readonly ChannelReader<object> _channelReader;
+        private readonly CancellationTokenSource _disposeCts;
+        private readonly Task _backgroundTask;
+        private int _enumerated; // 0 = not yet, 1 = already enumerated
+        private int _disposed;   // 0 = not yet, 1 = already disposed
 
         /// <summary>
-        ///     Gets or sets the status attributes from the gremlin response
+        ///     Gets the status attributes from the gremlin response.
+        ///     Only available after all results have been consumed.
         /// </summary>
-        public IReadOnlyDictionary<string, object> StatusAttributes { get; }
+        public IReadOnlyDictionary<string, object> StatusAttributes { get; internal set; }
+            = new Dictionary<string, object>();
 
         /// <summary>
-        ///     Initializes a new instance of the ResultSet class for the specified data and status attributes.
+        ///     Initializes a new <see cref="ResultSet{T}"/> backed by a channel, a cancellation
+        ///     source for disposal, and a background task that writes items into the channel.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="attributes"></param>
-        public ResultSet(IReadOnlyCollection<T> data, IReadOnlyDictionary<string, object> attributes)
+        internal ResultSet(ChannelReader<object> channelReader,
+            CancellationTokenSource disposeCts, Task backgroundTask)
         {
-            _data = data;
-            this.StatusAttributes = attributes;
+            _channelReader = channelReader;
+            _disposeCts = disposeCts;
+            _backgroundTask = backgroundTask;
         }
 
         /// <inheritdoc />
-        public IEnumerator<T> GetEnumerator()
+        public IAsyncEnumerator<T> GetAsyncEnumerator(
+            CancellationToken cancellationToken = default)
         {
-            return _data.GetEnumerator();
+            if (Interlocked.CompareExchange(ref _enumerated, 1, 0) != 0)
+            {
+                throw new InvalidOperationException(
+                    "ResultSet can only be enumerated once. Use ToListAsync() if you need " +
+                    "to iterate the results multiple times.");
+            }
+
+            return EnumerateChannel(cancellationToken);
+        }
+
+        private async IAsyncEnumerator<T> EnumerateChannel(CancellationToken cancellationToken)
+        {
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken, _disposeCts.Token);
+
+            await foreach (var item in _channelReader.ReadAllAsync(linked.Token)
+                .ConfigureAwait(false))
+            {
+                yield return (T)item;
+            }
+        }
+
+        /// <summary>
+        ///     Materializes all results into a List&lt;T&gt;.
+        ///     This is a convenience method for consumers that need the complete collection.
+        ///     Consumes the stream — cannot be called after GetAsyncEnumerator.
+        /// </summary>
+        public async Task<List<T>> ToListAsync(CancellationToken cancellationToken = default)
+        {
+            var results = new List<T>();
+            await foreach (var item in this.WithCancellation(cancellationToken)
+                .ConfigureAwait(false))
+            {
+                results.Add(item);
+            }
+            return results;
         }
 
         /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
+        public async ValueTask DisposeAsync()
         {
-            return _data.GetEnumerator();
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _disposeCts.Cancel();
+            try
+            {
+                await _backgroundTask.ConfigureAwait(false);
+            }
+            catch
+            {
+                // Background task may throw OperationCanceledException or other
+                // exceptions — swallow them during disposal.
+            }
+            _disposeCts.Dispose();
         }
 
-        /// <inheritdoc />
-        public int Count => _data.Count;
+        /// <summary>
+        ///     Synchronous disposal fallback. Prefer <see cref="DisposeAsync"/> in async contexts
+        ///     to avoid blocking the calling thread.
+        /// </summary>
+        public void Dispose()
+        {
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _disposeCts.Cancel();
+            try
+            {
+                _backgroundTask.GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Background task may throw OperationCanceledException or other
+                // exceptions — swallow them during disposal.
+            }
+            _disposeCts.Dispose();
+        }
     }
 }
