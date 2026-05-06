@@ -22,7 +22,6 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,25 +29,36 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Process.Traversal
 {
     /// <summary>
-    /// Represents the basic information for a walk over a graph.
+    ///     Represents the basic information for a walk over a graph.
     /// </summary>
     /// <seealso cref="ITraversal{SType, EType}"/>
-    public interface ITraversal: IEnumerator
+    public interface ITraversal : IAsyncDisposable
     {
         /// <summary>
         ///     Gets the <see cref="Traversal.GremlinLang" /> representation of this traversal.
         /// </summary>
         GremlinLang GremlinLang { get; }
-        
+
         /// <summary>
         ///     Determines if this traversal was spawned anonymously or not.
         /// </summary>
-        bool IsAnonymous { get;  }
+        bool IsAnonymous { get; }
 
         /// <summary>
         ///     Gets or sets the <see cref="Traverser" />'s of this traversal that hold the results of the traversal.
         /// </summary>
-        IEnumerable<Traverser>? Traversers { get; set; }
+        IAsyncEnumerable<Traverser>? Traversers { get; set; }
+
+        /// <summary>
+        ///     Gets the current result as an untyped object, without type conversion.
+        ///     This is useful when the caller does not know the specific TEnd type.
+        /// </summary>
+        object? CurrentObject { get; }
+
+        /// <summary>
+        ///     Advances the traversal to the next result asynchronously (used internally).
+        /// </summary>
+        ValueTask<bool> MoveNextAsync();
 
         /// <summary>
         ///     Iterates all <see cref="Traverser" /> instances in the traversal.
@@ -60,8 +70,19 @@ namespace Gremlin.Net.Process.Traversal
     /// <summary>
     ///     A traversal represents a directed walk over a graph.
     /// </summary>
-    public interface ITraversal<TStart, TEnd> : ITraversal, IEnumerator<TEnd?>
+    public interface ITraversal<TStart, TEnd> : ITraversal
     {
+        /// <summary>
+        ///     Gets the current result of the traversal.
+        /// </summary>
+        TEnd? Current { get; }
+
+        /// <summary>
+        ///     Advances the traversal to the next result asynchronously (used internally).
+        /// </summary>
+        /// <returns>True if there is a next result, false otherwise.</returns>
+        new ValueTask<bool> MoveNextAsync();
+
         /// <summary>
         ///     Gets the next result from the traversal.
         /// </summary>
@@ -100,7 +121,7 @@ namespace Gremlin.Net.Process.Traversal
         IList<TEnd?> ToList();
 
         /// <summary>
-        ///     Puts all the results into a <see cref="ISet{T}" />.
+        ///     Puts all the results into a <see cref="HashSet{T}" />.
         /// </summary>
         /// <returns>The results in a set.</returns>
         ISet<TEnd?> ToSet();

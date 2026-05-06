@@ -47,7 +47,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
                 var requestMsg = RequestMessage.Build(ivalidOperationName).Create();
 
                 var thrownException =
-                    await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync<dynamic>(requestMsg));
+                    await Assert.ThrowsAsync<ResponseException>(async () =>
+                    {
+                        var resultSet = await gremlinClient.SubmitAsync<dynamic>(requestMsg);
+                        await resultSet.ToListAsync();
+                    });
 
                 Assert.Contains("Failed to interpret Gremlin query", thrownException.Message);
                 Assert.Contains(ivalidOperationName, thrownException.Message);
@@ -67,7 +71,11 @@ namespace Gremlin.Net.IntegrationTest.Driver
                         .Create();
 
                 var thrownException =
-                    await Assert.ThrowsAsync<ResponseException>(() => gremlinClient.SubmitAsync(requestMsg));
+                    await Assert.ThrowsAsync<ResponseException>(async () =>
+                    {
+                        var resultSet = await gremlinClient.SubmitAsync<object>(requestMsg);
+                        await resultSet.ToListAsync();
+                    });
 
                 Assert.Contains("not an available GremlinScript", thrownException.Message);
                 Assert.Contains(unknownLanguage, thrownException.Message);

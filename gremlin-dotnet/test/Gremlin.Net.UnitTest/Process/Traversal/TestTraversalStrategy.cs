@@ -30,11 +30,11 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
 {
     public class TestTraversalStrategy : ITraversalStrategy
     {
-        private readonly IEnumerable<Traverser> _traversers;
+        private readonly IAsyncEnumerable<Traverser> _traversers;
 
         public TestTraversalStrategy(IEnumerable<Traverser> traversersToAddOnApplication)
         {
-            _traversers = traversersToAddOnApplication;
+            _traversers = TestTraversal.ToAsyncEnumerable(traversersToAddOnApplication);
         }
 
         public void Apply<TStart, TEnd>(ITraversal<TStart, TEnd> traversal)

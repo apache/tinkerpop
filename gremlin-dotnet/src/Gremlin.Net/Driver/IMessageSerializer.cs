@@ -22,6 +22,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -50,12 +51,15 @@ namespace Gremlin.Net.Driver
             CancellationToken cancellationToken = default);
 
         /// <summary>
-        ///     Deserializes a <see cref="ResponseMessage{T}"/> from a byte array.
+        ///     Deserializes result objects from a <see cref="Stream"/>, yielding each
+        ///     object as it is deserialized. The stream is expected to contain a
+        ///     GraphBinary 4.0 response including the version byte, result data, marker,
+        ///     and status footer.
         /// </summary>
-        /// <param name="message">The serialized message to deserialize.</param>
+        /// <param name="stream">The response stream to deserialize from.</param>
         /// <param name="cancellationToken">The token to cancel the operation. The default value is None.</param>
-        /// <returns>The deserialized <see cref="ResponseMessage{T}"/>.</returns>
-        Task<ResponseMessage<List<object>>> DeserializeMessageAsync(byte[] message,
+        /// <returns>An async sequence of deserialized result objects.</returns>
+        IAsyncEnumerable<object> DeserializeMessageAsync(Stream stream,
             CancellationToken cancellationToken = default);
     }
 }
