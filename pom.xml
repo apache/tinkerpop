@@ -169,7 +169,7 @@ limitations under the License.
           don't think we need guice 7 at the moment - the only difference with 6 is that
           it supports the jakarta.inject namespace which tinkerpop doesn't fuss with
         -->
-        <guice.version>6.0.0</guice.version>
+        <guice.version>7.0.0</guice.version>
         <hadoop.version>3.4.2</hadoop.version>
         <hamcrest.version>3.0</hamcrest.version>
         <java.tuples.version>1.2</java.tuples.version>
