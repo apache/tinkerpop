@@ -150,6 +150,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<Defaul
                 if (isGraphBinaryResponse()) {
                     if (queueInputStream != null) {
                         queueInputStream.signalEndOfStream();
+                        // Null out so any spurious content arriving between responses is dropped
+                        // rather than offered to the already-closed stream.
+                        queueInputStream = null;
                     }
                     // Reader thread handles completion directly via markComplete/markError
                 } else {
