@@ -93,7 +93,8 @@ describe('match(String) - declarative pattern matching (ti-70m.13)', function ()
 
       const strategyMock = {
         apply: function (traversal) {
-          traversal.results = expectedResults.map(r => new Traverser(r, 1));
+          const traversers = expectedResults.map(r => new Traverser(r, 1));
+          traversal._resultsStream = (async function* () { yield* traversers; })();
           return Promise.resolve();
         }
       };
