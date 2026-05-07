@@ -34,7 +34,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -414,5 +413,69 @@ public class TinkerGraphMatchStepTest {
 
         assertEquals(1, results.size());
         assertEquals(noNick, results.get(0));
+    }
+
+    // -------------------------------------------------------------------------
+    // Binding Map return type — no select() needed
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testMatchAloneReturnsBindingMap() {
+        final Vertex alice = graph.addVertex("person");
+        alice.property("name", "Alice");
+        final Vertex bob = graph.addVertex("person");
+        bob.property("name", "Bob");
+        alice.addEdge("knows", bob);
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                        .match("MATCH (a:person)-[:knows]->(b:person)")
+                        .toList();
+
+        assertEquals(1, results.size());
+        final Map<String, Object> row = results.get(0);
+        assertEquals(alice, row.get("a"));
+        assertEquals(bob, row.get("b"));
+    }
+
+    @Test
+    public void testMatchAloneBindingMapKeysMatchVariableNames() {
+        final Vertex alice = graph.addVertex("person");
+        graph.addVertex("person");
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                        .match("MATCH (n:person)")
+                        .toList();
+
+        assertEquals(2, results.size());
+        results.forEach(row -> {
+            assertTrue("binding map must contain key 'n'", row.containsKey("n"));
+            assertFalse("anonymous variables must not appear in binding map", row.containsKey("$anon0"));
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // where() with named variables works on binding Map
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testWhereWithNamedVariablesFiltersCorrectly() {
+        final Vertex a = graph.addVertex("person");
+        final Vertex b = graph.addVertex("person");
+        a.addEdge("knows", b);
+        a.addEdge("knows", a); // self-loop — should be filtered out by neq
+
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                        .match("MATCH (a:person)-[:knows]->(b:person)")
+                        .where("a", org.apache.tinkerpop.gremlin.process.traversal.P.neq("b"))
+                        .toList();
+
+        assertEquals(1, results.size());
+        assertNotEquals(results.get(0).get("a"), results.get(0).get("b"));
     }
 }

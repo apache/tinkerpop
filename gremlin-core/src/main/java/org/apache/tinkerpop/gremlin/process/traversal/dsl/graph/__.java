@@ -458,14 +458,14 @@ public class __ {
     /**
      * @see GraphTraversal#match(String)
      */
-    public static <A> GraphTraversal<A, Optional> match(final String matchQuery) {
+    public static <A> GraphTraversal<A, Map<String, Object>> match(final String matchQuery) {
         return __.<A>start().match(matchQuery);
     }
 
     /**
      * @see GraphTraversal#match(String, Map<String, Object>)
      */
-    public static <A> GraphTraversal<A, Optional> match(final String matchQuery, final Map<String, Object> params) {
+    public static <A> GraphTraversal<A, Map<String, Object>> match(final String matchQuery, final Map<String, Object> params) {
         return __.<A>start().match(matchQuery, params);
     }
 

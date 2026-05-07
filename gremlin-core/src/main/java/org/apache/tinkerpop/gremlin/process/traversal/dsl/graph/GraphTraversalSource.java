@@ -680,10 +680,10 @@ public class GraphTraversalSource implements TraversalSource {
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */
-    public <S> GraphTraversal<S, Optional> match(final String matchQuery) {
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery) {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery);
-        final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, null, null, true));
     }
 
@@ -699,10 +699,10 @@ public class GraphTraversalSource implements TraversalSource {
      * @return the traversal with an appended {@link DeclarativeMatchStep}.
      * @since 4.0.0
      */
-    public <S> GraphTraversal<S, Optional> match(final String matchQuery, final Map<String, Object> params) {
+    public <S> GraphTraversal<S, Map<String, Object>> match(final String matchQuery, final Map<String, Object> params) {
         final GraphTraversalSource clone = this.clone();
         clone.gremlinLang.addStep(GraphTraversal.Symbols.match, matchQuery, params);
-        final GraphTraversal.Admin<S, Optional> traversal = new DefaultGraphTraversal<>(clone);
+        final GraphTraversal.Admin<S, Map<String, Object>> traversal = new DefaultGraphTraversal<>(clone);
         return traversal.addStep(new DeclarativeMatchStep<>(traversal, matchQuery, params, null, true));
     }
 

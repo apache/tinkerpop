@@ -31,8 +31,9 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -115,7 +116,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    protected Traverser.Admin<Optional> processNextStart() throws NoSuchElementException {
+    protected Traverser.Admin<Map<String, Object>> processNextStart() throws NoSuchElementException {
         final String ql = getQueryLanguage();
         if (ql != null && !SUPPORTED_QUERY_LANGUAGE.equals(ql)) {
             throw new UnsupportedOperationException(
@@ -165,18 +166,18 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Optional> rowToSpawnTraverser(final Element[] row, final GqlMatchPlan plan) {
-        final Traverser.Admin<Optional> traverser =
-                this.getTraversal().getTraverserGenerator().generate(Optional.empty(), (Step) this, 1L);
+    private Traverser.Admin<Map<String, Object>> rowToSpawnTraverser(final Element[] row, final GqlMatchPlan plan) {
+        final Traverser.Admin<Map<String, Object>> traverser =
+                this.getTraversal().getTraverserGenerator().generate(Collections.emptyMap(), (Step) this, 1L);
         bindRow(row, plan, (Traverser.Admin) traverser);
         return traverser;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private Traverser.Admin<Optional> rowToSplitTraverser(final Element[] row, final GqlMatchPlan plan,
-                                                           final Traverser.Admin<S> start) {
-        final Traverser.Admin<Optional> split =
-                (Traverser.Admin<Optional>) start.split(Optional.empty(), (Step) this);
+    private Traverser.Admin<Map<String, Object>> rowToSplitTraverser(final Element[] row, final GqlMatchPlan plan,
+                                                                      final Traverser.Admin<S> start) {
+        final Traverser.Admin<Map<String, Object>> split =
+                (Traverser.Admin<Map<String, Object>>) start.split(Collections.emptyMap(), (Step) this);
         bindRow(row, plan, (Traverser.Admin) split);
         return split;
     }
@@ -185,17 +186,16 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
     private void bindRow(final Element[] row, final GqlMatchPlan plan,
                          final Traverser.Admin traverser) {
         final String[] variables = plan.getVariables();
+        final Map<String, Object> bindings = new LinkedHashMap<>();
         for (int i = 0; i < variables.length; i++) {
             final String var = variables[i];
             if (!var.startsWith("$anon") && row[i] != null) {
-                // Temporarily set the traverser value to the bound element so that
-                // addLabels() records it as a new labeled path entry, then restore
-                // the traverser value to Optional.empty() once all bindings are added.
                 traverser.set(row[i]);
                 traverser.addLabels(Collections.singleton(var));
+                bindings.put(var, row[i]);
             }
         }
-        traverser.set(Optional.empty());
+        traverser.set(bindings);
     }
 
     /**

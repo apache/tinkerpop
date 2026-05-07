@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -45,7 +44,7 @@ import java.util.Set;
  *
  * @since 4.0.0
  */
-public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implements Configuring {
+public class DeclarativeMatchStep<S> extends AbstractStep<S, Map<String, Object>> implements Configuring {
 
     protected Parameters parameters = new Parameters();
 
@@ -95,7 +94,7 @@ public class DeclarativeMatchStep<S> extends AbstractStep<S, Optional> implement
      * step before the traversal is executed.
      */
     @Override
-    protected Traverser.Admin<Optional> processNextStart() {
+    protected Traverser.Admin<Map<String, Object>> processNextStart() {
         throw new UnsupportedOperationException(
                 "No match execution engine registered for this graph - determine if your graph database supports this feature");
     }
