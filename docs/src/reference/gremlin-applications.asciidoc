@@ -444,22 +444,22 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
          (o o)
 -----oOOo-(4)-oOOo-----
 
-[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
-[INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] DefaultGraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
-[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and preparing GremlinScriptEngines instances.
-[INFO] ServerGremlinExecutor - Initialized gremlin-groovy GremlinScriptEngine and registered metrics
-[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
-[INFO] GremlinServer - Executing start up LifeCycleHook
-[INFO] Logger$info - Loading 'modern' graph data.
-[INFO] GremlinServer - idleConnectionTimeout was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] GremlinServer - keepAliveInterval was set to 0 which resolves to 0 seconds when configuring this value - this feature will be disabled
-[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v4.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
-[INFO] AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
-[INFO] AbstractChannelizer - Configured application/vnd.graphbinary-v4.0 with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4
-[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 4 and boss thread pool of 1.
-[INFO] GremlinServer$1 - Channel started at port 8182.
+[INFO] o.a.t.g.s.GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
+[INFO] o.a.t.g.s.u.MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
+[INFO] o.a.t.g.s.u.DefaultGraphManager - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] o.a.t.g.s.u.ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] o.a.t.g.s.u.ServerGremlinExecutor - Initialized GremlinExecutor and preparing GremlinScriptEngines instances.
+[INFO] o.a.t.g.s.u.ServerGremlinExecutor - Initialized gremlin-lang GremlinScriptEngine and registered metrics
+[INFO] o.a.t.g.s.u.ServerGremlinExecutor - A GraphTraversalSource is now auto-bound to [g] for graph [graph]
+[INFO] o.a.t.g.s.u.ServerGremlinExecutor - Instantiated LifeCycleHook: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader
+[INFO] o.a.t.g.s.h.TransactionManager - TransactionManager initialized with timeout=600000ms, maxTransactions=1000
+[INFO] o.a.t.g.s.GremlinServer - Executing start up LifeCycleHook
+[INFO] o.a.t.g.s.u.TinkerFactoryDataLoader - TinkerFactoryDataLoader loaded [modern] dataset into graph [graph]
+[INFO] o.a.t.g.s.AbstractChannelizer - Configured application/vnd.gremlin-v4.0+json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
+[INFO] o.a.t.g.s.AbstractChannelizer - Configured application/json with org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4
+[INFO] o.a.t.g.s.AbstractChannelizer - Configured application/vnd.graphbinary-v4.0 with org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4
+[INFO] o.a.t.g.s.GremlinServer - Gremlin Server configured with worker thread pool of 1, gremlin pool of 10 and boss thread pool of 1.
+[INFO] o.a.t.g.s.GremlinServer - Channel started at port 8182.
 ----
 
 Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `conf/gremlin-server-modern.yaml`.
@@ -469,31 +469,144 @@ That file tells Gremlin Server many things such as:
 * Thread pool sizes
 * Where to report metrics gathered by the server
 * The serializers to make available
-* The Gremlin `ScriptEngine` instances to expose and external dependencies to inject into them
 * `Graph` instances to expose
+* `TraversalSource` bindings (auto-created or explicitly declared)
+* `LifeCycleHook` implementations for startup/shutdown logic
 
 The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named
 `graph` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the
-server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  Its contents are
-as follows:
+server.  A `TinkerFactoryDataLoader` lifecycle hook loaded the "modern" dataset into it during startup, and a
+`TraversalSource` named `g` was auto-created from the `graph` entry.
 
-[source,groovy]
+[[server-auto-traversal-sources]]
+==== Auto-Created TraversalSources
+
+When Gremlin Server starts, it automatically creates a `TraversalSource` for each graph in the `graphs` configuration
+that does not have an explicit `traversalSources` list.  The naming convention is:
+
+* A graph named `graph` gets a `TraversalSource` named `g`
+* All other graphs get `g_<name>` (e.g. a graph named `modern` gets `g_modern`)
+
+This means a minimal configuration like the following is fully functional:
+
+[source,yaml]
 ----
-include::{basedir}/gremlin-server/scripts/generate-modern.groovy[]
+graphs: {
+  graph: conf/tinkergraph-empty.properties}
 ----
 
-The script above initializes a `Map` and assigns two key/values to it.  The first, assigned to "hook", defines a
-`LifeCycleHook` for Gremlin Server.  The "hook" provides a way to tie script code into the Gremlin Server startup and
-shutdown sequences.  The `LifeCycleHook` has two methods that can be implemented: `onStartUp` and `onShutDown`.
-These events are called once at Gremlin Server start and once at Gremlin Server stop.  This is an important point
-because code outside of the "hook" is executed for each `ScriptEngine` creation (multiple may be created when
-"sessions" are enabled) and therefore the `LifeCycleHook` provides a way to ensure that a script is only executed a
-single time. In this case, the startup hook loads the "modern" graph into the empty TinkerGraph instance, preparing
-it for use.  The second key/value pair assigned to the `Map`, named "g", defines a `TraversalSource` from the `Graph`
-bound to the "graph" variable in the YAML configuration file.  This variable `g`, as well as any other variable
-assigned to the `Map`, will be made available as variables for future remote script executions.  In more general
-terms, any key/value pairs assigned to a `Map` returned from the initialization script will become variables that
-are global to all requests. In addition, any functions that are defined will be cached for future use.
+[[server-traversal-sources]]
+==== Declarative TraversalSources
+
+For more control, the `traversalSources` list within a graph entry allows explicit `TraversalSource` creation with
+optional strategy configuration via a Gremlin expression:
+
+[source,yaml]
+----
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: g}, {name: gReadOnly, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)"}]}}
+----
+
+Each entry supports:
+
+* `name` (required) — the binding name for the `TraversalSource`
+* `gremlinExpression` (optional) — a Gremlin expression evaluated with a base traversal source bound as `g`; the
+  result becomes the final `TraversalSource`
+* `language` (optional) — which `ScriptEngine` to use for expression evaluation; defaults to `gremlin-lang`, or the
+  sole configured engine if only one is present
+
+Graphs with explicit `traversalSources` entries are excluded from auto-creation.
+
+[[server-lifecycle-hooks]]
+==== LifeCycleHooks
+
+The `lifecycleHooks` YAML section configures Java-based `LifeCycleHook` implementations that execute during server
+startup and shutdown:
+
+[source,yaml]
+----
+lifecycleHooks:
+  - className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader
+    config: {graph: graph, dataset: modern}
+----
+
+Each entry specifies:
+
+* `className` (required) — the fully qualified class name of a `LifeCycleHook` implementation
+* `config` (optional) — a `Map` of key/value pairs passed to the hook's `init(Map)` method
+
+The built-in `TinkerFactoryDataLoader` loads TinkerFactory sample datasets into a graph. It accepts two config
+parameters: `graph` (the name of the graph as defined in `graphs`) and `dataset` (one of `modern`, `classic`, `crew`,
+`grateful`, `sink`, or `airroutes`).
+
+Users may write their own custom classes implementing `LifeCycleHook`. The `Context` passed to the `onStartUp` and
+`onShutDown` methods provides access to a `Logger` and the `GraphManager`. The `init` method may optionally be
+overridden to receive configuration from the `config` block in the YAML entry.
+
+Here is a minimal example:
+
+[source,java]
+----
+package com.example.hooks;
+
+import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import java.util.Map;
+
+public class MyHook implements LifeCycleHook {
+    private String message = "(no message configured)";
+
+    @Override
+    public void init(final Map<String, Object> config) {
+        if (config.containsKey("message")) {
+            message = config.get("message").toString();
+        }
+    }
+
+    @Override
+    public void onStartUp(final Context c) {
+        c.getLogger().info("[MyHook] onStartUp - message: {}", message);
+    }
+
+    @Override
+    public void onShutDown(final Context c) {
+        c.getLogger().info("[MyHook] onShutDown - message: {}", message);
+    }
+}
+----
+
+To deploy the hook, compile it to a jar and place it under the server's `ext/` directory, which is automatically
+included on the classpath:
+
+[source,bash]
+----
+mkdir -p $GREMLIN_SERVER_HOME/ext/my-hooks/plugin
+cp my-hooks.jar $GREMLIN_SERVER_HOME/ext/my-hooks/plugin/
+----
+
+Then reference the hook in the server YAML configuration:
+
+[source,yaml]
+----
+lifecycleHooks:
+  - className: com.example.hooks.MyHook
+    config: {message: "Hello from custom LifeCycleHook!"}
+----
+
+IMPORTANT: Creating `LifeCycleHook` and `TraversalSource` instances via Groovy init scripts is deprecated.  Use the
+`lifecycleHooks` and `traversalSources` YAML configuration instead. Existing Groovy scripts continue to work but will
+produce a deprecation warning at startup.
+
+Both the deprecated Groovy init scripts and the new YAML configuration can coexist in the same configuration file to
+allow for progressive migration. When both are present, the server processes them in the following order:
+
+. Groovy init scripts run first, creating any `TraversalSource` and `LifeCycleHook` bindings.
+. Declarative `traversalSources` from the `graphs` YAML section are processed next. If an entry uses the same binding
+  name as one created by an init script, the YAML-configured `TraversalSource` overwrites the script-created one.
+. Implicitly-created `TraversalSource` bindings are added for any graphs not yet covered by either mechanism.
+. Declarative `lifecycleHooks` from YAML are instantiated. At startup, YAML-configured hooks execute before any
+  hooks created by init scripts.
 
 WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
 executing.  It is up to the script to properly commit or rollback transactions in the script itself.
@@ -806,7 +919,12 @@ The following table describes the various YAML configuration options that Gremli
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. HTTP). |`HttpChannelizer`
 |enableAuditLog |The `AuthenticationHandler`, `AuthorizationHandler` and processors can issue audit logging messages with the authenticated user, remote socket address and requests with a gremlin query. For privacy reasons, the default value of this setting is false. The audit logging messages are logged at the INFO level via the `audit.org.apache.tinkerpop.gremlin.server` logger, which can be configured using the `logback.xml` file. |_false_
 |graphManager |The fully qualified classname of the `GraphManager` implementation to use.  A `GraphManager` is a class that adheres to the TinkerPop `GraphManager` interface, allowing custom implementations for storing and managing graph references, as well as defining custom methods to open and close graphs instantiations. To prevent Gremlin Server from starting when all graphs fails, the `CheckedGraphManager` can be used.|`DefaultGraphManager`
-|graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
+|graphs |A `Map` of `Graph` configurations keyed by binding name.  Each value may be a simple string (path to a configuration file) or a structured object with a `configuration` path and optional `traversalSources` list.  See <<server-traversal-sources>>. |_none_
+|graphs.<name>.configuration |Path to the graph configuration properties file (when using the structured form). |_none_
+|graphs.<name>.traversalSources |A `List` of `TraversalSource` configurations for this graph.  When absent, a default `TraversalSource` is auto-created.  See <<server-traversal-sources>>. |_auto-created_
+|graphs.<name>.traversalSources[X].name |The binding name for the `TraversalSource`. |_none_
+|graphs.<name>.traversalSources[X].gremlinExpression |An optional Gremlin expression evaluated with a base traversal source bound as `g`.  The result becomes the final `TraversalSource`. |_none_
+|graphs.<name>.traversalSources[X].language |The `ScriptEngine` language to use for evaluating `gremlinExpression`.  Falls back to the sole configured engine if only one is present, or `gremlin-lang` otherwise. |_auto-detected_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. When set to `0`, Gremlin Server will use the value provided by `Runtime.availableProcessors()`. |0
 |host |The name of the host to bind the server to. |localhost
 |idleConnectionTimeout |Time in milliseconds that the server will allow a channel to not receive requests from a client before it automatically closes. If enabled, the value provided should typically exceed the amount of time given to `keepAliveInterval`. Note that while this value is to be provided as milliseconds it will resolve to second precision. Set this value to `0` to disable this feature. |0
@@ -842,8 +960,11 @@ The following table describes the various YAML configuration options that Gremli
 |scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  If this value is not set, it will default to "gremlin-lang". |_gremlin-lang_
 |scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
-|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
+|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. Deprecated — use `traversalSources` and `lifecycleHooks` instead.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
+|lifecycleHooks |A `List` of Java-based `LifeCycleHook` implementations to instantiate and execute during server startup and shutdown.  See <<server-lifecycle-hooks>>. |_none_
+|lifecycleHooks[X].className |The fully qualified class name of the `LifeCycleHook` implementation. |_none_
+|lifecycleHooks[X].config |A `Map` of configuration passed to the hook's `init(Map)` method. |_none_
 |evaluationTimeout |The amount of time in milliseconds before a request evaluation and iteration of result times out. This feature can be turned off by setting the value to `0`. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. If this value is not set, then Gremlin Server will configure with GraphSON and GraphBinary but will not register any `ioRegistries` for configured graphs. |_empty_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
@@ -1278,22 +1399,21 @@ consult the documentation of the graph you are using to determine what authoriza
 
 Gremlin Server supports three mechanisms to configure authorization:
 
-. With the `ScriptFileGremlinPlugin` a groovy script is configured that instantiates the `GraphTraversalSources` that
-can be accessed by client requests. Using the `withStrategies()` gremlin
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#start-steps[start step], one can apply so-called
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[TraversalStrategy instances] to these
-`GraphTraversalSource` instances, some of which can serve for authorization purposes (`ReadOnlyStrategy`,
+. With the `traversalSources` configuration within the `graphs` YAML section, one can declare `TraversalSource` instances with
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#traversalstrategy[TraversalStrategy instances] applied via
+a Gremlin expression, some of which can serve for authorization purposes (`ReadOnlyStrategy`,
 `LambdaRestrictionStrategy`, `VertexProgramRestrictionStrategy`, `SubgraphStrategy`, `PartitionStrategy`,
 `EdgeLabelVerificationStrategy`), provided that users are not allowed to remove or modify these `TraversalStrategy`
-instances afterwards. The `ScriptFileGremlinPlugin` is found in the yaml configuration file for Gremlin Server:
-+
+instances afterwards. For example:
+
 [source,yaml]
 ----
-scriptEngines: {
-  gremlin-groovy: {
-    plugins: {
-      org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/empty-sample.groovy]}}}}
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: g, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)"}]}}
 ----
+
 . Administrators can configure an authorizer class, an implementation of the `Authorizer` interface. An authorizer receives
 a request before it is executed and it can decide to pass or deny the request, based on the information it has available
 on the requesting user or can seek externally.
@@ -1314,12 +1434,13 @@ gives an overview.
 [width="95%",cols="5,2,2,4",options="header"]
 |=========================================================
 |Type (mechanism) |GraphTraversalSources |Groups |Bytecode analysis
-|Implicit (init script) | all accessible |one |`withStrategies()`
+|Implicit (YAML config or init script) | all accessible |one |`withStrategies()`
 |Passive (pass/deny) | selected access |few |hybrid
 |Active (inject) |selected access |many |hybrid
 |=========================================================
 
-With implicit authorization (only adding restricting `TraversalStrategy` instances in the initialization script of
+With implicit authorization (configuring restricting `TraversalStrategy` instances via the `traversalSources` list
+within the `graphs` YAML section, or in a Groovy initialization script of
 Gremlin Server) all authenticated users can access all hosted `GraphTraversalSources` and all face the same
 restrictions. One would need separate Gremlin Server instances for each authorization policy and apply an authenticator
 that restricts access to a group of users (that is, supports in authorization).
@@ -1330,7 +1451,8 @@ the most flexible and can support an almost unlimited number of authorization po
 implement. In particular, applying the `SubgraphStrategy` requires knowledge about the schema of the graph.
 
 The passive authorization solution perhaps provides a middle ground to start implementing authorization. This
-solution assumes that the `SubgraphStrategy` is applied in the Gremlin Server initialization script, because compliance
+solution assumes that the `SubgraphStrategy` is applied in the Gremlin Server `traversalSources` configuration (or
+initialization script), because compliance
 with a subgraph restriction can only be determined during the actual execution of the gremlin traversal. Note that the
 same graph can be reused with different `SubgraphStrategies`. Now, authorization policies can be defined in terms of
 accessible `GraphTraversalSources` and the authorizer can simply match the requested access to a `GraphTraversalSource`
@@ -1587,7 +1709,14 @@ groupsandbox: [usersandbox, marko]
 
 
 [[script-execution]]
-==== Protecting Script Execution
+==== Protecting Groovy Script Execution
+
+NOTE: TinkerPop currently provides two `GremlinScriptEngine` implementations, the grammar-based `GremlinLangScriptEngine`,
+and the Groovy-based `GremlinGroovyScriptEngine`. `GremlinLangScriptEngine` is the default implementation and
+recommended for most usages. This engine evaluates scripts through our gremlin grammar and parser, and thus isn't prone
+to the same arbitrary script evaluation risks as the `GremlinGroovyScriptEngine`. The following section details the
+process of hardening the `GremlinGroovyScriptEngine` if necessary. The simplest and safest recommendation is to avoid
+enabling `GremlinGroovyScriptEngine` in applications where hardening is warranted.
 
 It is important to remember that Gremlin Server exposes `GremlinScriptEngine` instances that allows for remote execution
 of arbitrary code on the server.  Obviously, this situation can represent a security risk or, more minimally, provide
@@ -1982,11 +2111,14 @@ Another option, `all`, can be used to indicate that all properties should be ret
 In some cases it can be inconvenient to load Elements with properties due to large data size or for compatibility reasons.
 That can be solved by utilizing `ReferenceElementStrategy` when creating the out-of-the-box `GraphTraversalSource`.
 As the name suggests, this means that elements will be detached by reference and will therefore not have properties 
-included. The relevant configuration from the Gremlin Server initialization script looks like this:
+included. The relevant configuration from the Gremlin Server YAML looks like this:
 
-[source,groovy]
+[source,yaml]
 ----
-globals << [g : traversal().with(graph).withStrategies(ReferenceElementStrategy)]
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: g, gremlinExpression: "g.withStrategies(ReferenceElementStrategy)"}]}}
 ----
 
 This configuration is global to Gremlin Server and therefore all methods of connection will always return elements
@@ -2233,7 +2365,7 @@ NOTE: This plugin is typically only useful to the Gremlin Console and is enabled
 
 The Server Plugin for remoting with the Gremlin Console should not be confused with a plugin of similar name that is
 used by the server. `GremlinServerGremlinPlugin` is typically only configured in Gremlin Server and provides a number
-of imports that are required for writing <<starting-gremlin-server,initialization scripts>>.
+of imports that are required for writing Groovy initialization scripts (if Groovy is enabled).
 
 [[spark-plugin]]
 === Spark Plugin

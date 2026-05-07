@@ -36,9 +36,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.SimpleBindings;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -135,6 +138,10 @@ public class ServerGremlinExecutor {
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
+        // build the allowlist of script engines from the server config - gremlin-lang is always available
+        final Set<String> allowedEngines = new HashSet<>(settings.scriptEngines.keySet());
+        allowedEngines.add("gremlin-lang");
+
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .evaluationTimeout(settings.getEvaluationTimeout())
                 .afterFailure((b, e) -> this.graphManager.rollbackAll())
@@ -142,7 +149,8 @@ public class ServerGremlinExecutor {
                 .afterTimeout((b, e) -> this.graphManager.rollbackAll())
                 .globalBindings(this.graphManager.getAsBindings())
                 .executorService(this.gremlinExecutorService)
-                .scheduledExecutorService(this.scheduledExecutorService);
+                .scheduledExecutorService(this.scheduledExecutorService)
+                .allowedEngineNames(allowedEngines);
 
         settings.scriptEngines.forEach((k, v) -> {
             // use plugins if they are present
@@ -186,19 +194,111 @@ public class ServerGremlinExecutor {
                 .forEach(kv -> this.graphManager.putGraph(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
-        gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
-                .filter(kv -> kv.getValue() instanceof TraversalSource)
-                .forEach(kv -> {
-                    logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    this.graphManager.putTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
-                });
+        final boolean hasScriptTraversalSources = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
+                .anyMatch(kv -> kv.getValue() instanceof TraversalSource);
+        if (hasScriptTraversalSources) {
+            logger.warn("TraversalSource instances were created via script engine initialization scripts. " +
+                        "This approach is deprecated - use the 'traversalSources' section within 'graphs' YAML configuration instead.");
+            gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
+                    .filter(kv -> kv.getValue() instanceof TraversalSource)
+                    .forEach(kv -> {
+                        logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
+                        this.graphManager.putTraversalSource(kv.getKey(), (TraversalSource) kv.getValue());
+                    });
+        }
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
         // up for execution
-        hooks = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
+        final boolean hasScriptHooks = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
+                .anyMatch(kv -> kv.getValue() instanceof LifeCycleHook);
+        if (hasScriptHooks) {
+            logger.warn("LifeCycleHook instances were created via script engine initialization scripts. " +
+                        "This approach is deprecated - use the 'lifecycleHooks' YAML configuration instead.");
+        }
+        final List<LifeCycleHook> scriptHooks = gremlinExecutor.getScriptEngineManager().getBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof LifeCycleHook)
                 .map(kv -> (LifeCycleHook) kv.getValue())
                 .collect(Collectors.toList());
+
+        // process declarative traversalSources from per-graph YAML config
+        final Set<String> graphsWithExplicitTraversalSources = new HashSet<>();
+        for (final String graphName : settings.graphs.keySet()) {
+            final Settings.GraphSettings graphSettings = settings.getGraphSettings(graphName);
+            if (graphSettings == null || graphSettings.traversalSources == null || graphSettings.traversalSources.isEmpty())
+                continue;
+
+            final Graph graph = this.graphManager.getGraph(graphName);
+            if (null == graph) {
+                logger.warn("Could not create TraversalSources for graph [{}] - graph not found", graphName);
+                continue;
+            }
+
+            graphsWithExplicitTraversalSources.add(graphName);
+
+            for (final Settings.TraversalSourceSettings tsSettings : graphSettings.traversalSources) {
+                final String tsName = tsSettings.name;
+                if (tsSettings.gremlinExpression != null && !tsSettings.gremlinExpression.isEmpty()) {
+                    // resolve which script engine to use for the expression
+                    final String language = resolveLanguage(tsSettings.language);
+                    try {
+                        // bind a base traversal source as 'g' for the expression to operate on
+                        final SimpleBindings bindings = new SimpleBindings();
+                        bindings.put("g", graph.traversal());
+                        final TraversalSource ts = (TraversalSource) gremlinExecutor.eval(
+                                tsSettings.gremlinExpression, language, bindings).join();
+                        this.graphManager.putTraversalSource(tsName, ts);
+                        logger.info("A {} is now bound to [{}] via gremlinExpression", ts.getClass().getSimpleName(), tsName);
+                    } catch (Exception ex) {
+                        logger.warn(String.format("Could not create TraversalSource [%s] from gremlinExpression - %s",
+                                    tsName, ex.getMessage()), ex);
+                    }
+                } else {
+                    final TraversalSource ts = graph.traversal();
+                    this.graphManager.putTraversalSource(tsName, ts);
+                    logger.info("A {} is now bound to [{}]", ts.getClass().getSimpleName(), tsName);
+                }
+            }
+        }
+
+        // auto-create TraversalSources for graphs that don't have explicit traversalSources entries and
+        // were not already bound by script engine initialization
+        for (final String graphName : this.graphManager.getGraphNames()) {
+            if (graphsWithExplicitTraversalSources.contains(graphName))
+                continue;
+
+            final String tsName = graphName.equals("graph") ? "g" : "g_" + graphName;
+            if (this.graphManager.getTraversalSource(tsName) != null)
+                continue;
+
+            final Graph graph = this.graphManager.getGraph(graphName);
+            final TraversalSource ts = graph.traversal();
+            this.graphManager.putTraversalSource(tsName, ts);
+            logger.info("A {} is now auto-bound to [{}] for graph [{}]",
+                        ts.getClass().getSimpleName(), tsName, graphName);
+        }
+
+        // instantiate Java-based lifecycle hooks from YAML config
+        final List<LifeCycleHook> yamlHooks = new ArrayList<>();
+        if (settings.lifecycleHooks != null) {
+            for (final Settings.LifeCycleHookSettings hookSettings : settings.lifecycleHooks) {
+                try {
+                    final Class<?> clazz = Class.forName(hookSettings.className);
+                    final LifeCycleHook hook = (LifeCycleHook) clazz.getDeclaredConstructor().newInstance();
+                    if (hookSettings.config != null) {
+                        hook.init(hookSettings.config);
+                    }
+                    yamlHooks.add(hook);
+                    logger.info("Instantiated LifeCycleHook: {}", hookSettings.className);
+                } catch (Exception ex) {
+                    logger.error(String.format("Could not instantiate LifeCycleHook %s", hookSettings.className), ex);
+                }
+            }
+        }
+
+        // combine YAML-configured hooks with any script-produced hooks (YAML hooks execute first)
+        final List<LifeCycleHook> allHooks = new ArrayList<>(yamlHooks);
+        allHooks.addAll(scriptHooks);
+        hooks = allHooks;
 
         transactionManager = new TransactionManager(
                 scheduledExecutorService,
@@ -212,6 +312,21 @@ public class ServerGremlinExecutor {
     private void registerMetrics(final String engineName) {
         final GremlinScriptEngine engine = gremlinExecutor.getScriptEngineManager().getEngineByName(engineName);
         MetricManager.INSTANCE.registerGremlinScriptEngineMetrics(engine, engineName, "sessionless", "class-cache");
+    }
+
+    /**
+     * Resolves the script engine language to use for evaluating a traversal source gremlinExpression. If an explicit language
+     * is provided, it is used directly. Otherwise, if exactly one script engine is configured, that engine is used.
+     * Falls back to {@code gremlin-lang}.
+     */
+    private String resolveLanguage(final String explicitLanguage) {
+        if (explicitLanguage != null && !explicitLanguage.isEmpty())
+            return explicitLanguage;
+
+        if (settings.scriptEngines.size() == 1)
+            return settings.scriptEngines.keySet().iterator().next();
+
+        return "gremlin-lang";
     }
 
     public void addHostOption(final String key, final Object value) {

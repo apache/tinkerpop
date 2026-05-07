@@ -119,16 +119,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.channelizer = HttpChannelizer.class.getName();
                 break;
             case "shouldAliasTraversalSourceVariables":
-                try {
-                    final String p = Storage.toPath(TestHelper.generateTempFileFromResource(
-                                                      GremlinDriverIntegrateTest.class,
-                                                      "generate-shouldRebindTraversalSourceVariables.groovy", ""));
-                    final Map<String,Object> m = new HashMap<>();
-                    m.put("files", Collections.singletonList(p));
-                    settings.scriptEngines.get("gremlin-groovy").plugins.put(ScriptFileGremlinPlugin.class.getName(), m);
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
+                final Settings.GraphSettings gs = settings.getGraphSettings("graph");
+                final Settings.TraversalSourceSettings readOnlyG = new Settings.TraversalSourceSettings();
+                readOnlyG.name = "g";
+                readOnlyG.gremlinExpression = "g.withStrategies(ReadOnlyStrategy)";
+                final Settings.TraversalSourceSettings writableG1 = new Settings.TraversalSourceSettings();
+                writableG1.name = "g1";
+                gs.traversalSources.add(readOnlyG);
+                gs.traversalSources.add(writableG1);
+                settings.graphs.put("graph", gs);
                 break;
             case "shouldFailWithBadClientSideSerialization":
                 // add custom gryo config for Color

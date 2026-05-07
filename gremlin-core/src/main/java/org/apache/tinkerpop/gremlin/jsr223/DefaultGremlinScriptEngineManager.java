@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -100,10 +101,18 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     private List<GremlinPlugin> plugins = new ArrayList<>();
 
     /**
+     * Optional set of engine names that are allowed to be resolved by this manager. When {@code null}, all
+     * SPI-discovered engines are available (the default). When set, {@link #getEngineByName(String)} will
+     * return {@code null} for any engine name not in this set.
+     */
+    private final Set<String> allowedEngines;
+
+    /**
      * The effect of calling this constructor is the same as calling
      * {@code DefaultGremlinScriptEngineManager(Thread.currentThread().getContextClassLoader())}.
      */
     public DefaultGremlinScriptEngineManager() {
+        this.allowedEngines = null;
         final ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
         initEngines(ctxtLoader);
     }
@@ -115,7 +124,21 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
      * (installed extensions) are loaded.
      */
     public DefaultGremlinScriptEngineManager(final ClassLoader loader) {
+        this.allowedEngines = null;
         initEngines(loader);
+    }
+
+    /**
+     * Creates a manager with an allowlist of engine names. Only engines whose names appear in
+     * {@code allowedEngines} will be returned by {@link #getEngineByName(String)}. Engines discovered
+     * via SPI but not in the allowlist will be rejected. Pass {@code null} to allow all engines.
+     *
+     * @param allowedEngines the set of permitted engine names, or {@code null} for no restriction
+     */
+    public DefaultGremlinScriptEngineManager(final Set<String> allowedEngines) {
+        this.allowedEngines = allowedEngines;
+        final ClassLoader ctxtLoader = Thread.currentThread().getContextClassLoader();
+        initEngines(ctxtLoader);
     }
 
     @Override
@@ -193,6 +216,11 @@ public class DefaultGremlinScriptEngineManager implements GremlinScriptEngineMan
     @Override
     public GremlinScriptEngine getEngineByName(final String shortName) {
         if (null == shortName) throw new NullPointerException();
+
+        if (allowedEngines != null && !allowedEngines.contains(shortName)) {
+            return null;
+        }
+
         //look for registered name first
         Object obj;
         if (null != (obj = nameAssociations.get(shortName))) {

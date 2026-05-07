@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.slf4j.Logger;
+
+import java.util.Map;
 
 /**
  * Provides a method in which users can hook into the startup and shutdown lifecycle of Gremlin Server.  Creating
@@ -30,13 +33,29 @@ import org.slf4j.Logger;
 public interface LifeCycleHook {
 
     /**
+     * Called once after instantiation to pass configuration from the {@code lifecycleHooks} YAML section.
+     * Implementations that require configuration should override this method.  The default implementation
+     * is a no-op so that existing hooks are not forced to implement it.
+     *
+     * <p>If this method throws an exception, the hook is skipped and the server continues to start without it.
+     *
+     * @param config the key/value pairs from the {@code config} block in the YAML entry
+     */
+    public default void init(final Map<String, Object> config) {}
+
+    /**
      * Called when the server starts up.  The graph collection will have been initialized at this point
      * and all initialization scripts will have been executed when this callback is called.
+     *
+     * <p>If this method throws an exception (other than {@link UnsupportedOperationException}), the server
+     * will fail to start.
      */
     public void onStartUp(final Context c);
 
     /**
      * Called when the server is shutdown.
+     *
+     * <p>If this method throws an exception, remaining shutdown hooks and graph cleanup may be skipped.
      */
     public void onShutDown(final Context c);
 
@@ -45,13 +64,30 @@ public interface LifeCycleHook {
      */
     public static class Context {
         private final Logger logger;
+        private final GraphManager graphManager;
 
+        /**
+         * @deprecated As of release 4.0.0, replaced by {@link #Context(Logger, GraphManager)}.
+         */
+        @Deprecated
         public Context(final Logger logger) {
+            this(logger, null);
+        }
+
+        public Context(final Logger logger, final GraphManager graphManager) {
             this.logger = logger;
+            this.graphManager = graphManager;
         }
 
         public Logger getLogger() {
             return logger;
+        }
+
+        /**
+         * Gets the {@link GraphManager} which provides access to all configured graphs and traversal sources.
+         */
+        public GraphManager getGraphManager() {
+            return graphManager;
         }
     }
 }

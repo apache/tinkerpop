@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -103,7 +104,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.evaluationTimeout = builder.evaluationTimeout;
         this.globalBindings = builder.globalBindings;
 
-        this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager();
+        this.gremlinScriptEngineManager = new CachedGremlinScriptEngineManager(builder.allowedEngineNames);
         initializeGremlinScriptEngineManager();
 
         this.suppliedExecutor = suppliedExecutor;
@@ -502,6 +503,7 @@ public class GremlinExecutor implements AutoCloseable {
         private BiConsumer<Bindings, Throwable> afterFailure = (b, e) -> {
         };
         private Bindings globalBindings = new ConcurrentBindings();
+        private Set<String> allowedEngineNames = null;
 
         private Builder() {
         }
@@ -514,6 +516,16 @@ public class GremlinExecutor implements AutoCloseable {
          */
         public Builder addPlugins(final String engineName, final Map<String, Map<String,Object>> plugins) {
             this.plugins.put(engineName, plugins);
+            return this;
+        }
+
+        /**
+         * Set the allowed engine names for the {@link GremlinScriptEngineManager}. Only engines whose names
+         * appear in this set will be returned by {@link GremlinScriptEngineManager#getEngineByName(String)}.
+         * Pass {@code null} to allow all SPI-discovered engines (the default).
+         */
+        public Builder allowedEngineNames(final Set<String> allowedEngineNames) {
+            this.allowedEngineNames = allowedEngineNames;
             return this;
         }
 

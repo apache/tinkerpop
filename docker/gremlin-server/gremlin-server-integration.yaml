@@ -20,23 +20,43 @@ port: 45940
 evaluationTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
-  graph: conf/tinkergraph-service.properties,
-  immutable: conf/tinkergraph-service.properties,
-  classic: conf/tinkergraph-service.properties,
-  modern: conf/tinkergraph-service.properties,
-  crew: conf/tinkergraph-service.properties,
-  grateful: conf/tinkergraph-service.properties,
-  sink: conf/tinkergraph-service.properties,
-  tx: conf/tinkertransactiongraph-service.properties
-}
+  graph: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: g}, {name: ggraph}]},
+  immutable: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: gimmutable}]},
+  classic: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: gclassic}]},
+  modern: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: gmodern}]},
+  crew: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: gcrew}]},
+  grateful: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: ggrateful}]},
+  sink: {
+    configuration: conf/tinkergraph-service.properties,
+    traversalSources: [{name: gsink}]},
+  tx: {
+    configuration: conf/tinkertransactiongraph-service.properties,
+    traversalSources: [{name: gtx}]}}
+lifecycleHooks:
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: classic, dataset: classic}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: modern, dataset: modern}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: crew, dataset: crew}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: grateful, dataset: grateful}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: sink, dataset: sink}}
 scriptEngines: {
   gremlin-lang : {},
   gremlin-groovy: {
     plugins: { org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.tinkergraph.jsr223.TinkerGraphGremlinPlugin: {},
                org.apache.tinkerpop.gremlin.groovy.jsr223.GroovyCompilerGremlinPlugin: {expectedCompilationTime: 30000},
-               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]},
-               org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin: {files: [scripts/generate-all.groovy]}}}}
+               org.apache.tinkerpop.gremlin.jsr223.ImportGremlinPlugin: {classImports: [java.lang.Math], methodImports: [java.lang.Math#*]}}}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV3] }}            # application/json
   - { className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }                                                                                                           # application/vnd.graphbinary-v1.0

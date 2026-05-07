@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.jsr223;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 /**
@@ -37,8 +38,8 @@ public class SingleScriptEngineManagerTest {
         assertSame(mgr, SingleGremlinScriptEngineManager.instance());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldNotGetGremlinScriptEngineAsItIsNotRegistered() {
-        mgr.getEngineByName("gremlin-groovy");
+        assertNull(mgr.getEngineByName("gremlin-groovy"));
     }
 }

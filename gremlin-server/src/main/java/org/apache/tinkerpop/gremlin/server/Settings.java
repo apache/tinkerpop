@@ -234,15 +234,54 @@ public class Settings {
     public ServerMetrics metrics = null;
 
     /**
-     * {@link Map} of {@link Graph} objects keyed by their binding name.
+     * {@link Map} of {@link Graph} configurations keyed by their binding name. Values may be either a
+     * {@link String} (path to a configuration file) or a {@link GraphSettings} object for graphs that
+     * need explicit {@link TraversalSource} configuration.
      */
-    public Map<String, String> graphs = new HashMap<>();
+    public Map<String, Object> graphs = new LinkedHashMap<>();
+
+    /**
+     * Returns the {@link GraphSettings} for the named graph, normalizing from the raw YAML value.
+     * Accepts a {@link String} (configuration path only), a {@link GraphSettings}, or a raw
+     * {@link Map} produced by SnakeYAML for the structured form.
+     */
+    @SuppressWarnings("unchecked")
+    public GraphSettings getGraphSettings(final String graphName) {
+        final Object value = graphs.get(graphName);
+        if (value instanceof GraphSettings) {
+            return (GraphSettings) value;
+        } else if (value instanceof String) {
+            final GraphSettings gs = new GraphSettings();
+            gs.configuration = (String) value;
+            return gs;
+        } else if (value instanceof Map) {
+            final Map<String, Object> map = (Map<String, Object>) value;
+            final GraphSettings gs = new GraphSettings();
+            gs.configuration = (String) map.get("configuration");
+            final List<Map<String, Object>> tsList = (List<Map<String, Object>>) map.getOrDefault("traversalSources", Collections.emptyList());
+            for (final Map<String, Object> tsMap : tsList) {
+                final TraversalSourceSettings ts = new TraversalSourceSettings();
+                ts.name = (String) tsMap.get("name");
+                ts.gremlinExpression = (String) tsMap.get("gremlinExpression");
+                ts.language = (String) tsMap.get("language");
+                gs.traversalSources.add(ts);
+            }
+            return gs;
+        }
+        return null;
+    }
 
     /**
      * {@link Map} of settings for {@code ScriptEngine} setting objects keyed by the name of the {@code ScriptEngine}
      * implementation.
      */
     public Map<String, ScriptEngineSettings> scriptEngines;
+
+    /**
+     * List of {@link LifeCycleHook} implementations to instantiate via reflection and execute during server
+     * initialization and shutdown.
+     */
+    public List<LifeCycleHookSettings> lifecycleHooks = new ArrayList<>();
 
     /**
      * List of {@link MessageSerializer} to configure. If no serializers are specified then default serializers for
@@ -297,9 +336,9 @@ public class Settings {
         final LoaderOptions options = new LoaderOptions();
         final Constructor constructor = new Constructor(Settings.class, options);
         final TypeDescription settingsDescription = new TypeDescription(Settings.class);
-        settingsDescription.addPropertyParameters("graphs", String.class, String.class);
         settingsDescription.addPropertyParameters("scriptEngines", String.class, ScriptEngineSettings.class);
         settingsDescription.addPropertyParameters("serializers", SerializerSettings.class);
+        settingsDescription.addPropertyParameters("lifecycleHooks", LifeCycleHookSettings.class);
         constructor.addTypeDescription(settingsDescription);
 
         final TypeDescription serializerSettingsDescription = new TypeDescription(SerializerSettings.class);
@@ -313,6 +352,10 @@ public class Settings {
         scriptEngineSettingsDescription.addPropertyParameters("config", String.class, Object.class);
         scriptEngineSettingsDescription.addPropertyParameters("plugins", String.class, Object.class);
         constructor.addTypeDescription(scriptEngineSettingsDescription);
+
+        final TypeDescription lifeCycleHookSettingsDescription = new TypeDescription(LifeCycleHookSettings.class);
+        lifeCycleHookSettingsDescription.addPropertyParameters("config", String.class, Object.class);
+        constructor.addTypeDescription(lifeCycleHookSettingsDescription);
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
         constructor.addTypeDescription(sslSettings);
@@ -391,6 +434,60 @@ public class Settings {
          * Plugins will be applied in the order they are listed.
          */
         public Map<String,Map<String,Object>> plugins = new LinkedHashMap<>();
+    }
+
+    /**
+     * Settings for a {@link Graph} entry in the server YAML. Each graph has a configuration file path
+     * and optionally a list of {@link TraversalSource} bindings.
+     */
+    public static class GraphSettings {
+        /**
+         * Path to the graph configuration properties file.
+         */
+        public String configuration;
+
+        /**
+         * Optional list of {@link TraversalSource} bindings for this graph. When absent, a default
+         * traversal source is auto-created.
+         */
+        public List<TraversalSourceSettings> traversalSources = new ArrayList<>();
+    }
+
+    /**
+     * Settings for a declarative {@link TraversalSource} entry nested under a graph in the server YAML.
+     */
+    public static class TraversalSourceSettings {
+        /**
+         * The binding name for this traversal source.
+         */
+        public String name;
+
+        /**
+         * An optional Gremlin expression evaluated with a base traversal source bound as {@code g}.
+         * The result of the expression becomes the final {@link TraversalSource}.
+         */
+        public String gremlinExpression = null;
+
+        /**
+         * The script engine language to use for evaluating {@link #gremlinExpression}. If not specified,
+         * resolution falls back to the single configured engine or {@code gremlin-lang}.
+         */
+        public String language = null;
+    }
+
+    /**
+     * Settings for a Java-based {@link LifeCycleHook} configured in the server YAML.
+     */
+    public static class LifeCycleHookSettings {
+        /**
+         * The fully qualified class name of the {@link LifeCycleHook} implementation.
+         */
+        public String className;
+
+        /**
+         * Optional configuration passed to {@link LifeCycleHook#init(java.util.Map)}.
+         */
+        public Map<String, Object> config = null;
     }
 
     /**

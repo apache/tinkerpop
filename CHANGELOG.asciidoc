@@ -37,6 +37,14 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
 * Removed `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` from `gremlin-python`, merging protocol logic into `Connection`.
 * Removed `GraphSONSerializersV4` and the `gremlin_python.structure.io.graphsonV4` module from `gremlin-python`. GraphBinary is the only supported wire format.
+* Added declarative `traversalSources` configuration to Gremlin Server YAML for creating `TraversalSource` instances with optional strategy configuration via `gremlinExpression`.
+* Added Java-based `lifecycleHooks` configuration to Gremlin Server YAML, replacing Groovy init script `LifeCycleHook` creation.
+* Added `TinkerFactoryDataLoader` `LifeCycleHook` implementation for loading sample datasets without Groovy.
+* Added auto-creation of `TraversalSource` bindings from `graphs` configuration (`graph` maps to `g`, others to `g_<name>`).
+* Added `GraphManager` to `LifeCycleHook.Context` for Java-based hooks to access configured graphs.
+* Deprecated Groovy-based `LifeCycleHook` and `TraversalSource` creation via init scripts in favor of YAML configuration.
+* Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
+* Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
