@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
@@ -165,18 +164,16 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
     }
 
     @Test
-    public void testTerminalMatchStepThrowsVerificationException() {
-        // TinkerGraphDeclarativeMatchStrategy (ProviderOptimization) runs first and replaces
-        // DeclarativeMatchStep with TinkerGraphMatchStep. DeclarativeMatchVerificationStrategy
-        // (Verification) runs after and must still reject the replacement step because
-        // TinkerGraphMatchStep extends DeclarativeMatchStep (instanceof check still fires).
-        graph.addVertex("Person");
-        try {
-            g.<Integer>inject(1).match("MATCH (n:Person)").toList();
-            fail("VerificationException expected when match() is a terminal step");
-        } catch (VerificationException ex) {
-            assertTrue(ex.getMessage().contains("match() cannot be a terminal step"));
-        }
+    public void testTerminalMatchStepReturnsBindingMap() {
+        // match() is now valid as a terminal step — it returns the full binding Map.
+        final Vertex alice = graph.addVertex("Person");
+        @SuppressWarnings("unchecked")
+        final List<Map<String, Object>> results =
+                (List<Map<String, Object>>) (List<?>) g.<Integer>inject(1)
+                        .match("MATCH (n:Person)")
+                        .toList();
+        assertEquals(1, results.size());
+        assertEquals(alice, results.get(0).get("n"));
     }
 
     @Test

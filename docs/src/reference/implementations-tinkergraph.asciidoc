@@ -381,8 +381,12 @@ link:https://www.iso.org/standard/76120.html[ISO GQL] `MATCH` syntax. This allow
 to be expressed directly against TinkerGraph. The implementation is intentionally minimal to help showcase how `match`
 step can work.
 
+Each result row is a `Map<String, Object>` keyed by the named variables in the pattern. `match()` can be used as a
+terminal step to return all bindings directly, or followed by `select()` to project specific variables:
+
 [gremlin-groovy,modern]
 ----
+g.match("MATCH (a:person)-[:knows]->(b:person)")
 g.match("MATCH (a:person)-[:knows]->(b:person)").
   select("a", "b").by("name")
 ----

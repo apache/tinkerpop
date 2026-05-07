@@ -2683,9 +2683,17 @@ g.V().hasLabel("software").
   select("a", "b").by("name")
 ----
 
-Each named variable in the pattern is bound into the traverser's path history, making it available to subsequent
-`select()` steps by name. Anonymous pattern elements, those without a variable names are not exposed and cannot be
-selected.
+Each result row is emitted as a `Map<String, Object>` whose keys are the named variable names from the pattern and
+whose values are the bound graph elements. This map is the current traverser value, so `match()` is valid as a
+terminal step:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:knows]->(b:person)")
+----
+
+Named variables are also recorded in the traverser's path history, making them available to subsequent `select()`
+steps by name. Anonymous pattern elements (those without a variable name) are not exposed and cannot be selected.
 
 Multiple comma-separated path patterns can be expressed in a single query. Patterns that share a variable
 name are joined on that variable:
