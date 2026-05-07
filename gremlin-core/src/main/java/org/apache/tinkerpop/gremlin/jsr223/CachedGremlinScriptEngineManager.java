@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.jsr223;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -48,6 +49,15 @@ public class CachedGremlinScriptEngineManager extends DefaultGremlinScriptEngine
     }
 
     /**
+     * Creates a cached manager with an allowlist of engine names.
+     *
+     * @see DefaultGremlinScriptEngineManager#DefaultGremlinScriptEngineManager(Set)
+     */
+    public CachedGremlinScriptEngineManager(final Set<String> allowedEngines) {
+        super(allowedEngines);
+    }
+
+    /**
      * Gets a {@link GremlinScriptEngine} from cache or creates a new one from the {@link GremlinScriptEngineFactory}.
      * <p/>
      * {@inheritDoc}
@@ -55,6 +65,7 @@ public class CachedGremlinScriptEngineManager extends DefaultGremlinScriptEngine
     @Override
     public GremlinScriptEngine getEngineByName(final String shortName) {
         final GremlinScriptEngine engine = cache.computeIfAbsent(shortName, super::getEngineByName);
+        if (engine == null) return null;
         registerLookUpInfo(engine, shortName);
         return engine;
     }

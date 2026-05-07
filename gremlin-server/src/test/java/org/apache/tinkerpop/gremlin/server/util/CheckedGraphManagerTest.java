@@ -75,7 +75,7 @@ public class CheckedGraphManagerTest {
     @Test(expected = IllegalStateException.class)
     public void allGraphFails() {
         settings.graphs = settings.graphs.keySet().stream()
-                .collect(toMap(Function.identity(), name -> "conf/invalidPath"));
+                .collect(toMap(Function.identity(), name -> (Object) "conf/invalidPath"));
         new CheckedGraphManager(settings);
     }
 

@@ -177,6 +177,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldTimeOutRemoteTraversal":
                 settings.evaluationTimeout = 500;
                 break;
+            case "ensureScriptEngineDefaultsToGremlinLang":
+                settings.scriptEngines = new HashMap<>();
+                break;
             case "shouldBlowTheWorkQueueSize":
                 settings.gremlinPool = 1;
                 settings.maxWorkQueueSize = 1;
@@ -1087,5 +1090,69 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         RequestOptions gremlinGroovy = new RequestOptions.Builder().language("gremlin-groovy").create();
         assertEquals(new BigDecimal("1.0"), client.submit("g.inject(1.0)", gremlinGroovy).one().getObject());
         assertEquals(new BigDecimal("-123.456"), client.submit("g.inject(-123.456)", gremlinGroovy).one().getObject());
+    }
+
+    @Test
+    public void ensureScriptEngineDefaultsToGremlinLang() {
+        final Cluster cluster = TestClientFactory.open();
+        final Client client = cluster.connect();
+
+        try {
+            // should handle traversal with no explicit language
+            final RequestOptions withAlias = RequestOptions.build().addG("gmodern").create();
+            assertEquals(6L, client.submit("g.V().count()", withAlias).one().getLong());
+
+            // should handle script with explicit gremlin-lang
+            final RequestOptions langOptions = RequestOptions.build().language("gremlin-lang").addG("gmodern").create();
+            assertEquals(6L, client.submit("g.V().count()", langOptions).one().getLong());
+
+            // should reject non-Gremlin expressions
+            try {
+                client.submit("2+2", langOptions).all().get();
+                fail("Should have failed for non-Gremlin expression");
+            } catch (Exception ex) {
+                final ResponseException re = (ResponseException) ex.getCause();
+                assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+                assertEquals("MalformedQueryException", re.getRemoteException());
+            }
+
+            // in gremlin-groovy '1g' is a valid BigDecimal but in gremlin-lang it should be '1m'
+            try {
+                client.submit("g.inject(1g)", langOptions).all().get();
+                fail("Should have failed for Groovy-specific syntax");
+            } catch (Exception ex) {
+                final ResponseException re = (ResponseException) ex.getCause();
+                assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+                assertEquals("MalformedQueryException", re.getRemoteException());
+            }
+
+            // gremlin-lang BigDecimal syntax should work
+            assertEquals(BigDecimal.ONE, client.submit("g.inject(1m)", langOptions).one().getObject());
+
+            // explicit gremlin-groovy should fail when engine is not configured
+            try {
+                client.submit("2+2", groovyRequestOptions).all().get();
+                fail("Should have failed for unavailable gremlin-groovy engine");
+            } catch (Exception ex) {
+                final ResponseException re = (ResponseException) ex.getCause();
+                assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+                assertEquals("InvalidRequestException", re.getRemoteException());
+                assertEquals("Script engine [gremlin-groovy] is not available.", re.getMessage());
+            }
+
+            // completely unknown engine should also fail
+            try {
+                final RequestOptions unknownEngine = RequestOptions.build().language("gremlin-foo").create();
+                client.submit("g.V()", unknownEngine).all().get();
+                fail("Should have failed for unknown script engine");
+            } catch (Exception ex) {
+                final ResponseException re = (ResponseException) ex.getCause();
+                assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+                assertEquals("InvalidRequestException", re.getRemoteException());
+                assertEquals("Script engine [gremlin-foo] is not available.", re.getMessage());
+            }
+        } finally {
+            cluster.close();
+        }
     }
 }

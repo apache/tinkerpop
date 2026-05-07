@@ -77,8 +77,7 @@ namespace Gremlin.Net.IntegrationTest.Driver
                         await resultSet.ToListAsync();
                     });
 
-                Assert.Contains("not an available GremlinScript", thrownException.Message);
-                Assert.Contains(unknownLanguage, thrownException.Message);
+                Assert.Contains("Script engine [unknown] is not available.", thrownException.Message);
             }
         }
     }

@@ -55,7 +55,10 @@ public class DefaultGraphManager implements GraphManager {
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
     public DefaultGraphManager(final Settings settings) {
-        settings.graphs.forEach(this::addGraph);
+        settings.graphs.forEach((name, value) -> {
+            final Settings.GraphSettings gs = settings.getGraphSettings(name);
+            addGraph(name, gs.configuration);
+        });
     }
     
     protected void addGraph(final String name, final String configurationFile) {

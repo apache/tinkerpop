@@ -38,31 +38,32 @@ public class ServerTestHelper {
      *  If an overriden path is determined to be absolute then the path is not re-written.
      */
     public static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
-        final Map<String, Map<String, Object>> plugins;
-        final Map<String, Object> scriptFileGremlinPlugin;
         final File homeDir;
 
         homeDir = new File( getBuildDir(), "../src/test/scripts" );
 
-        plugins = overridenSettings.scriptEngines.get("gremlin-groovy").plugins;
-        scriptFileGremlinPlugin = plugins.get(ScriptFileGremlinPlugin.class.getName());
+        final Settings.ScriptEngineSettings groovyEngine = overridenSettings.scriptEngines.get("gremlin-groovy");
+        if (groovyEngine != null) {
+            final Map<String, Map<String, Object>> plugins = groovyEngine.plugins;
+            final Map<String, Object> scriptFileGremlinPlugin = plugins.get(ScriptFileGremlinPlugin.class.getName());
 
-        if (scriptFileGremlinPlugin != null) {
-            scriptFileGremlinPlugin
-                .put("files",
-                     ((List<String>) scriptFileGremlinPlugin.get("files")).stream()
-                          .map(s -> new File(s))
-                          .map(f -> f.isAbsolute() ? f
-                                                   : new File(relocateFile( homeDir, f)))
-                          .map(f -> Storage.toPath(f))
-                          .collect(Collectors.toList()));
+            if (scriptFileGremlinPlugin != null) {
+                scriptFileGremlinPlugin
+                    .put("files",
+                         ((List<String>) scriptFileGremlinPlugin.get("files")).stream()
+                              .map(s -> new File(s))
+                              .map(f -> f.isAbsolute() ? f
+                                                       : new File(relocateFile( homeDir, f)))
+                              .map(f -> Storage.toPath(f))
+                              .collect(Collectors.toList()));
+            }
         }
 
-        overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
-                .map(kv -> {
-                    kv.setValue(relocateFile( homeDir, new File(kv.getValue())));
-                    return kv;
-                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        overridenSettings.graphs.replaceAll((name, value) -> {
+            final Settings.GraphSettings gs = overridenSettings.getGraphSettings(name);
+            gs.configuration = relocateFile(homeDir, new File(gs.configuration));
+            return gs;
+        });
     }
 
     /**

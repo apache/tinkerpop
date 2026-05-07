@@ -15,17 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-###############################################################################
-# IMPORTANT
-###############################################################################
-# Changes to this file need to be appropriately replicated to
-#
-# - docker/gremlin-server/conf/remote-objects.yaml
-#
-# Without such changes, the test docker server can't be started for independent
-# testing with Gremlin Language Variants.
-###############################################################################
-
-hosts: [localhost]
-port: 45940
-serializer: {  className: org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4 }
+host: localhost
+port: 8182
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: g}, {name: gReadOnly, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)", language: gremlin-groovy}]}}
+lifecycleHooks:
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: modern}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: classic}}
