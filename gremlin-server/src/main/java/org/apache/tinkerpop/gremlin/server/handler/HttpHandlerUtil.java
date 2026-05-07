@@ -97,6 +97,13 @@ public class HttpHandlerUtil {
      * @param serializer        The serializer to use to serialize the error response.
      */
     static void writeError(final Context context, final ResponseMessage responseMessage, final MessageSerializer<?> serializer) {
+        // Prevent writing after the response is already terminated. A second write would corrupt
+        // HTTP framing on keep-alive connections, poisoning them for subsequent requests.
+        if (context.getRequestState() == HttpGremlinEndpointHandler.RequestState.ERROR ||
+            context.getRequestState() == HttpGremlinEndpointHandler.RequestState.FINISHED) {
+            return;
+        }
+
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
             final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
