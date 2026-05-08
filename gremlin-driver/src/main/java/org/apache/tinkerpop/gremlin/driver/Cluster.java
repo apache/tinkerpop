@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
@@ -880,7 +881,12 @@ public final class Cluster {
 
         final PoolingAsyncClientConnectionManager connManager = connManagerBuilder.build();
 
+        final RequestConfig requestConfig = RequestConfig.custom()
+                .setResponseTimeout(Timeout.ofMilliseconds(builder.idleConnectionTimeoutMillis > 0 ? builder.idleConnectionTimeoutMillis : 180000))
+                .build();
+
         final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                .setDefaultRequestConfig(requestConfig)
                 .setIOReactorConfig(ioReactorConfig)
                 .setConnectionManager(connManager)
                 .build();
