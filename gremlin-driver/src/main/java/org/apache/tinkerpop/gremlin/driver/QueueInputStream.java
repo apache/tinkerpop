@@ -32,6 +32,12 @@ final class QueueInputStream extends InputStream {
 
     private static final byte[] END_MARKER = new byte[0];
 
+    /**
+     * Maximum number of queued byte[] chunks before enqueue starts discarding.
+     * This bounds memory usage if the consumer is not cancelled promptly.
+     */
+    private static final int MAX_QUEUE_CHUNKS = 512;
+
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private byte[] current;
     private int pos;
@@ -39,10 +45,13 @@ final class QueueInputStream extends InputStream {
     private volatile IOException error;
 
     /**
-     * Enqueue a chunk of data to be read.
+     * Enqueue a chunk of data to be read. If the queue has reached its capacity bound,
+     * the data is silently discarded to prevent unbounded memory growth.
      */
     void enqueue(final byte[] data) {
-        queue.offer(data);
+        if (queue.size() < MAX_QUEUE_CHUNKS) {
+            queue.offer(data);
+        }
     }
 
     /**

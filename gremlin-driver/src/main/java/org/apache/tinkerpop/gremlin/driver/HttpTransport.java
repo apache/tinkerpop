@@ -121,6 +121,10 @@ final class HttpTransport {
         final StreamingResponseConsumer consumer = new StreamingResponseConsumer(
                 resultSet, future, serializer, streamingReaderPool, maxResponseContentLength);
 
+        // When the ResultSet is done (success, error, or timeout), cancel the consumer
+        // to stop buffering any further incoming data and prevent OOM.
+        resultSet.getReadCompleted().whenComplete((v, t) -> consumer.cancel());
+
         httpClient.execute(
                 SimpleRequestProducer.create(request),
                 consumer,

@@ -63,6 +63,7 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
 
     private volatile int statusCode;
     private volatile boolean futureCompleted;
+    private volatile boolean cancelled;
     private volatile int trailingStatusCode = -1;
     private volatile String trailingException;
     private long bytesRead;
@@ -77,6 +78,15 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
         this.serializer = serializer;
         this.streamingReaderPool = streamingReaderPool;
         this.maxResponseContentLength = maxResponseContentLength;
+    }
+
+    /**
+     * Cancels this consumer so that subsequent {@code consume()} calls discard data instead of buffering it.
+     * Should be called when the client has given up on the response (e.g., timeout).
+     */
+    void cancel() {
+        cancelled = true;
+        queueInputStream.markComplete();
     }
 
     @Override
@@ -119,23 +129,28 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
 
     @Override
     public void updateCapacity(final CapacityChannel capacityChannel) throws IOException {
+        if (cancelled) {
+            capacityChannel.update(0);
+            return;
+        }
         // Allow unlimited buffering — backpressure is handled by the blocking queue
         capacityChannel.update(Integer.MAX_VALUE);
     }
 
     @Override
     public void consume(final ByteBuffer src) throws IOException {
-        if (src.hasRemaining()) {
-            bytesRead += src.remaining();
-            if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
-                resultSet.markError(new ResponseException(413, "Response entity too large"));
-                queueInputStream.markError(new IOException("Response entity too large"));
-                return;
-            }
-            final byte[] data = new byte[src.remaining()];
-            src.get(data);
-            queueInputStream.enqueue(data);
+        if (cancelled || !src.hasRemaining()) return;
+
+        bytesRead += src.remaining();
+        if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
+            cancelled = true;
+            resultSet.markError(new ResponseException(413, "Response entity too large"));
+            queueInputStream.markError(new IOException("Response entity too large"));
+            return;
         }
+        final byte[] data = new byte[src.remaining()];
+        src.get(data);
+        queueInputStream.enqueue(data);
     }
 
     @Override
@@ -164,6 +179,7 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
 
     @Override
     public void failed(final Exception cause) {
+        cancelled = true;
         logger.debug("Streaming response failed", cause);
         queueInputStream.markError(new IOException(cause));
         if (!futureCompleted) {
@@ -175,8 +191,8 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
 
     @Override
     public void releaseResources() {
-        // Don't close the QueueInputStream here — the reader thread may still be consuming data.
-        // The stream will naturally end when the END_MARKER (from streamEnd/markComplete) is processed.
+        cancelled = true;
+        queueInputStream.markComplete();
     }
 
     /**
