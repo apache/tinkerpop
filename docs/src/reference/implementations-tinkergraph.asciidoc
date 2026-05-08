@@ -504,11 +504,11 @@ instead. This is a known limitation of the current grammar and may be addressed 
 
 ==== Variable Reuse and Multi-Pattern Joins
 
-When the same variable appears in multiple comma-separated patterns it acts as a join key: every element bound to
+When the same variable appears in multiple comma-separated patterns, it acts as a join key where every element bound to
 that variable must be the same graph element across all patterns. This is the primary mechanism for expressing
 multi-way joins in a single `MATCH` clause.
 
-Variable names must be unique within a single element role — a name that refers to a node in one pattern cannot
+Variable names must be unique within a single element role, i.e., a name that refers to a node in one pattern cannot
 refer to an edge in another pattern:
 
 [source,text]
@@ -528,7 +528,7 @@ MATCH (a)-[r:KNOWS]->(b), (r:person)
 
 When a variable appears in a later pattern without a label (a bare reference such as `(n)` or `(n {age: 29})`),
 any label already assigned to that variable from an earlier pattern is preserved. Predicates from all occurrences
-are merged — the element must satisfy every predicate across all patterns in which the variable appears.
+are merged where the element must satisfy every predicate across all patterns in which the variable appears.
 
 [source,text]
 ----
@@ -549,7 +549,7 @@ MATCH (p:person {name: 'marko', age: 29})
 MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)
 ----
 
-Multiple predicates in the same filter are ANDed: all predicates must hold for the element to match. All predicates
+Multiple predicates in the same filter are ANDed where all predicates must hold for the element to match. All predicates
 are equality tests; range or inequality tests are not yet part of the supported grammar.
 
 The right-hand side of each predicate can be a literal value or a parameter reference:
@@ -601,9 +601,8 @@ g.match("MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)").
 
 ==== Parameterized Queries
 
-When a filter value is not known until execution time — for example, because it comes from user input or an outer
-traversal — supply it as a parameter reference (`$name`) in the query string and pass the actual value in the
-params map using the `match(String, Map)` overload:
+When a filter value is not known until execution time it may be supplied as a parameter reference (`$name`) in the query
+string and the actual value passed in the params map using the `match(String, Map)` overload:
 
 [gremlin-groovy,modern]
 ----
@@ -613,7 +612,7 @@ g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
 ----
 
 The same query string can be reused with different parameter maps without re-parsing (the parsed query graph is
-cached in an LRU cache bounded to 1,000 entries). The table below summarises edge-case parameter behaviours:
+cached in an LRU cache bounded to 1,000 entries). The table below summarizes edge-case parameter behaviors:
 
 [width="100%",cols="3,3",options="header"]
 |=========================================================
@@ -627,7 +626,7 @@ cached in an LRU cache bounded to 1,000 entries). The table below summarises edg
 When TinkerGraph has a vertex index on a filtered property key (created via `createIndex`), the executor
 automatically uses the index for the seed vertex lookup, reducing the initial scan to only those vertices whose
 indexed property matches the filter value. This is especially effective when the parameterized query pattern is
-constant but the parameter values change across calls — the query graph is parsed and cached once, and each
+constant but the parameter values change across calls. In this way, the query graph is parsed and cached once, and each
 invocation performs an index-backed seed lookup:
 
 [source,groovy]
@@ -640,6 +639,7 @@ names.collect { name ->
       select("p", "f").by("name").toList()
 }
 ----
+
 <1> Create the index once at graph setup time; all subsequent `match()` calls referencing `{name: $who}` use it automatically.
 
 ==== Unsupported Features
