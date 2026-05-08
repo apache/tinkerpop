@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONUntypedMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.HeapBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
@@ -57,6 +58,7 @@ public class SimpleHttpClient implements SimpleClient {
     private final URI uri;
     private final CloseableHttpClient httpClient;
     private final GraphSONUntypedMessageSerializerV4 serializer = new GraphSONUntypedMessageSerializerV4();
+    private final GraphSONMessageSerializerV4 responseSerializer = new GraphSONMessageSerializerV4();
 
     public SimpleHttpClient(final URI uri) {
         this.uri = uri;
@@ -122,7 +124,7 @@ public class SimpleHttpClient implements SimpleClient {
         final byte[] bytes = body.getBytes(Consts.UTF_8);
         final Buffer buffer = bufferFactory.create(bytes.length);
         buffer.writeBytes(bytes);
-        return serializer.deserializeBinaryResponse(buffer);
+        return responseSerializer.deserializeBinaryResponse(buffer);
     }
 
     @Override

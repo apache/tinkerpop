@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.http.Consts;
@@ -593,7 +594,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost beginPost = new HttpPost(TestClientFactory.createURLString());
         beginPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
         beginPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
-        beginPost.setEntity(new ByteArrayEntity(beginReq.array()));
+        beginPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(beginReq)));
 
         String txId;
         try (final CloseableHttpResponse response = client.execute(beginPost)) {
@@ -616,7 +617,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost addVPost = new HttpPost(TestClientFactory.createURLString());
         addVPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
         addVPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
-        addVPost.setEntity(new ByteArrayEntity(addVReq.array()));
+        addVPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(addVReq)));
         try (final CloseableHttpResponse response = client.execute(addVPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
@@ -628,7 +629,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost commitPost = new HttpPost(TestClientFactory.createURLString());
         commitPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHBINARY_V4.getValue());
         commitPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHBINARY_V4.getValue());
-        commitPost.setEntity(new ByteArrayEntity(commitReq.array()));
+        commitPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(commitReq)));
         try (final CloseableHttpResponse response = client.execute(commitPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
@@ -655,7 +656,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost beginPost = new HttpPost(TestClientFactory.createURLString());
         beginPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHSON_V4.getValue());
         beginPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHSON_V4.getValue());
-        beginPost.setEntity(new ByteArrayEntity(beginReq.array()));
+        beginPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(beginReq)));
 
         String txId;
         try (final CloseableHttpResponse response = client.execute(beginPost)) {
@@ -679,7 +680,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost addVPost = new HttpPost(TestClientFactory.createURLString());
         addVPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHSON_V4.getValue());
         addVPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHSON_V4.getValue());
-        addVPost.setEntity(new ByteArrayEntity(addVReq.array()));
+        addVPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(addVReq)));
         try (final CloseableHttpResponse response = client.execute(addVPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
@@ -691,7 +692,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final HttpPost commitPost = new HttpPost(TestClientFactory.createURLString());
         commitPost.addHeader(HttpHeaders.CONTENT_TYPE, Serializers.GRAPHSON_V4.getValue());
         commitPost.addHeader(HttpHeaders.ACCEPT, Serializers.GRAPHSON_V4.getValue());
-        commitPost.setEntity(new ByteArrayEntity(commitReq.array()));
+        commitPost.setEntity(new ByteArrayEntity(ByteBufUtil.getBytes(commitReq)));
         try (final CloseableHttpResponse response = client.execute(commitPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
