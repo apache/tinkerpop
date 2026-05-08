@@ -201,7 +201,7 @@ final class Connection {
                     } else {
                         final ResultSet resultSet = new ResultSet(cluster.executor(), requestMessage, pool.host);
 
-                        resultSet.getReadCompleted().whenCompleteAsync((v, t) -> {
+                        resultSet.getReadCompleted().whenComplete((v, t) -> {
                             if (t != null) {
                                 // the callback for when the read failed. a failed read means the request went to the server
                                 // and came back with a server-side error of some sort.  it means the server is responsive
@@ -219,7 +219,7 @@ final class Connection {
                             // the shutdown if the returned result cleared up the last pending message and unblocked
                             // the close.
                             tryShutdown();
-                        }, cluster.executor());
+                        });
 
                         pending.set(resultSet);
 

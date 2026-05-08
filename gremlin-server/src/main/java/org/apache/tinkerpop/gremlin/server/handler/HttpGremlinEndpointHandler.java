@@ -757,19 +757,21 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                         ctx.setRequestState(STREAMING);
                         return serializer.writeHeader(responseMessage, nettyContext.alloc());
                     }
-                    ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessage.build()
+                    final ByteBuf fullResponse = serializer.serializeResponseAsBinary(ResponseMessage.build()
                             .result(aggregate)
                             .bulked(bulking)
                             .code(HttpResponseStatus.OK)
                             .create(), nettyContext.alloc());
+                    ctx.setRequestState(FINISHED);
+                    return fullResponse;
 
                 case STREAMING:
                     return serializer.writeChunk(aggregate, nettyContext.alloc());
                 case FINISHING:
+                    final ByteBuf footer = serializer.writeFooter(responseMessage, nettyContext.alloc());
                     ctx.setRequestState(FINISHED);
-                    return serializer.writeFooter(responseMessage, nettyContext.alloc());
+                    return footer;
             }
 
             return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
