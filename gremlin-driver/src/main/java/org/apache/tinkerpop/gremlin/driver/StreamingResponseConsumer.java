@@ -213,7 +213,7 @@ final class StreamingResponseConsumer implements AsyncResponseConsumer<Void> {
         boolean isFirstChunk = true;
         try {
             final InputStreamBuffer buffer = new InputStreamBuffer(queueInputStream);
-            while (true) {
+            while (!cancelled) {
                 final ResponseMessage msg = serializer.readChunk(buffer, isFirstChunk);
                 isFirstChunk = false;
 

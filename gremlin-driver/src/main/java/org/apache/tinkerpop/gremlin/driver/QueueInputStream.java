@@ -36,7 +36,7 @@ final class QueueInputStream extends InputStream {
      * Maximum number of queued byte[] chunks before enqueue starts discarding.
      * This bounds memory usage if the consumer is not cancelled promptly.
      */
-    private static final int MAX_QUEUE_CHUNKS = 512;
+    private static final int MAX_QUEUE_CHUNKS = 64;
 
     private final BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>();
     private byte[] current;
@@ -78,6 +78,7 @@ final class QueueInputStream extends InputStream {
 
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
+        if (error != null) throw error;
         if (closed) return -1;
 
         while (current == null || pos >= current.length) {
