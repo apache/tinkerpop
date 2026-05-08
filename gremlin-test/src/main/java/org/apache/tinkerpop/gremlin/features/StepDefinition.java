@@ -85,6 +85,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.Base64;
 import java.util.UUID;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeJava;
@@ -165,6 +168,16 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), s -> String.format("datetime('%s')", s)));
 
+        add(Pair.with(Pattern.compile("char\\[(.)\\]"), s -> String.format("\"%s\"c", s)));
+        add(Pair.with(Pattern.compile("dur\\[(.*)\\]"), s -> {
+            final String[] parts = s.split(",");
+            if (parts.length == 2)
+                return String.format("Duration(%s, %s)", parts[0].trim(), parts[1].trim());
+            else
+                return String.format("Duration(%s, %s, %s)", parts[0].trim(), parts[1].trim(), parts[2].trim());
+        }));
+        add(Pair.with(Pattern.compile("bin\\[(.*)\\]"), s -> String.format("Binary(\"%s\")", s)));
+
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> world.convertIdToScript(g.V().has("name", s).id().next(), Vertex.class)));
         add(Pair.with(Pattern.compile("e\\[(.+)\\]\\.id"), s -> world.convertIdToScript(getEdgeId(g, s), Edge.class)));
@@ -236,6 +249,17 @@ public final class StepDefinition {
 
         add(Pair.with(Pattern.compile("dt\\[(.*)\\]"), DatetimeHelper::parse));
         add(Pair.with(Pattern.compile("uuid\\[(.*)\\]"), UUID::fromString));
+
+        add(Pair.with(Pattern.compile("char\\[(.)\\]"), s -> s.charAt(0)));
+        add(Pair.with(Pattern.compile("dur\\[(.*)\\]"), s -> {
+            final String[] parts = s.split(",");
+            final long seconds = Long.parseLong(parts[0].trim());
+            final int nanos = Integer.parseInt(parts[1].trim());
+            final boolean isPositive = parts.length < 3 || Boolean.parseBoolean(parts[2].trim());
+            final Duration d = Duration.ofSeconds(seconds, nanos);
+            return isPositive ? d : d.negated();
+        }));
+        add(Pair.with(Pattern.compile("bin\\[(.*)\\]"), s -> ByteBuffer.wrap(Base64.getDecoder().decode(s))));
 
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.id"), s -> g.V().has("name", s).id().next()));
         add(Pair.with(Pattern.compile("v\\[(.+)\\]\\.sid"), s -> g.V().has("name", s).id().next().toString()));

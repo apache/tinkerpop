@@ -27,8 +27,9 @@ from aenum import Enum
 from gremlin_python.structure.graph import Vertex, Edge, Path, Property
 
 from .. import statics
-from ..statics import long, SingleByte, short, bigint, BigDecimal
-from datetime import datetime
+from ..statics import long, SingleByte, SingleChar, short, bigint, BigDecimal
+from datetime import datetime, timedelta
+import base64
 
 
 class Traversal(object):
@@ -844,6 +845,9 @@ class GremlinLang(object):
         if arg is None:
             return 'null'
 
+        if isinstance(arg, SingleChar):
+            return f'{arg!r}c'
+
         if isinstance(arg, str):
             return f'{arg!r}'  # use repr() format for canonical string rep
             # return f'"{arg}"'
@@ -878,6 +882,20 @@ class GremlinLang(object):
 
         if isinstance(arg, uuid.UUID):
             return f'UUID("{arg}")'
+
+        if isinstance(arg, timedelta):
+            is_negative = arg.total_seconds() < 0
+            abs_td = -arg if is_negative else arg
+            # Use integer components directly to avoid float precision loss
+            seconds = abs_td.days * 86400 + abs_td.seconds
+            nanos = abs_td.microseconds * 1000
+            if is_negative:
+                return f'Duration({seconds},{nanos},false)'
+            else:
+                return f'Duration({seconds},{nanos})'
+
+        if isinstance(arg, bytes):
+            return f'Binary("{base64.b64encode(arg).decode("ascii")}")'
 
         if isinstance(arg, Enum):
             tmp = str(arg)

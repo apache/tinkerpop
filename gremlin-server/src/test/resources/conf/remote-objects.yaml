@@ -23,8 +23,7 @@
 # - docker/gremlin-server/conf/remote-objects.yaml
 #
 # Without such changes, the test docker server can't be started for independent
-# testing with Gremlin Language Variants. Note this file's relation to
-# gremlin-server/src/test/resources/scripts/test-server-start.groovy
+# testing with Gremlin Language Variants.
 ###############################################################################
 
 hosts: [localhost]

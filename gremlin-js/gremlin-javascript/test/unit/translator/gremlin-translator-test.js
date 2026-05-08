@@ -64,6 +64,8 @@ describe('GremlinTranslator', function () {
       ['g.inject(NaN)', 'g.inject(Number.NaN)'],
       ['g.inject(Infinity)', 'g.inject(Number.POSITIVE_INFINITY)'],
       ['g.inject(-Infinity)', 'g.inject(Number.NEGATIVE_INFINITY)'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', 'g.inject(Buffer.from("AQID",\'base64\'))'],
       // terminal steps — pass through as-is in JavaScript
       ['g.V().toList()', 'g.V().toList()'],
       ['g.V().toSet()', 'g.V().toSet()'],
@@ -134,6 +136,20 @@ describe('GremlinTranslator', function () {
         TranslatorException,
       );
     });
+
+    it('throws TranslatorException for character literal', function () {
+      assert.throws(
+        () => GremlinTranslator.translate('g.inject("a"c)'),
+        TranslatorException,
+      );
+    });
+
+    it('throws TranslatorException for duration literal', function () {
+      assert.throws(
+        () => GremlinTranslator.translate('g.inject(Duration(9000,0))'),
+        TranslatorException,
+      );
+    });
   });
 });
 
@@ -180,6 +196,12 @@ describe('PythonTranslateVisitor', function () {
       ['g.inject([1,2,3])', 'g.inject([1, 2, 3])'],
       // Set literal (non-empty)
       ['g.inject({1,2,3})', 'g.inject({1, 2, 3})'],
+      // Character literal
+      ['g.inject("a"c)', "g.inject(SingleChar('a'))"],
+      // Duration literal
+      ['g.inject(Duration(9000,0))', 'g.inject(timedelta(seconds=9000))'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', "g.inject(base64.b64decode('AQID'))"],
       // Map literal — T.id → T.id_ in Python
       ['g.addV("person").property(T.id, [(T.label): "person"])', "g.add_v('person').property(T.id_, { T.label: 'person' })"],
       // terminal steps — camelCase → snake_case
@@ -259,6 +281,10 @@ describe('GoTranslateVisitor', function () {
       ['g.inject(NaN)', 'g.Inject(math.NaN())'],
       ['g.inject(Infinity)', 'g.Inject(math.Inf(1))'],
       ['g.inject(-Infinity)', 'g.Inject(math.Inf(-1))'],
+      // Duration literal
+      ['g.inject(Duration(9000,0))', 'g.Inject(time.Duration(9000000000000))'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', 'g.Inject(gremlingo.ByteBuffer{Data: []byte{1,2,3}})'],
       // null → nil
       ['g.V().has("name", null)', 'g.V().Has("name", nil)'],
       // terminal steps — PascalCase
@@ -303,6 +329,13 @@ describe('GoTranslateVisitor', function () {
         TranslatorException,
       );
     });
+
+    it('throws TranslatorException for character literal', function () {
+      assert.throws(
+        () => GremlinTranslator.translate('g.inject("a"c)', 'g', 'GO'),
+        TranslatorException,
+      );
+    });
   });
 });
 
@@ -337,6 +370,12 @@ describe('DotNetTranslateVisitor', function () {
       // Collections
       ['g.inject([1,2,3])', 'g.Inject<object>(new List<object> { 1, 2, 3 })'],
       ['g.inject({1,2,3})', 'g.Inject<object>(new HashSet<object> { 1, 2, 3 })'],
+      // Character literal
+      ['g.inject("a"c)', "g.Inject<object>('a')"],
+      // Duration literal
+      ['g.inject(Duration(9000,0))', 'g.Inject<object>(TimeSpan.FromTicks(90000000000L))'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', 'g.Inject<object>(Convert.FromBase64String("AQID"))'],
       // Map literal
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.AddV((string) "person").Property(T.Id, new Dictionary<object, object> {{ T.Label, "person" }})'],
       // values gets <object>
@@ -422,6 +461,12 @@ describe('JavaTranslateVisitor', function () {
       ['g.inject([1,2,3])', 'g.inject(new ArrayList<Object>() {{ add(1); add(2); add(3); }})'],
       // Set literal
       ['g.inject({1,2,3})', 'g.inject(new HashSet<Object>() {{ add(1); add(2); add(3); }})'],
+      // Character literal
+      ['g.inject("a"c)', "g.inject('a')"],
+      // Duration literal
+      ['g.inject(Duration(9000,0))', 'g.inject(Duration.ofSeconds(9000, 0))'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', 'g.inject(ByteBuffer.wrap(Base64.getDecoder().decode("AQID")))'],
       // Map literal
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.addV("person").property(T.id, new LinkedHashMap<Object, Object>() {{ put(T.label, "person"); }})'],
       // terminal steps — pass through as-is in Java
@@ -500,6 +545,12 @@ describe('GroovyTranslateVisitor', function () {
       ['g.inject([1,2,3])', 'g.inject([1, 2, 3])'],
       // Set literal — Groovy: [items] as Set
       ['g.inject({1,2,3})', 'g.inject([1, 2, 3] as Set)'],
+      // Character literal
+      ['g.inject("a"c)', "g.inject('a' as char)"],
+      // Duration literal
+      ['g.inject(Duration(9000,0))', 'g.inject(Duration.ofSeconds(9000, 0))'],
+      // Binary literal
+      ['g.inject(Binary("AQID"))', 'g.inject(ByteBuffer.wrap(Base64.getDecoder().decode("AQID")))'],
       // Map literal — Groovy preserves parens on expression keys
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.addV("person").property(T.id, [(T.label):"person"])'],
       // null as Map in mergeV
@@ -585,6 +636,12 @@ describe('AnonymizedTranslateVisitor', function () {
       ['g.inject([1,2,3])', 'g.inject(list0)'],
       // set → set
       ['g.inject({1,2,3})', 'g.inject(set0)'],
+      // character → character
+      ['g.inject("a"c)', 'g.inject(character0)'],
+      // duration -> duration
+      ['g.inject(Duration(9000,0))', 'g.inject(duration0)'],
+      // binary → bytebuffer
+      ['g.inject(Binary("AQID"))', 'g.inject(bytebuffer0)'],
       // map → map
       ['g.addV("person").property(T.id, [(T.label): "person"])', 'g.addV(string0).property(T.id, map0)'],
       // enums/traversal steps pass through unchanged

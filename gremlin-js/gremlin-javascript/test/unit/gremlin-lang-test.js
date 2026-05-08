@@ -18,6 +18,7 @@
  */
 
 import assert from 'assert';
+import { Buffer } from 'buffer';
 import { GraphTraversalSource, statics as __, CardinalityValue } from '../../lib/process/graph-traversal.js';
 import { P, TextP, t as T, order as Order, scope as Scope, column as Column,
          operator as Operator, pop as Pop, cardinality as Cardinality,
@@ -412,6 +413,26 @@ describe('GremlinLang', function () {
         g.inject(new Map([['age', CardinalityValue.single(33)]])).getGremlinLang().getGremlin(),
         "g.inject(['age':Cardinality.single(33)])"
       );
+    });
+
+    // Binary - Uint8Array type (JS-specific, distinct from Buffer)
+    it('should handle Uint8Array', function () {
+      assert.strictEqual(g.inject(new Uint8Array([1, 2, 3])).getGremlinLang().getGremlin(), 'g.inject(Binary("AQID"))');
+    });
+
+    it('should handle empty Uint8Array', function () {
+      assert.strictEqual(g.inject(new Uint8Array([])).getGremlinLang().getGremlin(), 'g.inject(Binary(""))');
+    });
+
+    it('should handle Uint8Array with base64 padding', function () {
+      assert.strictEqual(g.inject(new Uint8Array([0])).getGremlinLang().getGremlin(), 'g.inject(Binary("AA=="))');
+    });
+
+    it('should handle Uint8Array view with offset', function () {
+      const ab = new ArrayBuffer(5);
+      new Uint8Array(ab).set([0, 1, 2, 3, 4]);
+      const view = new Uint8Array(ab, 1, 3); // bytes [1, 2, 3]
+      assert.strictEqual(g.inject(view).getGremlinLang().getGremlin(), 'g.inject(Binary("AQID"))');
     });
   });
 });

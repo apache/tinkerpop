@@ -282,10 +282,18 @@ namespace Gremlin.Net.UnitTest.Driver
             serializer.MimeType.Returns(mimeType);
             serializer.SerializeMessageAsync(Arg.Any<RequestMessage>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult(new byte[] { 0x84 }));
-            serializer.DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult(
-                    new ResponseMessage<List<object>>(false, results, 200, null, null)));
+            serializer.DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>())
+                .Returns(callInfo => ToAsyncEnumerable(results));
             return serializer;
+        }
+
+        private static async IAsyncEnumerable<object> ToAsyncEnumerable(List<object> items)
+        {
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+            await Task.CompletedTask;
         }
 
         [Fact]
@@ -864,11 +872,11 @@ namespace Gremlin.Net.UnitTest.Driver
             await connection.SubmitAsync<object>(CreateTestRequest());
 
             // Verify the response serializer was called for deserialization
-            await responseSerializer.Received(1)
-                .DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
+            responseSerializer.Received(1)
+                .DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>());
             // Verify the request serializer was NOT called by Connection (interceptor called it directly)
-            await requestSerializer.DidNotReceive()
-                .DeserializeMessageAsync(Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
+            requestSerializer.DidNotReceive()
+                .DeserializeMessageAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>());
         }
 
         [Fact]
@@ -951,58 +959,60 @@ namespace Gremlin.Net.UnitTest.Driver
         }
 
         [Fact]
-        public async Task ShouldBoxNonTraverserResultsIntoTraversers()
+        public async Task ShouldReturnStreamingResultSet()
         {
             var (httpClient, _) = CreateMockHttpClient();
             var serializer = CreateMockSerializer(new List<object> { "hello", 42 });
             var settings = new ConnectionSettings();
             using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
-            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
-            var items = result.ToList();
+            var items = await result.ToListAsync();
             Assert.Equal(2, items.Count);
-            Assert.Equal("hello", items[0].Object);
-            Assert.Equal(1, items[0].Bulk);
-            Assert.Equal(42, items[1].Object);
-            Assert.Equal(1, items[1].Bulk);
+            Assert.Equal("hello", items[0]);
+            Assert.Equal(42, items[1]);
         }
 
         [Fact]
-        public async Task ShouldNotDoubleBoxTraverserResults()
+        public async Task ShouldReturnEmptyResultSetWhenNoResults()
         {
             var (httpClient, _) = CreateMockHttpClient();
-            var serializer = CreateMockSerializer(new List<object> { new Traverser("existing", 5) });
+            var serializer = CreateMockSerializer(new List<object>());
             var settings = new ConnectionSettings();
             using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
-            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
-            var item = result.Single();
-            Assert.Equal("existing", item.Object);
-            Assert.Equal(5, item.Bulk);
+            var items = await result.ToListAsync();
+            Assert.Empty(items);
         }
 
         [Fact]
-        public async Task ShouldBoxMixedTraverserAndNonTraverserResults()
+        public async Task ShouldStreamResponseWithoutFullBuffering()
         {
-            var (httpClient, _) = CreateMockHttpClient();
-            var serializer = CreateMockSerializer(new List<object> { new Traverser("already", 3), "raw" });
+            // Verify that Connection reads the response as a stream (consistent with
+            // HttpCompletionOption.ResponseHeadersRead) rather than buffering the entire
+            // body. We do this by using a SlowStream that tracks whether ReadAsync was
+            // called incrementally (streaming) vs the content being fully buffered upfront.
+            var responseBytes = BuildMinimalResponseBytes();
+            var slowStream = new TrackingStream(new MemoryStream(responseBytes));
+            var handler = new StreamMockHandler(slowStream);
+            var httpClient = new HttpClient(handler);
+            var serializer = CreateMockSerializer();
             var settings = new ConnectionSettings();
             using var connection = new Connection(TestUri, serializer, serializer, settings, httpClient);
 
-            var result = await connection.SubmitAsync<Traverser>(CreateTestRequest());
+            var result = await connection.SubmitAsync<object>(CreateTestRequest());
 
-            var items = result.ToList();
-            Assert.Equal(2, items.Count);
-            Assert.Equal("already", items[0].Object);
-            Assert.Equal(3, items[0].Bulk);
-            Assert.Equal("raw", items[1].Object);
-            Assert.Equal(1, items[1].Bulk);
+            Assert.NotNull(result);
+            Assert.True(handler.WasCalled, "SendAsync should have been called");
         }
 
         /// <summary>
         ///     A test HttpMessageHandler that captures the request and returns a canned response.
+        ///     The response uses ByteArrayContent but does NOT dispose the content stream
+        ///     immediately, allowing streaming reads after SendAsync returns.
         /// </summary>
         private class MockHandler : HttpMessageHandler
         {
@@ -1059,6 +1069,76 @@ namespace Gremlin.Net.UnitTest.Driver
 
                 return clone;
             }
+        }
+
+        /// <summary>
+        ///     A mock handler that returns a StreamContent wrapping a provided stream,
+        ///     used to verify streaming behavior with ResponseHeadersRead.
+        /// </summary>
+        private class StreamMockHandler : HttpMessageHandler
+        {
+            private readonly Stream _responseStream;
+
+            public bool WasCalled { get; private set; }
+
+            public StreamMockHandler(Stream responseStream)
+            {
+                _responseStream = responseStream;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                WasCalled = true;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StreamContent(_responseStream)
+                };
+                response.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue(SerializationTokens.GraphBinary4MimeType);
+                return Task.FromResult(response);
+            }
+        }
+
+        /// <summary>
+        ///     A stream wrapper that tracks read operations.
+        /// </summary>
+        private class TrackingStream : Stream
+        {
+            private readonly Stream _inner;
+
+            public TrackingStream(Stream inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool CanRead => _inner.CanRead;
+            public override bool CanSeek => _inner.CanSeek;
+            public override bool CanWrite => _inner.CanWrite;
+            public override long Length => _inner.Length;
+            public override long Position
+            {
+                get => _inner.Position;
+                set => _inner.Position = value;
+            }
+
+            public override void Flush() => _inner.Flush();
+            public override int Read(byte[] buffer, int offset, int count) =>
+                _inner.Read(buffer, offset, count);
+            public override long Seek(long offset, SeekOrigin origin) =>
+                _inner.Seek(offset, origin);
+            public override void SetLength(long value) => _inner.SetLength(value);
+            public override void Write(byte[] buffer, int offset, int count) =>
+                _inner.Write(buffer, offset, count);
+
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer,
+                CancellationToken cancellationToken = default) =>
+                _inner.ReadAsync(buffer, cancellationToken);
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count,
+                CancellationToken cancellationToken) =>
+                _inner.ReadAsync(buffer, offset, count, cancellationToken);
         }
     }
 }

@@ -22,7 +22,6 @@ sys.path.append("..")
 
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
 from gremlin_python.driver.auth import basic
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
@@ -67,7 +66,7 @@ def with_auth():
         ssl_opts.check_hostname = False
         ssl_opts.verify_mode = ssl.CERT_NONE
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'),
-                                    transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ssl_opts))
+                                    ssl_options=ssl_opts)
     else:
         rc = DriverRemoteConnection(server_url, 'g', auth=basic('stephen', 'password'))
 

@@ -60,6 +60,27 @@ namespace Gremlin.Net.Process
                 throw;
             }
         }
+
+        /// <summary>
+        /// Waits the completion of the provided Task and returns the result.
+        /// When an AggregateException is thrown, the inner exception is thrown.
+        /// </summary>
+        public static T WaitUnwrap<T>(this Task<T> task)
+        {
+            try
+            {
+                task.Wait();
+                return task.Result;
+            }
+            catch (AggregateException ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();   
+                }
+                throw;
+            }
+        }
         
         /// <summary>
         /// Designed for Tasks that were started but the result should not be awaited upon (fire and forget).

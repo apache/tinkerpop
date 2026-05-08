@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -72,7 +73,12 @@ namespace Gremlin.Net.UnitTest.Structure.IO.GraphBinary4
             var serializer = CreateMessageSerializer();
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-                await serializer.DeserializeMessageAsync(Array.Empty<byte>(), new CancellationToken(true)));
+            {
+                await foreach (var item in serializer.DeserializeMessageAsync(
+                    new MemoryStream(Array.Empty<byte>()), new CancellationToken(true)))
+                {
+                }
+            });
         }
 
         private static GraphBinary4MessageSerializer CreateMessageSerializer()

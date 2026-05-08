@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,31 +14,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#
-import abc
 
-__author__ = 'David M. Brown (davebshow@gmail.com)'
-
-
-class AbstractBaseTransport(metaclass=abc.ABCMeta):
-
-    @abc.abstractmethod
-    def connect(self, url, headers=None):
-        pass
-
-    @abc.abstractmethod
-    def write(self, message):
-        pass
-
-    @abc.abstractmethod
-    def read(self):
-        pass
-
-    @abc.abstractmethod
-    def close(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def closed(self):
-        pass
+host: localhost
+port: 8182
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [{name: g}, {name: gReadOnly, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)", language: gremlin-groovy}]}}
+lifecycleHooks:
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: modern}}
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: classic}}

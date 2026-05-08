@@ -31,6 +31,21 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Connected HTTP streaming response deserialization to the traversal API in `gremlin-javascript`, enabling `next()` to return the first result without waiting for the full response.
 * Changed `Client.stream()` in `gremlin-javascript` to return an `AsyncGenerator` for direct incremental consumption.
 * Removed `readable-stream` dependency from `gremlin-javascript`.
+* Added `Character`, `Binary`, `Duration` to the `gremlin-lang` grammar, GLVs, and Translators.
+* Refactored `gremlin-python` receive path to stream results directly from the HTTP response through the configured `response_serializer`.
+* Replaced `read()` with `get_stream()` on `AbstractBaseTransport` in `gremlin-python` for streaming deserialization.
+* Removed `max_content_length` from `gremlin-python` driver (no longer applicable with streaming deserialization).
+* Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
+* Removed `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` from `gremlin-python`, merging protocol logic into `Connection`.
+* Removed `GraphSONSerializersV4` and the `gremlin_python.structure.io.graphsonV4` module from `gremlin-python`. GraphBinary is the only supported wire format.
+* Added declarative `traversalSources` configuration to Gremlin Server YAML for creating `TraversalSource` instances with optional strategy configuration via `gremlinExpression`.
+* Added Java-based `lifecycleHooks` configuration to Gremlin Server YAML, replacing Groovy init script `LifeCycleHook` creation.
+* Added `TinkerFactoryDataLoader` `LifeCycleHook` implementation for loading sample datasets without Groovy.
+* Added auto-creation of `TraversalSource` bindings from `graphs` configuration (`graph` maps to `g`, others to `g_<name>`).
+* Added `GraphManager` to `LifeCycleHook.Context` for Java-based hooks to access configured graphs.
+* Deprecated Groovy-based `LifeCycleHook` and `TraversalSource` creation via init scripts in favor of YAML configuration.
+* Updated all default Gremlin Server configs to remove Groovy dependency from initialization.
+* Added script engine allowlist to Gremlin Server - the `scriptEngines` YAML configuration now restricts which engines can serve requests; `gremlin-lang` is always available.
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)
@@ -61,6 +76,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Replace `WebSocket` with `HTTP` (non-streaming) in `gremlin-dotnet`.
 * Added `MimeType` to `IMessageSerializer` and split client option to allow separate request and response serialization in `gremlin-dotnet`.
 * Added `RequestInterceptor` to `gremlin-dotnet` with `auth` reference implementations.
+* Added streaming deserialization to `gremlin-dotnet`, results are now deserialized incrementally from the HTTP response stream via `IAsyncEnumerable<T>`. 
+* Target framework for `gremlin-dotnet` updated to `net8.0`.
 * Bumped minimum Node.js version for `gremlin-javascript` from 20 to 22.
 * Removed `mimeType` connection option in `gremlin-javascript` in favor of direct use of `reader` and `writer` options.
 * Bumped ANTLR to 4.13.2

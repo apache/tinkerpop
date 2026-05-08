@@ -232,4 +232,15 @@ public class GremlinError {
     public static GremlinError transactionUnableToStart(final String message) {
         return new GremlinError(HttpResponseStatus.INTERNAL_SERVER_ERROR, message, "TransactionException");
     }
+
+    /**
+     * Creates an error for when a requested script engine is not available on the server.
+     *
+     * @param language the requested script engine name
+     * @return A GremlinError with appropriate message and status code
+     */
+    public static GremlinError scriptEngineNotAvailable(final String language) {
+        final String message = String.format("Script engine [%s] is not available.", language);
+        return new GremlinError(HttpResponseStatus.BAD_REQUEST, message, "InvalidRequestException");
+    }
 }

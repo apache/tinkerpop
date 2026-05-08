@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Gremlin.Net.Driver;
@@ -81,13 +82,29 @@ namespace Gremlin.Net.Benchmarks
                 .ConfigureAwait(false);
 
         [Benchmark]
-        public async Task<ResponseMessage<List<object>>> TestReadSmallBinary() =>
-            await BinaryMessageSerializer.DeserializeMessageAsync(TestMessages.SmallBinaryResponseMessageBytes)
-                .ConfigureAwait(false);
+        public async Task<List<object>> TestReadSmallBinary()
+        {
+            using var stream = new MemoryStream(TestMessages.SmallBinaryResponseMessageBytes);
+            var results = new List<object>();
+            await foreach (var item in BinaryMessageSerializer.DeserializeMessageAsync(stream)
+                .ConfigureAwait(false))
+            {
+                results.Add(item);
+            }
+            return results;
+        }
 
         [Benchmark]
-        public async Task<ResponseMessage<List<object>>> TestReadBigBinary() =>
-            await BinaryMessageSerializer.DeserializeMessageAsync(TestMessages.BigBinaryResponseMessageBytes)
-                .ConfigureAwait(false);
+        public async Task<List<object>> TestReadBigBinary()
+        {
+            using var stream = new MemoryStream(TestMessages.BigBinaryResponseMessageBytes);
+            var results = new List<object>();
+            await foreach (var item in BinaryMessageSerializer.DeserializeMessageAsync(stream)
+                .ConfigureAwait(false))
+            {
+                results.Add(item);
+            }
+            return results;
+        }
     }
 }

@@ -159,7 +159,7 @@ public class GremlinServer {
             serverGremlinExecutor.getHooks().forEach(hook -> {
                 logger.info("Executing start up {}", LifeCycleHook.class.getSimpleName());
                 try {
-                    hook.onStartUp(new LifeCycleHook.Context(logger));
+                    hook.onStartUp(new LifeCycleHook.Context(logger, serverGremlinExecutor.getGraphManager()));
                 } catch (UnsupportedOperationException uoe) {
                     // if the user doesn't implement onStartUp the scriptengine will throw
                     // this exception.  it can safely be ignored.
@@ -269,7 +269,7 @@ public class GremlinServer {
                 serverGremlinExecutor.getHooks().forEach(hook -> {
                     logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
                     try {
-                        hook.onShutDown(new LifeCycleHook.Context(logger));
+                        hook.onShutDown(new LifeCycleHook.Context(logger, serverGremlinExecutor.getGraphManager()));
                     } catch (UnsupportedOperationException | UndeclaredThrowableException uoe) {
                         // if the user doesn't implement onShutDown the scriptengine will throw
                         // this exception.  it can safely be ignored.

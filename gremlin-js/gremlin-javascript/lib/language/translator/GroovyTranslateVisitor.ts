@@ -114,6 +114,32 @@ export default class GroovyTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        this.sb.push("'");
+        this.sb.push(inner);
+        this.sb.push("' as char");
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        const seconds = parseInt(ctx.integerLiteral(0).getText(), 10);
+        const nanos = parseInt(ctx.integerLiteral(1).getText(), 10);
+        const isPositive = ctx.booleanLiteral() === null ||
+            ctx.booleanLiteral().getText() === 'true';
+        this.sb.push(`Duration.ofSeconds(${seconds}, ${nanos})`);
+        if (!isPositive) {
+            this.sb.push('.negated()');
+        }
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push('ByteBuffer.wrap(Base64.getDecoder().decode(');
+        this.sb.push(ctx.stringLiteral().getText());
+        this.sb.push('))');
+    }
+
     visitNullLiteral(ctx: any): void {
         if (ctx.parent?.constructor?.name === 'GenericMapNullableArgumentContext') {
             this.sb.push('null as Map');

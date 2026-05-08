@@ -31,8 +31,11 @@ import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -522,6 +525,62 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      * {@inheritDoc}
      */
     @Override
+    public Object visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        final String text = ctx.getText();
+        // strip the 'c' suffix, then strip quotes, then unescape
+        final String withoutSuffix = text.substring(0, text.length() - 1);
+        final String inner = StringEscapeUtils.unescapeJava(stripQuotes(withoutSuffix));
+        if (inner.length() != 1) {
+            throw new GremlinParserException("Character literal must contain exactly one character");
+        }
+        return inner.charAt(0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        final Number secondsNum = (Number) antlr.genericVisitor.visitIntegerLiteral(ctx.integerLiteral(0));
+        final Number nanosNum = (Number) antlr.genericVisitor.visitIntegerLiteral(ctx.integerLiteral(1));
+
+        final long seconds = secondsNum.longValue();
+        final long nanos = nanosNum.longValue();
+
+        if (seconds < 0) {
+            throw new GremlinParserException(
+                    String.format("Duration seconds must be non-negative, got: %d", seconds));
+        }
+        if (nanos < 0 || nanos > 999999999) {
+            throw new GremlinParserException(
+                    String.format("Duration nanoseconds must be between 0 and 999999999, got: %d", nanos));
+        }
+
+        final boolean isPositive = ctx.booleanLiteral() == null ||
+                Boolean.parseBoolean(ctx.booleanLiteral().getText());
+
+        final Duration d = Duration.ofSeconds(seconds, nanos);
+        return isPositive ? d : d.negated();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        final String base64 = (String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral());
+        try {
+            return ByteBuffer.wrap(Base64.getDecoder().decode(base64));
+        } catch (IllegalArgumentException e) {
+            throw new GremlinParserException(
+                    String.format("Invalid Binary literal: '%s' is not valid base64", base64));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Object visitNumericLiteral(final GremlinParser.NumericLiteralContext ctx) {
         if (ctx.floatLiteral() != null) return visitFloatLiteral(ctx.floatLiteral());
         if (ctx.integerLiteral() != null) return visitIntegerLiteral(ctx.integerLiteral());
@@ -533,7 +592,12 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitStringLiteral(final GremlinParser.StringLiteralContext ctx) {
-        return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
+        final String text = ctx.getText();
+        // handle explicit 's' suffix for string literals
+        if (ctx.StringSuffixLiteral() != null || ctx.EmptyStringSuffixLiteral() != null) {
+            return StringEscapeUtils.unescapeJava(stripQuotes(text.substring(0, text.length() - 1)));
+        }
+        return StringEscapeUtils.unescapeJava(stripQuotes(text));
     }
 
     /**
@@ -677,8 +741,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitStringNullableLiteral(final GremlinParser.StringNullableLiteralContext ctx) {
         if (ctx.K_NULL() != null)
             return null;
-        else
-            return StringEscapeUtils.unescapeJava(stripQuotes(ctx.getText()));
+        return antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral());
     }
 
     @Override

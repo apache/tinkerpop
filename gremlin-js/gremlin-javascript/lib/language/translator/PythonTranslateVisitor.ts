@@ -214,6 +214,37 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        const text: string = ctx.getText();
+        const withoutSuffix = text.substring(0, text.length - 1);
+        const inner = TranslateVisitor.removeFirstAndLastCharacters(withoutSuffix);
+        this.sb.push("SingleChar('");
+        this.sb.push(inner);
+        this.sb.push("')");
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        const seconds = parseInt(ctx.integerLiteral(0).getText(), 10);
+        const nanos = parseInt(ctx.integerLiteral(1).getText(), 10);
+        const isPositive = ctx.booleanLiteral() === null ||
+            ctx.booleanLiteral().getText() === 'true';
+        const totalSeconds = isPositive ? seconds : -seconds;
+        // Python's timedelta has microsecond resolution; sub-microsecond nanos are truncated
+        const micros = Math.floor(nanos / 1000);
+        if (micros === 0) {
+            this.sb.push(`timedelta(seconds=${totalSeconds})`);
+        } else {
+            const totalMicros = isPositive ? micros : -micros;
+            this.sb.push(`timedelta(seconds=${totalSeconds},microseconds=${totalMicros})`);
+        }
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push('base64.b64decode(');
+        this.visitStringLiteral(ctx.stringLiteral());
+        this.sb.push(')');
+    }
+
     visitTraversalStrategy(ctx: any): void {
         if (ctx.getChildCount() === 1) {
             this.sb.push(ctx.getText());
@@ -319,3 +350,5 @@ function convertCamelCaseToSnakeCase(camelCase: string): string {
     }
     return result;
 }
+
+

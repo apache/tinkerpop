@@ -22,7 +22,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
@@ -57,9 +56,13 @@ namespace Gremlin.Net.Driver
             Dictionary<string, object>? bindings = null,
             CancellationToken cancellationToken = default)
         {
-            var resultCollection = await gremlinClient.SubmitAsync<T>(requestScript, bindings, cancellationToken)
+            await using var resultSet = await gremlinClient.SubmitAsync<T>(requestScript, bindings, cancellationToken)
                 .ConfigureAwait(false);
-            return resultCollection.FirstOrDefault();
+            await foreach (var item in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                return item;
+            }
+            return default;
         }
 
         /// <summary>
@@ -81,9 +84,13 @@ namespace Gremlin.Net.Driver
         public static async Task<T?> SubmitWithSingleResultAsync<T>(this IGremlinClient gremlinClient,
             RequestMessage requestMessage, CancellationToken cancellationToken = default)
         {
-            var resultCollection =
+            await using var resultSet =
                 await gremlinClient.SubmitAsync<T>(requestMessage, cancellationToken).ConfigureAwait(false);
-            return resultCollection.FirstOrDefault();
+            await foreach (var item in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                return item;
+            }
+            return default;
         }
 
         /// <summary>
@@ -102,7 +109,11 @@ namespace Gremlin.Net.Driver
         public static async Task SubmitAsync(this IGremlinClient gremlinClient, string requestScript,
             Dictionary<string, object>? bindings = null, CancellationToken cancellationToken = default)
         {
-            await gremlinClient.SubmitAsync<object>(requestScript, bindings, cancellationToken).ConfigureAwait(false);
+            await using var resultSet = await gremlinClient.SubmitAsync<object>(requestScript, bindings, cancellationToken).ConfigureAwait(false);
+            // Drain the stream to ensure the background task completes and resources are released.
+            await foreach (var _ in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+            }
         }
 
         /// <summary>
@@ -120,7 +131,11 @@ namespace Gremlin.Net.Driver
         public static async Task SubmitAsync(this IGremlinClient gremlinClient, RequestMessage requestMessage,
             CancellationToken cancellationToken = default)
         {
-            await gremlinClient.SubmitAsync<object>(requestMessage, cancellationToken).ConfigureAwait(false);
+            await using var resultSet = await gremlinClient.SubmitAsync<object>(requestMessage, cancellationToken).ConfigureAwait(false);
+            // Drain the stream to ensure the background task completes and resources are released.
+            await foreach (var _ in resultSet.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+            }
         }
 
         /// <summary>

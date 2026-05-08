@@ -21,6 +21,7 @@ package gremlingo
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -51,6 +52,8 @@ func init() {
 		regexp.MustCompile(`^str\[(.*)]$`):        func(stringVal, graphName string) interface{} { return stringVal }, //returns the string value as is
 		regexp.MustCompile(`^dt\[(.*)]$`):         toDateTime,
 		regexp.MustCompile(`^uuid\[(.*)]$`):       toUuid,
+		regexp.MustCompile(`^dur\[(.*)]$`):        toDuration,
+		regexp.MustCompile(`^bin\[(.*)]$`):        toBinary,
 		regexp.MustCompile(`^d\[(.*)]\.[bslfd]$`): toNumeric,
 		regexp.MustCompile(`^d\[(.*)]\.[m]$`):     toBigDecimal,
 		regexp.MustCompile(`^d\[(.*)]\.[n]$`):     toBigInt,
@@ -129,6 +132,40 @@ func toUuid(stringVal, graphName string) interface{} {
 		return nil
 	}
 	return val
+}
+
+// Parse duration from seconds,nanos[,isPositive] format.
+func toDuration(stringVal, graphName string) interface{} {
+	parts := strings.Split(stringVal, ",")
+	if len(parts) < 2 {
+		return nil
+	}
+	seconds, err := strconv.ParseInt(strings.TrimSpace(parts[0]), 10, 64)
+	if err != nil {
+		return nil
+	}
+	nanos, err := strconv.ParseInt(strings.TrimSpace(parts[1]), 10, 64)
+	if err != nil {
+		return nil
+	}
+	isPositive := true
+	if len(parts) >= 3 {
+		isPositive = strings.TrimSpace(parts[2]) == "true"
+	}
+	d := time.Duration(seconds)*time.Second + time.Duration(nanos)
+	if !isPositive {
+		d = -d
+	}
+	return d
+}
+
+// Parse binary from base64 string.
+func toBinary(stringVal, graphName string) interface{} {
+	data, err := base64.StdEncoding.DecodeString(stringVal)
+	if err != nil {
+		return nil
+	}
+	return &gremlingo.ByteBuffer{Data: data}
 }
 
 // Parse numeric.
@@ -1014,7 +1051,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree && ~@StepWrite",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree && ~@StepWrite && ~@DataChar",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

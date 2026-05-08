@@ -680,6 +680,28 @@ func Test_GremlinLang(t *testing.T) {
 			},
 			equals: "g.V().has(\"name\",\"\\\"marko\\n\\r\\t\\b\\f\\\"\")",
 		},
+		// Binary - []byte type (distinct from ByteBuffer)
+		{
+			name: "g_Inject_ByteSlice",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject([]byte{1, 2, 3})
+			},
+			equals: `g.inject(Binary("AQID"))`,
+		},
+		{
+			name: "g_Inject_ByteSlice_Empty",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject([]byte{})
+			},
+			equals: `g.inject(Binary(""))`,
+		},
+		{
+			name: "g_Inject_ByteSlice_Padding",
+			assert: func(g *GraphTraversalSource) *GraphTraversal {
+				return g.Inject([]byte{0})
+			},
+			equals: `g.inject(Binary("AA=="))`,
+		},
 	}
 
 	var testsToRun []test

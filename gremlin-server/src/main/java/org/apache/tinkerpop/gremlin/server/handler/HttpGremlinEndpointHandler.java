@@ -238,6 +238,13 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                     throw new ProcessingException(GremlinError.transactionalControlRequiresTransaction());
                 }
 
+                // validate script engine availability before committing the 200 response
+                final Map<String, Object> args = requestMessage.getFields();
+                final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
+                if (gremlinExecutor.getScriptEngineManager().getEngineByName(language) == null) {
+                    throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
+                }
+
                 // Send back the 200 OK response header here since the response is always chunk transfer encoded. Any
                 // failures that follow this will show up in the response body instead.
                 sendHttpResponse(ctx, OK, createResponseHeaders(ctx, serializer, requestCtx).toArray(CharSequence[]::new));
@@ -391,6 +398,15 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Map<String, Object> args = message.getFields();
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : "gremlin-lang";
         final GremlinScriptEngine scriptEngine = gremlinExecutor.getScriptEngineManager().getEngineByName(language);
+
+        if (scriptEngine == null) {
+            if (!settings.scriptEngines.containsKey(language) && !language.equals("gremlin-lang")) {
+                logger.warn("Request for script engine [{}] could not be fulfilled - not configured in the server's scriptEngines setting", language);
+            } else {
+                logger.warn("Request for script engine [{}] could not be fulfilled - configured but failed to load (check classpath for the engine's implementation)", language);
+            }
+            throw new ProcessingException(GremlinError.scriptEngineNotAvailable(language));
+        }
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);

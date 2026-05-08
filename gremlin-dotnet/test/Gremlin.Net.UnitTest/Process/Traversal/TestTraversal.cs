@@ -23,6 +23,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.UnitTest.Process.Traversal
@@ -33,14 +35,14 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         {
             var traversers = new List<Traverser>(traverserObjs.Count);
             traverserObjs.ForEach(o => traversers.Add(new Traverser(o)));
-            Traversers = traversers;
+            Traversers = ToAsyncEnumerable(traversers);
         }
 
         public TestTraversal(IReadOnlyList<object?> traverserObjs, IReadOnlyList<long> traverserBulks)
         {
             var traversers = new List<Traverser>(traverserObjs.Count);
             traversers.AddRange(traverserObjs.Select((t, i) => new Traverser(t, traverserBulks[i])));
-            Traversers = traversers;
+            Traversers = ToAsyncEnumerable(traversers);
         }
 
         public TestTraversal(IList<ITraversalStrategy> traversalStrategies)
@@ -49,5 +51,18 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         }
 
         public override GremlinLang GremlinLang { get; } = new();
+
+        #pragma warning disable CS1998 // Async method lacks 'await' — yield return in async iterator is intentional
+        internal static async IAsyncEnumerable<Traverser> ToAsyncEnumerable(
+            IEnumerable<Traverser> traversers,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            foreach (var traverser in traversers)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return traverser;
+            }
+        }
+        #pragma warning restore CS1998
     }
 }

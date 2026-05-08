@@ -231,6 +231,24 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitCharacterLiteral(final GremlinParser.CharacterLiteralContext ctx) {
+        throw new TranslatorException("Character literals are not supported in JavaScript");
+    }
+
+    @Override
+    public Void visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
+        throw new TranslatorException("Duration literals are not supported in JavaScript");
+    }
+
+    @Override
+    public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
+        sb.append("Buffer.from(");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(",'base64')");
+        return null;
+    }
+
+    @Override
     protected String getCardinalityFunctionClass() {
         return "CardinalityValue";
     }

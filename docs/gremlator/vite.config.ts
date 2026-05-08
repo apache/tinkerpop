@@ -24,8 +24,16 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: '/gremlator',
-  esbuild: {
-    keepNames: true,
+  build: {
+    rolldownOptions: {
+      output: {
+        minify: {
+          mangle: {
+            keepNames: true,
+          },
+        },
+      },
+    },
   },
   resolve: {
     dedupe: ['react', 'react-dom'],

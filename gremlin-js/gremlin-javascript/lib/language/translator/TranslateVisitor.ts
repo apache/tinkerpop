@@ -394,6 +394,18 @@ export default class TranslateVisitor {
         this.sb.push(ctx.getText());
     }
 
+    visitCharacterLiteral(ctx: any): void {
+        this.sb.push(ctx.getText());
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        this.sb.push(ctx.getText());
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        this.sb.push(ctx.getText());
+    }
+
     visitStringLiteral(ctx: any): void {
         const text = TranslateVisitor.removeFirstAndLastCharacters(ctx.getText());
         this.handleStringLiteralText(text);

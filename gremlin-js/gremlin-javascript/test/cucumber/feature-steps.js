@@ -36,6 +36,7 @@ import { toLong } from '../../lib/utils.js';
 import anon from '../../lib/process/anonymous-traversal.js';
 const __ = statics;
 import { deepMembersById } from './element-comparison.js';
+import { Buffer } from 'buffer';
 import GremlinLang from "../../lib/process/gremlin-lang.js";
 const parsers = [
   [ 'str\\[(.*)\\]', (stringValue) => stringValue ], //returns the string value as is
@@ -44,6 +45,7 @@ const parsers = [
   [ 'dt\\[(.+)\\]', toDateTime ],
   [ 'uuid\\[(.+)\\]', toUuid ],
   [ 'd\\[(.*)\\]\\.[bsilfdmn]', toNumeric ],
+  [ 'bin\\[(.*)\\]', toBinary ],
   [ 'v\\[(.+)\\]', toVertex ],
   [ 'v\\[(.+)\\]\\.id', toVertexId ],
   [ 'v\\[(.+)\\]\\.sid', toVertexIdString ],
@@ -446,6 +448,10 @@ function toUuid(value) {
 
 function toMerge(value) {
   return merge[value];
+}
+
+function toBinary(value) {
+  return Buffer.from(value, 'base64');
 }
 
 function splitByElement(s) {

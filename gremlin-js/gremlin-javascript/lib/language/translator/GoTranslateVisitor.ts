@@ -22,6 +22,7 @@
 
 import TranslateVisitor from './TranslateVisitor.js';
 import { TranslatorException } from './TranslatorException.js';
+import { Buffer } from 'buffer';
 
 const GO_PACKAGE_NAME = 'gremlingo.';
 
@@ -256,6 +257,32 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         this.sb.push(')');
     }
 
+    visitCharacterLiteral(_ctx: any): void {
+        throw new TranslatorException('Character literals are not supported in Go');
+    }
+
+    visitDurationLiteral(ctx: any): void {
+        const seconds = parseInt(ctx.integerLiteral(0).getText(), 10);
+        const nanos = parseInt(ctx.integerLiteral(1).getText(), 10);
+        const isPositive = ctx.booleanLiteral() === null ||
+            ctx.booleanLiteral().getText() === 'true';
+        // Use BigInt to avoid precision loss for durations over ~104 days
+        const totalNanos = BigInt(seconds) * 1_000_000_000n + BigInt(nanos);
+        this.sb.push(`time.Duration(${isPositive ? totalNanos : -totalNanos})`);
+    }
+
+    visitBinaryLiteral(ctx: any): void {
+        const base64Str = TranslateVisitor.removeFirstAndLastCharacters(ctx.stringLiteral().getText());
+        const bytes = base64ToBytes(base64Str);
+        this.sb.push(GO_PACKAGE_NAME + 'ByteBuffer{Data: []byte{');
+        for (let i = 0; i < bytes.length; i++) {
+            if (i > 0) this.sb.push(',');
+            this.sb.push(String(bytes[i]));
+        }
+        this.sb.push('}}');
+    }
+      
+      
     visitTraversalTerminalMethod_next(ctx: any): void {
         // Go has no method overloading: next() maps to Next(), next(n) maps to NextN(n)
         if (ctx.getChildCount() === 4) {
@@ -358,6 +385,19 @@ export default class GoTranslateVisitor extends TranslateVisitor {
 
         this.sb.push(')');
     }
+}
+
+/**
+ * Decodes a base64 string into an array of unsigned byte values.
+ */
+function base64ToBytes(base64: string): number[] {
+    if (base64 === '') return [];
+    const buf = Buffer.from(base64, 'base64');
+    const bytes: number[] = new Array(buf.length);
+    for (let i = 0; i < buf.length; i++) {
+        bytes[i] = buf[i];
+    }
+    return bytes;
 }
 
 class SymbolHelper {

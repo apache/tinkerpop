@@ -29,6 +29,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Gherkin.Ast;
 using Gremlin.Net.IntegrationTest.Gherkin.Attributes;
 using Gremlin.Net.Process.Traversal;
@@ -63,6 +64,9 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 {@"prop\[(.+)\]", ToProperty},
                 {@"dt\[(.+)\]", ToDateTime},
                 {@"uuid\[(.+)\]", ToUuid},
+                {@"char\[(.)\]", ToChar},
+                {@"dur\[(.+)\]", ToDuration},
+                {@"bin\[(.*)\]", ToBinary},
                 {@"d\[(.*)\]\.([bsilfdmn])", ToNumber},
                 {@"D\[(.+)\]", ToDirection},
                 {@"M\[(.+)\]", ToMerge},
@@ -175,19 +179,20 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             {
                 throw new InvalidOperationException("Traversal should be set before iterating");
             }
-            ITraversal t = _traversal;
             var list = new List<object>();
             try
             {
-                while (t.MoveNext())
+                // Use the base ITraversal interface's MoveNextAsync() and CurrentObject
+                // to avoid type conversion issues with ITraversal<TStart, TEnd>.Current
+                while (_traversal.MoveNextAsync().AsTask().GetAwaiter().GetResult())
                 {
-                    list.Add(t.Current);
+                    list.Add(_traversal.CurrentObject!);
                 }
                 _result = list.ToArray();
             }
             catch (Exception ex)
             {
-                _error = ex;
+                _error = UnwrapException(ex);
             }
         }
 
@@ -201,8 +206,8 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
             try
             {
-                _traversal.MoveNext();
-                var result = _traversal.Current;
+                _traversal.MoveNextAsync().AsTask().GetAwaiter().GetResult();
+                var result = _traversal.CurrentObject;
                 switch (result)
                 {
                     case null:
@@ -218,7 +223,7 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
             }
             catch (Exception ex)
             {
-                _error = ex;
+                _error = UnwrapException(ex);
             }
         }
 
@@ -236,15 +241,21 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
         {
             Assert.NotNull(_error);
 
+            // Unwrap AggregateException if the real exception is nested inside.
+            // With streaming deserialization, exceptions from the channel/async pipeline
+            // may be wrapped in AggregateException depending on how the async task is
+            // awaited (e.g., Task.Wait() vs GetAwaiter().GetResult()).
+            var errorMessage = UnwrapException(_error).Message;
+
             switch (comparison) {
                 case "containing":
-                    Assert.Contains(expectedMessage.ToUpper(), _error.Message.ToUpper());
+                    Assert.Contains(expectedMessage.ToUpper(), errorMessage.ToUpper());
                     break;
                 case "starting":
-                    Assert.StartsWith(expectedMessage.ToUpper(), _error.Message.ToUpper());
+                    Assert.StartsWith(expectedMessage.ToUpper(), errorMessage.ToUpper());
                     break;
                 case "ending":
-                    Assert.EndsWith(expectedMessage.ToUpper(), _error.Message.ToUpper());
+                    Assert.EndsWith(expectedMessage.ToUpper(), errorMessage.ToUpper());
                     break;
                 default:
                     throw new NotSupportedException(
@@ -253,6 +264,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
 
             // consume the error now that it has been asserted
             _error = null;
+        }
+
+        /// <summary>
+        ///     Unwraps an exception to find the innermost meaningful exception.
+        ///     With streaming deserialization, a ResponseException thrown in the background
+        ///     deserialization task may be wrapped in AggregateException when the consuming
+        ///     code uses Task.Wait() or similar synchronous blocking patterns.
+        /// </summary>
+        private static Exception UnwrapException(Exception ex)
+        {
+            while (true)
+            {
+                switch (ex)
+                {
+                    case AggregateException agg when agg.InnerExceptions.Count == 1:
+                        ex = agg.InnerExceptions[0];
+                        continue;
+                    default:
+                        return ex;
+                }
+            }
         }
 
 
@@ -391,11 +423,10 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 traversalText = traversalText.Substring(1, traversalText.Length - 2);
             }
             
-            var traversal =
-                Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
+            var traversal = (ITraversal) Gremlin.UseTraversal(ScenarioData.CurrentScenario!.Name, _g, _parameters, _sideEffects);
             
             var count = 0;
-            while (traversal.MoveNext())
+            while (traversal.MoveNextAsync().AsTask().GetAwaiter().GetResult())
             {
                 count++;
             }
@@ -539,6 +570,27 @@ namespace Gremlin.Net.IntegrationTest.Gherkin
                 return result;
             }
             return null;
+        }
+
+        private static object ToChar(string value, string graphName)
+        {
+            return value[0];
+        }
+
+        private static object ToDuration(string value, string graphName)
+        {
+            var parts = value.Split(',');
+            var seconds = long.Parse(parts[0].Trim());
+            var nanos = int.Parse(parts[1].Trim());
+            var isPositive = parts.Length < 3 || bool.Parse(parts[2].Trim());
+            // TimeSpan has 100-nanosecond tick resolution; sub-100ns values are truncated
+            var ts = TimeSpan.FromSeconds(seconds) + TimeSpan.FromTicks(nanos / 100);
+            return isPositive ? ts : ts.Negate();
+        }
+
+        private static object ToBinary(string base64, string graphName)
+        {
+            return Convert.FromBase64String(base64);
         }
 
         private static Vertex ToVertex(string name, string graphName)

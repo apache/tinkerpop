@@ -78,6 +78,329 @@ for await (const item of client.stream('g.V()', null)) {
 
 `Client.submit()` remains unchanged. It still buffers the full response and returns `Promise<ResultSet>`.
 
+==== New Gremlin-Lang Literals
+
+The canonical Gremlin grammar now includes literal syntax for `Character`, `Duration`, and `Binary` types. These
+literals can be used directly in traversals without falling back to parameter serialization.
+
+===== Character
+
+A character literal is a single-character string with a `c` suffix:
+
+[source,text]
+----
+g.V().has("initial","M"c)
+----
+
+NOTE: Character is not supported in gremlin-go or gremlin-javascript.
+
+===== Duration
+
+A duration literal uses seconds and nanoseconds with an optional sign flag:
+
+[source,text]
+----
+Duration(seconds,nanos)
+Duration(seconds,nanos,false)
+----
+
+The first argument is seconds (non-negative integer), the second is nanoseconds (integer, 0 to 999999999). The
+optional third argument is an `isPositive` boolean that defaults to `true` when omitted. Set it to `false` for
+negative durations.
+
+[source,text]
+----
+g.V().has("length",P.gt(Duration(3600,0)))
+----
+
+NOTE: Python's `timedelta` has microsecond resolution, so sub-microsecond nanosecond values are truncated.
+.NET's `TimeSpan` has 100-nanosecond tick resolution, so sub-100ns values are truncated.
+
+NOTE: Duration is not supported in gremlin-javascript.
+
+===== Binary
+
+A binary literal wraps a base64-encoded string:
+
+[source,text]
+----
+Binary("AQID")
+Binary("")
+----
+
+Each GLV maps this to its native byte array type:
+
+[source,text]
+----
+g.V().has("blob",P.eq(Binary("AQID")))
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3153[TINKERPOP-3153]
+
+==== Python HTTP Streaming Response Support
+
+The Python driver now streams results directly from the HTTP response body through the configured
+`response_serializer`. Results are available to the caller as they arrive from the server, rather than waiting for
+the full response to be buffered in memory. This improves memory efficiency for large result sets and reduces
+time-to-first-result.
+
+Traversal API terminal steps (`next()`, `to_list()`, `has_next()`) are now truly incremental. `next()` returns the
+first result as soon as it is deserialized from the wire, without waiting for the full response. In 3.x, `next()`
+waited for all data to be buffered before returning.
+
+The following internal APIs have changed:
+
+- `max_content_length` is no longer supported. Response size limits should be configured server-side via
+  `maxRequestContentLength`.
+- The built-in response serializer is `GraphBinarySerializersV4`. The receive path dispatches through the
+  configured `response_serializer`.
+- `ResultSet` now yields individual items instead of lists when iterated. Code that uses `results += result`
+  to accumulate results from a `ResultSet` iterator must change to `results.append(result)`. The `to_list()`
+  and `all()` APIs are unaffected and remain the recommended way to collect results.
+
+==== Python Driver Simplification — Removed GraphSON, Abstract Base Classes, and Protocol Layer
+
+The `AbstractBaseTransport`, `AbstractBaseProtocol`, and `GremlinServerHTTPProtocol` classes have been removed from
+`gremlin-python`. The protocol layer's request-building logic (serialization, headers, interceptors, auth) has been
+merged directly into `Connection`. The driver now uses `AiohttpHTTPTransport` directly without an abstract transport
+interface.
+
+`GremlinServerError` has moved from `gremlin_python.driver.protocol` to `gremlin_python.driver.connection`:
+
+The `GraphSONSerializersV4` class and the `gremlin_python.structure.io.graphsonV4` module have been removed.
+GraphBinary is the only supported wire format for the Python driver in TinkerPop 4. Code that constructed
+`GraphSONSerializersV4()` or imported from `gremlin_python.structure.io.graphsonV4` must switch to
+`GraphBinarySerializersV4` (the default `request_serializer` and `response_serializer`):
+
+[source,python]
+----
+# Before
+from gremlin_python.driver.protocol import GremlinServerError
+
+# After
+from gremlin_python.driver.connection import GremlinServerError
+----
+
+The `protocol_factory` and `transport_factory` parameters have been removed from `Client`,
+`DriverRemoteConnection`, and `Connection`. Users who were passing a custom `protocol_factory` should use the
+`request_serializer`, `response_serializer`, `auth`, and `interceptors` parameters directly instead — these cover
+all functionality that `GremlinServerHTTPProtocol` previously provided.
+
+Transport options like SSL and timeouts are now passed as keyword arguments directly:
+
+[source,python]
+----
+# Before
+from gremlin_python.driver.aiohttp.transport import AiohttpHTTPTransport
+Client(url, 'g', transport_factory=lambda: AiohttpHTTPTransport(ssl_options=ctx, read_timeout=30))
+
+# After
+Client(url, 'g', ssl_options=ctx, read_timeout=30)
+----
+
+The `Connection` constructor signature has changed. The `protocol` and `transport_factory` positional arguments have
+been removed. Transport kwargs are forwarded to `AiohttpHTTPTransport` internally:
+
+[source,python]
+----
+# Before
+Connection(url, traversal_source, protocol, transport_factory, executor, pool)
+
+# After
+Connection(url, traversal_source, executor, pool,
+           request_serializer=None, response_serializer=None,
+           auth=None, interceptors=None, **transport_kwargs)
+----
+
+Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
+
+==== Runtime Upgrades
+
+The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`). .NET 6 reached end-of-life in
+November 2024; .NET 8 is the current LTS release.
+
+==== .NET HTTP Streaming Response Support
+
+The .NET driver (`Gremlin.Net`) now uses streaming deserialization, results are deserialized incrementally from the
+HTTP response stream as bytes arrive over the network, rather than buffering the entire response before processing.
+This reduces memory usage and latency for large result sets.
+
+The traversal API (`Next()`, `ToList()`, `HasNext()`, `ToSet()`, `Iterate()`) is unchanged — these methods block
+internally on the async stream, so existing traversal code works without modification.
+
+`ResultSet<T>` no longer implements `IReadOnlyCollection<T>`. It now implements `IAsyncEnumerable<T>`, backed by a
+`Channel<T>` that receives items from a background deserialization task. Users who access `ResultSet<T>` directly
+via `GremlinClient.SubmitAsync<T>()` will need to update their code:
+
+[source,csharp]
+----
+// 3.x — ResultSet was IReadOnlyCollection<T>
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var count = resultSet.Count;              // no longer available
+foreach (var item in resultSet) { }       // no longer available
+
+// 4.0 — ResultSet is IAsyncEnumerable<T>
+var resultSet = await client.SubmitAsync<int>("g.inject(1,2,3)");
+var list = await resultSet.ToListAsync(); // materialize if you need Count
+await foreach (var item in resultSet) { } // async iteration
+----
+
+The `IMessageSerializer` interface has also changed: `DeserializeMessageAsync` now accepts a `Stream` and returns
+`IAsyncEnumerable<object>` instead of accepting `byte[]` and returning `Task<ResponseMessage<List<object>>>`.
+Custom serializer implementations will need to be updated. The `ResponseMessage<T>` type has been removed.
+
+With streaming, server errors (`ResponseException`) are now thrown during result iteration rather than during
+`SubmitAsync`. Code that catches `ResponseException` around `SubmitAsync` should be updated to catch around the
+result consumption instead:
+
+[source,csharp]
+----
+// 3.x — exception thrown during SubmitAsync
+try {
+    var resultSet = await client.SubmitAsync<int>("invalid");
+} catch (ResponseException ex) { ... }
+
+// 4.0 — exception thrown during iteration
+var resultSet = await client.SubmitAsync<int>("invalid");
+try {
+    var list = await resultSet.ToListAsync();
+} catch (ResponseException ex) { ... }
+----
+
+The traversal API is not affected — `Next()`, `ToList()`, etc. still throw `ResponseException` directly since they
+block on the async stream internally.
+
+==== More Secure Gremlin Server
+
+Previous versions of Gremlin Server relied on a Gremlin-flavored Groovy `ScriptEngine` for basic server initialization,
+which covered binding traversal sources, loading data, and running lifecycle hooks all set up by Groovy initialization
+scripts. This meant the Groovy `ScriptEngine` was active by default, even for users who only needed to send standard
+Gremlin queries.
+
+TinkerPop 4.0 addresses this in two ways. First, `gremlin-lang` replaces `gremlin-groovy` as the default `ScriptEngine`
+for remote script execution, so standard Gremlin queries no longer require a general-purpose scripting engine. Second,
+server initialization is now handled through declarative YAML configuration, removing the last reason Groovy needed to
+be active by default.
+
+As of this release, Groovy is completely disabled by default throughout the entire server lifecycle. Users who
+explicitly need Groovy script execution can still opt in, but it is no longer required for any standard usage. A future
+release may remove Groovy as an installed option in the server distribution altogether.
+
+===== Simplified Server Configuration
+
+The most basic server setup, initializing a basic graph with a traversal source, previously required a Groovy init
+script just to create the `g` binding.  Now, any graph defined in the `graphs` section automatically gets a
+`TraversalSource` according to these rules:
+
+* A graph named `graph` is implicitly bound to `g`
+* All others are bound to `g_<graph-name>` (e.g. `modern` gets `g_modern`)
+
+A fully functional minimal configuration is now simply:
+
+[source,yaml]
+----
+graphs: {
+  graph: conf/tinkergraph-empty.properties}
+----
+
+===== Strategy Configuration via `traversalSources`
+
+For cases that require custom traversalSource naming or strategies on a `TraversalSource` (e.g. `ReadOnlyStrategy`), the
+`traversalSources` list within a graph entry provides explicit control without scripting:
+
+[source,yaml]
+----
+graphs: {
+  graph: {
+    configuration: conf/tinkergraph-empty.properties,
+    traversalSources: [
+      {name: g},
+      {name: gReadOnly, gremlinExpression: "g.withStrategies(ReadOnlyStrategy)"}]}}
+----
+
+Each entry specifies:
+
+- `name` (required): the binding name for the `TraversalSource`
+- `gremlinExpression` (optional): a Gremlin expression evaluated with a base traversal source bound as `g`
+- `language` (optional): which `ScriptEngine` to use for the expression (defaults to `gremlin-lang`, or the sole
+configured engine if only one is present)
+
+Graphs with explicit `traversalSources` entries are excluded from the implicitly defined traversal sources described in
+the previous section.
+
+===== Java-Based Lifecycle Hooks
+
+For startup and shutdown logic that goes beyond declarative configuration such as loading sample data, initializing
+caches, or custom setup, Java-based `LifeCycleHook` implementations can now replace Groovy init scripts:
+
+[source,yaml]
+----
+lifecycleHooks:
+  - className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader
+    config: {graph: graph, dataset: modern}
+----
+
+Each entry specifies a `className` implementing `LifeCycleHook` and an optional `config` map passed to the hook's
+`init()` method. The built-in `TinkerFactoryDataLoader` supports datasets: `airroutes`, `modern`, `classic`, `crew`,
+`grateful`, and `sink`.
+
+===== Migrating from Groovy Init Scripts
+
+Creating `TraversalSource` and `LifeCycleHook` instances via Groovy init scripts is now deprecated. Existing scripts
+continue to work when `GremlinGroovyScriptEngine` is explicitly configured, but a deprecation warning is logged at
+startup. Support for Groovy script initialization and customization may be dropped in a future release.
+
+*Before (Groovy init script):*
+
+[source,groovy]
+----
+def globals = [:]
+globals << [hook : [
+  onStartUp: { ctx ->
+    org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.generateModern(graph)
+  }
+] as LifeCycleHook]
+globals << [g : traversal().withEmbedded(graph)]
+----
+
+*After (YAML only):*
+
+[source,yaml]
+----
+graphs: {
+  graph: conf/tinkergraph-empty.properties}
+lifecycleHooks:
+  - { className: org.apache.tinkerpop.gremlin.server.util.TinkerFactoryDataLoader, config: {graph: graph, dataset: modern}}
+----
+
+The `g` binding is implicitly created from the `graph` entry. No `scriptEngines` section is needed.
+
+===== `ScriptEngine` Allowlist
+
+The `scriptEngines` configuration in the Gremlin Server YAML now acts as an allowlist. Only `ScriptEngine`
+implementations explicitly listed in the configuration will accept requests. The `gremlin-lang` `ScriptEngine` is always
+available regardless of configuration.
+
+Previously, any `GremlinScriptEngineFactory` discovered via Java's `ServiceLoader` mechanism on the classpath could be
+used by clients, even if it was not listed in the server's `scriptEngines` configuration. This meant that
+`gremlin-groovy` was always available as long as its JAR was on the classpath, regardless of the server configuration.
+
+With this change, a request specifying a `language` that is not in the `scriptEngines` configuration will receive a
+`400 Bad Request` response. Providers who rely on `gremlin-groovy` or any other `ScriptEngine` must explicitly include
+it in their `scriptEngines` configuration:
+
+[source,yaml]
+----
+scriptEngines: {
+  gremlin-lang: {},
+  gremlin-groovy: {
+    plugins: {
+      org.apache.tinkerpop.gremlin.server.jsr223.GremlinServerGremlinPlugin: {}}}}
+----
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-2720[TINKERPOP-2720],
+link:https://issues.apache.org/jira/browse/TINKERPOP-3107[TINKERPOP-3107]
+
 === Upgrading for Providers
 
 ==== Graph System Providers
