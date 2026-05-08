@@ -29,6 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -673,6 +675,66 @@ public class TinkerGraphGqlExecutorTest {
         final Vertex v = graph.addVertex("item");
         v.property("weight", 3.14f);  // Float
         final List<Map<String, Element>> results = execute("MATCH (n:item {weight: 3.14f})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testByteSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("small", (byte) 5);
+        final Vertex other = graph.addVertex("item");
+        other.property("small", (byte) 10);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {small: 5b})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testShortSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("medium", (short) 1000);
+        final Vertex other = graph.addVertex("item");
+        other.property("medium", (short) 2000);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {medium: 1000s})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBigIntegerSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("big", new BigInteger("999999999999"));
+        final Vertex other = graph.addVertex("item");
+        other.property("big", new BigInteger("1"));
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {big: 999999999999n})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testBigDecimalSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("price", new BigDecimal("1.99"));
+        final Vertex other = graph.addVertex("item");
+        other.property("price", new BigDecimal("9.99"));
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {price: 1.99m})");
+        assertEquals(1, results.size());
+        assertEquals(v, results.get(0).get("n"));
+    }
+
+    @Test
+    public void testDoubleSuffixFilter() {
+        final Vertex v = graph.addVertex("item");
+        v.property("score", 9.5);
+        final Vertex other = graph.addVertex("item");
+        other.property("score", 8.0);
+
+        final List<Map<String, Element>> results = execute("MATCH (n:item {score: 9.5d})");
         assertEquals(1, results.size());
         assertEquals(v, results.get(0).get("n"));
     }
