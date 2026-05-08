@@ -244,7 +244,7 @@ final class Connection {
     }
 
     private void handleConnectionCleanupOnError(final Connection thisConnection) {
-        if (thisConnection.isDead()) {
+        if (thisConnection.isDead() || (thisConnection.channel != null && !thisConnection.channel.isOpen())) {
             if (pool != null) pool.replaceConnection(thisConnection);
         } else {
             thisConnection.returnToPool();
