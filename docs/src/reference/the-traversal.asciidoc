@@ -2670,8 +2670,7 @@ evaluated once and each result becomes a traverser:
 
 [gremlin-groovy,modern]
 ----
-g.match("MATCH (a:person)-[:knows]->(b:person)").
-    select("a", "b").by("name")
+g.match("MATCH (a:person)-[:knows]->(b:person)")
 ----
 
 As a mid-traversal step, the pattern is applied in the context of each incoming traverser:
@@ -2679,21 +2678,20 @@ As a mid-traversal step, the pattern is applied in the context of each incoming 
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel("software").
-  match("MATCH (a:person)-[:knows]->(b:person)").
-  select("a", "b").by("name")
+  match("MATCH (a:person)-[:knows]->(b:person)")
 ----
 
 Each result row is emitted as a `Map<String, Object>` whose keys are the named variable names from the pattern and
-whose values are the bound graph elements. This map is the current traverser value, so `match()` is valid as a
-terminal step:
+whose values are the bound graph elements.
+
+A common pattern is to follow `match()` with a `select()` to extract and then transform specific variables by name.
+Anonymous pattern elements (those without a variable name) are not exposed and cannot be selected.
 
 [gremlin-groovy,modern]
 ----
 g.match("MATCH (a:person)-[:knows]->(b:person)")
+    select("a", "b").by("name")
 ----
-
-Named variables are also recorded in the traverser's path history, making them available to subsequent `select()`
-steps by name. Anonymous pattern elements (those without a variable name) are not exposed and cannot be selected.
 
 Multiple comma-separated path patterns can be expressed in a single query. Patterns that share a variable
 name are joined on that variable:
@@ -2702,6 +2700,14 @@ name are joined on that variable:
 ----
 g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
     select("a", "b").by("name")
+----
+
+Another useful pattern with `match()` is to follow it with `where` for filtering:
+
+[gremlin-groovy,modern]
+----
+g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
+    where("a", neq("b"))
 ----
 
 The query language can be specified explicitly with `with("queryLanguage", ...)`. When omitted, the graph system
@@ -2722,10 +2728,14 @@ itself, because the query string stays constant and the provider can cache the p
 
 [gremlin-groovy,modern]
 ----
-g.match("MATCH (p:person {name: $who})-[:knows]->(f:person)",
-        ["who": "marko"]).
+g.match('MATCH (p:person {name: $who})-[:knows]->(f:person)',
+        [who: "marko"]).
   select("p", "f").by("name")
 ----
+
+IMPORTANT: Groovy has special string handling that requires single quoted string for `$who` to be treated as a `match()`
+variable. When using double-quotes or triple-quotes, the parameter would need to be escaped with a backslash like
+`\$who`.
 
 The syntax for inline property filters (`{key: value}`) and the full set of supported literal types are
 provider-specific. See <<tinkergraph-gql>> for the complete syntax supported by TinkerGraph's built-in GQL engine.

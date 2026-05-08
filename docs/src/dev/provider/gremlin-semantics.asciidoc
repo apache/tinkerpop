@@ -1830,12 +1830,13 @@ When omitted, the provider uses its native or default language.
 
 * The step is a provider-delegation point. `gremlin-core` supplies only the placeholder `DeclarativeMatchStep`;
 graph providers replace it with their own implementation via a `TraversalStrategy`.
-* Each named variable in the matched pattern is stored as a labeled entry in the traverser's path, making
-results retrievable by name via `select()`.
-* Anonymous elements in the pattern (those without a variable name) are not exposed in the path and cannot be
+* The traverser value emitted by the step is a `Map<String, Object>` containing one entry per named variable in
+the matched pattern, keyed by variable name. Providers must set this map as the traverser value for each result
+row.
+* Each named variable is also recorded as a labeled entry in the traverser's path, so results remain retrievable
+by name via `select()` when downstream steps require individual values.
+* Anonymous elements in the pattern (those without a variable name) are not exposed in the map or path and cannot be
 referenced by `select()`.
-* The traverser value itself after the step is unspecified by the framework; providers should set it to a
-neutral sentinel (such as `Optional.empty()`) since callers are expected to use `select()` to retrieve results.
 * When used as a spawn step on `GraphTraversalSource`, no upstream traversers are consumed; the provider
 executes the query once and emits one traverser per result row.
 
