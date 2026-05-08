@@ -21,6 +21,8 @@
  * @author Igor Ostapenko
  */
 
+import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../../../../utils.js';
+
 // Based on GraphSON NumberSerializer.serialize().
 // It's tested by AnySerializer.serialize() tests.
 export default class NumberSerializationStrategy {
@@ -29,6 +31,16 @@ export default class NumberSerializationStrategy {
   }
 
   canBeUsedFor(value) {
+    if (
+      value instanceof Long ||
+      value instanceof Int ||
+      value instanceof Float ||
+      value instanceof Double ||
+      value instanceof Short ||
+      value instanceof Byte
+    ) {
+      return true;
+    }
     if (Number.isNaN(value) || value === Number.POSITIVE_INFINITY || value === Number.NEGATIVE_INFINITY) {
       return true;
     }
@@ -43,6 +55,25 @@ export default class NumberSerializationStrategy {
   }
 
   serialize(item, fullyQualifiedFormat = true) {
+    if (item instanceof Float) {
+      return this.ioc.floatSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+    if (item instanceof Double) {
+      return this.ioc.doubleSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+    if (item instanceof Int) {
+      return this.ioc.intSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+    if (item instanceof Long) {
+      return this.ioc.longSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+    if (item instanceof Short) {
+      return this.ioc.shortSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+    if (item instanceof Byte) {
+      return this.ioc.byteSerializer.serialize(item.value, fullyQualifiedFormat);
+    }
+
     if (typeof item === 'number') {
       if (
         Number.isNaN(item) ||
@@ -54,8 +85,7 @@ export default class NumberSerializationStrategy {
         return this.ioc.doubleSerializer.serialize(item, fullyQualifiedFormat);
       }
 
-      if (item >= -2147483648 && item <= 2147483647) {
-        // INT32_MIN/MAX
+      if (item >= INT32_MIN && item <= INT32_MAX) {
         return this.ioc.intSerializer.serialize(item, fullyQualifiedFormat);
       }
       if (item >= Number.MIN_SAFE_INTEGER && item <= Number.MAX_SAFE_INTEGER) {

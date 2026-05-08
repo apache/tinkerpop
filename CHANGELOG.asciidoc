@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 [[release-4-0-0]]
 === TinkerPop 4.0.0 (Release Date: NOT OFFICIALLY RELEASED YET)
 
+* Added typed numeric wrappers and `numberMode: 'precise'` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.

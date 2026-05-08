@@ -61,6 +61,19 @@ describe('API', function () {
     assert.strictEqual(typeof glvModule.structure.Property, 'function');
     assert.strictEqual(typeof glvModule.structure.Vertex, 'function');
     assert.strictEqual(typeof glvModule.structure.VertexProperty, 'function');
+    assert.strictEqual(typeof glvModule.structure.toLong, 'function');
+    assert.strictEqual(typeof glvModule.structure.toInt, 'function');
+    assert.strictEqual(typeof glvModule.structure.toFloat, 'function');
+    assert.strictEqual(typeof glvModule.structure.toDouble, 'function');
+    assert.strictEqual(typeof glvModule.structure.toShort, 'function');
+    assert.strictEqual(typeof glvModule.structure.toByte, 'function');
+    assert.strictEqual(typeof glvModule.structure.Int, 'function');
+    assert.strictEqual(typeof glvModule.structure.Float, 'function');
+    assert.strictEqual(typeof glvModule.structure.Double, 'function');
+    assert.strictEqual(typeof glvModule.structure.Short, 'function');
+    assert.strictEqual(typeof glvModule.structure.Byte, 'function');
+    assert.strictEqual(typeof glvModule.structure.Long, 'function');
+    assert.strictEqual(typeof glvModule.structure.unwrap, 'function');
   });
   it('should expose fields under driver', function () {
     assert.ok(glvModule.driver);

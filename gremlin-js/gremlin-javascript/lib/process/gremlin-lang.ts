@@ -19,7 +19,7 @@
 
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
-import { Long } from '../utils.js';
+import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
 import { Vertex } from '../structure/graph.js';
 import { Buffer } from 'buffer';
 
@@ -72,6 +72,21 @@ export default class GremlinLang {
     if (arg instanceof Long) {
       return String(arg.value) + 'L';
     }
+    if (arg instanceof Float) {
+      return GremlinLang._fpAsString(arg.value, 'F');
+    }
+    if (arg instanceof Double) {
+      return GremlinLang._fpAsString(arg.value, 'D');
+    }
+    if (arg instanceof Short) {
+      return String(arg.value) + 'S';
+    }
+    if (arg instanceof Byte) {
+      return String(arg.value) + 'B';
+    }
+    if (arg instanceof Int) {
+      return String(arg.value);
+    }
     if (typeof arg === 'bigint') {
       return String(arg) + 'N';
     }
@@ -80,7 +95,7 @@ export default class GremlinLang {
       if (arg === Infinity) return '+Infinity';
       if (arg === -Infinity) return '-Infinity';
       if (!Number.isInteger(arg)) return String(arg) + 'D';
-      if (arg >= -2147483648 && arg <= 2147483647) return String(arg);
+      if (arg >= INT32_MIN && arg <= INT32_MAX) return String(arg);
       // Outside safe integer range, values have lost precision and may exceed Java Long — emit as Double.
       if (arg > Number.MAX_SAFE_INTEGER || arg < -Number.MAX_SAFE_INTEGER) return String(arg) + 'D';
       return String(arg) + 'L';
@@ -187,6 +202,13 @@ export default class GremlinLang {
     return this;
   }
   
+  private static _fpAsString(v: number, suffix: 'F' | 'D'): string {
+    if (v === Infinity) return '+Infinity';
+    if (v === -Infinity) return '-Infinity';
+    if (Number.isNaN(v)) return 'NaN';
+    return Number.isInteger(v) ? `${v}.0${suffix}` : `${v}${suffix}`;
+  }
+
   getGremlin(prefix: string = 'g'): string {
     if (this.gremlin.length > 0 && this.gremlin[0] !== '.') {
       return this.gremlin;
