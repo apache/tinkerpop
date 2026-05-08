@@ -132,12 +132,19 @@ public final class ResultSet implements Iterable<Result> {
      * {@link Iterator} or {@link Stream} options, as the results will be held in memory at once.
      */
     public CompletableFuture<List<Result>> all() {
-        return readCompleted.thenApplyAsync(unusedInput -> {
-            if (error.get() != null) throw new RuntimeException(error.get());
-            final List<Result> list = new ArrayList<>();
-            resultQueue.drainTo(list);
-            return list;
+        final CompletableFuture<List<Result>> result = new CompletableFuture<>();
+        readCompleted.whenCompleteAsync((v, t) -> {
+            if (t != null) {
+                result.completeExceptionally(t);
+            } else if (error.get() != null) {
+                result.completeExceptionally(new RuntimeException(error.get()));
+            } else {
+                final List<Result> list = new ArrayList<>();
+                resultQueue.drainTo(list);
+                result.complete(list);
+            }
         }, executor);
+        return result;
     }
 
     /**

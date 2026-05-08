@@ -18,27 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.driver.exception;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResponseException extends Exception {
-    private final HttpResponseStatus responseStatusCode;
+    private final int responseStatusCode;
     private final String remoteException;
 
-    public ResponseException(final HttpResponseStatus responseStatusCode, final String serverMessage) {
+    public ResponseException(final int responseStatusCode, final String serverMessage) {
         this(responseStatusCode, serverMessage, null);
     }
 
-    public ResponseException(final HttpResponseStatus responseStatusCode, final String serverMessage,
+    public ResponseException(final int responseStatusCode, final String serverMessage,
                              final String remoteException) {
         super(serverMessage);
         this.responseStatusCode = responseStatusCode;
         this.remoteException = remoteException;
     }
 
-    public HttpResponseStatus getResponseStatusCode() {
+    public int getResponseStatusCode() {
         return responseStatusCode;
     }
 

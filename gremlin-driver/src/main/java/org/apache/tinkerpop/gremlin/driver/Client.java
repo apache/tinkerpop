@@ -366,6 +366,46 @@ public abstract class Client implements RequestSubmitter, RequestSubmitterAsync 
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
         }
 
+        @Override
+        public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
+            if (isClosing()) throw new IllegalStateException("Client is closed");
+
+            if (!initialized)
+                init();
+
+            final CompletableFuture<ResultSet> future = new CompletableFuture<>();
+            final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
+            final Host bestHost = possibleHosts.hasNext() ? possibleHosts.next() : chooseRandomHost();
+            final ConnectionPool pool = hostConnectionPools.get(bestHost);
+
+            Connection connection = null;
+            try {
+                connection = pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+                connection.write(msg, future);
+
+                final HostHealthTracker healthTracker = cluster.healthTracker();
+                future.whenComplete((result, throwable) -> {
+                    if (throwable != null) {
+                        if (healthTracker.recordFailure(bestHost)) {
+                            bestHost.makeUnavailable();
+                            cluster.loadBalancingStrategy().onUnavailable(bestHost);
+                        }
+                    } else {
+                        healthTracker.recordSuccess(bestHost);
+                    }
+                });
+
+                return future;
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            } finally {
+                if (logger.isDebugEnabled())
+                    logger.debug("Submitted {} to - {}", msg, null == connection ? "connection not initialized" : connection.toString());
+            }
+        }
+
         /**
          * Initializes the connection pools on all hosts.
          */

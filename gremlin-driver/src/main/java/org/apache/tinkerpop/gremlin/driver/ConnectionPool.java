@@ -523,10 +523,15 @@ final class ConnectionPool {
         // remove head of queue until we can borrow a connection or the queue is empty
         Connection head = availableConnections.poll();
         while (head != null) {
-            // try to borrow connection
+            // try to borrow connection - also verify the host is still reachable
             if (!head.isDead() && !head.isBorrowed().get() && head.isBorrowed().compareAndSet(false, true)) {
-                available = head;
-                break;
+                if (isHostReachable()) {
+                    available = head;
+                    break;
+                } else {
+                    head.markDead();
+                    head.isBorrowed().set(false);
+                }
             }
             head = availableConnections.poll();
         }
@@ -536,6 +541,18 @@ final class ConnectionPool {
         }
 
         return available;
+    }
+
+    private boolean isHostReachable() {
+        final java.net.URI uri = host.getHostUri();
+        if (uri == null) return true;
+        final int port = uri.getPort() > 0 ? uri.getPort() : (uri.getScheme().equals("https") ? 443 : 80);
+        try (java.net.Socket socket = new java.net.Socket()) {
+            socket.connect(new java.net.InetSocketAddress(uri.getHost(), port), 1000);
+            return true;
+        } catch (final java.io.IOException e) {
+            return false;
+        }
     }
     
     private void awaitAvailableConnection(long timeout, TimeUnit unit) throws InterruptedException {

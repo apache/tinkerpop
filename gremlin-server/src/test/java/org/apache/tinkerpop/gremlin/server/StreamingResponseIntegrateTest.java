@@ -141,7 +141,7 @@ public class StreamingResponseIntegrateTest extends AbstractGremlinServerIntegra
             // Error should propagate correctly through the streaming pipeline
             assertTrue(e.getCause() instanceof ResponseException);
             final ResponseException re = (ResponseException) e.getCause();
-            assertEquals(HttpResponseStatus.BAD_REQUEST, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.BAD_REQUEST.code(), re.getResponseStatusCode());
         } finally {
             cluster.close();
         }

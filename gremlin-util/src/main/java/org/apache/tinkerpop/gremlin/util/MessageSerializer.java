@@ -22,8 +22,7 @@ import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,30 +52,28 @@ public interface MessageSerializer<M> {
     M getMapper();
 
     /**
-     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
+     * Serialize a {@link ResponseMessage} to a {@link Buffer}.
      *
      * @param responseMessage The response message to serialize to bytes.
-     * @param allocator       The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer serializeResponseAsBinary(final ResponseMessage responseMessage) throws SerializationException;
 
     /**
-     * Serialize a {@link ResponseMessage} to a Netty {@code ByteBuf}.
+     * Serialize a {@link RequestMessage} to a {@link Buffer}.
      *
      * @param requestMessage The request message to serialize to bytes.
-     * @param allocator      The Netty allocator for the {@code ByteBuf} to return back.
      */
-    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer serializeRequestAsBinary(final RequestMessage requestMessage) throws SerializationException;
 
     /**
-     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
+     * Deserialize a {@link Buffer} into a {@link RequestMessage}.
      */
-    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) throws SerializationException;
+    public RequestMessage deserializeBinaryRequest(final Buffer msg) throws SerializationException;
 
     /**
-     * Deserialize a Netty {@code ByteBuf} into a {@link RequestMessage}.
+     * Deserialize a {@link Buffer} into a {@link ResponseMessage}.
      */
-    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException;
+    public ResponseMessage deserializeBinaryResponse(final Buffer msg) throws SerializationException;
 
     /**
      * The list of mime types that the serializer supports. They should be ordered in preferred ordered where the
@@ -94,15 +91,15 @@ public interface MessageSerializer<M> {
     public default void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
     }
 
-    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer writeHeader(final ResponseMessage responseMessage) throws SerializationException;
 
-    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer writeChunk(final Object aggregate) throws SerializationException;
 
-    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer writeFooter(final ResponseMessage responseMessage) throws SerializationException;
 
-    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException;
+    public Buffer writeErrorFooter(final ResponseMessage responseMessage) throws SerializationException;
 
-    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException;
+    public ResponseMessage readChunk(final Buffer buffer, final boolean isFirstChunk) throws SerializationException;
 
     public enum MessageParts {
         HEADER, DATA, FOOTER;

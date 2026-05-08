@@ -18,10 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.benchmark.util.AbstractBenchmarkBase;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
+import org.apache.tinkerpop.gremlin.util.ser.HeapBufferFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -48,17 +47,16 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class GraphBinaryReaderWriterBenchmark extends AbstractBenchmarkBase {
     private static GraphBinaryReader reader = new GraphBinaryReader();
     private static GraphBinaryWriter writer = new GraphBinaryWriter();
-    private static UnpooledByteBufAllocator allocator = new UnpooledByteBufAllocator(false);
-    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
+    private static HeapBufferFactory bufferFactory = new HeapBufferFactory();
 
     @State(Scope.Thread)
     public static class BenchmarkState {
-        public Buffer bytecodeBuffer1 = bufferFactory.create(allocator.buffer(2048));
-        public Buffer bytecodeBuffer2 = bufferFactory.create(allocator.buffer(2048));
-        public Buffer pBuffer1 = bufferFactory.create(allocator.buffer(2048));
+        public Buffer bytecodeBuffer1 = bufferFactory.create(2048);
+        public Buffer bytecodeBuffer2 = bufferFactory.create(2048);
+        public Buffer pBuffer1 = bufferFactory.create(2048);
         public final GremlinLang gremlinLang1 = new GremlinLang();
 
-        public Buffer bufferWrite = bufferFactory.create(allocator.buffer(2048));
+        public Buffer bufferWrite = bufferFactory.create(2048);
 
         public GremlinLang gremlinLang2;
 

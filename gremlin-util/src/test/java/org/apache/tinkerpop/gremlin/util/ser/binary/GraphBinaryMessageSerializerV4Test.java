@@ -21,9 +21,11 @@ package org.apache.tinkerpop.gremlin.util.ser.binary;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.junit.Test;
 
@@ -59,7 +61,7 @@ public class GraphBinaryMessageSerializerV4Test {
                 .result(Arrays.asList(1, "test"))
                 .create();
 
-        final ByteBuf buffer = serializer.writeHeader(response, allocator);
+        final Buffer buffer = serializer.writeHeader(response);
         final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
@@ -70,7 +72,7 @@ public class GraphBinaryMessageSerializerV4Test {
                 .result(Arrays.asList(1, "test"))
                 .create();
 
-        final ByteBuf buffer = serializer.writeHeader(response, allocator);
+        final Buffer buffer = serializer.writeHeader(response);
         final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
@@ -78,7 +80,7 @@ public class GraphBinaryMessageSerializerV4Test {
     @Test
     public void shouldSerializeAndDeserializeResponseInDataChunk() throws SerializationException {
         final List data = Arrays.asList(1, "test");
-        final ByteBuf buffer = serializer.writeChunk(data, allocator);
+        final Buffer buffer = serializer.writeChunk(data);
         final ResponseMessage deserialized = serializer.readChunk(buffer, false);
 
         assertEquals(data, deserialized.getResult().getData());
@@ -92,7 +94,7 @@ public class GraphBinaryMessageSerializerV4Test {
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf buffer = serializer.writeFooter(response, allocator);
+        final Buffer buffer = serializer.writeFooter(response);
         final ResponseMessage deserialized = serializer.readChunk(buffer, false);
         assertResponseEquals(response, deserialized);
     }
@@ -104,7 +106,7 @@ public class GraphBinaryMessageSerializerV4Test {
                 .statusMessage("FORBIDDEN")
                 .create();
 
-        final ByteBuf buffer = serializer.writeHeader(response, allocator);
+        final Buffer buffer = serializer.writeHeader(response);
         final ResponseMessage deserialized = serializer.readChunk(buffer, true);
         assertResponseEquals(response, deserialized);
     }
@@ -126,14 +128,19 @@ public class GraphBinaryMessageSerializerV4Test {
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
-        final ByteBuf bb1 = serializer.writeChunk(chunkData1, allocator);
-        final ByteBuf bb2 = serializer.writeChunk(chunkData2, allocator);
-        final ByteBuf bb3 = serializer.writeFooter(footer, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
+        final Buffer bb1 = serializer.writeChunk(chunkData1);
+        final Buffer bb2 = serializer.writeChunk(chunkData2);
+        final Buffer bb3 = serializer.writeFooter(footer);
 
-        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final ByteBuf bbCombined = ByteBufAllocator.DEFAULT.buffer();
+        copyBufferTo(bb0, bbCombined);
+        copyBufferTo(bb1, bbCombined);
+        copyBufferTo(bb2, bbCombined);
+        copyBufferTo(bb3, bbCombined);
 
-        final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
+        final ResponseMessage deserialized = serializer.readChunk(bufferFactory.create(bbCombined), true);
 
         // Status
         assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
@@ -162,14 +169,19 @@ public class GraphBinaryMessageSerializerV4Test {
                 .exception("fire in data center")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
-        final ByteBuf bb1 = serializer.writeChunk(chunkData1, allocator);
-        final ByteBuf bb2 = serializer.writeChunk(chunkData2, allocator);
-        final ByteBuf bb3 = serializer.writeErrorFooter(footer, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
+        final Buffer bb1 = serializer.writeChunk(chunkData1);
+        final Buffer bb2 = serializer.writeChunk(chunkData2);
+        final Buffer bb3 = serializer.writeErrorFooter(footer);
 
-        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final ByteBuf bbCombined = ByteBufAllocator.DEFAULT.buffer();
+        copyBufferTo(bb0, bbCombined);
+        copyBufferTo(bb1, bbCombined);
+        copyBufferTo(bb2, bbCombined);
+        copyBufferTo(bb3, bbCombined);
 
-        final ResponseMessage deserialized = serializer.readChunk(bbCombined, true);
+        final ResponseMessage deserialized = serializer.readChunk(bufferFactory.create(bbCombined), true);
 
         // Status
         assertEquals(footer.getStatus().getCode(), deserialized.getStatus().getCode());
@@ -179,6 +191,12 @@ public class GraphBinaryMessageSerializerV4Test {
         List<Integer> combinedData = new ArrayList<>();
         Stream.of(headerData, chunkData1, chunkData2).forEach(combinedData::addAll);
         assertEquals(combinedData, deserialized.getResult().getData());
+    }
+
+    private static void copyBufferTo(final Buffer src, final ByteBuf dst) {
+        final byte[] bytes = new byte[src.readableBytes()];
+        src.readBytes(bytes);
+        dst.writeBytes(bytes);
     }
 
     @Test

@@ -18,13 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
-import io.netty.buffer.ByteBuf;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 
@@ -32,12 +30,8 @@ import java.io.IOException;
 import java.util.Map;
 
 public class RequestMessageSerializer {
-    private static NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
-    public RequestMessage readValue(final ByteBuf byteBuf, final GraphBinaryReader context) throws SerializationException {
-        // Wrap netty's buffer
-        final Buffer buffer = bufferFactory.create(byteBuf);
-
+    public RequestMessage readValue(final Buffer buffer, final GraphBinaryReader context) throws SerializationException {
         final int version = buffer.readByte() & 0xff;
 
         if (version >>> 7 != 1) {
@@ -83,10 +77,7 @@ public class RequestMessageSerializer {
         }
     }
 
-    public void writeValue(final RequestMessage value, final ByteBuf byteBuf, final GraphBinaryWriter context) throws SerializationException {
-        // Wrap netty's buffer
-        final Buffer buffer = bufferFactory.create(byteBuf);
-
+    public void writeValue(final RequestMessage value, final Buffer buffer, final GraphBinaryWriter context) throws SerializationException {
         try {
             // Version
             buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);

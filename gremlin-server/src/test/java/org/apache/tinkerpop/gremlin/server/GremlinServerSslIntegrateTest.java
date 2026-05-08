@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.junit.Test;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -192,11 +193,10 @@ public class GremlinServerSslIntegrateTest extends AbstractGremlinServerIntegrat
     @Test
     public void shouldEnableSslWithSslContextProgrammaticallySpecified() throws Exception {
         // just for testing - this is not good for production use
-        final SslContextBuilder builder = SslContextBuilder.forClient();
-        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-        builder.sslProvider(SslProvider.JDK);
+        final SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, InsecureTrustManagerFactory.INSTANCE.getTrustManagers(), null);
 
-        final Cluster cluster = TestClientFactory.build().enableSsl(true).sslContext(builder.build()).create();
+        final Cluster cluster = TestClientFactory.build().enableSsl(true).sslContext(sslContext).create();
         final Client client = cluster.connect();
 
         try {

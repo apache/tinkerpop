@@ -33,6 +33,11 @@ public interface BufferFactory<T> {
     Buffer create(final T value);
 
     /**
+     * Creates a new {@link Buffer} with the given initial capacity.
+     */
+    Buffer create(final int initialCapacity);
+
+    /**
      * Wraps a NIO buffer.
      */
     Buffer wrap(final ByteBuffer value);

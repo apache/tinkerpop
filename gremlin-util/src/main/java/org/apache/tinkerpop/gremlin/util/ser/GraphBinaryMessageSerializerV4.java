@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
@@ -162,8 +160,8 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-        final ByteBuf buffer = allocator.buffer();
+    public Buffer serializeRequestAsBinary(final RequestMessage requestMessage) throws SerializationException {
+        final Buffer buffer = bufferFactory.create(256);
 
         try {
             requestSerializer.writeValue(requestMessage, buffer, writer);
@@ -176,46 +174,45 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     }
 
     @Override
-    public RequestMessage deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
+    public RequestMessage deserializeBinaryRequest(final Buffer msg) throws SerializationException {
         return requestSerializer.readValue(msg, reader);
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public Buffer serializeResponseAsBinary(final ResponseMessage responseMessage) throws SerializationException {
         if (null == responseMessage.getStatus()) {
             throw new SerializationException("ResponseStatus can't be null when serializing a full ResponseMessage.");
         }
 
-        return writeHeader(responseMessage, allocator);
+        return writeHeader(responseMessage);
     }
 
     //////////////// chunked write
     @Override
-    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public Buffer writeHeader(final ResponseMessage responseMessage) throws SerializationException {
         final EnumSet<MessageParts> parts = responseMessage.getStatus() != null ? MessageParts.ALL : MessageParts.START;
 
-        return write(responseMessage, null, allocator, parts);
+        return write(responseMessage, null, parts);
     }
 
     @Override
-    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException {
-        return write(null, aggregate, allocator, MessageParts.CHUNK);
+    public Buffer writeChunk(final Object aggregate) throws SerializationException {
+        return write(null, aggregate, MessageParts.CHUNK);
     }
 
     @Override
-    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        return write(responseMessage, null, allocator, MessageParts.END);
+    public Buffer writeFooter(final ResponseMessage responseMessage) throws SerializationException {
+        return write(responseMessage, null, MessageParts.END);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        return write(responseMessage, null, allocator, MessageParts.ERROR);
+    public Buffer writeErrorFooter(final ResponseMessage responseMessage) throws SerializationException {
+        return write(responseMessage, null, MessageParts.ERROR);
     }
 
-    private ByteBuf write(final ResponseMessage responseMessage, final Object aggregate,
-                          final ByteBufAllocator allocator, final EnumSet<MessageParts> parts) throws SerializationException {
-        final ByteBuf byteBuf = allocator.buffer();
-        final Buffer buffer = bufferFactory.create(byteBuf);
+    private Buffer write(final ResponseMessage responseMessage, final Object aggregate,
+                         final EnumSet<MessageParts> parts) throws SerializationException {
+        final Buffer buffer = bufferFactory.create(256);
 
         try {
             if (parts.contains(MessageParts.HEADER)) {
@@ -252,15 +249,16 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
                 writer.writeValue(status.getException(), buffer, true);
             }
         } catch (IOException e) {
+            buffer.release();
             throw new SerializationException(e);
         }
-        return byteBuf;
+        return buffer;
     }
 
     //////////////// read message methods
 
     @Override
-    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
+    public ResponseMessage deserializeBinaryResponse(final Buffer msg) throws SerializationException {
         return readChunk(msg, true);
     }
 
@@ -285,8 +283,7 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     }
 
     @Override
-    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) throws SerializationException {
-        final Buffer buffer = bufferFactory.create(byteBuf);
+    public ResponseMessage readChunk(final Buffer buffer, final boolean isFirstChunk) throws SerializationException {
         boolean bulking = false;
 
         try {

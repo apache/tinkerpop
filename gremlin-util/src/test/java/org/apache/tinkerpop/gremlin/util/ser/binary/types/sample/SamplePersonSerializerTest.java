@@ -103,8 +103,8 @@ public class SamplePersonSerializerTest {
         final OffsetDateTime birthDate = OffsetDateTime.of(LocalDateTime.of(2010, 4, 29, 5, 30), ZoneOffset.UTC);
         final SamplePerson person = new SamplePerson("Olivia", birthDate);
 
-        final ByteBuf serialized = serializer.serializeResponseAsBinary(
-                ResponseMessage.build().result(Collections.singletonList(person)).code(HttpResponseStatus.OK).create(), allocator);
+        final Buffer serialized = serializer.serializeResponseAsBinary(
+                ResponseMessage.build().result(Collections.singletonList(person)).code(HttpResponseStatus.OK).create());
 
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(serialized);
 

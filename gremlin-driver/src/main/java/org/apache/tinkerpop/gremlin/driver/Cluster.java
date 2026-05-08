@@ -18,18 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.concurrent.Future;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
+import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
+import org.apache.hc.core5.reactor.IOReactorConfig;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.tinkerpop.gremlin.driver.auth.Auth;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
@@ -43,11 +44,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
@@ -56,10 +59,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -362,8 +362,8 @@ public final class Cluster {
         manager.untrackTransaction(tx);
     }
 
-    Factory getFactory() {
-        return manager.factory;
+    HttpTransport getHttpTransport() {
+        return manager.httpTransport;
     }
 
     MessageSerializer<?> getSerializer() {
@@ -398,73 +398,12 @@ public final class Cluster {
         return manager.loadBalancingStrategy;
     }
 
-    RequestMessage.Builder validationRequest() {
-        return manager.validationRequest.get();
+    HostHealthTracker healthTracker() {
+        return manager.healthTracker;
     }
 
-    SslContext createSSLContext() throws Exception {
-        // if the context is provided then just use that and ignore the other settings
-        if (manager.sslContextOptional.isPresent())
-            return manager.sslContextOptional.get();
-
-        final SslProvider provider = SslProvider.JDK;
-        final Settings.ConnectionPoolSettings connectionPoolSettings = connectionPoolSettings();
-        final SslContextBuilder builder = SslContextBuilder.forClient();
-
-        // Build JSSE SSLContext
-        try {
-
-            // Load private key/public cert for client auth
-            if (null != connectionPoolSettings.keyStore) {
-                final String keyStoreType = null == connectionPoolSettings.keyStoreType ? KeyStore.getDefaultType()
-                        : connectionPoolSettings.keyStoreType;
-                final KeyStore keystore = KeyStore.getInstance(keyStoreType);
-                final char[] password = null == connectionPoolSettings.keyStorePassword ? null
-                        : connectionPoolSettings.keyStorePassword.toCharArray();
-                try (final InputStream in = new FileInputStream(connectionPoolSettings.keyStore)) {
-                    keystore.load(in, password);
-                }
-                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(keystore, password);
-                builder.keyManager(kmf);
-            }
-
-            // Load custom truststore
-            if (null != connectionPoolSettings.trustStore) {
-                final String trustStoreType = null != connectionPoolSettings.trustStoreType ? connectionPoolSettings.trustStoreType
-                        : null != connectionPoolSettings.keyStoreType ? connectionPoolSettings.keyStoreType : KeyStore.getDefaultType();
-                final KeyStore truststore = KeyStore.getInstance(trustStoreType);
-                final char[] password = null == connectionPoolSettings.trustStorePassword ? null
-                        : connectionPoolSettings.trustStorePassword.toCharArray();
-                try (final InputStream in = new FileInputStream(connectionPoolSettings.trustStore)) {
-                    truststore.load(in, password);
-                }
-                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(truststore);
-                builder.trustManager(tmf);
-            }
-
-        } catch (UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-            logger.error("There was an error enabling SSL.", e);
-            return null;
-        }
-
-        if (null != connectionPoolSettings.sslCipherSuites && !connectionPoolSettings.sslCipherSuites.isEmpty()) {
-            builder.ciphers(connectionPoolSettings.sslCipherSuites);
-        }
-
-        if (null != connectionPoolSettings.sslEnabledProtocols && !connectionPoolSettings.sslEnabledProtocols.isEmpty()) {
-            builder.protocols(connectionPoolSettings.sslEnabledProtocols.toArray(new String[] {}));
-        }
-
-        if (connectionPoolSettings.sslSkipCertValidation) {
-            logger.warn("SSL configured with sslSkipCertValidation thus trusts all certificates without verification (not suitable for production)");
-            builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
-        }
-
-        builder.sslProvider(provider);
-
-        return builder.build();
+    RequestMessage.Builder validationRequest() {
+        return manager.validationRequest.get();
     }
 
     /**
@@ -508,13 +447,14 @@ public final class Cluster {
         private List<String> sslEnabledProtocols = new ArrayList<>();
         private List<String> sslCipherSuites = new ArrayList<>();
         private boolean sslSkipCertValidation = false;
-        private SslContext sslContext = null;
+        private SSLContext sslContext = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private LinkedList<Pair<String, ? extends RequestInterceptor>> interceptors = new LinkedList<>();
         private long connectionSetupTimeoutMillis = Connection.CONNECTION_SETUP_TIMEOUT_MILLIS;
         private long idleConnectionTimeoutMillis = Connection.CONNECTION_IDLE_TIMEOUT_MILLIS;
         private boolean enableUserAgentOnConnect = true;
         private boolean bulkResults = false;
+        private int healthCheckThreshold = 3;
 
         private Builder() {
             addInterceptor(SERIALIZER_INTERCEPTOR_NAME,
@@ -593,12 +533,12 @@ public final class Cluster {
         }
 
         /**
-         * Explicitly set the {@code SslContext} for when more flexibility is required in the configuration than is
+         * Explicitly set the {@code SSLContext} for when more flexibility is required in the configuration than is
          * allowed by the {@link Builder}. If this value is set to something other than {@code null} then all other
          * related SSL settings are ignored. The {@link #enableSsl} setting should still be set to {@code true} for
          * this setting to take effect.
          */
-        public Builder sslContext(final SslContext sslContext) {
+        public Builder sslContext(final SSLContext sslContext) {
             this.sslContext = sslContext;
             return this;
         }
@@ -899,6 +839,14 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * The number of consecutive failures before a host is marked unavailable. Default is 3.
+         */
+        public Builder healthCheckThreshold(final int threshold) {
+            this.healthCheckThreshold = threshold;
+            return this;
+        }
+
         List<InetSocketAddress> getContactPoints() {
             return addresses.stream().map(addy -> new InetSocketAddress(addy, port)).collect(Collectors.toList());
         }
@@ -910,28 +858,104 @@ public final class Cluster {
         }
     }
 
-    static class Factory {
-        private final NioEventLoopGroup group;
+    static CloseableHttpAsyncClient createHttpClient(final Builder builder) {
+        final IOReactorConfig ioReactorConfig = IOReactorConfig.custom()
+                .setIoThreadCount(builder.nioPoolSize)
+                .build();
 
-        public Factory(final int nioPoolSize) {
-            final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("gremlin-driver-loop-%d").build();
-            group = new NioEventLoopGroup(nioPoolSize, threadFactory);
+        final ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(builder.connectionSetupTimeoutMillis))
+                .setSocketTimeout(Timeout.ofMilliseconds(0))
+                .setTimeToLive(TimeValue.ofMilliseconds(builder.idleConnectionTimeoutMillis == 0 ? -1 : builder.idleConnectionTimeoutMillis))
+                .build();
+
+        final PoolingAsyncClientConnectionManagerBuilder connManagerBuilder = PoolingAsyncClientConnectionManagerBuilder.create()
+                .setMaxConnPerRoute(builder.maxConnectionPoolSize)
+                .setMaxConnTotal(builder.maxConnectionPoolSize)
+                .setDefaultConnectionConfig(connectionConfig);
+
+        if (builder.enableSsl) {
+            connManagerBuilder.setTlsStrategy(createTlsStrategy(builder));
         }
 
-        Bootstrap createBootstrap() {
-            final Bootstrap b = new Bootstrap().group(group);
-            b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-            return b;
+        final PoolingAsyncClientConnectionManager connManager = connManagerBuilder.build();
+
+        final CloseableHttpAsyncClient client = HttpAsyncClients.custom()
+                .setIOReactorConfig(ioReactorConfig)
+                .setConnectionManager(connManager)
+                .build();
+
+        client.start();
+        return client;
+    }
+
+    /**
+     * Creates a {@link TlsStrategy} from the SSL/TLS settings on the {@link Builder}.
+     */
+    private static TlsStrategy createTlsStrategy(final Builder builder) {
+        final SSLContext sslContext = builder.sslContext != null ? builder.sslContext : createSSLContext(builder);
+
+        final ClientTlsStrategyBuilder tlsBuilder = ClientTlsStrategyBuilder.create()
+                .setSslContext(sslContext);
+
+        if (!builder.sslEnabledProtocols.isEmpty()) {
+            tlsBuilder.setTlsVersions(builder.sslEnabledProtocols.toArray(new String[0]));
         }
 
-        /**
-         * Gracefully shutsdown the event loop and returns the termination future which signals that all jobs are done.
-         */
-        Future<?> shutdown() {
-            // Do not provide a quiet period (default is 2s) to accept more requests. Once we have decided to shutdown,
-            // no new requests should be accepted.
-            group.shutdownGracefully(/*quiet period*/0, /*timeout*/2, TimeUnit.SECONDS);
-            return group.terminationFuture();
+        if (!builder.sslCipherSuites.isEmpty()) {
+            tlsBuilder.setCiphers(builder.sslCipherSuites.toArray(new String[0]));
+        }
+
+        if (builder.sslSkipCertValidation) {
+            tlsBuilder.setHostnameVerifier((hostname, session) -> true);
+        }
+
+        return tlsBuilder.build();
+    }
+
+    /**
+     * Builds a {@link SSLContext} from the keyStore/trustStore settings on the {@link Builder}.
+     */
+    private static SSLContext createSSLContext(final Builder builder) {
+        try {
+            final KeyManagerFactory kmf;
+            if (builder.keyStore != null) {
+                final String ksType = builder.keyStoreType != null ? builder.keyStoreType : KeyStore.getDefaultType();
+                final KeyStore ks = KeyStore.getInstance(ksType);
+                try (final InputStream is = new FileInputStream(builder.keyStore)) {
+                    ks.load(is, builder.keyStorePassword != null ? builder.keyStorePassword.toCharArray() : null);
+                }
+                kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(ks, builder.keyStorePassword != null ? builder.keyStorePassword.toCharArray() : null);
+            } else {
+                kmf = null;
+            }
+
+            final TrustManager[] trustManagers;
+            if (builder.sslSkipCertValidation) {
+                trustManagers = new TrustManager[]{new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                }};
+            } else if (builder.trustStore != null) {
+                final String tsType = builder.trustStoreType != null ? builder.trustStoreType : KeyStore.getDefaultType();
+                final KeyStore ts = KeyStore.getInstance(tsType);
+                try (final InputStream is = new FileInputStream(builder.trustStore)) {
+                    ts.load(is, builder.trustStorePassword != null ? builder.trustStorePassword.toCharArray() : null);
+                }
+                final TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(ts);
+                trustManagers = tmf.getTrustManagers();
+            } else {
+                trustManagers = null;
+            }
+
+            final SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(kmf != null ? kmf.getKeyManagers() : null, trustManagers, null);
+            return sc;
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to create SSLContext", ex);
         }
     }
 
@@ -940,11 +964,10 @@ public final class Cluster {
         private final Set<HttpRemoteTransaction> openTransactions = ConcurrentHashMap.newKeySet();
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
-        private final Factory factory;
+        private final HttpTransport httpTransport;
         private final MessageSerializer<?> serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
-        private final Optional<SslContext> sslContextOptional;
         private final Supplier<RequestMessage.Builder> validationRequest;
         private final List<Pair<String, ? extends RequestInterceptor>> interceptors;
 
@@ -975,6 +998,7 @@ public final class Cluster {
         private final String path;
         private final boolean enableUserAgentOnConnect;
         private final boolean bulkResults;
+        private final HostHealthTracker healthTracker;
 
         private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
@@ -988,6 +1012,7 @@ public final class Cluster {
             this.interceptors = builder.interceptors;
             this.enableUserAgentOnConnect = builder.enableUserAgentOnConnect;
             this.bulkResults = builder.bulkResults;
+            this.healthTracker = new HostHealthTracker(builder.healthCheckThreshold);
 
             connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxSize = builder.maxConnectionPoolSize;
@@ -1010,19 +1035,25 @@ public final class Cluster {
             connectionPoolSettings.connectionSetupTimeoutMillis = builder.connectionSetupTimeoutMillis;
             connectionPoolSettings.idleConnectionTimeout = builder.idleConnectionTimeoutMillis;
 
-            sslContextOptional = Optional.ofNullable(builder.sslContext);
-
             nioPoolSize = builder.nioPoolSize;
             workerPoolSize = builder.workerPoolSize;
             port = builder.port;
             path = builder.path;
 
-            this.factory = new Factory(builder.nioPoolSize);
-            this.serializer = builder.serializer;
-            
             this.executor = new ScheduledThreadPoolExecutor(builder.workerPoolSize,
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-worker-%d").build());
             this.executor.setRemoveOnCancelPolicy(true);
+
+            final CloseableHttpAsyncClient httpClient = createHttpClient(builder);
+            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize,
+                    60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-stream-reader-%d").build());
+
+            this.httpTransport = new HttpTransport(httpClient, builder.serializer,
+                    builder.interceptors, this.executor, this.streamingReaderPool,
+                    builder.enableUserAgentOnConnect, builder.bulkResults,
+                    builder.maxResponseContentLength);
+            this.serializer = builder.serializer;
 
             // the executor above should be reserved for reading/writing background tasks that wont interfere with each
             // other if the thread pool is 1 otherwise tasks may be schedule in such a way as to produce a deadlock
@@ -1035,10 +1066,6 @@ public final class Cluster {
             // if all the possible jobs the driver allows for go to a single thread pool.
             this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
-
-            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize,
-                    60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-                    new BasicThreadFactory.Builder().namingPattern("gremlin-driver-stream-reader-%d").build());
 
             validationRequest = () -> RequestMessage.build(builder.validationRequest);
         }
@@ -1076,6 +1103,9 @@ public final class Cluster {
             if (builder.idleConnectionTimeoutMillis != 0 && builder.idleConnectionTimeoutMillis < 1000)
                 throw new IllegalArgumentException("idleConnectionTimeoutMillis must be zero or greater than or equal to 1000");
 
+            if (builder.healthCheckThreshold < 1)
+                throw new IllegalArgumentException("healthCheckThreshold must be greater than zero");
+
         }
 
         synchronized void init() {
@@ -1087,6 +1117,32 @@ public final class Cluster {
             contactPoints.forEach(address -> {
                 final Host host = add(address);
             });
+
+            // schedule periodic health probe for unavailable hosts
+            final long interval = connectionPoolSettings.reconnectInterval;
+            hostScheduler.scheduleAtFixedRate(this::probeUnavailableHosts, interval, interval, TimeUnit.MILLISECONDS);
+        }
+
+        /**
+         * Probes hosts that are currently unavailable by sending a validation request. On success, resets the
+         * failure counter and notifies the load balancing strategy that the host is available again.
+         */
+        private void probeUnavailableHosts() {
+            for (final Host host : allHosts()) {
+                if (!host.isAvailable()) {
+                    try {
+                        final RequestMessage probe = validationRequest.get().create();
+                        final CompletableFuture<ResultSet> f = httpTransport.sendAsync(host, probe);
+                        f.get(connectionPoolSettings.reconnectInterval, TimeUnit.MILLISECONDS).all().get();
+                        healthTracker.recordSuccess(host);
+                        host.makeAvailable();
+                        loadBalancingStrategy.onAvailable(host);
+                        logger.info("Health probe succeeded for {}. Marking as available.", host);
+                    } catch (Exception ex) {
+                        logger.debug("Health probe failed for {}", host, ex);
+                    }
+                }
+            }
         }
 
         void trackClient(final Client client) {
@@ -1137,22 +1193,17 @@ public final class Cluster {
                 }
             }
 
-            // when all the clients are fully closed then shutdown the netty event loop. not sure why this needs to
-            // block here, but if it doesn't then factory.shutdown() below doesn't seem to want to ever complete.
-            // ideally, this should all be async, but i guess it wasn't before this change so just going to leave it
-            // for now as this really isn't the focus on this change
+            // when all the clients are fully closed then shutdown the http transport.
             CompletableFuture.allOf(clientCloseFutures.toArray(new CompletableFuture[0])).join();
 
             final CompletableFuture<Void> closeIt = new CompletableFuture<>();
-            // shutdown the event loop. that shutdown can trigger some final jobs to get scheduled so add a listener
-            // to the termination event to shutdown remaining thread pools
-            factory.shutdown().awaitUninterruptibly().addListener(f -> {
-                executor.shutdown();
-                hostScheduler.shutdown();
-                connectionScheduler.shutdown();
-                streamingReaderPool.shutdownNow();
-                closeIt.complete(null);
-            });
+            // shutdown the http transport and then shutdown remaining thread pools
+            httpTransport.close();
+            executor.shutdown();
+            hostScheduler.shutdown();
+            connectionScheduler.shutdown();
+            streamingReaderPool.shutdownNow();
+            closeIt.complete(null);
 
             closeFuture.set(closeIt);
 

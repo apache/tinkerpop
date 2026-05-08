@@ -37,9 +37,14 @@ limitations under the License.
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>${netty.version}</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.4.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+            <version>5.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -190,10 +195,6 @@ limitations under the License.
                                 <relocation>
                                     <pattern>com.squareup</pattern>
                                     <shadedPattern>com.shaded.squareup</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>io.netty</pattern>
-                                    <shadedPattern>io.shaded.netty</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>net.objecthunter</pattern>

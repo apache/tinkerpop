@@ -18,14 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,10 +40,12 @@ public class TextPlainMessageSerializerTest {
                 result(Arrays.asList(1, new DetachedVertex(100, "person", m), java.awt.Color.RED)).create();
 
         final TextPlainMessageSerializer messageSerializer = new TextPlainMessageSerializer();
-        final ByteBuf output = messageSerializer.serializeResponseAsBinary(msg, ByteBufAllocator.DEFAULT);
+        final Buffer output = messageSerializer.serializeResponseAsBinary(msg);
+        final byte[] bytes = new byte[output.readableBytes()];
+        output.readBytes(bytes);
         final String exp = "==>1" + System.lineSeparator() +
                 "==>v[100]" + System.lineSeparator() +
                 "==>java.awt.Color[r=255,g=0,b=0]";
-        assertEquals(exp, output.toString(CharsetUtil.UTF_8));
+        assertEquals(exp, new String(bytes, StandardCharsets.UTF_8));
     }
 }

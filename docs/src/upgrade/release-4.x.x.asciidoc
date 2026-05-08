@@ -283,6 +283,47 @@ deserialization.
 
 ==== Graph Driver Providers
 
+===== MessageSerializer Interface Changes
+
+The `MessageSerializer` interface no longer uses Netty's `ByteBuf` or `ByteBufAllocator`. All methods now operate on
+`org.apache.tinkerpop.gremlin.structure.io.Buffer`, which is a transport-agnostic buffer abstraction. Third-party
+serializer implementations must be updated to use `Buffer` instead of `ByteBuf`.
+
+The key method signature changes are:
+
+[source,java]
+----
+// Before (3.x)
+ByteBuf serializeResponseAsBinary(ResponseMessage responseMessage, ByteBufAllocator allocator);
+ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator);
+RequestMessage deserializeBinaryRequest(ByteBuf msg);
+ResponseMessage deserializeBinaryResponse(ByteBuf msg);
+
+// After (4.x)
+Buffer serializeResponseAsBinary(ResponseMessage responseMessage);
+Buffer serializeRequestAsBinary(RequestMessage requestMessage);
+RequestMessage deserializeBinaryRequest(Buffer msg);
+ResponseMessage deserializeBinaryResponse(Buffer msg);
+----
+
+For creating `Buffer` instances without Netty, use `HeapBufferFactory` from
+`org.apache.tinkerpop.gremlin.util.ser.HeapBufferFactory`:
+
+[source,java]
+----
+HeapBufferFactory factory = new HeapBufferFactory();
+Buffer buffer = factory.create(1024);
+----
+
+===== Netty Removed from gremlin-driver
+
+Netty is no longer a dependency of `gremlin-driver`. The driver now uses Apache HttpClient 5.x as its HTTP transport
+layer. Netty remains a dependency of `gremlin-util` and `gremlin-server` for the server-side pipeline.
+
+Code that previously imported Netty classes through `gremlin-driver` (e.g. `ByteBuf`, `ByteBufAllocator`,
+`UnpooledByteBufAllocator`) must either add a direct Netty dependency or migrate to the `Buffer`/`HeapBufferFactory`
+API.
+
 == TinkerPop 4.0.0-beta.2
 
 *Release Date: April 1, 2026*

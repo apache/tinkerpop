@@ -22,7 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -46,6 +46,7 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,14 +78,13 @@ public class GraphSONMessageSerializerV4Test {
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
-        final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
-        final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeFooter(footer, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
+        final Buffer bb1 = serializer.writeChunk(Arrays.asList("chunk", 1));
+        final Buffer bb2 = serializer.writeChunk(Arrays.asList("chunk", 2));
+        final Buffer bb3 = serializer.writeFooter(footer);
 
-        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
-
-        final String json = bbCombined.readCharSequence(bbCombined.readableBytes(), CharsetUtil.UTF_8).toString();
+        final byte[] combined = combineBuffers(bb0, bb1, bb2, bb3);
+        final String json = new String(combined, StandardCharsets.UTF_8);
 
         final JsonNode node = mapper.readTree(json);
 
@@ -95,8 +95,9 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals(200, node.get("status").get("code").asInt());
 
         // a message composed of all chunks must be deserialized
-        bbCombined.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final Buffer combinedBuffer = bufferFactory.create(io.netty.buffer.Unpooled.wrappedBuffer(combined));
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(combinedBuffer);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(8, ((List)deserialized.getResult().getData()).size());
@@ -109,9 +110,10 @@ public class GraphSONMessageSerializerV4Test {
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
 
-        final String json = bb0.readCharSequence(bb0.readableBytes(), CharsetUtil.UTF_8).toString();
+        final byte[] bytes = readBufferBytes(bb0);
+        final String json = new String(bytes, StandardCharsets.UTF_8);
 
         final JsonNode node = mapper.readTree(json);
 
@@ -119,8 +121,9 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
-        bb0.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final Buffer buffer = bufferFactory.create(io.netty.buffer.Unpooled.wrappedBuffer(bytes));
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -134,9 +137,10 @@ public class GraphSONMessageSerializerV4Test {
                 .statusMessage("OK")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
 
-        final String json = bb0.readCharSequence(bb0.readableBytes(), CharsetUtil.UTF_8).toString();
+        final byte[] bytes = readBufferBytes(bb0);
+        final String json = new String(bytes, StandardCharsets.UTF_8);
 
         final JsonNode node = mapper.readTree(json);
 
@@ -144,8 +148,9 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals("OK", node.get("status").get("message").asText());
         assertEquals(200, node.get("status").get("code").asInt());
 
-        bb0.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bb0);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final Buffer buffer = bufferFactory.create(io.netty.buffer.Unpooled.wrappedBuffer(bytes));
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertEquals(200, deserialized.getStatus().getCode().code());
         assertEquals("OK", deserialized.getStatus().getMessage());
         assertEquals(0, ((List)deserialized.getResult().getData()).size());
@@ -163,14 +168,13 @@ public class GraphSONMessageSerializerV4Test {
                 .statusMessage("SERVER_ERROR")
                 .create();
 
-        final ByteBuf bb0 = serializer.writeHeader(header, allocator);
-        final ByteBuf bb1 = serializer.writeChunk(Arrays.asList("chunk", 1), allocator);
-        final ByteBuf bb2 = serializer.writeChunk(Arrays.asList("chunk", 2), allocator);
-        final ByteBuf bb3 = serializer.writeErrorFooter(footer, allocator);
+        final Buffer bb0 = serializer.writeHeader(header);
+        final Buffer bb1 = serializer.writeChunk(Arrays.asList("chunk", 1));
+        final Buffer bb2 = serializer.writeChunk(Arrays.asList("chunk", 2));
+        final Buffer bb3 = serializer.writeErrorFooter(footer);
 
-        final ByteBuf bbCombined = allocator.buffer().writeBytes(bb0).writeBytes(bb1).writeBytes(bb2).writeBytes(bb3);
-
-        final String json = bbCombined.readCharSequence(bbCombined.readableBytes(), CharsetUtil.UTF_8).toString();
+        final byte[] combined = combineBuffers(bb0, bb1, bb2, bb3);
+        final String json = new String(combined, StandardCharsets.UTF_8);
 
         final JsonNode node = mapper.readTree(json);
 
@@ -180,8 +184,9 @@ public class GraphSONMessageSerializerV4Test {
         assertEquals("SERVER_ERROR", node.get("status").get("message").asText());
         assertEquals(500, node.get("status").get("code").asInt());
 
-        bbCombined.resetReaderIndex();
-        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(bbCombined);
+        final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+        final Buffer combinedBuffer = bufferFactory.create(io.netty.buffer.Unpooled.wrappedBuffer(combined));
+        final ResponseMessage deserialized = serializer.deserializeBinaryResponse(combinedBuffer);
         assertEquals(500, deserialized.getStatus().getCode().code());
         assertEquals("SERVER_ERROR", deserialized.getStatus().getMessage());
         assertEquals(6, ((List)deserialized.getResult().getData()).size());
@@ -197,7 +202,7 @@ public class GraphSONMessageSerializerV4Test {
         serializer.configure(config, null);
 
         final ResponseMessage toSerialize = ResponseMessage.build().result(Collections.singletonList(Color.RED)).code(HttpResponseStatus.OK).create();
-        final ByteBuf buffer = serializer.serializeResponseAsBinary(toSerialize, allocator);
+        final Buffer buffer = serializer.serializeResponseAsBinary(toSerialize);
         ResponseResult results = serializer.deserializeBinaryResponse(buffer).getResult();
 
         assertEquals(Color.RED, results.getData().get(0));
@@ -271,8 +276,30 @@ public class GraphSONMessageSerializerV4Test {
     }
 
     private ResponseMessage convert(final Object toSerialize, MessageSerializer<?> serializer) throws SerializationException {
-        final ByteBuf bb = serializer.serializeResponseAsBinary(
-                responseMessageBuilder.result(Collections.singletonList(toSerialize)).code(HttpResponseStatus.OK).create(), allocator);
+        final Buffer bb = serializer.serializeResponseAsBinary(
+                responseMessageBuilder.result(Collections.singletonList(toSerialize)).code(HttpResponseStatus.OK).create());
         return serializer.deserializeBinaryResponse(bb);
+    }
+
+    private static byte[] readBufferBytes(final Buffer buffer) {
+        final byte[] bytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(bytes);
+        return bytes;
+    }
+
+    private static byte[] combineBuffers(final Buffer... buffers) {
+        int totalLen = 0;
+        final byte[][] arrays = new byte[buffers.length][];
+        for (int i = 0; i < buffers.length; i++) {
+            arrays[i] = readBufferBytes(buffers[i]);
+            totalLen += arrays[i].length;
+        }
+        final byte[] combined = new byte[totalLen];
+        int offset = 0;
+        for (byte[] arr : arrays) {
+            System.arraycopy(arr, 0, combined, offset, arr.length);
+            offset += arr.length;
+        }
+        return combined;
     }
 }

@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
-import org.apache.tinkerpop.gremlin.driver.simple.SimpleHttpClient;
+import org.apache.tinkerpop.gremlin.server.util.SimpleHttpClient;
 
 import java.net.URI;
 

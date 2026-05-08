@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.server.util.GremlinError;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.NettyMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -106,9 +107,10 @@ public class HttpHandlerUtil {
 
         try {
             final ChannelHandlerContext ctx = context.getChannelHandlerContext();
-            final ByteBuf ByteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
-                    ? serializer.writeErrorFooter(responseMessage, ctx.alloc())
-                    : serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
+            final NettyMessageSerializer nettySerializer = new NettyMessageSerializer(serializer);
+            final ByteBuf byteBuf = context.getRequestState() == HttpGremlinEndpointHandler.RequestState.STREAMING
+                    ? nettySerializer.writeErrorFooter(responseMessage, ctx.alloc())
+                    : nettySerializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
 
             context.setRequestState(HttpGremlinEndpointHandler.RequestState.ERROR);
 
@@ -118,7 +120,7 @@ public class HttpHandlerUtil {
                         HttpHeaderNames.CONTENT_TYPE, ctx.channel().attr(StateKey.SERIALIZER).get().getValue0());
             }
 
-            ctx.writeAndFlush(new DefaultHttpContent(ByteBuf));
+            ctx.writeAndFlush(new DefaultHttpContent(byteBuf));
 
             sendLastHttpContent(ctx, responseMessage.getStatus().getCode(), responseMessage.getStatus().getException());
         } catch (SerializationException se) {

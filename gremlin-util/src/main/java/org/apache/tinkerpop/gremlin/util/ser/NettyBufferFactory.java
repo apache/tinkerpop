@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.util.ser;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.BufferFactory;
@@ -33,6 +34,11 @@ public class NettyBufferFactory implements BufferFactory<ByteBuf> {
     @Override
     public Buffer create(final ByteBuf value) {
         return new NettyBuffer(value);
+    }
+
+    @Override
+    public Buffer create(final int initialCapacity) {
+        return new NettyBuffer(ByteBufAllocator.DEFAULT.buffer(initialCapacity));
     }
 
     @Override

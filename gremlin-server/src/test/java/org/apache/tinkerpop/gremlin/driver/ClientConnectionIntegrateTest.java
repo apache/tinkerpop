@@ -172,7 +172,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                     return null;
                 }
             }).forEach(conn -> {
-                String id = conn.getChannelId();
+                String id = String.valueOf(System.identityHashCode(conn));
                 channelsSize.put(id, channelsSize.getOrDefault(id, 0) + 1);
             });
 
@@ -218,7 +218,7 @@ public class ClientConnectionIntegrateTest extends AbstractGremlinServerIntegrat
                 }
             }).forEach(conn -> {
                 synchronized (this) {
-                    String id = conn.getChannelId();
+                    String id = String.valueOf(System.identityHashCode(conn));
                     connectionBorrowCount.put(id, connectionBorrowCount.getOrDefault(id, 0) + 1);
                 }
             });

@@ -18,18 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.driver.interceptor;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.HttpRequest;
 import org.apache.tinkerpop.gremlin.driver.RequestInterceptor;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
-import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 
 import java.util.Map;
 
@@ -52,18 +47,19 @@ public class PayloadSerializingInterceptor implements RequestInterceptor {
         }
 
         final RequestMessage request = (RequestMessage) httpRequest.getBody();
-        final ByteBuf requestBuf;
+        final Buffer buffer;
         try {
-            requestBuf = serializer.serializeRequestAsBinary(request, ByteBufAllocator.DEFAULT);
+            buffer = serializer.serializeRequestAsBinary(request);
         } catch (SerializationException se) {
-            throw new RuntimeException(new ResponseException(HttpResponseStatus.BAD_REQUEST, String.format(
+            throw new RuntimeException(new ResponseException(400, String.format(
                     "An error occurred during serialization of this request [%s] - it could not be sent to the server - Reason: %s",
                     request, se)));
         }
 
-        // Convert from ByteBuf to bytes[] because that's what the final request body should contain.
-        final byte[] requestBytes = ByteBufUtil.getBytes(requestBuf);
-        requestBuf.release();
+        // Convert from Buffer to byte[] because that's what the final request body should contain.
+        final byte[] requestBytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(requestBytes);
+        buffer.release();
 
         httpRequest.setBody(requestBytes);
         httpRequest.headers().put(HttpRequest.Headers.CONTENT_TYPE, serializer.mimeTypesSupported()[0]);

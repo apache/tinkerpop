@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.server.util;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.CharsetUtil;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
+import org.apache.tinkerpop.gremlin.util.ser.NettyBufferFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -36,55 +36,57 @@ import java.util.function.Function;
  */
 public class TextPlainMessageSerializer extends AbstractMessageSerializer<Function<Object, String>> {
 
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
+
     @Override
     public Function<Object, String> getMapper() {
         return Objects::toString;
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) {
+    public Buffer serializeResponseAsBinary(final ResponseMessage responseMessage) {
         return (responseMessage.getStatus().getCode() == HttpResponseStatus.OK)
-                ? convertStringData(responseMessage.getResult().getData(), false, allocator)
-                : convertErrorString(responseMessage.getStatus().getMessage(), allocator);
+                ? convertStringData(responseMessage.getResult().getData(), false)
+                : convertErrorString(responseMessage.getStatus().getMessage());
     }
 
     @Override
-    public ByteBuf writeHeader(ResponseMessage responseMessage, ByteBufAllocator allocator) {
-        return convertStringData(responseMessage.getResult().getData(), false, allocator);
+    public Buffer writeHeader(final ResponseMessage responseMessage) {
+        return convertStringData(responseMessage.getResult().getData(), false);
     }
 
     @Override
-    public ByteBuf writeChunk(Object aggregate, ByteBufAllocator allocator) {
-        return convertStringData((List<Object>) aggregate, true, allocator);
+    public Buffer writeChunk(final Object aggregate) {
+        return convertStringData((List<Object>) aggregate, true);
     }
 
     @Override
-    public ByteBuf writeFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
-        return convertStringData(responseMessage.getResult().getData(), true, allocator);
+    public Buffer writeFooter(final ResponseMessage responseMessage) {
+        return convertStringData(responseMessage.getResult().getData(), true);
     }
 
     @Override
-    public ByteBuf writeErrorFooter(ResponseMessage responseMessage, ByteBufAllocator allocator) {
-        return convertErrorString(System.lineSeparator() + responseMessage.getStatus().getMessage(), allocator);
+    public Buffer writeErrorFooter(final ResponseMessage responseMessage) {
+        return convertErrorString(System.lineSeparator() + responseMessage.getStatus().getMessage());
     }
 
     @Override
-    public ResponseMessage readChunk(ByteBuf byteBuf, boolean isFirstChunk) {
+    public ResponseMessage readChunk(final Buffer buffer, final boolean isFirstChunk) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(final RequestMessage requestMessage, final ByteBufAllocator allocator) {
+    public Buffer serializeRequestAsBinary(final RequestMessage requestMessage) {
         throw new UnsupportedOperationException("text/plain does not produce binary");
     }
 
     @Override
-    public RequestMessage deserializeBinaryRequest(final ByteBuf msg) {
+    public RequestMessage deserializeBinaryRequest(final Buffer msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
     @Override
-    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) {
+    public ResponseMessage deserializeBinaryResponse(final Buffer msg) {
         throw new UnsupportedOperationException("text/plain does not have deserialization functions");
     }
 
@@ -93,7 +95,7 @@ public class TextPlainMessageSerializer extends AbstractMessageSerializer<Functi
         return new String[] { "text/plain" };
     }
 
-    private ByteBuf convertStringData(final List<Object> data, final boolean addStartingSeparator, final ByteBufAllocator allocator) {
+    private Buffer convertStringData(final List<Object> data, final boolean addStartingSeparator) {
         final StringBuilder sb = new StringBuilder();
 
         if (addStartingSeparator) sb.append(System.lineSeparator());
@@ -105,15 +107,16 @@ public class TextPlainMessageSerializer extends AbstractMessageSerializer<Functi
                 sb.append(System.lineSeparator());
         }
 
-        final ByteBuf encodedMessage = allocator.buffer(sb.length());
-        encodedMessage.writeCharSequence(sb.toString(), CharsetUtil.UTF_8);
-
-        return encodedMessage;
+        final byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        final Buffer buffer = bufferFactory.create(bytes.length);
+        buffer.writeBytes(bytes);
+        return buffer;
     }
 
-    private ByteBuf convertErrorString(final String error, final ByteBufAllocator allocator) {
-        final ByteBuf encodedMessage = allocator.buffer(error.length());
-        encodedMessage.writeCharSequence(error, CharsetUtil.UTF_8);
-        return encodedMessage;
+    private Buffer convertErrorString(final String error) {
+        final byte[] bytes = error.getBytes(StandardCharsets.UTF_8);
+        final Buffer buffer = bufferFactory.create(bytes.length);
+        buffer.writeBytes(bytes);
+        return buffer;
     }
 }

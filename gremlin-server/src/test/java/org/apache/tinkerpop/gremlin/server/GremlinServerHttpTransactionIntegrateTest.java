@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.NettyMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -586,7 +587,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final GraphBinaryMessageSerializerV4 serializer = new GraphBinaryMessageSerializerV4();
 
         // begin via GraphBinary
-        final ByteBuf beginReq = serializer.serializeRequestAsBinary(
+        final ByteBuf beginReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.tx().begin()").addG(GTX).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost beginPost = new HttpPost(TestClientFactory.createURLString());
@@ -597,7 +598,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         String txId;
         try (final CloseableHttpResponse response = client.execute(beginPost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
-            final ResponseMessage rm = serializer.readChunk(toByteBuf(response.getEntity()), true);
+            final ResponseMessage rm = new NettyMessageSerializer(serializer).readChunk(toByteBuf(response.getEntity()), true);
             final List<?> data = rm.getResult().getData();
             assertNotNull(data);
             assertTrue(data.size() > 0);
@@ -609,7 +610,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         }
 
         // addV via GraphBinary
-        final ByteBuf addVReq = serializer.serializeRequestAsBinary(
+        final ByteBuf addVReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.addV('binary_test')").addG(GTX).addTransactionId(txId).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost addVPost = new HttpPost(TestClientFactory.createURLString());
@@ -621,7 +622,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         }
 
         // commit via GraphBinary
-        final ByteBuf commitReq = serializer.serializeRequestAsBinary(
+        final ByteBuf commitReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.tx().commit()").addG(GTX).addTransactionId(txId).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost commitPost = new HttpPost(TestClientFactory.createURLString());
@@ -648,7 +649,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
         // begin via GraphSON
-        final ByteBuf beginReq = serializer.serializeRequestAsBinary(
+        final ByteBuf beginReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.tx().begin()").addG(GTX).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost beginPost = new HttpPost(TestClientFactory.createURLString());
@@ -672,7 +673,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         }
 
         // addV via GraphSON
-        final ByteBuf addVReq = serializer.serializeRequestAsBinary(
+        final ByteBuf addVReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.addV('graphson_test')").addG(GTX).addTransactionId(txId).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost addVPost = new HttpPost(TestClientFactory.createURLString());
@@ -684,7 +685,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
         }
 
         // commit via GraphSON
-        final ByteBuf commitReq = serializer.serializeRequestAsBinary(
+        final ByteBuf commitReq = new NettyMessageSerializer(serializer).serializeRequestAsBinary(
                 RequestMessage.build("g.tx().commit()").addG(GTX).addTransactionId(txId).create(),
                 new UnpooledByteBufAllocator(false));
         final HttpPost commitPost = new HttpPost(TestClientFactory.createURLString());

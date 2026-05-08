@@ -290,7 +290,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(HttpResponseStatus.BAD_REQUEST, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.BAD_REQUEST.code(), ((ResponseException) inner).getResponseStatusCode());
                 assertTrue(ex.getMessage().contains("An error occurred during serialization of this request"));
             }
 
@@ -312,7 +312,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), re.getResponseStatusCode());
             assertEquals("ServerTimeoutExceededException", re.getRemoteException());
         } finally {
             cluster.close();
@@ -329,7 +329,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should have timed out");
         } catch (Exception ex) {
             final ResponseException re = (ResponseException) ex.getCause();
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), re.getResponseStatusCode());
             assertEquals("ServerTimeoutExceededException", re.getRemoteException());
         } finally {
             cluster.close();
@@ -496,7 +496,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertThat(inner, instanceOf(ResponseException.class));
-                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), ((ResponseException) inner).getResponseStatusCode());
             }
 
             // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -807,7 +807,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             } catch (Exception ex) {
                 final Throwable inner = ExceptionHelper.getRootCause(ex);
                 assertTrue(inner instanceof ResponseException);
-                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, ((ResponseException) inner).getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), ((ResponseException) inner).getResponseStatusCode());
                 assertEquals("ServerSerializationException", ((ResponseException) inner).getRemoteException());
             }
 
@@ -1055,7 +1055,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable root = ExceptionHelper.getRootCause(ex);
             assertThat(root, instanceOf(ResponseException.class));
             final ResponseException re = (ResponseException) root;
-            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+            assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), re.getResponseStatusCode());
 
             final Client rebound = cluster.connect().alias("graph");
             final Vertex v = rebound.submit("g.addVertex(label,'person','name','jason')", groovyRequestOptions)
@@ -1078,7 +1078,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 final Throwable root = ExceptionHelper.getRootCause(ex);
                 assertThat(root, instanceOf(ResponseException.class));
                 final ResponseException re = (ResponseException) root;
-                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, re.getResponseStatusCode());
+                assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), re.getResponseStatusCode());
             }
 
             final Client clientAliased = client.alias("g1");

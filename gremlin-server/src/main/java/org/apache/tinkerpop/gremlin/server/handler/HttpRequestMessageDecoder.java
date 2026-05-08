@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.server.util.TextPlainMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.util.ser.NettyMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -158,9 +159,10 @@ public class HttpRequestMessageDecoder extends MessageToMessageDecoder<FullHttpR
         if (contentType != null && !contentType.equals("application/json") && serializers.containsKey(contentType)) {
             final MessageSerializer<?> serializer = serializers.get(contentType);
             final ByteBuf buffer = request.content();
+            final NettyMessageSerializer nettySerializer = new NettyMessageSerializer(serializer);
 
             try {
-                return conditionallyInsertDefaultG(serializer.deserializeBinaryRequest(buffer));
+                return conditionallyInsertDefaultG(nettySerializer.deserializeBinaryRequest(buffer));
             } catch (Exception e) {
                 throw new SerializationException("Unable to deserialize request using: " + serializer.getClass().getSimpleName(), e);
             }

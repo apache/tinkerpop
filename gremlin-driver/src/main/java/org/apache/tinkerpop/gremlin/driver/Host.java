@@ -68,6 +68,17 @@ public final class Host {
         isAvailable = true;
     }
 
+    /**
+     * Marks this host as unavailable without starting a reconnection attempt. Used when the
+     * {@link HostHealthTracker} determines a host has exceeded its failure threshold and the
+     * periodic health probe will handle recovery.
+     */
+    void makeUnavailable() {
+        if (isAvailable)
+            logger.warn("Marking {} as unavailable.", this);
+        isAvailable = false;
+    }
+
     void makeUnavailable(final Function<Host, Boolean> reconnect) {
 
         if (isAvailable)
@@ -112,10 +123,8 @@ public final class Host {
     }
 
     private static URI makeUriFromAddress(final InetSocketAddress addy, final String path, final boolean ssl) {
-        final Channelizer channelizer = new Channelizer.HttpChannelizer();
-
         try {
-            final String scheme = channelizer.getScheme(ssl);
+            final String scheme = ssl ? "https" : "http";
             return new URI(scheme, null, addy.getHostName(), addy.getPort(), path, null, null);
         } catch (URISyntaxException use) {
             throw new RuntimeException(String.format("URI for host could not be constructed from: %s", addy), use);

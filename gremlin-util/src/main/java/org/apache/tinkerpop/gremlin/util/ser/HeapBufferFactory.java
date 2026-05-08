@@ -16,27 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.auth;
+package org.apache.tinkerpop.gremlin.util.ser;
 
-import org.apache.tinkerpop.gremlin.driver.HttpRequest;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
+import org.apache.tinkerpop.gremlin.structure.io.BufferFactory;
 
-import java.util.Base64;
+import java.nio.ByteBuffer;
 
-public class Basic implements Auth {
+/**
+ * A {@link BufferFactory} that creates heap-based {@link Buffer} instances without requiring Netty.
+ */
+public class HeapBufferFactory implements BufferFactory<byte[]> {
 
-    private final String username;
-    private final String password;
-
-    public Basic(final String username, final String password) {
-        this.username = username;
-        this.password = password;
+    @Override
+    public Buffer create(final byte[] value) {
+        final HeapBuffer buffer = new HeapBuffer(value.length);
+        buffer.writeBytes(value);
+        return buffer;
     }
 
     @Override
-    public HttpRequest apply(final HttpRequest httpRequest) {
-        final String valueToEncode = username + ":" + password;
-        httpRequest.headers().put(HttpRequest.Headers.AUTHORIZATION,
-                "Basic " + Base64.getEncoder().encodeToString(valueToEncode.getBytes()));
-        return httpRequest;
+    public Buffer create(final int initialCapacity) {
+        return new HeapBuffer(initialCapacity);
+    }
+
+    @Override
+    public Buffer wrap(final ByteBuffer value) {
+        return HeapBuffer.wrap(value);
     }
 }

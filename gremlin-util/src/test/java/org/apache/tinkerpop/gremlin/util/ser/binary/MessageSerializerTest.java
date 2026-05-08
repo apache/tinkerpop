@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.util.MessageSerializer;
@@ -84,7 +85,7 @@ public class MessageSerializerTest {
                 .addBinding("k", "v")
                 .create();
 
-        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        final Buffer buffer = serializer.serializeRequestAsBinary(request);
         final RequestMessage deserialized = serializer.deserializeBinaryRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
     }
@@ -93,7 +94,7 @@ public class MessageSerializerTest {
     public void shouldSerializeAndDeserializeRequestWithoutArgs() throws SerializationException {
         final RequestMessage request = RequestMessage.build("query").create();
 
-        final ByteBuf buffer = serializer.serializeRequestAsBinary(request, allocator);
+        final Buffer buffer = serializer.serializeRequestAsBinary(request);
         final RequestMessage deserialized = serializer.deserializeBinaryRequest(buffer);
         assertThat(request, reflectionEquals(deserialized));
     }
@@ -106,7 +107,7 @@ public class MessageSerializerTest {
                 .result(Collections.singletonList("This is a fine message with a string"))
                 .create();
 
-        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+        final Buffer buffer = serializer.serializeResponseAsBinary(response);
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
@@ -118,7 +119,7 @@ public class MessageSerializerTest {
                 .result(Collections.singletonList(123.3))
                 .create();
 
-        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+        final Buffer buffer = serializer.serializeResponseAsBinary(response);
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
@@ -130,7 +131,7 @@ public class MessageSerializerTest {
                 .result(Collections.singletonList(123.3))
                 .create();
 
-        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+        final Buffer buffer = serializer.serializeResponseAsBinary(response);
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
@@ -142,7 +143,7 @@ public class MessageSerializerTest {
                 .statusMessage("Something happened on the server")
                 .create();
 
-        final ByteBuf buffer = serializer.serializeResponseAsBinary(response, allocator);
+        final Buffer buffer = serializer.serializeResponseAsBinary(response);
         final ResponseMessage deserialized = serializer.deserializeBinaryResponse(buffer);
         assertResponseEquals(response, deserialized);
     }
@@ -166,12 +167,12 @@ public class MessageSerializerTest {
 
         // Manually write the GraphBinary request buffer with Integer-typed numeric fields
         final ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
-        final org.apache.tinkerpop.gremlin.structure.io.Buffer buffer = bufferFactory.create(byteBuf);
+        final Buffer buffer = bufferFactory.create(byteBuf);
         buffer.writeByte(GraphBinaryWriter.VERSION_BYTE);
         writer.writeValue(fields, buffer, false);
         writer.writeValue(gremlin, buffer, false);
 
-        final RequestMessage deserialized = requestSerializer.readValue(byteBuf, reader);
+        final RequestMessage deserialized = requestSerializer.readValue(buffer, reader);
         assertEquals(5000L, (long) deserialized.getField(Tokens.TIMEOUT_MS));
         assertEquals(64, (int) deserialized.getField(Tokens.ARGS_BATCH_SIZE));
         assertEquals(gremlin, deserialized.getGremlin());

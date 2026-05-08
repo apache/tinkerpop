@@ -65,6 +65,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.NettyMessageSerializer;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -491,7 +492,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     private void runBegin(final Context ctx, UnmanagedTransaction tx, final Pair<String, MessageSerializer<?>> serializer) throws Exception {
-        final ByteBuf chunk = makeChunk(ctx, serializer.getValue1(), List.of(Map.of(Tokens.ARGS_TRANSACTION_ID, tx.getTransactionId())), false, false);
+        final NettyMessageSerializer nettySerializer = new NettyMessageSerializer(serializer.getValue1());
+        final ByteBuf chunk = makeChunk(ctx, serializer.getValue1(), nettySerializer, List.of(Map.of(Tokens.ARGS_TRANSACTION_ID, tx.getTransactionId())), false, false);
         ctx.getChannelHandlerContext().writeAndFlush(new DefaultHttpContent(chunk));
     }
 
@@ -502,7 +504,8 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final Graph graph = graphManager.getTraversalSource(ctx.getRequestMessage().getField(Tokens.ARGS_G)).getGraph();
         graphOp.accept(graph.tx());
         transactionManager.destroy(transactionId);
-        final ByteBuf chunk = makeChunk(ctx, serializer.getValue1(), List.of(Map.of(Tokens.ARGS_TRANSACTION_ID, transactionId)), false, false);
+        final NettyMessageSerializer nettySerializer = new NettyMessageSerializer(serializer.getValue1());
+        final ByteBuf chunk = makeChunk(ctx, serializer.getValue1(), nettySerializer, List.of(Map.of(Tokens.ARGS_TRANSACTION_ID, transactionId)), false, false);
         ctx.getChannelHandlerContext().writeAndFlush(new DefaultHttpContent(chunk));
     }
 
@@ -548,6 +551,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         final ChannelHandlerContext nettyContext = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
+        final NettyMessageSerializer nettySerializer = new NettyMessageSerializer(serializer);
 
         // used to limit warnings for when netty fills the buffer and hits the high watermark - prevents
         // over-logging of the same message.
@@ -558,7 +562,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         if (!itty.hasNext()) {
             ByteBuf chunk = null;
             try {
-                chunk = makeChunk(context, serializer, new ArrayList<>(), false, bulking);
+                chunk = makeChunk(context, serializer, nettySerializer, new ArrayList<>(), false, bulking);
                 nettyContext.writeAndFlush(new DefaultHttpContent(chunk));
             } catch (Exception ex) {
                 // Bytebuf is a countable release - if it does not get written downstream
@@ -622,7 +626,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     ByteBuf chunk = null;
                     try {
-                        chunk = makeChunk(context, serializer, aggregate, itty.hasNext(), bulking);
+                        chunk = makeChunk(context, serializer, nettySerializer, aggregate, itty.hasNext(), bulking);
                     } catch (Exception ex) {
                         // Bytebuf is a countable release - if it does not get written downstream
                         // it needs to be released here
@@ -699,6 +703,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
     }
 
     private static ByteBuf makeChunk(final Context ctx, final MessageSerializer<?> serializer,
+                                     final NettyMessageSerializer nettySerializer,
                                      final List<Object> aggregate, final boolean hasMore,
                                      final boolean bulking) throws Exception {
         try {
@@ -730,24 +735,25 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 case NOT_STARTED:
                     if (hasMore) {
                         ctx.setRequestState(STREAMING);
-                        return serializer.writeHeader(responseMessage, nettyContext.alloc());
+                        return nettySerializer.writeHeader(responseMessage, nettyContext.alloc());
                     }
-                    ctx.setRequestState(FINISHED);
 
-                    return serializer.serializeResponseAsBinary(ResponseMessage.build()
+                    final ByteBuf fullResponse = nettySerializer.serializeResponseAsBinary(ResponseMessage.build()
                             .result(aggregate)
                             .bulked(bulking)
                             .code(HttpResponseStatus.OK)
                             .create(), nettyContext.alloc());
+                    ctx.setRequestState(FINISHED);
+                    return fullResponse;
 
                 case STREAMING:
-                    return serializer.writeChunk(aggregate, nettyContext.alloc());
+                    return nettySerializer.writeChunk(aggregate, nettyContext.alloc());
                 case FINISHING:
                     ctx.setRequestState(FINISHED);
-                    return serializer.writeFooter(responseMessage, nettyContext.alloc());
+                    return nettySerializer.writeFooter(responseMessage, nettyContext.alloc());
             }
 
-            return serializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
+            return nettySerializer.serializeResponseAsBinary(responseMessage, nettyContext.alloc());
 
         } catch (Exception ex) {
             final UUID requestId = ctx.getChannelHandlerContext().attr(StateKey.REQUEST_ID).get();

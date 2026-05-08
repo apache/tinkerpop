@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.AbstractObjectDeserializer;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
@@ -50,6 +48,8 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV4.class);
 
     protected ObjectMapper mapper;
+
+    private static final NettyBufferFactory bufferFactory = new NettyBufferFactory();
 
     public AbstractGraphSONMessageSerializerV4() {
         final GraphSONMapper.Builder builder = configureBuilder(initBuilder());
@@ -96,16 +96,16 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
     }
 
     @Override
-    public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
+    public Buffer serializeResponseAsBinary(final ResponseMessage responseMessage) throws SerializationException {
         if (null == responseMessage.getStatus()) {
             throw new SerializationException("ResponseStatus can't be null when serializing a full ResponseMessage.");
         }
 
-        return writeHeader(responseMessage, allocator);
+        return writeHeader(responseMessage);
     }
 
     @Override
-    public ResponseMessage deserializeBinaryResponse(final ByteBuf msg) throws SerializationException {
+    public ResponseMessage deserializeBinaryResponse(final Buffer msg) throws SerializationException {
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
@@ -117,9 +117,10 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
     }
 
     protected boolean isTyped() { return true; }
+
     @Override
-    public ByteBuf writeHeader(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        ByteBuf encodedMessage = null;
+    public Buffer writeHeader(final ResponseMessage responseMessage) throws SerializationException {
+        Buffer buffer = null;
         try {
             boolean writeFullMessage = responseMessage.getStatus() != null;
 
@@ -133,16 +134,17 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
             final int headerLen = header.length - (isTyped() ? 4 : 3);
             final int bufSize = headerLen + data.length + (writeFullMessage ? footer.length - 1 : 0);
 
-            encodedMessage = allocator.buffer(bufSize).writeBytes(header, 0, headerLen).writeBytes(data);
+            buffer = bufferFactory.create(bufSize);
+            buffer.writeBytes(header, 0, headerLen);
+            buffer.writeBytes(data);
 
             if (writeFullMessage) {
-                encodedMessage.writeBytes(footer, 1, footer.length - 1);
+                buffer.writeBytes(footer, 1, footer.length - 1);
             }
 
-            return encodedMessage;
+            return buffer;
         } catch (Exception ex) {
-            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
-
+            if (buffer != null) buffer.release();
             logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
@@ -172,83 +174,81 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
     }
 
     @Override
-    public ByteBuf writeChunk(final Object aggregate, final ByteBufAllocator allocator) throws SerializationException {
-        ByteBuf encodedMessage = null;
+    public Buffer writeChunk(final Object aggregate) throws SerializationException {
+        Buffer buffer = null;
         try {
             final byte[] payload = getChunk(false, aggregate);
-            encodedMessage = allocator.buffer(payload.length).writeBytes(payload);
+            buffer = bufferFactory.create(payload.length);
+            buffer.writeBytes(payload);
 
-            return encodedMessage;
+            return buffer;
         } catch (Exception ex) {
-            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
-
+            if (buffer != null) buffer.release();
             logger.warn(String.format("Response [%s] could not be serialized by %s.", aggregate, GraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
     @Override
-    public ByteBuf writeFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        ByteBuf encodedMessage = null;
+    public Buffer writeFooter(final ResponseMessage responseMessage) throws SerializationException {
+        Buffer buffer = null;
         try {
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
             final byte[] data = getChunk(false, responseMessage.getResult().getData());
             // skip opening {
-            encodedMessage = allocator.buffer(footer.length - 2 + data.length).
-                    writeBytes(data).writeBytes(footer, 1, footer.length - 1);
+            buffer = bufferFactory.create(footer.length - 2 + data.length);
+            buffer.writeBytes(data);
+            buffer.writeBytes(footer, 1, footer.length - 1);
 
-            return encodedMessage;
+            return buffer;
         } catch (Exception ex) {
-            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
-
+            if (buffer != null) buffer.release();
             logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, GraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
     @Override
-    public ByteBuf writeErrorFooter(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
-        ByteBuf encodedMessage = null;
+    public Buffer writeErrorFooter(final ResponseMessage responseMessage) throws SerializationException {
+        Buffer buffer = null;
         try {
             final byte[] footer = mapper.writeValueAsBytes(new ResponseMessage.ResponseMessageFooter(responseMessage, isTyped()));
             // skip opening {
-            encodedMessage = allocator.buffer(footer.length - 2).
-                    writeBytes(footer, 1, footer.length - 1);
+            buffer = bufferFactory.create(footer.length - 2);
+            buffer.writeBytes(footer, 1, footer.length - 1);
 
-            return encodedMessage;
+            return buffer;
         } catch (Exception ex) {
-            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
-
+            if (buffer != null) buffer.release();
             logger.warn(String.format("Response [%s] could not be serialized by %s.", responseMessage, GraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
     @Override
-    public ResponseMessage readChunk(final ByteBuf byteBuf, final boolean isFirstChunk) {
+    public ResponseMessage readChunk(final Buffer buffer, final boolean isFirstChunk) {
         throw new UnsupportedOperationException("Reading for streaming GraphSON is not supported");
     }
 
     @Override
-    public ByteBuf serializeRequestAsBinary(RequestMessage requestMessage, ByteBufAllocator allocator) throws SerializationException {
-        ByteBuf encodedMessage = null;
+    public Buffer serializeRequestAsBinary(final RequestMessage requestMessage) throws SerializationException {
+        Buffer buffer = null;
         try {
             final byte[] payload = mapper.writeValueAsBytes(requestMessage);
 
-            encodedMessage = allocator.buffer(payload.length);
-            encodedMessage.writeBytes(payload);
+            buffer = bufferFactory.create(payload.length);
+            buffer.writeBytes(payload);
 
-            return encodedMessage;
+            return buffer;
         } catch (Exception ex) {
-            if (encodedMessage != null) ReferenceCountUtil.release(encodedMessage);
-
+            if (buffer != null) buffer.release();
             logger.warn(String.format("Request [%s] could not be serialized by %s.", requestMessage, AbstractGraphSONMessageSerializerV4.class.getName()), ex);
             throw new SerializationException(ex);
         }
     }
 
     @Override
-    public RequestMessage deserializeBinaryRequest(ByteBuf msg) throws SerializationException {
+    public RequestMessage deserializeBinaryRequest(final Buffer msg) throws SerializationException {
         try {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);

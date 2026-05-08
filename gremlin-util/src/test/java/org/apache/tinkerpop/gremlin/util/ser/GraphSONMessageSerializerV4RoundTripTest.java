@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.tinkerpop.gremlin.structure.io.Buffer;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.junit.Test;
 
@@ -35,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 
 public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripTest {
     private final ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build();
-    private final static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
     public final GraphSONMessageSerializerV4 serializer = new GraphSONMessageSerializerV4();
 
@@ -49,8 +46,8 @@ public class GraphSONMessageSerializerV4RoundTripTest extends AbstractRoundTripT
 
         for (int i = 0; i < 5; i++) {
             // GraphSONv4 assumes that results are always in a list.
-            final ByteBuf bb = serializer.serializeResponseAsBinary(
-                    responseMessageBuilder.result(Collections.singletonList(value)).code(HttpResponseStatus.OK).create(), allocator);
+            final Buffer bb = serializer.serializeResponseAsBinary(
+                    responseMessageBuilder.result(Collections.singletonList(value)).code(HttpResponseStatus.OK).create());
             final Object result = serializer.deserializeBinaryResponse(bb).getResult().getData().get(0);
 
             Optional.ofNullable(assertion).orElse((Consumer) r -> assertEquals(value, r)).accept(result);

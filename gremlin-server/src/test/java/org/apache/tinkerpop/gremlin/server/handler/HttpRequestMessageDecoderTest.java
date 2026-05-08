@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
 import org.apache.tinkerpop.gremlin.util.ser.GraphSONMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.ser.NettyMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.gremlin.util.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.util.ser.Serializers;
@@ -74,7 +75,7 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessage request = RequestMessage.build("g.V()").create();
 
-        final ByteBuf buffer = graphSONSerializer.serializeRequestAsBinary(request, allocator);
+        final ByteBuf buffer = new NettyMessageSerializer(graphSONSerializer).serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
@@ -98,7 +99,7 @@ public class HttpRequestMessageDecoderTest {
 
         final RequestMessage request = RequestMessage.build("g.V()").addLanguage("gremlin-lang").create();
 
-        final ByteBuf buffer = graphBinarySerializer.serializeRequestAsBinary(request, allocator);
+        final ByteBuf buffer = new NettyMessageSerializer(graphBinarySerializer).serializeRequestAsBinary(request, allocator);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
         headers.add(HttpHeaderNames.CONTENT_TYPE, SerTokens.MIME_GRAPHBINARY_V4);
