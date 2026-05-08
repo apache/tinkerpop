@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 === TinkerPop 3.7.7 (Release Date: NOT OFFICIALLY RELEASED YET)
 
 * Fixed conjoin has incorrect null handling.
+* Expanded `gremlin-python` CI matrix to test against Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 
 [[release-3-7-6]]
 === TinkerPop 3.7.6 (Release Date: April 1, 2026)
