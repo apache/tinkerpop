@@ -70,48 +70,79 @@ import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
 import GraphBinaryWriter from './internals/GraphBinaryWriter.js';
 
-const ioc = {};
+import { Float, Double, Int, Long, Short, Byte } from '../../../utils.js';
 
-ioc.DataType = DataType;
-ioc.utils = utils;
+function createIoc(anySerializerOptions) {
+  const ioc = {};
 
-ioc.serializers = {};
+  ioc.DataType = DataType;
+  ioc.utils = utils;
 
-ioc.intSerializer = new IntSerializer(ioc);
-ioc.longSerializer = new LongSerializer(ioc);
-ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
-ioc.dateTimeSerializer = new DateTimeSerializer(ioc);
-ioc.doubleSerializer = new DoubleSerializer(ioc);
-ioc.floatSerializer = new FloatSerializer(ioc);
-ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
-ioc.mapSerializer = new MapSerializer(ioc);
-ioc.setSerializer = new SetSerializer(ioc, ioc.DataType.SET);
-ioc.uuidSerializer = new UuidSerializer(ioc);
-ioc.edgeSerializer = new EdgeSerializer(ioc);
-ioc.pathSerializer = new PathSerializer(ioc);
-ioc.propertySerializer = new PropertySerializer(ioc);
-ioc.vertexSerializer = new VertexSerializer(ioc);
-ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
-ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
-ioc.byteSerializer = new ByteSerializer(ioc);
-ioc.binarySerializer = new BinarySerializer(ioc);
-ioc.shortSerializer = new ShortSerializer(ioc);
-ioc.booleanSerializer = new BooleanSerializer(ioc);
-ioc.markerSerializer = new MarkerSerializer(ioc);
-ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
-ioc.enumSerializer = new EnumSerializer(ioc);
+  ioc.serializers = {};
 
-// Register stub serializers for unimplemented v4 types
-new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
-new StubSerializer(ioc, ioc.DataType.GRAPH, 'Graph');
-new StubSerializer(ioc, ioc.DataType.COMPOSITEPDT, 'CompositePDT');
-new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
+  ioc.intSerializer = new IntSerializer(ioc);
+  ioc.longSerializer = new LongSerializer(ioc);
+  ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
+  ioc.dateTimeSerializer = new DateTimeSerializer(ioc);
+  ioc.doubleSerializer = new DoubleSerializer(ioc);
+  ioc.floatSerializer = new FloatSerializer(ioc);
+  ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
+  ioc.mapSerializer = new MapSerializer(ioc);
+  ioc.setSerializer = new SetSerializer(ioc, ioc.DataType.SET);
+  ioc.uuidSerializer = new UuidSerializer(ioc);
+  ioc.edgeSerializer = new EdgeSerializer(ioc);
+  ioc.pathSerializer = new PathSerializer(ioc);
+  ioc.propertySerializer = new PropertySerializer(ioc);
+  ioc.vertexSerializer = new VertexSerializer(ioc);
+  ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
+  ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
+  ioc.byteSerializer = new ByteSerializer(ioc);
+  ioc.binarySerializer = new BinarySerializer(ioc);
+  ioc.shortSerializer = new ShortSerializer(ioc);
+  ioc.booleanSerializer = new BooleanSerializer(ioc);
+  ioc.markerSerializer = new MarkerSerializer(ioc);
+  ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
+  ioc.enumSerializer = new EnumSerializer(ioc);
 
-ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
-ioc.anySerializer = new AnySerializer(ioc);
+  // Register stub serializers for unimplemented v4 types
+  new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
+  new StubSerializer(ioc, ioc.DataType.GRAPH, 'Graph');
+  new StubSerializer(ioc, ioc.DataType.COMPOSITEPDT, 'CompositePDT');
+  new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
 
-ioc.graphBinaryReader = new GraphBinaryReader(ioc);
-ioc.graphBinaryWriter = new GraphBinaryWriter(ioc);
+  ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
+  ioc.anySerializer = new AnySerializer(ioc, anySerializerOptions);
+
+  ioc.graphBinaryReader = new GraphBinaryReader(ioc);
+  ioc.graphBinaryWriter = new GraphBinaryWriter(ioc);
+
+  return ioc;
+}
+
+export function createPreciseReader() {
+  const wrapperMap = new Map([
+    [DataType.INT, Int],
+    [DataType.LONG, Long],
+    [DataType.FLOAT, Float],
+    [DataType.DOUBLE, Double],
+    [DataType.SHORT, Short],
+    [DataType.BYTE, Byte],
+  ]);
+
+  const preciseIoc = createIoc({
+    postDeserialize(result, typeCode) {
+      const Wrapper = wrapperMap.get(typeCode);
+      if (Wrapper && result !== null && result !== undefined) {
+        return new Wrapper(result);
+      }
+      return result;
+    },
+  });
+
+  return preciseIoc.graphBinaryReader;
+}
+
+const ioc = createIoc();
 
 export { default as DataType } from './internals/DataType.js';
 

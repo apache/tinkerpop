@@ -87,6 +87,18 @@ export const structure = {
   Vertex: graph.Vertex,
   VertexProperty: graph.VertexProperty,
   toLong: utils.toLong,
+  toInt: utils.toInt,
+  toFloat: utils.toFloat,
+  toDouble: utils.toDouble,
+  toShort: utils.toShort,
+  toByte: utils.toByte,
+  Int: utils.Int,
+  Float: utils.Float,
+  Double: utils.Double,
+  Short: utils.Short,
+  Byte: utils.Byte,
+  Long: utils.Long,
+  unwrap: utils.unwrap,
 };
 
 export default { driver, process, structure };

@@ -1671,6 +1671,7 @@ can be passed in the constructor of a new `Client` or `DriverRemoteConnection` :
 |options.traversalSource |String |The traversal source. |'g'
 |options.headers |Object |Additional HTTP header key/values included with each request. |undefined
 |options.interceptors |RequestInterceptor/RequestInterceptor[] |One or more functions that can modify the HTTP request before it is sent. |undefined
+|options.numberMode |String |Set to `'precise'` to wrap deserialized numbers in typed wrappers that preserve the server's original type. |undefined
 |options.reader |GraphBinaryReader |The reader to use for deserializing responses. |GraphBinaryReader
 |options.writer |GraphBinaryWriter |The writer to use for serializing requests. |GraphBinaryWriter
 |options.enableUserAgentOnConnect |Boolean |Determines if a user agent header will be sent with requests. |true
@@ -1969,15 +1970,67 @@ g.V().hasLabel('person').groupCount().by('age')
 Either of the above two options accomplishes the desired goal as both prevent `groupCount()` from having to process
 the possibility of `null`.
 
+[[gremlin-javascript-numeric-types]]
+=== Numeric Types
+
+JavaScript has a single `Number` type (IEEE 754 double) which cannot distinguish between JVM numeric types. The driver
+provides typed wrapper classes and factory functions that give explicit control over serialization and deserialization.
+
+==== Controlling Serialization
+
+Wrapping a value selects the GremlinLang type suffix and GraphBinary type code sent to the server. Without wrappers the
+driver infers types automatically, so existing code is unaffected.
+
+[source,javascript]
+----
+const { toLong, toInt, toFloat, toDouble, toShort, toByte } = gremlin.structure;
+
+g.V().has('age', toInt(29)).next();
+g.V().has('score', toFloat(3.14)).next();
+g.V().has('id', toLong('9007199254740993')).next();
+----
+
+`toLong()` accepts `number`, `string`, or `bigint`. String and bigint inputs support the full signed 64-bit range;
+number inputs must be within the safe integer range.
+
+==== Preserving Types on Deserialization
+
+By default, the driver deserializes all numeric values as plain `Number` (or `BigInt` for large longs). To preserve the
+server's original type, set `numberMode` to `'precise'` on the connection:
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
+  numberMode: 'precise'
+}));
+
+const v = await g.V(1).elementMap().next();
+const age = v.value.get('age');  // Int { value: 29, type: 'int' }
+age + 1;                         // 30 — wrappers support arithmetic via valueOf()
+----
+
+==== Unwrapping
+
+The `unwrap()` helper extracts the raw value from any wrapper, passing non-wrapper values through unchanged:
+
+[source,javascript]
+----
+const { unwrap } = gremlin.structure;
+unwrap(toInt(29));  // 29
+unwrap('hello');    // 'hello'
+----
+
 [[gremlin-javascript-limitations]]
 === Limitations
 
 * JavaScript's `Number` type is an IEEE 754 double-precision float. `Float`, `Byte`, and `Short` values from the server
-are deserialized as `Number` and lose their original type information.
+are deserialized as `Number` and lose their original type information. Use `numberMode: 'precise'` to preserve the
+original types — see <<gremlin-javascript-numeric-types>>.
 * `Long` values outside the safe integer range (|n| > 2^53 - 1) are deserialized as `BigInt` to preserve precision.
 Values within the safe range are deserialized as `Number`. The same server type may produce different JavaScript types.
 * `Number.isInteger(1.0)` is `true` in JavaScript, so the driver cannot distinguish integer values from whole-number
-doubles. `BigDecimal` is not implemented.
+doubles. `BigDecimal` is not implemented. Typed wrappers (e.g. `toInt()`, `toDouble()`) can be used to control the
+exact type sent to the server — see <<gremlin-javascript-numeric-types>>.
 * The driver applies GremlinLang type suffixes automatically based on value characteristics: integers within the 32-bit
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`

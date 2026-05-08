@@ -24,7 +24,7 @@
 import { Buffer } from 'buffer';
 import { EventEmitter } from 'eventemitter3';
 import type { Agent } from 'node:http';
-import ioc from '../structure/io/binary/GraphBinary.js';
+import ioc, { createPreciseReader } from '../structure/io/binary/GraphBinary.js';
 import StreamReader from '../structure/io/binary/internals/StreamReader.js';
 import * as utils from '../utils.js';
 import ResultSet from './result-set.js';
@@ -53,6 +53,7 @@ export type ConnectionOptions = {
   ca?: string[];
   cert?: string | string[] | Buffer;
   pfx?: string | Buffer;
+  numberMode?: 'precise';
   reader?: any;
   rejectUnauthorized?: boolean;
   traversalSource?: string;
@@ -87,7 +88,7 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || graphBinaryReader;
+    this._reader = options.reader || (options.numberMode === 'precise' ? createPreciseReader() : graphBinaryReader);
     this._writer = 'writer' in options ? options.writer : graphBinaryWriter;
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;
