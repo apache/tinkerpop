@@ -162,7 +162,6 @@ public interface Channelizer extends ChannelHandler {
             }
 
             configure(pipeline);
-            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending));
         }
 
         @Override
@@ -269,6 +268,11 @@ public interface Channelizer extends ChannelHandler {
                 pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
                 pipeline.addLast(PIPELINE_HTTP_DECODER, gremlinResponseDecoder);
             }
+
+            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending, () -> {
+                connection.returnToPool();
+                connection.tryShutdown();
+            }, useStreaming));
         }
     }
 }

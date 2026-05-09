@@ -49,9 +49,13 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
     private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
     private static final AttributeKey<ResponseException> CAUGHT_EXCEPTION = AttributeKey.valueOf("caughtException");
     private final AtomicReference<ResultSet> pendingResultSet;
+    private final Runnable onResponseComplete;
+    private final boolean streaming;
 
-    public GremlinResponseHandler(final AtomicReference<ResultSet> pending) {
+    public GremlinResponseHandler(final AtomicReference<ResultSet> pending, final Runnable onResponseComplete, final boolean streaming) {
         this.pendingResultSet = pending;
+        this.onResponseComplete = onResponseComplete;
+        this.streaming = streaming;
     }
 
     @Override
@@ -100,14 +104,17 @@ public class GremlinResponseHandler extends SimpleChannelInboundHandler<Response
 
         // Stream is done when the last content signaling response message is read.
         if (LAST_CONTENT_READ_RESPONSE == response) {
-            final ResultSet rs = pendingResultSet.getAndSet(null);
-            if (rs != null) {
-                if (null == channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).get()) {
-                    rs.markComplete();
-                } else {
-                    rs.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
+            if (!streaming) {
+                final ResultSet rs = pendingResultSet.getAndSet(null);
+                if (rs != null) {
+                    if (null == channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).get()) {
+                        rs.markComplete();
+                    } else {
+                        rs.markError(channelHandlerContext.channel().attr(CAUGHT_EXCEPTION).getAndSet(null));
+                    }
                 }
             }
+            onResponseComplete.run();
         }
     }
 

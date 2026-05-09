@@ -209,10 +209,6 @@ final class Connection {
                                 // write operation.
                                 logger.debug("Error while processing request on the server {}.", this, t);
                                 handleConnectionCleanupOnError(thisConnection);
-                            } else {
-                                // the callback for when the read was successful, meaning that ResultSet.markComplete()
-                                // was called
-                                thisConnection.returnToPool();
                             }
                             // While this request was in process, close might have been signaled in closeAsync().
                             // However, close would be blocked until all pending requests are completed. Attempt
@@ -234,7 +230,7 @@ final class Connection {
         return requestPromise;
     }
 
-    private void returnToPool() {
+    void returnToPool() {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
@@ -259,7 +255,7 @@ final class Connection {
      * Close was signaled in closeAsync() but there were pending messages at that time. This method attempts the
      * shutdown if the returned result cleared up the last pending message.
      */
-    private void tryShutdown() {
+    void tryShutdown() {
         if (isClosing() && isOkToClose())
             shutdown(closeFuture.get());
     }

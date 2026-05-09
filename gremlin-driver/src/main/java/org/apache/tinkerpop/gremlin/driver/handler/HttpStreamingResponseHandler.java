@@ -23,7 +23,7 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.TooLongFrameException;
-import io.netty.handler.codec.http.DefaultHttpObject;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
@@ -57,7 +57,7 @@ import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LA
  * (e.g., JSON 401/500), the error body is accumulated across chunks and parsed on {@link LastHttpContent}, then
  * {@code LAST_CONTENT_READ_RESPONSE} is fired through the pipeline for {@link GremlinResponseHandler}.
  */
-public class HttpStreamingResponseHandler extends MessageToMessageDecoder<DefaultHttpObject> {
+public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpObject> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpStreamingResponseHandler.class);
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -85,7 +85,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<Defaul
     }
 
     @Override
-    protected void decode(final ChannelHandlerContext ctx, final DefaultHttpObject msg,
+    protected void decode(final ChannelHandlerContext ctx, final HttpObject msg,
                           final List<Object> out) throws Exception {
         if (msg instanceof HttpResponse) {
             final HttpResponse resp = (HttpResponse) msg;
@@ -154,7 +154,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<Defaul
                         // rather than offered to the already-closed stream.
                         queueInputStream = null;
                     }
-                    // Reader thread handles completion directly via markComplete/markError
+                    out.add(LAST_CONTENT_READ_RESPONSE);
                 } else {
                     // Non-GraphBinary error — parse accumulated body and fire sentinel
                     handleNonGraphBinaryError();
