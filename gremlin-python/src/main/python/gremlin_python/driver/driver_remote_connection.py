@@ -120,7 +120,9 @@ class DriverRemoteConnection(RemoteConnection):
         # request the server to bulk results by default when using drc through request options
         if 'bulkResults' not in request_options:
             request_options['bulkResults'] = True
-        if gremlin_lang.parameters is not None and len(gremlin_lang.parameters) > 0:
-            request_options["params"] = gremlin_lang.parameters
+
+        parameters_string = gremlin_lang.get_parameters_as_string()
+        if parameters_string != '[:]':
+            request_options["bindings"] = parameters_string
 
         return request_options

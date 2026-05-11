@@ -814,13 +814,11 @@ class GremlinLang(object):
         self.gremlin = []
         self.parameters = {}
         self.options_strategies = []
-        self.param_count = AtomicInteger()
 
         if gremlin_lang is not None:
             self.gremlin = list(gremlin_lang.gremlin)
             self.parameters = dict(gremlin_lang.parameters)
             self.options_strategies = list(gremlin_lang.options_strategies)
-            self.param_count = gremlin_lang.param_count
 
     def _add_to_gremlin(self, string_name, *args):
 
@@ -939,18 +937,17 @@ class GremlinLang(object):
         if isinstance(arg, list):
             return self._process_list(arg)
 
-        if hasattr(arg, '__class__'):
-            try:
-                return arg.__name__
-            except AttributeError:
-                pass
+        # Strategy instances render as their name (e.g. "ReadOnlyStrategy") for withoutStrategies.
+        # Class objects render as their __name__ (e.g. strategy classes passed directly).
+        # These replace the old hasattr(arg, '__class__') check which was too broad since every
+        # Python object has __class__, making it a silent escape hatch for anything with __name__.
+        if isinstance(arg, TraversalStrategy):
+            return arg.strategy_name
 
-        return self._as_parameter(arg)
+        if isinstance(arg, type):
+            return arg.__name__
 
-    def _as_parameter(self, arg):
-        param_name = f'_{self.param_count.get_and_increment()}'
-        self.parameters[param_name] = arg
-        return param_name
+        raise TypeError(f'GremlinLang contains at least one type [{type(arg).__name__}] that cannot be represented as text.')
 
     # Do special processing needed to format predicates that come in
     # such as "gt(a)" correctly.
@@ -1029,11 +1026,26 @@ class GremlinLang(object):
     def get_parameters(self):
         return self.parameters
 
+    def get_parameters_as_string(self):
+        return GremlinLang.convert_parameters_to_string(self.parameters)
+
+    @staticmethod
+    def convert_parameters_to_string(params):
+        """Converts a parameter map to a gremlin-lang map literal string.
+
+        Raises TypeError if any value is an unsupported type.
+        """
+        if params is None or len(params) == 0:
+            return '[:]'
+
+        helper = GremlinLang()
+        parts = []
+        for k, v in params.items():
+            parts.append(f'{helper._arg_as_string(k)}:{helper._arg_as_string(v)}')
+        return '[' + ','.join(parts) + ']'
+
     def add_g(self, g):
         self.parameters['g'] = g
-
-    def reset(self):
-        self.param_count.set(0)
 
     def add_source(self, source_name, *args):
 

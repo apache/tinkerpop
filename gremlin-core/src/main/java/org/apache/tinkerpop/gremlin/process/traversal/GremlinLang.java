@@ -51,7 +51,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Base64;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.util.DatetimeHelper.format;
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.asIterator;
@@ -66,7 +65,7 @@ public class GremlinLang implements Cloneable, Serializable {
 
     private StringBuilder gremlin = new StringBuilder();
     private Map<String, Object> parameters = new HashMap<>();
-    private static final AtomicInteger paramCount = new AtomicInteger(0);
+    private String unsupportedType = "";
     private List<OptionsStrategy> optionsStrategies = new ArrayList<>();
 
     public GremlinLang() {
@@ -208,6 +207,9 @@ public class GremlinLang implements Cloneable, Serializable {
         if (arg instanceof GremlinLang || arg instanceof DefaultTraversal) {
             final GremlinLang gremlinLang = arg instanceof GremlinLang ? (GremlinLang) arg : ((DefaultTraversal) arg).getGremlinLang();
             parameters.putAll(gremlinLang.getParameters());
+            if (gremlinLang.containsUnsupportedTypes()) {
+                unsupportedType = gremlinLang.getUnsupportedType();
+            }
             return gremlinLang.getGremlin("__");
         }
 
@@ -250,14 +252,8 @@ public class GremlinLang implements Cloneable, Serializable {
             return ((Class) arg).getSimpleName();
         }
 
-        return asParameter(arg);
-    }
-
-    private String asParameter(final Object arg) {
-        final String paramName = String.format("_%d", paramCount.getAndIncrement());
-        // todo: consider resetting paramCount when it's larger then 1_000_000
-        parameters.put(paramName, arg);
-        return paramName;
+        unsupportedType = arg.getClass().getSimpleName();
+        return arg.toString();
     }
 
     private String asString(final Iterator itty) {
@@ -378,17 +374,75 @@ public class GremlinLang implements Cloneable, Serializable {
     }
 
     /**
+     * Returns the simple class name of the last type encountered by {@code argAsString()} that could not be
+     * represented as a gremlin-lang literal. An empty string means all types were supported.
+     *
+     * @return the simple class name of the unsupported type, or empty string if none
+     */
+    public String getUnsupportedType() {
+        return unsupportedType;
+    }
+
+    /**
+     * Returns {@code true} if {@code argAsString()} encountered at least one type that could not be represented
+     * as a gremlin-lang literal. In remote mode, the driver should check this before sending the request.
+     * <p>
+     * Note: this only covers types encountered while building the gremlin string. Named {@code GValue} parameters
+     * store their inner value directly in the parameter map without type-checking via {@code argAsString()}, so
+     * an unsupported type wrapped in a named {@code GValue} will not be detected by this method. Such cases are
+     * caught separately by {@link #convertParametersToString(Map)} when the parameter map is serialized.
+     * Unnamed {@code GValue} instances (null name) recurse into {@code argAsString()} and will set this flag.
+     *
+     * @return true if unsupported types were encountered in the gremlin string
+     */
+    public boolean containsUnsupportedTypes() {
+        return !unsupportedType.isEmpty();
+    }
+
+    /**
+     * Serializes this instance's parameter map to a gremlin-lang map literal string. Keys are parameter names
+     * (identifiers), values are formatted using {@code argAsString()}.
+     *
+     * @return a gremlin-lang map literal string, e.g. {@code ["x":1,"y":"stephen"]} or {@code [:]} for empty
+     */
+    public String getParametersAsString() {
+        return convertParametersToString(parameters);
+    }
+
+    /**
+     * Converts an arbitrary parameter map to a gremlin-lang map literal string. Keys must be valid identifier strings.
+     * Values are formatted as gremlin-lang literals.
+     *
+     * @param params the parameter map to convert
+     * @return a gremlin-lang map literal string, e.g. {@code ["x":1,"y":"stephen"]} or {@code [:]} for empty
+     */
+    public static String convertParametersToString(final Map<String, Object> params) {
+        if (params == null || params.isEmpty()) return "[:]";
+
+        final GremlinLang helper = new GremlinLang();
+        final StringBuilder sb = new StringBuilder("[");
+        final Iterator<Map.Entry<String, Object>> itty = params.entrySet().iterator();
+        while (itty.hasNext()) {
+            final Map.Entry<String, Object> entry = itty.next();
+            sb.append(helper.argAsString(entry.getKey())).append(":").append(helper.argAsString(entry.getValue()));
+            if (itty.hasNext()) sb.append(",");
+        }
+        sb.append("]");
+
+        if (helper.containsUnsupportedTypes()) {
+            throw new IllegalArgumentException(String.format(
+                    "Parameter map contains at least one type [%s] that cannot be represented as text.",
+                    helper.getUnsupportedType()));
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * The alias to set.
      */
     public void addG(final String g) {
         parameters.put("g", g);
-    }
-
-    /**
-    * Reset parameter naming counter. Mainly intended to make testing easier
-    */
-    public void reset() {
-        paramCount.set(0);
     }
 
     /**
@@ -510,6 +564,7 @@ public class GremlinLang implements Cloneable, Serializable {
             clone.gremlin = new StringBuilder(gremlin.length());
             clone.gremlin.append(gremlin);
             clone.optionsStrategies = new ArrayList<>(this.optionsStrategies);
+            clone.unsupportedType = this.unsupportedType;
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);

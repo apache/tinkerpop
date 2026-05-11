@@ -642,6 +642,10 @@ public class GeneralLiteralVisitorTest {
                     {"[{'x'}: 'x']", createMap(new Object[]{new HashSet<>(Arrays.asList("x")), "x"})},
                     {"[['x']: ['x',{'y'}]]", createMap(new Object[]{Arrays.asList("x"), Arrays.asList("x", new HashSet<>(Arrays.asList("y")))})},
                     {"[['x']: ['x',['y']]]", createMap(new Object[]{Arrays.asList("x"), Arrays.asList("x", Arrays.asList("y"))})},
+                    {"[null:'x']", createMap(new Object[]{null, "x"})},
+                    {"[null:null]", createMap(new Object[]{null, null})},
+                    {"[null:'x','y':'z']", createMap(new Object[]{null, "x", "y", "z"})},
+                    {"['null':'x']", createMap(new Object[]{"null", "x"})},
             });
         }
 

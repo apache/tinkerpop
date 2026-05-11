@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Driver.Messages
 {
@@ -69,6 +70,7 @@ namespace Gremlin.Net.Driver.Messages
             private readonly string _gremlin;
             private readonly Dictionary<string, object> _fields = new Dictionary<string, object>();
             private readonly Dictionary<string, object> _bindings = new Dictionary<string, object>();
+            private string? _bindingsString;
 
             internal Builder(string gremlin)
             {
@@ -94,21 +96,41 @@ namespace Gremlin.Net.Driver.Messages
             /// <returns>The <see cref="Builder" />.</returns>
             public Builder AddBinding(string key, object val)
             {
+                if (_bindingsString != null)
+                    throw new InvalidOperationException("Cannot mix AddBinding() with AddBindingsString().");
                 _bindings[key] = val;
                 return this;
             }
 
             /// <summary>
-            ///     Adds multiple binding parameters.
+            ///     Adds multiple binding parameters from a dictionary. The values will be
+            ///     converted to a gremlin-lang string when the message is created.
+            ///     Cannot be mixed with <see cref="AddBindingsString"/>.
             /// </summary>
             /// <param name="bindings">The bindings to add.</param>
             /// <returns>The <see cref="Builder" />.</returns>
             public Builder AddBindings(Dictionary<string, object> bindings)
             {
+                if (_bindingsString != null)
+                    throw new InvalidOperationException("Cannot mix AddBindings() with AddBindingsString().");
                 foreach (var kvp in bindings)
                 {
                     _bindings[kvp.Key] = kvp.Value;
                 }
+                return this;
+            }
+
+            /// <summary>
+            ///     Sets the bindings as a pre-serialized gremlin-lang map literal string.
+            ///     Cannot be mixed with <see cref="AddBinding"/> or <see cref="AddBindings"/>.
+            /// </summary>
+            /// <param name="bindingsString">The gremlin-lang bindings string.</param>
+            /// <returns>The <see cref="Builder" />.</returns>
+            public Builder AddBindingsString(string bindingsString)
+            {
+                if (_bindings.Count > 0)
+                    throw new InvalidOperationException("Cannot mix AddBindingsString() with AddBinding()/AddBindings().");
+                _bindingsString = bindingsString;
                 return this;
             }
 
@@ -203,7 +225,15 @@ namespace Gremlin.Net.Driver.Messages
             /// <returns>The built <see cref="RequestMessage" />.</returns>
             public RequestMessage Create()
             {
-                _fields[Tokens.ArgsBindings] = _bindings;
+                // prefer pre-serialized bindings string over raw map
+                if (_bindingsString != null)
+                {
+                    _fields[Tokens.ArgsBindings] = _bindingsString;
+                }
+                else if (_bindings.Count > 0)
+                {
+                    _fields[Tokens.ArgsBindings] = GremlinLang.ConvertParametersToString(_bindings);
+                }
                 return new RequestMessage(_gremlin, _fields);
             }
         }

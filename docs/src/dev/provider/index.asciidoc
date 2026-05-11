@@ -1004,7 +1004,7 @@ Gremlin-Hints: <hints>
 {
   "gremlin": string,
   "timeoutMs": number,
-  "bindings": object,
+  "bindings": string,
   "g": string,
   "language" : string,
   "materializeProperties": string,
@@ -1064,7 +1064,7 @@ the serializer specified by the `Content-Type` header. The following are the key
 |Key |Description |Value |Required
 |gremlin |The Gremlin query to execute. |String containing script |Yes
 |timeoutMs |The maximum time a query is allowed to execute in milliseconds. |Number between 0 and 2^31-1 |No
-|bindings |A map used during query execution. Its usage depends on "language". For "gremlin-groovy", these are the variable bindings. For "gremlin-lang", these are the parameter bindings. |Object (Map) |No
+|bindings |A gremlin-lang string that contains a map used during query execution. Its usage depends on "language". For "gremlin-groovy", these are the variable bindings. For "gremlin-lang", these are the parameter bindings. |Object (Map) |No
 |g |The name of the graph traversal source to which the query applies. Default: "g" |String containing traversal source name |No
 |language |The name of the ScriptEngine to use to parse the gremlin query. Default: "gremlin-lang" |String containing ScriptEngine name |No
 |materializeProperties |Whether to include all properties for results. One of "tokens" or "all". |String |No

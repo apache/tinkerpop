@@ -110,14 +110,14 @@ namespace Gremlin.Net.UnitTest.Driver
             var connection = new DriverRemoteConnection(client, "g");
 
             var gl = new GremlinLang();
-            gl.Parameters["_0"] = 42;
+            gl.Parameters["x"] = 42;
             gl.AddStep("V", Array.Empty<object>());
 
             await connection.SubmitAsync<object, object>(gl);
 
             Assert.NotNull(capturedRequest);
-            var bindings = (Dictionary<string, object>)capturedRequest!.Fields[Tokens.ArgsBindings];
-            Assert.Equal(42, bindings["_0"]);
+            var bindingsString = (string)capturedRequest!.Fields[Tokens.ArgsBindings];
+            Assert.Contains("\"x\":42", bindingsString);
         }
 
         [Fact]

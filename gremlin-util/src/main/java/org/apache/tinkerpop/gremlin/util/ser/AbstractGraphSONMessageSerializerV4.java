@@ -323,7 +323,7 @@ public abstract class AbstractGraphSONMessageSerializerV4 extends AbstractMessag
                 builder.addG(data.get(SerTokens.TOKEN_G).toString());
             }
             if (data.containsKey(SerTokens.TOKEN_BINDINGS)) {
-                builder.addBindings((Map<String, Object>) data.get(SerTokens.TOKEN_BINDINGS));
+                builder.addBindings(data.get(SerTokens.TOKEN_BINDINGS).toString());
             }
             if (data.containsKey(Tokens.TIMEOUT_MS)) {
                 // Can be int for untyped JSON and long for typed GraphSON.

@@ -147,7 +147,7 @@ public class HttpRequestMessageDecoderTest {
         final String gremlin = "g.V(x)";
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{ \"gremlin\": \"" + gremlin +
-                        "\", \"bindings\":{\"x\":\"2\"}" +
+                        "\", \"bindings\":\"[\\\"x\\\":\\\"2\\\"]\"" +
                         ", \"language\":  \"gremlin-groovy\"}",
                 CharsetUtil.UTF_8);
 
@@ -163,7 +163,7 @@ public class HttpRequestMessageDecoderTest {
         final RequestMessage decodedRequestMessage = testChannel.readInbound();
         assertEquals(gremlin, decodedRequestMessage.getGremlin());
         assertEquals("gremlin-groovy", decodedRequestMessage.getField(Tokens.ARGS_LANGUAGE));
-        assertEquals("2", ((Map)decodedRequestMessage.getField(Tokens.ARGS_BINDINGS)).get("x"));
+        assertEquals("[\"x\":\"2\"]", decodedRequestMessage.getField(Tokens.ARGS_BINDINGS));
     }
 
     @Test
@@ -314,7 +314,7 @@ public class HttpRequestMessageDecoderTest {
         final UUID rid = UUID.randomUUID();
         final ByteBuf buffer = allocator.buffer();
         buffer.writeCharSequence("{\"gremlin\":\"g.V().limit(2)\",\"batchSize\":\"10\",\"language\":\"gremlin-lang\"," +
-                "\"g\":\"gmodern\",\"bindings\":{\"x\":\"1\"},\"timeoutMs\":\"12\"," +
+                "\"g\":\"gmodern\",\"bindings\":\"[\\\"x\\\":1]\",\"timeoutMs\":\"12\"," +
                 "\"materializeProperties\":\"" + Tokens.MATERIALIZE_PROPERTIES_TOKENS + "\"}", CharsetUtil.UTF_8);
 
         final HttpHeaders headers = new DefaultHttpHeaders();
@@ -331,8 +331,7 @@ public class HttpRequestMessageDecoderTest {
         assertEquals(10, (int) decodedRequest.getField(Tokens.ARGS_BATCH_SIZE));
         assertEquals("gremlin-lang", decodedRequest.getField(Tokens.ARGS_LANGUAGE));
         assertEquals("gmodern", decodedRequest.getField(Tokens.ARGS_G));
-        assertEquals("1", ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).get("x"));
-        assertEquals(1, ((Map) decodedRequest.getField(Tokens.ARGS_BINDINGS)).size());
+        assertEquals("[\"x\":1]", decodedRequest.getField(Tokens.ARGS_BINDINGS));
         assertEquals(12, (long) decodedRequest.getField(Tokens.TIMEOUT_MS));
         assertEquals(Tokens.MATERIALIZE_PROPERTIES_TOKENS, decodedRequest.getField(Tokens.ARGS_MATERIALIZE_PROPERTIES));
     }

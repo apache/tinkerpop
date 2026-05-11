@@ -55,7 +55,6 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
         [Fact]
         public void CloneShouldCreateIndependentGraphTraversal()
         {
-            GremlinLang.ResetCounter();
             var g = AnonymousTraversalSource.Traversal().With(null);
             var original = g.V().Out("created");
             var clone = original.Clone().Out("knows");

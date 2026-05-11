@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.message;
 
+import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 
 import java.util.Collections;
@@ -76,18 +77,12 @@ public final class RequestMessage {
     public static Builder from(final RequestMessage msg) {
         final Builder builder = build(msg.gremlin);
         builder.fields.putAll(msg.getFields());
-        if (msg.getFields().containsKey(Tokens.ARGS_BINDINGS)) {
-            builder.addBindings((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS));
-        }
         return builder;
     }
 
     public static Builder from(final RequestMessage msg, final String gremlin) {
         final Builder builder = build(gremlin);
         builder.fields.putAll(msg.getFields());
-        if (msg.getFields().containsKey(Tokens.ARGS_BINDINGS)) {
-            builder.addBindings((Map<String, Object>) msg.getFields().get(Tokens.ARGS_BINDINGS));
-        }
         return builder;
     }
 
@@ -108,7 +103,6 @@ public final class RequestMessage {
      */
     public static final class Builder {
         private final String gremlin;
-        private final Map<String, Object> bindings = new HashMap<>();
         private final Map<String, Object> fields = new HashMap<>(); // Only allow certain items to be added to prevent breaking changes.
 
         private Builder(final String gremlin) {
@@ -121,14 +115,24 @@ public final class RequestMessage {
             return this;
         }
 
-        public Builder addBinding(final String key, final Object val) {
-            bindings.put(key, val);
+        /**
+         * Sets the bindings as a gremlin-lang map literal string. Calling this method multiple
+         * times will replace the previous bindings (last-one-wins).
+         */
+        public Builder addBindings(final String bindingsString) {
+            Objects.requireNonNull(bindingsString, "bindings argument cannot be null.");
+            this.fields.put(Tokens.ARGS_BINDINGS, bindingsString);
             return this;
         }
 
+        /**
+         * Sets the bindings from a map by converting it to a gremlin-lang map literal string
+         * using {@link GremlinLang#convertParametersToString(Map)}. Calling this method multiple
+         * times will replace the previous bindings (last-one-wins).
+         */
         public Builder addBindings(final Map<String, Object> otherBindings) {
             Objects.requireNonNull(otherBindings, "bindings argument cannot be null.");
-            this.bindings.putAll(otherBindings);
+            this.fields.put(Tokens.ARGS_BINDINGS, GremlinLang.convertParametersToString(otherBindings));
             return this;
         }
 
@@ -183,7 +187,6 @@ public final class RequestMessage {
          * Create the request message given the settings provided to the {@link Builder}.
          */
         public RequestMessage create() {
-            this.fields.put(Tokens.ARGS_BINDINGS, bindings);
             return new RequestMessage(gremlin, fields);
         }
     }

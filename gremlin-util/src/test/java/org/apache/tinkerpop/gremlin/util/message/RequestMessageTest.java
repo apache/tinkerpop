@@ -43,19 +43,42 @@ public class RequestMessageTest {
         bindings.put("a", "b");
         bindings.put("g", "gmodern");
         final RequestMessage msg = RequestMessage.build("gremlin").addBindings(bindings).create();
-        assertEquals(bindings, msg.getField(Tokens.ARGS_BINDINGS));
+        // bindings are now stored as a gremlin-lang map literal string
+        final String bindingsString = msg.getField(Tokens.ARGS_BINDINGS);
+        assertTrue(bindingsString.startsWith("["));
+        assertTrue(bindingsString.endsWith("]"));
+        assertTrue(bindingsString.contains("\"a\":\"b\""));
+        assertTrue(bindingsString.contains("\"g\":\"gmodern\""));
     }
 
     @Test
-    public void shouldSetBindingsWithKeyValue() {
-        final Map<String, Object> bindings = new HashMap<>();
-        bindings.put("a", "b");
-        bindings.put("g", "gmodern");
+    public void shouldSetBindingsWithString() {
         final RequestMessage msg = RequestMessage.build("gremlin")
-                .addBinding("a", "b")
-                .addBinding("g", "gmodern")
+                .addBindings("[a:\"b\",g:\"gmodern\"]")
                 .create();
-        assertEquals(bindings, msg.getField(Tokens.ARGS_BINDINGS));
+        assertEquals("[a:\"b\",g:\"gmodern\"]", msg.getField(Tokens.ARGS_BINDINGS));
+    }
+
+    @Test
+    public void shouldNotContainBindingsWhenNoneSet() {
+        final RequestMessage msg = RequestMessage.build("g.V()").create();
+        assertNull(msg.getField(Tokens.ARGS_BINDINGS));
+    }
+
+    @Test
+    public void shouldOverwriteBindingsOnMultipleCalls() {
+        final RequestMessage msg = RequestMessage.build("gremlin")
+                .addBindings("[x:1]")
+                .addBindings("[y:2]")
+                .create();
+        assertEquals("[y:2]", msg.getField(Tokens.ARGS_BINDINGS));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectUnsupportedTypeInBindingsMap() {
+        final Map<String, Object> bindings = new HashMap<>();
+        bindings.put("x", new Thread());
+        RequestMessage.build("g.V()").addBindings(bindings);
     }
 
     @Test
@@ -111,7 +134,10 @@ public class RequestMessageTest {
         final Map<String, Object> fields = msg.getFields();
         assertEquals(g, fields.get(Tokens.ARGS_G));
         assertEquals(lang, fields.get(Tokens.ARGS_LANGUAGE));
-        assertEquals(bindings, fields.get(Tokens.ARGS_BINDINGS));
+        // bindings are now a gremlin-lang string, not the original map
+        final String bindingsString = (String) fields.get(Tokens.ARGS_BINDINGS);
+        assertTrue(bindingsString.contains("\"b\":\"c\""));
+        assertTrue(bindingsString.contains("\"g\":\"gmodern\""));
         assertEquals(query, msg.getGremlin());
     }
 

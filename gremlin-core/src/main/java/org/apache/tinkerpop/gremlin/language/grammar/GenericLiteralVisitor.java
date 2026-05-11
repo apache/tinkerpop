@@ -125,7 +125,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return collectionLiteral.genericLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.genericVisitor::visitGenericLiteral)
+                .map(this::visitGenericLiteral)
                 .toArray(Object[]::new);
     }
 
@@ -139,7 +139,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return varargsContext.genericLiteralExpr().genericLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.genericVisitor::visitGenericLiteral)
+                .map(this::visitGenericLiteral)
                 .toArray(Object[]::new);
     }
 
@@ -153,7 +153,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
         return varargsContext.stringNullableLiteral()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(antlr.genericVisitor::parseString)
+                .map(this::parseString)
                 .toArray(String[]::new);
     }
 
@@ -283,12 +283,12 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 return new Object[0];
             case 1:
                 // handle single generic literal
-                return antlr.genericVisitor.visitGenericLiteral(ctx.genericLiteral(0));
+                return this.visitGenericLiteral(ctx.genericLiteral(0));
             default:
                 // handle multiple generic literal separated by comma
                 final List<Object> genericLiterals = new ArrayList<>();
                 for (GremlinParser.GenericLiteralContext ic : ctx.genericLiteral()) {
-                    genericLiterals.add(antlr.genericVisitor.visitGenericLiteral(ic));
+                    genericLiterals.add(this.visitGenericLiteral(ic));
                 }
                 return genericLiterals.toArray();
         }
@@ -298,7 +298,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitGenericSetLiteral(final GremlinParser.GenericSetLiteralContext ctx) {
         final Set<Object> result = new HashSet<>(ctx.getChildCount() / 2);
         for (GremlinParser.GenericLiteralContext ic : ctx.genericLiteral()) {
-            result.add(antlr.genericVisitor.visitGenericLiteral(ic));
+            result.add(this.visitGenericLiteral(ic));
         }
         return result;
     }
@@ -349,7 +349,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
             } else if (kctx instanceof GremlinParser.GenericMapLiteralContext) {
                 key = visitGenericMapLiteral((GremlinParser.GenericMapLiteralContext) kctx);
             } else if (kctx instanceof GremlinParser.KeywordContext) {
-                key = ((GremlinParser.KeywordContext) kctx).getText();
+                final String keywordText = ((GremlinParser.KeywordContext) kctx).getText();
+                key = keywordText.equals("null") ? null : keywordText;
             } else if (kctx instanceof GremlinParser.NakedKeyContext) {
                 key = ((GremlinParser.NakedKeyContext) kctx).getText();
             } else if (kctx instanceof TerminalNode) {
@@ -508,7 +509,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitDateLiteral(final GremlinParser.DateLiteralContext ctx) {
         if (ctx.stringLiteral() == null)
             return DatetimeHelper.datetime();
-        return DatetimeHelper.parse((String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral()));
+        return DatetimeHelper.parse((String) this.visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
@@ -518,7 +519,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
         if (ctx.stringLiteral() == null)
             return UUID.randomUUID();
-        return UUID.fromString((String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral()));
+        return UUID.fromString((String) this.visitStringLiteral(ctx.stringLiteral()));
     }
 
     /**
@@ -541,8 +542,8 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitDurationLiteral(final GremlinParser.DurationLiteralContext ctx) {
-        final Number secondsNum = (Number) antlr.genericVisitor.visitIntegerLiteral(ctx.integerLiteral(0));
-        final Number nanosNum = (Number) antlr.genericVisitor.visitIntegerLiteral(ctx.integerLiteral(1));
+        final Number secondsNum = (Number) this.visitIntegerLiteral(ctx.integerLiteral(0));
+        final Number nanosNum = (Number) this.visitIntegerLiteral(ctx.integerLiteral(1));
 
         final long seconds = secondsNum.longValue();
         final long nanos = nanosNum.longValue();
@@ -568,7 +569,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
      */
     @Override
     public Object visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
-        final String base64 = (String) antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral());
+        final String base64 = (String) this.visitStringLiteral(ctx.stringLiteral());
         try {
             return ByteBuffer.wrap(Base64.getDecoder().decode(base64));
         } catch (IllegalArgumentException e) {
@@ -732,7 +733,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitGenericCollectionLiteral(final GremlinParser.GenericCollectionLiteralContext ctx) {
         final List<Object> result = new ArrayList<>(ctx.getChildCount() / 2);
         for (GremlinParser.GenericLiteralContext ic : ctx.genericLiteral()) {
-            result.add(antlr.genericVisitor.visitGenericLiteral(ic));
+            result.add(this.visitGenericLiteral(ic));
         }
         return result;
     }
@@ -741,7 +742,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
     public Object visitStringNullableLiteral(final GremlinParser.StringNullableLiteralContext ctx) {
         if (ctx.K_NULL() != null)
             return null;
-        return antlr.genericVisitor.visitStringLiteral(ctx.stringLiteral());
+        return this.visitStringLiteral(ctx.stringLiteral());
     }
 
     @Override
@@ -754,7 +755,7 @@ public class GenericLiteralVisitor extends DefaultGremlinBaseVisitor<Object> {
                 .filter(Objects::nonNull)
                 .filter(p -> p instanceof GremlinParser.StringNullableLiteralContext)
                 .map(p -> (GremlinParser.StringNullableLiteralContext) p)
-                .map(antlr.genericVisitor::visitStringNullableLiteral)
+                .map(this::visitStringNullableLiteral)
                 .toArray(Object[]::new);
     }
 }

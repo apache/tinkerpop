@@ -17,6 +17,8 @@
  * under the License.
  */
 
+import GremlinLang from '../process/gremlin-lang.js';
+
 // Token constants
 const Tokens = {
   ARGS_LANGUAGE: 'language',
@@ -109,6 +111,7 @@ export class RequestMessage {
 export class Builder {
   private readonly gremlin: string;
   private readonly bindings = {};
+  private bindingsString?: string;
   public language: string;
   public timeoutMs?: number;
   public g?: string;
@@ -127,14 +130,37 @@ export class Builder {
     return this;
   }
 
+  /**
+   * Adds a single binding parameter. The accumulated bindings map is converted to a gremlin-lang
+   * map literal string when the message is created.
+   * Cannot be mixed with {@link addBindingsString}.
+   */
   addBinding(key: string, value: any): Builder {
+    if (this.bindingsString) throw new Error('Cannot mix addBinding() with addBindingsString().');
     Object.assign(this.bindings, {[key]: value})
     return this;
   }
 
+  /**
+   * Merges the provided bindings into the accumulated bindings map. The values are converted to a
+   * gremlin-lang map literal string when the message is created.
+   * Cannot be mixed with {@link addBindingsString}.
+   */
   addBindings(otherBindings: object): Builder {
     if (!otherBindings) throw new Error('bindings argument cannot be null.');
+    if (this.bindingsString) throw new Error('Cannot mix addBindings() with addBindingsString().');
     Object.assign(this.bindings, otherBindings)
+    return this;
+  }
+
+  /**
+   * Sets the bindings as a pre-formatted gremlin-lang map literal string (e.g. `'["x":1,"y":"knows"]'`).
+   * Calling this method replaces any previously set bindings string (last-one-wins).
+   * Cannot be mixed with {@link addBinding} or {@link addBindings}.
+   */
+  addBindingsString(bindingsString: string): Builder {
+    if (Object.keys(this.bindings).length > 0) throw new Error('Cannot mix addBindingsString() with addBinding()/addBindings().');
+    this.bindingsString = bindingsString;
     return this;
   }
 
@@ -175,12 +201,20 @@ export class Builder {
    * Create the request message given the settings provided to the Builder.
    */
   create(): RequestMessage {
+    // mutual exclusion between addBindings/addBinding and addBindingsString is
+    // enforced at call time, so only one path can be set here
+    let bindings: string | undefined;
+    if (this.bindingsString) {
+      bindings = this.bindingsString;
+    } else if (Object.keys(this.bindings).length > 0) {
+      bindings = GremlinLang.convertParametersToString(new Map(Object.entries(this.bindings)));
+    }
     // @ts-ignore - accessing private constructor from Builder
     return new RequestMessage(
       this.gremlin,
       this.language || 'gremlin-lang',
       this.timeoutMs,
-      Object.keys(this.bindings).length > 0 ? this.bindings : undefined,
+      bindings,
       this.g,
       this.materializeProperties,
       this.bulkResults,

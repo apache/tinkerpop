@@ -28,7 +28,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -39,7 +38,6 @@ type GremlinLang struct {
 	gremlin           []string
 	parameters        map[string]interface{}
 	optionsStrategies []*traversalStrategy
-	paramCount        *atomic.Uint64
 }
 
 // NewGremlinLang creates a new GremlinLang to be used in traversals.
@@ -47,7 +45,6 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 	gremlin := make([]string, 0)
 	parameters := make(map[string]interface{})
 	optionsStrategies := make([]*traversalStrategy, 0)
-	paramCount := atomic.Uint64{}
 	if gl != nil {
 		gremlin = make([]string, len(gl.gremlin))
 		copy(gremlin, gl.gremlin)
@@ -59,15 +56,12 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 
 		optionsStrategies = make([]*traversalStrategy, len(gl.optionsStrategies))
 		copy(optionsStrategies, gl.optionsStrategies)
-
-		paramCount.Store(gl.paramCount.Load())
 	}
 
 	return &GremlinLang{
 		gremlin:           gremlin,
 		parameters:        parameters,
 		optionsStrategies: optionsStrategies,
-		paramCount:        &paramCount,
 	}
 }
 
@@ -175,7 +169,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "NaN", nil
 		}
 		if math.IsInf(float64(v), 1) {
-			return "Infinity", nil
+			return "+Infinity", nil
 		}
 		if math.IsInf(float64(v), -1) {
 			return "-Infinity", nil
@@ -186,7 +180,7 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 			return "NaN", nil
 		}
 		if math.IsInf(v, 1) {
-			return "Infinity", nil
+			return "+Infinity", nil
 		}
 		if math.IsInf(v, -1) {
 			return "-Infinity", nil
@@ -296,7 +290,13 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 		case reflect.Slice:
 			return gl.translateSlice(arg)
 		default:
-			return gl.asParameter(arg), nil
+			// Panic rather than returning an error because unsupported types are programmer
+			// mistakes (passing a type the library can't serialize), not recoverable runtime
+			// conditions. This matches the existing GValue validation pattern in this file.
+			// An error-return approach was considered but every caller in the fluent traversal
+			// API (AddSource, WithSack, etc.) would need to propagate and immediately panic
+			// anyway, adding complexity with no practical benefit.
+			panic(fmt.Sprintf("GremlinLang contains at least one type [%s] that cannot be represented as text", reflect.TypeOf(arg).Name()))
 		}
 	}
 }
@@ -435,13 +435,6 @@ func (gl *GremlinLang) translatePValue(operator string, values []interface{}) (s
 	return sb.String(), nil
 }
 
-func (gl *GremlinLang) asParameter(arg interface{}) string {
-	paramName := fmt.Sprintf("_%d", gl.paramCount.Load())
-	gl.paramCount.Add(1)
-	gl.parameters[paramName] = arg
-	return paramName
-}
-
 func (gl *GremlinLang) GetGremlin(arg ...string) string {
 	var g string
 	gremlin := strings.Join(gl.gremlin, "")
@@ -461,12 +454,39 @@ func (gl *GremlinLang) GetParameters() map[string]interface{} {
 	return gl.parameters
 }
 
-func (gl *GremlinLang) AddG(g string) {
-	gl.parameters["g"] = g
+// GetParametersAsString serializes this instance's parameter map to a gremlin-lang map literal string.
+func (gl *GremlinLang) GetParametersAsString() string {
+	return ConvertParametersToString(gl.parameters)
 }
 
-func (gl *GremlinLang) Reset() {
-	gl.paramCount.Store(0)
+// ConvertParametersToString converts a parameter map to a gremlin-lang map literal string.
+// Panics if any value is an unsupported type.
+func ConvertParametersToString(params map[string]interface{}) string {
+	if params == nil || len(params) == 0 {
+		return "[:]"
+	}
+
+	helper := NewGremlinLang(nil)
+	sb := strings.Builder{}
+	sb.WriteString("[")
+	first := true
+	for k, v := range params {
+		if !first {
+			sb.WriteString(",")
+		}
+		ks, _ := helper.argAsString(k)
+		vs, _ := helper.argAsString(v)
+		sb.WriteString(ks)
+		sb.WriteString(":")
+		sb.WriteString(vs)
+		first = false
+	}
+	sb.WriteString("]")
+	return sb.String()
+}
+
+func (gl *GremlinLang) AddG(g string) {
+	gl.parameters["g"] = g
 }
 
 func (gl *GremlinLang) AddSource(name string, arguments ...interface{}) {

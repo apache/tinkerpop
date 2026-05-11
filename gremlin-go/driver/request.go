@@ -53,8 +53,8 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		"g":        traversalSource,
 	}
 
-	if requestOptions.bindings != nil {
-		newFields["bindings"] = requestOptions.bindings
+	if requestOptions.bindingsString != "" && requestOptions.bindingsString != "[:]" {
+		newFields["bindings"] = requestOptions.bindingsString
 	}
 
 	if requestOptions.evaluationTimeout != 0 {

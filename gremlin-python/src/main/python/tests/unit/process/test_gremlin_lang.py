@@ -25,7 +25,7 @@ from gremlin_python.process.strategies import ReadOnlyStrategy, SubgraphStrategy
 from gremlin_python.process.traversal import within, eq, T, Order, Scope, Column, Operator, P, Pop, Cardinality, \
     between, inside, WithOptions, ShortestPath, starting_with, ending_with, containing, gt, lte, GValue
 from gremlin_python.statics import SingleByte, short, long, bigint, BigDecimal, SingleChar
-from gremlin_python.structure.graph import Graph, Vertex, Edge, VertexProperty
+from gremlin_python.structure.graph import Graph, Vertex
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.process.graph_traversal import __
 from datetime import datetime, timezone, timedelta
@@ -415,80 +415,66 @@ class TestGremlinLang(object):
                       "g.V(0)"])
 
         # 107
-        outVertex = Vertex(0, "person")
-        inVertex = Vertex(1, "person")
-        edge = Edge(2, outVertex, "knows", inVertex)
-        tests.append([g.E(edge),
-                      "g.E(_0)"])
-
-        # 108
-        vp = VertexProperty(3, "time", "18:00", None)
-        tests.append([g.inject(vp),
-                      "g.inject(_1)"])
-
-        # 109
         tests.append([g.inject({'name': 'java'}, {T.id: 0}, {},
                                {'age': float(10), 'pos_inf': float("inf"), 'neg_inf': float("-inf"),
                                 'nan': float("nan")}),
                       "g.inject(['name':'java'],[(T.id):0],[:],['age':10.0D,'pos_inf':+Infinity,'neg_inf':-Infinity,'nan':NaN])"])
 
-        # 110
+        # 108
         tests.append([g.inject(float(1)).is_(P.eq(1).or_(P.gt(2)).or_(P.lte(3)).or_(P.gte(4))),
                       "g.inject(1.0D).is(eq(1).or(gt(2)).or(lte(3)).or(gte(4)))"])
 
-        # 111
+        # 109
         tests.append([g.V().has_label('person').has('age', P.gt(10).or_(P.gte(11).and_(P.lt(20))).and_(
             P.lt(29).or_(P.eq(35)))).name,
                       "g.V().hasLabel('person').has('age',gt(10).or(gte(11).and(lt(20))).and(lt(29).or(eq(35)))).values('name')"])
 
-        # 112
+        # 110
         tests.append([g.inject(set('a')),
                       "g.inject({'a'})"])
 
-        # 113
+        # 111
         tests.append([g.merge_v(None),
                       "g.mergeV(null)"])
 
-        # 114
+        # 112
         tests.append([g.merge_e(None),
                       "g.mergeE(null)"])
 
-        # 115
+        # 113
         tests.append([g.add_v('\"test\"'),
                       "g.addV('\"test\"')"])
 
-        # 116
+        # 114
         tests.append([g.add_v('t\'"est'),
                       "g.addV('t\\'\"est')"])
 
-        # 117
+        # 115
         tests.append([g.inject(True, SingleByte(1), short(2), 3, long(4), float(5),
                                float(6), bigint(7), BigDecimal(0, 8)),
                       "g.inject(true,1B,2S,3,4L,5.0D,6.0D,7N,8M)"])
 
-        #118
+        # 116
         tests.append([g.inject(uuid.UUID('9b8d8a9c-61c2-43e5-9cc8-c27b9261290e')),
                       'g.inject(UUID("9b8d8a9c-61c2-43e5-9cc8-c27b9261290e"))'])
 
-        # 119
+        # 117
         tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone.utc)),
                       "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00+00:00\"))"])
-        
-        # 120
+
+        # 118
         tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone(timedelta(hours=7)))),
                       "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00+07:00\"))"])
-        
-        # 121
+
+        # 119
         tests.append([g.add_v('test').property('date', datetime(2021, 2, 1, 9, 30, tzinfo=timezone(timedelta(hours=-5)))),
                       "g.addV('test').property('date',datetime(\"2021-02-01T09:30:00-05:00\"))"])
 
-        # Character - backslash (not in feature file due to Gherkin escaping issues)
-        # 122
+        # 120 - Character backslash (not in feature file due to Gherkin escaping issues)
         tests.append([g.inject(SingleChar('\\')),
                       "g.inject('\\\\'c)"])
 
-        # Character - single quote (no feature equivalent)
-        # 123
+        # 121 - Character single quote (no feature equivalent)
         tests.append([g.inject(SingleChar("'")),
                       "g.inject(\"'\"c)"])
 
@@ -545,3 +531,51 @@ class TestGremlinLang(object):
         gremlin = g.inject(p).V(p).gremlin_lang
         assert 'g.inject(ids).V(ids)' == gremlin.get_gremlin()
         assert val == gremlin.get_parameters().get('ids')
+
+    def test_unsupported_type_throws(self):
+        g = traversal().with_(None)
+        import pytest
+        with pytest.raises(TypeError, match='cannot be represented as text'):
+            g.inject(object()).gremlin_lang.get_gremlin()
+
+    def test_unsupported_type_in_list_throws(self):
+        g = traversal().with_(None)
+        import pytest
+        with pytest.raises(TypeError, match='cannot be represented as text'):
+            g.inject([1, object()]).gremlin_lang.get_gremlin()
+
+    def test_unsupported_type_in_dict_throws(self):
+        g = traversal().with_(None)
+        import pytest
+        with pytest.raises(TypeError, match='cannot be represented as text'):
+            g.inject({'key': object()}).gremlin_lang.get_gremlin()
+
+    def test_unsupported_type_in_convert_parameters_to_string_throws(self):
+        from gremlin_python.process.traversal import GremlinLang
+        import pytest
+        with pytest.raises(TypeError, match='cannot be represented as text'):
+            GremlinLang.convert_parameters_to_string({'x': object()})
+
+    def test_convert_parameters_to_string_empty(self):
+        from gremlin_python.process.traversal import GremlinLang
+        assert '[:]' == GremlinLang.convert_parameters_to_string({})
+        assert '[:]' == GremlinLang.convert_parameters_to_string(None)
+
+    def test_convert_parameters_to_string_basic(self):
+        from gremlin_python.process.traversal import GremlinLang
+        result = GremlinLang.convert_parameters_to_string({'x': 1, 'name': 'marko'})
+        assert result.startswith('[')
+        assert result.endswith(']')
+        assert "'x':1" in result
+        assert "'name':'marko'" in result
+
+    def test_convert_parameters_to_string_nested_list(self):
+        from gremlin_python.process.traversal import GremlinLang
+        result = GremlinLang.convert_parameters_to_string({'ids': [1, 2, 3]})
+        assert "'ids':[1,2,3]" in result
+
+    def test_convert_parameters_to_string_escaped_string(self):
+        from gremlin_python.process.traversal import GremlinLang
+        result = GremlinLang.convert_parameters_to_string({'name': "it's a test"})
+        assert "'name'" in result
+        assert "it" in result
