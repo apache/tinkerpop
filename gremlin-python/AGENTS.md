@@ -9,7 +9,8 @@ supplements the root `AGENTS.md` file.
 
 To build and run tests for `gremlin-python`, ensure the following:
 
-*   **Python Version**: Python 3.9 or higher must be installed.
+*   **Python Version**: A supported Python version must be installed. `gremlin-python` supports Python 3.9 through
+    3.13.
 *   **Virtual Environment**: While a virtual environment is recommended for local development, the preferred way to 
     run tests is via Maven and Docker, which handles environment isolation automatically.
 *   **Docker**: Docker and Docker Compose must be installed and running.
