@@ -277,7 +277,7 @@ public final class QueryGraph {
             return ctx.SIGNED_INFINITY().getText().charAt(0) == '-'
                    ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         }
-        throw new IllegalStateException("Unrecognised literal: " + ctx.getText());
+        throw new IllegalStateException("Unrecognized literal: " + ctx.getText());
     }
 
     /**

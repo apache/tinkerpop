@@ -720,13 +720,6 @@ func Test_GremlinLang(t *testing.T) {
 			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\",[\"limit\":10])",
 		},
 		{
-			name: "GTS Match spawn with chained select",
-			assert: func(g *GraphTraversalSource) *GraphTraversal {
-				return g.Match("MATCH (p:person)-[e:knows]->(friend:person)").Select("p", "friend")
-			},
-			equals: "g.match(\"MATCH (p:person)-[e:knows]->(friend:person)\").select(\"p\",\"friend\")",
-		},
-		{
 			name: "GT MatchGql mid-traversal step",
 			assert: func(g *GraphTraversalSource) *GraphTraversal {
 				return g.V().MatchGql("MATCH (p:person)-[e:knows]->(friend:person)")

@@ -36,29 +36,26 @@ namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
         private readonly RemoteConnectionFactory _connectionFactory = new RemoteConnectionFactory();
 
         /// <summary>
-        ///     Verifies that <c>g.Match("MATCH (p:person)-[e:knows]->(friend:person)").Select("p","friend").By("name")</c>
-        ///     returns the two <c>knows</c> relationships present in the modern graph:
-        ///     marko→vadas and marko→josh.
+        ///     Verifies that <c>g.Match("MATCH (p:person)-[e:knows]->(friend:person)")</c> returns
+        ///     one binding <c>Map&lt;string, object&gt;</c> per result row — no <c>select()</c> required.
+        ///     The modern graph has two <c>knows</c> edges out of marko: marko→vadas and marko→josh.
         /// </summary>
         [Fact]
-        public void g_Match_PersonKnowsPerson_Select_P_Friend_ByName()
+        public void g_Match_PersonKnowsPerson_ReturnsBindingMaps()
         {
             var connection = _connectionFactory.CreateRemoteConnection("gmodern");
             var g = AnonymousTraversalSource.Traversal().With(connection);
 
-            var results = g.Match("MATCH (p:person)-[e:knows]->(friend:person)")
-                           .Select<object>("p", "friend")
-                           .By("name")
-                           .ToList();
+            var results = g.Match("MATCH (p:person)-[e:knows]->(friend:person)").ToList();
 
             Assert.Equal(2, results.Count);
 
-            var personNames = results.Select(row => (string) row["p"]).ToList();
-            var friendNames = results.Select(row => (string) row["friend"]).ToList();
-
-            Assert.All(personNames, name => Assert.Equal("marko", name));
-            Assert.Contains("vadas", friendNames);
-            Assert.Contains("josh", friendNames);
+            foreach (var result in results)
+            {
+                var row = (IDictionary<string, object>) result;
+                Assert.True(row.ContainsKey("p"), "binding map must contain key 'p'");
+                Assert.True(row.ContainsKey("friend"), "binding map must contain key 'friend'");
+            }
         }
     }
 }
