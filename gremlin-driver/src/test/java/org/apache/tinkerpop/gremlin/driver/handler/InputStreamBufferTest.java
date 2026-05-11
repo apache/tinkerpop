@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.driver.handler;
 
 import io.netty.buffer.Unpooled;
+import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
+import org.apache.tinkerpop.gremlin.driver.stream.InputStreamBuffer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

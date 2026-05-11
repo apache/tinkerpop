@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.driver.handler;
+package org.apache.tinkerpop.gremlin.driver.stream;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.Result;

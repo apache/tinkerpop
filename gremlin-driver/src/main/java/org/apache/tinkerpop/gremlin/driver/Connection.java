@@ -67,7 +67,7 @@ final class Connection {
      */
     private final AtomicBoolean isBorrowed = new AtomicBoolean(false);
     /**
-     * Guards returnToPool() to ensure it is idempotent.
+     * Prevents returnToPool() from being called more than once per borrow cycle.
      */
     private final AtomicBoolean returned = new AtomicBoolean(false);
 

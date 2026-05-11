@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -32,6 +32,9 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
+import org.apache.tinkerpop.gremlin.driver.stream.GraphBinaryStreamResponseReader;
+import org.apache.tinkerpop.gremlin.driver.stream.InputStreamBuffer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
@@ -47,15 +50,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
 
 /**
- * A Netty handler that receives raw HTTP response chunks and feeds them to a streaming GraphBinary reader
- * running on a dedicated thread. Replaces {@code HttpObjectAggregator} + {@code HttpGremlinResponseDecoder}
- * in the production pipeline.
+ * Decodes chunked HTTP responses into streaming results without buffering the full response body.
  * <p>
- * For GraphBinary responses, HTTP content chunks are fed to a {@link ByteBufQueueInputStream} which is consumed
- * by a {@link GraphBinaryStreamResponseReader} on a reader thread. The reader thread handles result delivery,
- * {@code ResultSet} completion, and {@code pendingResultSet} cleanup directly. For non-GraphBinary error responses
- * (e.g., JSON 401/500), the error body is accumulated across chunks and parsed on {@link LastHttpContent}, then
- * {@code LAST_CONTENT_READ_RESPONSE} is fired through the pipeline for {@link GremlinResponseHandler}.
+ * For GraphBinary responses, content chunks are passed to a {@link ByteBufQueueInputStream} consumed by a
+ * {@link GraphBinaryStreamResponseReader} on a separate thread. That reader deserializes results incrementally,
+ * delivers them to the {@code ResultSet}, and handles completion and cleanup. For non-GraphBinary error responses
+ * (e.g., JSON 401/500), the error body is accumulated and parsed when the response ends, then
+ * {@code LAST_CONTENT_READ_RESPONSE} is fired for {@link GremlinResponseHandler} to process.
  */
 public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpObject> {
 
@@ -99,7 +100,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             queueInputStream = new ByteBufQueueInputStream();
 
             // Spawn reader thread for GraphBinary responses
-            if (shouldStreamResponse()) {
+            if (isGraphBinaryResponse()) {
                 final ResultSet rs = pendingResultSet.get();
                 if (rs != null) {
                     final InputStreamBuffer buffer = new InputStreamBuffer(queueInputStream);
@@ -132,10 +133,10 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
                 // Don't signal here — exceptionCaught will handle cleanup
-                throw new TooLongFrameException("Response entity too large");
+                throw new TooLongFrameException("Response exceeded " + maxResponseContentLength + " bytes.");
             }
 
-            if (!shouldStreamResponse()) {
+            if (!isGraphBinaryResponse()) {
                 // Accumulate non-GraphBinary error body across chunks
                 if (content.readableBytes() > 0) {
                     if (errorBody == null) {
@@ -151,7 +152,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             }
 
             if (msg instanceof LastHttpContent) {
-                if (shouldStreamResponse()) {
+                if (isGraphBinaryResponse()) {
                     if (queueInputStream != null) {
                         queueInputStream.signalEndOfStream();
                         // Null out so any spurious content arriving between responses is dropped
@@ -226,7 +227,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
         }
     }
 
-    private boolean shouldStreamResponse() {
+    private boolean isGraphBinaryResponse() {
         return !isError(responseStatus) || SerTokens.MIME_GRAPHBINARY_V4.equals(contentType);
     }
 
