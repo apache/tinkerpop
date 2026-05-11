@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
 
 import com.github.benmanes.caffeine.cache.Cache;

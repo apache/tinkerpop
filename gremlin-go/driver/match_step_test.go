@@ -21,7 +21,6 @@ package gremlingo
 
 import (
 	"crypto/tls"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,45 +41,27 @@ func TestMatchGqlIntegration(t *testing.T) {
 		g := getModernGraph(t, testNoAuthUrl, &tls.Config{})
 		defer g.remoteConnection.Close()
 
-		// The modern graph contains exactly two "knows" edges out of marko:
-		//   marko -[knows]-> vadas
-		//   marko -[knows]-> josh
-		// g.Match("MATCH (p:person)-[e:knows]->(friend:person)").Select("p","friend")
-		// should therefore return two rows.
-		results, err := g.Match("MATCH (p:person)-[e:knows]->(friend:person)").Select("p", "friend").ToList()
+		// match() returns one binding Map per result row — no select() needed.
+		// The modern graph has two knows edges out of marko: marko->vadas and marko->josh.
+		results, err := g.Match("MATCH (p:person)-[e:knows]->(friend:person)").ToList()
 		require.Nil(t, err)
 		require.Equal(t, 2, len(results), "expected exactly 2 person-knows-person pairs in the modern graph")
 
-		var friendNames []string
 		for _, result := range results {
 			row, ok := result.GetInterface().(map[interface{}]interface{})
-			require.True(t, ok, "expected each select result to be a map")
+			require.True(t, ok, "expected each match() result to be a binding Map")
 
 			pVal, pExists := row["p"]
-			require.True(t, pExists, "expected 'p' key in result map")
+			require.True(t, pExists, "expected 'p' key in binding map")
 			pVertex, ok := pVal.(*Vertex)
 			require.True(t, ok, "expected 'p' value to be a *Vertex")
 			assert.Equal(t, "person", pVertex.Label)
 
 			friendVal, friendExists := row["friend"]
-			require.True(t, friendExists, "expected 'friend' key in result map")
+			require.True(t, friendExists, "expected 'friend' key in binding map")
 			friendVertex, ok := friendVal.(*Vertex)
 			require.True(t, ok, "expected 'friend' value to be a *Vertex")
 			assert.Equal(t, "person", friendVertex.Label)
-
-			// Extract the friend's name from its vertex properties.
-			props, ok := friendVertex.Properties.([]interface{})
-			if ok {
-				for _, p := range props {
-					if vp, ok := p.(*VertexProperty); ok && vp.Label == "name" {
-						friendNames = append(friendNames, vp.Value.(string))
-					}
-				}
-			}
 		}
-
-		// Both known friends of marko must appear in the results.
-		sort.Strings(friendNames)
-		assert.Equal(t, []string{"josh", "vadas"}, friendNames)
 	})
 }

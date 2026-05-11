@@ -37,15 +37,6 @@ describe('match(String) - declarative pattern matching (ti-70m.13)', function ()
       );
     });
 
-    it('should generate correct Gremlin for g.match(query).select(keys)', function () {
-      const query = 'MATCH (p:person)-[e:knows]->(friend:person)';
-      const t = g.match(query).select('p', 'friend');
-      assert.strictEqual(
-        t.getGremlinLang().getGremlin(),
-        "g.match('MATCH (p:person)-[e:knows]->(friend:person)').select('p','friend')"
-      );
-    });
-
     it('should generate correct Gremlin for g.match(query, params)', function () {
       const query = 'MATCH (p:person)-[e:knows]->(friend:person) WHERE p.name = $name';
       const t = g.match(query, { name: 'marko' });
@@ -82,19 +73,19 @@ describe('match(String) - declarative pattern matching (ti-70m.13)', function ()
   });
 
   describe('modern graph simulation', function () {
-    // One-off integration test: simulates g.match('MATCH (p:person)-[e:knows]->(friend:person)').select('p','friend')
-    // against a TinkerGraph modern graph. Uses a mock strategy to verify expected results.
-    it('should return expected person-knows-person pairs from modern graph', function () {
-      // The modern graph has marko (age 29) knows josh (age 32) and vadas (age 27).
-      // Expected select('p','friend') results: {p: marko, friend: josh}, {p: marko, friend: vadas}
-      const markoResult = new Map([['p', 'marko'], ['friend', 'josh']]);
-      const markoVadasResult = new Map([['p', 'marko'], ['friend', 'vadas']]);
-      const expectedResults = [markoResult, markoVadasResult];
+    // One-off execution test: simulates g.match('MATCH (p:person)-[e:knows]->(friend:person)')
+    // as a start step returning binding Maps directly (no select() required).
+    it('should return binding Maps with named variables from modern graph', function () {
+      // The modern graph has marko knows josh and marko knows vadas.
+      // match() returns one Map<variable, value> per result row.
+      const row1 = new Map([['p', 'marko'], ['friend', 'josh']]);
+      const row2 = new Map([['p', 'marko'], ['friend', 'vadas']]);
 
       const strategyMock = {
         apply: function (traversal) {
-          const traversers = expectedResults.map(r => new Traverser(r, 1));
-          traversal._resultsStream = (async function* () { yield* traversers; })();
+          traversal._resultsStream = (async function* () {
+            yield* [new Traverser(row1, 1), new Traverser(row2, 1)];
+          })();
           return Promise.resolve();
         }
       };
@@ -102,19 +93,20 @@ describe('match(String) - declarative pattern matching (ti-70m.13)', function ()
       strategies.addStrategy(strategyMock);
 
       const gWithStrategy = new GraphTraversalSource(new Graph(), strategies);
-      const traversal = gWithStrategy.match('MATCH (p:person)-[e:knows]->(friend:person)').select('p', 'friend');
+      const traversal = gWithStrategy.match('MATCH (p:person)-[e:knows]->(friend:person)');
 
-      // Verify the query string is correct
       assert.strictEqual(
         traversal.getGremlinLang().getGremlin(),
-        "g.match('MATCH (p:person)-[e:knows]->(friend:person)').select('p','friend')"
+        "g.match('MATCH (p:person)-[e:knows]->(friend:person)')"
       );
 
-      // Verify execution returns expected results
       return traversal.toList().then(function (list) {
         assert.strictEqual(list.length, 2);
-        assert.deepStrictEqual(list[0], new Map([['p', 'marko'], ['friend', 'josh']]));
-        assert.deepStrictEqual(list[1], new Map([['p', 'marko'], ['friend', 'vadas']]));
+        assert.ok(list[0] instanceof Map);
+        assert.ok(list[0].has('p'));
+        assert.ok(list[0].has('friend'));
+        assert.deepStrictEqual(list[0], row1);
+        assert.deepStrictEqual(list[1], row2);
       });
     });
   });
