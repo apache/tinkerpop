@@ -50,5 +50,6 @@ coverage.out
 gremlinconsoletest.egg-info
 CLAUDE.md
 **/.claude/
+.kiro/
 .beads/
 gremlin-python/src/main/python/build/
