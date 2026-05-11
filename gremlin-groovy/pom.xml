@@ -153,6 +153,38 @@ limitations under the License.
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-annotations</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-core</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-shaded</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.apache.tinkerpop</groupId>
+                            <artifactId>gremlin-language</artifactId>
+                            <version>${project.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.squareup</groupId>
+                            <artifactId>javapoet</artifactId>
+                            <version>${javapoet.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.antlr</groupId>
+                            <artifactId>antlr4-runtime</artifactId>
+                            <version>${antlr4.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
