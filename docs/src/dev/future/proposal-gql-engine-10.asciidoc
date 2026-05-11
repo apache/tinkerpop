@@ -1,0 +1,281 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+
+image::apache-tinkerpop-logo.png[width=500,link="https://tinkerpop.apache.org"]
+
+*Proposal 10*
+
+== Generalized GQL Execution Engine
+
+=== Introduction
+
+The `match(String)` step introduced in TinkerPop 4.0 allows declarative GQL pattern matching to
+be embedded inside a Gremlin traversal. The current implementation of this engine lives entirely
+inside `tinkergraph-gremlin` and is coupled to TinkerGraph's internal data structures. This means
+that every graph database that wants to offer a working `match()` step must implement the full GQL
+stack from scratch: grammar, parser, query planner, and DFS executor.
+
+This proposal describes extracting that engine into a new, independently usable Maven module —
+`gql-gremlin` — so that any TinkerPop-compliant graph database can adopt it as a dependency and
+get a working `match()` implementation with minimal effort. Providers that prefer to supply their
+own native implementation are unaffected; the module is strictly opt-in.
+
+=== Motivation
+
+At the outset of building `match()`, it was not clear what form the GQL execution engine would take.
+As it developed in TinkerGraph, however, the engine started to form with relatively clear lines for
+where interfaces could be introduced to take advantage of that engine's execution patterns. If graphs
+simply exposed some general statistics about their data it could easily supply the engine with the
+information it needed to make an optimized query. Interestingly, any `Graph` implementation could offer
+GQL with the current `Graph` interface, but it would likely be painfully slow to use, perhaps similar
+in profile to the old `match()` step that took `Traversal` instances for arguments. 
+
+Offering this engine as a default reference implementation lowers the bar for providers to offer 
+basic GQL support. It spares providers the need to develop and maintain  their own grammar and parser, 
+come up with their own query planner and execution engine, or handle other related details. As an 
+added benefit for users, the TinkerPop form of GQL offers some level of standardization about what 
+TinkerPop supports with `match` so that the feature has some potential to carry from one graph to
+another.
+
+==== Why a Separate Module, Not `gremlin-core`
+
+The step _contract_ (return type, path label recording, `TraverserRequirement.LABELED_PATH`) belongs
+in `gremlin-core` and is already there via `DeclarativeMatchStep`. The step _implementation_
+is a different concern.
+
+Placing the execution engine in `gremlin-core` would impose the ANTLR4 GQL grammar, the query
+model classes, and the planner/executor on every TinkerPop consumer regardless of whether they
+use `match()`. While `gremlin-core` already depends on ANTLR4 for the Gremlin grammar, that grammar
+is fundamental to the traversal engine itself. The GQL grammar is optional infrastructure for one
+step. Keeping them separate maintains a clean distinction.
+
+A dedicated `gql-gremlin` module also gives the GQL grammar and executor room to evolve at their
+own pace — adding new syntax, improving the planner, introducing property filter pushdown — without
+touching `gremlin-core`'s compatibility guarantees.
+
+The `gremlin-test` and `gremlin-tools` modules set the precedent: optional, composable pieces live
+in their own modules. `gql-gremlin` follows that pattern.
+
+=== Architecture
+
+The following diagram shows the intended module responsibility split.
+
+----
+gremlin-core
+  └── DeclarativeMatchStep          (placeholder; step contract only)
+  └── GraphTraversalSource.match()  (API; unchanged)
+  └── GraphTraversal.match()        (API; unchanged)
+
+gql-gremlin  (new module, depends on gremlin-core)
+  ├── GQL.g4                        (ANTLR4 grammar, currently in tinkergraph-gremlin)
+  ├── QueryGraph / QueryVertex / QueryEdge  (parsed query model)
+  ├── PropertyPredicate / ExtensionStep     (plan model)
+  ├── GqlMatchPlan                  (compiled plan)
+  ├── GqlPlanner  (interface)       (compiles a query string into a GqlMatchPlan)
+  ├── DefaultGqlPlanner             (reference implementation; uses GraphStatistics when available)
+  ├── GqlExecutor (interface)       (executes a GqlMatchPlan against a Graph)
+  ├── DefaultGqlExecutor            (reference implementation; uses IndexAccess when available)
+  ├── GqlMatchStep                  (concrete AbstractStep; wires plan + executor into traversal)
+  ├── GqlDeclarativeMatchStrategy   (ProviderOptimizationStrategy; registers the above)
+  ├── GraphStatistics (interface)   (optional; cardinality hints for the planner)
+  └── IndexAccess  (interface)      (optional; index pushdown for the executor)
+
+tinkergraph-gremlin  (depends on gql-gremlin)
+  ├── AbstractTinkerGraph implements GraphStatistics
+  ├── AbstractTinkerGraph implements IndexAccess  (via existing TinkerIndexHelper)
+  ├── TinkerGraphGqlPlanner extends DefaultGqlPlanner  (overrides cost estimation with O(1) counts)
+  ├── TinkerGraphGqlExecutor extends DefaultGqlExecutor (overrides seed iteration with index lookup)
+  └── TinkerGraphDeclarativeMatchStrategy (registers TinkerGraph-specific planner/executor)
+----
+
+This structure means that a new provider wishing to support `match()` needs to:
+
+. Add `gql-gremlin` as a Maven dependency.
+. Register `GqlDeclarativeMatchStrategy` with their `GraphTraversalSource`.
+. Optionally implement `GraphStatistics` and/or `IndexAccess` on their `Graph` to unlock
+  performance optimizations.
+
+That is the entire adoption path for a correct, functional implementation.
+
+=== Interface Specifications
+
+==== GraphStatistics
+
+This interface exposes cardinality estimates that the planner uses for seed selection and step
+ordering. It carries no index-access semantics — only counts.
+
+[source,java]
+----
+/**
+ * Optional interface for Graph implementations that can supply vertex and edge
+ * cardinality estimates. When implemented, the GQL planner uses these counts to
+ * select the lowest-cardinality node as the DFS seed and to order extension steps
+ * by edge-label density so that rarer labels prune the search space sooner.
+ *
+ * Implementations are not required to return exact counts; approximate values are
+ * sufficient for planning purposes. A null label means "all vertices" or "all edges".
+ */
+public interface GraphStatistics {
+    long getVerticesCountByLabel(String label);
+    long getEdgesCountByLabel(String label);
+}
+----
+
+Without this interface the planner treats all nodes and edges as having equal cardinality
+(`Long.MAX_VALUE`), which keeps correctness but makes seed selection arbitrary and step
+ordering suboptimal for skewed graphs.
+
+==== IndexAccess
+
+This interface allows the executor to replace the default full-vertex scan with a targeted
+index lookup when the seed node has an indexed literal predicate. It is separate from
+`GraphStatistics` because a graph may expose cardinality counts without supporting
+property-level index access, and vice versa.
+
+[source,java]
+----
+/**
+ * Optional interface for Graph implementations that maintain property indexes
+ * queryable by key/value. When implemented, the GQL executor uses index lookups
+ * for seed vertex iteration instead of a full graph scan, reducing the O(V) cost
+ * of seed selection to O(result-set) for selective predicates.
+ *
+ * This interface complements IndexMixin: IndexMixin exposes which keys are indexed
+ * (getIndexedKeys), while IndexAccess exposes how to query those indexes.
+ */
+public interface IndexAccess {
+    /**
+     * Returns all vertices where the given property key equals the given value.
+     * Must return an empty iterator (not null) when no match exists.
+     */
+    Iterator<Vertex> queryVertexIndex(String key, Object value);
+
+    /**
+     * Returns the number of vertices where the given property key equals the
+     * given value. Used by the planner to select the most selective index predicate
+     * when multiple indexed keys appear in the same node filter.
+     */
+    long countVertexIndex(String key, Object value);
+}
+----
+
+The executor determines which predicate to use for the index lookup by finding the key with
+the lowest `countVertexIndex` result among all indexed, resolvable (non-param-ref or
+param-present) predicates on the seed node. The selected index result is then post-filtered
+by the remaining predicates and the seed label.
+
+Note that `IndexAccess` is intentionally vertex-only. Edge index access may be added in
+a future revision as the engine gains edge-first seed selection support.
+
+==== GqlPlanner and GqlExecutor
+
+These interfaces allow providers to substitute their own implementations without replacing
+the full strategy.
+
+[source,java]
+----
+public interface GqlPlanner {
+    /**
+     * Compiles a GQL MATCH string into an executable plan. Implementations are
+     * encouraged to cache the parsed QueryGraph keyed on the query string; seed
+     * selection should be recomputed on each call so that graph mutations are
+     * reflected in subsequent executions.
+     */
+    GqlMatchPlan plan(String gqlMatchString);
+}
+
+public interface GqlExecutor {
+    /** Executes the plan with no parameter bindings. */
+    Iterator<Element[]> execute(GqlMatchPlan plan);
+
+    /** Executes the plan with the given parameter bindings. */
+    Iterator<Element[]> execute(GqlMatchPlan plan, Map<String, Object> params);
+}
+----
+
+`GqlDeclarativeMatchStrategy` accepts a `GqlPlanner` and a `GqlExecutor` at construction time.
+A provider that wants to replace only the executor (for example, to use a native index) can
+supply their own `GqlExecutor` while reusing `DefaultGqlPlanner`.
+
+==== GqlDeclarativeMatchStrategy
+
+[source,java]
+----
+/**
+ * ProviderOptimizationStrategy that replaces DeclarativeMatchStep with a concrete
+ * GqlMatchStep backed by the supplied planner and executor.
+ *
+ * Providers that want the reference engine register this strategy directly:
+ *
+ *   graph.traversal()
+ *        .withStrategies(GqlDeclarativeMatchStrategy.create(graph))
+ *
+ * The static factory inspects the Graph for GraphStatistics and IndexAccess
+ * and wires them into the DefaultGqlPlanner / DefaultGqlExecutor automatically.
+ */
+public class GqlDeclarativeMatchStrategy extends AbstractTraversalStrategy<...>
+        implements ProviderOptimizationStrategy {
+
+    public static GqlDeclarativeMatchStrategy create(Graph graph) { ... }
+
+    public static GqlDeclarativeMatchStrategy create(GqlPlanner planner,
+                                                     GqlExecutor executor) { ... }
+}
+----
+
+=== Graceful Degradation
+
+The reference engine degrades gracefully as optional capabilities are absent:
+
+[width="100%",cols="3,3,4",options="header"]
+|=========================================================
+|`GraphStatistics` |`IndexAccess` |Behavior
+|Absent |Absent |Full vertex scan; seed chosen arbitrarily; step order is parse order
+|Present |Absent |Full vertex scan; seed is lowest-cardinality node; steps ordered by edge density
+|Absent |Present |Index lookup for seed; step order is parse order
+|Present |Present |Index lookup for seed; lowest-cardinality index predicate chosen; steps ordered by edge density
+|=========================================================
+
+In all cases the results are correct. The degraded modes are simply slower on large graphs.
+
+=== TinkerGraph Migration
+
+The migration is largely mechanical:
+
+. Move `GQL.g4`, `QueryGraph`, `QueryVertex`, `QueryEdge`, `PropertyPredicate`,
+  `ExtensionStep`, and `GqlMatchPlan` from `tinkergraph-gremlin` to `gql-gremlin` unchanged.
+. Extract `GqlPlanner` and `GqlExecutor` interfaces and move the `Default*` implementations
+  into `gql-gremlin`.
+. Move `GqlMatchStep` and `GqlDeclarativeMatchStrategy` into `gql-gremlin`.
+. In `tinkergraph-gremlin`:
+** Make `AbstractTinkerGraph` implement `GraphStatistics` using the existing
+   `getVerticesCountByLabel` / `getEdgesCountByLabel` methods.
+** Make `AbstractTinkerGraph` implement `IndexAccess` by delegating to `TinkerIndexHelper`.
+** Subclass `DefaultGqlPlanner` as `TinkerGraphGqlPlanner`; the subclass overrides only
+   `estimateCardinality()` to use `GraphStatistics` counts directly.
+** Subclass `DefaultGqlExecutor` as `TinkerGraphGqlExecutor`; the subclass overrides only
+   `seedIterator()` to use `IndexAccess` for index-based seed lookup.
+** Update `TinkerGraphDeclarativeMatchStrategy` to extend `GqlDeclarativeMatchStrategy`
+   and register the TinkerGraph-specific planner and executor.
+. Add `gql-gremlin` as a `compile` dependency of `tinkergraph-gremlin`.
+. Convert TinkerGraph `match()` tests to Gherkin features tests in `gremlin-test`.
+
+=== Open Questions
+
+* Should `IndexAccess` and `GraphStatistics` be in `gremlin-core`?
