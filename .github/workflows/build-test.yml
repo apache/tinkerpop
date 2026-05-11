@@ -274,10 +274,16 @@ jobs:
           mvn clean install -pl $EXCLUDE -q -DskipTests -Dci
           mvn verify -pl :gremlin-javascript -Dnode.test.version=24 -Dhost.uid=$(id -u) -Dhost.gid=$(id -g)
   python:
-    name: python
+    name: python-${{ matrix.python-version }}
     timeout-minutes: 20
     needs: cache-gremlin-server-docker-image
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v6
       - name: Set up JDK 11
@@ -285,10 +291,10 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - name: Set up Python 3.x
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
-          python-version: '3.10'
+          python-version: ${{ matrix.python-version }}
       - name: Build with Maven
         run: |
           touch gremlin-python/.glv
