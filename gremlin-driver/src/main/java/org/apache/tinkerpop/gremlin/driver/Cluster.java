@@ -1036,7 +1036,7 @@ public final class Cluster {
             this.connectionScheduler = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-conn-scheduler-%d").build());
 
-            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize,
+            this.streamingReaderPool = new ThreadPoolExecutor(0, builder.maxConnectionPoolSize * Math.max(contactPoints.size(), 1) * 4,
                     60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
                     new BasicThreadFactory.Builder().namingPattern("gremlin-driver-stream-reader-%d").build());
 

@@ -94,9 +94,9 @@ public class GraphBinaryStreamResponseReader implements Runnable {
             } else {
                 resultSet.markError(new ResponseException(HttpResponseStatus.valueOf(statusCode), message, exception));
             }
-        } catch (Exception e) {
-            logger.warn("Error reading streaming response", e);
-            resultSet.markError(e);
+        } catch (Throwable t) {
+            logger.warn("Error reading streaming response", t);
+            resultSet.markError(t);
         } finally {
             pendingResultSet.compareAndSet(resultSet, null);
             buffer.release();

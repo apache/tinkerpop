@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An {@link InputStream} backed by a {@link BlockingQueue} of {@link ByteBuf} objects. The Netty event loop
@@ -72,11 +73,12 @@ public class ByteBufQueueInputStream extends InputStream {
         while (current == null || !current.isReadable()) {
             releaseCurrent();
             try {
-                current = queue.take();
+                current = queue.poll(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while waiting for data", e);
             }
+            if (current == null) throw new IOException("Timed out waiting for streaming response data");
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;
@@ -95,11 +97,12 @@ public class ByteBufQueueInputStream extends InputStream {
         while (current == null || !current.isReadable()) {
             releaseCurrent();
             try {
-                current = queue.take();
+                current = queue.poll(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while waiting for data", e);
             }
+            if (current == null) throw new IOException("Timed out waiting for streaming response data");
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;

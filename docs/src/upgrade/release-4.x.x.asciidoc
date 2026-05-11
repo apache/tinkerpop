@@ -273,9 +273,11 @@ block on the async stream internally.
 ==== Streaming Response Deserialization in gremlin-driver
 
 The Java driver now deserializes HTTP responses incrementally, delivering results to the `ResultSet` as they arrive
-rather than buffering the entire response. This is only supported with the default GraphBinary serializer; custom
-`MessageSerializer` implementations will use a non-streaming pipeline that buffers the full response before
-deserialization.
+rather than buffering the entire response. This reduces time-to-first-result for large result sets.
+
+This change is automatic and requires no code changes. It applies only when using the default GraphBinary serializer.
+Custom `MessageSerializer` implementations fall back to the non-streaming pipeline that buffers the full response
+before deserialization. The `ResultSet` API is unchanged.
 
 ==== More Secure Gremlin Server
 

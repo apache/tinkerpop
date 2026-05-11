@@ -214,4 +214,26 @@ public class StreamingResponseIntegrateTest extends AbstractGremlinServerIntegra
             cluster.close();
         }
     }
+
+    @Test
+    public void shouldReuseConnectionAfterServerError() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final Client client = cluster.connect();
+
+            // Submit a request that causes a server error
+            try {
+                client.submit("throw new RuntimeException('test error')").all().get();
+                fail("Should have thrown");
+            } catch (ExecutionException e) {
+                // expected
+            }
+
+            // Connection should still be usable
+            final List<Result> results = client.submit("g.inject(1)").all().get();
+            assertEquals(1, results.get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
 }

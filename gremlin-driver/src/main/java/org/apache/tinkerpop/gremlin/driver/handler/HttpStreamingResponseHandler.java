@@ -99,7 +99,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             queueInputStream = new ByteBufQueueInputStream();
 
             // Spawn reader thread for GraphBinary responses
-            if (isGraphBinaryResponse()) {
+            if (shouldStreamResponse()) {
                 final ResultSet rs = pendingResultSet.get();
                 if (rs != null) {
                     final InputStreamBuffer buffer = new InputStreamBuffer(queueInputStream);
@@ -126,12 +126,16 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             final ByteBuf content = ((HttpContent) msg).content();
             bytesRead += content.readableBytes();
 
+            if (bytesRead > 0 && ctx.channel().attr(InactiveChannelHandler.BYTES_READ).get() == null) {
+                ctx.channel().attr(InactiveChannelHandler.BYTES_READ).set(0);
+            }
+
             if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
                 // Don't signal here — exceptionCaught will handle cleanup
                 throw new TooLongFrameException("Response entity too large");
             }
 
-            if (!isGraphBinaryResponse()) {
+            if (!shouldStreamResponse()) {
                 // Accumulate non-GraphBinary error body across chunks
                 if (content.readableBytes() > 0) {
                     if (errorBody == null) {
@@ -147,7 +151,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             }
 
             if (msg instanceof LastHttpContent) {
-                if (isGraphBinaryResponse()) {
+                if (shouldStreamResponse()) {
                     if (queueInputStream != null) {
                         queueInputStream.signalEndOfStream();
                         // Null out so any spurious content arriving between responses is dropped
@@ -198,6 +202,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             logger.debug("Failed to parse error response body as JSON", e);
             rs.markError(new ResponseException(responseStatus, responseStatus.reasonPhrase()));
         } finally {
+            pendingResultSet.compareAndSet(rs, null);
             releaseErrorBody();
         }
     }
@@ -221,7 +226,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
         }
     }
 
-    private boolean isGraphBinaryResponse() {
+    private boolean shouldStreamResponse() {
         return !isError(responseStatus) || SerTokens.MIME_GRAPHBINARY_V4.equals(contentType);
     }
 

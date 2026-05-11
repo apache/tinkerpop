@@ -67,6 +67,14 @@ final class Connection {
      */
     private final AtomicBoolean isBorrowed = new AtomicBoolean(false);
     /**
+     * Guards returnToPool() to ensure it is idempotent.
+     */
+    private final AtomicBoolean returned = new AtomicBoolean(false);
+
+    void resetReturned() {
+        returned.set(false);
+    }
+    /**
      * This boolean guards the replace of the connection and ensures that it only occurs once.
      */
     public final AtomicBoolean isBeingReplaced = new AtomicBoolean(false);
@@ -231,6 +239,7 @@ final class Connection {
     }
 
     void returnToPool() {
+        if (!returned.compareAndSet(false, true)) return;
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
