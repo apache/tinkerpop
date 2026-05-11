@@ -151,6 +151,7 @@ story.
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-asbool-step-7.asciidoc[Proposal 7] |asBool() Step|3.8.0 |Y
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-type-predicate-8.asciidoc[Proposal 8] |typeof Predicate |3.8.0 |N
 |link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-declarative-match-step-9.asciidoc[Proposal 9] |match() Step Redesign |4.0.0 |N
+|link:https://github.com/apache/tinkerpop/blob/master/docs/src/dev/future/proposal-gql-engine-10.asciidoc[Proposal 10] |Generalized GQL Execution Engine (`gql-gremlin` Module) |Future |N
 |=========================================================
 
 NOTE: Proposals with "N/A" for a Resolution are no longer under consideration at this time.
