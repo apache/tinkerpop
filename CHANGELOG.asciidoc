@@ -32,7 +32,6 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Removed `readable-stream` dependency from `gremlin-javascript`.
 * Added `Character`, `Binary`, `Duration` to the `gremlin-lang` grammar, GLVs, and Translators.
 * Refactored `gremlin-python` receive path to stream results directly from the HTTP response through the configured `response_serializer`.
-* Fixed slow GraphBinary deserialization in `gremlin-python` by chunk-buffering the HTTP response in `AiohttpSyncStream` instead of running the asyncio event loop on every byte-level read.
 * Replaced `read()` with `get_stream()` on `AbstractBaseTransport` in `gremlin-python` for streaming deserialization.
 * Removed `max_content_length` from `gremlin-python` driver (no longer applicable with streaming deserialization).
 * Removed GraphSON parameterized test fixtures from `gremlin-python` integration tests (GraphBinary only).
