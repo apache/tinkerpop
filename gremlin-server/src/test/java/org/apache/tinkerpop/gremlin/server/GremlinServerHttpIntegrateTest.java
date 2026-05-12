@@ -111,6 +111,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 settings.maxRequestContentLength = 31;
                 break;
             case "should200OnPOSTTransactionalGraph":
+            case "shouldRollbackOnFailedMutatingTraversal":
+            case "shouldCommitMutatingTraversalWithEmptyResult":
                 useTinkerTransactionGraph(settings);
                 break;
             case "should200OnPOSTTransactionalGraphInStrictMode":
@@ -489,36 +491,97 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         }
     }
 
-    /*@Test disabled for now as current implementation doesn't support implicit transactions.
+    @Test
     public void should200OnPOSTTransactionalGraph() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        // add a vertex without an explicit transaction - should be auto-committed
         final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"graph.addVertex('name','stephen');g.V().count()\"}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity(
+                "{\"gremlin\":\"g.addV('person').property('name','stephen')\",\"g\":\"g\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
-            assertEquals("application/json", response.getEntity().getContentType().getValue());
-            final String json = EntityUtils.toString(response.getEntity());
-            final JsonNode node = mapper.readTree(json);
-            assertEquals(1, node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+            EntityUtils.consume(response.getEntity());
         }
 
-        final HttpGet httpget = new HttpGet(TestClientFactory.createURLString("?gremlin=g.V().count()"));
-        httpget.addHeader("Accept", "application/json");
+        // verify the vertex is visible on subsequent requests from potentially different threads
+        final HttpPost countPost = new HttpPost(TestClientFactory.createURLString());
+        countPost.addHeader("Content-Type", "application/json");
+        countPost.setEntity(new StringEntity("{\"gremlin\":\"g.V().count()\",\"g\":\"g\"}", Consts.UTF_8));
 
-        // execute this a bunch of times so that there's a good chance a different thread on the server processes
-        // the request
         for (int ix = 0; ix < 100; ix++) {
-            try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            try (final CloseableHttpResponse response = httpclient.execute(countPost)) {
                 assertEquals(200, response.getStatusLine().getStatusCode());
-                assertEquals("application/json", response.getEntity().getContentType().getValue());
                 final String json = EntityUtils.toString(response.getEntity());
                 final JsonNode node = mapper.readTree(json);
-                assertEquals(1, node.get("result").get(TOKEN_DATA).get(GraphSONTokens.VALUEPROP).get(0).get(GraphSONTokens.VALUEPROP).intValue());
+                assertEquals(1, node.get("result").get(TOKEN_DATA)
+                        .get(GraphSONTokens.VALUEPROP).get(0)
+                        .get(GraphSONTokens.VALUEPROP).intValue());
             }
         }
-    } */
+    }
+
+    @Test
+    public void shouldRollbackOnFailedMutatingTraversal() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        // submit a traversal that adds a vertex then fails - should be rolled back
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g.addV('person').fail()\",\"g\":\"g\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            // the fail() error appears in the response body, not the HTTP status
+        }
+
+        // verify the vertex was not persisted
+        final HttpPost countPost = new HttpPost(TestClientFactory.createURLString());
+        countPost.addHeader("Content-Type", "application/json");
+        countPost.setEntity(new StringEntity(
+                "{\"gremlin\":\"g.V().hasLabel('person').count()\",\"g\":\"g\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(countPost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get(TOKEN_DATA)
+                    .get(GraphSONTokens.VALUEPROP).get(0)
+                    .get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
+
+    @Test
+    public void shouldCommitMutatingTraversalWithEmptyResult() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+
+        // g.addV() followed by iterate-style consumption returns no results but should still commit
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity(
+                "{\"gremlin\":\"g.addV('person').property('name','p').iterate()\",\"g\":\"g\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            EntityUtils.consume(response.getEntity());
+        }
+
+        // verify the vertex was committed despite the empty result set
+        final HttpPost countPost2 = new HttpPost(TestClientFactory.createURLString());
+        countPost2.addHeader("Content-Type", "application/json");
+        countPost2.setEntity(new StringEntity(
+                "{\"gremlin\":\"g.V().hasLabel('person').count()\",\"g\":\"g\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(countPost2)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1, node.get("result").get(TOKEN_DATA)
+                    .get(GraphSONTokens.VALUEPROP).get(0)
+                    .get(GraphSONTokens.VALUEPROP).intValue());
+        }
+    }
 
     @Test
     public void should200OnPOSTTransactionalGraphInStrictMode() throws Exception {

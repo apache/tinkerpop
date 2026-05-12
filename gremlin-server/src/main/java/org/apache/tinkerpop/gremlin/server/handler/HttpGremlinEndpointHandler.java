@@ -422,6 +422,17 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         }
 
         final Bindings mergedBindings = mergeBindingsFromRequest(context, new SimpleBindings(graphManager.getAsBindings()));
+
+        // resolve the graph for auto-transaction management on non-transactional requests
+        final String g = message.getField(Tokens.ARGS_G);
+        final TraversalSource ts = g != null ? graphManager.getTraversalSource(g) : null;
+        final Graph graph = ts != null ? ts.getGraph() : null;
+        final boolean autoCommit = (context.getTransactionId() == null) && (graph != null) &&
+                graph.features().graph().supportsTransactions();
+
+        // rollback any stale open transaction before processing
+        if (autoCommit && graph.tx().isOpen()) graph.tx().rollback();
+
         final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
 
         final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULK_RESULTS);
@@ -444,7 +455,11 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 itty = IteratorUtils.asIterator(result);
                 handleIterator(context, itty, serializer, false);
             }
-        } catch (Exception ex) {
+
+            if (autoCommit && graph.tx().isOpen()) graph.tx().commit();
+        } catch (Throwable t) {
+            if (autoCommit && graph.tx().isOpen()) graph.tx().rollback();
+
             // TINKERPOP-3144 ensure Traversals are closed when exception thrown.
             if (itty instanceof TraverserIterator) {
                 CloseableIterator.closeIterator(((TraverserIterator) itty).getTraversal());
@@ -452,7 +467,7 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
                 CloseableIterator.closeIterator(itty);
             }
 
-            throw ex;
+            throw t;
         }
     }
 
