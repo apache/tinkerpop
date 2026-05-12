@@ -647,4 +647,31 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
             gtx.tx().rollback();
         }
     }
+
+    @Test
+    public void shouldAutoCommitNonTransactionalMutatingTraversal() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+
+        // add a vertex without explicit transaction management - should be auto-committed
+        client.submit("g.addV('person').property('name','alice')").all().get();
+
+        // verify persisted on a subsequent request
+        assertEquals(1L, client.submit("g.V().hasLabel('person').count()").all().get().get(0).getLong());
+    }
+
+    @Test
+    public void shouldAutoRollbackOnFailedNonTransactionalMutatingTraversal() throws Exception {
+        final Client client = cluster.connect().alias(GTX);
+
+        // submit a traversal that mutates then fails - should be rolled back
+        try {
+            client.submit("g.addV('person').fail()").all().get();
+            fail("Expected an exception");
+        } catch (Exception ex) {
+            // expected
+        }
+
+        // verify nothing was persisted
+        assertEquals(0L, client.submit("g.V().hasLabel('person').count()").all().get().get(0).getLong());
+    }
 }
