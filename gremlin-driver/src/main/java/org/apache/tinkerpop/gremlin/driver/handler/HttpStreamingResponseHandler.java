@@ -133,7 +133,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
                 // Don't signal here — exceptionCaught will handle cleanup
-                throw new TooLongFrameException("Response exceeded " + maxResponseContentLength + " bytes.");
+                throw new TooLongFrameException("Response entity too large");
             }
 
             if (!isGraphBinaryResponse()) {
