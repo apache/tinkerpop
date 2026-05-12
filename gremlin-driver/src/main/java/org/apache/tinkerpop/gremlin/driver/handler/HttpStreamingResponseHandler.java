@@ -132,7 +132,6 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             }
 
             if (maxResponseContentLength > 0 && bytesRead > maxResponseContentLength) {
-                // Don't signal here — exceptionCaught will handle cleanup
                 throw new TooLongFrameException("Response entity too large");
             }
 
@@ -180,6 +179,12 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     @Override
     public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+        // Mark error before signaling end-of-stream so the reader thread can't race
+        // with an EOFException from the closed stream.
+        final ResultSet rs = pendingResultSet.getAndSet(null);
+        if (rs != null) {
+            rs.markError(cause);
+        }
         if (queueInputStream != null) {
             queueInputStream.signalEndOfStream();
         }
