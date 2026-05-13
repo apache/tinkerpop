@@ -30,17 +30,48 @@ __author__ = 'Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 class AiohttpSyncStream:
     """Wraps aiohttp's async StreamReader as a synchronous file-like object.
-    read(n) blocks until exactly n bytes are available from the HTTP response."""
+    read(n) blocks until exactly n bytes are available from the HTTP response.
+
+    Maintains an internal byte buffer that is refilled one HTTP chunk at a time
+    so the deserializer's many small read(n) calls don't each pay the cost of a
+    full asyncio event-loop turn."""
+
+    # Max bytes pulled from the response per underlying read. Matches
+    # aiohttp.StreamReader's default 64 KB limit, which is the per-connection
+    # high-water mark, asking for more in one read() never returns more.
+    _FILL_SIZE = 64 * 1024
 
     def __init__(self, response, loop, read_timeout):
         self._response = response
         self._loop = loop
         self._read_timeout = read_timeout
+        self._buf = bytearray()
+        self._pos = 0
 
     def read(self, n):
+        if n <= 0:
+            return b''
+        while len(self._buf) - self._pos < n:
+            data = self._read_chunk()
+            if not data:
+                partial = bytes(self._buf[self._pos:])
+                self._buf.clear()
+                self._pos = 0
+                raise asyncio.IncompleteReadError(partial=partial, expected=n)
+            self._buf.extend(data)
+        end = self._pos + n
+        out = bytes(self._buf[self._pos:end])
+        self._pos = end
+        # Reclaim memory once the buffer is fully drained
+        if self._pos == len(self._buf):
+            self._buf.clear()
+            self._pos = 0
+        return out
+
+    def _read_chunk(self):
         async def _read():
             async with async_timeout.timeout(self._read_timeout):
-                return await self._response.content.readexactly(n)
+                return await self._response.content.read(self._FILL_SIZE)
         return self._loop.run_until_complete(_read())
 
 
