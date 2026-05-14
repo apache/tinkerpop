@@ -70,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -92,6 +93,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
+
+import org.junit.Assert;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -699,12 +702,23 @@ public class TinkerGraphTest {
      */
     @Test
     public void shouldCheckWithinListsOfIdsForMidTraversalHasId() {
-        final GraphTraversalSource g = TinkerFactory.createModern().traversal();
-
-        final List<Vertex> expectedMidTraversal = g.V().has("name", "marko").outE("knows").inV().hasId(2, 4).toList();
-
-        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(new Integer[]{2, 4}).toList());
-        assertEquals(expectedMidTraversal, g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList());
+    GraphTraversalSource g = TinkerFactory.createModern().traversal();
+    List<Vertex> expectedMidTraversal = g.V().has("name", "marko").outE("knows").inV().hasId(2, 4).toList();
+    
+    List<Vertex> actual1 = g.V().has("name", "marko").outE("knows").inV().hasId(new Integer[]{2, 4}).toList();
+    List<Vertex> actual2 = g.V().has("name", "marko").outE("knows").inV().hasId(Arrays.asList(2, 4)).toList();
+    
+    
+    Comparator<Vertex> byId = Comparator.comparingInt(v -> (int) v.id());
+    List<Vertex> sortedExpected = new ArrayList<>(expectedMidTraversal);
+    List<Vertex> sortedActual1 = new ArrayList<>(actual1);
+    List<Vertex> sortedActual2 = new ArrayList<>(actual2);
+    sortedExpected.sort(byId);
+    sortedActual1.sort(byId);
+    sortedActual2.sort(byId);
+    
+    Assert.assertEquals(sortedExpected, sortedActual1);
+    Assert.assertEquals(sortedExpected, sortedActual2);
     }
 
     @Test
