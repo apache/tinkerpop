@@ -137,7 +137,8 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         if (null == idValue)
             idValue = vertexIdManager.getNextId(this);
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
+        final Set<String> labels = ElementHelper.getLabelsValue(keyValues).orElse(
+                Collections.singleton(Vertex.DEFAULT_LABEL));
 
         this.tx().readWrite();
         final long txNumber = transaction.getTxNumber();
@@ -162,7 +163,7 @@ public final class TinkerTransactionGraph extends AbstractTinkerGraph {
         if (container == null)
             container = newContainer;
 
-        final TinkerVertex vertex = new TinkerVertex(idValue, label, this, version);
+        final TinkerVertex vertex = new TinkerVertex(idValue, labels, this, version);
         ElementHelper.attachProperties(vertex, VertexProperty.Cardinality.list, keyValues);
         container.setDraft(vertex, (TinkerTransaction) tx());
 

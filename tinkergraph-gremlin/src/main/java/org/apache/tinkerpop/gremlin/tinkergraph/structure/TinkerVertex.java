@@ -94,6 +94,22 @@ public class TinkerVertex extends TinkerElement implements Vertex {
         }
     }
 
+    /**
+     * Constructs a TinkerVertex with multiple labels and a specific version (for transactional graphs).
+     */
+    protected TinkerVertex(final Object id, final Set<String> labels, final AbstractTinkerGraph graph, final long currentVersion) {
+        super(id, (labels == null || labels.isEmpty()) ? Vertex.DEFAULT_LABEL : labels.iterator().next(), currentVersion);
+        this.graph = graph;
+        this.isTxMode = graph instanceof TinkerTransactionGraph;
+        this.allowNullPropertyValues = graph.features().vertex().supportsNullPropertyValues();
+        if (labels == null || labels.isEmpty()) {
+            this.vertexLabels = new LinkedHashSet<>();
+            this.vertexLabels.add(Vertex.DEFAULT_LABEL);
+        } else {
+            this.vertexLabels = new LinkedHashSet<>(labels);
+        }
+    }
+
     @Override
     public Set<String> labels() {
         return Collections.unmodifiableSet(this.vertexLabels);
