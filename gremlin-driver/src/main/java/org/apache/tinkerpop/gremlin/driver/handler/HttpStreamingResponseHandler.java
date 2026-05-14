@@ -39,12 +39,16 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.util.ser.SerTokens;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
@@ -65,8 +69,13 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     private final GraphBinaryReader graphBinaryReader;
     private final AtomicReference<ResultSet> pendingResultSet;
-    private final ExecutorService readerPool;
     private final long maxResponseContentLength;
+
+    // Per-connection executor for the reader thread. Sized to one thread because an HTTP/1.1
+    // connection has at most one in-flight request. The thread is created lazily on first use
+    // and expires after 60 seconds idle, avoiding a parked thread on quiet connections.
+    // When HTTP/2 multiplexing is added, this can grow to match MAX_CONCURRENT_STREAMS.
+    private final ExecutorService readerExecutor;
 
     // Mutable state below is accessed exclusively from the channel's event loop thread.
     private HttpResponseStatus responseStatus;
@@ -77,12 +86,14 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
     public HttpStreamingResponseHandler(final GraphBinaryReader graphBinaryReader,
                                         final AtomicReference<ResultSet> pendingResultSet,
-                                        final ExecutorService readerPool,
                                         final long maxResponseContentLength) {
         this.graphBinaryReader = graphBinaryReader;
         this.pendingResultSet = pendingResultSet;
-        this.readerPool = readerPool;
         this.maxResponseContentLength = maxResponseContentLength;
+        this.readerExecutor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                new BasicThreadFactory.Builder().namingPattern(
+                        "gremlin-driver-stream-reader-" + UUID.randomUUID().toString().substring(0, 8)).build());
     }
 
     @Override
@@ -106,14 +117,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
                     final InputStreamBuffer buffer = new InputStreamBuffer(queueInputStream);
                     final GraphBinaryStreamResponseReader streamReader =
                             new GraphBinaryStreamResponseReader(buffer, graphBinaryReader, rs, pendingResultSet);
-                    try {
-                        readerPool.submit(streamReader::run);
-                    } catch (RejectedExecutionException e) {
-                        queueInputStream.signalEndOfStream();
-                        rs.markError(e);
-                        pendingResultSet.compareAndSet(rs, null);
-                        out.add(LAST_CONTENT_READ_RESPONSE);
-                    }
+                    readerExecutor.submit(streamReader::run);
                 } else {
                     // No pending ResultSet — close the stream and fire sentinel immediately
                     queueInputStream.signalEndOfStream();
@@ -175,6 +179,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             queueInputStream.signalEndOfStream();
         }
         releaseErrorBody();
+        // shutdownNow() interrupts the reader thread if it's blocked waiting for data,
+        // ensuring it doesn't linger after the connection is gone.
+        readerExecutor.shutdownNow();
         super.channelInactive(ctx);
     }
 

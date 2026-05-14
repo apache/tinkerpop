@@ -212,7 +212,7 @@ public interface Channelizer extends ChannelHandler {
                 final GraphBinaryReader graphBinaryReader =
                         ((GraphBinaryMessageSerializerV4) serializer).getMapper().getReader();
                 streamingResponseHandler = new HttpStreamingResponseHandler(
-                        graphBinaryReader, pending, cluster.streamingReaderPool(), cluster.getMaxResponseContentLength());
+                        graphBinaryReader, pending, cluster.getMaxResponseContentLength());
             } else {
                 useStreaming = false;
                 gremlinResponseDecoder = new HttpGremlinResponseDecoder(serializer);

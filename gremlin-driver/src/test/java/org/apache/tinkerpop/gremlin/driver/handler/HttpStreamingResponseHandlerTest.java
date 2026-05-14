@@ -69,7 +69,7 @@ public class HttpStreamingResponseHandlerTest {
 
     private EmbeddedChannel createChannel(final AtomicReference<ResultSet> pendingResultSet, final long maxResponseContentLength) {
         final HttpStreamingResponseHandler handler = new HttpStreamingResponseHandler(
-                reader, pendingResultSet, executor, maxResponseContentLength);
+                reader, pendingResultSet, maxResponseContentLength);
         return new EmbeddedChannel(handler);
     }
 
