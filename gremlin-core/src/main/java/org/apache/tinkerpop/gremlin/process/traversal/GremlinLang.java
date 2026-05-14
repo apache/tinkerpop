@@ -314,7 +314,16 @@ public class GremlinLang implements Cloneable, Serializable {
         } else if (p.hasTraversal()) {
             // Traversal-bearing predicate: serialize as P.op(traversalGremlinLang)
             sb.append("P.").append(p.getPredicateName()).append("(");
-            sb.append(argAsString(p.getTraversalValue()));
+            if (p.getTraversalValues() != null) {
+                // Multi-traversal predicate (within/without with multiple traversals)
+                final List<Traversal.Admin<?, ?>> traversals = p.getTraversalValues();
+                for (int i = 0; i < traversals.size(); i++) {
+                    if (i > 0) sb.append(",");
+                    sb.append(argAsString(traversals.get(i)));
+                }
+            } else {
+                sb.append(argAsString(p.getTraversalValue()));
+            }
         } else {
             sb.append("P.").append(p.getPredicateName()).append("(");
             sb.append(argAsString(p.getValue()));

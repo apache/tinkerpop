@@ -201,3 +201,124 @@ Feature: Step - has() with traversal arguments
     Then the result should be unordered
       | result |
       | d[29].i |
+
+  # Multi-traversal within() where one traversal produces multiple results
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_constantXpeterXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.V(vid1).out("knows").values("name"), __.constant("peter")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[peter] |
+
+  # Multi-traversal within() where one traversal produces no results — still matches on the other
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_constantXmarkoXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.V(vid1).values("nonexistent"), __.constant("marko")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[marko] |
+
+  # Multi-traversal within() where all traversals produce no results — filters everything
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXVXvid1X_valuesXnonexistentX_VXvid1X_valuesXnonexistentXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.V(vid1).values("nonexistent"), __.V(vid1).values("nonexistent")))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # Multi-traversal without() with three traversals
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withoutXVXvid1X_valuesXnameX_VXvid2X_valuesXnameX_VXvid3X_valuesXnameXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[vadas].id"
+    And using the parameter vid3 defined as "v[peter].id"
+    And the traversal of
+      """
+      g.V().has("name", P.without(__.V(vid1).values("name"), __.V(vid2).values("name"), __.V(vid3).values("name")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[josh] |
+      | v[lop] |
+      | v[ripple] |
+
+  # Multi-traversal within() — union of relationship traversals from different sources
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasXname_withinXVXvid1X_outXknowsX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid3 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V().has("name", P.within(__.V(vid1).out("knows").values("name"), __.V(vid3).out("created").values("name")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | v[vadas] |
+      | v[josh] |
+      | v[ripple] |
+      | v[lop] |
+
+  # Multi-traversal without() — exclusion from multiple relationship sources
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXsoftwareX_hasXname_withoutXVXvid1X_outXcreatedX_valuesXnameX_VXvid3X_outXcreatedX_valuesXnameXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid3 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V().hasLabel("software").has("name", P.without(__.V(vid1).out("created").values("name"), __.V(vid3).out("created").values("name")))
+      """
+    When iterated to list
+    Then the result should be empty
+
+  # Multi-traversal within() with is() — cross-label dynamic filtering
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_hasLabelXpersonX_valuesXageX_isXwithinXVXvid1X_valuesXageX_V_hasXname_lopX_inXcreatedX_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V().hasLabel("person").values("age").is(P.within(__.V(vid1).values("age"), __.V().has("name","lop").in("created").values("age")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[29].i |
+      | d[32].i |
+      | d[35].i |
+
+  # Multi-traversal within() — dynamic edge filtering via inV property check
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_VXvid1X_outEXknowsX_filterXinV_hasXname_withinXV_hasXname_lopX_inXcreatedX_valuesXnameX_V_hasXname_rippleX_inXcreatedX_valuesXnameXXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And the traversal of
+      """
+      g.V(vid1).outE("knows").filter(__.inV().has("name", P.within(__.V().has("name","lop").in("created").values("name"), __.V().has("name","ripple").in("created").values("name"))))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | e[marko-knows->josh] |

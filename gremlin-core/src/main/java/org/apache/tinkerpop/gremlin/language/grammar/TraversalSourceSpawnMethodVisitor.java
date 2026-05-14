@@ -99,12 +99,13 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_E(final GremlinParser.TraversalSourceSpawnMethod_EContext ctx) {
-        if (ctx.nestedTraversal() != null) {
-            return this.traversalSource.E((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
-        }
         final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
-        if (args.length == 1 && args[0] instanceof Traversal) {
-            return this.traversalSource.E((Traversal<?, ?>) args[0]);
+        for (final Object arg : args) {
+            if (arg instanceof Traversal) {
+                throw new IllegalArgumentException(
+                        "E(traversal) cannot be used as a start step because there is no Traverser context " +
+                        "available to evaluate the child traversal. Use E(traversal) as a mid-traversal step instead.");
+            }
         }
         return this.traversalSource.E(args);
     }
@@ -114,12 +115,13 @@ public class TraversalSourceSpawnMethodVisitor extends DefaultGremlinBaseVisitor
      */
     @Override
     public GraphTraversal visitTraversalSourceSpawnMethod_V(final GremlinParser.TraversalSourceSpawnMethod_VContext ctx) {
-        if (ctx.nestedTraversal() != null) {
-            return this.traversalSource.V((Traversal<?, ?>) anonymousVisitor.visitNestedTraversal(ctx.nestedTraversal()));
-        }
         final Object[] args = antlr.argumentVisitor.parseObjectVarargs(ctx.genericArgumentVarargs());
-        if (args.length == 1 && args[0] instanceof Traversal) {
-            return this.traversalSource.V((Traversal<?, ?>) args[0]);
+        for (final Object arg : args) {
+            if (arg instanceof Traversal) {
+                throw new IllegalArgumentException(
+                        "V(traversal) cannot be used as a start step because there is no Traverser context " +
+                        "available to evaluate the child traversal. Use V(traversal) as a mid-traversal step instead.");
+            }
         }
         return this.traversalSource.V(args);
     }

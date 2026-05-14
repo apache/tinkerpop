@@ -123,12 +123,10 @@ traversalSourceSpawnMethod_addV
 
 traversalSourceSpawnMethod_E
     : K_E LPAREN genericArgumentVarargs RPAREN
-    | K_E LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_V
     : K_V LPAREN genericArgumentVarargs RPAREN
-    | K_V LPAREN nestedTraversal RPAREN
     ;
 
 traversalSourceSpawnMethod_inject

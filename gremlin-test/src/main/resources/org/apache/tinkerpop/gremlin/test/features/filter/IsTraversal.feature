@@ -255,3 +255,19 @@ Feature: Step - is() with traversal-bearing predicates
       """
     When iterated to list
     Then the result should be empty
+
+  # Multi-traversal without() in is() context
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_valuesXageX_isXwithoutXVXvid1X_valuesXageX_VXvid2X_valuesXageXXX
+    Given the modern graph
+    And using the parameter vid1 defined as "v[marko].id"
+    And using the parameter vid2 defined as "v[josh].id"
+    And the traversal of
+      """
+      g.V().values("age").is(P.without(__.V(vid1).values("age"), __.V(vid2).values("age")))
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | d[27].i |
+      | d[35].i |

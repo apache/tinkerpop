@@ -215,4 +215,164 @@ public class PTraversalTest {
             assertThat(p.test(99), is(false));
         }
     }
+
+    /**
+     * Tests for multi-traversal support in within() and without().
+     * <p>
+     * When multiple traversals are passed to within(trav1, trav2, ...), each traversal is evaluated
+     * independently and results are unioned into a single collection for the Contains test.
+     */
+    public static class MultiTraversalTest {
+
+        private Traverser.Admin<?> createTraverser(final Object value) {
+            return new B_O_Traverser<>(value, 1L);
+        }
+
+        // --- Detection ---
+
+        @Test
+        public void shouldDetectMultipleTraversalsInWithin() {
+            final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            assertThat(p.hasTraversal(), is(true));
+        }
+
+        @Test
+        public void shouldDetectMultipleTraversalsInWithout() {
+            final P<Object> p = P.without(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            assertThat(p.hasTraversal(), is(true));
+        }
+
+        @Test
+        public void shouldReturnTraversalValuesListForMultiTraversal() {
+            final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            assertThat(p.getTraversalValues() != null, is(true));
+            assertThat(p.getTraversalValues().size(), is(2));
+        }
+
+        @Test
+        public void shouldReturnNullTraversalValueForMultiTraversal() {
+            // Single traversalValue should be null when using multi-traversal form
+            final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            assertThat(p.getTraversalValue() == null, is(true));
+        }
+
+        // --- Resolution and testing ---
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveMultipleTraversalsForWithin() {
+            // within(__.constant(1), __.constant(2)) should union results: [1, 2]
+            final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(true));
+            assertThat(p.test(2), is(true));
+            assertThat(p.test(3), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveMultipleTraversalsForWithout() {
+            // without(__.constant(1), __.constant(2)) should union results: [1, 2]
+            final P<Object> p = P.without(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(false));
+            assertThat(p.test(2), is(false));
+            assertThat(p.test(3), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveMultipleTraversalsWithMultipleResultsEach() {
+            // within(__.inject(1,2), __.inject(3,4)) should union: [1, 2, 3, 4]
+            final P<Object> p = P.within(__.inject(1, 2).asAdmin(), __.inject(3, 4).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(true));
+            assertThat(p.test(2), is(true));
+            assertThat(p.test(3), is(true));
+            assertThat(p.test(4), is(true));
+            assertThat(p.test(5), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldHandleEmptyResultFromOneTraversal() {
+            // within(__.inject(1,2), __.limit(0)) where second produces nothing
+            // Should still match on results from first traversal
+            final P<Object> p = P.within(__.inject(1, 2).asAdmin(), __.limit(0).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.isResolvedEmpty(), is(false));
+            assertThat(p.test(1), is(true));
+            assertThat(p.test(2), is(true));
+            assertThat(p.test(3), is(false));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldHandleAllEmptyResults() {
+            // within(__.limit(0), __.limit(0)) where both produce nothing
+            final P<Object> p = P.within(__.limit(0).asAdmin(), __.limit(0).asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.isResolvedEmpty(), is(true));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldResolveThreeTraversals() {
+            // within(__.constant("a"), __.constant("b"), __.constant("c"))
+            final P<Object> p = P.within(__.constant("a").asAdmin(), __.constant("b").asAdmin(), __.constant("c").asAdmin());
+            p.resolve(createTraverser("start"));
+            assertThat(p.test("a"), is(true));
+            assertThat(p.test("b"), is(true));
+            assertThat(p.test("c"), is(true));
+            assertThat(p.test("d"), is(false));
+        }
+
+        // --- Clone independence ---
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldCloneMultiTraversalPredicate() {
+            final P<Object> original = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin());
+            final P<Object> clone = original.clone();
+
+            // Clone should have independent traversal values
+            assertThat(clone.hasTraversal(), is(true));
+            assertThat(clone.getTraversalValues() != null, is(true));
+            assertThat(clone.getTraversalValues().size(), is(2));
+
+            // Modifying clone should not affect original
+            clone.resolve(createTraverser("start"));
+            assertThat(clone.test(1), is(true));
+            // Original should still be unresolved (literals empty)
+            assertThat(original.getTraversalValues().size(), is(2));
+        }
+
+        // --- Varargs detection ---
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldDetectMultipleTraversalsInVarargs() {
+            // This tests the varargs path: P.within(trav1, trav2) going through within(V... values)
+            final Traversal<?, ?> trav1 = __.constant(10);
+            final Traversal<?, ?> trav2 = __.constant(20);
+            final P<Object> p = (P<Object>) P.within(trav1, trav2);
+            assertThat(p.hasTraversal(), is(true));
+            assertThat(p.getTraversalValues() != null, is(true));
+            assertThat(p.getTraversalValues().size(), is(2));
+            p.resolve(createTraverser("start"));
+            assertThat(p.test(10), is(true));
+            assertThat(p.test(20), is(true));
+            assertThat(p.test(30), is(false));
+        }
+
+        // --- collectTraversals and integrateTraversals ---
+
+        @Test
+        public void shouldCollectTraversalsFromMultiTraversalPredicate() {
+            final P<Object> p = P.within(__.constant(1).asAdmin(), __.constant(2).asAdmin(), __.constant(3).asAdmin());
+            final java.util.List<Traversal.Admin<?, ?>> collected = new java.util.ArrayList<>();
+            P.collectTraversals(p, collected);
+            assertThat(collected.size(), is(3));
+        }
+    }
 }
