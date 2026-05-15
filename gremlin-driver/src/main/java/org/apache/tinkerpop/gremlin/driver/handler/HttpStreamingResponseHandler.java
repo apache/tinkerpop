@@ -90,7 +90,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
         this.graphBinaryReader = graphBinaryReader;
         this.pendingResultSet = pendingResultSet;
         this.maxResponseContentLength = maxResponseContentLength;
-        this.readerExecutor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
+        this.readerExecutor = new ThreadPoolExecutor(0, 1, 30L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(),
                 new BasicThreadFactory.Builder().namingPattern(
                         "gremlin-driver-stream-reader-" + UUID.randomUUID().toString().substring(0, 8)).build());
@@ -179,9 +179,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             queueInputStream.signalEndOfStream();
         }
         releaseErrorBody();
-        // shutdownNow() interrupts the reader thread if it's blocked waiting for data,
-        // ensuring it doesn't linger after the connection is gone.
-        readerExecutor.shutdownNow();
+        // The reader thread terminates naturally after consuming END_OF_STREAM.
+        // The executor's idle timeout reclaims the thread. We intentionally avoid
+        // shutdownNow() because the interrupt races with the reader's EOF handling.
         super.channelInactive(ctx);
     }
 
