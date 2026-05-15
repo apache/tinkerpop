@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Structure
@@ -33,6 +34,16 @@ namespace Gremlin.Net.Structure
     public class Graph
     {
         /// <summary>
+        ///     Gets the <see cref="Vertex" /> instances contained in this <see cref="Graph" />, keyed by their id.
+        /// </summary>
+        public IDictionary<object, Vertex> Vertices { get; } = new Dictionary<object, Vertex>();
+
+        /// <summary>
+        ///     Gets the <see cref="Edge" /> instances contained in this <see cref="Graph" />, keyed by their id.
+        /// </summary>
+        public IDictionary<object, Edge> Edges { get; } = new Dictionary<object, Edge>();
+
+        /// <summary>
         ///     Generates a reusable <see cref="GraphTraversalSource" /> instance.
         /// </summary>
         /// <returns>A graph traversal source.</returns>
@@ -40,6 +51,12 @@ namespace Gremlin.Net.Structure
         public GraphTraversalSource Traversal()
         {
             return new GraphTraversalSource();
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"graph[vertices:{Vertices.Count} edges:{Edges.Count}]";
         }
     }
 }

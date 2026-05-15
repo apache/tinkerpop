@@ -23,10 +23,21 @@
 
 /**
  * An "empty" graph object to server only as a reference.
+ *
+ * Holds in-memory collections of vertices and edges so that GraphBinary
+ * Graph (0x10) deserialization can return a usable data container.
  */
 export class Graph {
+  readonly vertices: Map<any, Vertex>;
+  readonly edges: Map<any, Edge>;
+
+  constructor() {
+    this.vertices = new Map();
+    this.edges = new Map();
+  }
+
   toString() {
-    return 'graph[]';
+    return `graph[vertices:${this.vertices.size} edges:${this.edges.size}]`;
   }
 }
 
