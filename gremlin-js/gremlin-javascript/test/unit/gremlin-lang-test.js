@@ -27,7 +27,7 @@ import { ReadOnlyStrategy, SubgraphStrategy, OptionsStrategy,
          PartitionStrategy, SeedStrategy } from '../../lib/process/traversal-strategy.js';
 import { Graph, Vertex } from '../../lib/structure/graph.js';
 import { TraversalStrategies } from '../../lib/process/traversal-strategy.js';
-import { Long } from '../../lib/utils.js';
+import { Long, toFloat, toDouble, toShort, toByte, toInt, toLong } from '../../lib/utils.js';
 import GremlinLang from '../../lib/process/gremlin-lang.js';
 
 const g = new GraphTraversalSource(new Graph(), new TraversalStrategies());
@@ -433,6 +433,138 @@ describe('GremlinLang', function () {
       new Uint8Array(ab).set([0, 1, 2, 3, 4]);
       const view = new Uint8Array(ab, 1, 3); // bytes [1, 2, 3]
       assert.strictEqual(g.inject(view).getGremlinLang().getGremlin(), 'g.inject(Binary("AQID"))');
+    });
+
+    it('should handle toFloat with round number', function () {
+      assert.strictEqual(g.V(toFloat(1.0)).getGremlinLang().getGremlin(), 'g.V(1.0F)');
+    });
+
+    it('should handle toFloat with fractional number', function () {
+      assert.strictEqual(g.V(toFloat(1.5)).getGremlinLang().getGremlin(), 'g.V(1.5F)');
+    });
+
+    it('should handle toDouble with round number', function () {
+      assert.strictEqual(g.V(toDouble(1.0)).getGremlinLang().getGremlin(), 'g.V(1.0D)');
+    });
+
+    it('should handle toDouble with fractional number', function () {
+      assert.strictEqual(g.V(toDouble(1.5)).getGremlinLang().getGremlin(), 'g.V(1.5D)');
+    });
+
+    it('should handle toShort', function () {
+      assert.strictEqual(g.V(toShort(5)).getGremlinLang().getGremlin(), 'g.V(5S)');
+    });
+
+    it('should handle toShort with negative value', function () {
+      assert.strictEqual(g.V(toShort(-32768)).getGremlinLang().getGremlin(), 'g.V(-32768S)');
+    });
+
+    it('should handle toByte', function () {
+      assert.strictEqual(g.V(toByte(127)).getGremlinLang().getGremlin(), 'g.V(127B)');
+    });
+
+    it('should handle toByte with negative value', function () {
+      assert.strictEqual(g.V(toByte(-128)).getGremlinLang().getGremlin(), 'g.V(-128B)');
+    });
+
+    it('should handle toInt', function () {
+      assert.strictEqual(g.V(toInt(42)).getGremlinLang().getGremlin(), 'g.V(42)');
+    });
+
+    it('should handle toLong with bigint input', function () {
+      assert.strictEqual(g.V(toLong(42n)).getGremlinLang().getGremlin(), 'g.V(42L)');
+    });
+
+    it('should handle toLong with number input', function () {
+      assert.strictEqual(g.V(toLong(42)).getGremlinLang().getGremlin(), 'g.V(42L)');
+    });
+
+    it('should handle toLong with string input', function () {
+      assert.strictEqual(g.V(toLong('9007199254740993')).getGremlinLang().getGremlin(), 'g.V(9007199254740993L)');
+    });
+
+    it('should handle toFloat with zero', function () {
+      assert.strictEqual(g.V(toFloat(0)).getGremlinLang().getGremlin(), 'g.V(0.0F)');
+    });
+
+    it('should handle toDouble with zero', function () {
+      assert.strictEqual(g.V(toDouble(0)).getGremlinLang().getGremlin(), 'g.V(0.0D)');
+    });
+
+    it('should handle toFloat with NaN', function () {
+      assert.strictEqual(g.V(toFloat(NaN)).getGremlinLang().getGremlin(), 'g.V(NaN)');
+    });
+
+    it('should handle toFloat with Infinity', function () {
+      assert.strictEqual(g.V(toFloat(Infinity)).getGremlinLang().getGremlin(), 'g.V(+Infinity)');
+    });
+
+    it('should handle toFloat with -Infinity', function () {
+      assert.strictEqual(g.V(toFloat(-Infinity)).getGremlinLang().getGremlin(), 'g.V(-Infinity)');
+    });
+
+    it('should handle toDouble with NaN', function () {
+      assert.strictEqual(g.V(toDouble(NaN)).getGremlinLang().getGremlin(), 'g.V(NaN)');
+    });
+
+    it('should handle toDouble with Infinity', function () {
+      assert.strictEqual(g.V(toDouble(Infinity)).getGremlinLang().getGremlin(), 'g.V(+Infinity)');
+    });
+
+    it('should handle toDouble with -Infinity', function () {
+      assert.strictEqual(g.V(toDouble(-Infinity)).getGremlinLang().getGremlin(), 'g.V(-Infinity)');
+    });
+
+    it('should handle toLong with negative number input', function () {
+      assert.strictEqual(g.V(toLong(-1)).getGremlinLang().getGremlin(), 'g.V(-1L)');
+    });
+
+    it('should handle toLong with int64 min bigint', function () {
+      assert.strictEqual(g.V(toLong(-9223372036854775808n)).getGremlinLang().getGremlin(), 'g.V(-9223372036854775808L)');
+    });
+
+    it('should handle toInt with negative value', function () {
+      assert.strictEqual(g.V(toInt(-1)).getGremlinLang().getGremlin(), 'g.V(-1)');
+    });
+
+    it('should handle toInt at int32 max', function () {
+      assert.strictEqual(g.V(toInt(2147483647)).getGremlinLang().getGremlin(), 'g.V(2147483647)');
+    });
+
+    it('should handle toInt at int32 min', function () {
+      assert.strictEqual(g.V(toInt(-2147483648)).getGremlinLang().getGremlin(), 'g.V(-2147483648)');
+    });
+
+    it('should handle toShort at boundary values', function () {
+      assert.strictEqual(g.V(toShort(32767)).getGremlinLang().getGremlin(), 'g.V(32767S)');
+    });
+
+    it('should handle toByte at zero', function () {
+      assert.strictEqual(g.V(toByte(0)).getGremlinLang().getGremlin(), 'g.V(0B)');
+    });
+
+    it('should handle toFloat inside P.gt', function () {
+      assert.strictEqual(g.V().has('x', P.gt(toFloat(1.5))).getGremlinLang().getGremlin(), "g.V().has('x',gt(1.5F))");
+    });
+
+    it('should handle toShort inside P.between', function () {
+      assert.strictEqual(g.V().has('x', P.between(toShort(1), toShort(10))).getGremlinLang().getGremlin(), "g.V().has('x',between(1S,10S))");
+    });
+
+    it('should handle toInt inside P.within', function () {
+      assert.strictEqual(g.V().has('x', P.within([toInt(1), toInt(2)])).getGremlinLang().getGremlin(), "g.V().has('x',within([1,2]))");
+    });
+
+    it('should handle toDouble inside P.gt', function () {
+      assert.strictEqual(g.V().has('x', P.gt(toDouble(3.14))).getGremlinLang().getGremlin(), "g.V().has('x',gt(3.14D))");
+    });
+
+    it('should handle typed wrappers in inject array', function () {
+      assert.strictEqual(g.inject([toFloat(1.5), toFloat(2.5)]).getGremlinLang().getGremlin(), 'g.inject([1.5F,2.5F])');
+    });
+
+    it('should handle typed wrapper in inject Map', function () {
+      assert.strictEqual(g.inject(new Map([['x', toDouble(3.14)]])).getGremlinLang().getGremlin(), "g.inject(['x':3.14D])");
     });
   });
 

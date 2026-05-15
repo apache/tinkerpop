@@ -22,8 +22,9 @@
  */
 
 export default class AnySerializer {
-  constructor(ioc) {
+  constructor(ioc, { postDeserialize } = {}) {
     this.ioc = ioc;
+    this._postDeserialize = postDeserialize || null;
 
     // specifically ordered, the first canBeUsedFor=true wins
     this.serializers = [
@@ -84,11 +85,17 @@ export default class AnySerializer {
       throw new Error(`AnySerializer: unexpected {value_flag}=0x${value_flag.toString(16)} at position ${pos}`);
     }
 
+    let result;
     try {
-      return await serializer.deserializeValue(reader, value_flag, type_code);
+      result = await serializer.deserializeValue(reader, value_flag, type_code);
     } catch (err) {
       err.message = `${serializer.constructor.name}.deserializeValue() at position ${pos}: ${err.message}`;
       throw err;
     }
+
+    if (this._postDeserialize) {
+      return this._postDeserialize(result, type_code);
+    }
+    return result;
   }
 }
