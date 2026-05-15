@@ -440,8 +440,7 @@ public enum GryoVersion {
             tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.util.message.ResponseMessage",
                     "org.apache.tinkerpop.gremlin.util.ser.ResponseMessageGryoSerializer", 169);
 
-            tryAddDynamicType(this, "org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy",
-                    null, 184);
+            // ID 184 was SparqlStrategy - removed in 4.0
         }};
     }
 

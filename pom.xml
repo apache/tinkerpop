@@ -138,7 +138,6 @@ limitations under the License.
         <module>gremlin-go</module>
         <module>hadoop-gremlin</module>
         <module>spark-gremlin</module>
-        <module>sparql-gremlin</module>
         <module>gremlin-console</module>
         <module>gremlin-tools</module>
     </modules>
