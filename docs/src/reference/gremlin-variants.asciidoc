@@ -1549,8 +1549,8 @@ java -cp target/run-examples-shaded.jar examples.ModernTraversals
 == Gremlin-JavaScript
 
 image:gremlin-js.png[width=130,float=right] Apache TinkerPop's Gremlin-JavaScript implements Gremlin within the
-JavaScript language. It targets Node.js runtime and can be used on different operating systems on any Node.js 20 or
-above. Since the JavaScript naming conventions are very similar to that of Java, it should be very easy to switch
+JavaScript language. It targets Node.js runtime and can be used on different operating systems. Since the JavaScript
+naming conventions are very similar to that of Java, it should be very easy to switch
 between Gremlin-Java and Gremlin-JavaScript.
 
 [source,bash]
@@ -1560,16 +1560,18 @@ The following table outlines recommended runtime versions by the release in whic
 
 [cols="1,1,1",options="header"]
 |===
-|Version |Min Node.js |npm Version
-|3.4.0 |≥6 |N/A
-|3.5.0 |≥10 |6.14.16
-|3.5.7 |≥16 |8.19.4
-|3.6.0 |≥10 |8.1.2
-|3.6.5 |≥16 |8.19.4
-|3.6.7 |≥18 |9.6.7
-|3.7.0 |≥18 |9.6.7
-|3.7.4 |≥20 |10.8.2
-|3.8.0 |≥20 |10.8.2
+|Version |Recommended Node.js Version |npm Version
+|3.4.0 |6 |N/A
+|3.5.0 |10 |6.14.16
+|3.5.7 |16 |8.19.4
+|3.6.0 |10 |8.1.2
+|3.6.5 |16 |8.19.4
+|3.6.7 |18 |9.6.7
+|3.7.0 |18 |9.6.7
+|3.7.4 |20, 22, 24 |10.8.2
+|3.7.7 |20, 22, 24, 26 |10.8.2
+|3.8.0 |20, 22, 24 |10.8.2
+|3.8.2 |20, 22, 24, 26 |10.8.2
 |===
 
 [[gremlin-javascript-connecting]]
