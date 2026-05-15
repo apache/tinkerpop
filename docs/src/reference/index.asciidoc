@@ -49,7 +49,6 @@ include::implementations-hadoop-start.asciidoc[]
 include::implementations-spark.asciidoc[]
 include::implementations-hadoop-end.asciidoc[]
 
-include::compilers.asciidoc[]
 
 include::conclusion.asciidoc[]
 

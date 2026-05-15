@@ -106,7 +106,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -126,17 +125,7 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
         super(name);
     }
 
-    /**
-     * Attempt to load {@code SparqlStrategy} if it's on the path. Dynamically loading it from core makes it easier
-     * for users as they won't have to register special modules for serialization purposes.
-     */
-    private static Optional<Class<?>> tryLoadSparqlStrategy() {
-        try {
-            return Optional.of(Class.forName("org.apache.tinkerpop.gremlin.sparql.process.traversal.strategy.SparqlStrategy"));
-        } catch (Exception ignored) {
-            return Optional.empty();
-        }
-    }
+
 
     /**
      * Version 4.0 of GraphSON.
@@ -353,7 +342,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             VertexProgramStrategy.class
                     ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
 
-                    GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> put(s, s.getSimpleName()));
                 }});
 
         /**
@@ -489,7 +477,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     VertexProgramStrategy.class
             ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(strategy)));
 
-            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV3.TraversalStrategyProxyJacksonDeserializer(s)));
         }
 
         public static Builder build() {
@@ -601,7 +588,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                             VertexProgramStrategy.class
                     ).forEach(strategy -> put(strategy, strategy.getSimpleName()));
 
-                    GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> put(s, s.getSimpleName()));
                 }});
 
         /**
@@ -723,7 +709,6 @@ abstract class GraphSONModule extends TinkerPopJacksonModule {
                     VertexProgramStrategy.class
             ).forEach(strategy -> addDeserializer(strategy, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(strategy)));
 
-            GraphSONModule.tryLoadSparqlStrategy().ifPresent(s -> addDeserializer(s, new TraversalSerializersV2.TraversalStrategyProxyJacksonDeserializer(s)));
         }
 
         public static Builder build() {

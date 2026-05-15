@@ -214,6 +214,13 @@ Connection(url, traversal_source, executor, pool,
 
 Custom transport implementations are no longer supported. The driver uses `AiohttpHTTPTransport` directly.
 
+==== Removal of sparql-gremlin
+
+The `sparql-gremlin` module has been removed following a prolonged period of inactivity. There is currently no direct
+replacement planned for this functionality.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-3249[TINKERPOP-3249]
+
 ==== Runtime Upgrades
 
 The minimum target framework is now `net8.0` (previously `netstandard2.0;net6.0`). .NET 6 reached end-of-life in

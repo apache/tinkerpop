@@ -45,8 +45,7 @@ image::gremlin-reference.png[width=1024]
 Despite all this diversity and disparity, Gremlin remains the unifying interface for all these different elements of
 the graph community. As a user, choosing a TinkerPop-enabled graph and using Gremlin in the correct way when building
 applications shields them from change and disparity in the space. As a graph provider, choosing to become
-TinkerPop-enabled not only expands the reach their system can get into different development ecosystems, but also
-provides access to other query languages through bytecode compilation as seen in <<sparql-gremlin,sparql-gremlin>>.
+TinkerPop-enabled immediately expands the reach their system can get into different development ecosystems.
 
 Irrespective of the programming language being used, graph system chosen or other development background that might
 be driving a user to this documentation, the critical point to remember is that "Gremlin is Gremlin is Gremlin". The
