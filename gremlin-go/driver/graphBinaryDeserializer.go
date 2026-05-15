@@ -243,6 +243,8 @@ func (d *GraphBinaryDeserializer) readValue(dt dataType, flag byte) (interface{}
 		return d.readVertex(true)
 	case edgeType:
 		return d.readEdge()
+	case graphType:
+		return d.readGraph()
 	case pathType:
 		return d.readPath()
 	case propertyType:
@@ -414,6 +416,194 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 		e.Properties = props
 	}
 	return e, nil
+}
+
+// readGraph reads a GraphBinary 4.0 Graph value (after the 0x10 type code + 0x00
+// value flag have already been consumed). Mirrors org.apache.tinkerpop.gremlin.
+// structure.io.binary.types.GraphSerializer (Java).
+func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
+	graph := NewGraph()
+
+	// {vertex_count} value-only int32
+	vertexCount, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := int32(0); i < vertexCount; i++ {
+		// {id} fully-qualified
+		vId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+
+		// {labels} list<string> value-only, take first element
+		vLabels, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+		labelSlice, ok := vLabels.([]interface{})
+		if !ok || len(labelSlice) == 0 {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		vLabel, ok := labelSlice[0].(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+
+		v := &Vertex{Element: Element{Id: vId, Label: vLabel}}
+
+		// {vp_count} value-only int32
+		vpCount, err := d.readInt32()
+		if err != nil {
+			return nil, err
+		}
+
+		vps := make([]*VertexProperty, 0, vpCount)
+		for j := int32(0); j < vpCount; j++ {
+			// {vp_id} fully-qualified
+			vpId, err := d.ReadFullyQualified()
+			if err != nil {
+				return nil, err
+			}
+
+			// {vp_label} list<string> value-only, take first element
+			vpLabels, err := d.readList(false)
+			if err != nil {
+				return nil, err
+			}
+			vpLabelSlice, ok := vpLabels.([]interface{})
+			if !ok || len(vpLabelSlice) == 0 {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+			vpLabel, ok := vpLabelSlice[0].(string)
+			if !ok {
+				return nil, newError(err0404ReadNullTypeError)
+			}
+
+			// {vp_value} fully-qualified
+			vpValue, err := d.ReadFullyQualified()
+			if err != nil {
+				return nil, err
+			}
+
+			// {parent} fully-qualified null placeholder — discard
+			if _, err := d.ReadFullyQualified(); err != nil {
+				return nil, err
+			}
+
+			// {meta_props} value-only list<property>
+			metaProps, err := d.readList(false)
+			if err != nil {
+				return nil, err
+			}
+
+			vp := &VertexProperty{
+				Element: Element{Id: vpId, Label: vpLabel},
+				Key:     vpLabel,
+				Value:   vpValue,
+				Vertex:  *v,
+			}
+			vp.Properties = make([]interface{}, 0)
+			if metaProps != nil {
+				vp.Properties = metaProps
+			}
+			vps = append(vps, vp)
+		}
+		// Store vertex properties on the Vertex; match the existing convention
+		// of storing as []interface{} (see readVertex above).
+		if vpCount > 0 {
+			vpList := make([]interface{}, len(vps))
+			for k, vp := range vps {
+				vpList[k] = vp
+			}
+			v.Properties = vpList
+		} else {
+			v.Properties = make([]interface{}, 0)
+		}
+
+		graph.Vertices[vId] = v
+	}
+
+	// {edge_count} value-only int32
+	edgeCount, err := d.readInt32()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := int32(0); i < edgeCount; i++ {
+		// {id} fully-qualified
+		eId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+
+		// {labels} list<string> value-only, take first element
+		eLabels, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+		labelSlice, ok := eLabels.([]interface{})
+		if !ok || len(labelSlice) == 0 {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+		eLabel, ok := labelSlice[0].(string)
+		if !ok {
+			return nil, newError(err0404ReadNullTypeError)
+		}
+
+		// {inV_id} fully-qualified
+		inVId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		// {inV_label} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+		// {outV_id} fully-qualified
+		outVId, err := d.ReadFullyQualified()
+		if err != nil {
+			return nil, err
+		}
+		// {outV_label} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+		// {parent} fully-qualified null placeholder — discard
+		if _, err := d.ReadFullyQualified(); err != nil {
+			return nil, err
+		}
+
+		// {props} value-only list<property>
+		props, err := d.readList(false)
+		if err != nil {
+			return nil, err
+		}
+
+		// Reuse previously-read vertex instances if present, else build stand-ins.
+		inV, ok := graph.Vertices[inVId]
+		if !ok {
+			inV = &Vertex{Element: Element{Id: inVId}}
+		}
+		outV, ok := graph.Vertices[outVId]
+		if !ok {
+			outV = &Vertex{Element: Element{Id: outVId}}
+		}
+
+		e := &Edge{
+			Element: Element{Id: eId, Label: eLabel},
+			InV:     *inV,
+			OutV:    *outV,
+		}
+		e.Properties = make([]interface{}, 0)
+		if props != nil {
+			e.Properties = props
+		}
+		graph.Edges[eId] = e
+	}
+
+	return graph, nil
 }
 
 func (d *GraphBinaryDeserializer) readPath() (*Path, error) {

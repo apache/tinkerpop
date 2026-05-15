@@ -44,8 +44,7 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         public static readonly DataType Edge = new DataType(0x0D);
         public static readonly DataType Path = new DataType(0x0E);
         public static readonly DataType Property = new DataType(0x0F);
-        // Not yet implemented
-        // public static readonly DataType Graph = new DataType(0x10);
+        public static readonly DataType Graph = new DataType(0x10);
         public static readonly DataType Vertex = new DataType(0x11);
         public static readonly DataType VertexProperty = new DataType(0x12);
         public static readonly DataType Direction = new DataType(0x18);

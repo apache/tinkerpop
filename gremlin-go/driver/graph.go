@@ -26,7 +26,25 @@ import (
 )
 
 // Graph is used to store the graph.
+// In-memory collections of vertices and edges populated by GraphBinary 4.0
+// Graph (0x10) deserialization so that subgraph() results can be returned as
+// a usable data container. Maps are keyed by element id.
 type Graph struct {
+	Vertices map[interface{}]*Vertex
+	Edges    map[interface{}]*Edge
+}
+
+// NewGraph creates a new empty Graph with initialized Vertices and Edges maps.
+func NewGraph() *Graph {
+	return &Graph{
+		Vertices: make(map[interface{}]*Vertex),
+		Edges:    make(map[interface{}]*Edge),
+	}
+}
+
+// String returns the string representation of the graph.
+func (g *Graph) String() string {
+	return fmt.Sprintf("graph[vertices:%d edges:%d]", len(g.Vertices), len(g.Edges))
 }
 
 // Element is the base structure for both Vertex and Edge.
