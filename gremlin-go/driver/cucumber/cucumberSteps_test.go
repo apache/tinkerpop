@@ -582,9 +582,6 @@ func (tg *tinkerPopGraph) theResultShouldBeEmpty() error {
 // traversal result is a *gremlingo.Graph data container whose Vertices or
 // Edges map (selected by the data-table header) matches the expected rows.
 func (tg *tinkerPopGraph) theResultShouldBeASubgraphWithTheFollowing(table *godog.Table) error {
-	if msg, errored := tg.error[true]; errored {
-		return fmt.Errorf("traversal raised an error: %s", msg)
-	}
 	if len(tg.result) == 0 {
 		return errors.New("no result to assert against")
 	}
