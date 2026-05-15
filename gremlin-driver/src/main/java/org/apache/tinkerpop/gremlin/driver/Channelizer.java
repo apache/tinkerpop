@@ -34,9 +34,13 @@ import org.apache.tinkerpop.gremlin.driver.handler.GremlinResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpContentDecompressionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.HttpGremlinResponseDecoder;
+import org.apache.tinkerpop.gremlin.driver.handler.HttpStreamingResponseHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.IdleConnectionHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.InactiveChannelHandler;
+import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.gremlin.util.MessageSerializer;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -92,7 +96,7 @@ public interface Channelizer extends ChannelHandler {
         protected Connection connection;
         protected Cluster cluster;
         protected SslHandler sslHandler;
-        private AtomicReference<ResultSet> pending;
+        protected AtomicReference<ResultSet> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
         protected static final String PIPELINE_SSL_HANDLER = "gremlin-ssl-handler";
@@ -158,7 +162,6 @@ public interface Channelizer extends ChannelHandler {
             }
 
             configure(pipeline);
-            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending));
         }
 
         @Override
@@ -187,7 +190,9 @@ public interface Channelizer extends ChannelHandler {
                 ResponseMessage.build().code(HttpResponseStatus.NO_CONTENT).result(Collections.emptyList()).create();
 
         private HttpGremlinRequestEncoder gremlinRequestEncoder;
+        private HttpStreamingResponseHandler streamingResponseHandler;
         private HttpGremlinResponseDecoder gremlinResponseDecoder;
+        private boolean useStreaming;
 
         private HttpContentDecompressionHandler httpCompressionDecoder;
         private IdleStateHandler idleStateHandler;
@@ -200,7 +205,19 @@ public interface Channelizer extends ChannelHandler {
             httpCompressionDecoder = new HttpContentDecompressionHandler();
             gremlinRequestEncoder = new HttpGremlinRequestEncoder(cluster.getSerializer(), cluster.getRequestInterceptors(),
                     cluster.isUserAgentOnConnectEnabled(), cluster.isBulkResultsEnabled(), connection.getUri());
-            gremlinResponseDecoder = new HttpGremlinResponseDecoder(cluster.getSerializer());
+
+            final MessageSerializer<?> serializer = cluster.getSerializer();
+            if (serializer instanceof GraphBinaryMessageSerializerV4) {
+                useStreaming = true;
+                final GraphBinaryReader graphBinaryReader =
+                        ((GraphBinaryMessageSerializerV4) serializer).getMapper().getReader();
+                streamingResponseHandler = new HttpStreamingResponseHandler(
+                        graphBinaryReader, pending, cluster.streamingReaderPool(), cluster.getMaxResponseContentLength());
+            } else {
+                useStreaming = false;
+                gremlinResponseDecoder = new HttpGremlinResponseDecoder(serializer);
+            }
+
             if (cluster.getIdleConnectionTimeout() > 0) {
                 final int idleConnectionTimeout = (int) (cluster.getIdleConnectionTimeout() / 1000);
                 idleStateHandler = new IdleStateHandler(idleConnectionTimeout, idleConnectionTimeout, 0);
@@ -240,11 +257,22 @@ public interface Channelizer extends ChannelHandler {
                     DEFAULT_ALLOW_DUPLICATE_CONTENT_LENGTHS, false);
 
             pipeline.addLast(PIPELINE_HTTP_CODEC, handler);
-            pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, new HttpObjectAggregator(cluster.getMaxResponseContentLength() > 0
-                    ? (int) cluster.getMaxResponseContentLength() : Integer.MAX_VALUE));
-            pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
-            pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
-            pipeline.addLast(PIPELINE_HTTP_DECODER, gremlinResponseDecoder);
+            if (useStreaming) {
+                pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
+                pipeline.addLast(PIPELINE_HTTP_DECODER, streamingResponseHandler);
+                pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
+            } else {
+                pipeline.addLast(PIPELINE_HTTP_AGGREGATOR, new HttpObjectAggregator(cluster.getMaxResponseContentLength() > 0
+                        ? (int) cluster.getMaxResponseContentLength() : Integer.MAX_VALUE));
+                pipeline.addLast(PIPELINE_HTTP_ENCODER, gremlinRequestEncoder);
+                pipeline.addLast(PIPELINE_HTTP_DECOMPRESSION_HANDLER, httpCompressionDecoder);
+                pipeline.addLast(PIPELINE_HTTP_DECODER, gremlinResponseDecoder);
+            }
+
+            pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new GremlinResponseHandler(pending, () -> {
+                connection.returnToPool();
+                connection.tryShutdown();
+            }, useStreaming));
         }
     }
 }
