@@ -432,7 +432,8 @@ The GraphBinary 4.0 `Graph` type (`0x10`) is now handled by `gremlin-javascript`
 so a `subgraph()`-step result returned to the client is deserialized into a `Graph` data container populated with the
 captured vertices and edges. Reference documentation: <<subgraph-step>>.
 
-The returned `Graph` is read-only. Each variant exposes the contents through its idiomatic collection type:
+The returned `Graph` is a detached snapshot of the captured vertices and edges. Mutating its collections has no
+effect on the source graph.
 
 * `gremlin-javascript`: `graph.vertices: Map<any, Vertex>` and `graph.edges: Map<any, Edge>`
 * `gremlin-dotnet`: `graph.Vertices: IDictionary<object, Vertex>` and `graph.Edges: IDictionary<object, Edge>`
