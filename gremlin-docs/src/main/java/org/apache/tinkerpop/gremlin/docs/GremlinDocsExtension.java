@@ -16,29 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.docs;
+
+import org.asciidoctor.Asciidoctor;
+import org.asciidoctor.jruby.extension.spi.ExtensionRegistry;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * SPI entry point that registers the {@link GremlinTreeProcessor} with AsciidoctorJ.
+ * Discovered automatically via {@code META-INF/services/org.asciidoctor.jruby.extension.spi.ExtensionRegistry}.
  */
-import org.apache.tinkerpop.gremlin.groovy.util.Artifact
-import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
+public class GremlinDocsExtension implements ExtensionRegistry {
 
-installPlugin = { def artifact ->
-  def classLoader = new groovy.lang.GroovyClassLoader()
-  def extensionPath = new File(System.getProperty("user.dir"), "ext")
-  try {
-    System.err.print(" * ${artifact.getArtifact()} ... ")
-    new DependencyGrabber(classLoader, extensionPath).copyDependenciesToPath(artifact)
-    System.err.println("done")
-  } catch (Exception e) {
-    System.err.println("failed")
-    System.err.println()
-    System.err.println(e.getMessage())
-    e.printStackTrace()
-    System.exit(1)
-  }
+    @Override
+    public void register(final Asciidoctor asciidoctor) {
+        asciidoctor.javaExtensionRegistry().treeprocessor(GremlinTreeProcessor.class);
+    }
 }
-
-:plugin use tinkerpop.sugar
-:plugin use tinkerpop.credentials
-System.err.println("done")

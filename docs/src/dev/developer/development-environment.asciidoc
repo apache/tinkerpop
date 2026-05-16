@@ -120,111 +120,19 @@ an issue when working with SNAPSHOT dependencies.
 [[documentation-environment]]
 === Documentation Environment
 
-The documentation generation process is not Maven-based and uses shell scripts to process the project's asciidoc. The
-scripts should work on Mac and Linux. Javadocs should be built using Java 11.
+Documentation is generated using the `gremlin-docs` AsciidoctorJ extension, which delegates Gremlin code block
+execution to a real Gremlin Console process and generates language variant tabs via the ANTLR-based
+`GremlinTranslator`. The scripts should work on Mac and Linux.
 
-TIP: We recommend performing documentation generation on Linux. For the scripts to work on Mac, you will need to
-install GNU versions of the utility programs via `homebrew`, e.g.`grep`, `awk`, `sed`, `findutils`, and `diffutils`.
-
-To generate documentation, it is required that link:https://hadoop.apache.org[Hadoop 3.3.x] is running in
-link:https://hadoop.apache.org/docs/r3.3.1/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation[pseudo-distributed]
-mode. Be sure to set the `HADOOP_GREMLIN_LIBS` environment variable as described in the
-link:https://tinkerpop.apache.org/docs/x.y.z/reference/#hadoop-gremlin[reference documentation]. It is also important
-to set the `CLASSPATH` to point at the directory containing the Hadoop configuration files, like `mapred-site.xml`.
-
-The `/etc/hadoop/yarn-site.xml` file prefers this configuration over the one provided in the Hadoop documentation
-referenced above:
-
-[source,xml]
-----
-<configuration>
-  <property>
-    <name>yarn.nodemanager.aux-services</name>
-    <value>mapreduce_shuffle</value>
-  </property>
-  <property>
-    <name>yarn.nodemanager.vmem-check-enabled</name>
-    <value>false</value>
-  </property>
-  <property>
-    <name>yarn.nodemanager.vmem-pmem-ratio</name>
-    <value>4</value>
-  </property>
-</configuration>
-----
-
-The `/etc/hadoop/mapred-site.xml` file prefers the following configuration:
-
-[source,xml]
-----
-<configuration>
-  <property>
-    <name>mapreduce.framework.name</name>
-    <value>yarn</value>
-  </property>
-  <property>
-    <name>mapred.map.tasks</name>
-    <value>4</value>
-  </property>
-  <property>
-    <name>mapred.reduce.tasks</name>
-    <value>4</value>
-  </property>
-  <property>
-    <name>mapreduce.job.counters.limit</name>
-    <value>1000</value>
-  </property>
-  <property>
-    <name>mapreduce.jobtracker.address</name>
-    <value>localhost:9001</value>
-  </property>
-  <property>
-    <name>mapreduce.map.memory.mb</name>
-    <value>2048</value>
-  </property>
-  <property>
-    <name>mapreduce.reduce.memory.mb</name>
-    <value>4096</value>
-  </property>
-  <property>
-    <name>mapreduce.map.java.opts</name>
-    <value>-Xmx2048m</value>
-  </property>
-  <property>
-    <name>mapreduce.reduce.java.opts</name>
-    <value>-Xmx4096m</value>
-  </property>
-</configuration>
-----
-
-Also note that link:http://www.grymoire.com/Unix/Awk.html[awk] version `4.0.1` is required for documentation generation.
-The link:https://tinkerpop.apache.org/docs/x.y.z/recipes/#olap-spark-yarn[YARN recipe] also uses the `zip` program to
-create an archive so that needs to be installed, too, if you don't have it already.
-
-The Hadoop 3.3.x installation instructions call for installing `pdsh` but installing that seems to cause permission
-problems when executing `sbin/start-dfs.sh`. Skipping that prerequisite seems to solve the problem.
-
-Documentation can be generated locally with:
+For a full build with live Gremlin execution, the Gremlin Console and Gremlin Server distributions must be built first:
 
 [source,text]
+mvn clean install -pl :gremlin-server,:gremlin-console -am -DskipTests
 bin/process-docs.sh
 
-Documentation is generated to the `target/docs` directory. It is also possible to generate documentation locally with
-Docker. `docker/build.sh -d`.
-
-NOTE: The installation of plugins sometimes fails in this step with the error: `Error grabbing grapes - download
-failed`. It often helps in this case to delete the directories for the dependencies that cannot be downloaded
-in the `.m2` (`~/.m2/`) and in the `grapes` (`~/.groovy/grapes/`) cache. E.g., if the error is about
-`asm#asm;3.2!asm.jar`, then remove the `asm/asm` sub directory in both directories.
-
-NOTE: Unexpected failures with OLAP often point to a jar conflict that arises in scenarios where Hadoop or Spark
-dependencies (or other dependencies for that matter) are modified and conflict. It is not picked up by the enforcer
-plugin because the inconsistency arises through plugin installation in Gremlin Console at document generation time.
-Making adjustments to the various paths by way of the `<manifestEntries>` on the jar given the functionality provided
-by the `DependencyGrabber` class which allows you to manipulate (typically deleting conflicting files from `/lib` and
-`/plugin`) plugin loading will usually resolve it, though it could also be a more general environmental problem with
-Spark or Hadoop. The easiest way to see the error is to simply run the examples in the Gremlin Console which more
-plainly displays the error than the failure of the documentation generation process.
+Documentation is generated to the `target/docs` directory. Use `bin/process-docs.sh --dry-run` to skip Gremlin
+execution for faster builds when only checking layout — this mode does not require the Console or Server distributions.
+It is also possible to generate documentation locally with Docker. `docker/build.sh -d`.
 
 To generate the web site locally, there is no need for any of the above infrastructure. Site generation is a simple
 shell script:
@@ -528,10 +436,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Start Gremlin Server with Docker using the standard test configuration: `docker/gremlin-server.sh`
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (see <<documentation-environment,Documentation Environment>>): `bin/process-docs.sh`
-** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
-** Build AsciiDocs (but don't evaluate code blocks in specific files): `bin/process-docs.sh --dryRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Build AsciiDocs (but evaluate code blocks only in specific files): `bin/process-docs.sh --fullRun docs/src/reference/the-graph.asciidoc,docs/src/tutorial/getting-started,...`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-tinkerpop-gremlin-console-*-standalone "" "*" `pwd`/docs/src/xyz.asciidoc]+
+** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dry-run`
 * Build JavaDocs/JSDoc: `mvn process-resources -Djavadoc`
 ** Javadoc to `target/site/apidocs` directory
 ** JSDoc to the `gremlin-javascript/src/main/javascript/gremlin-javascript/doc/` directory

@@ -956,14 +956,12 @@ limitations under the License.
             </activation>
 
             <properties>
-                <!-- the source asciidocs are copied from /docs to asciidoc.source.dir by bin/process-docs.sh
-                     where they can the scripts embedded in the text are then executed and their results shoved
-                     back into the doc -->
-                <asciidoc.source.dir>${project.basedir}/target/postprocess-asciidoc</asciidoc.source.dir>
+                <!-- The source asciidocs. The gremlin-docs AsciidoctorJ extension processes
+                     [gremlin-*] code blocks during rendering. Override with -Dasciidoc.source.dir
+                     to point at a different source directory. -->
+                <asciidoc.source.dir>${project.basedir}/docs/src</asciidoc.source.dir>
 
-                <!-- once code processing is over, the documents are basically ready for the formatter and are
-                     copied by way of the maven-resources-plugin to asciidoc.input.dir where they will be processed
-                     by the asciidoctor plugin -->
+                <!-- Staging area where docs are copied before asciidoctor processes them -->
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
 
                 <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
@@ -1035,6 +1033,29 @@ limitations under the License.
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <inherited>false</inherited>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.tinkerpop</groupId>
+                                <artifactId>gremlin-docs</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <!-- Force commons-text version to match what gremlin-core needs.
+                                 The asciidoctor plugin bundles commons-text:1.3 which conflicts
+                                 with commons-configuration2's requirement for 1.15.0. -->
+                            <dependency>
+                                <groupId>org.apache.commons</groupId>
+                                <artifactId>commons-text</artifactId>
+                                <version>1.15.0</version>
+                            </dependency>
+                            <!-- Rouge syntax highlighter requires SnakeYAML 1.x for JRuby's
+                                 Psych YAML extension. The project uses SnakeYAML 2.0 which has
+                                 incompatible API changes. This override is scoped to the plugin. -->
+                            <dependency>
+                                <groupId>org.yaml</groupId>
+                                <artifactId>snakeyaml</artifactId>
+                                <version>1.33</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <id>home</id>
@@ -1065,7 +1086,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1092,7 +1113,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1119,7 +1140,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1146,7 +1167,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1173,7 +1194,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1200,7 +1221,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1227,7 +1248,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1254,7 +1275,7 @@ limitations under the License.
                                         <toc-position>left</toc-position>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1279,7 +1300,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1305,7 +1326,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1331,7 +1352,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
@@ -1356,7 +1377,7 @@ limitations under the License.
                                         <encoding>UTF-8</encoding>
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
-                                        <source-highlighter>coderay</source-highlighter>
+                                        <source-highlighter>rouge</source-highlighter>
                                         <basedir>${project.basedir}</basedir>
                                         <docinfo>shared</docinfo>
                                         <docinfodir>${project.basedir}/docs/src</docinfodir>
