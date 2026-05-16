@@ -89,9 +89,11 @@ in relation to the usage convention and graph provider caveats alluded to earlie
 
 Focusing on remote contexts first, note that it is still possible to issue traversals from `g`, but those will have a
 transaction scope outside of `gtx` and will simply behave as self-contained units of work where the graph's own
-transaction semantics apply (i.e. one traversal is one transaction). Each isolated transaction will require its own
-`Transaction` object. Multiple `begin()` calls on the same `Transaction` object are not permitted and will throw an
-`IllegalStateException`:
+transaction semantics apply (i.e. one traversal is one transaction). For graphs that support transactions, the server
+automatically commits on successful completion of the traversal and rolls back on any error, so a simple
+`g.addV('person')` will be persisted immediately upon success without requiring an explicit `commit()`. Each isolated
+transaction will require its own `Transaction` object. Multiple `begin()` calls on the same `Transaction` object are
+not permitted and will throw an `IllegalStateException`:
 
 [source,java]
 ----

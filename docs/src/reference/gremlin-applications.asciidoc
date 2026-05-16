@@ -2242,10 +2242,14 @@ above with the use of the `maximumSize`.
 [[considering-transactions]]
 ==== Considering Transactions
 
-Non-transactional requests (those without a `transactionId`) behave as self-contained units of work where the graph's
-own transaction semantics apply. Each traversal executes within its own transaction as managed by the graph
-implementation itself. Transactional requests participate in a transaction opened via `g.tx().begin()`, where the
-client explicitly controls the lifecycle through `g.tx().commit()` and `g.tx().rollback()`.
+Non-transactional requests (those without a `transactionId`) behave as self-contained units of work. If the underlying
+graph supports transactions, the server automatically commits after successfully iterating the traversal and
+automatically rolls back on any error. This means that a simple `g.addV('person')` will be persisted immediately upon
+success without requiring an explicit `commit()`. Before processing each non-transactional request, the server also
+rolls back any stale open transaction to prevent state leakage between requests.
+
+Transactional requests participate in a transaction opened via `g.tx().begin()`, where the client explicitly controls
+the lifecycle through `g.tx().commit()` and `g.tx().rollback()`.
 
 IMPORTANT: Understand the transactional capabilities of the graph configured in Gremlin Server. For example, a basic
 `TinkerGraph` does not support transactions. Use `TinkerTransactionGraph` or another transaction-capable graph
