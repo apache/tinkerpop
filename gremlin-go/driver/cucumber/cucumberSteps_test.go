@@ -578,6 +578,86 @@ func (tg *tinkerPopGraph) theResultShouldBeEmpty() error {
 	return nil
 }
 
+// theResultShouldBeASubgraphWithTheFollowing asserts that the most recent
+// traversal result is a *gremlingo.Graph data container whose Vertices or
+// Edges map (selected by the data-table header) matches the expected rows.
+func (tg *tinkerPopGraph) theResultShouldBeASubgraphWithTheFollowing(table *godog.Table) error {
+	if len(tg.result) == 0 {
+		return errors.New("no result to assert against")
+	}
+
+	res, ok := tg.result[0].(*gremlingo.Result)
+	if !ok {
+		return fmt.Errorf("expected first result to be *gremlingo.Result, got %T", tg.result[0])
+	}
+	sg, ok := res.GetInterface().(*gremlingo.Graph)
+	if !ok {
+		return fmt.Errorf("expected result to be *gremlingo.Graph, got %T", res.GetInterface())
+	}
+
+	if table == nil || len(table.Rows) == 0 {
+		return nil
+	}
+
+	header := table.Rows[0].Cells[0].Value
+	expectedRows := table.Rows[1:]
+
+	switch header {
+	case "vertices":
+		if len(sg.Vertices) != len(expectedRows) {
+			return fmt.Errorf("subgraph vertex count mismatch: expected %d, got %d",
+				len(expectedRows), len(sg.Vertices))
+		}
+		for _, row := range expectedRows {
+			parsed := parseValue(row.Cells[0].Value, tg.graphName)
+			expected, ok := parsed.(*gremlingo.Vertex)
+			if !ok {
+				return fmt.Errorf("could not parse expected vertex %q (got %T)", row.Cells[0].Value, parsed)
+			}
+			actual, ok := sg.Vertices[expected.Id]
+			if !ok {
+				return fmt.Errorf("subgraph is missing vertex with id %v", expected.Id)
+			}
+			if actual.Label != expected.Label {
+				return fmt.Errorf("vertex %v: expected label %q, got %q",
+					expected.Id, expected.Label, actual.Label)
+			}
+		}
+	case "edges":
+		if len(sg.Edges) != len(expectedRows) {
+			return fmt.Errorf("subgraph edge count mismatch: expected %d, got %d",
+				len(expectedRows), len(sg.Edges))
+		}
+		for _, row := range expectedRows {
+			parsed := parseValue(row.Cells[0].Value, tg.graphName)
+			expected, ok := parsed.(*gremlingo.Edge)
+			if !ok {
+				return fmt.Errorf("could not parse expected edge %q (got %T)", row.Cells[0].Value, parsed)
+			}
+			actual, ok := sg.Edges[expected.Id]
+			if !ok {
+				return fmt.Errorf("subgraph is missing edge with id %v", expected.Id)
+			}
+			if actual.Label != expected.Label {
+				return fmt.Errorf("edge %v: expected label %q, got %q",
+					expected.Id, expected.Label, actual.Label)
+			}
+			if actual.OutV.Id != expected.OutV.Id {
+				return fmt.Errorf("edge %v: expected outV.Id %v, got %v",
+					expected.Id, expected.OutV.Id, actual.OutV.Id)
+			}
+			if actual.InV.Id != expected.InV.Id {
+				return fmt.Errorf("edge %v: expected inV.Id %v, got %v",
+					expected.Id, expected.InV.Id, actual.InV.Id)
+			}
+		}
+	default:
+		return fmt.Errorf("unknown subgraph assertion header: %q", header)
+	}
+
+	return nil
+}
+
 func (tg *tinkerPopGraph) theResultShouldBe(characterizedAs string, table *godog.Table) error {
 	ordered := characterizedAs == "ordered"
 	// For comparing ordered gremlingo.SimpleSet case.
@@ -1016,6 +1096,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the graph initializer of$`, tg.theGraphInitializerOf)
 	ctx.Step(`^the graph should return (\d+) for count of "(.+)"$`, tg.theGraphShouldReturnForCountOf)
 	ctx.Step(`^the result should be empty$`, tg.theResultShouldBeEmpty)
+	ctx.Step(`^the result should be a subgraph with the following$`, tg.theResultShouldBeASubgraphWithTheFollowing)
 	ctx.Step(`^the result should be (o\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should be (u\w+)$`, tg.theResultShouldBe)
 	ctx.Step(`^the result should have a count of (\d+)$`, tg.theResultShouldHaveACountOf)
@@ -1051,7 +1132,7 @@ func TestCucumberFeatures(t *testing.T) {
 		TestSuiteInitializer: InitializeTestSuite,
 		ScenarioInitializer:  InitializeScenario,
 		Options: &godog.Options{
-			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepSubgraph && ~@StepTree && ~@StepWrite && ~@DataChar",
+			Tags:     "~@GraphComputerOnly && ~@AllowNullPropertyValues && ~@StepTree && ~@StepWrite && ~@DataChar",
 			Format:   "pretty",
 			Paths:    []string{getEnvOrDefaultString("CUCUMBER_FEATURE_FOLDER", "../../../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features")},
 			TestingT: t, // Testing instance that will run subtests.

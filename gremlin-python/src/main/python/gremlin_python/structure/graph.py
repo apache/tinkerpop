@@ -26,7 +26,7 @@ class Graph(object):
         self.edges = {}
 
     def __repr__(self):
-        return "graph[]"
+        return "graph[vertices:" + str(len(self.vertices)) + " edges:" + str(len(self.edges)) + "]"
 
 
 class Element(object):

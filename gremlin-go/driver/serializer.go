@@ -220,6 +220,7 @@ func initSerializers() {
 		propertyType:       propertyWriter,
 		vertexPropertyType: vertexPropertyWriter,
 		pathType:           pathWriter,
+		graphType:          graphWriter,
 		datetimeType:       dateTimeWriter,
 		durationType:       durationWriter,
 		directionType:      enumWriter,

@@ -29,7 +29,7 @@ import { use, expect } from 'chai';
 use(chaiString);
 import { inspect, format, inherits } from 'util';
 import { gremlin } from './gremlin.js';
-import { Path, Vertex, Edge, Property } from '../../lib/structure/graph.js';
+import { Path, Vertex, Edge, Property, Graph } from '../../lib/structure/graph.js';
 import { statics } from '../../lib/process/graph-traversal.js';
 import { t, P, direction, merge, barrier, cardinality, column, order, TextP, IO, pick, pop, scope, operator, withOptions } from '../../lib/process/traversal.js';
 import { toLong } from '../../lib/utils.js';
@@ -73,18 +73,12 @@ const ignoreReason = {
   nullKeysInMapNotSupportedWell: "Javascript does not nicely support 'null' as a key in Map instances",
   floatingPointIssues: "Javascript floating point numbers not working in this case",
   uuidSerializationIssues: "Javascript does not serialize to a UUID object, which complicates test assertions",
-  subgraphStepNotSupported: "Javascript does not yet support subgraph()",
   treeStepNotSupported: "Javascript does not yet support tree()",
   needsFurtherInvestigation: '',
 };
 
 // An associative array for ignored feature tests containing the scenario name as key
 const ignoredScenarios = {
-  // javascript doesn't have subgraph() step yet
-  'g_VX1X_outEXknowsX_subgraphXsgX_name_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_V_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup_capXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_V_outEXnoexistX_subgraphXsgXcapXsgX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
-  'g_E_hasXweight_0_5X_subgraphXaX_selectXaX': new IgnoreError(ignoreReason.subgraphStepNotSupported),
   // javascript doesn't have tree() step yet
   'g_VX1X_out_out_tree_byXnameX': new IgnoreError(ignoreReason.treeStepNotSupported),
   'g_VX1X_out_out_tree': new IgnoreError(ignoreReason.treeStepNotSupported),
@@ -257,8 +251,50 @@ Then(/^the result should be (\w+)$/, function assertResult(characterizedAs, resu
   }
 });
 
-Then('the result should be a subgraph with the following', _ => {
-  // subgraph is not supported yet in javascript
+Then('the result should be a subgraph with the following', function (resultTable) {
+  if (this.result instanceof Error) {
+    console.error('Error encountered:', this.result.message, this.result.stack);
+  }
+  expect(this.result).to.not.be.a.instanceof(Error);
+
+  // 'iterated next' surfaces the Graph directly; 'iterated to list' wraps it in an array.
+  const sg = Array.isArray(this.result) ? this.result[0] : this.result;
+  expect(sg).to.be.an.instanceof(Graph);
+
+  // No data table means there's nothing further to assert.
+  if (!resultTable || typeof resultTable.raw !== 'function') {
+    return;
+  }
+  const raw = resultTable.raw();
+  if (!raw || raw.length === 0) {
+    return;
+  }
+  const header = raw[0][0];
+  const assertingVertices = header === 'vertices';
+
+  const dataRows = typeof resultTable.rows === 'function' ? resultTable.rows() : raw.slice(1);
+
+  if (assertingVertices) {
+    const expectedVertices = dataRows.map(row => parseValue.call(this, row[0]));
+    expect(sg.vertices.size).to.equal(expectedVertices.length);
+    for (const expected of expectedVertices) {
+      expect(sg.vertices.has(expected.id)).to.equal(true,
+        format('subgraph is missing vertex %s', inspect(expected.id)));
+      const actual = sg.vertices.get(expected.id);
+      expect(actual.label).to.equal(expected.label);
+    }
+  } else {
+    const expectedEdges = dataRows.map(row => parseValue.call(this, row[0]));
+    expect(sg.edges.size).to.equal(expectedEdges.length);
+    for (const expected of expectedEdges) {
+      expect(sg.edges.has(expected.id)).to.equal(true,
+        format('subgraph is missing edge %s', inspect(expected.id)));
+      const actual = sg.edges.get(expected.id);
+      expect(actual.label).to.equal(expected.label);
+      expect(actual.outV.id).to.equal(expected.outV.id);
+      expect(actual.inV.id).to.equal(expected.inV.id);
+    }
+  }
 });
 
 Then('the result should be a tree with a structure of', _ => {

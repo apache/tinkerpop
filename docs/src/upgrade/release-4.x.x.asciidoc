@@ -433,6 +433,60 @@ beyond this limit will be rejected with an error.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 
+==== Subgraph Support in GLVs
+
+The GraphBinary 4.0 `Graph` type (`0x10`) is now handled by `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go`,
+so a `subgraph()`-step result returned to the client is deserialized into a `Graph` data container populated with the
+captured vertices and edges. Reference documentation: <<subgraph-step>>.
+
+The returned `Graph` is a detached snapshot of the captured vertices and edges. Mutating its collections has no
+effect on the source graph.
+
+* `gremlin-javascript`: `graph.vertices: Map<any, Vertex>` and `graph.edges: Map<any, Edge>`
+* `gremlin-dotnet`: `graph.Vertices: IDictionary<object, Vertex>` and `graph.Edges: IDictionary<object, Edge>`
+* `gremlin-go`: `graph.Vertices: map[interface{}]*Vertex` and `graph.Edges: map[interface{}]*Edge`
+
+IMPORTANT: The deserialized `Graph` is a detached data container, not a traversable `Graph` instance. It cannot be
+passed to `traversal().with(...)` from a GLV. To re-query elements from the original graph, extract their ids and
+call `g.V(id)` or `g.E(id)` against the original `GraphTraversalSource`.
+
+Example (`gremlin-javascript`):
+
+[source,javascript]
+----
+const sg = await g.E().hasLabel('knows').subgraph('sg').cap('sg').next();
+for (const [id, vertex] of sg.vertices) {
+  console.log(id, vertex.label);
+}
+for (const [id, edge] of sg.edges) {
+  console.log(`${edge.outV.id} -${edge.label}-> ${edge.inV.id}`);
+}
+----
+
+Example (`gremlin-dotnet`):
+
+[source,csharp]
+----
+var sg = (Graph) await g.E().HasLabel("knows").Subgraph("sg").Cap<object>("sg").Next();
+foreach (var entry in sg.Vertices)
+    Console.WriteLine($"{entry.Key} {entry.Value.Label}");
+----
+
+Example (`gremlin-go`):
+
+[source,go]
+----
+result, _ := g.E().HasLabel("knows").Subgraph("sg").Cap("sg").Next()
+sg := result.Data.(*gremlingo.Graph)
+for id, v := range sg.Vertices {
+    fmt.Println(id, v.Label)
+}
+----
+
+The `Graph` string representation in `gremlin-python`, `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` now
+renders as `graph[vertices:N edges:M]`, matching the format used by Java's `AbstractTinkerGraph.toString()` for easier
+debugging.
+
 === Upgrading for Providers
 
 ==== Graph System Providers

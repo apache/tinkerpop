@@ -39,6 +39,7 @@ export default class AnySerializer {
       ioc.propertySerializer,
       ioc.vertexSerializer,
       ioc.vertexPropertySerializer,
+      ioc.graphSerializer,
       ioc.enumSerializer,
       ioc.stringSerializer,
       ioc.binarySerializer,

@@ -557,6 +557,12 @@ that can be used to fulfill the `gremlingo.Set` interface if desired.
 * Go does not support ordered maps natively as the built-in `map` type does not guarantee iteration order. Traversal
 results which contain maps may not preserve original ordering when deserialized into Go's native map types.
 
+* The `subgraph()`-step returns a detached `*Graph` data container exposing
+`Vertices map[interface{}]*Vertex` and `Edges map[interface{}]*Edge`. The result is not a live `Graph` instance:
+mutating the maps has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To
+re-query subgraph elements against the original graph, extract their `Id` and use `g.V(id)` / `g.E(id)` on the
+original `GraphTraversalSource`.
+
 [[gremlin-go-examples]]
 === Application Examples
 
@@ -1984,9 +1990,11 @@ doubles. `BigDecimal` is not implemented.
 signed range are unsuffixed (Int), integers beyond that up to `Number.MAX_SAFE_INTEGER` use the `L` suffix (Long),
 non-integer numbers and integers beyond the safe range use the `D` suffix (Double), and `BigInt` values use the `N`
 suffix (BigInteger).
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
+* The `subgraph()`-step returns a detached `Graph` data container exposing
+`vertices: Map<any, Vertex>` and `edges: Map<any, Edge>`. The result is not a live `Graph` instance: mutating the
+collections has no effect on the source graph, and it cannot be passed to `traversal().with(...)`. To re-query
+subgraph elements against the original graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original
+`GraphTraversalSource`.
 
 [[gremlin-javascript-examples]]
 === Application Examples
@@ -2400,9 +2408,11 @@ anchor:gremlin-net-limitations[]
 [[gremlin-dotnet-limitations]]
 === Limitations
 
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
+* The `subgraph()`-step returns a detached `Graph` data container exposing
+`Vertices: IDictionary<object, Vertex>` and `Edges: IDictionary<object, Edge>`. The result is not a live `Graph`
+instance: mutating the collections has no effect on the source graph, and it cannot be passed to
+`traversal().with(...)`. To re-query subgraph elements against the original graph, extract their `Id` and use
+`g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
 * `DateTimeOffset` cannot represent the extreme values of Gremlin's `OffsetDateTime` maximum and minimum,
 so offset date-time values at those boundaries will fail to deserialize.
 * Gremlin's `Duration` type has a much larger range than C#'s `TimeSpan`, so extreme duration values (such as
@@ -2965,9 +2975,10 @@ and `timedelta`.
 * In Gremlin, 1 isn't equal to the boolean true value and 0 isn't equal to the boolean false value, but they are equal
 in Python. This means that in `gremlin-python` if these values are in a `Set`, you will get a different behavior than
 what is intended by Gremlin, since it follows Python's behavior.
-* The `subgraph()`-step is not supported by any variant that is not running on the Java Virtual Machine as there is
-no `Graph` instance to deserialize a result into on the client-side. A workaround is to replace the step with
-`aggregate(local)` and then convert those results to something the client can use locally.
+* The `subgraph()`-step returns a detached `Graph` data container exposing `vertices: dict` and `edges: dict`
+keyed by element id. The result is not a live `Graph` instance: mutating the dicts has no effect on the source
+graph, and it cannot be passed to `traversal().with(...)`. To re-query subgraph elements against the original
+graph, extract their `id` and use `g.V(id)` / `g.E(id)` on the original `GraphTraversalSource`.
 * Use of the aiohttp library in the default transport requires the use of asyncio's event loop to run the async functions.
 This can be an issue in situations where the application calling Gremlin-Python is already using an event loop.
 Certain types of event loops can be patched using nest-asyncio which allows Gremlin-Python to proceed without an error like
