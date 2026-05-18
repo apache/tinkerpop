@@ -281,6 +281,18 @@ export default class GoTranslateVisitor extends TranslateVisitor {
         }
         this.sb.push('}}');
     }
+      
+      
+    visitTraversalTerminalMethod_next(ctx: any): void {
+        // Go has no method overloading: next() maps to Next(), next(n) maps to NextN(n)
+        if (ctx.getChildCount() === 4) {
+            this.sb.push('NextN(');
+            this.visit(ctx.getChild(2));
+            this.sb.push(')');
+        } else {
+            this.sb.push('Next()');
+        }
+    }
 
     visitTraversalStrategy(ctx: any): void {
         if (ctx.getChildCount() === 1) {

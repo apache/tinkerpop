@@ -336,6 +336,19 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalTerminalMethod_next(final GremlinParser.TraversalTerminalMethod_nextContext ctx) {
+        // Go has no method overloading: next() maps to Next(), next(n) maps to NextN(n)
+        if (ctx.getChildCount() == 4) {
+            sb.append("NextN(");
+            visit(ctx.getChild(2));
+            sb.append(")");
+        } else {
+            sb.append("Next()");
+        }
+        return null;
+    }
+
+    @Override
     public Void visitUuidLiteral(final GremlinParser.UuidLiteralContext ctx) {
         if (ctx.stringLiteral() == null) {
             sb.append("uuid.New()");

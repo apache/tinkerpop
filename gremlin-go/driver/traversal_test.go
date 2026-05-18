@@ -667,6 +667,123 @@ func TestTraversalNextValue(t *testing.T) {
 	})
 }
 
+func TestTraversalNextN(t *testing.T) {
+	makeResultSet := func(results ...*Result) ResultSet {
+		rs := newChannelResultSetCapacity(len(results) + 1).(*channelResultSet)
+		for _, r := range results {
+			rs.channel <- r
+		}
+		rs.channelMutex.Lock()
+		rs.closed = true
+		close(rs.channel)
+		rs.channelMutex.Unlock()
+		return rs
+	}
+
+	t.Run("returns exactly n when n is less than available", func(t *testing.T) {
+		rs := makeResultSet(&Result{"a"}, &Result{"b"}, &Result{"c"}, &Result{"d"})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(3)
+		assert.Nil(t, err)
+		assert.Equal(t, 3, len(got))
+		assert.Equal(t, "a", got[0].Data)
+		assert.Equal(t, "b", got[1].Data)
+		assert.Equal(t, "c", got[2].Data)
+	})
+
+	t.Run("returns exactly n when n equals available", func(t *testing.T) {
+		rs := makeResultSet(&Result{"a"}, &Result{"b"})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(2)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got))
+	})
+
+	t.Run("returns all available when n exceeds available", func(t *testing.T) {
+		rs := makeResultSet(&Result{"a"}, &Result{"b"})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(5)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got))
+		assert.Equal(t, "a", got[0].Data)
+		assert.Equal(t, "b", got[1].Data)
+	})
+
+	t.Run("returns empty slice when n is zero", func(t *testing.T) {
+		rs := makeResultSet(&Result{"a"})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, 0, len(got))
+	})
+
+	t.Run("returns empty slice when n is negative", func(t *testing.T) {
+		rs := makeResultSet(&Result{"a"})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(-3)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, 0, len(got))
+	})
+
+	t.Run("returns empty slice when traversal is exhausted", func(t *testing.T) {
+		rs := makeResultSet()
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(3)
+		assert.Nil(t, err)
+		assert.Equal(t, 0, len(got))
+	})
+
+	t.Run("unrolls bulked Traverser across the batch", func(t *testing.T) {
+		rs := makeResultSet(&Result{&Traverser{Bulk: 3, Value: "x"}})
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(2)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got))
+		assert.Equal(t, "x", got[0].Data)
+		assert.Equal(t, "x", got[1].Data)
+	})
+
+	t.Run("can be called repeatedly to drain in batches", func(t *testing.T) {
+		rs := makeResultSet(&Result{1}, &Result{2}, &Result{3}, &Result{4}, &Result{5})
+		trav := &Traversal{results: rs}
+
+		first, err := trav.NextN(2)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(first))
+
+		second, err := trav.NextN(10)
+		assert.Nil(t, err)
+		assert.Equal(t, 3, len(second))
+
+		third, err := trav.NextN(1)
+		assert.Nil(t, err)
+		assert.Equal(t, 0, len(third))
+	})
+
+	t.Run("propagates error from ResultSet", func(t *testing.T) {
+		rs := newChannelResultSetCapacity(1).(*channelResultSet)
+		rs.setError(assert.AnError)
+		rs.channelMutex.Lock()
+		rs.closed = true
+		close(rs.channel)
+		rs.channelMutex.Unlock()
+		trav := &Traversal{results: rs}
+
+		got, err := trav.NextN(5)
+		assert.Equal(t, assert.AnError, err)
+		assert.Equal(t, 0, len(got))
+	})
+}
+
 func newWithOptionsConnection(t *testing.T) *GraphTraversalSource {
 	// No authentication integration test with graphs loaded and alias configured server
 	testNoAuthWithAliasUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
