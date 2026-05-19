@@ -485,7 +485,11 @@ fmt.Println(resAnon.GetString())
 === Differences
 
 All step names start with a capital letter which is consistent with the idiomatic style for Go. This use of Pascal-case
-extends to enums like `Direction`, e.g. `Direction.OUT` is `Direction.Out` in Go.  
+extends to enums like `Direction`, e.g. `Direction.OUT` is `Direction.Out` in Go.
+
+Because Go does not support method overloading, the batched form of `next(n)` available in other GLVs is exposed as a
+distinct method `NextN(n)` on `Traversal`. `Next()` returns a single `*Result`, while `NextN(n)` returns up to `n`
+results as `[]*Result`.
 
 [[gremlin-go-aliases]]
 === Aliases

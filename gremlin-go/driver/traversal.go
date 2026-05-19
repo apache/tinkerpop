@@ -117,6 +117,34 @@ func (t *Traversal) Next() (*Result, error) {
 	return result, err
 }
 
+// NextN returns up to n results from the traversal. If the traversal has
+// fewer than n results, only those results are returned. If n is non-positive,
+// an empty slice is returned.
+func (t *Traversal) NextN(n int) ([]*Result, error) {
+	if n <= 0 {
+		return []*Result{}, nil
+	}
+	results, err := t.GetResultSet()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*Result, 0, n)
+	for i := 0; i < n; i++ {
+		if results.IsEmpty() {
+			break
+		}
+		result, ok, err := results.One()
+		if err != nil {
+			return out, err
+		}
+		if !ok {
+			break
+		}
+		out = append(out, result)
+	}
+	return out, results.GetError()
+}
+
 // GetResultSet submits the traversal and returns the ResultSet.
 func (t *Traversal) GetResultSet() (ResultSet, error) {
 	if t.results == nil {
