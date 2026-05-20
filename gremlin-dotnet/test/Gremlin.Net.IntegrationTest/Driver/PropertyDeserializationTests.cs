@@ -35,6 +35,11 @@ using Xunit;
 
 namespace Gremlin.Net.IntegrationTest.Driver
 {
+    /// <summary>
+    /// Serialized with Gherkin tests to avoid reading vertices through an active GraphComputerView
+    /// when @GraphComputerOnly scenarios run concurrently, which would expose transient compute properties.
+    /// </summary>
+    [Collection("GremlinServerTests")]
     public class PropertyDeserializationTests
     {
         private readonly RemoteConnectionFactory _connectionFactory = new();
