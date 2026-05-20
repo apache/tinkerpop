@@ -359,6 +359,8 @@ class P(object):
             return P("within", args[0])
         elif len(args) == 1 and type(args[0]) == set:
             return P("within", list(args[0]))
+        elif len(args) == 1 and isinstance(args[0], Traversal):
+            return P("within", args[0])
         else:
             return P("within", list(args))
 
@@ -368,6 +370,8 @@ class P(object):
             return P("without", args[0])
         elif len(args) == 1 and type(args[0]) == set:
             return P("without", list(args[0]))
+        elif len(args) == 1 and isinstance(args[0], Traversal):
+            return P("without", args[0])
         else:
             return P("without", list(args))
 
@@ -964,13 +968,22 @@ class GremlinLang(object):
         c = 0
         res = [str(p).split('(')[0] + '(']
         if isinstance(p.value, list):
-            res.append('[')
-            for v in p.value:
-                if c > 0:
-                    res.append(',')
-                res.append(self._arg_as_string(v))
-                c += 1
-            res.append(']')
+            # If all elements are Traversals, serialize as comma-separated args (no brackets)
+            # This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+            if len(p.value) > 0 and all(isinstance(v, Traversal) for v in p.value):
+                for v in p.value:
+                    if c > 0:
+                        res.append(',')
+                    res.append(self._arg_as_string(v))
+                    c += 1
+            else:
+                res.append('[')
+                for v in p.value:
+                    if c > 0:
+                        res.append(',')
+                    res.append(self._arg_as_string(v))
+                    c += 1
+                res.append(']')
         else:
             res.append(self._arg_as_string(p.value))
             if p.other is not None:

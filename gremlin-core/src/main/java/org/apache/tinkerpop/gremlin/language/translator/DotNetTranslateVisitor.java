@@ -963,6 +963,49 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitTraversalMethod_property_Object(final GremlinParser.TraversalMethod_property_ObjectContext ctx) {
+        // Property(null) is ambiguous with Property(ITraversal) — cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            visit(ctx.getChild(0));
+            sb.append("(");
+            sb.append("(IDictionary<object, object>) ");
+            visit(ctx.genericMapNullableArgument());
+            sb.append(")");
+            return null;
+        }
+        return super.visitTraversalMethod_property_Object(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_property_Cardinality_Object(final GremlinParser.TraversalMethod_property_Cardinality_ObjectContext ctx) {
+        // Property(Cardinality, null) — cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            visit(ctx.getChild(0));
+            sb.append("(");
+            visit(ctx.traversalCardinality());
+            sb.append(", ");
+            sb.append("(IDictionary<object, object>) ");
+            visit(ctx.genericMapNullableArgument());
+            sb.append(")");
+            return null;
+        }
+        return super.visitTraversalMethod_property_Cardinality_Object(ctx);
+    }
+
+    @Override
+    public Void visitTraversalMethod_property_Traversal(final GremlinParser.TraversalMethod_property_TraversalContext ctx) {
+        // Property(ITraversal) — cast to ITraversal to disambiguate
+        visit(ctx.getChild(0));
+        sb.append("(");
+        sb.append("(ITraversal) ");
+        visit(ctx.nestedTraversal());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitTraversalMethod_property_Cardinality_Object_Object_Object(final GremlinParser.TraversalMethod_property_Cardinality_Object_Object_ObjectContext ctx) {
         if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() == 0) {
             final String step = ctx.getChild(0).getText();

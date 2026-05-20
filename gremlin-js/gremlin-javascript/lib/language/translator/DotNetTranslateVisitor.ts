@@ -834,6 +834,45 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
 
     // ─── property ────────────────────────────────────────────────────────────
 
+    visitTraversalMethod_property_Object(ctx: any): void {
+        // Property(null) is ambiguous with Property(ITraversal) — cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Cardinality_Object(ctx: any): void {
+        // Property(Cardinality, null) — cast null to IDictionary to disambiguate
+        if (ctx.genericMapNullableArgument().genericMapNullableLiteral() != null &&
+            ctx.genericMapNullableArgument().genericMapNullableLiteral().nullLiteral() != null) {
+            this.visit(ctx.getChild(0));
+            this.sb.push('(');
+            this.visit(ctx.traversalCardinality());
+            this.sb.push(', ');
+            this.sb.push('(IDictionary<object, object>) ');
+            this.visit(ctx.genericMapNullableArgument());
+            this.sb.push(')');
+            return;
+        }
+        this.visitChildren(ctx);
+    }
+
+    visitTraversalMethod_property_Traversal(ctx: any): void {
+        // Property(ITraversal) — cast to ITraversal to disambiguate
+        this.visit(ctx.getChild(0));
+        this.sb.push('(');
+        this.sb.push('(ITraversal) ');
+        this.visit(ctx.nestedTraversal());
+        this.sb.push(')');
+    }
+
     visitTraversalMethod_property_Cardinality_Object_Object_Object(ctx: any): void {
         if (ctx.genericArgumentVarargs() == null || ctx.genericArgumentVarargs().getChildCount() === 0) {
             this.sb.push(capitalize(ctx.getChild(0).getText()));

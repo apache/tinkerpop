@@ -25,6 +25,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using Gremlin.Net.Process.Traversal.Strategy;
@@ -417,10 +418,20 @@ namespace Gremlin.Net.Process.Traversal
                 }
                 else if (p.Value is IList listVal && (p.OperatorName == "within" || p.OperatorName == "without"))
                 {
-                    // within/without with a list value - render as [e1,e2,...]
+                    // within/without with a list value
                     if (listVal.Count == 0)
                     {
                         // empty within() - no brackets
+                    }
+                    else if (listVal.Cast<object>().All(v => v is ITraversal))
+                    {
+                        // All elements are traversals - serialize as comma-separated args (no brackets)
+                        // This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+                        for (int i = 0; i < listVal.Count; i++)
+                        {
+                            if (i > 0) sb.Append(',');
+                            sb.Append(ArgAsString(listVal[i]));
+                        }
                     }
                     else
                     {

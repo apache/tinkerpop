@@ -157,12 +157,22 @@ namespace Gremlin.Net.Process.Traversal
 
         public static P Within(params object[]? args)
         {
+            if (args is { Length: 1 } && args[0] is ITraversal)
+                return new P("within", args[0]);
+            // Multiple traversals - store as list preserving ITraversal type for serializer detection
+            if (args is { Length: > 1 } && args.All(a => a is ITraversal))
+                return new P("within", new List<object>(args));
             var x = args is { Length: 1 } && args[0] is ICollection collection ? collection : args;
             return new P("within", ToGenericList(x));
         }
 
         public static P Without(params object[]? args)
         {
+            if (args is { Length: 1 } && args[0] is ITraversal)
+                return new P("without", args[0]);
+            // Multiple traversals - store as list preserving ITraversal type for serializer detection
+            if (args is { Length: > 1 } && args.All(a => a is ITraversal))
+                return new P("without", new List<object>(args));
             var x = args is { Length: 1 } && args[0] is ICollection collection ? collection : args;
             return new P("without", ToGenericList(x));
         }

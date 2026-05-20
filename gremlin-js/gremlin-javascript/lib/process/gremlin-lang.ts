@@ -55,7 +55,14 @@ export default class GremlinLang {
     
     let result = p.operator + '(';
     if (Array.isArray(p.value)) {
-      result += '[' + p.value.map(v => this._argAsString(v)).join(',') + ']';
+      // If all elements are traversals, serialize as comma-separated args (no brackets)
+      // This matches the server grammar: within(trav1, trav2) via genericArgumentVarargs
+      const allTraversals = p.value.length > 0 && p.value.every((v: any) => v != null && typeof v.getGremlinLang === 'function');
+      if (allTraversals) {
+        result += p.value.map((v: any) => this._argAsString(v)).join(',');
+      } else {
+        result += '[' + p.value.map((v: any) => this._argAsString(v)).join(',') + ']';
+      }
     } else {
       result += this._argAsString(p.value);
       if (p.other !== undefined && p.other !== null) {
