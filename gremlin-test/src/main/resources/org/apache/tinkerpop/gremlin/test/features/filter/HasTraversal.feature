@@ -43,7 +43,6 @@ Feature: Step - has() with traversal arguments
     Then the result should be unordered
       | result |
       | v[vadas] |
-      | v[josh] |
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXage_VXvid1X_outXknowsX_valuesXageXX
@@ -57,7 +56,6 @@ Feature: Step - has() with traversal arguments
     Then the result should be unordered
       | result |
       | v[vadas] |
-      | v[josh] |
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_hasXname_VXvid1X_valuesXnonexistentXX

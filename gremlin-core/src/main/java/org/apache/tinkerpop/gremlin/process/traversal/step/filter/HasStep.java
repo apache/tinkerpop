@@ -110,9 +110,9 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
                 if (hc.getTraversalValue() != null) {
                     final List<Object> results = collectTraversalResults(traverser, hc.getTraversalValue());
                     if (results.isEmpty()) return false;
-                    // Get the property value to test against
+                    // Get the property value to test against — takes first result, ignores extras
                     final Object propertyValue = getPropertyValueFromProperty(property, hc.getKey());
-                    if (!P.within(results).test(propertyValue)) return false;
+                    if (!P.eq(results.get(0)).test(propertyValue)) return false;
                 } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
                     hc.getPredicate().resolve(traverser);
                     if (hc.getPredicate().isResolvedEmpty()) return false;
@@ -133,12 +133,13 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     private boolean testHasContainer(final Traverser.Admin<S> traverser, final HasContainer hc, final Element element) {
         if (hc.hasTraversal()) {
             if (hc.getTraversalValue() != null) {
-                // Direct traversal value: evaluate and use P.within(results)
+                // Direct traversal value: evaluate and use P.eq(first result) — takes first, ignores extras
+                // Consistent with by(traversal) which also takes the first result silently.
                 final List<Object> results = collectTraversalResults(traverser, hc.getTraversalValue());
                 if (results.isEmpty()) return false;
                 final Object propertyValue = getPropertyValue(element, hc.getKey());
                 if (propertyValue == null) return false;
-                return P.within(results).test(propertyValue);
+                return P.eq(results.get(0)).test(propertyValue);
             } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
                 // Predicate with embedded traversal: resolve then test normally
                 hc.getPredicate().resolve(traverser);
