@@ -199,12 +199,17 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
                     if (this.done)
                         throw FastNoSuchElementException.instance();
                     if (this.idTraversal != null) {
-                        throw new IllegalStateException(
-                                "V(traversal)/E(traversal) cannot be used as a start step: " +
-                                "no Traverser context available to evaluate the child traversal");
+                        // Start step with idTraversal: generate a synthetic traverser to seed
+                        // the child traversal, consistent with how mergeV/addV handle start steps.
+                        this.done = true;
+                        final Traverser.Admin<S> syntheticTraverser = (Traverser.Admin<S>)
+                                this.getTraversal().getTraverserGenerator().generate(false, (Step) this, 1L);
+                        final Object[] resolvedIds = resolveTraversalIds(syntheticTraverser);
+                        this.iterator = lookupElements(resolvedIds);
+                    } else {
+                        this.done = true;
+                        this.iterator = null == this.iteratorSupplier ? EmptyIterator.instance() : this.iteratorSupplier.get();
                     }
-                    this.done = true;
-                    this.iterator = null == this.iteratorSupplier ? EmptyIterator.instance() : this.iteratorSupplier.get();
                 } else {
                     this.head = this.starts.next();
                     if (this.idTraversal != null) {

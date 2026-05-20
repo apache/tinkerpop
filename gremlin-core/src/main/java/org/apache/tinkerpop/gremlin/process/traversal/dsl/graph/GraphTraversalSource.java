@@ -539,8 +539,9 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * Spawns a {@link GraphTraversal} starting with vertices whose IDs are resolved from a child traversal.
-     * This form will throw an {@link IllegalStateException} at runtime because there is no traverser context
-     * available to evaluate the child traversal as a start step.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeV(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).id()}) rather than dependent on an incoming traverser.
      *
      * @param traversal the child traversal that produces vertex IDs
      * @since 4.0.0
@@ -576,8 +577,9 @@ public class GraphTraversalSource implements TraversalSource {
 
     /**
      * Spawns a {@link GraphTraversal} starting with edges whose IDs are resolved from a child traversal.
-     * This form will throw an {@link IllegalStateException} at runtime because there is no traverser context
-     * available to evaluate the child traversal as a start step.
+     * As a start step, a synthetic traverser is generated to seed the child traversal evaluation,
+     * consistent with how {@code mergeE(traversal)} handles start steps. The child traversal should
+     * be self-contained (e.g., {@code __.V(1).outE().id()}) rather than dependent on an incoming traverser.
      *
      * @param traversal the child traversal that produces edge IDs
      * @since 4.0.0

@@ -130,7 +130,9 @@ Feature: Step - V(traversal) and E(traversal)
       g.V(__.V(vid1).id()).values("name")
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the result should be unordered
+      | result |
+      | marko |
 
   Scenario: g_EXVXvid1X_outE_idX
     Given the modern graph
@@ -140,4 +142,8 @@ Feature: Step - V(traversal) and E(traversal)
       g.E(__.V(vid1).outE().id())
       """
     When iterated to list
-    Then the traversal will raise an error
+    Then the result should be unordered
+      | result |
+      | e[marko-created->lop] |
+      | e[marko-knows->josh] |
+      | e[marko-knows->vadas] |
