@@ -96,7 +96,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
                 settings.transactionTimeout = 1000;
                 break;
             case "shouldTimeoutIdleTransactionWithNoOperations":
-                settings.transactionTimeout = 1;
+                settings.transactionTimeout = 500;
                 break;
             case "shouldTimeoutAndRejectLateCommit":
             case "shouldTrackTransactionCountAccurately":
@@ -333,7 +333,7 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
     public void shouldTimeoutIdleTransactionWithNoOperations() throws Exception {
         final String txId = beginTx(client, GTX);
 
-        // wait for the transaction to timeout (configured at 1ms)
+        // wait for the transaction to timeout (configured at 500ms)
         Thread.sleep(1000);
 
         // the transaction should be gone
@@ -382,12 +382,16 @@ public class GremlinServerHttpTransactionIntegrateTest extends AbstractGremlinSe
 
         assertEquals(3, txManager.getActiveTransactionCount());
 
-        // commit one
-        commitTx(client, txId1, GTX);
+        // commit one - must close response to ensure server-side processing completes
+        try (final CloseableHttpResponse r = commitTx(client, txId1, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+        }
         assertEquals(2, txManager.getActiveTransactionCount());
 
         // rollback one
-        rollbackTx(client, txId2, GTX);
+        try (final CloseableHttpResponse r = rollbackTx(client, txId2, GTX)) {
+            assertEquals(200, r.getStatusLine().getStatusCode());
+        }
         assertEquals(1, txManager.getActiveTransactionCount());
 
         // let the third one timeout
