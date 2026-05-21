@@ -71,6 +71,7 @@ if [ "${MODE}" == "dry" ]; then
   fi
   echo "Copying docs sources to target/postprocess-asciidoc/..."
   mkdir -p target/postprocess-asciidoc
+  cp -r docs/{static,stylesheets} target/postprocess-asciidoc/
   cp -r docs/src/* target/postprocess-asciidoc/
   mvn process-resources -Dasciidoc -Dgremlin.docs.dryrun=true
   exit $?
@@ -163,6 +164,7 @@ HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib"
 # 8. Copy source docs to staging area (replaces old preprocessor copy)
 echo "Copying docs sources to target/postprocess-asciidoc/..."
 mkdir -p target/postprocess-asciidoc
+cp -r docs/{static,stylesheets} target/postprocess-asciidoc/
 cp -r docs/src/* target/postprocess-asciidoc/
 
 # 9. Invoke Maven with AsciidoctorJ extension attributes
