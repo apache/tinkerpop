@@ -349,12 +349,12 @@ public class GremlinTreeprocessor extends Treeprocessor {
         try {
             return doBuildConsoleOutput(block, dryRun);
         } catch (final ConsoleRestartedException e) {
-            // Console was restarted — retry the entire block from scratch
+            // Console was restarted — retry the entire block on the fresh console
             LOG.info("Retrying block after console restart");
             try {
                 return doBuildConsoleOutput(block, dryRun);
             } catch (final ConsoleRestartedException e2) {
-                // Second failure — skip this block with a warning rather than failing the build
+                // Block is genuinely broken — skip it
                 LOG.warning("Block failed after retry, skipping: " + e2.getMessage());
                 return buildDryRunOutput(block);
             }
@@ -387,14 +387,15 @@ public class GremlinTreeprocessor extends Treeprocessor {
 
         final StringBuilder output = new StringBuilder();
         final String[] lines = source.split("\\r?\\n");
-        final List<String> statements = buildStatements(lines);
-        for (final String statement : statements) {
-            // Show each original line with prompt in output
-            for (final String displayLine : statement.split("\\r?\\n")) {
+        final List<String> displayStatements = buildDisplayStatements(lines);
+        final List<String> execStatements = buildStatements(lines);
+        for (int s = 0; s < displayStatements.size(); s++) {
+            // Show original lines with callouts for display
+            for (final String displayLine : displayStatements.get(s).split("\\r?\\n")) {
                 output.append(PROMPT).append(displayLine).append("\n");
             }
             if (!dryRun && getActiveExecutor() != null) {
-                final String result = executeSafely(statement);
+                final String result = executeSafely(execStatements.get(s));
                 if (result != null && !result.isEmpty()) {
                     final String[] resultLines = result.split("\\r?\\n");
                     // Skip the first line which is the echo of the command
@@ -408,8 +409,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     /**
-     * Groups source lines into complete statements. Lines ending with a period, backslash,
-     * or opening brace, or followed by indented continuation lines, are joined.
+     * Groups source lines into complete statements for execution. Strips callouts.
      */
     static List<String> buildStatements(final String[] lines) {
         final List<String> statements = new ArrayList<>();
@@ -419,12 +419,35 @@ public class GremlinTreeprocessor extends Treeprocessor {
             if (current.length() == 0) {
                 current.append(cleaned);
             } else if (cleaned.length() > 0 && Character.isWhitespace(cleaned.charAt(0))) {
-                // Continuation line (indented)
                 current.append("\n").append(cleaned);
             } else {
                 statements.add(current.toString());
                 current.setLength(0);
                 current.append(cleaned);
+            }
+        }
+        if (current.length() > 0) {
+            statements.add(current.toString());
+        }
+        return statements;
+    }
+
+    /**
+     * Groups source lines into complete statements for display. Preserves callouts.
+     */
+    static List<String> buildDisplayStatements(final String[] lines) {
+        final List<String> statements = new ArrayList<>();
+        final StringBuilder current = new StringBuilder();
+        for (final String line : lines) {
+            final String stripped = stripCallouts(line);
+            if (current.length() == 0) {
+                current.append(line);
+            } else if (stripped.length() > 0 && Character.isWhitespace(stripped.charAt(0))) {
+                current.append("\n").append(line);
+            } else {
+                statements.add(current.toString());
+                current.setLength(0);
+                current.append(line);
             }
         }
         if (current.length() > 0) {

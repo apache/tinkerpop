@@ -127,10 +127,12 @@ public class TabbedHtmlBuilder {
             final Tab tab = tabs.get(i);
             final int tabNum = i + 1;
             html.append("    <div class=\"tabcontent-").append(tabNum).append("\">\n");
-            html.append("      <pre class=\"CodeRay highlight\"><code data-lang=\"")
+            html.append("<div class=\"listingblock\">\n<div class=\"content\">\n");
+            html.append("<pre class=\"CodeRay highlight\"><code data-lang=\"")
                     .append(escapeHtml(tab.getLanguage())).append("\">")
-                    .append(escapeHtml(tab.getContent()))
+                    .append(renderContent(tab.getContent()))
                     .append("</code></pre>\n");
+            html.append("</div>\n</div>\n");
             html.append("    </div>\n");
         }
 
@@ -227,5 +229,41 @@ public class TabbedHtmlBuilder {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
+    }
+
+    /**
+     * Escapes HTML and then renders callout markers as proper conum elements.
+     * Converts escaped {@code &lt;N&gt;} patterns into HTML callout spans.
+     */
+    private static String renderContent(final String text) {
+        final String escaped = escapeHtml(text);
+        // Process line by line to handle callouts at end of lines
+        final String[] lines = escaped.split("\\n", -1);
+        final StringBuilder result = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) result.append("\n");
+            result.append(renderCallouts(lines[i]));
+        }
+        return result.toString();
+    }
+
+    /**
+     * Replaces trailing callout markers on a line with HTML conum elements.
+     */
+    private static String renderCallouts(final String line) {
+        // Match trailing callout markers: &lt;1&gt; or &lt;1&gt; &lt;2&gt; etc.
+        final java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\s*((&lt;\\d+&gt;\\s*)+)$").matcher(line);
+        if (!m.find()) return line;
+        final String prefix = line.substring(0, m.start());
+        final String calloutsPart = m.group(1);
+        final StringBuilder sb = new StringBuilder(prefix);
+        final java.util.regex.Matcher nums = java.util.regex.Pattern
+                .compile("&lt;(\\d+)&gt;").matcher(calloutsPart);
+        while (nums.find()) {
+            sb.append(" <span class=\"hide-when-copy\">//</span> <b class=\"conum invisible\">(")
+              .append(nums.group(1)).append(")</b>");
+        }
+        return sb.toString();
     }
 }
