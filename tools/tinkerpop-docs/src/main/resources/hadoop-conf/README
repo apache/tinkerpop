@@ -1,0 +1,34 @@
+Hadoop Configuration for Docs Builds
+=====================================
+
+This directory contains Hadoop configuration files used during TinkerPop
+documentation builds. These files allow SparkGraphComputer and Hadoop
+filesystem operations (copyFromLocal, ls, head) to work against the local
+filesystem without requiring any Hadoop daemons.
+
+Files
+-----
+
+core-site.xml
+  Sets fs.defaultFS=file:/// so all HDFS API calls resolve to the local
+  filesystem. No NameNode or DataNode is needed.
+
+hadoop-docs.properties
+  Sets gremlin.hadoop.jarsInDistributedCache=false since all jars are
+  already on the local classpath. No ResourceManager or NodeManager is
+  needed.
+
+Usage
+-----
+
+The docs build orchestration script (phase 8) adds this directory to the
+Gremlin Console classpath so that Hadoop picks up core-site.xml
+automatically. The properties file can be loaded explicitly in console
+scripts or referenced as a graph configuration source.
+
+Prerequisites
+-------------
+
+- Java (version matching the project build)
+- spark.master=local[4] (configured elsewhere in the docs build)
+- NO Hadoop daemons required (NameNode, DataNode, ResourceManager, NodeManager)
