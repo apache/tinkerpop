@@ -53,7 +53,7 @@ export type ConnectionOptions = {
   ca?: string[];
   cert?: string | string[] | Buffer;
   pfx?: string | Buffer;
-  numberMode?: 'precise';
+  preciseNumbers?: boolean;
   reader?: any;
   rejectUnauthorized?: boolean;
   traversalSource?: string;
@@ -88,7 +88,7 @@ export default class Connection extends EventEmitter {
   ) {
     super();
 
-    this._reader = options.reader || (options.numberMode === 'precise' ? createPreciseReader() : graphBinaryReader);
+    this._reader = options.reader || (options.preciseNumbers === true ? createPreciseReader() : graphBinaryReader);
     this._writer = 'writer' in options ? options.writer : graphBinaryWriter;
     this.traversalSource = options.traversalSource || 'g';
     this._enableUserAgentOnConnect = options.enableUserAgentOnConnect !== false;

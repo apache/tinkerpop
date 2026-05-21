@@ -502,14 +502,14 @@ describe('Precise Mode Tests', () => {
   });
 
   describe('Connection option wiring', () => {
-    it('numberMode: precise uses a precise reader', () => {
-      const conn = new Connection('http://localhost:8182', { numberMode: 'precise' });
+    it('preciseNumbers: true uses a precise reader', () => {
+      const conn = new Connection('http://localhost:8182', { preciseNumbers: true });
       assert.ok(conn._reader !== graphBinaryReader);
     });
 
-    it('explicit reader takes precedence over numberMode', () => {
+    it('explicit reader takes precedence over preciseNumbers', () => {
       const customReader = { custom: true };
-      const conn = new Connection('http://localhost:8182', { reader: customReader, numberMode: 'precise' });
+      const conn = new Connection('http://localhost:8182', { reader: customReader, preciseNumbers: true });
       assert.strictEqual(conn._reader, customReader);
     });
 

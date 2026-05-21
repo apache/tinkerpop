@@ -444,7 +444,7 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP-3247[TINKERPOP-3247]
 
 ==== JavaScript Typed Numeric Wrappers
 
-JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between JVM numeric types like
+JavaScript has a single `Number` type (IEEE 754 double) which loses the distinction between Gremlin numeric types like
 `int`, `float`, `long`, and `double`. The `gremlin-javascript` driver now provides typed wrapper classes and factory
 functions that give explicit control over how numbers are serialized and deserialized.
 
@@ -460,16 +460,19 @@ g.V().has('score', toFloat(3.14)).next();  // score sent as Float
 g.V().has('id', toLong('9007199254740993')).next(); // id sent as Long
 ----
 
+`toLong()` accepts `number`, `string`, or `bigint`. Number inputs must be within the safe integer range (throws
+`RangeError` otherwise); string and bigint inputs support the full signed 64-bit range.
+
 Without wrappers, the driver continues to infer types automatically from the JavaScript value, so existing code is
 unaffected.
 
-On the *deserialization* side, a new `numberMode: 'precise'` connection option wraps incoming numeric values in the
+On the *deserialization* side, a new `preciseNumbers: true` connection option wraps incoming numeric values in the
 same typed wrappers, preserving the server's original type information:
 
 [source,javascript]
 ----
 const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin', {
-  numberMode: 'precise'
+  preciseNumbers: true
 }));
 
 const v = await g.V(1).elementMap().next();

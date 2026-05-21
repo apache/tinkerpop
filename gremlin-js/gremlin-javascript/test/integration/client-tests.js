@@ -160,11 +160,11 @@ describe('Client', function () {
     // });
   });
 
-  describe('#submit() with numberMode precise', function () {
+  describe('#submit() with preciseNumbers', function () {
     let preciseClient;
 
     before(async function () {
-      preciseClient = new Client(serverUrl, { traversalSource: 'gmodern', numberMode: 'precise' });
+      preciseClient = new Client(serverUrl, { traversalSource: 'gmodern', preciseNumbers: true });
       await preciseClient.open();
     });
 
