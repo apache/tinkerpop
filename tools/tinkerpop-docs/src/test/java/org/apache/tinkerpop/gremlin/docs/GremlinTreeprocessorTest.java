@@ -51,7 +51,7 @@ public class GremlinTreeprocessorTest {
             assertThat(result, is(notNullValue()));
             assertThat(processor.getGremlinBlockCount(), is(1));
             assertThat(executor.statements.contains("graph = TinkerFactory.createModern()"), is(true));
-            assertThat(executor.statements.contains("g = traversal().with(graph)"), is(true));
+            assertThat(executor.statements.contains("g = graph.traversal()"), is(true));
             assertThat(executor.statements.contains("g.V(1)"), is(true));
         }
     }
@@ -68,7 +68,7 @@ public class GremlinTreeprocessorTest {
             final String result = asciidoctor.convert(input, Options.builder().build());
             assertThat(result, is(notNullValue()));
             assertThat(executor.statements.contains("graph = TinkerGraph.open()"), is(true));
-            assertThat(executor.statements.contains("g = traversal().with(graph)"), is(true));
+            assertThat(executor.statements.contains("g = graph.traversal()"), is(true));
         }
     }
 
@@ -282,7 +282,7 @@ public class GremlinTreeprocessorTest {
             asciidoctor.javaExtensionRegistry().treeprocessor(processor);
             final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
-            assertThat(result, containsString("section class=\"tabs tabs-1\""));
+            assertThat(result, containsString("section class=\"tabs tabs-2\""));
             assertThat(result, containsString("console (groovy)"));
             assertThat(result, containsString("tab-group-1"));
         }
@@ -301,10 +301,10 @@ public class GremlinTreeprocessorTest {
                     "[source,java]\n----\ng.V(1)\n----\n" +
                     "[source,python]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
-            assertThat(result, containsString("tabs tabs-3"));
+            assertThat(result, containsString("tabs tabs-4"));
             assertThat(result, containsString("console (groovy)"));
-            assertThat(result, containsString("tab-label-2\">java"));
-            assertThat(result, containsString("tab-label-3\">python"));
+            assertThat(result, containsString("tab-label-3\">java"));
+            assertThat(result, containsString("tab-label-4\">python"));
         }
     }
 
@@ -321,7 +321,7 @@ public class GremlinTreeprocessorTest {
                     "[source,ruby]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
             // Only the console tab, ruby is not consumed
-            assertThat(result, containsString("tabs tabs-1"));
+            assertThat(result, containsString("tabs tabs-2"));
         }
     }
 
