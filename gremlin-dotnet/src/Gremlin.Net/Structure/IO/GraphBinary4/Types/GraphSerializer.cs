@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 namespace Gremlin.Net.Structure.IO.GraphBinary4.Types
 {
     /// <summary>
-    /// A <see cref="Graph"/> serializer for GraphBinary 4.0. The wire format is a count-prefixed
+    /// A <see cref="Graph"/> serializer for GraphBinary. The wire format is a count-prefixed
     /// list of vertices (each with their vertex properties and meta-properties), followed by a
     /// count-prefixed list of edges (each with their properties). Vertex/edge labels are written
     /// as a single-element list, parent placeholders are written as <c>null</c>.

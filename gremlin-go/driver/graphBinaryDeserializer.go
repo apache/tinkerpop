@@ -418,9 +418,6 @@ func (d *GraphBinaryDeserializer) readEdge() (*Edge, error) {
 	return e, nil
 }
 
-// readGraph reads a GraphBinary 4.0 Graph value (after the 0x10 type code + 0x00
-// value flag have already been consumed). Mirrors org.apache.tinkerpop.gremlin.
-// structure.io.binary.types.GraphSerializer (Java).
 func (d *GraphBinaryDeserializer) readGraph() (*Graph, error) {
 	graph := NewGraph()
 

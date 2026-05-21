@@ -26,9 +26,8 @@ import (
 )
 
 // Graph is used to store the graph.
-// In-memory collections of vertices and edges populated by GraphBinary 4.0
-// Graph (0x10) deserialization so that subgraph() results can be returned as
-// a usable data container. Maps are keyed by element id.
+// In-memory collections of vertices and edges, typically produced by a subgraph()
+// traversal. Maps are keyed by element id.
 type Graph struct {
 	Vertices map[interface{}]*Vertex
 	Edges    map[interface{}]*Edge
