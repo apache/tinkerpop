@@ -243,6 +243,8 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final String consoleOutput = buildConsoleOutput(gremlinBlock, dryRun);
         final List<TabbedHtmlBuilder.Tab> tabs = new ArrayList<>();
         tabs.add(TabbedHtmlBuilder.consoleTab("groovy", consoleOutput));
+        // Add second tab with clean source code (no prompts/output)
+        tabs.add(TabbedHtmlBuilder.codeTab("groovy", gremlinBlock.getSource()));
 
         // Consume consecutive [source,<lang>] sibling blocks as manual tabs (FR-5)
         int lastIndex = startIndex;
@@ -394,8 +396,10 @@ public class GremlinTreeprocessor extends Treeprocessor {
             if (!dryRun && getActiveExecutor() != null) {
                 final String result = executeSafely(statement);
                 if (result != null && !result.isEmpty()) {
-                    for (final String resultLine : result.split("\\r?\\n")) {
-                        output.append("\t").append(resultLine).append("\n");
+                    final String[] resultLines = result.split("\\r?\\n");
+                    // Skip the first line which is the echo of the command
+                    for (int idx = 1; idx < resultLines.length; idx++) {
+                        output.append(resultLines[idx]).append("\n");
                     }
                 }
             }
