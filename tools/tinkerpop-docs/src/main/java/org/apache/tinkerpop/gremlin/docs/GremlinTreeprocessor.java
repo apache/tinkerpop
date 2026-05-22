@@ -159,7 +159,8 @@ public class GremlinTreeprocessor extends Treeprocessor {
             resolvedExecutor = statement -> lazyConsole.execute(statement);
             LOG.info("GremlinConsole started successfully");
         } catch (final IOException | GremlinConsole.ConsoleTimeoutException e) {
-            throw new RuntimeException("Failed to start GremlinConsole from: " + consoleHomePath, e);
+            LOG.warning("Failed to start GremlinConsole: " + e.getMessage());
+            throw new ConsoleRestartedException("Console startup failed: " + e.getMessage());
         }
     }
 
@@ -319,9 +320,12 @@ public class GremlinTreeprocessor extends Treeprocessor {
         try {
             final org.jruby.Ruby ruby = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
             if (ruby == null) return escapeHtml(source);
-            ruby.evalScriptlet("require 'coderay' unless defined?(CodeRay)");
-            final String escaped = source.replace("\\", "\\\\").replace("'", "\\'");
-            final String script = "CodeRay::Duo[:" + lang + ", :html, :css => :class].highlight('" + escaped + "')";
+            // Initialize CodeRay encoder once
+            ruby.evalScriptlet("require 'coderay' unless defined?(CodeRay); " +
+                    "$tp_coderay_groovy ||= CodeRay::Duo[:groovy, :html, :css => :class]");
+            // Use heredoc to avoid escaping issues
+            final String marker = "TPDOC" + System.identityHashCode(source);
+            final String script = "$tp_coderay_groovy.highlight(<<'" + marker + "'.chomp\n" + source + "\n" + marker + "\n)";
             final org.jruby.runtime.builtin.IRubyObject result = ruby.evalScriptlet(script);
             return result != null ? result.asJavaString() : escapeHtml(source);
         } catch (final Exception e) {
