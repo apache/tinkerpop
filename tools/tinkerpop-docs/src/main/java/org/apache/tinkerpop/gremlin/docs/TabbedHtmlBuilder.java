@@ -53,11 +53,17 @@ public class TabbedHtmlBuilder {
         private final String label;
         private final String language;
         private final String content;
+        private final boolean preHighlighted;
 
         Tab(final String label, final String language, final String content) {
+            this(label, language, content, false);
+        }
+
+        Tab(final String label, final String language, final String content, final boolean preHighlighted) {
             this.label = label;
             this.language = language;
             this.content = content;
+            this.preHighlighted = preHighlighted;
         }
 
         String getLabel() {
@@ -70,6 +76,10 @@ public class TabbedHtmlBuilder {
 
         String getContent() {
             return content;
+        }
+
+        boolean isPreHighlighted() {
+            return preHighlighted;
         }
     }
 
@@ -130,7 +140,7 @@ public class TabbedHtmlBuilder {
             html.append("<div class=\"listingblock\">\n<div class=\"content\">\n");
             html.append("<pre class=\"CodeRay highlight\"><code data-lang=\"")
                     .append(escapeHtml(tab.getLanguage())).append("\">")
-                    .append(renderContent(tab.getContent()))
+                    .append(tab.isPreHighlighted() ? tab.getContent() : renderContent(tab.getContent()))
                     .append("</code></pre>\n");
             html.append("</div>\n</div>\n");
             html.append("    </div>\n");
@@ -151,6 +161,20 @@ public class TabbedHtmlBuilder {
      */
     static Tab consoleTab(final String lang, final String consoleOutput) {
         return new Tab("console (" + lang + ")", lang, consoleOutput);
+    }
+
+    /**
+     * Creates a console tab with pre-highlighted HTML content.
+     */
+    static Tab consoleTabHighlighted(final String lang, final String highlightedHtml) {
+        return new Tab("console (" + lang + ")", lang, highlightedHtml, true);
+    }
+
+    /**
+     * Creates a code tab with pre-highlighted HTML content.
+     */
+    static Tab codeTabHighlighted(final String lang, final String highlightedHtml) {
+        return new Tab(lang, lang, highlightedHtml, true);
     }
 
     /**
