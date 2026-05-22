@@ -277,6 +277,45 @@ public class GremlinTreeprocessor extends Treeprocessor {
 
     private String highlightAsSource(final StructuralNode parent, final String lang, final String source) {
         if (source == null || source.isEmpty()) return "";
+        // Strip callouts before highlighting, re-inject after
+        final String[] lines = source.split("\\r?\\n");
+        final String[] calloutMarkers = new String[lines.length];
+        final StringBuilder cleanSource = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            final java.util.regex.Matcher m = java.util.regex.Pattern
+                    .compile("\\s*((<\\d+>\\s*)+)$").matcher(lines[i]);
+            if (m.find()) {
+                calloutMarkers[i] = m.group(1);
+                if (i > 0) cleanSource.append("\n");
+                cleanSource.append(lines[i], 0, m.start());
+            } else {
+                calloutMarkers[i] = null;
+                if (i > 0) cleanSource.append("\n");
+                cleanSource.append(lines[i]);
+            }
+        }
+
+        String highlighted = doHighlight(parent, lang, cleanSource.toString());
+
+        // Re-inject callouts as HTML conums
+        final String[] highlightedLines = highlighted.split("\\n", -1);
+        final StringBuilder result = new StringBuilder();
+        for (int i = 0; i < highlightedLines.length; i++) {
+            if (i > 0) result.append("\n");
+            result.append(highlightedLines[i]);
+            if (i < calloutMarkers.length && calloutMarkers[i] != null) {
+                final java.util.regex.Matcher nums = java.util.regex.Pattern
+                        .compile("<(\\d+)>").matcher(calloutMarkers[i]);
+                while (nums.find()) {
+                    result.append(" <span class=\"hide-when-copy\">//</span> <b class=\"conum invisible\">(")
+                          .append(nums.group(1)).append(")</b>");
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private String doHighlight(final StructuralNode parent, final String lang, final String source) {
         try {
             final org.jruby.Ruby ruby = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
             if (ruby == null) return escapeHtml(source);
