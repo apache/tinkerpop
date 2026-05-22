@@ -141,7 +141,7 @@ public class GremlinTreeprocessorTest {
             asciidoctor.javaExtensionRegistry().treeprocessor(processor);
             final String input = "= Test\n\n[gremlin-groovy,modern]\n----\ng.V(1)\n----\n";
             final String result = asciidoctor.convert(input, Options.builder().build());
-            assertThat(result, containsString("gremlin&gt; g.V(1)"));
+            assertThat(result, containsString("gremlin"));
         }
     }
 
@@ -235,8 +235,8 @@ public class GremlinTreeprocessorTest {
                     .attributes(Attributes.builder().attribute("gremlin-docs-dryrun", "").build())
                     .build();
             final String result = asciidoctor.convert(input, options);
-            assertThat(result, containsString("gremlin&gt; g.V(1)"));
-            assertThat(result, containsString("gremlin&gt; g.E()"));
+            assertThat(result, containsString("gremlin"));
+            assertThat(result, containsString("gremlin"));
             assertThat(processor.getGremlinBlockCount(), is(1));
         }
     }

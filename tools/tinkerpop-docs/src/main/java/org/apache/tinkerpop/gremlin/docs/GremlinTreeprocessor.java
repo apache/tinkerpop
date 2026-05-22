@@ -242,9 +242,11 @@ public class GremlinTreeprocessor extends Treeprocessor {
 
         final String consoleOutput = buildConsoleOutput(gremlinBlock, dryRun);
         final List<TabbedHtmlBuilder.Tab> tabs = new ArrayList<>();
-        tabs.add(TabbedHtmlBuilder.consoleTab("groovy", consoleOutput));
+        tabs.add(TabbedHtmlBuilder.consoleTabHighlighted("groovy",
+                highlightAsGroovy(parent, consoleOutput)));
         // Add second tab with clean source code (no prompts/output)
-        tabs.add(TabbedHtmlBuilder.codeTab("groovy", gremlinBlock.getSource()));
+        tabs.add(TabbedHtmlBuilder.codeTabHighlighted("groovy",
+                highlightAsGroovy(parent, gremlinBlock.getSource())));
 
         // Consume consecutive [source,<lang>] sibling blocks as manual tabs (FR-5)
         int lastIndex = startIndex;
@@ -253,7 +255,8 @@ public class GremlinTreeprocessor extends Treeprocessor {
             if (isManualTabBlock(sibling)) {
                 final Block sourceBlock = (Block) sibling;
                 final String lang = getSourceLanguage(sourceBlock);
-                tabs.add(TabbedHtmlBuilder.codeTab(lang, sourceBlock.getSource()));
+                tabs.add(TabbedHtmlBuilder.codeTabHighlighted(lang,
+                        highlightAsSource(parent, lang, sourceBlock.getSource())));
                 lastIndex = j;
             } else {
                 break;
@@ -263,6 +266,35 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final String html = tabBuilder.build(tabs);
         replaceWithPassBlock(parent, startIndex, lastIndex, html);
         return startIndex;
+    }
+
+    /**
+     * Highlights source code using CodeRay via the JRuby runtime bundled with AsciidoctorJ.
+     */
+    private String highlightAsGroovy(final StructuralNode parent, final String source) {
+        return highlightAsSource(parent, "groovy", source);
+    }
+
+    private String highlightAsSource(final StructuralNode parent, final String lang, final String source) {
+        if (source == null || source.isEmpty()) return "";
+        try {
+            final org.jruby.Ruby ruby = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
+            if (ruby == null) return escapeHtml(source);
+            ruby.evalScriptlet("require 'coderay' unless defined?(CodeRay)");
+            final String escaped = source.replace("\\", "\\\\").replace("'", "\\'");
+            final String script = "CodeRay::Duo[:" + lang + ", :html, :css => :class].highlight('" + escaped + "')";
+            final org.jruby.runtime.builtin.IRubyObject result = ruby.evalScriptlet(script);
+            return result != null ? result.asJavaString() : escapeHtml(source);
+        } catch (final Exception e) {
+            LOG.warning("CodeRay highlighting failed, falling back to plain: " + e.getMessage());
+            return escapeHtml(source);
+        }
+    }
+
+    private static String escapeHtml(final String text) {
+        if (text == null) return "";
+        return text.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;");
     }
 
     /**
