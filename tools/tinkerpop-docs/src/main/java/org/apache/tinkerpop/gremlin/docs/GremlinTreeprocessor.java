@@ -440,8 +440,17 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final String source = block.getSource();
         if (source == null || source.isEmpty()) return "";
         final StringBuilder output = new StringBuilder();
-        for (final String line : source.split("\\r?\\n")) {
-            output.append(PROMPT).append(line).append("\n");
+        final String[] lines = source.split("\\r?\\n");
+        final List<String> statements = buildDisplayStatements(lines);
+        for (final String statement : statements) {
+            final String[] stmtLines = statement.split("\\r?\\n");
+            for (int l = 0; l < stmtLines.length; l++) {
+                if (l == 0) {
+                    output.append(PROMPT).append(stmtLines[l]).append("\n");
+                } else {
+                    output.append("         ").append(stmtLines[l]).append("\n");
+                }
+            }
         }
         return output.toString().stripTrailing();
     }
@@ -466,8 +475,14 @@ public class GremlinTreeprocessor extends Treeprocessor {
         final List<String> execStatements = buildStatements(lines);
         for (int s = 0; s < displayStatements.size(); s++) {
             // Show original lines with callouts for display
-            for (final String displayLine : displayStatements.get(s).split("\\r?\\n")) {
-                output.append(PROMPT).append(displayLine).append("\n");
+            final String[] displayLines = displayStatements.get(s).split("\\r?\\n");
+            for (int l = 0; l < displayLines.length; l++) {
+                if (l == 0) {
+                    output.append(PROMPT).append(displayLines[l]).append("\n");
+                } else {
+                    // Continuation lines: indent to align with first line (no prompt)
+                    output.append("         ").append(displayLines[l]).append("\n");
+                }
             }
             if (!dryRun && getActiveExecutor() != null) {
                 final String result = executeSafely(execStatements.get(s));
