@@ -173,6 +173,7 @@ public final class Cluster {
                 .reconnectInterval(settings.connectionPool.reconnectInterval)
                 .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
                 .maxResponseContentLength(settings.connectionPool.maxResponseContentLength)
+                .streamBufferSize(settings.connectionPool.streamBufferSize)
                 .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .connectionSetupTimeoutMillis(settings.connectionPool.connectionSetupTimeoutMillis)
@@ -324,6 +325,13 @@ public final class Cluster {
      */
     public long getMaxResponseContentLength() {
         return manager.connectionPoolSettings.maxResponseContentLength;
+    }
+
+    /**
+     * Gets the size of the buffer used for streaming responses.
+     */
+    public int getStreamBufferSize() {
+        return manager.connectionPoolSettings.streamBufferSize;
     }
 
     /**
@@ -495,6 +503,7 @@ public final class Cluster {
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
         private int maxWaitForClose = Connection.MAX_WAIT_FOR_CLOSE;
         private long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
+        private int streamBufferSize = Connection.DEFAULT_STREAM_BUFFER_SIZE;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
@@ -720,6 +729,15 @@ public final class Cluster {
          */
         public Builder maxResponseContentLength(final long maxResponseContentLength) {
             this.maxResponseContentLength = maxResponseContentLength;
+            return this;
+        }
+
+        /**
+         * The size of the buffer used for streaming responses.
+         */
+        public Builder streamBufferSize(final int streamBufferSize) {
+            if (streamBufferSize < 1) throw new IllegalArgumentException("streamBufferSize must be at least 1");
+            this.streamBufferSize = streamBufferSize;
             return this;
         }
 
@@ -994,6 +1012,7 @@ public final class Cluster {
             connectionPoolSettings.maxWaitForConnection = builder.maxWaitForConnection;
             connectionPoolSettings.maxWaitForClose = builder.maxWaitForClose;
             connectionPoolSettings.maxResponseContentLength = builder.maxResponseContentLength;
+            connectionPoolSettings.streamBufferSize = builder.streamBufferSize;
             connectionPoolSettings.reconnectInterval = builder.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = builder.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = builder.enableSsl;

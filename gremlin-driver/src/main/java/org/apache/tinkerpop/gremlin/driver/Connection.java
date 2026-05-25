@@ -47,6 +47,7 @@ final class Connection {
     public static final int MAX_WAIT_FOR_CONNECTION = 16000;
     public static final int MAX_WAIT_FOR_CLOSE = 3000;
     public static final long MAX_RESPONSE_CONTENT_LENGTH = Integer.MAX_VALUE;
+    public static final int DEFAULT_STREAM_BUFFER_SIZE = 256;
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
     public static final long CONNECTION_SETUP_TIMEOUT_MILLIS = 15000;

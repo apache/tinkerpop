@@ -202,6 +202,9 @@ public final class Settings {
             if (connectionPoolConf.containsKey("maxResponseContentLength"))
                 cpSettings.maxResponseContentLength = connectionPoolConf.getInt("maxResponseContentLength");
 
+            if (connectionPoolConf.containsKey("streamBufferSize"))
+                cpSettings.streamBufferSize = connectionPoolConf.getInt("streamBufferSize");
+
             if (connectionPoolConf.containsKey("reconnectInterval"))
                 cpSettings.reconnectInterval = connectionPoolConf.getInt("reconnectInterval");
 
@@ -323,6 +326,11 @@ public final class Settings {
          * {@link Integer#MAX_VALUE}.
          */
         public long maxResponseContentLength = Connection.MAX_RESPONSE_CONTENT_LENGTH;
+
+        /**
+         * The size of the buffer used for streaming responses. The default value is 256.
+         */
+        public int streamBufferSize = Connection.DEFAULT_STREAM_BUFFER_SIZE;
 
         /**
          * The amount of time in milliseconds to wait before trying to reconnect to a dead host. The default value is

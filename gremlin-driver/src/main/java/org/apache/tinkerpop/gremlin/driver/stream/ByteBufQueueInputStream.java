@@ -37,33 +37,70 @@ public class ByteBufQueueInputStream extends InputStream {
     private static final ByteBuf END_OF_STREAM = Unpooled.buffer(0);
 
     private final BlockingQueue<ByteBuf> queue;
+    private final int capacity;
+    private final Runnable onSpaceAvailable;
     private ByteBuf current;
     private volatile boolean eof;
+    private volatile boolean readsPaused;
 
     public ByteBufQueueInputStream() {
-        this.queue = new LinkedBlockingQueue<>();
+        this(Integer.MAX_VALUE, () -> {});
+    }
+
+    public ByteBufQueueInputStream(final int capacity, final Runnable onSpaceAvailable) {
+        this.queue = new LinkedBlockingQueue<>(capacity);
+        this.capacity = capacity;
+        this.onSpaceAvailable = onSpaceAvailable;
     }
 
     /**
      * Offer a ByteBuf to the queue. The caller must have already retained the ByteBuf if needed.
      * The ByteBuf will be released after it is fully read. If the stream is already closed,
      * the buffer is released immediately.
+     *
+     * @return true if the buffer was accepted, false if the queue is full.
      */
-    public void offer(final ByteBuf buf) {
+    public boolean offer(final ByteBuf buf) {
+        if (eof) {
+            if (buf != END_OF_STREAM && buf.refCnt() > 0) {
+                buf.release();
+            }
+            return true;
+        }
+        return queue.offer(buf);
+    }
+
+    /**
+     * Blocking put for when the queue is full. The caller should pause reads before calling this
+     * to avoid blocking the event loop indefinitely.
+     */
+    public void putBlocking(final ByteBuf buf) throws InterruptedException {
         if (eof) {
             if (buf != END_OF_STREAM && buf.refCnt() > 0) {
                 buf.release();
             }
             return;
         }
-        queue.add(buf);
+        queue.put(buf);
+    }
+
+    /**
+     * Mark that the producer has paused reads due to backpressure.
+     */
+    public void markPaused() {
+        readsPaused = true;
     }
 
     /**
      * Signal that no more ByteBufs will be offered.
      */
     public void signalEndOfStream() {
-        queue.offer(END_OF_STREAM);
+        try {
+            queue.put(END_OF_STREAM);
+        } catch (InterruptedException e) {
+            eof = true;
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
@@ -78,12 +115,15 @@ public class ByteBufQueueInputStream extends InputStream {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while waiting for data", e);
             }
-            if (current == null) throw new IOException("Timed out waiting for streaming response data");
+            if (current == null) {
+                throw new IOException("Timed out waiting for streaming response data");
+            }
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;
                 return -1;
             }
+            checkBackpressure();
         }
         return current.readByte() & 0xFF;
     }
@@ -102,12 +142,15 @@ public class ByteBufQueueInputStream extends InputStream {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while waiting for data", e);
             }
-            if (current == null) throw new IOException("Timed out waiting for streaming response data");
+            if (current == null) {
+                throw new IOException("Timed out waiting for streaming response data");
+            }
             if (current == END_OF_STREAM) {
                 eof = true;
                 current = null;
                 return -1;
             }
+            checkBackpressure();
         }
         final int readable = Math.min(current.readableBytes(), len);
         current.readBytes(b, off, readable);
@@ -124,6 +167,13 @@ public class ByteBufQueueInputStream extends InputStream {
             if (buf != END_OF_STREAM && buf.refCnt() > 0) {
                 buf.release();
             }
+        }
+    }
+
+    private void checkBackpressure() {
+        if (readsPaused && queue.size() < Math.max(1, capacity / 2)) {
+            readsPaused = false;
+            onSpaceAvailable.run();
         }
     }
 

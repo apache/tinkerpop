@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.tinkerpop.gremlin.driver.Channelizer.HttpChannelizer.LAST_CONTENT_READ_RESPONSE;
@@ -68,8 +69,12 @@ public class HttpStreamingResponseHandlerTest {
     }
 
     private EmbeddedChannel createChannel(final AtomicReference<ResultSet> pendingResultSet, final long maxResponseContentLength) {
+        return createChannel(pendingResultSet, maxResponseContentLength, 256);
+    }
+
+    private EmbeddedChannel createChannel(final AtomicReference<ResultSet> pendingResultSet, final long maxResponseContentLength, final int streamBufferSize) {
         final HttpStreamingResponseHandler handler = new HttpStreamingResponseHandler(
-                reader, pendingResultSet, executor, maxResponseContentLength);
+                reader, pendingResultSet, executor, maxResponseContentLength, streamBufferSize);
         return new EmbeddedChannel(handler);
     }
 
@@ -197,6 +202,7 @@ public class HttpStreamingResponseHandlerTest {
 
         channel.finishAndReleaseAll();
     }
+
 
     private byte[] toBytes(final io.netty.buffer.ByteBuf buf) {
         final byte[] bytes = new byte[buf.readableBytes()];

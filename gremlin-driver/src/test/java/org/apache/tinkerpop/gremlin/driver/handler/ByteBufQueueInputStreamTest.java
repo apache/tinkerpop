@@ -24,6 +24,8 @@ import io.netty.buffer.Unpooled;
 import org.apache.tinkerpop.gremlin.driver.stream.ByteBufQueueInputStream;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.Assert.*;
 
 public class ByteBufQueueInputStreamTest {
@@ -75,6 +77,34 @@ public class ByteBufQueueInputStreamTest {
         stream.read(); // triggers release of buf and reads EOS
 
         assertEquals(0, buf.refCnt());
+    }
+
+    @Test
+    public void shouldReturnFalseWhenQueueFull() throws Exception {
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream(2, () -> {});
+        assertTrue(stream.offer(Unpooled.wrappedBuffer(new byte[]{1})));
+        assertTrue(stream.offer(Unpooled.wrappedBuffer(new byte[]{2})));
+        assertFalse(stream.offer(Unpooled.wrappedBuffer(new byte[]{3})));
+        stream.close();
+    }
+
+    @Test
+    public void shouldInvokeCallbackWhenDrainedBelowThreshold() throws Exception {
+        final AtomicBoolean callbackInvoked = new AtomicBoolean(false);
+        final ByteBufQueueInputStream stream = new ByteBufQueueInputStream(2, () -> callbackInvoked.set(true));
+
+        stream.offer(Unpooled.wrappedBuffer(new byte[]{1}));
+        stream.offer(Unpooled.wrappedBuffer(new byte[]{2}));
+        stream.markPaused();
+
+        // First read consumes the first buf (queue size goes to 1, not below capacity/2=1 yet)
+        assertEquals(1, stream.read());
+        assertFalse(callbackInvoked.get());
+
+        // Second read polls the second buf (queue size goes to 0, below threshold) triggering callback
+        assertEquals(2, stream.read());
+        assertTrue(callbackInvoked.get());
+        stream.close();
     }
 
     @Test

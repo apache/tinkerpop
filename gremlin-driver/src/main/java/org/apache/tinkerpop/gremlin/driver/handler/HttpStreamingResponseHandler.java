@@ -67,6 +67,7 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
     private final AtomicReference<ResultSet> pendingResultSet;
     private final ExecutorService readerPool;
     private final long maxResponseContentLength;
+    private final int streamBufferSize;
 
     // Mutable state below is accessed exclusively from the channel's event loop thread.
     private HttpResponseStatus responseStatus;
@@ -78,11 +79,13 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
     public HttpStreamingResponseHandler(final GraphBinaryReader graphBinaryReader,
                                         final AtomicReference<ResultSet> pendingResultSet,
                                         final ExecutorService readerPool,
-                                        final long maxResponseContentLength) {
+                                        final long maxResponseContentLength,
+                                        final int streamBufferSize) {
         this.graphBinaryReader = graphBinaryReader;
         this.pendingResultSet = pendingResultSet;
         this.readerPool = readerPool;
         this.maxResponseContentLength = maxResponseContentLength;
+        this.streamBufferSize = streamBufferSize;
     }
 
     @Override
@@ -97,7 +100,9 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
 
             responseStatus = resp.status();
             contentType = resp.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            queueInputStream = new ByteBufQueueInputStream();
+            final io.netty.channel.Channel channel = ctx.channel();
+            queueInputStream = new ByteBufQueueInputStream(streamBufferSize, () ->
+                    channel.eventLoop().execute(() -> channel.config().setAutoRead(true)));
 
             // Spawn reader thread for GraphBinary responses
             if (isGraphBinaryResponse()) {
@@ -147,7 +152,18 @@ public class HttpStreamingResponseHandler extends MessageToMessageDecoder<HttpOb
             } else if (content.readableBytes() > 0 && queueInputStream != null) {
                 // Feed bytes to the reader thread
                 // retain() because Netty releases the content ByteBuf after decode() returns
-                queueInputStream.offer(content.retain());
+                final ByteBuf buf = content.retain();
+                if (!queueInputStream.offer(buf)) {
+                    ctx.channel().config().setAutoRead(false);
+                    queueInputStream.markPaused();
+                    try {
+                        queueInputStream.putBlocking(buf);
+                    } catch (InterruptedException e) {
+                        buf.release();
+                        ctx.channel().config().setAutoRead(true);
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
 
             if (msg instanceof LastHttpContent) {
