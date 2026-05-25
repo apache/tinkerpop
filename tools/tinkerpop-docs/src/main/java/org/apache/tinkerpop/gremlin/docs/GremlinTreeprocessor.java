@@ -316,17 +316,20 @@ public class GremlinTreeprocessor extends Treeprocessor {
         return result.toString();
     }
 
+    private org.jruby.runtime.builtin.IRubyObject coderayEncoder;
+    private org.jruby.Ruby rubyRuntime;
+
     private String doHighlight(final StructuralNode parent, final String lang, final String source) {
         try {
-            final org.jruby.Ruby ruby = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
-            if (ruby == null) return escapeHtml(source);
-            // Initialize CodeRay encoder once
-            ruby.evalScriptlet("require 'coderay' unless defined?(CodeRay); " +
-                    "$tp_coderay_groovy ||= CodeRay::Duo[:groovy, :html, :css => :class]");
-            // Use heredoc to avoid escaping issues
-            final String marker = "TPDOC" + System.identityHashCode(source);
-            final String script = "$tp_coderay_groovy.highlight(<<'" + marker + "'.chomp\n" + source + "\n" + marker + "\n)";
-            final org.jruby.runtime.builtin.IRubyObject result = ruby.evalScriptlet(script);
+            if (rubyRuntime == null) {
+                rubyRuntime = org.asciidoctor.jruby.internal.JRubyRuntimeContext.get(parent);
+                if (rubyRuntime == null) return escapeHtml(source);
+                coderayEncoder = rubyRuntime.evalScriptlet(
+                        "require 'coderay'; CodeRay::Duo[:groovy, :html, :css => :class]");
+            }
+            final org.jruby.RubyString rubySource = org.jruby.RubyString.newString(rubyRuntime, source);
+            final org.jruby.runtime.builtin.IRubyObject result = coderayEncoder.callMethod(
+                    rubyRuntime.getCurrentContext(), "highlight", rubySource);
             return result != null ? result.asJavaString() : escapeHtml(source);
         } catch (final Exception e) {
             LOG.warning("CodeRay highlighting failed, falling back to plain: " + e.getMessage());
