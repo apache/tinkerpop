@@ -1358,6 +1358,123 @@ can be used as a reference on how these files can be used and its
 link:https://github.com/apache/tinkerpop/blob/x.y.z/gremlin-util/src/test/java/org/apache/tinkerpop/gremlin/structure/io/Model.java[model]
 shows the Java representation of those files.
 
+[[provider-defined-types]]
+=== Provider Defined Types (PDT)
+
+Provider Defined Types allow graph providers to expose custom types that drivers can serialize and deserialize without
+manual configuration on the client side. A provider annotates a class (or registers an adapter for a class it doesn't
+own), and the type flows through the wire protocol automatically. Clients receive PDT values as structured objects they
+can use directly or hydrate into language-native types.
+
+==== Basic Usage
+
+Annotate a class with `@ProviderDefined` from the `org.apache.tinkerpop.gremlin.structure.io.pdt` package:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+
+@ProviderDefined(name = "x:Point")
+public class Point {
+    private final double x;
+    private final double y;
+
+    public Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+}
+----
+
+The `name` attribute is a unique identifier for the type, typically namespaced (e.g. `"x:Point"`). By default, all
+fields are included. Use `includedFields` or `excludedFields` to control which fields are serialized:
+
+[source,java]
+----
+@ProviderDefined(name = "x:Point", includedFields = {"x", "y"})
+public class Point { ... }
+
+// or exclude specific fields
+@ProviderDefined(name = "x:Person", excludedFields = {"internalId"})
+public class Person { ... }
+----
+
+==== Nested Types
+
+PDT supports nested custom types. Each nested type must also be annotated:
+
+[source,java]
+----
+@ProviderDefined(name = "x:Address")
+public class Address {
+    private final String street;
+    private final String city;
+    // constructor, getters...
+}
+
+@ProviderDefined(name = "x:Person")
+public class Person {
+    private final String name;
+    private final Address address;
+    // constructor, getters...
+}
+----
+
+When serialized, the `address` field is itself encoded as a PDT value.
+
+==== Adapter for Types You Don't Own
+
+For classes you cannot annotate (e.g. `java.awt.Color`), implement `ProviderDefinedTypeAdapter<T>`:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+
+public class ColorAdapter implements ProviderDefinedTypeAdapter<java.awt.Color> {
+
+    @Override
+    public String typeName() { return "x:Color"; }
+
+    @Override
+    public Class<java.awt.Color> targetClass() { return java.awt.Color.class; }
+
+    @Override
+    public Map<String, Object> toProperties(java.awt.Color color) {
+        return Map.of("r", color.getRed(), "g", color.getGreen(),
+                      "b", color.getBlue(), "a", color.getAlpha());
+    }
+
+    @Override
+    public java.awt.Color fromProperties(Map<String, Object> fields) {
+        return new java.awt.Color((int) fields.get("r"), (int) fields.get("g"),
+                                  (int) fields.get("b"), (int) fields.get("a"));
+    }
+}
+----
+
+==== ServiceLoader Registration
+
+Register adapters for auto-discovery by adding a file at:
+
+----
+META-INF/services/org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter
+----
+
+with the fully qualified class name of each adapter:
+
+----
+com.example.graph.ColorAdapter
+----
+
+Annotated classes (`@ProviderDefined`) are discovered automatically via classpath scanning and do not require
+ServiceLoader registration.
+
+For driver users consuming PDTs, see the <<gremlin-variants,Gremlin Variants>> reference documentation for
+each language driver.
+
 [[gremlin-plugins]]
 == Gremlin Plugins
 

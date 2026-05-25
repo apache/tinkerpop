@@ -24,7 +24,7 @@ import uuid
 import warnings
 
 from aenum import Enum
-from gremlin_python.structure.graph import Vertex, Edge, Path, Property
+from gremlin_python.structure.graph import Vertex, Edge, Path, Property, ProviderDefinedType
 
 from .. import statics
 from ..statics import long, SingleByte, SingleChar, short, bigint, BigDecimal
@@ -814,11 +814,13 @@ class GremlinLang(object):
         self.gremlin = []
         self.parameters = {}
         self.options_strategies = []
+        self.pdt_registry = None
 
         if gremlin_lang is not None:
             self.gremlin = list(gremlin_lang.gremlin)
             self.parameters = dict(gremlin_lang.parameters)
             self.options_strategies = list(gremlin_lang.options_strategies)
+            self.pdt_registry = gremlin_lang.pdt_registry
 
     def _add_to_gremlin(self, string_name, *args):
 
@@ -904,6 +906,9 @@ class GremlinLang(object):
             else:
                 return tmp
 
+        if isinstance(arg, ProviderDefinedType):
+            return f'PDT({self._arg_as_string(arg.name)},{self._process_dict(arg.properties)})'
+
         if isinstance(arg, Vertex):
             return f'{self._arg_as_string(arg.id)}'
 
@@ -946,6 +951,25 @@ class GremlinLang(object):
 
         if isinstance(arg, type):
             return arg.__name__
+
+        # Registry-based dehydration
+        if self.pdt_registry is not None:
+            adapter = self.pdt_registry.get_adapter_by_class(type(arg))
+            if adapter is not None and adapter['serialize'] is not None:
+                props = adapter['serialize'](arg)
+                return self._arg_as_string(ProviderDefinedType(adapter['type_name'], props))
+
+        # Auto-dehydrate @provider_defined decorated objects
+        if hasattr(arg, '_pdt_name'):
+            included = getattr(arg, '_pdt_included_fields', None)
+            excluded = getattr(arg, '_pdt_excluded_fields', None)
+            fields = [f for f in vars(arg) if not f.startswith('_')]
+            if included:
+                fields = [f for f in fields if f in included]
+            elif excluded:
+                fields = [f for f in fields if f not in excluded]
+            pdt = ProviderDefinedType(arg._pdt_name, {f: getattr(arg, f) for f in fields})
+            return self._arg_as_string(pdt)
 
         raise TypeError(f'GremlinLang contains at least one type [{type(arg).__name__}] that cannot be represented as text.')
 

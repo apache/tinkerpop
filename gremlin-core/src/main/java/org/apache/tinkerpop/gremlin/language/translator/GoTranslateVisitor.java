@@ -377,6 +377,16 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        sb.append("&gremlingo.ProviderDefinedType{Name: ");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(", Properties: ");
+        visitGenericMapLiteral(ctx.genericMapLiteral());
+        sb.append("}");
+        return null;
+    }
+
+    @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         final String base64Str = removeFirstAndLastCharacters(ctx.stringLiteral().getText());
         final byte[] bytes = Base64.getDecoder().decode(base64Str);

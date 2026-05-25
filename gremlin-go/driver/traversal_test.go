@@ -26,6 +26,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTraversal(t *testing.T) {
@@ -507,4 +508,73 @@ func getCount(t *testing.T, g *GraphTraversalSource) int32 {
 	val, err := count[0].GetInt32()
 	assert.Nil(t, err)
 	return val
+}
+
+func TestProviderDefinedTypeTraversalAPIIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("raw PDT round-trip via Traversal API", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		pdt := &ProviderDefinedType{Name: "TestPoint", Properties: map[string]interface{}{"x": int32(1), "y": int32(2)}}
+
+		results, err := g.Inject(pdt).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*ProviderDefinedType)
+		require.True(t, ok, "expected *ProviderDefinedType, got %T", results[0].GetInterface())
+		assert.Equal(t, "TestPoint", result.Name)
+		assert.Equal(t, int32(1), result.Properties["x"])
+		assert.Equal(t, int32(2), result.Properties["y"])
+	})
+
+	t.Run("registry-based round-trip via typed struct", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		registry := NewPDTRegistry()
+		registry.RegisterFuncsWithType("RegPoint", reflect.TypeOf(regPoint{}),
+			func(props map[string]interface{}) (interface{}, error) {
+				return &regPoint{X: props["x"].(int32), Y: props["y"].(int32)}, nil
+			},
+			func(obj interface{}) (map[string]interface{}, error) {
+				p := obj.(regPoint)
+				return map[string]interface{}{"x": p.X, "y": p.Y}, nil
+			})
+
+		remote, err := NewDriverRemoteConnection(testNoAuthUrl,
+			func(settings *DriverRemoteConnectionSettings) {
+				settings.TlsConfig = &tls.Config{}
+				settings.TraversalSource = testServerModernGraphAlias
+				settings.PDTRegistry = registry
+			})
+		require.NoError(t, err)
+		defer remote.Close()
+
+		g := Traversal_().With(remote)
+		point := regPoint{X: 5, Y: 10}
+
+		results, err := g.Inject(point).ToList()
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+
+		result, ok := results[0].GetInterface().(*regPoint)
+		require.True(t, ok, "expected *regPoint, got %T", results[0].GetInterface())
+		assert.Equal(t, int32(5), result.X)
+		assert.Equal(t, int32(10), result.Y)
+	})
+}
+
+// regPoint is a plain struct used for registry-based tests.
+type regPoint struct {
+	X int32
+	Y int32
 }

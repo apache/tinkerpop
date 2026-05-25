@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdge;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.util.DatetimeHelper;
@@ -140,6 +141,19 @@ public class GremlinLangTest {
                 {g.inject(new byte[]{1, 2, 3}), "g.inject(Binary(\"AQID\"))"},
                 {g.inject(new byte[]{}), "g.inject(Binary(\"\"))"},
                 {g.inject(new byte[]{0}), "g.inject(Binary(\"AA==\"))"},
+                // PDT
+                {g.inject(new ProviderDefinedType("MyType", asMap("x", 1, "y", "hello"))),
+                        "g.inject(PDT(\"MyType\",[\"x\":1,\"y\":\"hello\"]))"},
+                {g.inject(new ProviderDefinedType("Empty", Collections.emptyMap())),
+                        "g.inject(PDT(\"Empty\",[:]))"},
+                // PDT with special characters in name
+                {g.inject(new ProviderDefinedType("say\"hello\"", asMap("v", 1))),
+                        "g.inject(PDT(\"say\\\"hello\\\"\",[\"v\":1]))"},
+                {g.inject(new ProviderDefinedType("back\\slash", asMap("v", 1))),
+                        "g.inject(PDT(\"back\\\\slash\",[\"v\":1]))"},
+                // Nested PDT
+                {g.inject(new ProviderDefinedType("Outer", asMap("inner", new ProviderDefinedType("Inner", asMap("v", 1))))),
+                        "g.inject(PDT(\"Outer\",[\"inner\":PDT(\"Inner\",[\"v\":1])]))"},
         });
     }
 

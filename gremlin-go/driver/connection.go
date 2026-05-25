@@ -43,6 +43,7 @@ type connectionSettings struct {
 	keepAliveInterval        time.Duration
 	enableCompression        bool
 	enableUserAgentOnConnect bool
+	pdtRegistry              *PDTRegistry
 }
 
 // connection handles HTTP request/response for Gremlin queries.
@@ -313,7 +314,12 @@ func (c *connection) getReader(resp *http.Response) (io.Reader, io.Closer, error
 }
 
 func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
-	d := NewGraphBinaryDeserializer(reader)
+	var d *GraphBinaryDeserializer
+	if c.connSettings.pdtRegistry != nil {
+		d = NewGraphBinaryDeserializerWithRegistry(reader, c.connSettings.pdtRegistry)
+	} else {
+		d = NewGraphBinaryDeserializer(reader)
+	}
 	if err := d.ReadHeader(); err != nil {
 		if err != io.EOF {
 			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())

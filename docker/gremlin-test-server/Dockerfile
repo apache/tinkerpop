@@ -24,6 +24,7 @@ USER root
 RUN mkdir -p /opt
 WORKDIR /opt
 COPY gremlin-server/src/test /opt/test/
+COPY gremlin-server/target/gremlin-server-*-tests.jar /opt/gremlin-server/lib/
 COPY docker/gremlin-server/docker-entrypoint.sh docker/gremlin-server/*.yaml docker/gremlin-server/*.conf /opt/
 RUN chmod 755 /opt/docker-entrypoint.sh
 

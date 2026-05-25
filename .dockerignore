@@ -1,6 +1,7 @@
 **/*.log
 **/target
 !gremlin-server/target/apache-tinkerpop-gremlin-server-*
+!gremlin-server/target/gremlin-server-*-tests.jar
 !gremlin-console/target/apache-tinkerpop-gremlin-console-*
 !gremlin-tools/gremlin-socket-server/target/gremlin-socket-server-*
 !gremlin-tools/gremlin-socket-server/target/libs

@@ -153,6 +153,16 @@ public class GroovyTranslateVisitor extends TranslateVisitor {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        sb.append("new ProviderDefinedType(");
+        sb.append(ctx.stringLiteral().getText());
+        sb.append(", ");
+        visitGenericMapLiteral(ctx.genericMapLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         sb.append("ByteBuffer.wrap(Base64.getDecoder().decode(");
         sb.append(ctx.stringLiteral().getText());

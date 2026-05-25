@@ -28,6 +28,7 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.IntegrationTest.Util;
+using Gremlin.Net.Structure;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -203,6 +204,73 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using var gremlinClient = new GremlinClient(gremlinServer, loggerFactory: loggerFactory);
             
             logger.VerifyNothingWasLogged();
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripSimplePointPdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            Assert.Equal("Point", pdt.Name);
+            Assert.Equal(2, pdt.Properties.Count);
+            Assert.Equal(1, pdt.Properties["x"]);
+            Assert.Equal(2, pdt.Properties["y"]);
+        }
+
+        [Fact]
+        public async Task ShouldRoundTripNestedPdt()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, " +
+                "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var pdt = Assert.IsType<ProviderDefinedType>(results[0]);
+            Assert.Equal("Person", pdt.Name);
+            Assert.Equal("Alice", pdt.Properties["name"]);
+            Assert.Equal(30, pdt.Properties["age"]);
+
+            var address = Assert.IsType<ProviderDefinedType>(pdt.Properties["address"]);
+            Assert.Equal("Address", address.Name);
+            Assert.Equal("123 Main St", address.Properties["street"]);
+            Assert.Equal("Springfield", address.Properties["city"]);
+            Assert.Equal("12345", address.Properties["zip"]);
+        }
+
+        [Fact]
+        public async Task ShouldHandlePdtInCollection()
+        {
+            var gremlinServer = new GremlinServer(TestHost, TestPort);
+            using var gremlinClient = new GremlinClient(gremlinServer);
+
+            var response = await gremlinClient.SubmitAsync<object>(
+                "g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])");
+            var results = await response.ToListAsync();
+
+            Assert.Single(results);
+            var list = Assert.IsType<List<object>>(results[0]);
+            Assert.Equal(2, list.Count);
+
+            var p1 = Assert.IsType<ProviderDefinedType>(list[0]);
+            Assert.Equal("Point", p1.Name);
+            Assert.Equal(1, p1.Properties["x"]);
+            Assert.Equal(2, p1.Properties["y"]);
+
+            var p2 = Assert.IsType<ProviderDefinedType>(list[1]);
+            Assert.Equal("Point", p2.Name);
+            Assert.Equal(3, p2.Properties["x"]);
+            Assert.Equal(4, p2.Properties["y"]);
         }
     }
 }

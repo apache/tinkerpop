@@ -42,7 +42,7 @@ class Client:
                  request_serializer=serializer.GraphBinarySerializersV4(),
                  response_serializer=None, interceptors=None, auth=None,
                  headers=None, enable_user_agent_on_connect=True,
-                 bulk_results=False, **transport_kwargs):
+                 bulk_results=False, pdt_registry=None, **transport_kwargs):
         log.info("Creating Client with url '%s'", url)
 
         self._closed = False
@@ -56,6 +56,10 @@ class Client:
         self._traversal_source = traversal_source
         if response_serializer is None:
             response_serializer = serializer.GraphBinarySerializersV4()
+        if pdt_registry is not None:
+            if request_serializer is not None:
+                request_serializer.configure_pdt_registry(pdt_registry)
+            response_serializer.configure_pdt_registry(pdt_registry)
 
         self._auth = auth
         self._response_serializer = response_serializer

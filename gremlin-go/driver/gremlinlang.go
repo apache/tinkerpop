@@ -26,6 +26,7 @@ import (
 	"math"
 	"math/big"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -38,6 +39,7 @@ type GremlinLang struct {
 	gremlin           []string
 	parameters        map[string]interface{}
 	optionsStrategies []*traversalStrategy
+	pdtRegistry       *PDTRegistry
 }
 
 // NewGremlinLang creates a new GremlinLang to be used in traversals.
@@ -45,6 +47,7 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 	gremlin := make([]string, 0)
 	parameters := make(map[string]interface{})
 	optionsStrategies := make([]*traversalStrategy, 0)
+	var registry *PDTRegistry
 	if gl != nil {
 		gremlin = make([]string, len(gl.gremlin))
 		copy(gremlin, gl.gremlin)
@@ -56,12 +59,14 @@ func NewGremlinLang(gl *GremlinLang) *GremlinLang {
 
 		optionsStrategies = make([]*traversalStrategy, len(gl.optionsStrategies))
 		copy(optionsStrategies, gl.optionsStrategies)
+		registry = gl.pdtRegistry
 	}
 
 	return &GremlinLang{
 		gremlin:           gremlin,
 		parameters:        parameters,
 		optionsStrategies: optionsStrategies,
+		pdtRegistry:       registry,
 	}
 }
 
@@ -200,6 +205,16 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case dt:
 		name := reflect.ValueOf(v).Type().Name()
 		return fmt.Sprintf("%s.%s", strings.ToUpper(name), v), nil
+	case *ProviderDefinedType:
+		props := v.Properties
+		if props == nil {
+			props = map[string]interface{}{}
+		}
+		mapStr, err := gl.translateMap(props)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("PDT(\"%s\",%s)", escapeString(v.Name), mapStr), nil
 	case *Vertex:
 		return gl.argAsString(v.Id)
 	case textP:
@@ -284,6 +299,17 @@ func (gl *GremlinLang) argAsString(arg interface{}) (string, error) {
 	case []byte:
 		return fmt.Sprintf("Binary(\"%s\")", base64.StdEncoding.EncodeToString(v)), nil
 	default:
+		// Registry-based dehydration
+		if gl.pdtRegistry != nil {
+			adapter := gl.pdtRegistry.GetAdapterByType(reflect.TypeOf(arg))
+			if adapter != nil && adapter.ToProperties != nil {
+				props, err := adapter.ToProperties(arg)
+				if err == nil {
+					pdt := &ProviderDefinedType{Name: adapter.TypeName, Properties: props}
+					return gl.argAsString(pdt)
+				}
+			}
+		}
 		switch reflect.TypeOf(arg).Kind() {
 		case reflect.Map:
 			return gl.translateMap(arg)
@@ -308,14 +334,19 @@ func (gl *GremlinLang) translateMap(arg interface{}) (string, error) {
 	if size == 0 {
 		sb.WriteString(":")
 	} else {
-		iter := reflect.ValueOf(arg).MapRange()
-		for iter.Next() {
-			k := iter.Key().Interface()
+		mapVal := reflect.ValueOf(arg)
+		keys := mapVal.MapKeys()
+		// Sort keys for deterministic output (not semantic ordering)
+		sort.Slice(keys, func(i, j int) bool {
+			return fmt.Sprintf("%v", keys[i].Interface()) < fmt.Sprintf("%v", keys[j].Interface())
+		})
+		for idx, key := range keys {
+			k := key.Interface()
 			kString, err := gl.argAsString(k)
 			if err != nil {
 				return "", err
 			}
-			v := iter.Value().Interface()
+			v := mapVal.MapIndex(key).Interface()
 			vString, err := gl.argAsString(v)
 			if err != nil {
 				return "", err
@@ -323,8 +354,7 @@ func (gl *GremlinLang) translateMap(arg interface{}) (string, error) {
 			sb.WriteString(kString)
 			sb.WriteByte(':')
 			sb.WriteString(vString)
-			size--
-			if size > 0 {
+			if idx < len(keys)-1 {
 				sb.WriteString(",")
 			}
 		}

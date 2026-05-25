@@ -241,6 +241,16 @@ public class JavascriptTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     @Override
+    public Void visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) {
+        sb.append("new ProviderDefinedType(");
+        visitStringLiteral(ctx.stringLiteral());
+        sb.append(", ");
+        visitGenericMapLiteral(ctx.genericMapLiteral());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
     public Void visitBinaryLiteral(final GremlinParser.BinaryLiteralContext ctx) {
         sb.append("Buffer.from(");
         visitStringLiteral(ctx.stringLiteral());

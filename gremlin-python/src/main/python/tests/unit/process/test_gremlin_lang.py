@@ -579,3 +579,38 @@ class TestGremlinLang(object):
         result = GremlinLang.convert_parameters_to_string({'name': "it's a test"})
         assert "'name'" in result
         assert "it" in result
+
+    def test_provider_defined_auto_dehydration(self):
+        from gremlin_python.structure.graph import ProviderDefinedType, provider_defined
+        g = traversal().with_(None)
+
+        @provider_defined(name="com.example.Point")
+        class Point:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        p = Point(1, 2)
+        gremlin = g.inject(p).gremlin_lang.get_gremlin()
+        assert "PDT('com.example.Point',['x':1,'y':2])" in gremlin
+
+    def test_pdt_special_characters_in_name(self):
+        from gremlin_python.structure.graph import ProviderDefinedType
+        g = traversal().with_(None)
+
+        pdt = ProviderDefinedType('say"hello"', {'v': 1})
+        gremlin = g.inject(pdt).gremlin_lang.get_gremlin()
+        assert "PDT('say\"hello\"',['v':1])" in gremlin
+
+        pdt2 = ProviderDefinedType('back\\slash', {'v': 1})
+        gremlin2 = g.inject(pdt2).gremlin_lang.get_gremlin()
+        assert "PDT('back\\\\slash',['v':1])" in gremlin2
+
+    def test_pdt_nested(self):
+        from gremlin_python.structure.graph import ProviderDefinedType
+        g = traversal().with_(None)
+
+        inner = ProviderDefinedType('Inner', {'v': 1})
+        outer = ProviderDefinedType('Outer', {'inner': inner})
+        gremlin = g.inject(outer).gremlin_lang.get_gremlin()
+        assert "PDT('Outer',['inner':PDT('Inner',['v':1])])" in gremlin

@@ -23,9 +23,11 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using Gremlin.Net.Process.Traversal.Strategy;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
@@ -40,10 +42,16 @@ namespace Gremlin.Net.Process.Traversal
     public class GremlinLang : ICloneable, IEquatable<GremlinLang>
     {
         private static readonly object[] EmptyArray = Array.Empty<object>();
+        private static readonly ConcurrentDictionary<Type, (string name, PropertyInfo[] props)?> _pdtCache = new();
 
         private StringBuilder _gremlin = new();
         private Dictionary<string, object> _parameters = new();
         private List<OptionsStrategy> _optionsStrategies = new();
+
+        /// <summary>
+        ///     Gets or sets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration.
+        /// </summary>
+        public ProviderDefinedTypeRegistry? PdtRegistry { get; set; }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GremlinLang" /> class.
@@ -329,6 +337,25 @@ namespace Gremlin.Net.Process.Traversal
             if (arg is CardinalityValue cv)
                 return $"Cardinality.{cv.Cardinality!.EnumValue}({ArgAsString(cv.Value)})";
 
+            if (arg is ProviderDefinedType pdt)
+            {
+                var sb2 = new StringBuilder("[");
+                var count = pdt.Properties.Count;
+                if (count == 0)
+                {
+                    sb2.Append(':');
+                }
+                else
+                {
+                    foreach (var kvp in pdt.Properties)
+                    {
+                        sb2.Append(ArgAsString(kvp.Key)).Append(':').Append(ArgAsString(kvp.Value));
+                        if (--count > 0) sb2.Append(',');
+                    }
+                }
+                sb2.Append(']');
+                return $"PDT(\"{EscapeJava(pdt.Name)}\",{sb2})";
+            }
             if (arg is IDictionary dict)
                 return AsString(dict);
 
@@ -347,6 +374,33 @@ namespace Gremlin.Net.Process.Traversal
 
             if (arg is Type type)
                 return type.Name;
+
+            // Registry-based dehydration
+            if (PdtRegistry != null)
+            {
+                var adapterInfo = PdtRegistry.GetAdapterByType(arg.GetType());
+                if (adapterInfo != null)
+                {
+                    var (adapterTypeName, toProperties) = adapterInfo.Value;
+                    var props = toProperties(arg);
+                    return ArgAsString(new ProviderDefinedType(adapterTypeName,
+                        new Dictionary<string, object?>(props)));
+                }
+            }
+
+            // Auto-dehydrate objects annotated with [ProviderDefined]
+            var cached = GetPdtInfo(arg.GetType());
+            if (cached != null)
+            {
+                var (typeName, fields) = cached.Value;
+                ProviderDefinedAttribute.RegisteredTypes.TryAdd(typeName, arg.GetType());
+                var props = new Dictionary<string, object?>();
+                foreach (var field in fields)
+                {
+                    props[field.Name] = field.GetValue(arg);
+                }
+                return ArgAsString(new ProviderDefinedType(typeName, props));
+            }
 
             throw new ArgumentException(
                 $"GremlinLang contains at least one type [{arg.GetType().Name}] that cannot be represented as text.");
@@ -728,6 +782,39 @@ namespace Gremlin.Net.Process.Traversal
             return true;
         }
 
+        private static (string name, PropertyInfo[] props)? GetPdtInfo(Type type)
+        {
+            return _pdtCache.GetOrAdd(type, t =>
+            {
+                var attrs = t.GetCustomAttributes(typeof(ProviderDefinedAttribute), false);
+                if (attrs.Length == 0) return null;
+
+                var attr = (ProviderDefinedAttribute)attrs[0];
+                var typeName = string.IsNullOrEmpty(attr.Name) ? t.Name : attr.Name;
+
+                var included = attr.IncludedFields;
+                var excluded = attr.ExcludedFields;
+                if (included is { Length: > 0 } && excluded is { Length: > 0 })
+                {
+                    throw new ArgumentException(
+                        "[ProviderDefined] cannot specify both IncludedFields and ExcludedFields");
+                }
+
+                var includedSet = included is { Length: > 0 } ? new HashSet<string>(included) : null;
+                var excludedSet = excluded is { Length: > 0 } ? new HashSet<string>(excluded) : null;
+
+                var allProps = t.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var filtered = new List<PropertyInfo>();
+                foreach (var p in allProps)
+                {
+                    if (includedSet != null && !includedSet.Contains(p.Name)) continue;
+                    if (excludedSet != null && excludedSet.Contains(p.Name)) continue;
+                    filtered.Add(p);
+                }
+                return (typeName, filtered.ToArray());
+            });
+        }
+
         /// <summary>
         ///     Creates a deep copy of this <see cref="GremlinLang" /> instance.
         /// </summary>
@@ -738,7 +825,8 @@ namespace Gremlin.Net.Process.Traversal
             {
                 _gremlin = new StringBuilder(_gremlin.ToString()),
                 _parameters = new Dictionary<string, object>(_parameters),
-                _optionsStrategies = new List<OptionsStrategy>(_optionsStrategies)
+                _optionsStrategies = new List<OptionsStrategy>(_optionsStrategies),
+                PdtRegistry = PdtRegistry
             };
             return clone;
         }

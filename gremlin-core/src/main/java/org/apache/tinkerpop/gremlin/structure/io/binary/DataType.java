@@ -58,7 +58,8 @@ public enum DataType {
     CHAR(0X80),
     DURATION(0X81),
 
-    CUSTOM(0),
+    COMPOSITE_PDT(0xF0),
+
     MARKER(0XFD),
     UNSPECIFIED_NULL(0XFE);
 

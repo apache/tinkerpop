@@ -29,6 +29,7 @@ using Gremlin.Net.Driver.Messages;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
+using Gremlin.Net.Structure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -42,6 +43,11 @@ namespace Gremlin.Net.Driver.Remote
         private readonly IGremlinClient _client;
         private readonly string _traversalSource;
         private readonly ILogger<DriverRemoteConnection> _logger;
+
+        /// <summary>
+        ///     Gets or sets the <see cref="ProviderDefinedTypeRegistry"/> for registry-based dehydration.
+        /// </summary>
+        public ProviderDefinedTypeRegistry? PdtRegistry { get; set; }
 
         // All OptionsStrategy keys are passed through to the request fields.
         // The server filters out options that don't apply, and this allows
@@ -58,14 +64,17 @@ namespace Gremlin.Net.Driver.Remote
         ///     An optional list of request interceptors forwarded to the underlying
         ///     <see cref="GremlinClient" />.
         /// </param>
+        /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
         /// <exception cref="ArgumentNullException">Thrown when client is null.</exception>
         public DriverRemoteConnection(string host, int port, string traversalSource = "g",
             ILoggerFactory? loggerFactory = null,
-            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null) : this(
-            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors),
+            IReadOnlyList<Func<HttpRequestContext, Task>>? interceptors = null,
+            ProviderDefinedTypeRegistry? pdtRegistry = null) : this(
+            new GremlinClient(new GremlinServer(host, port), loggerFactory: loggerFactory, interceptors: interceptors, pdtRegistry: pdtRegistry),
             traversalSource,
             logger: loggerFactory?.CreateLogger<DriverRemoteConnection>() ?? NullLogger<DriverRemoteConnection>.Instance)
         {
+            PdtRegistry = pdtRegistry;
         }
 
         /// <summary>
@@ -73,10 +82,13 @@ namespace Gremlin.Net.Driver.Remote
         /// </summary>
         /// <param name="client">The <see cref="IGremlinClient" /> that will be used for the connection.</param>
         /// <param name="traversalSource">The name of the traversal source on the server to bind to.</param>
+        /// <param name="pdtRegistry">An optional registry for PDT hydration.</param>
         /// <exception cref="ArgumentNullException">Thrown when client or the traversalSource is null.</exception>
-        public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g")
+        public DriverRemoteConnection(IGremlinClient client, string traversalSource = "g",
+            ProviderDefinedTypeRegistry? pdtRegistry = null)
             : this(client, traversalSource, logger: null)
         {
+            PdtRegistry = pdtRegistry;
         }
 
         private DriverRemoteConnection(IGremlinClient client, string traversalSource,

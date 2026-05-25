@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.util.ser.binary;
 
-import org.apache.tinkerpop.gremlin.util.ser.binary.types.sample.SamplePerson;
-import org.apache.tinkerpop.gremlin.util.ser.binary.types.sample.SamplePersonSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.DataType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
@@ -93,18 +91,18 @@ public class TypeSerializerRegistryTest {
 
         String message = null;
         try {
-            registry.getSerializer(SamplePerson.class);
+            registry.getSerializer(StringBuilder.class);
         } catch (IOException ex) {
             message = ex.getMessage();
         }
 
-        assertEquals("Serializer for type org.apache.tinkerpop.gremlin.util.ser.binary.types.sample.SamplePerson not found", message);
+        assertEquals("Serializer not found for type java.lang.StringBuilder. If this is a provider-defined type, annotate the class with @ProviderDefined.", message);
         assertEquals(1, called[0]);
     }
 
     @Test
     public void shouldUseFallbackResolverReturnValue() throws IOException {
-        TypeSerializer expected = new SamplePersonSerializer();
+        TypeSerializer expected = new TestUUIDSerializer();
         final int[] called = {0};
         final TypeSerializerRegistry registry = TypeSerializerRegistry.build()
                 .withFallbackResolver(t -> {
@@ -112,7 +110,7 @@ public class TypeSerializerRegistryTest {
                     return expected;
                 }).create();
 
-        TypeSerializer<SamplePerson> serializer = registry.getSerializer(SamplePerson.class);
+        TypeSerializer<StringBuilder> serializer = registry.getSerializer(StringBuilder.class);
         assertEquals(1, called[0]);
         assertSame(expected, serializer);
     }

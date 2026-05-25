@@ -1088,5 +1088,91 @@ namespace Gremlin.Net.UnitTest.Process.Traversal
             var result = GremlinLang.ConvertParametersToString(parameters);
             Assert.Contains("\"name\":", result);
         }
+
+        [Fact]
+        public void g_Inject_PDT_basic()
+        {
+            var pdt = new ProviderDefinedType("Point", new Dictionary<string, object?> { { "x", 1 }, { "y", 2 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Point\",[\"x\":1,\"y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_special_chars_in_name()
+        {
+            var pdt = new ProviderDefinedType("my\"type", new Dictionary<string, object?> { { "a", 1 } });
+            var result = _g.Inject((object)pdt).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"my\\\"type\",[\"a\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_nested()
+        {
+            var inner = new ProviderDefinedType("Inner", new Dictionary<string, object?> { { "v", 42 } });
+            var outer = new ProviderDefinedType("Outer", new Dictionary<string, object?> { { "child", inner } });
+            var result = _g.Inject((object)outer).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"Outer\",[\"child\":PDT(\"Inner\",[\"v\":42])]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_via_attribute()
+        {
+            var point = new TestPoint { X = 10, Y = 20 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"geo.Point\",[\"X\":10,\"Y\":20]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_IncludedFields()
+        {
+            var point = new IncludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"IncludedFieldsPoint\",[\"X\":1]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_ExcludedFields()
+        {
+            var point = new ExcludedFieldsPoint { X = 1, Y = 2, Z = 3 };
+            var result = _g.Inject((object)point).GremlinLang.GetGremlin();
+            Assert.Equal("g.inject(PDT(\"ExcludedFieldsPoint\",[\"X\":1,\"Y\":2]))", result);
+        }
+
+        [Fact]
+        public void g_Inject_PDT_auto_dehydration_both_fields_throws()
+        {
+            var point = new BothFieldsPoint { X = 1, Y = 2 };
+            Assert.Throws<ArgumentException>(() => _g.Inject((object)point).GremlinLang.GetGremlin());
+        }
+
+        [ProviderDefined(Name = "geo.Point")]
+        private class TestPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" })]
+        private class IncludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(ExcludedFields = new[] { "Z" })]
+        private class ExcludedFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+            public int Z { get; set; }
+        }
+
+        [ProviderDefined(IncludedFields = new[] { "X" }, ExcludedFields = new[] { "Y" })]
+        private class BothFieldsPoint
+        {
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
     }
 }

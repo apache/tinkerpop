@@ -26,6 +26,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver.Messages;
+using Gremlin.Net.Structure;
 
 namespace Gremlin.Net.Driver
 {
@@ -61,5 +62,12 @@ namespace Gremlin.Net.Driver
         /// <returns>An async sequence of deserialized result objects.</returns>
         IAsyncEnumerable<object> DeserializeMessageAsync(Stream stream,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        ///     Sets the <see cref="ProviderDefinedTypeRegistry"/> for automatic hydration
+        ///     of provider-defined types during deserialization. The default implementation
+        ///     is a no-op for serializers that do not support PDT hydration.
+        /// </summary>
+        void SetPdtRegistry(ProviderDefinedTypeRegistry pdtRegistry) { }
     }
 }

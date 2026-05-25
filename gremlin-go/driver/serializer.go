@@ -24,7 +24,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"sync"
 )
 
 const graphBinaryMimeType = "application/vnd.graphbinary-v4.0"
@@ -40,22 +39,12 @@ type GraphBinarySerializer struct {
 	ser *graphBinaryTypeSerializer
 }
 
-// CustomTypeReader user provided function to deserialize custom types
-// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
-type CustomTypeReader func(data *[]byte, i *int) (interface{}, error)
-
 type writer func(interface{}, io.Writer, *graphBinaryTypeSerializer) error
 
 var serializers map[dataType]writer
 
-// customTypeReaderLock used to synchronize access to the customDeserializers map
-// Deprecated: Custom type deserialization is handled by GraphBinaryDeserializer
-var customTypeReaderLock = sync.RWMutex{}
-var customDeserializers map[string]CustomTypeReader
-
 func init() {
 	initSerializers()
-	customDeserializers = map[string]CustomTypeReader{}
 }
 
 func newGraphBinarySerializer(handler *logHandler) *GraphBinarySerializer {
@@ -232,21 +221,8 @@ func initSerializers() {
 		setType:            setWriter,
 		byteBuffer:         byteBufferWriter,
 		markerType:         markerWriter,
+		compositePDTType:   pdtWriter,
 	}
 }
 
-// RegisterCustomTypeReader register a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
-func RegisterCustomTypeReader(customTypeName string, reader CustomTypeReader) {
-	customTypeReaderLock.Lock()
-	defer customTypeReaderLock.Unlock()
-	customDeserializers[customTypeName] = reader
-}
 
-// UnregisterCustomTypeReader unregister a reader (deserializer) for a custom type
-// Deprecated: Custom type deserialization should be handled by extending GraphBinaryDeserializer
-func UnregisterCustomTypeReader(customTypeName string) {
-	customTypeReaderLock.Lock()
-	defer customTypeReaderLock.Unlock()
-	delete(customDeserializers, customTypeName)
-}

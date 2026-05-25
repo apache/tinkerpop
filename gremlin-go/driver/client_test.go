@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
@@ -292,4 +293,98 @@ func AssertMarkoVertexWithoutProperties(t *testing.T, result *Result) {
 	properties, ok := vertex.Properties.([]interface{})
 	assert.True(t, ok)
 	assert.Equal(t, 0, len(properties))
+}
+
+func TestProviderDefinedTypeIntegration(t *testing.T) {
+	testNoAuthUrl := getEnvOrDefaultString("GREMLIN_SERVER_URL", noAuthUrl)
+	testNoAuthEnable := getEnvOrDefaultBool("RUN_INTEGRATION_TESTS", true)
+
+	t.Run("simple Point PDT round-trip", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.TlsConfig = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit("g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		pdt, ok := result.Data.(*ProviderDefinedType)
+		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
+		assert.Equal(t, "Point", pdt.Name)
+		assert.Equal(t, int32(1), pdt.Properties["x"])
+		assert.Equal(t, int32(2), pdt.Properties["y"])
+	})
+
+	t.Run("nested PDT (Person with Address)", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.TlsConfig = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit(
+			"g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, " +
+				"\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		pdt, ok := result.Data.(*ProviderDefinedType)
+		require.True(t, ok, "expected *ProviderDefinedType, got %T", result.Data)
+		assert.Equal(t, "Person", pdt.Name)
+		assert.Equal(t, "Alice", pdt.Properties["name"])
+		assert.Equal(t, int32(30), pdt.Properties["age"])
+
+		address, ok := pdt.Properties["address"].(*ProviderDefinedType)
+		require.True(t, ok, "expected nested *ProviderDefinedType for address")
+		assert.Equal(t, "Address", address.Name)
+		assert.Equal(t, "123 Main St", address.Properties["street"])
+		assert.Equal(t, "Springfield", address.Properties["city"])
+		assert.Equal(t, "12345", address.Properties["zip"])
+	})
+
+	t.Run("PDT in collection", func(t *testing.T) {
+		skipTestsIfNotEnabled(t, integrationTestSuiteName, testNoAuthEnable)
+		client, err := NewClient(testNoAuthUrl, func(settings *ClientSettings) {
+			settings.TlsConfig = &tls.Config{}
+			settings.TraversalSource = testServerModernGraphAlias
+		})
+		require.NoError(t, err)
+		defer client.Close()
+
+		rs, err := client.Submit(
+			"g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])")
+		require.NoError(t, err)
+
+		result, ok, err := rs.One()
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		list, ok := result.Data.([]interface{})
+		require.True(t, ok, "expected []interface{}, got %T", result.Data)
+		require.Len(t, list, 2)
+
+		p1, ok := list[0].(*ProviderDefinedType)
+		require.True(t, ok)
+		assert.Equal(t, "Point", p1.Name)
+		assert.Equal(t, int32(1), p1.Properties["x"])
+		assert.Equal(t, int32(2), p1.Properties["y"])
+
+		p2, ok := list[1].(*ProviderDefinedType)
+		require.True(t, ok)
+		assert.Equal(t, "Point", p2.Name)
+		assert.Equal(t, int32(3), p2.Properties["x"])
+		assert.Equal(t, int32(4), p2.Properties["y"])
+	})
 }

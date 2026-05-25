@@ -1358,6 +1358,10 @@ public class DefaultGremlinBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
     /**
 	 * {@inheritDoc}
 	 */
+    @Override public T visitPdtLiteral(final GremlinParser.PdtLiteralContext ctx) { notImplemented(ctx); return null; }
+    /**
+	 * {@inheritDoc}
+	 */
 	@Override public T visitPageRankStringConstant(final GremlinParser.PageRankStringConstantContext ctx) { notImplemented(ctx); return null; }
 	/**
 	 * {@inheritDoc}

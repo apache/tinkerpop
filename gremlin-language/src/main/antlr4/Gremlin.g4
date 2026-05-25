@@ -1636,6 +1636,7 @@ genericLiteral
     | characterLiteral
     | durationLiteral
     | binaryLiteral
+    | pdtLiteral
     | genericMapLiteral
     ;
 
@@ -1726,6 +1727,10 @@ durationLiteral
 
 binaryLiteral
     : K_BINARYC LPAREN stringLiteral RPAREN
+    ;
+
+pdtLiteral
+    : K_PDT LPAREN stringLiteral COMMA genericMapLiteral RPAREN
     ;
 
 
@@ -1951,6 +1956,7 @@ keyword
     | K_PAGERANKU
     | K_PATH
     | K_PATHU
+    | K_PDT
     | K_PEERPRESSURE
     | K_PEERPRESSUREU
     | K_PICK
@@ -2263,6 +2269,7 @@ K_PAGERANKU: 'PageRank';
 K_PAGERANK: 'pageRank';
 K_PATH: 'path';
 K_PATHU: 'PATH';
+K_PDT: 'PDT';
 K_PEERPRESSUREU: 'PeerPressure';
 K_PEERPRESSURE: 'peerPressure';
 K_PICK: 'Pick';

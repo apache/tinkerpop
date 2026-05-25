@@ -23,24 +23,20 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Buffer;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryIo;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryMapper;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryReader;
 import org.apache.tinkerpop.gremlin.structure.io.binary.GraphBinaryWriter;
 import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.util.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.util.ser.binary.RequestMessageSerializer;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -48,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<GraphBinaryMapper> {
-    public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_BUILDER = "builder";
 
     private GraphBinaryReader reader;
@@ -68,6 +63,14 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
 
     public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry) {
         reader = new GraphBinaryReader(registry);
+        writer = new GraphBinaryWriter(registry);
+        mapper = new GraphBinaryMapper(writer, reader);
+
+        requestSerializer = new RequestMessageSerializer();
+    }
+
+    public GraphBinaryMessageSerializerV4(final TypeSerializerRegistry registry, final ProviderDefinedTypeRegistry pdtRegistry) {
+        reader = new GraphBinaryReader(registry, pdtRegistry);
         writer = new GraphBinaryWriter(registry);
         mapper = new GraphBinaryMapper(writer, reader);
 
@@ -100,27 +103,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
             builder = TypeSerializerRegistry.build();
         }
 
-        final List<String> classNameList = getListStringFromConfig(TOKEN_IO_REGISTRIES, config);
-        classNameList.forEach(className -> {
-            try {
-                final Class<?> clazz = Class.forName(className);
-                try {
-                    final Method instanceMethod = tryInstanceMethod(clazz);
-                    final IoRegistry ioreg = (IoRegistry) instanceMethod.invoke(null);
-                    final List<Pair<Class, CustomTypeSerializer>> classSerializers = ioreg.find(GraphBinaryIo.class, CustomTypeSerializer.class);
-                    for (Pair<Class,CustomTypeSerializer> cs : classSerializers) {
-                        builder.addCustomType(cs.getValue0(), cs.getValue1());
-                    }
-                } catch (Exception methodex) {
-                    throw new IllegalStateException(String.format("Could not instantiate IoRegistry from an instance() method on %s", className), methodex);
-                }
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        });
-
-        addCustomClasses(config, builder);
-
         final TypeSerializerRegistry registry = builder.create();
         reader = new GraphBinaryReader(registry);
         writer = new GraphBinaryWriter(registry);
@@ -131,34 +113,6 @@ public class GraphBinaryMessageSerializerV4 extends AbstractMessageSerializer<Gr
     @Override
     public String[] mimeTypesSupported() {
         return new String[] {MIME_TYPE};
-    }
-
-    private void addCustomClasses(final Map<String, Object> config, final TypeSerializerRegistry.Builder builder) {
-        final List<String> classNameList = getListStringFromConfig(TOKEN_CUSTOM, config);
-
-        classNameList.forEach(serializerDefinition -> {
-            final String className;
-            final String serializerName;
-            if (serializerDefinition.contains(";")) {
-                final String[] split = serializerDefinition.split(";");
-                if (split.length != 2)
-                    throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
-
-                className = split[0];
-                serializerName = split[1];
-            } else {
-                throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
-            }
-
-            try {
-                final Class clazz = Class.forName(className);
-                final Class serializerClazz = Class.forName(serializerName);
-                final CustomTypeSerializer serializer = (CustomTypeSerializer) serializerClazz.newInstance();
-                builder.addCustomType(clazz, serializer);
-            } catch (Exception ex) {
-                throw new IllegalStateException("CustomTypeSerializer could not be instantiated", ex);
-            }
-        });
     }
 
     @Override

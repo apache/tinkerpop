@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.remote.traversal.RemoteTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.GremlinLang;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Optional;
@@ -54,6 +55,7 @@ public class DriverRemoteConnection implements RemoteConnection {
     private transient Optional<Configuration> conf = Optional.empty();
 
     private final boolean attachElements;
+    private ProviderDefinedTypeRegistry pdtRegistry;
 
     public DriverRemoteConnection(final Configuration conf) {
         final boolean hasClusterConf = IteratorUtils.anyMatch(conf.getKeys(), k -> k.startsWith("clusterConfiguration"));
@@ -212,6 +214,18 @@ public class DriverRemoteConnection implements RemoteConnection {
         else {
             return using(Cluster.open(conf.subset("clusterConfiguration")), remoteTraversalSourceName);
         }
+    }
+
+    @Override
+    public ProviderDefinedTypeRegistry getPdtRegistry() {
+        return pdtRegistry;
+    }
+
+    /**
+     * Sets the {@link ProviderDefinedTypeRegistry} for registry-based dehydration in the gremlin-lang translator.
+     */
+    public void setPdtRegistry(final ProviderDefinedTypeRegistry pdtRegistry) {
+        this.pdtRegistry = pdtRegistry;
     }
 
     @Override

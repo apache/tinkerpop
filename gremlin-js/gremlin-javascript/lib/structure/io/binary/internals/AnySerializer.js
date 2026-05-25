@@ -44,6 +44,7 @@ export default class AnySerializer {
       ioc.enumSerializer,
       ioc.stringSerializer,
       ioc.binarySerializer,
+      ioc.compositePDTSerializer,
       ioc.mapSerializer,
     ];
   }

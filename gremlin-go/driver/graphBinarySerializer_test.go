@@ -719,3 +719,104 @@ func TestWriterErrorPropagation(t *testing.T) {
 		assert.Equal(t, 22, w.written)
 	})
 }
+
+func TestProviderDefinedTypeSerialization(t *testing.T) {
+	serializer := graphBinaryTypeSerializer{newLogHandler(&defaultLogger{}, Error, language.English)}
+
+	t.Run("round-trip simple PDT", func(t *testing.T) {
+		source := &ProviderDefinedType{
+			Name:       "com.example.MyType",
+			Properties: map[string]interface{}{"key": "value", "num": int32(42)},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*ProviderDefinedType)
+		assert.True(t, ok)
+		assert.Equal(t, source.Name, pdt.Name)
+		assert.Equal(t, source.Properties["key"], pdt.Properties["key"])
+		assert.Equal(t, source.Properties["num"], pdt.Properties["num"])
+	})
+
+	t.Run("round-trip nested PDT", func(t *testing.T) {
+		inner := &ProviderDefinedType{
+			Name:       "com.example.Inner",
+			Properties: map[string]interface{}{"x": int32(1)},
+		}
+		outer := &ProviderDefinedType{
+			Name:       "com.example.Outer",
+			Properties: map[string]interface{}{"child": inner},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(outer, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*ProviderDefinedType)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.Outer", pdt.Name)
+		child, ok := pdt.Properties["child"].(*ProviderDefinedType)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.Inner", child.Name)
+		assert.Equal(t, int32(1), child.Properties["x"])
+	})
+
+	t.Run("empty name produces error", func(t *testing.T) {
+		data := []byte{
+			0xf0, 0x00,
+			0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x0a, 0x00, 0x00, 0x00, 0x00, 0x00,
+		}
+		d := NewGraphBinaryDeserializer(bytes.NewReader(data))
+		_, err := d.ReadFullyQualified()
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "non-empty")
+	})
+
+	t.Run("auto-hydrate with registry", func(t *testing.T) {
+		registry := NewPDTRegistry()
+		registry.RegisterFuncs("com.example.MyType",
+			func(props map[string]interface{}) (interface{}, error) {
+				return map[string]interface{}{"hydrated": true, "key": props["key"]}, nil
+			}, nil)
+
+		source := &ProviderDefinedType{
+			Name:       "com.example.MyType",
+			Properties: map[string]interface{}{"key": "value"},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializerWithRegistry(bytes.NewReader(buf.Bytes()), registry)
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		m, ok := result.(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, true, m["hydrated"])
+		assert.Equal(t, "value", m["key"])
+	})
+
+	t.Run("no hydration without registry", func(t *testing.T) {
+		source := &ProviderDefinedType{
+			Name:       "com.example.MyType",
+			Properties: map[string]interface{}{"key": "value"},
+		}
+		var buf bytes.Buffer
+		err := serializer.write(source, &buf)
+		assert.Nil(t, err)
+
+		d := NewGraphBinaryDeserializer(bytes.NewReader(buf.Bytes()))
+		result, err := d.ReadFullyQualified()
+		assert.Nil(t, err)
+		pdt, ok := result.(*ProviderDefinedType)
+		assert.True(t, ok)
+		assert.Equal(t, "com.example.MyType", pdt.Name)
+	})
+}

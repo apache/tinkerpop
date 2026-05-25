@@ -46,6 +46,8 @@ class GraphTraversalSource(object):
         self.graph_traversal = GraphTraversal
         if remote_connection:
             self.traversal_strategies.add_strategies([RemoteStrategy(remote_connection)])
+            if hasattr(remote_connection, 'pdt_registry') and remote_connection.pdt_registry is not None:
+                self.gremlin_lang.pdt_registry = remote_connection.pdt_registry
         self.remote_connection = remote_connection
 
     def __repr__(self):

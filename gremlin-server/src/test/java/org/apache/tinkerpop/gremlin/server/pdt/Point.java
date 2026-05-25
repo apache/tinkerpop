@@ -16,31 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.util.ser.binary.types.sample;
+package org.apache.tinkerpop.gremlin.server.pdt;
 
-import java.time.OffsetDateTime;
-import java.util.Objects;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
 
 /**
- * A sample custom data type containing few properties.
+ * A simple test class annotated with {@link ProviderDefined} for PDT integration testing.
  */
-public class SamplePerson {
-    private final String name;
-    private final OffsetDateTime birthDate;
+@ProviderDefined(name = "Point")
+public class Point {
+    public int x;
+    public int y;
 
-    SamplePerson(final String name, final OffsetDateTime birthDate) {
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(birthDate);
-
-        this.name = name;
-        this.birthDate = birthDate;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public OffsetDateTime getBirthDate() {
-        return birthDate;
+    public Point(final int x, final int y) {
+        this.x = x;
+        this.y = y;
     }
 }

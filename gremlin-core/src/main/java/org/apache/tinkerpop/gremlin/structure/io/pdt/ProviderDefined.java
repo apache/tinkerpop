@@ -16,17 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.binary.types;
+package org.apache.tinkerpop.gremlin.structure.io.pdt;
 
-import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializer;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Represents a serializer for a custom (provider specific) serializer.
- * @param <T>
+ * Marks a class as a provider-defined type for serialization via {@link ProviderDefinedType}.
  */
-public interface CustomTypeSerializer<T> extends TypeSerializer<T> {
-    /**
-     * Gets the custom type name.
-     */
-    String getTypeName();
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ProviderDefined {
+    String name() default "";
+    String[] includedFields() default {};
+    String[] excludedFields() default {};
 }

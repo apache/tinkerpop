@@ -66,6 +66,7 @@ import MarkerSerializer from './internals/MarkerSerializer.js';
 import UnspecifiedNullSerializer from './internals/UnspecifiedNullSerializer.js';
 import EnumSerializer from './internals/EnumSerializer.js';
 import StubSerializer from './internals/StubSerializer.js';
+import CompositePDTSerializer from './internals/CompositePDTSerializer.js';
 import NumberSerializationStrategy from './internals/NumberSerializationStrategy.js';
 import AnySerializer from './internals/AnySerializer.js';
 import GraphBinaryReader from './internals/GraphBinaryReader.js';
@@ -81,35 +82,37 @@ function createIoc(anySerializerOptions) {
 
   ioc.serializers = {};
 
-ioc.intSerializer = new IntSerializer(ioc);
-ioc.longSerializer = new LongSerializer(ioc);
-ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
-ioc.dateTimeSerializer = new DateTimeSerializer(ioc);
-ioc.doubleSerializer = new DoubleSerializer(ioc);
-ioc.floatSerializer = new FloatSerializer(ioc);
-ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
-ioc.mapSerializer = new MapSerializer(ioc);
-ioc.setSerializer = new SetSerializer(ioc, ioc.DataType.SET);
-ioc.uuidSerializer = new UuidSerializer(ioc);
-ioc.edgeSerializer = new EdgeSerializer(ioc);
-ioc.pathSerializer = new PathSerializer(ioc);
-ioc.propertySerializer = new PropertySerializer(ioc);
-ioc.vertexSerializer = new VertexSerializer(ioc);
-ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
-ioc.graphSerializer = new GraphSerializer(ioc);
-ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
-ioc.byteSerializer = new ByteSerializer(ioc);
-ioc.binarySerializer = new BinarySerializer(ioc);
-ioc.shortSerializer = new ShortSerializer(ioc);
-ioc.booleanSerializer = new BooleanSerializer(ioc);
-ioc.markerSerializer = new MarkerSerializer(ioc);
-ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
-ioc.enumSerializer = new EnumSerializer(ioc);
+  ioc.intSerializer = new IntSerializer(ioc);
+  ioc.longSerializer = new LongSerializer(ioc);
+  ioc.stringSerializer = new StringSerializer(ioc, ioc.DataType.STRING);
+  ioc.dateTimeSerializer = new DateTimeSerializer(ioc);
+  ioc.doubleSerializer = new DoubleSerializer(ioc);
+  ioc.floatSerializer = new FloatSerializer(ioc);
+  ioc.listSerializer = new ArraySerializer(ioc, ioc.DataType.LIST);
+  ioc.mapSerializer = new MapSerializer(ioc);
+  ioc.setSerializer = new SetSerializer(ioc, ioc.DataType.SET);
+  ioc.uuidSerializer = new UuidSerializer(ioc);
+  ioc.edgeSerializer = new EdgeSerializer(ioc);
+  ioc.pathSerializer = new PathSerializer(ioc);
+  ioc.propertySerializer = new PropertySerializer(ioc);
+  ioc.vertexSerializer = new VertexSerializer(ioc);
+  ioc.vertexPropertySerializer = new VertexPropertySerializer(ioc);
+  ioc.graphSerializer = new GraphSerializer(ioc);
+  ioc.bigIntegerSerializer = new BigIntegerSerializer(ioc);
+  ioc.byteSerializer = new ByteSerializer(ioc);
+  ioc.binarySerializer = new BinarySerializer(ioc);
+  ioc.shortSerializer = new ShortSerializer(ioc);
+  ioc.booleanSerializer = new BooleanSerializer(ioc);
+  ioc.markerSerializer = new MarkerSerializer(ioc);
+  ioc.unspecifiedNullSerializer = new UnspecifiedNullSerializer(ioc);
+  ioc.enumSerializer = new EnumSerializer(ioc);
+  ioc.compositePDTSerializer = new CompositePDTSerializer(ioc);
 
-// Register stub serializers for unimplemented v4 types
-new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
-new StubSerializer(ioc, ioc.DataType.COMPOSITEPDT, 'CompositePDT');
-new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
+  // Register stub serializers for unimplemented v4 types
+  new StubSerializer(ioc, ioc.DataType.TREE, 'Tree');
+  new StubSerializer(ioc, ioc.DataType.PRIMITIVEPDT, 'PrimitivePDT');
+
+  ioc.pdtRegistry = null;
 
   ioc.numberSerializationStrategy = new NumberSerializationStrategy(ioc);
   ioc.anySerializer = new AnySerializer(ioc, anySerializerOptions);
@@ -173,6 +176,7 @@ export const {
   markerSerializer,
   unspecifiedNullSerializer,
   enumSerializer,
+  compositePDTSerializer,
   numberSerializationStrategy,
   anySerializer,
   graphBinaryReader,

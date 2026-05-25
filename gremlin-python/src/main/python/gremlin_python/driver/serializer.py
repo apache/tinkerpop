@@ -34,16 +34,23 @@ class GraphBinarySerializersV4(object):
 
     int_pack = graphbinaryV4.int32_pack
 
-    def __init__(self, reader=None, writer=None, version=None):
+    def __init__(self, reader=None, writer=None, version=None, pdt_registry=None):
         if not version:
             version = self.DEFAULT_VERSION
         self._version = version
         if not reader:
-            reader = self.DEFAULT_READER_CLASS()
+            reader = self.DEFAULT_READER_CLASS(pdt_registry=pdt_registry)
         self._graphbinary_reader = reader
         if not writer:
             writer = self.DEFAULT_WRITER_CLASS()
         self._graphbinary_writer = writer
+
+    def configure_pdt_registry(self, pdt_registry):
+        if self._graphbinary_reader.pdt_registry is None:
+            self._graphbinary_reader.pdt_registry = pdt_registry
+        else:
+            self._graphbinary_reader.pdt_registry._adapters_by_name.update(pdt_registry._adapters_by_name)
+            self._graphbinary_reader.pdt_registry._adapters_by_class.update(pdt_registry._adapters_by_class)
 
     @property
     def version(self):

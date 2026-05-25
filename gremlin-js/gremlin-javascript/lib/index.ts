@@ -25,6 +25,7 @@ import * as t from './process/traversal.js';
 import * as gt from './process/graph-traversal.js';
 import * as strategiesModule from './process/traversal-strategy.js';
 import * as graph from './structure/graph.js';
+import { ProviderDefinedTypeRegistry } from './structure/ProviderDefinedTypeRegistry.js';
 import * as rc from './driver/remote-connection.js';
 import GremlinLang from './process/gremlin-lang.js';
 import * as utils from './utils.js';
@@ -84,6 +85,8 @@ export const structure = {
   Graph: graph.Graph,
   Path: graph.Path,
   Property: graph.Property,
+  ProviderDefinedType: graph.ProviderDefinedType,
+  ProviderDefinedTypeRegistry,
   Vertex: graph.Vertex,
   VertexProperty: graph.VertexProperty,
   toLong: utils.toLong,

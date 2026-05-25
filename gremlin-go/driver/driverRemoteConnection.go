@@ -59,6 +59,9 @@ type DriverRemoteConnectionSettings struct {
 
 	// RequestInterceptors are functions that modify HTTP requests before sending.
 	RequestInterceptors []RequestInterceptor
+
+	// PDTRegistry enables registry-based dehydration in the gremlin-lang translator.
+	PDTRegistry *PDTRegistry
 }
 
 // DriverRemoteConnection is a remote connection.
@@ -103,6 +106,7 @@ func NewDriverRemoteConnection(
 		keepAliveInterval:        settings.KeepAliveInterval,
 		enableCompression:        settings.EnableCompression,
 		enableUserAgentOnConnect: settings.EnableUserAgentOnConnect,
+		pdtRegistry:              settings.PDTRegistry,
 	}
 
 	logHandler := newLogHandler(settings.Logger, settings.LogVerbosity, settings.Language)

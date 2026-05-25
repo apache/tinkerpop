@@ -18,6 +18,7 @@
 #
 
 import concurrent.futures
+from collections import namedtuple
 from json import dumps
 import os
 import ssl
@@ -39,6 +40,14 @@ anonymous_url = gremlin_server_url.format(45940)
 basic_url = gremlin_basic_auth_url.format(45941)
 
 verbose_logging = False
+
+# Shared namedtuple used by remote_connection_with_registry fixture and its tests.
+RegistryPoint = namedtuple('RegistryPoint', ['x', 'y'])
+
+
+@pytest.fixture
+def registry_point_class():
+    return RegistryPoint
 
 logging.basicConfig(format='%(asctime)s [%(levelname)8s] [%(filename)15s:%(lineno)d - %(funcName)10s()] - %(message)s',
                     level=logging.DEBUG if verbose_logging else logging.INFO)
@@ -209,6 +218,27 @@ def client_with_interceptor(request):
 
         request.addfinalizer(fin)
         return client
+
+
+@pytest.fixture
+def remote_connection_with_registry(request):
+    from gremlin_python.structure.graph import ProviderDefinedTypeRegistry
+
+    registry = ProviderDefinedTypeRegistry()
+    registry.register('RegistryPoint',
+                      deserialize_fn=lambda props: RegistryPoint(x=props['x'], y=props['y']),
+                      serialize_fn=lambda p: {'x': p.x, 'y': p.y},
+                      target_class=RegistryPoint)
+    try:
+        remote_conn = DriverRemoteConnection(anonymous_url, 'gmodern', pdt_registry=registry)
+    except OSError:
+        pytest.skip('Gremlin Server is not running')
+    else:
+        def fin():
+            remote_conn.close()
+
+        request.addfinalizer(fin)
+        return remote_conn
 
 
 def json_interceptor(request):

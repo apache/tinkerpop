@@ -48,6 +48,9 @@ func NewGraphTraversalSource(graph *Graph, remoteConnection remoteConnection,
 	traversalStrategies ...TraversalStrategy) *GraphTraversalSource {
 	// TODO: revisit when updating strategies
 	gl := NewGremlinLang(nil)
+	if remoteConnection != nil && remoteConnection.settings != nil && remoteConnection.settings.PDTRegistry != nil {
+		gl.pdtRegistry = remoteConnection.settings.PDTRegistry
+	}
 	return &GraphTraversalSource{graph: graph, gremlinLang: gl, remoteConnection: remoteConnection}
 }
 
@@ -144,6 +147,9 @@ func (gts *GraphTraversalSource) With(key interface{}, value interface{}) *Graph
 // WithRemote adds a remote to be used throughout the life of a spawned Traversal.
 func (gts *GraphTraversalSource) WithRemote(remoteConnection *DriverRemoteConnection) *GraphTraversalSource {
 	gts.remoteConnection = remoteConnection
+	if remoteConnection != nil && remoteConnection.settings != nil && remoteConnection.settings.PDTRegistry != nil {
+		gts.gremlinLang.pdtRegistry = remoteConnection.settings.PDTRegistry
+	}
 	if gts.graphTraversal != nil {
 		gts.graphTraversal.remote = remoteConnection
 	}

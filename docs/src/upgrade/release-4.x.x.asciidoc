@@ -530,9 +530,37 @@ It cannot be passed to `traversal().with(...)`, and mutating its collections has
 re-query elements against the original graph, extract their ids and call `g.V(id)` or `g.E(id)` against the original
 `GraphTraversalSource`.
 
+==== Provider Defined Types
+
+Graph providers may now expose custom types as Provider Defined Types (PDT) (replacing the old `CustomTypeSerializer`
+mechanism). The key improvement is that the default case now works out of the box — drivers deserialize PDT values
+as `ProviderDefinedType` objects containing a `name` and a `properties` map without any configuration, eliminating
+the serializer errors that occurred with unknown custom types in TP3. For automatic conversion between PDT values and
+application-specific types, each driver supports an optional registry or annotation mechanism, which requires similar
+effort to the old custom serializer approach but is entirely optional for basic usage:
+
+* <<gremlin-java-pdt,Gremlin-Java>>
+* <<gremlin-python-pdt,Gremlin-Python>>
+* <<gremlin-javascript-pdt,Gremlin-JavaScript>>
+* <<gremlin-dotnet-pdt,Gremlin.Net>>
+* <<gremlin-go-pdt,Gremlin-Go>>
+
+
 === Upgrading for Providers
 
 ==== Graph System Providers
+
+===== Provider Defined Types
+
+TinkerPop 4 replaces the TP3 `CustomTypeSerializer` mechanism with Provider Defined Types (PDT). The key improvement
+is that driver users receive PDT values as structured `ProviderDefinedType` objects by default, without any
+configuration — eliminating the serializer errors that unknown custom types caused in TP3. Providers expose types by
+annotating classes with `@ProviderDefined` or implementing `ProviderDefinedTypeAdapter<T>` for types they don't own;
+adapters are discovered automatically via ServiceLoader, requiring similar effort to the old approach but benefiting
+all driver users transparently.
+
+See <<provider-defined-types>> for full details on annotation usage, field filtering, nested types, and ServiceLoader
+registration.
 
 ==== Graph Driver Providers
 

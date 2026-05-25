@@ -20,19 +20,22 @@
 import { P, TextP, EnumValue } from './traversal.js';
 import { OptionsStrategy, TraversalStrategy } from './traversal-strategy.js';
 import { Long, Int, Float, Double, Short, Byte, INT32_MIN, INT32_MAX } from '../utils.js';
-import { Vertex } from '../structure/graph.js';
+import { Vertex, ProviderDefinedType } from '../structure/graph.js';
+import { ProviderDefinedTypeRegistry } from '../structure/ProviderDefinedTypeRegistry.js';
 import { Buffer } from 'buffer';
 
 export default class GremlinLang {
   private gremlin: string = '';
   private optionsStrategies: OptionsStrategy[] = [];
   private parameters: Map<string, any> = new Map();
+  pdtRegistry: ProviderDefinedTypeRegistry | null = null;
   
   constructor(toClone?: GremlinLang) {
     if (toClone) {
       this.gremlin = toClone.gremlin;
       this.optionsStrategies = [...toClone.optionsStrategies];
       this.parameters = new Map(toClone.parameters);
+      this.pdtRegistry = toClone.pdtRegistry;
     }
   }
   
@@ -128,6 +131,14 @@ export default class GremlinLang {
     if (typeof arg === 'function' && arg.prototype instanceof TraversalStrategy) {
       return arg.name;
     }
+    if (arg instanceof ProviderDefinedType) {
+      const props = arg.properties;
+      const keys = Object.keys(props);
+      const escapedName = JSON.stringify(arg.name).slice(1, -1);
+      if (keys.length === 0) return `PDT("${escapedName}",[:])`; 
+      const entries = keys.map(k => `${this._argAsString(k)}:${this._argAsString(props[k])}`);
+      return `PDT("${escapedName}",[${entries.join(',')}])`;
+    }
     if (arg instanceof Vertex) {
       return this._argAsString(arg.id);
     }
@@ -166,6 +177,14 @@ export default class GremlinLang {
       const entries = Object.entries(arg);
       if (entries.length === 0) return '[:]';
       return '[' + entries.map(([k, v]) => `${this._argAsString(k)}:${this._argAsString(v)}`).join(',') + ']';
+    }
+    // Registry-based dehydration
+    if (this.pdtRegistry && typeof arg === 'object' && arg.constructor) {
+      const entry = this.pdtRegistry.getAdapterByClass(arg.constructor);
+      if (entry) {
+        const props = entry.serialize(arg);
+        return this._argAsString(new ProviderDefinedType(entry.typeName, props));
+      }
     }
     throw new TypeError(`GremlinLang contains at least one type [${arg?.constructor?.name ?? typeof arg}] that cannot be represented as text.`);
   }

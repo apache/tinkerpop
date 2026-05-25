@@ -26,7 +26,7 @@ from gremlin_python.statics import long
 from gremlin_python.process.traversal import TraversalStrategy, P, Order, T, DT, GValue, Cardinality, Scope
 from gremlin_python.process.graph_traversal import __
 from gremlin_python.process.anonymous_traversal import traversal
-from gremlin_python.structure.graph import Vertex, Edge, Graph
+from gremlin_python.structure.graph import Vertex, Edge, Graph, ProviderDefinedType, provider_defined
 from gremlin_python.process.strategies import SubgraphStrategy, SeedStrategy, ReservedKeysVerificationStrategy
 from gremlin_python.structure.io.util import HashableDict
 from gremlin_python.driver.connection import GremlinServerError
@@ -289,3 +289,34 @@ class TestDriverRemoteConnection(object):
         g = traversal().with_(remote_connection_with_interceptor)
         result = g.inject(1).next()
         assert 2 == result # interceptor changes request to g.inject(2)
+
+    def test_pdt_round_trip_via_traversal(self, remote_connection):
+        g = traversal().with_(remote_connection)
+        pdt = ProviderDefinedType('Point', {'x': 1, 'y': 2})
+        result = g.inject(pdt).next()
+        assert isinstance(result, ProviderDefinedType)
+        assert result.name == 'Point'
+        assert result.properties == {'x': 1, 'y': 2}
+
+    def test_pdt_registry_round_trip_via_traversal(self, remote_connection_with_registry, registry_point_class):
+        g = traversal().with_(remote_connection_with_registry)
+        point = registry_point_class(x=10, y=20)
+        result = g.inject(point).next()
+        # Registry auto-dehydrates on send and auto-hydrates on receive
+        assert isinstance(result, registry_point_class)
+        assert result.x == 10
+        assert result.y == 20
+
+    def test_pdt_annotation_auto_dehydrate_via_traversal(self, remote_connection):
+        @provider_defined(name='TestPoint')
+        class TestPoint:
+            def __init__(self, x, y):
+                self.x = x
+                self.y = y
+
+        g = traversal().with_(remote_connection)
+        point = TestPoint(5, 10)
+        result = g.inject(point).next()
+        assert isinstance(result, TestPoint)
+        assert result.x == 5
+        assert result.y == 10

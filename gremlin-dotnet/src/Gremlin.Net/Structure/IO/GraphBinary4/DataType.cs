@@ -58,8 +58,8 @@ namespace Gremlin.Net.Structure.IO.GraphBinary4
         // Not yet implemented
         // public static readonly DataType Tree = new DataType(0x2B);
         public static readonly DataType Merge = new DataType(0x2E);
+        public static readonly DataType CompositePDT = new DataType(0xF0);
         // Not yet implemented
-        // public static readonly DataType CompositePDT = new DataType(0xF0);
         // public static readonly DataType PrimitivePDT = new DataType(0xF1);
         public static readonly DataType Char = new DataType(0x80);
         public static readonly DataType Duration = new DataType(0x81);

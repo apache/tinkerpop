@@ -31,13 +31,13 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigDecimalSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BigIntegerSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BulkSetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.BinarySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.CharSerializer;
-import org.apache.tinkerpop.gremlin.structure.io.binary.types.CustomTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.DurationSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EdgeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.EnumSerializer;
@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.MapSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.DateTimeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PathSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.PropertySerializer;
+import org.apache.tinkerpop.gremlin.structure.io.binary.types.ProviderDefinedTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SetSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.SingleTypeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.StringSerializer;
@@ -57,7 +58,6 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.types.TreeSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.UUIDSerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexPropertySerializer;
 import org.apache.tinkerpop.gremlin.structure.io.binary.types.VertexSerializer;
-import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -120,7 +120,8 @@ public class TypeSerializerRegistry {
 
             new RegistryEntry<>(Character.class, new CharSerializer()),
             new RegistryEntry<>(Duration.class, new DurationSerializer()),
-            new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer())
+            new RegistryEntry<>(OffsetDateTime.class, new DateTimeSerializer()),
+            new RegistryEntry<>(ProviderDefinedType.class, new ProviderDefinedTypeSerializer())
     };
 
     public static final TypeSerializerRegistry INSTANCE = build().create();
@@ -140,37 +141,8 @@ public class TypeSerializerRegistry {
          * </p>
          */
         public <DT> Builder add(final Class<DT> type, final TypeSerializer<DT> serializer) {
-            if (serializer.getDataType() == DataType.CUSTOM) {
-                throw new IllegalArgumentException("DataType can not be CUSTOM, use addCustomType() method instead");
-            }
-
             if (serializer.getDataType() == DataType.UNSPECIFIED_NULL) {
                 throw new IllegalArgumentException("Adding a serializer for a UNSPECIFIED_NULL is not permitted");
-            }
-
-            if (serializer instanceof CustomTypeSerializer) {
-                throw new IllegalArgumentException(
-                        "CustomTypeSerializer implementations are reserved for customtypes");
-            }
-
-            list.add(new RegistryEntry<>(type, serializer));
-            return this;
-        }
-
-        /**
-         * Adds a serializer for a custom type.
-         */
-        public <DT> Builder addCustomType(final Class<DT> type, final CustomTypeSerializer<DT> serializer) {
-            if (serializer == null) {
-                throw new NullPointerException("serializer can not be null");
-            }
-
-            if (serializer.getDataType() != DataType.CUSTOM) {
-                throw new IllegalArgumentException("Custom serializer must use CUSTOM data type");
-            }
-
-            if (serializer.getTypeName() == null) {
-                throw new NullPointerException("serializer custom type name can not be null");
             }
 
             list.add(new RegistryEntry<>(type, serializer));
@@ -182,21 +154,6 @@ public class TypeSerializerRegistry {
          */
         public Builder withFallbackResolver(final Function<Class<?>, TypeSerializer<?>> fallbackResolver) {
             this.fallbackResolver = fallbackResolver;
-            return this;
-        }
-
-        /**
-         * Add {@link CustomTypeSerializer} by way of an {@link IoRegistry}. The registry entries should be bound to
-         * {@link GraphBinaryIo}.
-         */
-        public Builder addRegistry(final IoRegistry registry) {
-            if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
-
-            final List<Pair<Class, CustomTypeSerializer>> classSerializers = registry.find(GraphBinaryIo.class, CustomTypeSerializer.class);
-            for (Pair<Class,CustomTypeSerializer> cs : classSerializers) {
-                addCustomType(cs.getValue0(), cs.getValue1());
-            }
-
             return this;
         }
 
@@ -225,15 +182,6 @@ public class TypeSerializerRegistry {
             return typeSerializer.getDataType();
         }
 
-        public String getCustomTypeName() {
-            if (getDataType() != DataType.CUSTOM) {
-                return null;
-            }
-
-            final CustomTypeSerializer customTypeSerializer = (CustomTypeSerializer) typeSerializer;
-            return customTypeSerializer.getTypeName();
-        }
-
         public TypeSerializer<DT> getTypeSerializer() {
             return typeSerializer;
         }
@@ -242,7 +190,6 @@ public class TypeSerializerRegistry {
     private final Map<Class<?>, TypeSerializer<?>> serializers = new HashMap<>();
     private final Map<Class<?>, TypeSerializer<?>> serializersByInterface = new LinkedHashMap<>();
     private final Map<DataType, TypeSerializer<?>> serializersByDataType = new HashMap<>();
-    private final Map<String, CustomTypeSerializer> serializersByCustomTypeName = new HashMap<>();
     private Function<Class<?>, TypeSerializer<?>> fallbackResolver;
 
     /**
@@ -291,9 +238,7 @@ public class TypeSerializerRegistry {
             serializersByInterface.put(type, serializer);
         }
 
-        if (serializer.getDataType() == DataType.CUSTOM) {
-            serializersByCustomTypeName.put(entry.getCustomTypeName(), (CustomTypeSerializer) serializer);
-        } else if (serializer.getDataType() != null) {
+        if (serializer.getDataType() != null) {
             serializersByDataType.put(serializer.getDataType(), serializer);
         }
     }
@@ -333,7 +278,15 @@ public class TypeSerializerRegistry {
             serializer = fallbackResolver.apply(type);
         }
 
-        validateInstance(serializer, type.getTypeName());
+        if (null == serializer && type.isAnnotationPresent(ProviderDefined.class)) {
+            serializer = serializersByDataType.get(DataType.COMPOSITE_PDT);
+        }
+
+        if (serializer == null) {
+            throw new IOException(String.format(
+                    "Serializer not found for type %s. If this is a provider-defined type, annotate the class with @ProviderDefined.",
+                    type.getTypeName()));
+        }
 
         // Store the lookup match to avoid looking it up in the future
         serializersByImplementation.put(type, serializer);
@@ -342,24 +295,7 @@ public class TypeSerializerRegistry {
     }
 
     public <DT> TypeSerializer<DT> getSerializer(final DataType dataType) throws IOException {
-        if (dataType == DataType.CUSTOM) {
-            throw new IllegalArgumentException("Custom type serializers can not be retrieved using this method");
-        }
-
         return validateInstance(serializersByDataType.get(dataType), dataType.toString());
-    }
-
-    /**
-     * Gets the serializer for a given custom type name.
-     */
-    public <DT> CustomTypeSerializer<DT> getSerializerForCustomType(final String name) throws IOException {
-        final CustomTypeSerializer serializer = serializersByCustomTypeName.get(name);
-
-        if (serializer == null) {
-            throw new IOException(String.format("Serializer for custom type '%s' not found", name));
-        }
-
-        return serializer;
     }
 
     private static TypeSerializer validateInstance(final TypeSerializer serializer, final String typeName) throws IOException {
