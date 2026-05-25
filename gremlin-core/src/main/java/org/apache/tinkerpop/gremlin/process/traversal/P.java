@@ -636,6 +636,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             }
             return new P(Contains.within, traversals);
         }
+        // Reject mixed traversals and literals — would silently produce wrong results.
+        if (values != null && values.length > 1 && anyTraversals(values)) {
+            throw new IllegalArgumentException(
+                    "Cannot mix traversals and literal values in within(). " +
+                    "Use within(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
+        }
         final V[] v = null == values ? (V[]) new Object[] { null } : (V[]) values;
         return P.within(Arrays.asList(v));
     }
@@ -680,6 +686,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 traversals.add(((Traversal<?, ?>) v).asAdmin());
             }
             return new P(Contains.without, traversals);
+        }
+        // Reject mixed traversals and literals
+        if (values != null && values.length > 1 && anyTraversals(values)) {
+            throw new IllegalArgumentException(
+                    "Cannot mix traversals and literal values in without(). " +
+                    "Use without(__.constant(val1), __.constant(val2)) to wrap all values as traversals.");
         }
         final V[] v = null == values ? (V[]) new Object[] { null } : values;
         return P.without(Arrays.asList(v));
@@ -871,5 +883,18 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if any element in the array is a {@link Traversal} instance (specifically
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal}).
+     */
+    private static <V> boolean anyTraversals(final V[] values) {
+        for (final V v : values) {
+            if (v instanceof org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal) {
+                return true;
+            }
+        }
+        return false;
     }
 }
