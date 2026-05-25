@@ -73,7 +73,7 @@ if [ "${MODE}" == "dry" ]; then
   mkdir -p target/postprocess-asciidoc
   cp -r docs/{static,stylesheets} target/postprocess-asciidoc/
   cp -r docs/src/* target/postprocess-asciidoc/
-  mvn process-resources -Dasciidoc -Dgremlin.docs.dryrun=true
+  mvn process-resources -pl . -Dasciidoc -Dgremlin.docs.dryrun=true
   exit $?
 fi
 
@@ -173,7 +173,7 @@ if [ -z "${NOCLEAN}" ]; then
   rm -r target/doc-source target/docs 2>/dev/null || true
 fi
 set +e
-mvn process-resources -Dasciidoc \
+mvn process-resources -pl . -Dasciidoc \
   -Dgremlin.docs.console.home="${CONSOLE_HOME}" \
   -Dgremlin.docs.hadoop.libs="${HADOOP_GREMLIN_LIBS}"
 ec=$?
