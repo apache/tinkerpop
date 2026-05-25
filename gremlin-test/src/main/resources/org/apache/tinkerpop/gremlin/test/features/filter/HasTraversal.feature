@@ -32,6 +32,8 @@ Feature: Step - has() with traversal arguments
       | v[marko] |
 
   @GraphComputerVerificationMidVNotSupported
+  # has(key, traversal) with multi-result child traversal — takes first result (order-dependent)
+  @InsertionOrderingRequired
   Scenario: g_V_hasXname_VXvid1X_outXknowsX_valuesXnameXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"
@@ -44,7 +46,9 @@ Feature: Step - has() with traversal arguments
       | result |
       | v[vadas] |
 
+  # has(key, traversal) with multi-result child traversal (age) — takes first result (order-dependent)
   @GraphComputerVerificationMidVNotSupported
+  @InsertionOrderingRequired
   Scenario: g_V_hasXage_VXvid1X_outXknowsX_valuesXageXX
     Given the modern graph
     And using the parameter vid1 defined as "v[marko].id"

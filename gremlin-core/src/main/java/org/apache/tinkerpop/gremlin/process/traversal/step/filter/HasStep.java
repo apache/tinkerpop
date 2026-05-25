@@ -103,16 +103,25 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
      * Tests all HasContainers against a Property, handling traversal-bearing containers by evaluating
      * child traversals against the current traverser.
      */
+    @SuppressWarnings("unchecked")
     private boolean testAllWithTraversals(final Traverser.Admin<S> traverser, final Property property) {
         for (final HasContainer hc : this.hasContainers) {
             if (hc.hasTraversal()) {
-                // For properties with traversals, we need to handle the traversal resolution
                 if (hc.getTraversalValue() != null) {
-                    final List<Object> results = collectTraversalResults(traverser, hc.getTraversalValue());
-                    if (results.isEmpty()) return false;
-                    // Get the property value to test against — takes first result, ignores extras
-                    final Object propertyValue = getPropertyValueFromProperty(property, hc.getKey());
-                    if (!P.eq(results.get(0)).test(propertyValue)) return false;
+                    final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) hc.getTraversalValue();
+                    final Traverser.Admin<Object> split = (Traverser.Admin<Object>) (Traverser.Admin) traverser.split();
+                    split.setSideEffects(trav.getSideEffects());
+                    split.setBulk(1L);
+                    trav.reset();
+                    trav.addStart(split);
+                    try {
+                        if (!trav.hasNext()) return false;
+                        final Object result = trav.next();
+                        final Object propertyValue = getPropertyValueFromProperty(property, hc.getKey());
+                        if (!P.eq(result).test(propertyValue)) return false;
+                    } finally {
+                        CloseableIterator.closeIterator(trav);
+                    }
                 } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
                     hc.getPredicate().resolve(traverser);
                     if (hc.getPredicate().isResolvedEmpty()) return false;
@@ -130,16 +139,27 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     /**
      * Tests a single HasContainer against an Element, resolving traversals if present.
      */
+    @SuppressWarnings("unchecked")
     private boolean testHasContainer(final Traverser.Admin<S> traverser, final HasContainer hc, final Element element) {
         if (hc.hasTraversal()) {
             if (hc.getTraversalValue() != null) {
-                // Direct traversal value: evaluate and use P.eq(first result) — takes first, ignores extras
+                // Direct traversal value: evaluate and use P.eq(first result) — takes first, ignores extras.
                 // Consistent with by(traversal) which also takes the first result silently.
-                final List<Object> results = collectTraversalResults(traverser, hc.getTraversalValue());
-                if (results.isEmpty()) return false;
-                final Object propertyValue = getPropertyValue(element, hc.getKey());
-                if (propertyValue == null) return false;
-                return P.eq(results.get(0)).test(propertyValue);
+                final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) hc.getTraversalValue();
+                final Traverser.Admin<Object> split = (Traverser.Admin<Object>) (Traverser.Admin) traverser.split();
+                split.setSideEffects(trav.getSideEffects());
+                split.setBulk(1L);
+                trav.reset();
+                trav.addStart(split);
+                try {
+                    if (!trav.hasNext()) return false;
+                    final Object result = trav.next();
+                    final Object propertyValue = getPropertyValue(element, hc.getKey());
+                    if (propertyValue == null) return false;
+                    return P.eq(result).test(propertyValue);
+                } finally {
+                    CloseableIterator.closeIterator(trav);
+                }
             } else if (hc.getPredicate() != null && hc.getPredicate().hasTraversal()) {
                 // Predicate with embedded traversal: resolve then test normally
                 hc.getPredicate().resolve(traverser);

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
+import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
 import java.io.Serializable;
@@ -336,8 +337,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
         if (this.traversalValue == null) return;
 
-        // Use prepare + iteration directly to avoid ambiguous overload resolution of applyAll
-        // when S=Object (Traverser.Admin<Object> matches both the Traverser.Admin<S> and S overloads).
         final Traversal.Admin<Object, Object> trav = (Traversal.Admin<Object, Object>) (Traversal.Admin) this.traversalValue;
         final Traverser.Admin<Object> split = (Traverser.Admin<Object>) traverser.split();
         split.setSideEffects(trav.getSideEffects());
@@ -345,29 +344,35 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         trav.reset();
         trav.addStart(split);
 
-        final List<Object> results = new ArrayList<>();
-        while (trav.hasNext()) {
-            results.add(trav.next());
-        }
+        this.isCollection = false;
 
-        this.resolvedEmpty = results.isEmpty();
-
-        if (results.isEmpty()) {
-            this.literals = Collections.emptyList();
-            this.isCollection = false;
-        } else if (this.biPredicate instanceof Contains) {
-            // Collection predicates (within, without) accept multiple results
-            this.literals = (Collection<V>) (Collection<?>) results;
-            this.isCollection = true;
-        } else {
-            // Single-value predicates (Compare, Text, etc.) require exactly one result
-            if (results.size() > 1) {
-                throw new IllegalArgumentException(
-                        "Predicate " + this.biPredicate.getPredicateName() +
-                        " requires exactly one value but traversal produced " + results.size());
+        try {
+            if (this.biPredicate instanceof Contains) {
+                // Collection predicates (within, without) need all results
+                final List<Object> results = new ArrayList<>();
+                while (trav.hasNext()) {
+                    results.add(trav.next());
+                }
+                this.resolvedEmpty = results.isEmpty();
+                if (!results.isEmpty()) {
+                    this.literals = (Collection<V>) (Collection<?>) results;
+                    this.isCollection = true;
+                } else {
+                    this.literals = Collections.emptyList();
+                }
+            } else {
+                // Single-value predicates (Compare, Text, etc.) only need the first result.
+                // Stop immediately — consistent with by(traversal) and has(key, traversal).
+                if (!trav.hasNext()) {
+                    this.resolvedEmpty = true;
+                    this.literals = Collections.emptyList();
+                } else {
+                    this.resolvedEmpty = false;
+                    this.literals = Collections.singleton((V) trav.next());
+                }
             }
-            this.literals = Collections.singleton((V) results.get(0));
-            this.isCollection = false;
+        } finally {
+            CloseableIterator.closeIterator(trav);
         }
     }
 
@@ -387,8 +392,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             trav.reset();
             trav.addStart(split);
 
-            while (trav.hasNext()) {
-                allResults.add(trav.next());
+            try {
+                while (trav.hasNext()) {
+                    allResults.add(trav.next());
+                }
+            } finally {
+                CloseableIterator.closeIterator(trav);
             }
         }
 

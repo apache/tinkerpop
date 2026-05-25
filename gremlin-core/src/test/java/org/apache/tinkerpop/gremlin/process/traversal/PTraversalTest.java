@@ -102,40 +102,60 @@ public class PTraversalTest {
 
         // --- Single-value predicates should throw on multiple results ---
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForEq() {
-            final P<Object> p = P.eq(__.inject(1, 2).asAdmin());
+        // --- Single-value predicates take first result, ignore extras (consistent with by()) ---
+
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForEq() {
+            final P<Object> p = P.eq(__.union(__.constant(1), __.constant(2)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(true));
+            assertThat(p.test(2), is(false));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForNeq() {
-            final P<Object> p = P.neq(__.inject(1, 2).asAdmin());
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForNeq() {
+            final P<Object> p = P.neq(__.union(__.constant(1), __.constant(2)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(1), is(false));
+            assertThat(p.test(2), is(true));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForGt() {
-            final P<Object> p = P.gt(__.inject(10, 20).asAdmin());
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForGt() {
+            final P<Object> p = P.gt(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(11), is(true));
+            assertThat(p.test(10), is(false));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForLt() {
-            final P<Object> p = P.lt(__.inject(10, 20).asAdmin());
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForLt() {
+            final P<Object> p = P.lt(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(9), is(true));
+            assertThat(p.test(10), is(false));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForGte() {
-            final P<Object> p = P.gte(__.inject(10, 20).asAdmin());
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForGte() {
+            final P<Object> p = P.gte(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(10), is(true));
+            assertThat(p.test(9), is(false));
         }
 
-        @Test(expected = IllegalArgumentException.class)
-        public void shouldRejectMultipleResultsForLte() {
-            final P<Object> p = P.lte(__.inject(10, 20).asAdmin());
+        @SuppressWarnings("unchecked")
+        @Test
+        public void shouldTakeFirstResultForLte() {
+            final P<Object> p = P.lte(__.union(__.constant(10), __.constant(20)).asAdmin());
             p.resolve(createTraverser("start"));
+            assertThat(p.test(10), is(true));
+            assertThat(p.test(11), is(false));
         }
 
         // --- Collection predicates should accept multiple results ---
