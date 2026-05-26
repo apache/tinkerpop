@@ -45,17 +45,10 @@ public class GremlinPostprocessor extends Postprocessor {
     public String process(final Document document, final String output) {
         String result = output;
 
-        // 1. Callout fix: add invisible class to conum elements
-        result = CONUM_PATTERN.matcher(result).replaceAll("<$1 class=\"conum invisible\"");
-
-        // 2. Wrap // before callouts in hide-when-copy span
-        result = COMMENT_BEFORE_CONUM_PATTERN.matcher(result).replaceAll(
-                "<span class=\"hide-when-copy\">//</span> $1");
-
-        // 3. Remove empty comment spans
+        // 1. Remove empty comment spans from CodeRay
         result = EMPTY_COMMENT_SPAN_PATTERN.matcher(result).replaceAll("");
 
-        // 4. Replace x.y.z with actual version
+        // 2. Replace x.y.z with actual version
         final String version = resolveVersion(document);
         if (version != null) {
             result = result.replace("x.y.z", version);
