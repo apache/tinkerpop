@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
  *   &lt;input type="radio" name="tab-group-ID" id="tab-ID-1" class="tab-selector-1" checked&gt;
  *   &lt;label for="tab-ID-1" class="tab-label-1"&gt;Label&lt;/label&gt;
  *   ...
- *   &lt;div class="clear-shadow"&gt;&lt;/div&gt;
  *   &lt;div class="tabcontent"&gt;
  *     &lt;div class="tabcontent-1"&gt;...&lt;/div&gt;
  *     ...
@@ -129,7 +128,6 @@ public class TabbedHtmlBuilder {
                     .append(escapeHtml(tabs.get(i).getLabel())).append("</label>\n");
         }
 
-        html.append("  <div class=\"clear-shadow\"></div>\n");
         html.append("  <div class=\"tabcontent\">\n");
 
         // Tab content panels
@@ -285,7 +283,7 @@ public class TabbedHtmlBuilder {
         final java.util.regex.Matcher nums = java.util.regex.Pattern
                 .compile("&lt;(\\d+)&gt;").matcher(calloutsPart);
         while (nums.find()) {
-            sb.append(" <span class=\"hide-when-copy\">//</span> <b class=\"conum invisible\">(")
+            sb.append(" <span class=\"comment\">//</span> <b class=\"conum\">(")
               .append(nums.group(1)).append(")</b>");
         }
         return sb.toString();

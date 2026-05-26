@@ -308,7 +308,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
                 final java.util.regex.Matcher nums = java.util.regex.Pattern
                         .compile("<(\\d+)>").matcher(calloutMarkers[i]);
                 while (nums.find()) {
-                    result.append(" <span class=\"hide-when-copy\">//</span> <b class=\"conum invisible\">(")
+                    result.append(" <span class=\"comment\">//</span> <b class=\"conum\">(")
                           .append(nums.group(1)).append(")</b>");
                 }
             }
@@ -354,7 +354,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
         int lastIndex = startIndex;
         for (int j = startIndex; j < blocks.size(); j++) {
             final StructuralNode block = blocks.get(j);
-            if (isStandaloneTabBlock(block)) {
+            if (isStandaloneTabBlock(block) || isManualTabBlock(block)) {
                 final Block sourceBlock = (Block) block;
                 final String lang = getSourceLanguage(sourceBlock);
                 tabs.add(TabbedHtmlBuilder.codeTab(lang, sourceBlock.getSource()));

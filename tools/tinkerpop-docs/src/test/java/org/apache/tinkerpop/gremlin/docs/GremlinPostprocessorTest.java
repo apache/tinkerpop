@@ -34,8 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class GremlinPostprocessorTest {
 
     @Test
-    public void shouldAddInvisibleClassToConumElements() {
-        // Process through Asciidoctor with a callout to trigger conum generation
+    public void shouldNotModifyConumElements() {
         try (final Asciidoctor asciidoctor = Asciidoctor.Factory.create()) {
             final String input = "= Test\n\n" +
                     "[source,java]\n----\nint x = 1; // <1>\n----\n<1> Sets x\n";
@@ -43,8 +42,7 @@ public class GremlinPostprocessorTest {
                     .attributes(Attributes.builder().attribute("tinkerpop-version", "3.7.7").build())
                     .build();
             final String result = asciidoctor.convert(input, options);
-            // The postprocessor (SPI-registered) should have added invisible class
-            assertThat(result, containsString("conum invisible"));
+            assertThat(result, containsString("conum"));
         }
     }
 

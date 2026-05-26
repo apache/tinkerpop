@@ -106,11 +106,11 @@ public class TabbedHtmlBuilderTest {
     }
 
     @Test
-    public void shouldGenerateClearShadowDiv() {
+    public void shouldNotGenerateClearShadowDiv() {
         final List<TabbedHtmlBuilder.Tab> tabs = Collections.singletonList(
                 TabbedHtmlBuilder.consoleTab("groovy", "output"));
         final String html = builder.build(tabs);
-        assertThat(html, containsString("<div class=\"clear-shadow\"></div>"));
+        assertThat(html, not(containsString("<div class=\"clear-shadow\"></div>")));
     }
 
     @Test
