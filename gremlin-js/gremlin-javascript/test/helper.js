@@ -34,6 +34,8 @@ if (process.env.DOCKER_ENVIRONMENT === 'true') {
   serverAuthUrl = 'https://localhost:45941/gremlin';
 }
 
+export { serverUrl };
+
 /** @returns {DriverRemoteConnection} */
 export function getConnection(traversalSource) {
   return new DriverRemoteConnection(serverUrl, { traversalSource });

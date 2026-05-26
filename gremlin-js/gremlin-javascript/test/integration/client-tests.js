@@ -19,8 +19,10 @@
 
 import assert from 'assert';
 import { Vertex, Edge, VertexProperty } from '../../lib/structure/graph.js';
-import { getClient } from '../helper.js';
+import { getClient, serverUrl } from '../helper.js';
 import { cardinality } from '../../lib/process/traversal.js';
+import Client from '../../lib/driver/client.js';
+import { Int, Double } from '../../lib/utils.js';
 
 let client, clientCrew;
 
@@ -156,6 +158,35 @@ describe('Client', function () {
     //   await closingClient.close();
     //   assert.ok(!closingClient.isOpen());
     // });
+  });
+
+  describe('#submit() with preciseNumbers', function () {
+    let preciseClient;
+
+    before(async function () {
+      preciseClient = new Client(serverUrl, { traversalSource: 'gmodern', preciseNumbers: true });
+      await preciseClient.open();
+    });
+
+    after(async function () {
+      await preciseClient.close();
+    });
+
+    it('should return Int wrapper for integer vertex property', async function () {
+      const result = await preciseClient.submit('g.V().has("name", "marko").values("age")');
+      assert.ok(result);
+      assert.ok(result.first() instanceof Int);
+      assert.strictEqual(result.first().value, 29);
+    });
+
+    it('should return Double wrapper for edge weight property', async function () {
+      const result = await preciseClient.submit('g.E().has("weight", 0.5).limit(1)');
+      assert.ok(result);
+      const edge = result.first();
+      assert.ok(edge instanceof Edge);
+      assert.ok(edge.properties[0].value instanceof Double);
+      assert.strictEqual(edge.properties[0].value.value, 0.5);
+    });
   });
 });
 
