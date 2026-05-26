@@ -39,7 +39,7 @@ public class GremlinConsole implements Closeable {
 
     static final String PROMPT = "gremlin>";
     static final String ERROR_PROMPT = "Display stack trace?";
-    private static final long DEFAULT_TIMEOUT_MS = 30_000;
+    private static final long DEFAULT_TIMEOUT_MS = 60_000;
     private static final int EOF = -1;
 
     private final Process process;
