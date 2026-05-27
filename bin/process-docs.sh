@@ -114,15 +114,31 @@ for plugin in ${PLUGINS}; do
   elif [ -f "${plugin}/target/${plugin}-${TP_VERSION}.jar" ]; then
     echo " * installing ${plugin} (jar + dependencies)"
     mkdir -p "${CONSOLE_HOME}/ext/${plugin}/lib"
+    mkdir -p "${CONSOLE_HOME}/ext/${plugin}/plugin"
     cp "${plugin}/target/${plugin}-${TP_VERSION}.jar" "${CONSOLE_HOME}/ext/${plugin}/lib/"
+    cp "${plugin}/target/${plugin}-${TP_VERSION}.jar" "${CONSOLE_HOME}/ext/${plugin}/plugin/"
     cp "${plugin}"/target/dependency/*.jar "${CONSOLE_HOME}/ext/${plugin}/lib/" 2>/dev/null || \
       mvn dependency:copy-dependencies -pl "${plugin}" -DoutputDirectory="${CONSOLE_HOME}/ext/${plugin}/lib" -q
+    # Copy all deps to main lib for classloading
+    cp "${CONSOLE_HOME}/ext/${plugin}/lib/"*.jar "${CONSOLE_HOME}/lib/" 2>/dev/null
   else
     echo " * WARNING: ${plugin} not found"
   fi
 done
 
-# 4. Copy hadoop config to console classpath
+# 4. Register plugins in console
+echo "Registering plugins..."
+PLUGIN_CLASSES="org.apache.tinkerpop.gremlin.hadoop.jsr223.HadoopGremlinPlugin
+org.apache.tinkerpop.gremlin.spark.jsr223.SparkGremlinPlugin
+org.apache.tinkerpop.gremlin.neo4j.jsr223.Neo4jGremlinPlugin
+org.apache.tinkerpop.gremlin.sparql.jsr223.SparqlGremlinPlugin"
+for cls in ${PLUGIN_CLASSES}; do
+  if ! grep -q "${cls}" "${CONSOLE_HOME}/ext/plugins.txt" 2>/dev/null; then
+    echo "${cls}" >> "${CONSOLE_HOME}/ext/plugins.txt"
+  fi
+done
+
+# 5. Copy hadoop config to console classpath
 HADOOP_CONF_SRC="tools/tinkerpop-docs/src/main/resources/hadoop-conf"
 cp "${HADOOP_CONF_SRC}/core-site.xml" "${CONSOLE_HOME}/conf/"
 cp "${HADOOP_CONF_SRC}/hadoop-docs.properties" "${CONSOLE_HOME}/conf/"
