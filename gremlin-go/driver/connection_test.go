@@ -990,12 +990,8 @@ func TestConnectionWithMockServer(t *testing.T) {
 			connectionTimeout: 100 * time.Millisecond,
 		})
 
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		assert.NoError(t, err) // submit returns nil, error goes to ResultSet
-
-		// All() blocks until stream closes, then we can check error
-		_, _ = rs.All()
-		assert.Error(t, rs.GetError())
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		assert.Error(t, err) // connection errors are now returned directly
 	})
 
 	t.Run("receives headers from request", func(t *testing.T) {
@@ -1035,14 +1031,10 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Contains(t, rsErr.Error(), "HTTP 500")
-		assert.Contains(t, rsErr.Error(), "Internal Server Error")
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "HTTP 500")
+		assert.Contains(t, err.Error(), "Internal Server Error")
 	})
 
 	t.Run("extracts message from JSON error response", func(t *testing.T) {
@@ -1054,13 +1046,9 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Equal(t, "Authentication required", rsErr.Error())
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Equal(t, "Authentication required", err.Error())
 	})
 
 	t.Run("falls back to raw body for non-JSON error response", func(t *testing.T) {
@@ -1072,14 +1060,10 @@ func TestConnectionWithMockServer(t *testing.T) {
 		defer server.Close()
 
 		conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
-		rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-		require.NoError(t, err)
-
-		_, _ = rs.All()
-		rsErr := rs.GetError()
-		require.Error(t, rsErr)
-		assert.Contains(t, rsErr.Error(), "HTTP 502")
-		assert.Contains(t, rsErr.Error(), "<html>Bad Gateway</html>")
+		_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "HTTP 502")
+		assert.Contains(t, err.Error(), "<html>Bad Gateway</html>")
 	})
 
 	t.Run("falls through to GraphBinary deserialization for GraphBinary error responses", func(t *testing.T) {
@@ -1127,9 +1111,18 @@ func TestConnectionWithMockServer(t *testing.T) {
 	})
 
 	t.Run("close waits for in-flight requests", func(t *testing.T) {
+		// Server responds with headers immediately but streams body slowly.
+		// This tests that close() waits for the body-streaming goroutine.
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			time.Sleep(200 * time.Millisecond)
+			w.Header().Set("Content-Type", graphBinaryMimeType)
 			w.WriteHeader(http.StatusOK)
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+			// Delay before writing body so the streaming goroutine is still active
+			time.Sleep(200 * time.Millisecond)
+			// Write a minimal valid GraphBinary response (version + no-bulking flag)
+			w.Write([]byte{0x84, 0x00})
 		}))
 		defer server.Close()
 
@@ -1142,7 +1135,7 @@ func TestConnectionWithMockServer(t *testing.T) {
 		conn.close()
 		elapsed := time.Since(start)
 
-		// close() should have waited for the in-flight goroutine
+		// close() should have waited for the body-streaming goroutine to finish
 		assert.GreaterOrEqual(t, elapsed.Milliseconds(), int64(150),
 			"close() should wait for in-flight requests to complete")
 
