@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.step.GValue;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
 import java.util.Collection;
 import java.util.Map;
@@ -92,6 +93,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP startingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.startingWith, traversalValue.asAdmin());
     }
 
@@ -119,6 +121,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP notStartingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.notStartingWith, traversalValue.asAdmin());
     }
 
@@ -146,6 +149,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP endingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.endingWith, traversalValue.asAdmin());
     }
 
@@ -173,6 +177,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP notEndingWith(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.notEndingWith, traversalValue.asAdmin());
     }
 
@@ -200,6 +205,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP containing(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.containing, traversalValue.asAdmin());
     }
 
@@ -227,6 +233,7 @@ public class TextP extends P<String> {
      * @since 4.0.0
      */
     public static TextP notContaining(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new TextP(Text.notContaining, traversalValue.asAdmin());
     }
     

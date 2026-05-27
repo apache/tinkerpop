@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.structure.util.CloseableIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -725,6 +726,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> eq(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.eq, traversalValue.asAdmin());
     }
 
@@ -734,6 +736,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> neq(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.neq, traversalValue.asAdmin());
     }
 
@@ -743,6 +746,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> lt(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.lt, traversalValue.asAdmin());
     }
 
@@ -752,6 +756,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> lte(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.lte, traversalValue.asAdmin());
     }
 
@@ -761,6 +766,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> gt(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.gt, traversalValue.asAdmin());
     }
 
@@ -770,6 +776,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> gte(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Compare.gte, traversalValue.asAdmin());
     }
 
@@ -779,6 +786,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> within(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Contains.within, traversalValue.asAdmin());
     }
 
@@ -797,6 +805,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
                 traversals.add(tv.asAdmin());
             }
         }
+        for (final Traversal.Admin<?, ?> tv : traversals) {
+            ChildTraversalValidator.validateFilterContext(tv);
+        }
         return new P(Contains.within, traversals);
     }
 
@@ -806,6 +817,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
      * @since 4.0.0
      */
     public static <V> P<V> without(final Traversal<?, ?> traversalValue) {
+        ChildTraversalValidator.validateFilterContext(traversalValue.asAdmin());
         return new P(Contains.without, traversalValue.asAdmin());
     }
 
@@ -823,6 +835,9 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
             for (final Traversal<?, ?> tv : more) {
                 traversals.add(tv.asAdmin());
             }
+        }
+        for (final Traversal.Admin<?, ?> tv : traversals) {
+            ChildTraversalValidator.validateFilterContext(tv);
         }
         return new P(Contains.without, traversals);
     }

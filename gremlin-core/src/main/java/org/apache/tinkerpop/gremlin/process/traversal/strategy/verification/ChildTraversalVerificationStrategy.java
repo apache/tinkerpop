@@ -1,0 +1,90 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
+
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AllStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AnyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NoneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStepContract;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalContext;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ChildTraversalValidator;
+
+/**
+ * A verification strategy that validates child traversals do not contain disallowed mutating steps
+ * based on the context in which they are used. This serves as a safety net for cases where
+ * construction-time validation is bypassed (e.g., programmatic traversal construction).
+ * <p>
+ * Context classification:
+ * <ul>
+ *   <li>{@code HasStep}, {@code IsStep}, {@code AllStep}, {@code AnyStep}, {@code NoneStep} → FILTER</li>
+ *   <li>{@code GraphStep} with idTraversal → LOOKUP</li>
+ *   <li>{@code AddPropertyStepContract} → MUTATION</li>
+ * </ul>
+ */
+public final class ChildTraversalVerificationStrategy
+        extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy>
+        implements TraversalStrategy.VerificationStrategy {
+
+    private static final ChildTraversalVerificationStrategy INSTANCE = new ChildTraversalVerificationStrategy();
+
+    private ChildTraversalVerificationStrategy() {
+    }
+
+    @Override
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof TraversalParent) {
+                final ChildTraversalContext context = classifyContext(step);
+                if (context != ChildTraversalContext.NONE) {
+                    for (final Traversal.Admin<?, ?> child : ((TraversalParent) step).getLocalChildren()) {
+                        try {
+                            ChildTraversalValidator.validateRecursive(child, context);
+                        } catch (final IllegalArgumentException e) {
+                            throw new VerificationException(e.getMessage(), traversal);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private ChildTraversalContext classifyContext(final Step<?, ?> step) {
+        if (step instanceof HasStep || step instanceof IsStep ||
+                step instanceof AllStep || step instanceof AnyStep || step instanceof NoneStep) {
+            return ChildTraversalContext.FILTER;
+        } else if (step instanceof GraphStep && ((GraphStep<?, ?>) step).getIdTraversal() != null) {
+            return ChildTraversalContext.LOOKUP;
+        } else if (step instanceof AddPropertyStepContract) {
+            return ChildTraversalContext.MUTATION;
+        }
+        return ChildTraversalContext.NONE;
+    }
+
+    public static ChildTraversalVerificationStrategy instance() {
+        return INSTANCE;
+    }
+}

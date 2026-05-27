@@ -148,6 +148,15 @@ public class AddPropertyStep<S extends Element> extends SideEffectStep<S> implem
             return;
         }
 
+        // Runtime validation for property(traversal) — the Map-producing form uses sentinel key "~traversalMap".
+        // If the traversal did NOT produce a Map, reject it to prevent the sentinel key from leaking as a real property.
+        if ("~traversalMap".equals(key)) {
+            final Object result = results.get(0);
+            throw new IllegalArgumentException(
+                    "property(traversal) requires the traversal to produce a Map, but got: " +
+                    (result == null ? "null" : result.getClass().getSimpleName()));
+        }
+
         // Multi-result handling with cardinality awareness
         if (results.size() > 1) {
             // Determine effective cardinality
