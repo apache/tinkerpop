@@ -146,7 +146,7 @@ Feature: Child Traversal Verification - mutating steps blocked in filter/lookup 
     When iterated to list
     Then the traversal will raise an error with message containing text of "mutating step"
 
-  # ===== MUTATION CONTEXT: property(traversal) blocks DropStep but allows other mutations =====
+  # ===== MUTATION CONTEXT: property(traversal) blocks ALL mutating steps =====
 
   @GraphComputerVerificationMidVNotSupported
   Scenario: g_V_propertyXV_mapXdropX_projectXxX_byXnameXX_rejected
@@ -156,7 +156,17 @@ Feature: Child Traversal Verification - mutating steps blocked in filter/lookup 
       g.V().property(__.V().map(__.drop()).project("x").by("name"))
       """
     When iterated to list
-    Then the traversal will raise an error with message containing text of "DropStep"
+    Then the traversal will raise an error with message containing text of "mutating step"
+
+  @GraphComputerVerificationMidVNotSupported
+  Scenario: g_V_propertyXaddVXtempX_projectXkX_byXnameXX_rejected
+    Given the modern graph
+    And the traversal of
+      """
+      g.V().property(__.addV("temp").project("k").by("name"))
+      """
+    When iterated to list
+    Then the traversal will raise an error with message containing text of "mutating step"
 
   # ===== VALID TRAVERSALS: should NOT be rejected =====
 

@@ -215,9 +215,10 @@ public class ChildTraversalValidatorTest {
     }
 
     @Test
-    public void shouldAllowAddVInMutationContext() {
-        // addV is allowed in property(traversal) — only DropStep is blocked
-        g.V().property(__.V().addV("temp").project("k").by("name"));
+    public void shouldRejectAddVInMutationContext() {
+        // addV is now blocked in property(traversal) — all mutating steps are blocked in all contexts
+        assertThrows(IllegalArgumentException.class, () ->
+                g.V().property(__.V().addV("temp").project("k").by("name")));
     }
 
     @Test

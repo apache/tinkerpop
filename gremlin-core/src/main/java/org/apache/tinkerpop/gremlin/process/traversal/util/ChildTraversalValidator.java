@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 
 /**
  * Validates child traversals to ensure they do not contain disallowed steps based on the context
@@ -31,8 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
  * <p>
  * Validation rules:
  * <ul>
- *   <li><b>FILTER / LOOKUP context:</b> No steps implementing {@link Mutating} are allowed at any nesting depth.</li>
- *   <li><b>MUTATION context:</b> Only {@link DropStep} is blocked; other mutating steps are permitted.</li>
+ *   <li><b>FILTER / LOOKUP / MUTATION context:</b> No steps implementing {@link Mutating} are allowed at any nesting depth.</li>
  * </ul>
  * <p>
  * Recursion walks both {@link TraversalParent#getLocalChildren()} and
@@ -63,7 +61,7 @@ public final class ChildTraversalValidator {
 
     /**
      * Validates a child traversal used in mutation context (property(traversal)).
-     * Throws {@link IllegalArgumentException} if a {@link DropStep} is found.
+     * Throws {@link IllegalArgumentException} if any {@link Mutating} step is found.
      */
     public static void validateMutationContext(final Traversal.Admin<?, ?> child) {
         validateRecursive(child, ChildTraversalContext.MUTATION);
@@ -91,17 +89,11 @@ public final class ChildTraversalValidator {
         switch (context) {
             case FILTER:
             case LOOKUP:
+            case MUTATION:
                 if (step instanceof Mutating) {
                     throw new IllegalArgumentException(
                             "Child traversal in " + context.name().toLowerCase() + " context contains mutating step " +
                             step.getClass().getSimpleName() + ". Mutating steps are not allowed in this context.");
-                }
-                break;
-            case MUTATION:
-                if (step instanceof DropStep) {
-                    throw new IllegalArgumentException(
-                            "Child traversal in mutation context contains DropStep. " +
-                            "Destructive steps are not allowed inside property(traversal).");
                 }
                 break;
             default:
