@@ -62,7 +62,9 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added GraphBinary 4.0 `Graph` (`0x10`) serializer/deserializer to `gremlin-javascript`, `gremlin-dotnet`, and `gremlin-go` so that `subgraph()` results are returned as a detached `Graph` data container.
 * Added `match(string)` and `match(string, IDictionary)` overloads for declarative pattern matching.
 * Deprecated the traversal-based `match(Traversal[])` in favor of the new string-based API.
-* Added an initial GQL implementation in TinkerGraph that can process a limited subset of the syntax.
+* Added the `gql-gremlin` module containing the TinkerGQL engine, a `MATCH`-pattern executor implementing a deliberate minimal subset of ISO GQL, usable by any graph provider.
+* Added `Graph.countVerticesByLabel(String)`, `Graph.countEdgesByLabel(String)`, and the `Graph.Index` nested interface as performance-hint extension points for the TinkerGQL engine.
+* Added GQL support to TinkerGraph with `gql-gremlin`,
 
 [[release-4-0-0-beta-2]]
 === TinkerPop 4.0.0-beta.2 (April 1, 2026)

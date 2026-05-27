@@ -623,6 +623,128 @@ from TinkerPop using the link:https://tinkerpop.apache.org/docs/x.y.z/reference/
 Simply provide a `InputFormat` and `OutputFormat` that can be referenced by a `HadoopGraph` instance as discussed
 in the link:https://tinkerpop.apache.org/docs/x.y.z/reference/#clonevertexprogram[Reference Documentation].
 
+[[tinkerpop-providers-tinkergql]]
+==== Supporting Declarative Pattern Matching (TinkerGQL)
+
+Graph providers can offer declarative pattern matching via the `match(String)` step by integrating the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] engine shipped in the optional
+`gql-gremlin` module. TinkerGQL handles GQL `MATCH` parsing, query planning, and execution against any `Graph`
+implementation through a thin set of default interface methods, so most providers can get working `match()` support
+with only a few lines of wiring code.
+
+===== Maven Dependency
+
+Add `gql-gremlin` alongside your provider's existing TinkerPop dependencies:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.tinkerpop</groupId>
+    <artifactId>gql-gremlin</artifactId>
+    <version>x.y.z</version>
+</dependency>
+----
+
+===== Registering the Strategy
+
+The simplest integration is to register `GqlDeclarativeMatchStrategy` in your graph's global strategy cache so that
+every `GraphTraversalSource` created from your graph automatically supports `match()`. The pattern mirrors the way
+TinkerGraph registers its own built-in strategies via a static initializer:
+
+[source,java]
+----
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+public class AcmeGraph implements Graph {
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(
+                AcmeGraph.class,
+                TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone()
+                        .addStrategies(GqlDeclarativeMatchStrategy.create(/* graph instance */)));  // <1>
+    }
+    // ...
+}
+----
+
+<1> Because the global cache is shared across all instances of the graph class, the strategy must be able to locate the
+    correct `Graph` instance at traversal execution time. The recommended approach is to create the strategy per
+    `GraphTraversalSource` rather than statically, as shown below.
+
+A cleaner per-instance approach is to override `traversal()` on your graph (or on your `GraphTraversalSource`
+subclass) to inject the strategy automatically:
+
+[source,java]
+----
+@Override
+public GraphTraversalSource traversal() {
+    return super.traversal().withStrategies(GqlDeclarativeMatchStrategy.create(this));  // <1>
+}
+----
+
+<1> Passing `this` binds the strategy to the specific graph instance. The `DefaultGqlPlanner` and `DefaultGqlExecutor`
+    created inside `GqlDeclarativeMatchStrategy.create()` are reused across all traversals from this source, so the
+    query-graph parse cache is shared.
+
+===== Performance Hints (Optional)
+
+By default the TinkerGQL planner treats all vertex and edge label counts as unknown (`Long.MAX_VALUE`) and performs
+full scans unless a property index is available. You can improve planning quality by overriding these methods on your
+`Graph` implementation:
+
+[source,java]
+----
+@Override
+public long countVerticesByLabel(final String label) {
+    // return the number of vertices with this label, or Long.MAX_VALUE if unknown
+    return myLabelIndex.getCount(label);
+}
+
+@Override
+public long countEdgesByLabel(final String label) {
+    // return the number of edges with this label, or Long.MAX_VALUE if unknown
+    return myEdgeLabelIndex.getCount(label);
+}
+----
+
+These values guide the planner's join-ordering heuristic: extension steps backed by rarer labels are placed earlier
+in the execution order, which prunes the DFS search space sooner. Approximate counts are acceptable; the planner
+only uses them for relative comparison.
+
+===== Property Index Integration (Optional)
+
+If your graph maintains property indexes you can expose them to the TinkerGQL executor by returning a custom
+`Graph.Index` from `Graph.index()`. When a `MATCH` pattern includes an inline property filter and the executor finds
+an index for that key, it replaces the full vertex scan with a targeted index lookup:
+
+[source,java]
+----
+@Override
+public Graph.Index index() {
+    return new Graph.Index() {
+
+        @Override
+        public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return myVertexIndex.lookup(key, value);  // <1>
+        }
+
+        @Override
+        public long countVertexIndex(final String key, final Object value) {
+            // return Long.MAX_VALUE if 'key' is not indexed; otherwise the exact or approximate count
+            return myVertexIndex.isIndexed(key)
+                    ? myVertexIndex.count(key, value)
+                    : Long.MAX_VALUE;  // <2>
+        }
+    };
+}
+----
+
+<1> Return an empty iterator (not `null`) when the key is not indexed or no match exists.
+<2> Returning `Long.MAX_VALUE` for an un-indexed key signals the executor to fall back to a full vertex scan.
+    Any value less than `Long.MAX_VALUE` — including `0` — means "the index was consulted and returned this count."
+
 [[validating-with-gremlin-test]]
 === Validating with Gremlin-Test
 

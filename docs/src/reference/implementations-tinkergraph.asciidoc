@@ -374,15 +374,11 @@ g.V().valueMap()
 <5> Rollback the change
 
 [[tinkergraph-gql]]
-=== Declarative Pattern Matching (GQL)
+=== Declarative Pattern Matching (TinkerGQL)
 
-TinkerGraph includes a built-in implementation of the `match(String)` step that accepts a subset of the
-link:https://www.iso.org/standard/76120.html[ISO GQL] `MATCH` syntax. This allows declarative graph pattern queries
-to be expressed directly against TinkerGraph. The implementation is intentionally minimal to help showcase how `match`
-step can work.
-
-Each result row is a `Map<String, Object>` keyed by the named variables in the pattern. `match()` can be used as a
-terminal step to return all bindings directly, or followed by `select()` to project specific variables:
+TinkerGraph ships with full support for the <<tinkergql,TinkerGQL>> dialect out of the box.
+`TinkerGraphDeclarativeMatchStrategy` is registered automatically when a `GraphTraversalSource` is created from
+a TinkerGraph instance, so no additional configuration is required:
 
 [gremlin-groovy,modern]
 ----
@@ -391,243 +387,16 @@ g.match("MATCH (a:person)-[:knows]->(b:person)").
   select("a", "b").by("name")
 ----
 
-==== Supported Syntax
+See <<tinkergql>> for the complete TinkerGQL syntax reference, including supported patterns, property filters,
+parameterized queries, variable reuse, and known limitations.
 
-The following `MATCH` patterns are supported:
+==== Index Integration
 
-[width="100%",cols="2,4",options="header"]
-|=========================================================
-|Pattern |Description
-|`()` |Anonymous node — matches any vertex
-|`(n)` |Named node — binds the matching vertex to variable `n`
-|`(:Label)` |Labeled node — matches vertices with the given label
-|`(n:Label)` |Named and labeled node
-|`(n {key: 'value'})` |Inline property filter — matches vertices where property `key` equals the literal value
-|`(n:Label {key: 'value'})` |Named, labeled, and filtered node — combines a label constraint with a property filter
-|`(n {key: $param})` |Parameter reference — value is resolved from the params map supplied to `match(String, Map)` at execution time
-|`-[]->`  |Anonymous directed edge
-|`-[e]->` |Named directed edge — binds the edge to variable `e`
-|`-[:Label]->` |Labeled directed edge
-|`-[e:Label]->` |Named and labeled directed edge
-|`-[e:Label {key: 'value'}]->` |Named, labeled directed edge with an inline property filter — matches only edges where the property equals the literal value
-|`-[e:Label {key: $param}]->` |Named, labeled directed edge with a parameter reference — value resolved from the params map at execution time
-|`<-[]-`  |Anonymous reverse directed edge
-|`<-[e]-` |Named reverse directed edge
-|`<-[:Label]-` |Labeled reverse directed edge
-|`<-[e:Label]-` |Named and labeled reverse directed edge
-|`<-[e:Label {key: 'value'}]-` |Named, labeled reverse directed edge with an inline property filter
-|`-[]-`   |Anonymous undirected edge — matches edges in either direction
-|`-[e]-`  |Named undirected edge
-|`-[:Label]-` |Labeled undirected edge
-|`-[e:Label]-` |Named and labeled undirected edge
-|`-[e:Label {key: 'value'}]-` |Named, labeled undirected edge with an inline property filter
-|=========================================================
-
-Multiple comma-separated path patterns are supported in a single `MATCH` clause. Patterns that share a variable
-name are joined on that variable, which must resolve to the same element across all patterns. Perhaps, most notably,
-there is not `RETURN` clause. `match` will always return the full binding `Map` and any projection must be performed
-with Gremlin steps.
-
-The following examples use the modern toy graph to demonstrate more complex usage patterns.
-
-*Find all software and the person who created it, traversing the edge in reverse*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (s:software)<-[:created]-(p:person)").
-  select("p", "s").by("name")
-----
-
-*Find people who know someone who created software — a two-hop chain across three vertices*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)").
-  select("a", "b", "s").by("name")
-----
-
-*Find pairs of people who co-created the same software, using a shared variable across two patterns*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)").
-  where("a", neq("b")).
-  select("a", "b", "s").by("name")
-----
-
-Note the use of `where` as a mechanism for filtering `match` results.
-
-*Find people connected by a knows relationship in either direction using an undirected edge, binding the edge itself*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[e:knows]-(b:person)").
-  select("a", "e", "b").
-    by("name").by("weight").by("name")
-----
-
-Any of the examples above could be written as a pure Gremlin traversal. The `match()` step becomes arguably preferable
-when the query involves a multi-way join, where several paths must all connect through shared variables, because the
-pattern expresses the shape of the subgraph directly rather than requiring the reader to trace variable bindings
-through a chain of steps.
-
-For example, the following Gremlin traversal using all imperative steps answers the question: "Find people who know
-someone they also co-created software with":
-
-[gremlin-groovy,modern]
-----
-g.V().hasLabel("person").as("a").
-    out("created").as("s").
-    in("created").as("b").
-    where("a", neq("b")).
-    where(__.in("knows").where(eq("a"))).
-    select("a", "b", "s").by("name")
-----
-
-and here is the same using `match`:
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s), (a)-[:knows]->(b)").
-    select("a", "b", "s").by("name")
-----
-
-The three-way relationship where `a` created `s`, `b` created `s`, and `a` knows `b` is immediately visible as a pattern
-in the `match()` form. In the Gremlin traversal, the reader has to follow the variable threading across `as()`,
-`select()`, and `where()` to reconstruct the same topology.
-
-IMPORTANT: TinkerGraph stores labels, variable names, and property keys as plain Java `String` values with no
-restrictions on content. However, because the GQL grammar is identifier-based, any label, variable name, or property
-key that contains spaces, hyphens, or non-ASCII Unicode characters cannot currently be referenced in a `MATCH` query.
-For example, `MATCH (n:my-label)` and `MATCH (n {my-key: 1})` are not parseable; use simple alphanumeric identifiers
-instead. This is a known limitation of the current grammar and may be addressed in a future release.
-
-==== Variable Reuse and Multi-Pattern Joins
-
-When the same variable appears in multiple comma-separated patterns, it acts as a join key where every element bound to
-that variable must be the same graph element across all patterns. This is the primary mechanism for expressing
-multi-way joins in a single `MATCH` clause.
-
-Variable names must be unique within a single element role, i.e., a name that refers to a node in one pattern cannot
-refer to an edge in another pattern:
-
-[source,text]
-----
-// Valid: 's' joins two vertex patterns on a shared software vertex
-MATCH (a:person)-[:created]->(s:software), (b:person)-[:created]->(s)
-
-// Valid: same variable, same label — second occurrence is a bare reference that adds nothing
-MATCH (n:person)-[:knows]->(m:person), (n:person)
-
-// Invalid: 'n' is labeled :Person in the first pattern and :Animal in the second
-MATCH (n:Person)-[:KNOWS]->(m), (n:Animal)
-
-// Invalid: 'r' is used as an edge variable in one pattern and a node variable in another
-MATCH (a)-[r:KNOWS]->(b), (r:person)
-----
-
-When a variable appears in a later pattern without a label (a bare reference such as `(n)` or `(n {age: 29})`),
-any label already assigned to that variable from an earlier pattern is preserved. Predicates from all occurrences
-are merged where the element must satisfy every predicate across all patterns in which the variable appears.
-
-[source,text]
-----
-// 'n' already carries :Person from the first pattern; the bare (n {age: 29}) adds only the predicate
-MATCH (n:Person)-[:KNOWS]->(m), (n {age: 29})
-// equivalent to: MATCH (n:Person {age: 29})-[:KNOWS]->(m)
-----
-
-==== Property Filters
-
-Both node and edge patterns can carry inline property filters. Filters are written as a comma-separated list of
-`key: value` pairs inside curly braces immediately after the label (or variable, or the opening delimiter):
-
-[source,text]
-----
-MATCH (p:person {name: 'marko'})
-MATCH (p:person {name: 'marko', age: 29})
-MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)
-----
-
-Multiple predicates in the same filter are ANDed where all predicates must hold for the element to match. All predicates
-are equality tests; range or inequality tests are not yet part of the supported grammar.
-
-The right-hand side of each predicate can be a literal value or a parameter reference:
-
-[width="100%",cols="2,4",options="header"]
-|=========================================================
-|Value form |Description
-|`'text'` / `"text"` |String literal (single- or double-quoted; Java escape sequences supported: `\n`, `\t`, `\\`, etc.)
-|`42`       |Integer literal — defaults to `Integer` if the value fits, otherwise `Long` or `BigInteger`. Type suffixes: `29i` (Integer), `30l` (Long), `5b` (Byte), `1000s` (Short), `999n` (BigInteger).
-|`3.14`     |Floating-point literal — defaults to `Double`. Type suffixes: `3.14f` (Float), `1.5d` (Double), `1.99m` (BigDecimal).
-|`true` / `false` |Boolean literal (case-insensitive)
-|`null`     |Matches elements where the property is absent
-|`NaN` / `Infinity` / `+Infinity` / `-Infinity` |Special floating-point values
-|`$name`    |Parameter reference — resolved from the params map supplied to `match(String, Map)` at execution time
-|=========================================================
-
-*Find the co-creators of a specific piece of software using a node filter*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (p:person {name: 'josh'})-[:created]->(s:software)").
-  select("s").by("name")
-----
-
-Property filters can appear on any node in the pattern, including intermediate and target nodes:
-
-*Find software co-created with 'lop', filtering both the start and end vertices*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[:created]->(s:software {name: 'lop'}), (b:person)-[:created]->(s)").
-  where("a", neq("b")).
-  select("a", "b").by("name")
-----
-
-Edge patterns support the same filter syntax. The filter is applied to the edge itself before the target vertex is
-resolved, so only edges whose properties satisfy the predicate contribute to the result.
-
-The modern graph's `knows` edges carry a `weight` property, making it a natural example:
-
-*Find high-weight knows relationships, binding the filtered edge*
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)").
-  select("a", "e", "b").
-    by("name").by("weight").by("name")
-----
-
-==== Parameterized Queries
-
-When a filter value is not known until execution time it may be supplied as a parameter reference (`$name`) in the query
-string and the actual value passed in the params map using the `match(String, Map)` overload:
-
-[gremlin-groovy,modern]
-----
-g.match("MATCH (p:person {name: $personName})-[:knows]->(f:person)",
-        ["personName": "marko"]).
-  select("p", "f").by("name")
-----
-
-The same query string can be reused with different parameter maps without re-parsing (the parsed query graph is
-cached in an LRU cache bounded to 1,000 entries). The table below summarizes edge-case parameter behaviors:
-
-[width="100%",cols="3,3",options="header"]
-|=========================================================
-|Situation |Result
-|Parameter key present, non-null value |Predicate tests the element property against the supplied value
-|Parameter key present, `null` value |Predicate passes only for elements where the property is absent
-|Parameter key absent from the map |Predicate always fails — no element matches that filter
-|Numeric type mismatch (e.g. `Integer` 29 vs `Long` 29) |Values are compared numerically; `29` (Integer) equals `29L` (Long)
-|=========================================================
-
-When TinkerGraph has a vertex index on a filtered property key (created via `createIndex`), the executor
-automatically uses the index for the seed vertex lookup, reducing the initial scan to only those vertices whose
-indexed property matches the filter value. This is especially effective when the parameterized query pattern is
-constant but the parameter values change across calls. In this way, the query graph is parsed and cached once, and each
-invocation performs an index-backed seed lookup:
+TinkerGraph maintains in-memory indexes that the TinkerGQL executor consults automatically. When a vertex index
+exists on a property key that appears in an inline filter, the executor uses the index for the seed vertex lookup
+rather than scanning all vertices. This is especially effective when the same parameterized query is executed
+repeatedly with different parameter values — the query graph is parsed and cached once, and each invocation performs
+an index-backed lookup:
 
 [source,groovy]
 ----
@@ -640,24 +409,6 @@ names.collect { name ->
 }
 ----
 
-<1> Create the index once at graph setup time; all subsequent `match()` calls referencing `{name: $who}` use it automatically.
-
-==== Unsupported Features
-
-The current GQL engine supports a minimal subset of the ISO GQL `MATCH` syntax. The following features are
-recognized in the specification but not yet implemented:
-
-[width="100%",cols="2,4",options="header"]
-|=========================================================
-|Feature |Notes
-|`WHERE` clause |Post-match filtering within the `MATCH` string is not supported. Use Gremlin's `where()` step after `match()` instead.
-|`RETURN` clause |Projection within the `MATCH` string is not supported. Use `select()` after `match()` to project named variables.
-|Inequality / range predicates |Only equality tests (`{key: value}`) are supported. Expressions such as `n.age > 30` or `n.name STARTS WITH 'A'` are not yet part of the grammar.
-|Variable-length paths |Quantified path patterns such as `(a)-[:KNOWS*1..3]->(b)` are not supported.
-|Multiple labels per element |`(n:Person:Employee)` — assigning more than one label to a node pattern — is not supported. Each node pattern accepts at most one label.
-|`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
-|Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar aggregation functions are not part of the supported grammar.
-|=========================================================
-
-In the meantime, equivalent behaviour for `WHERE` and `RETURN` can be expressed using the standard Gremlin step
-vocabulary (`where()`, `select()`, `filter()`, `group()`, etc.).
+<1> Create the index once at graph setup time; all subsequent `match()` calls referencing `{name: $who}` use it
+automatically. Indexes created after a traversal source has already been built take effect on the next traversal
+execution.
