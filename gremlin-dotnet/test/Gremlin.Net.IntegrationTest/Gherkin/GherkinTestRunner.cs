@@ -37,10 +37,10 @@ using Xunit.Abstractions;
 
 namespace Gremlin.Net.IntegrationTest.Gherkin
 {
-    [CollectionDefinition(nameof(GherkinTestDefinition), DisableParallelization = true)]
-    public class GherkinTestDefinition { }
+    [CollectionDefinition(nameof(GremlinServerTests), DisableParallelization = true)]
+    public class GremlinServerTests { }
 
-    [Collection(nameof(GherkinTestDefinition))]
+    [Collection(nameof(GremlinServerTests))]
     public class GherkinTestRunner
     {
         private static readonly IDictionary<string, IgnoreReason> IgnoredScenarios =

@@ -34,6 +34,7 @@ using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 
 namespace Gremlin.Net.IntegrationTest.Process.Traversal.DriverRemoteConnection
 {
+    [Collection("GremlinServerTests")]
     public class GraphTraversalTests
     {
         private readonly RemoteConnectionFactory _connectionFactory = new RemoteConnectionFactory();
