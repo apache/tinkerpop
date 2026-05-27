@@ -491,8 +491,9 @@ public class GremlinTreeprocessor extends Treeprocessor {
                 final String result = executeSafely(execStatements.get(s));
                 if (result != null && !result.isEmpty()) {
                     final String[] resultLines = result.split("\\r?\\n");
-                    // Skip the first line which is the echo of the command
+                    // Skip echo lines (first line + continuation prompts like ......N>)
                     for (int idx = 1; idx < resultLines.length; idx++) {
+                        if (resultLines[idx].matches("^\\.{6}\\d+>.*")) continue;
                         output.append(resultLines[idx]).append("\n");
                     }
                 }
