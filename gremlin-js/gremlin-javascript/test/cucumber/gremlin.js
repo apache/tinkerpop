@@ -1022,6 +1022,7 @@ const gremlins = {
     g_V_hasLabelXpersonX_valuesXageX_asString: [function({g}) { return g.V().hasLabel("person").values("age").asString() }], 
     g_V_hasLabelXpersonX_valuesXageX_order_fold_asStringXlocalX: [function({g}) { return g.V().hasLabel("person").values("age").order().fold().asString(Scope.local) }], 
     g_V_hasLabelXpersonX_valuesXageX_asString_concatX_years_oldX: [function({g}) { return g.V().hasLabel("person").values("age").asString().concat(" years old") }], 
+    g_V_outEXknowsX_subgraphXsgX_capXsgX_asString: [function({g}) { return g.V().outE("knows").subgraph("sg").cap("sg").asString() }], 
     g_call: [function({g}) { return g.call() }], 
     g_callXlistX: [function({g}) { return g.call("--list") }], 
     g_callXlistX_withXstring_stringX: [function({g}) { return g.call("--list").with_("service", "tinker.search") }], 

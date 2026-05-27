@@ -20420,6 +20420,23 @@
         ]
     },
     {
+        "scenario": "g_V_outEXknowsX_subgraphXsgX_capXsgX_asString",
+        "traversals": [
+            {
+                "original": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "language": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "canonical": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "anonymized": "g.V().outE(string0).subgraph(string1).cap(string1).asString()",
+                "dotnet": "g.V().OutE(\"knows\").Subgraph(\"sg\").Cap<object>(\"sg\").AsString()",
+                "go": "g.V().OutE(\"knows\").Subgraph(\"sg\").Cap(\"sg\").AsString()",
+                "groovy": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "java": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "javascript": "g.V().outE(\"knows\").subgraph(\"sg\").cap(\"sg\").asString()",
+                "python": "g.V().out_e('knows').subgraph('sg').cap('sg').as_string()"
+            }
+        ]
+    },
+    {
         "scenario": "g_call",
         "traversals": [
             {
