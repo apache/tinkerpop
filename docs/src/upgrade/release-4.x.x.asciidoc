@@ -80,11 +80,12 @@ With `match` redesigned in this way users have the opportunity to take advantage
 languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
 Gremlin being both imperative and declarative offers a much more compelling story with this model.
 
-As of this release, TinkerPop does not offer a general purpose processing engine for queries that might be given to
-`match`. It is up to the underlying graph database to offer support for one. While there is no general purpose
-processing engine that can be applied to every graph, TinkerPop does offer limited GQL support with TinkerGraph. It is
-therefore possible to try this functionality while graph providers work toward supporting the new `match` step in their
-TinkerPop 4.0.0 implementations.
+TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
+link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
+ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.
+TinkerGraph uses it out of the box with no configuration required. Graph providers that want to offer TinkerGQL support
+can add the `gql-gremlin` dependency and register `GqlDeclarativeMatchStrategy` as described in the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation].
 
 ==== Request Interceptors
 
@@ -690,8 +691,13 @@ For each result row the concrete step must:
   can retrieve values by name.
 * Declare `TraverserRequirement.LABELED_PATH` in `getRequirements()`.
 
-See `TinkerGraphMatchStep` and `TinkerGraphDeclarativeMatchStrategy` in `tinkergraph-gremlin` for a complete
-reference implementation to study before writing your own.
+Providers that want to use TinkerPop's built-in GQL engine rather than supplying their own step can add the
+`gql-gremlin` module and register `GqlDeclarativeMatchStrategy.create(graph)` as a `ProviderOptimizationStrategy`.
+`GqlDeclarativeMatchStrategy` wraps a `DefaultGqlPlanner` and `DefaultGqlExecutor` that work against any `Graph`
+through the standard interface, with optional performance hints via `countVerticesByLabel()`, `countEdgesByLabel()`,
+and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete reference
+implementation, and the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
+for wiring instructions.
 
 == TinkerPop 4.0.0-beta.2
 
