@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -24,10 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.GqlMatchPlan;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlExecutor;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlPlanner;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
+
+
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -55,7 +55,7 @@ import java.util.Set;
  *
  * @param <S> the traverser start type
  */
-public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
+public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
 
     /**
      * The query language identifier that this step accepts when set explicitly.
@@ -63,8 +63,8 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      */
     public static final String SUPPORTED_QUERY_LANGUAGE = "gql";
 
-    private TinkerGraphGqlPlanner planner;
-    private TinkerGraphGqlExecutor executor;
+    private GqlPlanner planner;
+    private GqlExecutor executor;
     private GqlMatchPlan plan;
     // Lazy row source: one iterator per spawn execution or per incoming mid-traversal traverser.
     private Iterator<Element[]> rowIterator = null;
@@ -80,7 +80,7 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      *
      * @param originalStep the step being replaced by this concrete implementation
      */
-    public TinkerGraphMatchStep(final DeclarativeMatchStep<S> originalStep) {
+    public GqlMatchStep(final DeclarativeMatchStep<S> originalStep) {
         this(originalStep, null, null);
     }
 
@@ -94,9 +94,9 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      * @param planner      the graph-level planner singleton, or {@code null} for lazy init
      * @param executor     the graph-level executor singleton, or {@code null} for lazy init
      */
-    public TinkerGraphMatchStep(final DeclarativeMatchStep<S> originalStep,
-                                final TinkerGraphGqlPlanner planner,
-                                final TinkerGraphGqlExecutor executor) {
+    public GqlMatchStep(final DeclarativeMatchStep<S> originalStep,
+                                final GqlPlanner planner,
+                                final GqlExecutor executor) {
         super(originalStep.getTraversal(), originalStep.getMatchQuery(),
               originalStep.getParams(), originalStep.getQueryLanguage(), originalStep.isStart());
         originalStep.getLabels().forEach(this::addLabel);
@@ -131,9 +131,9 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
         // Ensure planner and executor are available. When injected by the strategy they are
         // graph-level singletons; otherwise fall back to per-step lazy initialisation.
         if (planner == null) {
-            final AbstractTinkerGraph graph = (AbstractTinkerGraph) this.getTraversal().getGraph().get();
-            planner = new TinkerGraphGqlPlanner(graph);
-            executor = new TinkerGraphGqlExecutor(graph);
+            final Graph graph = this.getTraversal().getGraph().get();
+            planner = new DefaultGqlPlanner(graph);
+            executor = new DefaultGqlExecutor(graph);
         }
         if (plan == null) {
             plan = planner.plan(getMatchQuery());
@@ -216,8 +216,8 @@ public final class TinkerGraphMatchStep<S> extends DeclarativeMatchStep<S> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public TinkerGraphMatchStep<S> clone() {
-        final TinkerGraphMatchStep<S> clone = (TinkerGraphMatchStep<S>) super.clone();
+    public GqlMatchStep<S> clone() {
+        final GqlMatchStep<S> clone = (GqlMatchStep<S>) super.clone();
         clone.rowIterator = null;
         clone.currentStart = null;
         clone.plan = null;

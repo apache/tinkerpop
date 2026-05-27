@@ -16,16 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
-
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
+package org.apache.tinkerpop.gremlin.gql;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -38,36 +34,30 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Compiles a {@link QueryGraph} into an executable {@link GqlMatchPlan} for TinkerGraph.
+ * Compiles a {@link QueryGraph} into an executable {@link GqlMatchPlan}.
  *
  * <h3>Algorithm</h3>
  * <ol>
  *   <li><strong>Seed selection</strong> — each {@link QueryVertex} is scored via
- *       {@link AbstractTinkerGraph#getVerticesCountByLabel} (O(1) for {@link TinkerGraph},
- *       scan-based for transactional graphs). The node with the fewest matching vertices is
+ *       {@link Graph#countVerticesByLabel(String)}. The node with the fewest matching vertices is
  *       chosen as the seed; ties are broken by list order. Seed selection is recomputed on
  *       every call so that graph mutations are always reflected.</li>
  *   <li><strong>Plan compilation</strong> — a BFS is performed over the {@link QueryGraph}
  *       starting from the seed node. Within each BFS node, edges are sorted by edge-label
- *       density (ascending via {@link AbstractTinkerGraph#getEdgesCountByLabel}) so that
- *       rarer edge labels produce extension steps earlier in the plan, pruning the DFS sooner.
- *       Anonymous nodes receive synthetic variable names with a {@code $anon} prefix.</li>
+ *       density (ascending via {@link Graph#countEdgesByLabel(String)}) so that rarer edge
+ *       labels produce extension steps earlier in the plan, pruning the DFS sooner.</li>
  *   <li><strong>Parse caching</strong> — the parsed {@link QueryGraph} is cached keyed by
  *       the original GQL query string in a Caffeine LRU cache bounded by
  *       {@link #PLAN_CACHE_MAX_SIZE}. Seed selection and step ordering are recomputed each
  *       call using live counts, avoiding stale plans after mutations.</li>
  * </ol>
- *
- * <p>This planner is the primary optimization surface for TinkerGraph GQL execution. Future
- * extensions can incorporate property-filter selectivity estimates and index hints to improve
- * seed selection.
  */
-public final class TinkerGraphGqlPlanner {
+public final class DefaultGqlPlanner implements GqlPlanner {
 
     /** Maximum number of distinct GQL query strings whose parsed {@link QueryGraph} is retained. */
     static final int PLAN_CACHE_MAX_SIZE = 1_000;
 
-    private final AbstractTinkerGraph graph;
+    private final Graph graph;
     // Cache only the parsed QueryGraph — mutation-independent, safe to reuse across calls.
     // Seed selection and step ordering are recomputed on every call using live label counts.
     // Bounded to PLAN_CACHE_MAX_SIZE entries via Caffeine LRU eviction.
@@ -75,7 +65,7 @@ public final class TinkerGraphGqlPlanner {
             .maximumSize(PLAN_CACHE_MAX_SIZE)
             .build();
 
-    public TinkerGraphGqlPlanner(final AbstractTinkerGraph graph) {
+    public DefaultGqlPlanner(final Graph graph) {
         this.graph = graph;
     }
 
@@ -88,6 +78,7 @@ public final class TinkerGraphGqlPlanner {
      * @return the compiled execution plan
      * @throws IllegalArgumentException if the string cannot be parsed
      */
+    @Override
     public GqlMatchPlan plan(final String gqlMatchString) {
         final QueryGraph queryGraph = queryGraphCache.get(gqlMatchString, QueryGraph::parse);
         return compile(queryGraph);
@@ -152,20 +143,18 @@ public final class TinkerGraphGqlPlanner {
 
     /**
      * Estimates the number of vertices matching the given label and predicates.
-     * Uses the vertex label count index as the base, then narrows with the most selective
-     * indexed literal predicate (O(1) via TinkerGraph's property index).
+     * Uses the vertex label count as the base, then narrows with the most selective
+     * indexed literal predicate if the graph supports index access.
      */
     private long estimateCardinality(final String label, final List<PropertyPredicate> predicates) {
-        long count = graph.getVerticesCountByLabel(label);
-        if (!predicates.isEmpty()) {
-            final Set<String> indexedKeys = graph.getIndexedKeys(Vertex.class);
-            if (!indexedKeys.isEmpty()) {
-                for (final PropertyPredicate p : predicates) {
-                    if (!indexedKeys.contains(p.getKey()) || p.isParamRef()) continue;
-                    final Object value = p.getLiteralValue();
-                    if (value == null) continue;
-                    count = Math.min(count, TinkerIndexHelper.countVertexIndex(graph, p.getKey(), value));
-                }
+        long count = graph.countVerticesByLabel(label);
+        for (final PropertyPredicate p : predicates) {
+            if (p.isParamRef()) continue;
+            final Object value = p.getLiteralValue();
+            if (value == null) continue;
+            final long indexCount = graph.index().countVertexIndex(p.getKey(), value);
+            if (indexCount < Long.MAX_VALUE) {
+                count = Math.min(count, indexCount);
             }
         }
         return count;
@@ -173,11 +162,10 @@ public final class TinkerGraphGqlPlanner {
 
     /**
      * Estimates the cost of traversing an extension step. Bounded by both the edge label
-     * density and the estimated cardinality of the target vertex set (incorporating any
-     * indexed property predicates on the target node).
+     * density and the estimated cardinality of the target vertex set.
      */
     private long estimateStepCost(final QueryEdge edge, final QueryVertex targetNode) {
-        final long edgeCost = graph.getEdgesCountByLabel(edge.getLabel());
+        final long edgeCost = graph.countEdgesByLabel(edge.getLabel());
         final long targetCost = estimateCardinality(targetNode.getLabel(), targetNode.getPredicates());
         return Math.min(edgeCost, targetCost);
     }
@@ -239,8 +227,7 @@ public final class TinkerGraphGqlPlanner {
             final int currentOrder = visitOrder.get(current);
 
             // Collect edges touching current, sort by edge-label density (ascending) so that
-            // rarer edge labels produce extension steps earlier in the plan, pruning the DFS
-            // search space sooner.
+            // rarer edge labels produce extension steps earlier in the plan.
             final List<QueryEdge> eligible = new ArrayList<>();
             for (final QueryEdge edge : queryGraph.getEdges()) {
                 if (!processedEdges.contains(edge) &&
@@ -248,7 +235,7 @@ public final class TinkerGraphGqlPlanner {
                     eligible.add(edge);
                 }
             }
-            eligible.sort(Comparator.comparingLong(e -> graph.getEdgesCountByLabel(e.getLabel())));
+            eligible.sort(Comparator.comparingLong(e -> graph.countEdgesByLabel(e.getLabel())));
 
             for (final QueryEdge edge : eligible) {
                 processedEdges.add(edge);
@@ -323,9 +310,7 @@ public final class TinkerGraphGqlPlanner {
             }
         }
 
-        // Detect disconnected pattern components: every node in the query must have been
-        // reached by the BFS. If any node was not visited, the query graph has more than one
-        // connected component and the patterns cannot be joined by a shared variable.
+        // Detect disconnected pattern components.
         if (visitOrder.size() < queryGraph.getNodes().size()) {
             final List<String> unvisited = new ArrayList<>();
             for (final QueryVertex n : queryGraph.getNodes()) {

@@ -33,6 +33,8 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
+import org.apache.tinkerpop.gremlin.gql.DefaultGqlExecutor;
+import org.apache.tinkerpop.gremlin.gql.DefaultGqlPlanner;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
 import java.io.File;
@@ -171,7 +173,8 @@ public abstract class AbstractTinkerGraph implements Graph {
      * total vertex count. The default implementation does a full vertex scan; subclasses that
      * maintain a label index should override this for O(1) performance.
      */
-    public long getVerticesCountByLabel(final String label) {
+    @Override
+    public long countVerticesByLabel(final String label) {
         if (label == null) return getVerticesCount();
         long count = 0;
         final Iterator<Vertex> it = vertices();
@@ -186,7 +189,8 @@ public abstract class AbstractTinkerGraph implements Graph {
      * total edge count. The default implementation does a full edge scan; subclasses that
      * maintain a label index should override this for O(1) performance.
      */
-    public long getEdgesCountByLabel(final String label) {
+    @Override
+    public long countEdgesByLabel(final String label) {
         if (label == null) return getEdgesCount();
         long count = 0;
         final Iterator<Edge> it = edges();
@@ -194,6 +198,65 @@ public abstract class AbstractTinkerGraph implements Graph {
             if (label.equals(it.next().label())) count++;
         }
         return count;
+    }
+
+    /**
+     * {@link Graph.Index} implementation backed by TinkerGraph's property index structures.
+     * Returns {@code Long.MAX_VALUE} from {@link Graph.Index#countVertexIndex} when the key
+     * is not indexed, signalling to the GQL executor that a full scan is required.
+     */
+    private final class TinkerGraphIndex implements Graph.Index {
+        @Override
+        public Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+            return TinkerIndexHelper.queryVertexIndex(AbstractTinkerGraph.this, key, value)
+                    .stream().map(v -> (Vertex) v).iterator();
+        }
+
+        @Override
+        public long countVertexIndex(final String key, final Object value) {
+            if (vertexIndex == null) return Long.MAX_VALUE;
+            // TinkerIndex.count() returns 0 for keys that are not indexed, which is
+            // indistinguishable from "indexed but empty". Use getIndexedKeys() to distinguish.
+            if (!getIndexedKeys(Vertex.class).contains(key)) return Long.MAX_VALUE;
+            return TinkerIndexHelper.countVertexIndex(AbstractTinkerGraph.this, key, value);
+        }
+    }
+
+    private final Graph.Index tinkerGraphIndex = new TinkerGraphIndex();
+
+    @Override
+    public Graph.Index index() {
+        return tinkerGraphIndex;
+    }
+
+    private volatile DefaultGqlPlanner gqlPlanner;
+    private volatile DefaultGqlExecutor gqlExecutor;
+
+    /**
+     * Returns the shared {@link DefaultGqlPlanner} for this graph instance, creating it
+     * lazily on first access. The planner's compiled-plan cache spans all traversals on this
+     * graph, so identical GQL query strings are compiled only once.
+     */
+    public DefaultGqlPlanner getGqlPlanner() {
+        if (gqlPlanner == null) {
+            synchronized (this) {
+                if (gqlPlanner == null) gqlPlanner = new DefaultGqlPlanner(this);
+            }
+        }
+        return gqlPlanner;
+    }
+
+    /**
+     * Returns the shared {@link DefaultGqlExecutor} for this graph instance, creating it
+     * lazily on first access.
+     */
+    public DefaultGqlExecutor getGqlExecutor() {
+        if (gqlExecutor == null) {
+            synchronized (this) {
+                if (gqlExecutor == null) gqlExecutor = new DefaultGqlExecutor(this);
+            }
+        }
+        return gqlExecutor;
     }
 
     /**
@@ -298,6 +361,8 @@ public abstract class AbstractTinkerGraph implements Graph {
         this.edgeIndex = null;
         this.graphComputerView = null;
         this.vertexProperties.clear();
+        this.gqlPlanner = null;
+        this.gqlExecutor = null;
     }
 
     /**

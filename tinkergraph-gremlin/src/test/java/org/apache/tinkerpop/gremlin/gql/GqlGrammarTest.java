@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.gql;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.BailErrorStrategy;

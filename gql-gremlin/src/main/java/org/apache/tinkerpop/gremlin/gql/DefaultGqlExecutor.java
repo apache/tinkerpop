@@ -16,15 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIndexHelper;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -37,77 +35,48 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * Executes a {@link GqlMatchPlan} against a TinkerGraph using a DFS backtracking
- * pattern matching algorithm.
+ * Executes a {@link GqlMatchPlan} against any TinkerPop {@link Graph} using a DFS
+ * backtracking pattern matching algorithm.
  *
  * <h3>Algorithm</h3>
  * <ol>
- *   <li><strong>Seed iteration</strong> — vertices are scanned from the graph, filtered by the
- *       seed label and seed property predicates (if present). Each matching vertex is bound to
- *       the seed variable and used as the starting point for DFS extension.</li>
+ *   <li><strong>Seed iteration</strong> — vertices are scanned from the graph (or looked up
+ *       via {@link Graph.Index} when available), filtered by the seed label and seed property
+ *       predicates. Each matching vertex is bound to the seed variable and used as the
+ *       starting point for DFS extension.</li>
  *   <li><strong>DFS extension</strong> — {@link #extend} is called recursively with a shared
  *       {@code Element[]} binding array. Steps are selected from the remaining list using DAG
- *       eligibility (anchor variable already bound), with BFS order as the tiebreaker. Target
- *       property predicates are applied after the label check. Bindings are set in the array
- *       before recursing and cleared (set to {@code null}) on backtrack, avoiding any
- *       per-candidate HashMap allocation. When the traversed edge is anonymous, a per-step
- *       {@code HashSet} deduplicates parallel edges to the same target vertex so that
- *       multigraph parallel edges do not produce duplicate result rows.</li>
- *   <li><strong>Result emission</strong> — when all steps are consumed, a shallow clone of the
- *       binding array is added to the per-seed buffer.</li>
+ *       eligibility (anchor variable already bound), with BFS order as the tiebreaker.</li>
  *   <li><strong>Lazy delivery</strong> — {@link #execute} returns an {@code Iterator} that
- *       advances the DFS one seed vertex at a time. Results for a seed are buffered in an
- *       {@code ArrayDeque} and drained before the next seed is processed, so callers that apply
- *       an early termination (e.g. {@code limit()}) pay only for the work they consume.</li>
+ *       advances the DFS one seed vertex at a time.</li>
  * </ol>
  *
- * <p>Variable reuse across patterns is handled by the equality constraint: if the target
- * variable is already non-null in the binding array, the candidate target must equal the
- * existing binding. This enables multi-pattern joins such as
- * {@code MATCH (a)-[:KNOWS]->(b), (b)-[:WORKS_AT]->(c)} where {@code b} is shared.
- *
- * <p>Property predicates (from inline filter maps or parameter references) are evaluated
- * during seed iteration, edge traversal, and target vertex filtering. Edge predicates are checked
- * immediately after each candidate edge is retrieved and before the target vertex is resolved,
- * which prunes the search space before computing the target. Parameter values are resolved from
- * the {@code params} map passed to {@link #execute(GqlMatchPlan, Map)}.
- *
- * <p>This is a pure Java implementation using only the direct TinkerGraph and {@link Vertex}
- * APIs — no Gremlin traversal machinery is involved.
+ * <p>Index access is provided via {@link Graph#index()}. When
+ * {@link Graph.Index#countVertexIndex(String, Object)} returns a value less than
+ * {@code Long.MAX_VALUE} for a seed predicate key, an index lookup replaces the full vertex
+ * scan. When all counts equal {@code Long.MAX_VALUE} (no index), a full scan is used.</p>
  */
-public final class TinkerGraphGqlExecutor {
+public final class DefaultGqlExecutor implements GqlExecutor {
 
-    private final AbstractTinkerGraph graph;
+    private final Graph graph;
 
-    public TinkerGraphGqlExecutor(final AbstractTinkerGraph graph) {
+    public DefaultGqlExecutor(final Graph graph) {
         this.graph = graph;
     }
 
     /**
      * Returns a lazy {@link Iterator} of result rows using an empty params map.
-     * Equivalent to {@code execute(plan, Collections.emptyMap())}.
-     *
-     * @param plan the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
-     * @return a lazy iterator of binding arrays; empty if the plan has no seed
      */
+    @Override
     public Iterator<Element[]> execute(final GqlMatchPlan plan) {
         return execute(plan, Collections.emptyMap());
     }
 
     /**
      * Returns a lazy {@link Iterator} of result rows. Each row is an {@code Element[]} whose
-     * indices correspond to the variable index defined in the {@link GqlMatchPlan}; use
-     * {@link GqlMatchPlan#getVariables()} to map indices back to variable names.
-     *
-     * <p>The iterator advances the DFS one seed vertex at a time. Results for a given seed
-     * are fully computed before the iterator moves to the next seed, so memory usage is
-     * bounded by the maximum number of results a single seed vertex can produce.
-     *
-     * @param plan   the compiled execution plan produced by {@link TinkerGraphGqlPlanner}
-     * @param params the parameter bindings for {@code $name} references in property predicates;
-     *               may be empty if the query contains no parameter references
-     * @return a lazy iterator of binding arrays; empty if the plan has no seed
+     * indices correspond to the variable index defined in the {@link GqlMatchPlan}.
      */
+    @Override
     public Iterator<Element[]> execute(final GqlMatchPlan plan, final Map<String, Object> params) {
         if (plan.getSeedVariable() == null) {
             return Collections.emptyIterator();
@@ -142,45 +111,56 @@ public final class TinkerGraphGqlExecutor {
     // -------------------------------------------------------------------------
 
     /**
-     * Returns an iterator over seed vertex candidates. When the graph has a vertex index and
-     * at least one seed predicate's key is indexed with a resolvable value (literal or present
-     * param), the most selective such predicate is used for an O(result-set) index lookup
-     * instead of a full vertex scan. The label constraint and all remaining predicates are
-     * applied as a post-filter over the index results. Falls back to a full scan when no
-     * usable indexed predicate exists.
+     * Returns an iterator over seed vertex candidates. When {@link Graph#index()} returns
+     * a count less than {@code Long.MAX_VALUE} for a seed predicate key, the most selective
+     * such predicate is used for an index lookup instead of a full vertex scan. Falls back
+     * to a full scan when no usable indexed predicate exists.
      */
     private Iterator<Vertex> seedIterator(final String label,
                                           final List<PropertyPredicate> predicates,
                                           final Map<String, Object> params) {
         // Attempt index-based lookup if any seed predicate key is indexed.
         if (!predicates.isEmpty()) {
-            final Set<String> indexedKeys = graph.getIndexedKeys(Vertex.class);
-            if (!indexedKeys.isEmpty()) {
-                PropertyPredicate bestPredicate = null;
-                Object bestValue = null;
-                long bestCount = Long.MAX_VALUE;
+            PropertyPredicate bestPredicate = null;
+            Object bestValue = null;
+            long bestCount = Long.MAX_VALUE;
 
-                for (final PropertyPredicate p : predicates) {
-                    if (!indexedKeys.contains(p.getKey())) continue;
-                    final Object value = p.isParamRef() ? params.get(p.getParamName()) : p.getLiteralValue();
-                    if (value == null) continue; // param absent — cannot use index
-                    final long count = TinkerIndexHelper.countVertexIndex(graph, p.getKey(), value);
-                    if (count < bestCount) {
-                        bestCount = count;
-                        bestPredicate = p;
-                        bestValue = value;
+            for (final PropertyPredicate p : predicates) {
+                final Object value = p.isParamRef() ? params.get(p.getParamName()) : p.getLiteralValue();
+                if (value == null) continue; // param absent or null literal — cannot use index
+                final long count = graph.index().countVertexIndex(p.getKey(), value);
+                if (count < bestCount) { // Long.MAX_VALUE means "not indexed"
+                    bestCount = count;
+                    bestPredicate = p;
+                    bestValue = value;
+                }
+            }
+
+            if (bestPredicate != null && bestCount < Long.MAX_VALUE) {
+                final Iterator<Vertex> indexResults =
+                        graph.index().queryVertexIndex(bestPredicate.getKey(), bestValue);
+                return new Iterator<Vertex>() {
+                    private Vertex next = advance();
+
+                    private Vertex advance() {
+                        while (indexResults.hasNext()) {
+                            final Vertex v = indexResults.next();
+                            if (label != null && !label.equals(v.label())) continue;
+                            if (!matchesPredicates(v, predicates, params)) continue;
+                            return v;
+                        }
+                        return null;
                     }
-                }
 
-                if (bestPredicate != null) {
-                    final List<TinkerVertex> candidates =
-                            TinkerIndexHelper.queryVertexIndex(graph, bestPredicate.getKey(), bestValue);
-                    return candidates.stream()
-                            .filter(v -> label == null || label.equals(v.label()))
-                            .filter(v -> matchesPredicates(v, predicates, params))
-                            .map(v -> (Vertex) v)
-                            .iterator();
-                }
+                    @Override public boolean hasNext() { return next != null; }
+
+                    @Override
+                    public Vertex next() {
+                        final Vertex result = next;
+                        next = advance();
+                        return result;
+                    }
+                };
             }
         }
 
@@ -217,21 +197,6 @@ public final class TinkerGraphGqlExecutor {
     /**
      * Recursively extends the current partial match using DAG-aware step selection and
      * array-based bindings with in-place backtracking.
-     *
-     * <p>Among all steps in {@code remaining} whose anchor variable slot is non-null in
-     * {@code bindings} (simultaneously eligible steps), the one with the lowest
-     * {@link ExtensionStep#selectivityRatio()} is chosen first, with
-     * {@link ExtensionStep#getEstimatedCost()} as a tiebreaker. This combines adaptive
-     * runtime reordering (learned from observed hits/attempts ratios) with the planner's
-     * static property-aware cost estimate. New variable bindings are written directly into
-     * the shared {@code bindings} array and cleared on unwind, avoiding any HashMap
-     * allocation during the DFS.</p>
-     *
-     * @param bindings  shared binding array (index → Element); mutated in place, backtracked on unwind
-     * @param plan      the compiled plan supplying the variable index
-     * @param params    parameter bindings for predicate resolution
-     * @param remaining steps not yet executed; modified in place and restored on return
-     * @param results   buffer into which complete binding-array snapshots are added
      */
     private void extend(final Element[] bindings, final GqlMatchPlan plan,
                         final Map<String, Object> params,
@@ -242,8 +207,7 @@ public final class TinkerGraphGqlExecutor {
         }
 
         // Find the best eligible step: anchor slot non-null, lowest selectivityRatio() first,
-        // estimatedCost as tiebreaker. This implements both static (planner-cost) and adaptive
-        // (observed hits/attempts) step ordering when multiple DAG steps are simultaneously eligible.
+        // estimatedCost as tiebreaker.
         int chosenIdx = -1;
         double chosenRatio = Double.MAX_VALUE;
         long chosenCost = Long.MAX_VALUE;
@@ -273,13 +237,9 @@ public final class TinkerGraphGqlExecutor {
                 ? anchor.edges(step.getDirection(), step.getEdgeLabel())
                 : anchor.edges(step.getDirection());
 
-        // Resolve binding-array indices for this step's variables once (outside the loop).
         final int edgeIdx   = step.getEdgeVariable()   != null ? plan.getIndex(step.getEdgeVariable())   : -1;
         final int targetIdx = step.getTargetVariable() != null ? plan.getIndex(step.getTargetVariable()) : -1;
 
-        // When the edge is anonymous, parallel edges between the same two vertices are
-        // indistinguishable as bindings.  Track visited targets so we recurse at most once
-        // per distinct target vertex via this step.
         final Set<Vertex> seenAnonymousTargets = edgeIdx < 0 ? new HashSet<>() : null;
 
         while (candidates.hasNext()) {
@@ -288,9 +248,6 @@ public final class TinkerGraphGqlExecutor {
             if (!matchesPredicates(edge, step.getEdgePredicates(), params))
                 continue;
 
-            // Enforce edge equality constraint: if the edge variable is already bound (from a
-            // prior pattern that reuses the same variable name), the candidate edge must be
-            // the same object.
             if (edgeIdx >= 0 && bindings[edgeIdx] != null && !bindings[edgeIdx].equals(edge))
                 continue;
 
@@ -302,33 +259,24 @@ public final class TinkerGraphGqlExecutor {
             if (!matchesPredicates(target, step.getTargetPredicates(), params))
                 continue;
 
-            // Track whether we are writing the edge binding ourselves (vs. it already being set).
             final boolean writeEdge = edgeIdx >= 0 && bindings[edgeIdx] == null;
 
             if (targetIdx >= 0 && bindings[targetIdx] != null) {
-                // Equality constraint: target variable already bound — candidate must match.
                 if (!bindings[targetIdx].equals(target)) continue;
 
                 if (writeEdge) {
-                    // Named edge not yet bound: bind, recurse, clear.
                     bindings[edgeIdx] = edge;
                     step.recordHit();
                     extend(bindings, plan, params, remaining, results);
                     bindings[edgeIdx] = null;
                 } else {
-                    // Edge already bound (equality checked above) or anonymous edge.
-                    // Anonymous edge: one matching edge is sufficient to establish
-                    // connectivity — break after the first.
                     step.recordHit();
                     extend(bindings, plan, params, remaining, results);
                     if (edgeIdx < 0) break;
                 }
             } else {
-                // Anonymous edge: parallel edges to the same target vertex yield identical
-                // bindings — skip if this target was already reached via an earlier parallel edge.
                 if (seenAnonymousTargets != null && !seenAnonymousTargets.add(target)) continue;
 
-                // New target binding (and edge binding if not yet set): write, recurse, clear.
                 if (writeEdge)      bindings[edgeIdx]  = edge;
                 if (targetIdx >= 0) bindings[targetIdx] = target;
                 step.recordHit();

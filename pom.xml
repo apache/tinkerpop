@@ -125,6 +125,7 @@ limitations under the License.
         <module>gremlin-language</module>
         <module>gremlin-shaded</module>
         <module>gremlin-core</module>
+        <module>gql-gremlin</module>
         <module>gremlin-annotations</module>
         <module>gremlin-test</module>
         <module>gremlin-util</module>

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -30,18 +30,18 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for {@link TinkerGraphGqlPlanner}: seed selection, step ordering, direction
+ * Unit tests for {@link DefaultGqlPlanner}: seed selection, step ordering, direction
  * handling, plan caching, and edge cases.
  */
-public class TinkerGraphGqlPlannerTest {
+public class DefaultGqlPlannerTest {
 
     private TinkerGraph graph;
-    private TinkerGraphGqlPlanner planner;
+    private DefaultGqlPlanner planner;
 
     @Before
     public void setUp() {
         graph = TinkerGraph.open();
-        planner = new TinkerGraphGqlPlanner(graph);
+        planner = new DefaultGqlPlanner(graph);
     }
 
     @After
@@ -228,7 +228,7 @@ public class TinkerGraphGqlPlannerTest {
 
     @Test
     public void testCacheMaxSizeConstantIsDefined() {
-        assertTrue("PLAN_CACHE_MAX_SIZE must be positive", TinkerGraphGqlPlanner.PLAN_CACHE_MAX_SIZE > 0);
+        assertTrue("PLAN_CACHE_MAX_SIZE must be positive", DefaultGqlPlanner.PLAN_CACHE_MAX_SIZE > 0);
     }
 
     // -------------------------------------------------------------------------
