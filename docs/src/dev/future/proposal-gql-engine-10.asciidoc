@@ -40,16 +40,15 @@ own native implementation are unaffected; the module is strictly opt-in.
 
 At the outset of building `match()`, it was not clear what form the GQL execution engine would take.
 As it developed in TinkerGraph, however, the engine started to form with relatively clear lines for
-where interfaces could be introduced to take advantage of that engine's execution patterns. If graphs
-simply exposed some general statistics about their data it could easily supply the engine with the
-information it needed to make an optimized query. Interestingly, any `Graph` implementation could offer
-GQL with the current `Graph` interface, but it would likely be painfully slow to use, perhaps similar
-in profile to the old `match()` step that took `Traversal` instances for arguments. 
+where the planner and executor could consult the graph for information to make better decisions. Any
+`Graph` implementation can already offer GQL using only the standard `Graph`, `Vertex`, and `Edge`
+APIs, but without cardinality hints and index access the engine falls back to full vertex scans and
+arbitrary seed selection — potentially painful on large graphs.
 
-Offering this engine as a default reference implementation lowers the bar for providers to offer 
-basic GQL support. It spares providers the need to develop and maintain  their own grammar and parser, 
-come up with their own query planner and execution engine, or handle other related details. As an 
-added benefit for users, the TinkerPop form of GQL offers some level of standardization about what 
+Offering this engine as a default reference implementation lowers the bar for providers to offer
+basic GQL support. It spares providers the need to develop and maintain their own grammar and parser,
+come up with their own query planner and execution engine, or handle other related details. As an
+added benefit for users, the TinkerPop form of GQL offers some level of standardization about what
 TinkerPop supports with `match` so that the feature has some potential to carry from one graph to
 another.
 
@@ -78,115 +77,142 @@ The following diagram shows the intended module responsibility split.
 
 ----
 gremlin-core
-  └── DeclarativeMatchStep          (placeholder; step contract only)
-  └── GraphTraversalSource.match()  (API; unchanged)
-  └── GraphTraversal.match()        (API; unchanged)
+  └── DeclarativeMatchStep              (placeholder; step contract only)
+  └── GraphTraversalSource.match()      (API; unchanged)
+  └── GraphTraversal.match()            (API; unchanged)
+  └── Graph.countVerticesByLabel()      (new default method; returns Long.MAX_VALUE)
+  └── Graph.countEdgesByLabel()         (new default method; returns Long.MAX_VALUE)
+  └── Graph.index()                     (new default method; returns Graph.Index.EMPTY)
+  └── Graph.Index                       (new nested interface; queryVertexIndex, countVertexIndex)
 
 gql-gremlin  (new module, depends on gremlin-core)
-  ├── GQL.g4                        (ANTLR4 grammar, currently in tinkergraph-gremlin)
+  ├── GQL.g4                            (ANTLR4 grammar, currently in tinkergraph-gremlin)
   ├── QueryGraph / QueryVertex / QueryEdge  (parsed query model)
   ├── PropertyPredicate / ExtensionStep     (plan model)
-  ├── GqlMatchPlan                  (compiled plan)
-  ├── GqlPlanner  (interface)       (compiles a query string into a GqlMatchPlan)
-  ├── DefaultGqlPlanner             (reference implementation; uses GraphStatistics when available)
-  ├── GqlExecutor (interface)       (executes a GqlMatchPlan against a Graph)
-  ├── DefaultGqlExecutor            (reference implementation; uses IndexAccess when available)
-  ├── GqlMatchStep                  (concrete AbstractStep; wires plan + executor into traversal)
-  ├── GqlDeclarativeMatchStrategy   (ProviderOptimizationStrategy; registers the above)
-  ├── GraphStatistics (interface)   (optional; cardinality hints for the planner)
-  └── IndexAccess  (interface)      (optional; index pushdown for the executor)
+  ├── GqlMatchPlan                      (compiled plan)
+  ├── GqlPlanner  (interface)           (compiles a query string into a GqlMatchPlan)
+  ├── DefaultGqlPlanner                 (calls graph.countVerticesByLabel / countEdgesByLabel)
+  ├── GqlExecutor (interface)           (executes a GqlMatchPlan against a Graph)
+  ├── DefaultGqlExecutor                (calls graph.index().queryVertexIndex / countVertexIndex)
+  ├── GqlMatchStep                      (concrete AbstractStep; wires plan + executor into traversal)
+  └── GqlDeclarativeMatchStrategy       (ProviderOptimizationStrategy; registers the above)
 
 tinkergraph-gremlin  (depends on gql-gremlin)
-  ├── AbstractTinkerGraph implements GraphStatistics
-  ├── AbstractTinkerGraph implements IndexAccess  (via existing TinkerIndexHelper)
-  ├── TinkerGraphGqlPlanner extends DefaultGqlPlanner  (overrides cost estimation with O(1) counts)
-  ├── TinkerGraphGqlExecutor extends DefaultGqlExecutor (overrides seed iteration with index lookup)
-  └── TinkerGraphDeclarativeMatchStrategy (registers TinkerGraph-specific planner/executor)
+  ├── AbstractTinkerGraph overrides countVerticesByLabel()  (O(1) via label count map)
+  ├── AbstractTinkerGraph overrides countEdgesByLabel()     (O(1) via label count map)
+  └── AbstractTinkerGraph overrides index()                 (returns TinkerIndex backed by TinkerIndexHelper)
 ----
 
-This structure means that a new provider wishing to support `match()` needs to:
+A new provider wishing to support `match()` needs to:
 
 . Add `gql-gremlin` as a Maven dependency.
 . Register `GqlDeclarativeMatchStrategy` with their `GraphTraversalSource`.
-. Optionally implement `GraphStatistics` and/or `IndexAccess` on their `Graph` to unlock
-  performance optimizations.
+. Optionally override `countVerticesByLabel()`, `countEdgesByLabel()`, and `index()` on their
+  `Graph` to unlock performance optimizations.
 
 That is the entire adoption path for a correct, functional implementation.
 
-=== Interface Specifications
+=== Graph Interface Extensions
 
-==== GraphStatistics
+Two default methods and one nested interface are added to `Graph` in `gremlin-core`. These follow
+the existing pattern of `Graph.Variables` (a nested interface accessed via a default-backed accessor
+on `Graph`) and `getServiceRegistry()` (a default method returning a no-op singleton when not
+overridden).
 
-This interface exposes cardinality estimates that the planner uses for seed selection and step
-ordering. It carries no index-access semantics — only counts.
+==== Cardinality Methods
 
 [source,java]
 ----
 /**
- * Optional interface for Graph implementations that can supply vertex and edge
- * cardinality estimates. When implemented, the GQL planner uses these counts to
- * select the lowest-cardinality node as the DFS seed and to order extension steps
- * by edge-label density so that rarer labels prune the search space sooner.
+ * Returns the number of vertices with the given label, or Long.MAX_VALUE if unknown.
+ * A null label means all vertices regardless of label.
  *
- * Implementations are not required to return exact counts; approximate values are
- * sufficient for planning purposes. A null label means "all vertices" or "all edges".
+ * The default implementation returns Long.MAX_VALUE. Graph implementations that
+ * maintain label cardinality counts should override this method to enable the GQL
+ * planner to select an optimal seed variable and order extension steps by label density.
+ * Approximate values are sufficient; exact counts are not required.
  */
-public interface GraphStatistics {
-    long getVerticesCountByLabel(String label);
-    long getEdgesCountByLabel(String label);
+default long countVerticesByLabel(final String label) {
+    return Long.MAX_VALUE;
+}
+
+/**
+ * Returns the number of edges with the given label, or Long.MAX_VALUE if unknown.
+ * A null label means all edges regardless of label.
+ *
+ * The default implementation returns Long.MAX_VALUE. Graph implementations that
+ * maintain edge label cardinality counts should override this method to enable the
+ * GQL planner to order extension steps by edge-label density so that rarer labels
+ * prune the DFS search space sooner.
+ */
+default long countEdgesByLabel(final String label) {
+    return Long.MAX_VALUE;
 }
 ----
 
-Without this interface the planner treats all nodes and edges as having equal cardinality
-(`Long.MAX_VALUE`), which keeps correctness but makes seed selection arbitrary and step
-ordering suboptimal for skewed graphs.
+==== Graph.Index
 
-==== IndexAccess
-
-This interface allows the executor to replace the default full-vertex scan with a targeted
-index lookup when the seed node has an indexed literal predicate. It is separate from
-`GraphStatistics` because a graph may expose cardinality counts without supporting
-property-level index access, and vice versa.
+`Graph.Index` is a nested interface modelled after `Graph.Variables`. The accessor `index()` is a
+default method returning `Graph.Index.EMPTY`, a no-op singleton whose methods return conservative
+values. Graphs that maintain property indexes override `index()` to return a live implementation.
 
 [source,java]
 ----
 /**
- * Optional interface for Graph implementations that maintain property indexes
- * queryable by key/value. When implemented, the GQL executor uses index lookups
- * for seed vertex iteration instead of a full graph scan, reducing the O(V) cost
- * of seed selection to O(result-set) for selective predicates.
+ * Returns the Index accessor for this graph. The default implementation returns
+ * Graph.Index.EMPTY, whose methods return conservative values (empty iterator /
+ * Long.MAX_VALUE) indicating that no property index is available.
  *
- * This interface complements IndexMixin: IndexMixin exposes which keys are indexed
- * (getIndexedKeys), while IndexAccess exposes how to query those indexes.
+ * Graph implementations that maintain property indexes should override this method
+ * and return an Index backed by their index structures. The GQL executor uses the
+ * Index to replace full vertex scans with targeted lookups for selective predicates.
  */
-public interface IndexAccess {
-    /**
-     * Returns all vertices where the given property key equals the given value.
-     * Must return an empty iterator (not null) when no match exists.
-     */
-    Iterator<Vertex> queryVertexIndex(String key, Object value);
+default Index index() {
+    return Index.EMPTY;
+}
+
+/**
+ * Provides access to property index lookups for the graph. Analogous to Graph.Variables
+ * for graph-level metadata, Graph.Index exposes the read side of a graph's property
+ * index structures.
+ *
+ * Implementations whose graphs do not support property indexes need not implement this
+ * interface; the default Graph.index() accessor returns Graph.Index.EMPTY.
+ */
+interface Index {
 
     /**
-     * Returns the number of vertices where the given property key equals the
-     * given value. Used by the planner to select the most selective index predicate
+     * Returns an iterator over all vertices where the given property key equals the
+     * given value. Must return an empty iterator (not null) when no match exists or
+     * when the key is not indexed.
+     */
+    default Iterator<Vertex> queryVertexIndex(final String key, final Object value) {
+        return Collections.emptyIterator();
+    }
+
+    /**
+     * Returns the number of vertices where the given property key equals the given
+     * value. Returns Long.MAX_VALUE when the key is not indexed or the count is
+     * unknown. Used by the GQL planner to select the most selective index predicate
      * when multiple indexed keys appear in the same node filter.
      */
-    long countVertexIndex(String key, Object value);
+    default long countVertexIndex(final String key, final Object value) {
+        return Long.MAX_VALUE;
+    }
+
+    /** No-op singleton returned by the default Graph.index() implementation. */
+    Index EMPTY = new Index() {};
 }
 ----
 
-The executor determines which predicate to use for the index lookup by finding the key with
-the lowest `countVertexIndex` result among all indexed, resolvable (non-param-ref or
-param-present) predicates on the seed node. The selected index result is then post-filtered
-by the remaining predicates and the seed label.
+Note that `Graph.Index` is intentionally vertex-only. Edge index access may be added in a future
+revision as the engine gains edge-first seed selection support.
 
-Note that `IndexAccess` is intentionally vertex-only. Edge index access may be added in
-a future revision as the engine gains edge-first seed selection support.
+=== GqlPlanner and GqlExecutor
 
-==== GqlPlanner and GqlExecutor
-
-These interfaces allow providers to substitute their own implementations without replacing
-the full strategy.
+These interfaces allow providers to substitute their own implementations without replacing the full
+strategy, while `DefaultGqlPlanner` and `DefaultGqlExecutor` call the `Graph` methods unconditionally
+— no `instanceof` checks or adapters are needed.
 
 [source,java]
 ----
@@ -209,11 +235,12 @@ public interface GqlExecutor {
 }
 ----
 
-`GqlDeclarativeMatchStrategy` accepts a `GqlPlanner` and a `GqlExecutor` at construction time.
-A provider that wants to replace only the executor (for example, to use a native index) can
-supply their own `GqlExecutor` while reusing `DefaultGqlPlanner`.
+`DefaultGqlPlanner` takes a `Graph` and calls `graph.countVerticesByLabel()` and
+`graph.countEdgesByLabel()` directly for seed selection and step ordering. `DefaultGqlExecutor` takes
+a `Graph` and calls `graph.index().queryVertexIndex()` and `graph.index().countVertexIndex()` for
+seed iteration, falling back to a full scan when `graph.index()` returns `Graph.Index.EMPTY`.
 
-==== GqlDeclarativeMatchStrategy
+=== GqlDeclarativeMatchStrategy
 
 [source,java]
 ----
@@ -226,8 +253,9 @@ supply their own `GqlExecutor` while reusing `DefaultGqlPlanner`.
  *   graph.traversal()
  *        .withStrategies(GqlDeclarativeMatchStrategy.create(graph))
  *
- * The static factory inspects the Graph for GraphStatistics and IndexAccess
- * and wires them into the DefaultGqlPlanner / DefaultGqlExecutor automatically.
+ * The static factory constructs DefaultGqlPlanner and DefaultGqlExecutor over the
+ * supplied graph. Both delegate to the graph's countVerticesByLabel(), countEdgesByLabel(),
+ * and index() methods, which return conservative defaults unless the graph overrides them.
  */
 public class GqlDeclarativeMatchStrategy extends AbstractTraversalStrategy<...>
         implements ProviderOptimizationStrategy {
@@ -241,15 +269,15 @@ public class GqlDeclarativeMatchStrategy extends AbstractTraversalStrategy<...>
 
 === Graceful Degradation
 
-The reference engine degrades gracefully as optional capabilities are absent:
+The reference engine degrades gracefully based on which `Graph` methods are overridden:
 
 [width="100%",cols="3,3,4",options="header"]
 |=========================================================
-|`GraphStatistics` |`IndexAccess` |Behavior
-|Absent |Absent |Full vertex scan; seed chosen arbitrarily; step order is parse order
-|Present |Absent |Full vertex scan; seed is lowest-cardinality node; steps ordered by edge density
-|Absent |Present |Index lookup for seed; step order is parse order
-|Present |Present |Index lookup for seed; lowest-cardinality index predicate chosen; steps ordered by edge density
+|`countVerticesByLabel` / `countEdgesByLabel` |`index()` |Behavior
+|Default (`Long.MAX_VALUE`) |Default (`EMPTY`) |Full vertex scan; seed chosen arbitrarily; step order is parse order
+|Overridden |Default (`EMPTY`) |Full vertex scan; seed is lowest-cardinality node; steps ordered by edge density
+|Default (`Long.MAX_VALUE`) |Overridden |Index lookup for seed; step order is parse order
+|Overridden |Overridden |Index lookup for seed; lowest-cardinality index predicate chosen; steps ordered by edge density
 |=========================================================
 
 In all cases the results are correct. The degraded modes are simply slower on large graphs.
@@ -258,24 +286,22 @@ In all cases the results are correct. The degraded modes are simply slower on la
 
 The migration is largely mechanical:
 
+. Add `countVerticesByLabel()`, `countEdgesByLabel()`, and `index()` as default methods to `Graph`
+  in `gremlin-core`. Add the `Graph.Index` nested interface.
 . Move `GQL.g4`, `QueryGraph`, `QueryVertex`, `QueryEdge`, `PropertyPredicate`,
   `ExtensionStep`, and `GqlMatchPlan` from `tinkergraph-gremlin` to `gql-gremlin` unchanged.
 . Extract `GqlPlanner` and `GqlExecutor` interfaces and move the `Default*` implementations
   into `gql-gremlin`.
 . Move `GqlMatchStep` and `GqlDeclarativeMatchStrategy` into `gql-gremlin`.
 . In `tinkergraph-gremlin`:
-** Make `AbstractTinkerGraph` implement `GraphStatistics` using the existing
-   `getVerticesCountByLabel` / `getEdgesCountByLabel` methods.
-** Make `AbstractTinkerGraph` implement `IndexAccess` by delegating to `TinkerIndexHelper`.
-** Subclass `DefaultGqlPlanner` as `TinkerGraphGqlPlanner`; the subclass overrides only
-   `estimateCardinality()` to use `GraphStatistics` counts directly.
-** Subclass `DefaultGqlExecutor` as `TinkerGraphGqlExecutor`; the subclass overrides only
-   `seedIterator()` to use `IndexAccess` for index-based seed lookup.
-** Update `TinkerGraphDeclarativeMatchStrategy` to extend `GqlDeclarativeMatchStrategy`
-   and register the TinkerGraph-specific planner and executor.
+** Override `countVerticesByLabel()` and `countEdgesByLabel()` on `AbstractTinkerGraph` using the
+   existing O(1) label count maps.
+** Override `index()` on `AbstractTinkerGraph` to return a `TinkerIndex` implementation backed by
+   `TinkerIndexHelper`.
+** Remove `TinkerGraphGqlPlanner` and `TinkerGraphGqlExecutor` — they are no longer needed since
+   `DefaultGqlPlanner` and `DefaultGqlExecutor` call the graph methods directly.
+** Update `TinkerGraphDeclarativeMatchStrategy` to simply delegate to
+   `GqlDeclarativeMatchStrategy.create(graph)`, or remove it entirely if TinkerGraph
+   auto-registers the strategy at traversal source construction time.
 . Add `gql-gremlin` as a `compile` dependency of `tinkergraph-gremlin`.
-. Convert TinkerGraph `match()` tests to Gherkin features tests in `gremlin-test`.
-
-=== Open Questions
-
-* Should `IndexAccess` and `GraphStatistics` be in `gremlin-core`?
+. Convert TinkerGraph `match()` tests to Gherkin feature tests in `gremlin-test`.
