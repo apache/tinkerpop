@@ -2242,18 +2242,20 @@ above with the use of the `maximumSize`.
 [[considering-transactions]]
 ==== Considering Transactions
 
-Non-transactional requests (those without a `transactionId`) behave as self-contained units of work. If the underlying
-graph supports transactions, the server automatically commits after successfully iterating the traversal and
-automatically rolls back on any error. This means that a simple `g.addV('person')` will be persisted immediately upon
-success without requiring an explicit `commit()`. Before processing each non-transactional request, the server also
-rolls back any stale open transaction to prevent state leakage between requests.
+Every traversal executes within a transaction. TinkerPop distinguishes between two modes:
 
-Transactional requests participate in a transaction opened via `g.tx().begin()`, where the client explicitly controls
-the lifecycle through `g.tx().commit()` and `g.tx().rollback()`.
+* *Implicit transactions* are the default. Each traversal submitted through `g` is a self-contained unit of work. All
+graphs participate in implicit transactions. When the graph supports explicit transactions, implicit transactions are
+auto-committed on success and rolled back on error, providing atomicity. When the graph does not support explicit
+transactions, writes are immediately durable and cannot be rolled back if a failure occurs mid-traversal, potentially
+leaving the graph in a partially mutated state. In either case, a simple `g.addV('person')` will be persisted on
+success without requiring an explicit `commit()`.
+* *Explicit transactions* are opened via `g.tx().begin()`, where the client controls the lifecycle through
+`g.tx().commit()` and `g.tx().rollback()`. Multiple traversals can participate in the same explicit transaction.
 
-IMPORTANT: Understand the transactional capabilities of the graph configured in Gremlin Server. For example, a basic
-`TinkerGraph` does not support transactions. Use `TinkerTransactionGraph` or another transaction-capable graph
-implementation. Attempting to begin a transaction on a non-transactional graph will result in an error.
+IMPORTANT: Not all graph implementations support explicit transactions (for example, basic `TinkerGraph` does not).
+Use `TinkerTransactionGraph` or another graph implementation that supports explicit transactions. Attempting to begin
+an explicit transaction on a graph that does not support them will result in an error.
 
 Two settings in the Gremlin Server YAML control transaction resource usage:
 

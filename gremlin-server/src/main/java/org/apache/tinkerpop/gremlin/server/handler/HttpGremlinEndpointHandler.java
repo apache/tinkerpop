@@ -433,19 +433,19 @@ public class HttpGremlinEndpointHandler extends SimpleChannelInboundHandler<Requ
         // rollback any stale open transaction before processing
         if (autoCommit && graph.tx().isOpen()) graph.tx().rollback();
 
-        final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
-
-        final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULK_RESULTS);
-        // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
-        // The serializer check is temporarily needed because GraphSON hasn't been removed yet and doesn't support bulking.
-        final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 ?
-                (args.containsKey(Tokens.BULK_RESULTS) ?
-                        Objects.equals(args.get(Tokens.BULK_RESULTS), "true") :
-                        Objects.equals(bulkingSetting, "true")) :
-                false;
-
         Iterator itty = null;
         try {
+            final Object result = scriptEngine.eval(message.getGremlin(), mergedBindings);
+
+            final String bulkingSetting = context.getChannelHandlerContext().channel().attr(StateKey.REQUEST_HEADERS).get().get(Tokens.BULK_RESULTS);
+            // bulking only applies if it's gremlin-lang, and per request token setting takes precedence over header setting.
+            // The serializer check is temporarily needed because GraphSON hasn't been removed yet and doesn't support bulking.
+            final boolean bulking = language.equals("gremlin-lang") && serializer instanceof GraphBinaryMessageSerializerV4 ?
+                    (args.containsKey(Tokens.BULK_RESULTS) ?
+                            Objects.equals(args.get(Tokens.BULK_RESULTS), "true") :
+                            Objects.equals(bulkingSetting, "true")) :
+                    false;
+
             if (bulking) {
                 // optimization for driver requests
                 ((Traversal.Admin<?, ?>) result).applyStrategies();

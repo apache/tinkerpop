@@ -1260,25 +1260,32 @@ Graph transactions are typically `ThreadLocal`-bound. The server maintains a sin
 to ensure all operations execute on the same thread. This is an important implementation detail for graph system
 providers whose `Transaction` implementation relies on thread-local state.
 
-==== Auto-Commit for Non-Transactional Requests
+==== Implicit Transaction Management
 
-Non-transactional requests (those without a `transactionId`) are not affected by any of the transaction-specific
-behavior described above. However, if the underlying graph supports transactions, the server must automatically manage
-transactions for these requests:
+Implicit transactions (requests without a `transactionId`) are not affected by any of the explicit transaction-specific
+behavior described above. All graphs participate in implicit transactions regardless of whether they support explicit
+transactions. The difference lies in what the server does at the boundaries:
+
+When the graph supports explicit transactions, the server auto-commits and rolls back implicit transactions:
 
 * Before processing: roll back any stale open transaction to prevent state leakage between requests.
 * On success: commit the transaction after the traversal has been fully iterated and serialized.
 * On error: roll back the transaction so that partial mutations are not persisted.
 
-This auto-commit behavior ensures that users who do not use explicit transactions still get durable writes on success
-and clean rollback on failure. Graph system providers implementing their own server or HTTP endpoint must replicate
-this behavior if their graph implementation supports transactions. The commit occurs after serialization is complete
-but before the final response is flushed to the client, so the client only receives a success response after the
-data is committed.
+When the graph does not support explicit transactions, writes are immediately durable. If a failure occurs
+mid-traversal, the graph may be left in a partially mutated state since rollback is not possible.
 
-IMPORTANT: This auto-commit/rollback logic must only apply to non-transactional requests. Requests that carry a
-`transactionId` are part of a client-managed transaction and must not be auto-committed or auto-rolled-back by the
-server.
+Graph system providers implementing their own server or HTTP endpoint should replicate the auto-commit/rollback behavior
+when their graph implementation supports explicit transactions. The commit occurs after serialization is complete but
+before the final response is flushed to the client, so the client only receives a success response after the data is
+committed. Note that because HTTP responses use chunked transfer encoding, the initial HTTP status is sent as 200 OK
+before iteration begins. If the commit itself fails, the error will appear in the response body status field and in
+the trailing HTTP headers rather than as a non-200 HTTP status code. Clients should therefore check the response body
+status (and trailing headers) to confirm that the transaction was committed successfully.
+
+IMPORTANT: The auto-commit/rollback logic must only apply to implicit transactions. Requests that carry a
+`transactionId` are part of an explicit, client-managed transaction and must not be auto-committed or auto-rolled-back
+by the server.
 
 === HTTP Request Interceptor
 
