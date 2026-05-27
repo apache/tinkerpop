@@ -50,8 +50,8 @@ public class GqlMatchStepTest {
 
     /**
      * A minimal traversal strategy that replaces every {@link DeclarativeMatchStep} with a
-     * {@link GqlMatchStep}. This is a stand-in for the full provider strategy
-     * (TinkerGraphDeclarativeMatchStrategy) so we can test the step in isolation.
+     * {@link GqlMatchStep}. This is a stand-in for {@link org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy}
+     * so we can test the step in isolation without the shared graph-level cache.
      */
     private static final class InjectMatchStrategy
             extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>

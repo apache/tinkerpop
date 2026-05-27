@@ -33,8 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoVersion;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
-import org.apache.tinkerpop.gremlin.gql.DefaultGqlExecutor;
-import org.apache.tinkerpop.gremlin.gql.DefaultGqlPlanner;
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.tinkergraph.services.TinkerServiceRegistry;
 
 import java.io.File;
@@ -229,36 +228,6 @@ public abstract class AbstractTinkerGraph implements Graph {
         return tinkerGraphIndex;
     }
 
-    private volatile DefaultGqlPlanner gqlPlanner;
-    private volatile DefaultGqlExecutor gqlExecutor;
-
-    /**
-     * Returns the shared {@link DefaultGqlPlanner} for this graph instance, creating it
-     * lazily on first access. The planner's compiled-plan cache spans all traversals on this
-     * graph, so identical GQL query strings are compiled only once.
-     */
-    public DefaultGqlPlanner getGqlPlanner() {
-        if (gqlPlanner == null) {
-            synchronized (this) {
-                if (gqlPlanner == null) gqlPlanner = new DefaultGqlPlanner(this);
-            }
-        }
-        return gqlPlanner;
-    }
-
-    /**
-     * Returns the shared {@link DefaultGqlExecutor} for this graph instance, creating it
-     * lazily on first access.
-     */
-    public DefaultGqlExecutor getGqlExecutor() {
-        if (gqlExecutor == null) {
-            synchronized (this) {
-                if (gqlExecutor == null) gqlExecutor = new DefaultGqlExecutor(this);
-            }
-        }
-        return gqlExecutor;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -361,8 +330,6 @@ public abstract class AbstractTinkerGraph implements Graph {
         this.edgeIndex = null;
         this.graphComputerView = null;
         this.vertexProperties.clear();
-        this.gqlPlanner = null;
-        this.gqlExecutor = null;
     }
 
     /**
@@ -373,8 +340,8 @@ public abstract class AbstractTinkerGraph implements Graph {
     @Override
     public void close() {
         if (graphLocation != null) saveGraph();
-        // shutdown services
         serviceRegistry.close();
+        GqlDeclarativeMatchStrategy.evict(this);
     }
 
     @Override

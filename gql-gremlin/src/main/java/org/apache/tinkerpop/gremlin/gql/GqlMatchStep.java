@@ -37,21 +37,22 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * TinkerGraph-specific executable replacement for the generic {@link DeclarativeMatchStep}.
+ * Concrete executable replacement for the generic {@link DeclarativeMatchStep} that runs
+ * TinkerGQL patterns via a {@link GqlPlanner} and {@link GqlExecutor}.
  *
- * <p>The planner and executor are normally injected by {@code TinkerGraphDeclarativeMatchStrategy}
- * as graph-level singletons so the compiled-plan cache is shared across all traversals on the
- * same graph instance. When the step is constructed without injected instances (e.g. in tests
- * using a substitute strategy), they are initialised lazily from the traversal's graph on the
- * first call to {@link #processNextStart()}.</p>
+ * <p>The planner and executor are normally supplied by {@link GqlDeclarativeMatchStrategy},
+ * which caches one pair per graph instance so the planner's parse cache is shared across
+ * all traversals on the same graph. When the step is constructed without injected instances
+ * (e.g. in tests that use a substitute strategy), they are initialised lazily from the
+ * traversal's graph on the first call to {@link #processNextStart()}.</p>
  *
- * <p>For each incoming traverser the plan is executed against the graph and one output traverser
- * is emitted per result row. Each result row's named variable bindings are recorded in the
- * emitted traverser's path so that downstream {@code select()} steps can retrieve them by
- * name.</p>
+ * <p>For each incoming traverser the plan is executed against the graph and one output
+ * traverser is emitted per result row. Each result row's named variable bindings are
+ * recorded in the emitted traverser's path so that downstream {@code select()} steps can
+ * retrieve them by name.</p>
  *
- * <p>Only the {@code "gql"} query language is supported. If the step's query language is set
- * to any other non-null value, {@link UnsupportedOperationException} is thrown.</p>
+ * <p>Only the {@code "gql"} query language is supported. If the step's query language is
+ * set to any other non-null value, {@link UnsupportedOperationException} is thrown.</p>
  *
  * @param <S> the traverser start type
  */
@@ -73,10 +74,10 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     private boolean done = false;
 
     /**
-     * Constructs a {@code TinkerGraphMatchStep} without pre-injected planner or executor.
-     * Both will be initialised lazily from the traversal's graph on the first
-     * {@link #processNextStart()} call. Intended for use in tests where a substitute strategy
-     * replaces the placeholder step without access to graph-level singletons.
+     * Constructs a {@code GqlMatchStep} without pre-injected planner or executor. Both are
+     * initialised lazily from the traversal's graph on the first {@link #processNextStart()}
+     * call. Intended for use in tests where a substitute strategy replaces the placeholder
+     * step without access to the shared graph-level cache.
      *
      * @param originalStep the step being replaced by this concrete implementation
      */
@@ -85,14 +86,14 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
     }
 
     /**
-     * Constructs a {@code TinkerGraphMatchStep} with pre-injected graph-level singletons.
-     * When {@code planner} and {@code executor} are non-null the plan cache is shared across
-     * all traversals on the same graph instance. Called by
-     * {@code TinkerGraphDeclarativeMatchStrategy}.
+     * Constructs a {@code GqlMatchStep} with pre-injected planner and executor. When
+     * {@code planner} and {@code executor} are non-null the plan cache is shared across all
+     * traversals that use the same objects — normally the per-graph-instance pair cached by
+     * {@link GqlDeclarativeMatchStrategy}.
      *
      * @param originalStep the step being replaced
-     * @param planner      the graph-level planner singleton, or {@code null} for lazy init
-     * @param executor     the graph-level executor singleton, or {@code null} for lazy init
+     * @param planner      the planner to use, or {@code null} for lazy init
+     * @param executor     the executor to use, or {@code null} for lazy init
      */
     public GqlMatchStep(final DeclarativeMatchStep<S> originalStep,
                                 final GqlPlanner planner,
@@ -120,7 +121,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
         final String ql = getQueryLanguage();
         if (ql != null && !SUPPORTED_QUERY_LANGUAGE.equals(ql)) {
             throw new UnsupportedOperationException(
-                    "TinkerGraphMatchStep only supports query language '" + SUPPORTED_QUERY_LANGUAGE +
+                    "GqlMatchStep only supports query language '" + SUPPORTED_QUERY_LANGUAGE +
                     "', got: " + ql);
         }
 
