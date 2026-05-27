@@ -246,13 +246,9 @@ func TestInterceptor_NilSerializerNoSerialization(t *testing.T) {
 	conn := newConnection(newTestLogHandler(), server.URL, &connectionSettings{})
 	conn.serializer = nil // explicitly nil serializer
 
-	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-	require.NoError(t, err)
-
-	_, _ = rs.All() // drain — this triggers the async executeAndStream
-	rsErr := rs.GetError()
-	require.Error(t, rsErr, "should get an error when serializer is nil and no interceptor serializes")
-	assert.Contains(t, rsErr.Error(), "request body was not serialized",
+	_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+	require.Error(t, err, "should get an error when serializer is nil and no interceptor serializes")
+	assert.Contains(t, err.Error(), "request body was not serialized",
 		"error message should indicate the body was not serialized")
 }
 
@@ -327,14 +323,10 @@ func TestInterceptor_ErrorPropagation(t *testing.T) {
 		return fmt.Errorf("interceptor failed")
 	})
 
-	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-	require.NoError(t, err)
-
-	_, _ = rs.All() // drain — triggers async executeAndStream
-	rsErr := rs.GetError()
-	require.Error(t, rsErr, "interceptor error should propagate to ResultSet")
-	assert.Contains(t, rsErr.Error(), "interceptor failed",
-		"ResultSet error should contain the interceptor's error message")
+	_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+	require.Error(t, err, "interceptor error should propagate")
+	assert.Contains(t, err.Error(), "interceptor failed",
+		"error should contain the interceptor's error message")
 }
 
 // TestInterceptor_UnsupportedBodyType verifies that setting Body to an unsupported type
@@ -353,13 +345,9 @@ func TestInterceptor_UnsupportedBodyType(t *testing.T) {
 		return nil
 	})
 
-	rs, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
-	require.NoError(t, err)
-
-	_, _ = rs.All() // drain
-	rsErr := rs.GetError()
-	require.Error(t, rsErr, "unsupported body type should produce an error")
-	assert.Contains(t, rsErr.Error(), "unsupported body type",
+	_, err := conn.submit(&RequestMessage{Gremlin: "g.V()", Fields: map[string]interface{}{}})
+	require.Error(t, err, "unsupported body type should produce an error")
+	assert.Contains(t, err.Error(), "unsupported body type",
 		"error message should indicate unsupported body type")
 }
 

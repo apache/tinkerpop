@@ -119,28 +119,71 @@ func (c *connection) AddInterceptor(interceptor RequestInterceptor) {
 	c.interceptors = append(c.interceptors, interceptor)
 }
 
-// submit sends request and streams results directly to ResultSet
+// submit sends request and streams results directly to ResultSet.
+// Blocks until response headers arrive, ensuring the server has acknowledged
+// receipt of the request before returning.
 func (c *connection) submit(req *RequestMessage) (ResultSet, error) {
 	rs := newChannelResultSet()
 
+	// Send the HTTP request synchronously — blocks until response headers arrive
+	resp, err := c.sendRequest(req)
+	if err != nil {
+		rs.Close()
+		return nil, err
+	}
+
+	// If the HTTP status indicates an error and the response is not GraphBinary,
+	// read the body as a text/JSON error message instead of attempting binary
+	// deserialization which would produce cryptic errors.
+	contentType := resp.Header.Get(HeaderContentType)
+	if resp.StatusCode >= 400 && !strings.Contains(contentType, graphBinaryMimeType) {
+		defer func() {
+			io.Copy(io.Discard, resp.Body)
+			resp.Body.Close()
+		}()
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+		if readErr != nil {
+			rs.Close()
+			return nil, fmt.Errorf("Gremlin Server returned HTTP %d and failed to read body: %w",
+				resp.StatusCode, readErr)
+		}
+		errorBody := string(bodyBytes)
+		errorMsg := tryExtractJSONError(errorBody)
+		if errorMsg == "" {
+			errorMsg = fmt.Sprintf("Gremlin Server returned HTTP %d: %s", resp.StatusCode, errorBody)
+		}
+		c.logHandler.logf(Error, failedToReceiveResponse, errorMsg)
+		rs.Close()
+		return nil, fmt.Errorf("%s", errorMsg)
+	}
+
+	// Stream the response body into the ResultSet asynchronously
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()
-		c.executeAndStream(req, rs)
+		// Drain any unread bytes so the connection can be reused gracefully.
+		// Without this, Go's HTTP client sends a TCP RST instead of FIN,
+		// causing "Connection reset by peer" errors on the server.
+		defer func() {
+			io.Copy(io.Discard, resp.Body)
+			if err := resp.Body.Close(); err != nil {
+				c.logHandler.logf(Debug, failedToCloseResponseBody, err.Error())
+			}
+		}()
+		defer rs.Close()
+		c.streamResponse(resp, rs)
 	}()
 
 	return rs, nil
 }
 
-func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
-	defer rs.Close()
-
+// sendRequest builds and sends the HTTP request, blocking until response headers arrive.
+func (c *connection) sendRequest(req *RequestMessage) (*http.Response, error) {
 	// Create HttpRequest for interceptors
 	httpReq, err := NewHttpRequest(http.MethodPost, c.url)
 	if err != nil {
 		c.logHandler.logf(Error, failedToSendRequest, err.Error())
-		rs.setError(err)
-		return
+		return nil, err
 	}
 
 	// Set default headers before interceptors
@@ -154,8 +197,7 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 	for _, interceptor := range c.interceptors {
 		if err := interceptor(httpReq); err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 	}
 
@@ -165,15 +207,13 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 			data, err := c.serializer.SerializeMessage(r)
 			if err != nil {
 				c.logHandler.logf(Error, failedToSendRequest, err.Error())
-				rs.setError(err)
-				return
+				return nil, err
 			}
 			httpReq.Body = data
 		} else {
 			errMsg := "request body was not serialized; either provide a serializer or add an interceptor that serializes the request"
 			c.logHandler.logf(Error, failedToSendRequest, errMsg)
-			rs.setError(fmt.Errorf("%s", errMsg))
-			return
+			return nil, fmt.Errorf("%s", errMsg)
 		}
 	}
 
@@ -184,16 +224,14 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), bytes.NewReader(body))
 		if err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 		httpGoReq.Header = httpReq.Headers
 	case io.Reader:
 		httpGoReq, err = http.NewRequest(httpReq.Method, httpReq.URL.String(), body)
 		if err != nil {
 			c.logHandler.logf(Error, failedToSendRequest, err.Error())
-			rs.setError(err)
-			return
+			return nil, err
 		}
 		httpGoReq.Header = httpReq.Headers
 	case *http.Request:
@@ -201,48 +239,21 @@ func (c *connection) executeAndStream(req *RequestMessage, rs ResultSet) {
 	default:
 		errMsg := fmt.Sprintf("unsupported body type after interceptors: %T", body)
 		c.logHandler.logf(Error, failedToSendRequest, errMsg)
-		rs.setError(fmt.Errorf("%s", errMsg))
-		return
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
+	// This blocks until response headers arrive
 	resp, err := c.httpClient.Do(httpGoReq)
 	if err != nil {
 		c.logHandler.logf(Error, failedToSendRequest, err.Error())
-		rs.setError(err)
-		return
-	}
-	defer func() {
-		// Drain any unread bytes so the connection can be reused gracefully.
-		// Without this, Go's HTTP client sends a TCP RST instead of FIN,
-		// causing "Connection reset by peer" errors on the server.
-		io.Copy(io.Discard, resp.Body)
-		if err := resp.Body.Close(); err != nil {
-			c.logHandler.logf(Debug, failedToCloseResponseBody, err.Error())
-		}
-	}()
-
-	// If the HTTP status indicates an error and the response is not GraphBinary,
-	// read the body as a text/JSON error message instead of attempting binary
-	// deserialization which would produce cryptic errors.
-	contentType := resp.Header.Get(HeaderContentType)
-	if resp.StatusCode >= 400 && !strings.Contains(contentType, graphBinaryMimeType) {
-		bodyBytes, readErr := io.ReadAll(resp.Body)
-		if readErr != nil {
-			c.logHandler.logf(Error, failedToReceiveResponse, readErr.Error())
-			rs.setError(fmt.Errorf("Gremlin Server returned HTTP %d and failed to read body: %w",
-				resp.StatusCode, readErr))
-			return
-		}
-		errorBody := string(bodyBytes)
-		errorMsg := tryExtractJSONError(errorBody)
-		if errorMsg == "" {
-			errorMsg = fmt.Sprintf("Gremlin Server returned HTTP %d: %s", resp.StatusCode, errorBody)
-		}
-		c.logHandler.logf(Error, failedToReceiveResponse, errorMsg)
-		rs.setError(fmt.Errorf("%s", errorMsg))
-		return
+		return nil, err
 	}
 
+	return resp, nil
+}
+
+// streamResponse reads the response body and pushes results into the ResultSet.
+func (c *connection) streamResponse(resp *http.Response, rs ResultSet) {
 	reader, zlibReader, err := c.getReader(resp)
 	if err != nil {
 		c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
