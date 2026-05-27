@@ -23,6 +23,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Traversal;
 
 namespace Gremlin.Net.Process.Remote
@@ -51,10 +52,5 @@ namespace Gremlin.Net.Process.Remote
         /// </param>
         /// <returns>The created <see cref="RemoteTransaction" />.</returns>
         RemoteTransaction Tx(GraphTraversalSource graphTraversalSource);
-        
-        /// <summary>
-        ///     Determines if the connection is bound to a session.
-        /// </summary>
-        bool IsSessionBound { get; }
     }
 }

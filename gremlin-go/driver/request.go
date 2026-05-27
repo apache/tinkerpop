@@ -77,6 +77,10 @@ func MakeStringRequest(stringGremlin string, traversalSource string, requestOpti
 		newFields["bulkResults"] = strconv.FormatBool(*requestOptions.bulkResults)
 	}
 
+	if requestOptions.transactionId != "" {
+		newFields["transactionId"] = requestOptions.transactionId
+	}
+
 	return RequestMessage{
 		Gremlin: stringGremlin,
 		Fields:  newFields,

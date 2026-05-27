@@ -102,15 +102,6 @@ class DriverRemoteConnection(RemoteConnection):
     def is_closed(self):
         return self._client.is_closed()
 
-    # TODO remove or update once HTTP transaction is implemented
-    # def commit(self):
-    #     log.info("Submitting commit graph operation.")
-    #     return self._client.submit(Bytecode.GraphOp.commit())
-    #
-    # def rollback(self):
-    #     log.info("Submitting rollback graph operation.")
-    #     return self._client.submit(Bytecode.GraphOp.rollback())
-
     @staticmethod
     def extract_request_options(gremlin_lang):
         request_options = {}

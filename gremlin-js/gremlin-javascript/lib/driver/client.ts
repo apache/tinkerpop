@@ -19,6 +19,7 @@
 
 import Connection, { ConnectionOptions } from './connection.js';
 import {RequestMessage} from "./request-message.js";
+import { Transaction } from '../process/transaction.js';
 
 export type RequestOptions = {
   bindings?: any;
@@ -30,6 +31,7 @@ export type RequestOptions = {
   materializeProperties?: string;
   bulkResults?: boolean;
   params?: Record<string, any>;
+  transactionId?: string;
 };
 
 export type ClientOptions = ConnectionOptions & RequestOptions & { processor?: string };
@@ -45,9 +47,14 @@ export default class Client {
    * @param {String} url The resource uri.
    * @param {ClientOptions} [options] The connection options.
    */
+  // Tracks open transactions for cascade rollback on close. JS Set iteration
+  // is safe during concurrent modification (deleting the current element during
+  // for-of is spec-guaranteed to not affect remaining iterations).
+  private readonly _trackedTransactions = new Set<any>();
+
   constructor(
-    url: string,
-    private readonly options: ClientOptions = {},
+    readonly url: string,
+    readonly options: ClientOptions = {},
   ) {
     this._connection = new Connection(url, options);
   }
@@ -122,6 +129,9 @@ export default class Client {
     if (requestOptions?.bulkResults) {
       requestBuilder.addBulkResults(requestOptions.bulkResults);
     }
+    if (requestOptions?.transactionId) {
+      requestBuilder.addField('transactionId', requestOptions.transactionId);
+    }
 
     return requestBuilder.create();
   }
@@ -130,8 +140,32 @@ export default class Client {
    * Closes the underlying connection
    * @returns {Promise}
    */
-  close(): Promise<void> {
+  async close(): Promise<void> {
+    // Best-effort rollback of any open transactions before closing connections
+    for (const tx of this._trackedTransactions) {
+      try { await tx.close(); } catch {}
+    }
+    this._trackedTransactions.clear();
     return this._connection.close();
+  }
+
+  trackTransaction(tx: any): void {
+    this._trackedTransactions.add(tx);
+  }
+
+  untrackTransaction(tx: any): void {
+    this._trackedTransactions.delete(tx);
+  }
+
+  /**
+   * Creates a new Transaction for executing operations within an explicit transaction.
+   * Transactions are short-lived and single-use. After commit or rollback,
+   * create a new Transaction for the next unit of work.
+   * The traversal source (g alias) is inherited from this Client.
+   * @returns {Transaction}
+   */
+  transact(): Transaction {
+    return new Transaction(this);
   }
 
   /**

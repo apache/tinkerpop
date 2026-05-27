@@ -143,24 +143,24 @@ class GraphTraversalSource(object):
 
         return source
 
-    # TODO remove or update once HTTP transaction is implemented
-    # def tx(self):
-    #     # In order to keep the constructor unchanged within 3.5.x we can try to pop the RemoteConnection out of the
-    #     # TraversalStrategies. keeping this unchanged will allow user DSLs to not take a break.
-    #     # This is the same strategy as gremlin-javascript.
-    #     # TODO https://issues.apache.org/jira/browse/TINKERPOP-2664: refactor this to be nicer in 3.6.0 when
-    #     #  we can take a breaking change
-    #     remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
-    #                               x.fqcn == "py:RemoteStrategy"), None)
-    #
-    #     if remote_connection is None:
-    #         raise Exception("Error, remote connection is required for transaction.")
-    #
-    #     # You can't do g.tx().begin().tx() i.e child transactions are not supported.
-    #     if remote_connection and remote_connection.is_session_bound():
-    #         raise Exception("This TraversalSource is already bound to a transaction - child transactions are not "
-    #                         "supported")
-    #     return Transaction(self, remote_connection)
+    def tx(self):
+        """Spawns a Transaction or returns the existing one if this GTS is
+        already bound to a transaction. Requires a RemoteConnection backed by a Client.
+        """
+        from gremlin_python.driver.remote_connection import RemoteStrategy
+        remote_connection = next((x.remote_connection for x in self.traversal_strategies.traversal_strategies if
+                                  x.fqcn == "py:RemoteStrategy"), None)
+
+        if remote_connection is None:
+            raise Exception("Remote connection is required for transactions")
+
+        # If this GTS is already bound to a transaction, return that transaction.
+        from gremlin_python.driver.transaction import TransactionRemoteConnection
+        if isinstance(remote_connection, TransactionRemoteConnection):
+            return remote_connection._transaction
+
+        from gremlin_python.driver.transaction import Transaction
+        return Transaction(remote_connection._client)
 
     def withComputer(self, graph_computer=None, workers=None, result=None, persist=None, vertices=None,
                      edges=None, configuration=None):
@@ -1774,81 +1774,6 @@ class __(object, metaclass=MagicType):
     @classmethod
     def where(cls, *args):
         return cls.graph_traversal(None, None, GremlinLang()).where(*args)
-
-
-# Class to handle transactions.
-# class Transaction:
-#
-#     def __init__(self, g, remote_connection):
-#         self._g = g
-#         self._session_based_connection = None
-#         self._remote_connection = remote_connection
-#         self.__is_open = False
-#         self.__mutex = Lock()
-#
-#     # Begins transaction.
-#     def begin(self):
-#         with self.__mutex:
-#             # Verify transaction is not open.
-#             self.__verify_transaction_state(False, "Transaction already started on this object")
-#
-#             # Create new session using the remote connection.
-#             self._session_based_connection = self._remote_connection.create_session()
-#             self.__is_open = True
-#
-#             # Set the session as a remote strategy within the traversal strategy.
-#             traversal_strategy.py = TraversalStrategies()
-#             traversal_strategy.py.add_strategies([RemoteStrategy(self._session_based_connection)])
-#
-#             # Return new GraphTraversalSource.
-#             return GraphTraversalSource(self._g.graph, traversal_strategy.py, self._g.bytecode)
-#
-#     # Rolls transaction back.
-#     def rollback(self):
-#         with self.__mutex:
-#             # Verify transaction is open, close session and return result of transaction's rollback.
-#             self.__verify_transaction_state(True, "Cannot rollback a transaction that is not started.")
-#             return self.__close_session(self._session_based_connection.rollback())
-#
-#     # Commits the current transaction.
-#     def commit(self):
-#         with self.__mutex:
-#             # Verify transaction is open, close session and return result of transaction's commit.
-#             self.__verify_transaction_state(True, "Cannot commit a transaction that is not started.")
-#             return self.__close_session(self._session_based_connection.commit())
-#
-#     # Closes session.
-#     def close(self):
-#         with self.__mutex:
-#             # Verify transaction is open.
-#             self.__verify_transaction_state(True, "Cannot close a transaction that has previously been closed.")
-#             self.__close_session(None)
-#
-#     # Return whether or not transaction is open.
-#     # Allow camelcase function here to keep api consistent with other languages.
-#     def isOpen(self):
-#         warnings.warn(
-#             "gremlin_python.process.Transaction.isOpen will be replaced by "
-#             "gremlin_python.process.Transaction.is_open.",
-#             DeprecationWarning)
-#         return self.is_open()
-#
-#     def is_open(self):
-#         # if the underlying DriverRemoteConnection is closed then the Transaction can't be open
-#         if (self._session_based_connection and self._session_based_connection.is_closed()) or \
-#                 self._remote_connection.is_closed():
-#             self.__is_open = False
-#
-#         return self.__is_open
-#
-#     def __verify_transaction_state(self, state, error_message):
-#         if self.__is_open != state:
-#             raise Exception(error_message)
-#
-#     def __close_session(self, session):
-#         self.__is_open = False
-#         self._remote_connection.remove_session(self._session_based_connection)
-#         return session
 
 
 def E(*args):

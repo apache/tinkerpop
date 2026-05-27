@@ -148,32 +148,33 @@ using var gremlinClient = new GremlinClient(gremlinServer,
         }
         
         [Fact(Skip = "No Server under localhost")]
-        public async Task TransactionsTest()
+        public async Task TransactionsViaTraversalSourceTest()
         {
-// tag::transactions[]
-using var gremlinClient = new GremlinClient(new GremlinServer("localhost", 8182));
-var g = Traversal().With(new DriverRemoteConnection(gremlinClient));
-var tx = g.Tx();    // create a transaction
+// tag::transactionsViaTraversalSource[]
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182));
 
-// spawn a new GraphTraversalSource binding all traversals established from it to tx
-var gtx = tx.Begin();
+var tx = g.Tx();
+var gtx = await tx.BeginAsync();
 
-// execute traversals using gtx occur within the scope of the transaction held by tx. the
-// tx is closed after calls to CommitAsync or RollbackAsync and cannot be re-used. simply spawn a
-// new Transaction from g.Tx() to create a new one as needed. the g context remains
-// accessible through all this as a sessionless connection.
-try
-{
-    await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
-    await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
-    
-    await tx.CommitAsync();
-}
-catch (Exception)
-{
-    await tx.RollbackAsync();
-}
-// end::transactions[]
+await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+
+await tx.CommitAsync();
+// end::transactionsViaTraversalSource[]
+        }
+
+        [Fact(Skip = "No Server under localhost")]
+        public async Task TransactionsViaClientTest()
+        {
+// tag::transactionsViaClient[]
+using var client = new GremlinClient(new GremlinServer("localhost", 8182));
+var tx = client.Transact("g");
+await tx.BeginAsync();
+
+await tx.SubmitAsync<object>("g.addV('person').property('name','alice')");
+
+await tx.CommitAsync();
+// end::transactionsViaClient[]
         }
     }
 }

@@ -26,6 +26,7 @@ type RequestOptions struct {
 	bindingsString        string
 	materializeProperties string
 	bulkResults           *bool
+	transactionId         string
 }
 
 type RequestOptionsBuilder struct {
@@ -36,6 +37,7 @@ type RequestOptionsBuilder struct {
 	bindingsString        string
 	materializeProperties string
 	bulkResults           *bool
+	transactionId         string
 }
 
 func (builder *RequestOptionsBuilder) SetEvaluationTimeout(evaluationTimeout int) *RequestOptionsBuilder {
@@ -79,6 +81,11 @@ func (builder *RequestOptionsBuilder) SetBulkResults(bulkResults bool) *RequestO
 	return builder
 }
 
+func (builder *RequestOptionsBuilder) SetTransactionId(transactionId string) *RequestOptionsBuilder {
+	builder.transactionId = transactionId
+	return builder
+}
+
 func (builder *RequestOptionsBuilder) AddBinding(key string, binding interface{}) *RequestOptionsBuilder {
 	if builder.bindingsString != "" {
 		panic("cannot mix AddBinding() with SetBindingsString()")
@@ -98,6 +105,7 @@ func (builder *RequestOptionsBuilder) Create() RequestOptions {
 	requestOptions.userAgent = builder.userAgent
 	requestOptions.materializeProperties = builder.materializeProperties
 	requestOptions.bulkResults = builder.bulkResults
+	requestOptions.transactionId = builder.transactionId
 
 	// convert map bindings to string at creation time, matching Java's RequestOptions.Builder.create()
 	if builder.bindingsString != "" {

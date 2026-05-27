@@ -1141,22 +1141,6 @@ class GremlinLang(object):
         return (''.join(self.gremlin) if len(self.gremlin) > 0 else "") + \
             (str(self.parameters) if len(self.parameters) > 0 else "")
 
-    # TODO to be removed or updated once HTTP transaction is implemented
-    # @staticmethod
-    # def _create_graph_op(name, *values):
-    #     bc = Bytecode()
-    #     bc.add_source(name, *values)
-    #     return bc
-    #
-    # @staticmethod
-    # class GraphOp:
-    #     @staticmethod
-    #     def commit():
-    #         return Bytecode._create_graph_op("tx", "commit")
-    #
-    #     @staticmethod
-    #     def rollback():
-    #         return Bytecode._create_graph_op("tx", "rollback")
 
 
 class GValue:

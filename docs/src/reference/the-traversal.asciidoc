@@ -107,22 +107,8 @@ GraphTraversalSource gtx2 = tx2.begin();
 ----
 
 In remote cases, `GraphTraversalSource` instances spawned from `begin()` are safe to use from a single thread. The
-default behavior of `close()` on a `Transaction` for remote cases is to `commit()`, so the following re-write of the
-earlier example is also valid:
-
-[source,java]
-----
-// note here that we dispense with creating a Transaction object and
-// simply spawn the gtx in a more inline fashion
-GraphTraversalSource gtx = g.tx().begin();
-try {
-    gtx.addV('person').iterate();
-    gtx.addV('software').iterate();
-    gtx.close();
-} catch (Exception ex) {
-    tx.rollback();
-}
-----
+default behavior of `close()` on a `Transaction` for remote cases is to `rollback()`, ensuring partial work is
+discarded if the user forgets to commit. Users must call `commit()` explicitly to persist data.
 
 IMPORTANT: Transactions with non-JVM languages are always "remote". For specific transaction syntax in a particular
 language, please see the "Transactions" sub-section of your language of interest in the

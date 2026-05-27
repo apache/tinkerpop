@@ -89,5 +89,10 @@ namespace Gremlin.Net.Driver
         ///     Argument name for bulk results mode.
         /// </summary>
         public const string ArgsBulkResults = "bulkResults";
+
+        /// <summary>
+        ///     Argument name for the transaction ID that binds a request to a server-side transaction.
+        /// </summary>
+        public const string ArgsTransactionId = "transactionId";
     }
 }

@@ -30,6 +30,8 @@ image::https://raw.githubusercontent.com/apache/tinkerpop/master/docs/static/ima
 * Added typed numeric wrappers and `preciseNumbers` connection option to `gremlin-javascript` for explicit control over numeric type serialization and deserialization.
 * Added `NextN(n)` to `Traversal` in `gremlin-go` for batched result iteration, providing API parity with `next(n)` in the Java, Python, and .NET GLVs, and updated the Go translators in `gremlin-core` and `gremlin-javascript` to emit `NextN(n)` for the batched form.
 * Added Gremlator, a single page web application, that translates Gremlin into various programming languages like Javascript and Python.
+* Added explicit transaction support to all non-Java GLVs (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet).
+* Changed default transaction close behavior from commit to rollback across all GLVs to align with embedded graph defaults.
 * Refactored Go driver connection to block until response headers arrive, enabling synchronous error returns and proper transaction ordering.
 * Removed `uuid` dependency from `gremlin-javascript` in favor of the built-in `globalThis.crypto.randomUUID()`.
 * Added streaming HTTP response support to `gremlin-driver` for incremental result deserialization over GraphBinary.

@@ -47,9 +47,6 @@ namespace Gremlin.Net.Driver.Remote
         // The server filters out options that don't apply, and this allows
         // providers to use custom request fields via the Client directly or DRC.
 
-        /// <inheritdoc />
-        public bool IsSessionBound => false;
-
         /// <summary>
         ///     Initializes a new <see cref="IRemoteConnection" />.
         /// </summary>
@@ -141,12 +138,11 @@ namespace Gremlin.Net.Driver.Remote
         }
 
         /// <inheritdoc />
-        /// <remarks>
-        ///     Transaction support over HTTP is not yet implemented. This will be addressed in a future release.
-        /// </remarks>
         public RemoteTransaction Tx(GraphTraversalSource g)
         {
-            throw new NotSupportedException("Transaction support over HTTP is not yet implemented.");
+            // The g parameter satisfies the IRemoteConnection interface but is unused.
+            // The traversal source is taken from this connection's configuration.
+            return new RemoteTransaction(_client, _traversalSource);
         }
 
         /// <inheritdoc />

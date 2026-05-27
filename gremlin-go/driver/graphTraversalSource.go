@@ -27,17 +27,24 @@ func convertStrategyVarargs(strategies []TraversalStrategy) []interface{} {
 	return converted
 }
 
+// remoteConnection abstracts the submission of traversals to a remote server.
+// Both DriverRemoteConnection and transactionRemoteConnection satisfy this interface.
+type remoteConnection interface {
+	submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error)
+	Close()
+}
+
 // GraphTraversalSource can be used to start GraphTraversal.
 type GraphTraversalSource struct {
 	graph            *Graph
 	gremlinLang      *GremlinLang
-	remoteConnection *DriverRemoteConnection
+	remoteConnection remoteConnection
 	graphTraversal   *GraphTraversal
 }
 
 // NewGraphTraversalSource creates a new GraphTraversalSource from a Graph, DriverRemoteConnection, and any TraversalStrategy.
 // Graph and DriverRemoteConnection can be set to nil as valid default values.
-func NewGraphTraversalSource(graph *Graph, remoteConnection *DriverRemoteConnection,
+func NewGraphTraversalSource(graph *Graph, remoteConnection remoteConnection,
 	traversalStrategies ...TraversalStrategy) *GraphTraversalSource {
 	// TODO: revisit when updating strategies
 	gl := NewGremlinLang(nil)
@@ -62,7 +69,7 @@ func (gts *GraphTraversalSource) clone() *GraphTraversalSource {
 	return cloneGraphTraversalSource(gts.graph, NewGremlinLang(gts.gremlinLang), gts.remoteConnection)
 }
 
-func cloneGraphTraversalSource(graph *Graph, gl *GremlinLang, remoteConnection *DriverRemoteConnection) *GraphTraversalSource {
+func cloneGraphTraversalSource(graph *Graph, gl *GremlinLang, remoteConnection remoteConnection) *GraphTraversalSource {
 	return &GraphTraversalSource{graph: graph,
 		gremlinLang:      gl,
 		remoteConnection: remoteConnection,
@@ -230,5 +237,17 @@ func (gts *GraphTraversalSource) Union(args ...interface{}) *GraphTraversal {
 }
 
 func (gts *GraphTraversalSource) Tx() *Transaction {
-	return &Transaction{g: gts, remoteConnection: gts.remoteConnection}
+	if gts.remoteConnection == nil {
+		panic("remote connection is required for transactions")
+	}
+	// If this GTS is already bound to a transaction, return that transaction.
+	if txRC, ok := gts.remoteConnection.(*transactionRemoteConnection); ok {
+		return txRC.transaction
+	}
+	// Extract the Client from the DriverRemoteConnection.
+	drc, ok := gts.remoteConnection.(*DriverRemoteConnection)
+	if !ok {
+		panic("transactions require a DriverRemoteConnection")
+	}
+	return &Transaction{client: drc.client}
 }

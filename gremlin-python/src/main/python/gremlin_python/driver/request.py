@@ -24,4 +24,5 @@ RequestMessage = collections.namedtuple(
     'RequestMessage', ['fields', 'gremlin'])
 
 Tokens = ['batchSize', 'bindings', 'g', 'gremlin', 'language',
-          'evaluationTimeout', 'materializeProperties', 'timeoutMs', 'userAgent', 'bulkResults']
+          'evaluationTimeout', 'materializeProperties', 'timeoutMs', 'userAgent', 'bulkResults',
+          'transactionId']

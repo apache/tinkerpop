@@ -32,16 +32,28 @@ import { ConnectionOptions } from './connection.js';
  * Represents the default `RemoteConnection` implementation.
  */
 export default class DriverRemoteConnection extends RemoteConnection {
-  private readonly _client: Client;
+  // Exposed as package-internal for Transaction to submit begin/commit/rollback.
+  // Not part of the public API contract.
+  readonly _client: Client;
+  private _transactionId?: string;
 
   /**
    * Creates a new instance of {@link DriverRemoteConnection}.
    * @param {String} url The resource uri.
    * @param {ConnectionOptions} [options] The connection options.
+   * @param {String} [transactionId] Optional transaction ID to attach to all requests.
    */
-  constructor(url: string, options: ConnectionOptions = {}) {
+  constructor(url: string, options: ConnectionOptions = {}, transactionId?: string) {
     super(url, options);
     this._client = new Client(url, options);
+    this._transactionId = transactionId;
+  }
+
+  /**
+   * Returns the transaction ID if this connection is bound to a transaction, undefined otherwise.
+   */
+  get transactionId(): string | undefined {
+    return this._transactionId;
   }
 
   /** @override */
@@ -100,15 +112,12 @@ export default class DriverRemoteConnection extends RemoteConnection {
       requestOptions.bindings = parametersString;
     }
 
+    // If this connection is bound to a transaction, attach the transactionId
+    if (this._transactionId) {
+      requestOptions.transactionId = this._transactionId;
+    }
+
     return { gremlin: gremlinLang.getGremlin(), requestOptions };
-  }
-
-  override commit() {
-    return this._client.submit('g.tx().commit()', null);
-  }
-
-  override rollback() {
-    return this._client.submit('g.tx().rollback()', null);
   }
 
   override close() {

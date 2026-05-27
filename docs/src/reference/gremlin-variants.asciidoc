@@ -291,8 +291,42 @@ re-construction machine-side.
 [[gremlin-go-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin-Go. This will be addressed by the official
-4.0.0 release.
+Gremlin-Go supports remote transactions over HTTP via two entry points: the Traversal API (`g.Tx()`) and the
+Driver API (`client.Transact()`).
+
+==== Traversal API
+
+[source,go]
+----
+g := gremlingo.Traversal_().With(remote)
+
+tx := g.Tx()
+gtx, err := tx.Begin()
+if err != nil { log.Fatal(err) }
+
+_, err = gtx.AddV("person").Property("name", "alice").Iterate()
+if err != nil { tx.Rollback(); log.Fatal(err) }
+
+err = tx.Commit()
+if err != nil { log.Fatal(err) }
+----
+
+==== Driver API
+
+[source,go]
+----
+client, _ := gremlingo.NewClient(url, func(settings *gremlingo.ClientSettings) {
+    settings.TraversalSource = "g"
+})
+
+tx := client.Transact()
+tx.Begin()
+tx.Submit("g.addV('person').property('name','alice')")
+tx.Commit()
+----
+
+NOTE: Transactions are not thread-safe. All operations within a transaction must be sequential. The default behavior
+of `Close()` is to rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-go-gvalue]]
 === GValue Parameterization
@@ -908,10 +942,10 @@ Please see the link:https://tinkerpop.apache.org/javadocs/x.y.z/core/org/apache/
 [[gremlin-java-transactions]]
 === Transactions
 
-Gremlin-Java supports remote transactions over HTTP. There are two ways to create a transaction: from a
-`GraphTraversalSource` or directly from a `Cluster` instance.
+Gremlin-Java supports remote transactions over HTTP. There are two ways to create a transaction: the Traversal API
+(`g.tx()`) and the Driver API (`cluster.transact()`).
 
-==== Via GraphTraversalSource
+==== Traversal API
 
 The recommended approach uses the standard `g.tx()` pattern:
 
@@ -934,7 +968,7 @@ try {
 Traversals spawned from `gtx` are bound to the transaction. The driver handles host pinning and transaction ID
 propagation automatically.
 
-==== Via Cluster
+==== Driver API
 
 For script-based usage or when working with the `Client` API directly, transactions can be created from the `Cluster`:
 
@@ -964,15 +998,15 @@ sequentially.
 
 ==== Close Behavior
 
-The default behavior of `close()` on a transaction is to commit. This can be changed:
+The default behavior of `close()` on a transaction is to rollback. This can be changed:
 
 [source,java]
 ----
 RemoteTransaction tx = cluster.transact("g");
-tx.onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
+tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
 tx.begin();
 // ... do work ...
-tx.close(); // rolls back instead of committing
+tx.close(); // commits instead of rolling back
 ----
 
 [[gremlin-java-serialization]]
@@ -1762,8 +1796,36 @@ To get a full understanding of this section, it would be good to start by readin
 section of this documentation, which discusses transactions in the general context of TinkerPop itself. This section
 builds on that content by demonstrating the transactional syntax for Javascript.
 
-IMPORTANT: 4.0.0-beta.2 Release - Transactions are not yet implemented for the HTTP driver. This functionality is
-planned for a future release.
+Gremlin-Javascript supports remote transactions over HTTP via two entry points: the Traversal API (`g.tx()`) and the
+Driver API (`client.transact()`).
+
+==== Traversal API
+
+[source,javascript]
+----
+const g = traversal().with_(new DriverRemoteConnection('http://localhost:8182/gremlin'));
+const tx = g.tx();
+const gtx = await tx.begin();
+
+await gtx.addV("person").property("name", "jorge").iterate();
+await gtx.addV("person").property("name", "josh").iterate();
+
+await tx.commit();
+----
+
+==== Driver API
+
+[source,javascript]
+----
+const client = new Client('http://localhost:8182/gremlin', { traversalSource: 'g' });
+const tx = client.transact();
+await tx.begin();
+await tx.submit("g.addV('person').property('name','alice')");
+await tx.commit();
+----
+
+IMPORTANT: Each traversal must be `await`ed before submitting the next. Transactions are not thread-safe. The default
+behavior of `close()` is to rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [source,javascript]
 ----
@@ -2291,8 +2353,40 @@ encoded in the Gremlin.Net GremlinLang and transmitted to the Gremlin traversal 
 [[gremlin-dotnet-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin.Net. This will be addressed by the official
-4.0.0 release.
+Gremlin.Net supports remote transactions over HTTP via two entry points: the Traversal API (`g.Tx()`) and the
+Driver API (`client.Transact()`).
+
+==== Traversal API
+
+[source,csharp]
+----
+var g = AnonymousTraversalSource.Traversal().With(new DriverRemoteConnection("localhost", 8182));
+
+var tx = g.Tx();
+var gtx = await tx.BeginAsync();
+
+await gtx.AddV("person").Property("name", "jorge").Promise(t => t.Iterate());
+await gtx.AddV("person").Property("name", "josh").Promise(t => t.Iterate());
+
+await tx.CommitAsync();
+----
+
+==== Driver API
+
+[source,csharp]
+----
+using var client = new GremlinClient(new GremlinServer("localhost", 8182));
+var tx = client.Transact("g");
+await tx.BeginAsync();
+
+await tx.SubmitAsync<object>("g.addV('person').property('name','alice')");
+
+await tx.CommitAsync();
+----
+
+NOTE: Submissions within a transaction are serialized internally via a semaphore to guarantee the server receives
+requests in order. Transactions are not thread-safe. The default behavior of `DisposeAsync()` is to rollback. Use
+`await using` for automatic cleanup. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-dotnet-gvalue]]
 === GValue Parameterization
@@ -2795,8 +2889,49 @@ re-construction machine-side.
 [[gremlin-python-transactions]]
 === Transactions
 
-IMPORTANT: Transaction support over HTTP is not yet implemented in Gremlin-Python. This will be addressed by the
-official 4.0.0 release.
+Gremlin-Python supports remote transactions over HTTP via two entry points: the Traversal API (`g.tx()`) and the
+Driver API (`client.transact()`).
+
+==== Traversal API
+
+[source,python]
+----
+g = traversal().with_remote(DriverRemoteConnection('http://localhost:8182/gremlin', 'g'))
+
+tx = g.tx()
+gtx = tx.begin()
+
+gtx.addV('person').property('name', 'jorge').iterate()
+gtx.addV('person').property('name', 'josh').iterate()
+
+tx.commit()
+----
+
+==== Driver API
+
+[source,python]
+----
+client = Client('http://localhost:8182/gremlin', 'g')
+
+tx = client.transact()
+tx.begin()
+tx.submit("g.addV('person').property('name','alice')")
+tx.commit()
+----
+
+==== Context Manager
+
+[source,python]
+----
+with client.transact() as tx:
+    tx.begin()
+    tx.submit("g.addV('person').property('name','alice')")
+    tx.commit()
+    # if commit() not called or exception occurs, rollback happens on exit
+----
+
+NOTE: Transactions are not thread-safe. All operations must be sequential. The default behavior of `close()` is to
+rollback. Transactions are single-use and cannot be reused after commit or rollback.
 
 [[gremlin-python-gvalue]]
 === GValue Parameterization

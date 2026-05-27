@@ -35,7 +35,6 @@ import { getConnection, getDriverRemoteConnection } from '../helper.js';
 const __ = statics;
 
 let connection;
-let txConnection;
 
 class SocialTraversal extends GraphTraversal {
   constructor(graph, traversalStrategies, gremlinLang) {
@@ -327,110 +326,5 @@ describe('Traversal', function () {
       });
     });
   });
-  //TODO:: Re-enable after tx reimplementation
-  // describe("should handle tx errors if graph not support tx", function() {
-  //   it('should throw exception on commit if graph not support tx', async function() {
-  //     const g = anon.traversal().withRemote(connection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     const result = await g.V().count().next();
-  //     assert.strictEqual(6, result.value);
-  //     try {
-  //       await tx.commit();
-  //       assert.fail("should throw error");
-  //     } catch (err) {
-  //       assert.strictEqual(err.statusCode, 500);
-  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
-  //     }
-  //   });
-  //   it('should throw exception on rollback if graph not support tx', async function() {
-  //     const g = anon.traversal().withRemote(connection);
-  //     const tx = g.tx();
-  //     tx.begin();
-  //     try {
-  //       await tx.rollback();
-  //       assert.fail("should throw error");
-  //     } catch (err) {
-  //       assert.strictEqual(err.statusCode, 500);
-  //       assert.ok(err.statusMessage.includes('Graph does not support transactions'));
-  //     }
-  //   });
-  // });
-  // describe('support remote transactions - commit', function() {
-  //   before(function () {
-  //     txConnection = getConnection('gtx');
-  //     return txConnection.open();
-  //   });
-  //   after(function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     return g.V().drop().iterate().then(() => {
-  //       return txConnection.close()
-  //     });
-  //   });
-  //   it('should commit a simple transaction', async function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     await Promise.all([
-  //       gtx.addV("person").property("name", "jorge").iterate(),
-  //       gtx.addV("person").property("name", "josh").iterate()
-  //     ]);
-  //
-  //     let r = await gtx.V().count().next();
-  //     // assert within the transaction....
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //
-  //     // now commit changes to test outside of the transaction
-  //     await tx.commit();
-  //
-  //     r = await g.V().count().next();
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //     // connection closing async, so need to wait
-  //     while (tx._sessionBasedConnection.isOpen) {
-  //       await new Promise(resolve => setTimeout(resolve, 10));
-  //     }
-  //     assert.ok(!tx._sessionBasedConnection.isOpen);
-  //   });
-  // });
-  // describe('support remote transactions - rollback', function() {
-  //   before(function () {
-  //
-  //     txConnection = getConnection('gtx');
-  //     return txConnection.open();
-  //   });
-  //   after(function () {
-  //     const g = anon.traversal().with_(txConnection);
-  //     return g.V().drop().iterate().then(() => {
-  //       return txConnection.close()
-  //     });
-  //   });
-  //   it('should rollback a simple transaction', async function() {
-  //     const g = anon.traversal().with_(txConnection);
-  //     const tx = g.tx();
-  //     const gtx = tx.begin();
-  //     await Promise.all([
-  //       gtx.addV("person").property("name", "jorge").iterate(),
-  //       gtx.addV("person").property("name", "josh").iterate()
-  //     ]);
-  //
-  //     let r = await gtx.V().count().next();
-  //     // assert within the transaction....
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 2);
-  //
-  //     // now rollback changes to test outside of the transaction
-  //     await tx.rollback();
-  //
-  //     r = await g.V().count().next();
-  //     assert.ok(r);
-  //     assert.strictEqual(r.value, 0);
-  //     // connection closing async, so need to wait
-  //     while (tx._sessionBasedConnection.isOpen) {
-  //       await new Promise(resolve => setTimeout(resolve, 10));
-  //     }
-  //     assert.ok(!tx._sessionBasedConnection.isOpen);
-  //   });
-  // });
 });
+

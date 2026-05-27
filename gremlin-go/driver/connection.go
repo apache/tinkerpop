@@ -192,6 +192,9 @@ func (c *connection) sendRequest(req *RequestMessage) (*http.Response, error) {
 	// Set Body to the raw *RequestMessage so interceptors can inspect/modify it
 	httpReq.Body = req
 
+	// Promote transactionId to HTTP header before interceptors and serialization
+	c.promoteTransactionIdHeader(httpReq, req)
+
 	// Apply interceptors — they see *RequestMessage in Body (pre-serialization).
 	// Interceptors may replace Body with []byte, io.Reader, or *http.Request.
 	for _, interceptor := range c.interceptors {
@@ -281,6 +284,20 @@ func (c *connection) setHttpRequestHeaders(req *HttpRequest) {
 	}
 	if c.connSettings.enableCompression {
 		req.Headers.Set(HeaderAcceptEncoding, "deflate")
+	}
+}
+
+// promoteTransactionIdHeader extracts transactionId from the request message
+// fields and sets it as the X-Transaction-Id HTTP header. The field remains in
+// the body for dual transmission per the HTTP transaction protocol spec.
+func (c *connection) promoteTransactionIdHeader(req *HttpRequest, msg *RequestMessage) {
+	if msg == nil {
+		return
+	}
+	if txId, ok := msg.Fields["transactionId"]; ok {
+		if txIdStr, ok := txId.(string); ok && txIdStr != "" {
+			req.Headers.Set("X-Transaction-Id", txIdStr)
+		}
 	}
 }
 
