@@ -509,22 +509,33 @@ public class GremlinTreeprocessor extends Treeprocessor {
     static List<String> buildStatements(final String[] lines) {
         final List<String> statements = new ArrayList<>();
         final StringBuilder current = new StringBuilder();
+        boolean inTripleQuote = false;
         for (final String line : lines) {
             final String cleaned = stripCallouts(line);
+            // Track triple-quote state
+            final int tqCount = countOccurrences(cleaned, "\"\"\"");
             if (current.length() == 0) {
                 current.append(cleaned);
-            } else if (cleaned.length() > 0 && Character.isWhitespace(cleaned.charAt(0))) {
+            } else if (inTripleQuote || (cleaned.length() > 0 && Character.isWhitespace(cleaned.charAt(0)))) {
                 current.append("\n").append(cleaned);
             } else {
                 statements.add(current.toString());
                 current.setLength(0);
                 current.append(cleaned);
             }
+            if (tqCount % 2 != 0) inTripleQuote = !inTripleQuote;
         }
         if (current.length() > 0) {
             statements.add(current.toString());
         }
         return statements;
+    }
+
+    private static int countOccurrences(final String str, final String sub) {
+        int count = 0;
+        int idx = 0;
+        while ((idx = str.indexOf(sub, idx)) != -1) { count++; idx += sub.length(); }
+        return count;
     }
 
     /**
@@ -533,17 +544,20 @@ public class GremlinTreeprocessor extends Treeprocessor {
     static List<String> buildDisplayStatements(final String[] lines) {
         final List<String> statements = new ArrayList<>();
         final StringBuilder current = new StringBuilder();
+        boolean inTripleQuote = false;
         for (final String line : lines) {
             final String stripped = stripCallouts(line);
+            final int tqCount = countOccurrences(stripped, "\"\"\"");
             if (current.length() == 0) {
                 current.append(line);
-            } else if (stripped.length() > 0 && Character.isWhitespace(stripped.charAt(0))) {
+            } else if (inTripleQuote || (stripped.length() > 0 && Character.isWhitespace(stripped.charAt(0)))) {
                 current.append("\n").append(line);
             } else {
                 statements.add(current.toString());
                 current.setLength(0);
                 current.append(line);
             }
+            if (tqCount % 2 != 0) inTripleQuote = !inTripleQuote;
         }
         if (current.length() > 0) {
             statements.add(current.toString());
