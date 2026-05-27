@@ -111,6 +111,10 @@ for plugin in ${PLUGINS}; do
   if [ -d "${PLUGIN_DIR}" ]; then
     echo " * installing ${plugin} (standalone)"
     cp -r "${PLUGIN_DIR}" "${CONSOLE_HOME}/ext/${plugin}"
+    mkdir -p "${CONSOLE_HOME}/ext/${plugin}/plugin"
+    cp "${plugin}/target/${plugin}-${TP_VERSION}.jar" "${CONSOLE_HOME}/ext/${plugin}/plugin/" 2>/dev/null
+    # Copy deps to main lib for classloading
+    cp "${CONSOLE_HOME}/ext/${plugin}/lib/"*.jar "${CONSOLE_HOME}/lib/" 2>/dev/null
   elif [ -f "${plugin}/target/${plugin}-${TP_VERSION}.jar" ]; then
     echo " * installing ${plugin} (jar + dependencies)"
     mkdir -p "${CONSOLE_HOME}/ext/${plugin}/lib"
