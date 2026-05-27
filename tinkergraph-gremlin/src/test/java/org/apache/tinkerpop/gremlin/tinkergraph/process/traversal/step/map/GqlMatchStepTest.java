@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.gql.GqlMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -39,17 +40,17 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for {@link TinkerGraphMatchStep}: path binding, multi-row output,
+ * Unit tests for {@link GqlMatchStep}: path binding, multi-row output,
  * empty match, and query-language rejection.
  */
-public class TinkerGraphMatchStepTest {
+public class GqlMatchStepTest {
 
     private TinkerGraph graph;
     private GraphTraversalSource g;
 
     /**
      * A minimal traversal strategy that replaces every {@link DeclarativeMatchStep} with a
-     * {@link TinkerGraphMatchStep}. This is a stand-in for the full provider strategy
+     * {@link GqlMatchStep}. This is a stand-in for the full provider strategy
      * (TinkerGraphDeclarativeMatchStrategy) so we can test the step in isolation.
      */
     private static final class InjectMatchStrategy
@@ -68,7 +69,7 @@ public class TinkerGraphMatchStepTest {
             for (final DeclarativeMatchStep<?> original :
                     TraversalHelper.getStepsOfClass(DeclarativeMatchStep.class, traversal)) {
                 TraversalHelper.replaceStep(
-                        (Step) original, (Step) new TinkerGraphMatchStep<>(original), traversal);
+                        (Step) original, (Step) new GqlMatchStep<>(original), traversal);
             }
         }
     }

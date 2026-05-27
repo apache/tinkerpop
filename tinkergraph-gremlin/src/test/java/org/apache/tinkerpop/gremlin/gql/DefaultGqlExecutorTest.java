@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -42,21 +42,21 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for {@link TinkerGraphGqlExecutor}: DFS backtracking pattern matching,
+ * Unit tests for {@link DefaultGqlExecutor}: DFS backtracking pattern matching,
  * label constraints, equality constraints for shared variables, edge variable binding,
  * self-loops, and multi-hop paths.
  */
-public class TinkerGraphGqlExecutorTest {
+public class DefaultGqlExecutorTest {
 
     private TinkerGraph graph;
-    private TinkerGraphGqlPlanner planner;
-    private TinkerGraphGqlExecutor executor;
+    private DefaultGqlPlanner planner;
+    private DefaultGqlExecutor executor;
 
     @Before
     public void setUp() {
         graph = TinkerGraph.open();
-        planner = new TinkerGraphGqlPlanner(graph);
-        executor = new TinkerGraphGqlExecutor(graph);
+        planner = new DefaultGqlPlanner(graph);
+        executor = new DefaultGqlExecutor(graph);
     }
 
     @After
@@ -336,10 +336,6 @@ public class TinkerGraphGqlExecutorTest {
         // Missing c→a edge
         assertTrue(execute("MATCH (a:A)-[:AB]->(b:B)-[:BC]->(c:C)-[:CA]->(a:A)").isEmpty());
     }
-
-    // -------------------------------------------------------------------------
-    // Lazy delivery: each row is an independent array snapshot
-    // -------------------------------------------------------------------------
 
     // -------------------------------------------------------------------------
     // Property filters: literal values
@@ -832,10 +828,6 @@ public class TinkerGraphGqlExecutorTest {
     }
 
     // -------------------------------------------------------------------------
-    // Lazy delivery: each row is an independent array snapshot
-    // -------------------------------------------------------------------------
-
-    // -------------------------------------------------------------------------
     // Equality constraint short-circuit
     // -------------------------------------------------------------------------
 
@@ -1169,8 +1161,8 @@ public class TinkerGraphGqlExecutorTest {
         config.setProperty(AbstractTinkerGraph.GREMLIN_TINKERGRAPH_ALLOW_NULL_PROPERTY_VALUES, true);
         final TinkerGraph nullGraph = TinkerGraph.open(config);
         try {
-            final TinkerGraphGqlPlanner nullPlanner = new TinkerGraphGqlPlanner(nullGraph);
-            final TinkerGraphGqlExecutor nullExecutor = new TinkerGraphGqlExecutor(nullGraph);
+            final DefaultGqlPlanner nullPlanner = new DefaultGqlPlanner(nullGraph);
+            final DefaultGqlExecutor nullExecutor = new DefaultGqlExecutor(nullGraph);
 
             final Vertex v = nullGraph.addVertex("Item");
             v.property(VertexProperty.Cardinality.list, "tag", "java");

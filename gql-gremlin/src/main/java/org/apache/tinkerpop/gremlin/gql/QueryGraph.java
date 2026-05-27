@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.gql;
+package org.apache.tinkerpop.gremlin.gql;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.tinkergraph.gql.GQLLexer;
-import org.apache.tinkerpop.gremlin.tinkergraph.gql.GQLParser;
+import org.apache.tinkerpop.gremlin.gql.GQLLexer;
+import org.apache.tinkerpop.gremlin.gql.GQLParser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

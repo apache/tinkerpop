@@ -18,21 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.gql.GqlMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlExecutor;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.gql.TinkerGraphGqlPlanner;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.map.TinkerGraphMatchStep;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.AbstractTinkerGraph;
 
 /**
- * Replaces every {@link DeclarativeMatchStep} in a traversal with a
- * {@link TinkerGraphMatchStep}, which is the TinkerGraph-specific executable
- * implementation backed by the GQL pattern-matching engine.
+ * Replaces every {@link DeclarativeMatchStep} in a traversal with a {@link GqlMatchStep}
+ * backed by TinkerGraph's {@link org.apache.tinkerpop.gremlin.gql.DefaultGqlPlanner} and
+ * {@link org.apache.tinkerpop.gremlin.gql.DefaultGqlExecutor} graph-level singletons.
  *
  * <p>This strategy is registered as a default provider-optimization strategy for
  * {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph} and
@@ -41,10 +38,12 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerTransactionGraph
  *
  * @since 4.0.0
  */
-public final class TinkerGraphDeclarativeMatchStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>
+public final class TinkerGraphDeclarativeMatchStrategy
+        extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>
         implements TraversalStrategy.ProviderOptimizationStrategy {
 
-    private static final TinkerGraphDeclarativeMatchStrategy INSTANCE = new TinkerGraphDeclarativeMatchStrategy();
+    private static final TinkerGraphDeclarativeMatchStrategy INSTANCE =
+            new TinkerGraphDeclarativeMatchStrategy();
 
     private TinkerGraphDeclarativeMatchStrategy() {
     }
@@ -52,27 +51,16 @@ public final class TinkerGraphDeclarativeMatchStrategy extends AbstractTraversal
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (TraversalHelper.onGraphComputer(traversal))
-            return;
-
-        // Resolve the graph-level singleton planner and executor so the plan cache is
-        // shared across all traversals on this graph instance.
-        TinkerGraphGqlPlanner planner = null;
-        TinkerGraphGqlExecutor executor = null;
-        if (traversal.getGraph().isPresent()) {
-            final Object graph = traversal.getGraph().get();
-            if (graph instanceof TinkerGraph) {
-                planner = ((TinkerGraph) graph).getGqlPlanner();
-                executor = ((TinkerGraph) graph).getGqlExecutor();
-            } else if (graph instanceof TinkerTransactionGraph) {
-                planner = ((TinkerTransactionGraph) graph).getGqlPlanner();
-                executor = ((TinkerTransactionGraph) graph).getGqlExecutor();
-            }
-        }
-
-        for (final DeclarativeMatchStep originalStep : TraversalHelper.getStepsOfClass(DeclarativeMatchStep.class, traversal)) {
-            final TinkerGraphMatchStep tinkerGraphMatchStep = new TinkerGraphMatchStep(originalStep, planner, executor);
-            TraversalHelper.replaceStep(originalStep, tinkerGraphMatchStep, traversal);
+        if (TraversalHelper.onGraphComputer(traversal)) return;
+        if (!traversal.getGraph().isPresent()) return;
+        final Object graph = traversal.getGraph().get();
+        if (!(graph instanceof AbstractTinkerGraph)) return;
+        final AbstractTinkerGraph tg = (AbstractTinkerGraph) graph;
+        for (final DeclarativeMatchStep step :
+                TraversalHelper.getStepsOfClass(DeclarativeMatchStep.class, traversal)) {
+            TraversalHelper.replaceStep(step,
+                    new GqlMatchStep(step, tg.getGqlPlanner(), tg.getGqlExecutor()),
+                    traversal);
         }
     }
 
