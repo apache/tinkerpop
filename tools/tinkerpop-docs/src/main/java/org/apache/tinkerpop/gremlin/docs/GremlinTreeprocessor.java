@@ -62,6 +62,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
         m.put("modern", "graph = TinkerFactory.createModern()");
         m.put("classic", "graph = TinkerFactory.createClassic()");
         m.put("crew", "graph = TinkerFactory.createTheCrew()");
+        m.put("theCrew", "graph = TinkerFactory.createTheCrew()");
         m.put("grateful", "graph = TinkerFactory.createGratefulDead()");
         m.put("sink", "graph = TinkerFactory.createKitchenSink()");
         GRAPH_INIT = Collections.unmodifiableMap(m);
