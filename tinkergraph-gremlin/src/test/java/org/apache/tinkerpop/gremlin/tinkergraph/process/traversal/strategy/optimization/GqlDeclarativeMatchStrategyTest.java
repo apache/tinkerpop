@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.gql.GqlDeclarativeMatchStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -27,16 +28,15 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 /**
- * Integration tests for the full path through {@link TinkerGraphDeclarativeMatchStrategy}:
- * uses a real {@link TinkerGraph} traversal source (no substitute strategy) so the
- * registered strategy is exercised end-to-end.
+ * Integration tests for the full path through {@link GqlDeclarativeMatchStrategy}: uses a real
+ * {@link TinkerGraph} traversal source (no substitute strategy) so the registered singleton
+ * strategy is exercised end-to-end.
  */
-public class TinkerGraphDeclarativeMatchStrategyTest {
+public class GqlDeclarativeMatchStrategyTest {
 
     private TinkerGraph graph;
     private GraphTraversalSource g;
@@ -44,7 +44,7 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
     @Before
     public void setUp() {
         graph = TinkerGraph.open();
-        g = graph.traversal(); // no withStrategies — uses the registered strategy
+        g = graph.traversal(); // no withStrategies — uses the auto-registered singleton
     }
 
     @After
@@ -109,8 +109,9 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
 
     @Test
     public void testSharedPlanCacheAcrossTraversals() {
-        // Two traversals with the same query string should share the compiled plan
-        // (verified indirectly: both produce correct results)
+        // Two traversals with the same query string should share the compiled plan cache
+        // (the singleton strategy caches the planner per graph instance). Verify correctness
+        // on both executions; a shared plan cache means the second parse is a cache hit.
         graph.addVertex("Person");
         graph.addVertex("Person");
 
@@ -125,10 +126,30 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
 
         assertEquals(2, count1);
         assertEquals(2, count2);
+    }
 
-        // Verify planner is a singleton — same instance for both traversals
-        assertSame(graph.getGqlPlanner(), graph.getGqlPlanner());
-        assertSame(graph.getGqlExecutor(), graph.getGqlExecutor());
+    @Test
+    public void testEvictAndReuseDoesNotCorruptResults() {
+        // Evict the cache entry mid-session, then run another traversal. The strategy must
+        // allocate a fresh planner/executor pair and produce correct results.
+        graph.addVertex("Person");
+
+        final long countBefore = g.<Integer>inject(1)
+                .match("MATCH (n:Person)")
+                .<Vertex>select("n")
+                .toList().size();
+        assertEquals(1, countBefore);
+
+        GqlDeclarativeMatchStrategy.evict(graph);
+
+        // Add a second vertex after eviction to make the test sensitive to state corruption.
+        graph.addVertex("Person");
+
+        final long countAfter = g.<Integer>inject(1)
+                .match("MATCH (n:Person)")
+                .<Vertex>select("n")
+                .toList().size();
+        assertEquals(2, countAfter);
     }
 
     @Test
@@ -165,7 +186,6 @@ public class TinkerGraphDeclarativeMatchStrategyTest {
 
     @Test
     public void testTerminalMatchStepReturnsBindingMap() {
-        // match() is now valid as a terminal step — it returns the full binding Map.
         final Vertex alice = graph.addVertex("Person");
         @SuppressWarnings("unchecked")
         final List<Map<String, Object>> results =

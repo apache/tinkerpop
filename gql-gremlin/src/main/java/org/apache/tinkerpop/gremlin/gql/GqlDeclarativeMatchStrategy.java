@@ -25,64 +25,170 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * {@link TraversalStrategy.ProviderOptimizationStrategy} that replaces every
  * {@link DeclarativeMatchStep} in a traversal with a concrete {@link GqlMatchStep} backed
  * by a {@link DefaultGqlPlanner} and {@link DefaultGqlExecutor}.
  *
- * <p>Providers that want the reference GQL engine register this strategy directly:</p>
+ * <h3>Singleton usage (recommended)</h3>
+ * <p>The no-arg {@link #instance()} singleton maintains a static
+ * {@link ConcurrentHashMap} keyed by graph identity. The first traversal executed against
+ * a given {@link Graph} instance allocates one {@link DefaultGqlPlanner} and one
+ * {@link DefaultGqlExecutor} for that graph; all subsequent traversals reuse them, so the
+ * planner's parse cache is shared across all traversals on the same graph.</p>
+ *
+ * <p>Graph providers should register the singleton in their global strategy cache:</p>
  * <pre>
- *   graph.traversal().withStrategies(GqlDeclarativeMatchStrategy.create(graph))
+ *   TraversalStrategies.GlobalCache.registerStrategies(
+ *       AcmeGraph.class,
+ *       TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone()
+ *           .addStrategies(GqlDeclarativeMatchStrategy.instance()));
  * </pre>
  *
- * <p>The static factory constructs a {@link DefaultGqlPlanner} and {@link DefaultGqlExecutor}
- * over the supplied graph. Both delegate to the graph's {@code countVerticesByLabel()},
- * {@code countEdgesByLabel()}, and {@code index()} methods, which return conservative defaults
- * unless the graph overrides them. The planner and executor are created once and shared across
- * all traversals using this strategy instance, so the planner's parse cache is reused.</p>
+ * <p>When the graph is closed call {@link #evict(Graph)} to release the cached pair:</p>
+ * <pre>
+ *   &#64;Override
+ *   public void close() {
+ *       GqlDeclarativeMatchStrategy.evict(this);
+ *       // ... other cleanup
+ *   }
+ * </pre>
+ *
+ * <h3>Custom planner / executor</h3>
+ * <p>Providers that supply their own {@link GqlPlanner} or {@link GqlExecutor} implementations
+ * can use {@link #create(GqlPlanner, GqlExecutor)} to construct a per-instance strategy. That
+ * strategy instance holds the supplied objects directly and does not interact with the shared
+ * cache.</p>
  */
 public final class GqlDeclarativeMatchStrategy
         extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>
         implements TraversalStrategy.ProviderOptimizationStrategy {
 
+    // -------------------------------------------------------------------------
+    // Singleton + shared cache
+    // -------------------------------------------------------------------------
+
+    private static final GqlDeclarativeMatchStrategy INSTANCE = new GqlDeclarativeMatchStrategy();
+
+    /**
+     * Per-graph-instance planner and executor cache. Keyed by graph identity so that all
+     * traversals on the same graph share the planner's parse cache. Entries are removed when
+     * {@link #evict(Graph)} is called (typically from {@code Graph.close()}).
+     */
+    private static final ConcurrentHashMap<Graph, PlannerExecutorPair> CACHE =
+            new ConcurrentHashMap<>();
+
+    // -------------------------------------------------------------------------
+    // Per-instance state (only set when constructed via create(planner, executor))
+    // -------------------------------------------------------------------------
+
+    /** Non-null only for the custom-planner/executor path; null for the singleton. */
     private final GqlPlanner planner;
+    /** Non-null only for the custom-planner/executor path; null for the singleton. */
     private final GqlExecutor executor;
 
+    // -------------------------------------------------------------------------
+    // Constructors
+    // -------------------------------------------------------------------------
+
+    /** Singleton constructor — uses the shared cache. */
+    private GqlDeclarativeMatchStrategy() {
+        this.planner = null;
+        this.executor = null;
+    }
+
+    /** Custom-implementation constructor. */
     private GqlDeclarativeMatchStrategy(final GqlPlanner planner, final GqlExecutor executor) {
         this.planner = planner;
         this.executor = executor;
     }
 
+    // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
+
     /**
-     * Creates a strategy backed by {@link DefaultGqlPlanner} and {@link DefaultGqlExecutor}
-     * over the supplied graph.
-     *
-     * @param graph the graph to plan and execute against
-     * @return a new strategy instance
+     * Returns the singleton strategy that uses {@link DefaultGqlPlanner} and
+     * {@link DefaultGqlExecutor} cached per graph instance. This is the recommended way for
+     * providers to register TinkerGQL support.
      */
-    public static GqlDeclarativeMatchStrategy create(final Graph graph) {
-        return new GqlDeclarativeMatchStrategy(new DefaultGqlPlanner(graph), new DefaultGqlExecutor(graph));
+    public static GqlDeclarativeMatchStrategy instance() {
+        return INSTANCE;
     }
 
     /**
-     * Creates a strategy with explicit planner and executor instances. Useful when the caller
-     * wants to supply custom implementations.
+     * Creates a per-instance strategy with explicit planner and executor objects. Use this when
+     * you want to supply custom implementations; the strategy holds {@code planner} and
+     * {@code executor} directly and does not interact with the shared cache.
      *
-     * @param planner  the planner to use
-     * @param executor the executor to use
+     * @param planner  the planner to use for every traversal that goes through this strategy
+     * @param executor the executor to use for every traversal that goes through this strategy
      * @return a new strategy instance
      */
-    public static GqlDeclarativeMatchStrategy create(final GqlPlanner planner, final GqlExecutor executor) {
+    public static GqlDeclarativeMatchStrategy create(final GqlPlanner planner,
+                                                     final GqlExecutor executor) {
         return new GqlDeclarativeMatchStrategy(planner, executor);
     }
+
+    /**
+     * Removes the cached {@link GqlPlanner} / {@link GqlExecutor} pair for the given graph
+     * instance. Graph implementations should call this from their {@code close()} method to
+     * release the cache entry and allow the planner and executor to be garbage-collected.
+     *
+     * @param graph the graph whose cached pair should be removed
+     */
+    public static void evict(final Graph graph) {
+        CACHE.remove(graph);
+    }
+
+    // -------------------------------------------------------------------------
+    // Strategy application
+    // -------------------------------------------------------------------------
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (TraversalHelper.onGraphComputer(traversal)) return;
+
         for (final DeclarativeMatchStep step :
                 TraversalHelper.getStepsOfClass(DeclarativeMatchStep.class, traversal)) {
-            TraversalHelper.replaceStep(step, new GqlMatchStep(step, planner, executor), traversal);
+
+            GqlPlanner p = this.planner;
+            GqlExecutor e = this.executor;
+
+            if (p == null) {
+                // Singleton path: resolve or create the pair from the traversal's graph.
+                if (!traversal.getGraph().isPresent()) {
+                    // No graph attached — leave the step unreplaced; it will fail at execution
+                    // time with a clear error if the graph is still absent.
+                    continue;
+                }
+                final Graph graph = traversal.getGraph().get();
+                final PlannerExecutorPair pair = CACHE.computeIfAbsent(graph,
+                        g -> new PlannerExecutorPair(
+                                new DefaultGqlPlanner(g),
+                                new DefaultGqlExecutor(g)));
+                p = pair.planner;
+                e = pair.executor;
+            }
+
+            TraversalHelper.replaceStep(step, new GqlMatchStep(step, p, e), traversal);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal types
+    // -------------------------------------------------------------------------
+
+    private static final class PlannerExecutorPair {
+        final GqlPlanner planner;
+        final GqlExecutor executor;
+
+        PlannerExecutorPair(final GqlPlanner planner, final GqlExecutor executor) {
+            this.planner = planner;
+            this.executor = executor;
         }
     }
 }
