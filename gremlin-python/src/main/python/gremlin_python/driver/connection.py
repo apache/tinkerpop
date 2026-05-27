@@ -87,6 +87,11 @@ class Connection:
         if self._request_serializer is not None:
             content_type = str(self._request_serializer.version, encoding='utf-8')
             message['headers']['content-type'] = content_type
+        # Promote transactionId to HTTP header before interceptors run.
+        # The field remains in the serialized body as well (dual transmission
+        # per the HTTP transaction protocol specification).
+        if hasattr(request_message, 'fields') and 'transactionId' in request_message.fields:
+            message['headers']['X-Transaction-Id'] = request_message.fields['transactionId']
         for interceptor in self._interceptors or []:
             message = interceptor(message)
         self._transport.write(message)

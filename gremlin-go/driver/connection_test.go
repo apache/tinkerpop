@@ -124,9 +124,9 @@ func initializeGraph(t *testing.T, url string, tls *tls.Config) *GraphTraversalS
 }
 
 func resetGraph(t *testing.T, g *GraphTraversalSource) {
-	defer func(remoteConnection *DriverRemoteConnection) {
-		remoteConnection.Close()
-	}(g.remoteConnection)
+	defer func() {
+		g.remoteConnection.Close()
+	}()
 	// Drop the graph and check that it is empty.
 	dropGraph(t, g)
 	readCount(t, g, "", 0)

@@ -65,7 +65,10 @@ public class HttpRemoteTransaction implements RemoteTransaction {
     private static final Logger logger = LoggerFactory.getLogger(HttpRemoteTransaction.class);
     private static final long CLOSING_MAX_WAIT_MS = 10000;
 
-    protected Consumer<Transaction> closeConsumer = CLOSE_BEHAVIOR.COMMIT;
+    // Rollback-on-close is the default because non-Java GLVs don't support configurable close behavior and must have a
+    // single default. Rollback is the safest choice since partial work is discarded rather than accidentally persisted
+    // if a user forgets to call commit().
+    protected Consumer<Transaction> closeConsumer = CLOSE_BEHAVIOR.ROLLBACK;
     private final Client.PinnedClient pinnedClient;
     private final Cluster cluster;
     private final Host pinnedHost;

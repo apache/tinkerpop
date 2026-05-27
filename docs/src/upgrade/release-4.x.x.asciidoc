@@ -41,6 +41,35 @@ anonymized form. The original gremlator.com was a prototype built by TinkerPop c
 previous implementation required Java and a running Gremlin Server, whereas the new version runs entirely in the
 browser with no server infrastructure needed.
 
+==== GLV Transaction Support
+
+All non-Java Gremlin Language Variants (gremlin-python, gremlin-go, gremlin-javascript, gremlin-dotnet) now support
+explicit remote transactions over HTTP. The transaction model is the same across all GLVs: begin a transaction, submit
+traversals within it, then commit or rollback. Data is isolated until committed.
+
+Each GLV provides two entry points:
+
+* **Traversal API**: `g.tx().begin()` returns a transaction-bound `GraphTraversalSource`
+* **Driver API**: `client.transact()` (or `client.Transact()` in .NET) returns a `Transaction` with `submit()` methods
+
+Key behaviors consistent across all GLVs:
+
+* Transactions are not thread-safe. All operations must be sequential.
+* The default close behavior is rollback (partial work discarded if commit is not called explicitly).
+* Transactions are single-use. After commit or rollback, a new transaction must be created.
+* `gtx.tx()` returns the same transaction object (enabling `gtx.tx().commit()` pattern from the Traversal API).
+
+See the <<gremlin-drivers-variants,Gremlin Drivers and Variants>> reference documentation for language-specific
+syntax and examples.
+
+==== Transaction Default Close Behavior Changed
+
+The default behavior of `close()` on a remote transaction has been changed from `commit` to `rollback` across all
+GLVs (including the Java driver). This aligns with the embedded graph transaction default and is the safer behavior:
+partial work is discarded if the user forgets to call `commit()`. In Java (both remote and embedded mode), the behavior
+can still be overridden via `tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT)`. The non-Java GLVs do not support
+configuring close behavior and always rollback.
+
 ==== Removed `uuid` Dependency in gremlin-javascript
 
 The `uuid` npm package has been removed from `gremlin-javascript`. UUID generation now uses the built-in

@@ -26,8 +26,6 @@ import { TraversalStrategy } from '../process/traversal-strategy.js';
 import { Traversal, Traverser } from '../process/traversal.js';
 import type { ConnectionOptions } from './connection.js';
 
-export type RemoteConnectionOptions = ConnectionOptions & { session?: string };
-
 /**
  * Represents an abstraction of a "connection" to a "server" that is capable of processing a traversal and
  * returning results.
@@ -35,11 +33,11 @@ export type RemoteConnectionOptions = ConnectionOptions & { session?: string };
 export abstract class RemoteConnection {
   /**
    * @param {String} url The resource uri.
-   * @param {RemoteConnectionOptions} [options] The connection options.
+   * @param {ConnectionOptions} [options] The connection options.
    */
   constructor(
     public url: string,
-    protected readonly options: RemoteConnectionOptions = {},
+    protected readonly options: ConnectionOptions = {},
   ) {}
 
   /**
@@ -62,19 +60,7 @@ export abstract class RemoteConnection {
   abstract submit(gremlinLang: GremlinLang): Promise<RemoteTraversal>;
 
   /**
-   * Submits a commit operation to the server and closes the connection.
-   * @returns {Promise}
-   */
-  abstract commit(): Promise<void>;
-
-  /**
-   * Submits a rollback operation to the server and closes the connection.
-   * @returns {Promise}
-   */
-  abstract rollback(): Promise<void>;
-
-  /**
-   * Closes the connection where open transactions will close according to the features of the graph provider.
+   * Closes the connection and releases any associated resources.
    * @returns {Promise}
    */
   abstract close(): Promise<void>;

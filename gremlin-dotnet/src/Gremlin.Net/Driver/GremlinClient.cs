@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ namespace Gremlin.Net.Driver
     public class GremlinClient : IGremlinClient
     {
         private readonly Connection _connection;
+        private readonly ConcurrentDictionary<RemoteTransaction, byte> _trackedTransactions = new();
 
         internal ILoggerFactory LoggerFactory { get; }
 
@@ -117,6 +119,18 @@ namespace Gremlin.Net.Driver
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        ///     Creates a new <see cref="RemoteTransaction"/> for executing operations within an explicit
+        ///     server-side transaction. Transactions are short-lived and single-use: after commit
+        ///     or rollback, create a new RemoteTransaction for the next unit of work.
+        /// </summary>
+        /// <param name="traversalSource">The traversal source alias (e.g. "g" or "gtx").</param>
+        /// <returns>A new <see cref="RemoteTransaction"/>.</returns>
+        public RemoteTransaction Transact(string traversalSource)
+        {
+            return new RemoteTransaction(this, traversalSource);
+        }
+
         #region IDisposable Support
 
         private bool _disposed;
@@ -137,9 +151,34 @@ namespace Gremlin.Net.Driver
             if (!_disposed)
             {
                 if (disposing)
+                {
+                    // Best-effort rollback of any open transactions before closing connections
+                    foreach (var kvp in _trackedTransactions)
+                    {
+                        try
+                        {
+                            if (kvp.Key.IsOpen)
+                            {
+                                kvp.Key.RollbackAsync().GetAwaiter().GetResult();
+                            }
+                        }
+                        catch { }
+                    }
+                    _trackedTransactions.Clear();
                     _connection?.Dispose();
+                }
                 _disposed = true;
             }
+        }
+
+        internal void TrackTransaction(RemoteTransaction tx)
+        {
+            _trackedTransactions.TryAdd(tx, 0);
+        }
+
+        internal void UntrackTransaction(RemoteTransaction tx)
+        {
+            _trackedTransactions.TryRemove(tx, out _);
         }
 
         #endregion

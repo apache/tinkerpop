@@ -17,58 +17,162 @@
  *  under the License.
  */
 
-import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import { RemoteStrategy } from '../driver/remote-connection.js';
+import DriverRemoteConnection from '../driver/driver-remote-connection.js';
+import Client from '../driver/client.js';
 import GremlinLang from './gremlin-lang.js';
 import { GraphTraversalSource } from './graph-traversal.js';
 import { TraversalStrategies } from './traversal-strategy.js';
 
 /**
- * A controller for a remote transaction that is constructed from <code>g.tx()</code>. Calling <code>begin()</code>
- * on this object will produce a new <code>GraphTraversalSource</code> that is bound to a remote transaction over which
- * multiple traversals may be executed in that context. Calling <code>commit()</code> or <code>rollback()</code> will
- * then close the transaction and thus, the session. This feature only works with transaction enabled graphs.
+ * Controls an explicit remote transaction. A thin wrapper around a Client that
+ * adds transaction lifecycle (begin/commit/rollback/close) and attaches a
+ * transactionId to every request.
+ *
+ * Created via Client.transact() or g.tx(). The traversal source (g alias) is
+ * inherited from the Client and cannot be changed.
+ *
+ * Transactions are short-lived and single-use. After commit or rollback, the
+ * transaction ID is invalid and the object cannot be reused.
+ *
+ * Each traversal on the transaction-bound source must be awaited before
+ * submitting the next, to ensure the server receives requests in order.
+ *
+ * This class is NOT thread-safe. Do not share a Transaction across concurrent
+ * async contexts without external synchronization.
  */
 export class Transaction {
-  private _sessionBasedConnection?: RemoteConnection = undefined;
-
-  constructor(private readonly g: GraphTraversalSource) {}
+  private _transactionId?: string;
+  private _isOpen = false;
+  private _failed = false;
+  private readonly _client: Client;
 
   /**
-   * Spawns a <code>GraphTraversalSource</code> that is bound to a remote session which enables a transaction.
-   * @returns {GraphTraversalSource}
+   * Creates a Transaction. Accepts a Client which provides the connection
+   * and traversal source for all transaction requests.
    */
-  begin(): GraphTraversalSource {
-    throw new Error ("Transactions are not yet implemented")
+  constructor(client: Client) {
+    if (!client) {
+      throw new Error('Client is required for transactions');
+    }
+    this._client = client;
   }
 
   /**
-   * @returns {Promise}
+   * Spawns a GraphTraversalSource that is bound to a remote transaction.
+   * @returns {Promise<GraphTraversalSource>}
    */
-  commit(): Promise<void> {
-    throw new Error ("Transactions are not yet implemented")
+  async begin(): Promise<GraphTraversalSource> {
+    if (this._isOpen || this._failed) {
+      throw new Error('Transaction already started');
+    }
+
+    let result;
+    try {
+      result = await this._client.submit('g.tx().begin()', null);
+    } catch (e) {
+      this._failed = true;
+      throw e;
+    }
+
+    const resultArray = result.toArray();
+    if (!resultArray || resultArray.length === 0) {
+      this._failed = true;
+      throw new Error('Server did not return transaction ID');
+    }
+
+    const resultMap = resultArray[0];
+    if (!resultMap || !(resultMap instanceof Map) || !resultMap.get('transactionId')) {
+      this._failed = true;
+      throw new Error('Server did not return transaction ID in expected format');
+    }
+
+    this._transactionId = resultMap.get('transactionId');
+    this._isOpen = true;
+    this._client.trackTransaction(this);
+
+    // Create a DriverRemoteConnection bound to this transaction. The DRC
+    // will automatically attach the transactionId to all requests.
+    const txConnection = new DriverRemoteConnection(
+      this._client.url,
+      this._client.options,
+      this._transactionId,
+    );
+
+    const strategies = new TraversalStrategies();
+    strategies.addStrategy(new RemoteStrategy(txConnection));
+    const gtx = new GraphTraversalSource(null as any, strategies, new GremlinLang());
+    gtx._boundTransaction = this;
+    return gtx;
   }
 
   /**
-   * @returns {Promise}
+   * Commits the transaction.
+   * @returns {Promise<void>}
    */
-  rollback(): Promise<void> {
-    throw new Error ("Transactions are not yet implemented")
+  async commit(): Promise<void> {
+    await this.#closeTransaction('g.tx().commit()');
+  }
+
+  /**
+   * Rolls back the transaction.
+   * @returns {Promise<void>}
+   */
+  async rollback(): Promise<void> {
+    await this.#closeTransaction('g.tx().rollback()');
   }
 
   /**
    * Returns true if transaction is open.
-   * @returns {Boolean}
    */
   get isOpen(): boolean {
-    return this._sessionBasedConnection?.isOpen ?? false;
+    return this._isOpen;
   }
 
   /**
-   * @returns {Promise}
+   * Returns the server-generated transaction ID, or undefined if not yet begun.
+   */
+  get transactionId(): string | undefined {
+    return this._transactionId;
+  }
+
+  /**
+   * Closes the transaction. Default behavior is rollback: partial work is
+   * discarded rather than accidentally persisted.
+   * @returns {Promise<void>}
    */
   async close(): Promise<void> {
-    if (this._sessionBasedConnection) {
-      this._sessionBasedConnection.close();
+    if (this._isOpen) {
+      await this.rollback();
     }
+  }
+
+  /**
+   * Submits a gremlin-lang string within this transaction. The transactionId
+   * is automatically attached. Has the same signature as Client.submit().
+   */
+  async submit(gremlin: string, bindings?: any, requestOptions?: any): Promise<any> {
+    if (!this._isOpen) {
+      throw new Error('Transaction is not open');
+    }
+    const opts = {
+      ...requestOptions,
+      transactionId: this._transactionId,
+    };
+    return this._client.submit(gremlin, bindings || null, opts);
+  }
+
+  async #closeTransaction(script: string): Promise<void> {
+    if (!this._isOpen) {
+      throw new Error('Transaction is not open');
+    }
+
+    await this._client.submit(script, null, {
+      transactionId: this._transactionId
+    });
+
+    this._isOpen = false;
+    this._failed = true; // Terminal state: transaction cannot be reused
+    this._client.untrackTransaction(this);
   }
 }

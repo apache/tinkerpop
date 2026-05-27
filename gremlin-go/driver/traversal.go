@@ -36,7 +36,7 @@ type Traverser struct {
 type Traversal struct {
 	graph         *Graph
 	GremlinLang   *GremlinLang
-	remote        *DriverRemoteConnection
+	remote        remoteConnection
 	results       ResultSet
 	lastTraverser *Traverser // current traverser being lazily unrolled
 }

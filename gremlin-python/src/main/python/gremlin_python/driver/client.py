@@ -36,7 +36,6 @@ except ImportError:
 __author__ = 'David M. Brown (davebshow@gmail.com), Lyndon Bauto (lyndonb@bitquilltech.com)'
 
 
-# TODO: remove session, update connection pooling, etc.
 class Client:
 
     def __init__(self, url, traversal_source, pool_size=None, max_workers=None,
@@ -48,6 +47,9 @@ class Client:
 
         self._closed = False
         self._url = url
+        # A raw list is safe here because Python's GIL ensures list.append and
+        # list.remove are atomic at the bytecode level.
+        self._tracked_transactions = []
         self._headers = headers
         self._enable_user_agent_on_connect = enable_user_agent_on_connect
         self._bulk_results = bulk_results
@@ -104,12 +106,40 @@ class Client:
         if self._closed:
             return
 
+        # Best-effort rollback of any open transactions before closing connections
+        txs = list(self._tracked_transactions)
+        for tx in txs:
+            try:
+                tx.close()
+            except Exception:
+                pass
+        self._tracked_transactions.clear()
+
         log.info("Closing Client with url '%s'", self._url)
         while not self._pool.empty():
             conn = self._pool.get(True)
             conn.close()
         self._executor.shutdown()
         self._closed = True
+
+    def track_transaction(self, tx):
+        self._tracked_transactions.append(tx)
+
+    def untrack_transaction(self, tx):
+        try:
+            self._tracked_transactions.remove(tx)
+        except ValueError:
+            pass
+
+    def transact(self):
+        """Creates a new Transaction for executing operations within an explicit transaction.
+
+        Transactions are short-lived and single-use. After commit or rollback,
+        create a new Transaction for the next unit of work. The traversal source
+        (g alias) is inherited from this Client.
+        """
+        from gremlin_python.driver.transaction import Transaction
+        return Transaction(self)
 
     def _get_connection(self):
         return connection.Connection(

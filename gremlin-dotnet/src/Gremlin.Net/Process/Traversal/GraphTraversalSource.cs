@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gremlin.Net.Driver;
 using Gremlin.Net.Process.Remote;
 using Gremlin.Net.Process.Traversal.Strategy.Decoration;
 using Gremlin.Net.Structure;
@@ -39,8 +40,6 @@ namespace Gremlin.Net.Process.Traversal
     public class GraphTraversalSource
     {
         private readonly IRemoteConnection? _connection;
-
-        public bool IsSessionBound => _connection is { IsSessionBound: true };
         
         /// <summary>
         ///     Gets or sets the traversal strategies associated with this graph traversal source.
@@ -267,18 +266,12 @@ namespace Gremlin.Net.Process.Traversal
                 GremlinLang.Clone(), remoteConnection);
 
         /// <summary>
-        ///     Spawns a new <see cref="RemoteTransaction"/> object that can then start and stop a transaction.
+        ///     Returns the <see cref="RemoteTransaction"/> for this traversal source. If the source is
+        ///     already bound to a transaction, the existing transaction is returned.
         /// </summary>
-        /// <returns>The spawned transaction.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if this traversal source is already bound to a session.</exception>
+        /// <returns>The transaction.</returns>
         public RemoteTransaction Tx()
         {
-            // you can't do g.tx().begin().tx() - no child transactions
-            if (IsSessionBound)
-            {
-                throw new InvalidOperationException(
-                    "This GraphTraversalSource is already bound to a transaction - child transactions are not supported");
-            }
             return _connection!.Tx(this);
         }
 

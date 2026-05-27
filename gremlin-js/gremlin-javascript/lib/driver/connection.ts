@@ -239,6 +239,16 @@ export default class Connection extends EventEmitter {
       body,
     };
 
+    // Promote transactionId to HTTP header before interceptors run.
+    // The field remains in the serialized body as well (dual transmission
+    // per the HTTP transaction protocol specification).
+    if (body instanceof RequestMessage) {
+      const fields = body.getFields();
+      if (fields.has('transactionId')) {
+        httpRequest.headers['X-Transaction-Id'] = fields.get('transactionId');
+      }
+    }
+
     for (let i = 0; i < this._interceptors.length; i++) {
       try {
         httpRequest = await this._interceptors[i](httpRequest);

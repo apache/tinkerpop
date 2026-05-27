@@ -26,6 +26,7 @@ import { Transaction } from './transaction.js';
 import { TraversalStrategies, VertexProgramStrategy, OptionsStrategy } from './traversal-strategy.js';
 import {Graph, Vertex} from '../structure/graph.js';
 import { RemoteConnection, RemoteStrategy } from '../driver/remote-connection.js';
+import DriverRemoteConnection from '../driver/driver-remote-connection.js';
 import GremlinLang from './gremlin-lang.js';
 
 /**
@@ -33,6 +34,8 @@ import GremlinLang from './gremlin-lang.js';
  */
 export class GraphTraversalSource {
   remoteConnection?: RemoteConnection;
+  /** @internal - set by Transaction.begin() for gtx.tx() to return the owning transaction */
+  _boundTransaction?: Transaction;
 
   /**
    * Creates a new instance of {@link GraphTraversalSource}.
@@ -58,12 +61,24 @@ export class GraphTraversalSource {
    * @returns {Transaction}
    */
   tx(): Transaction {
-    // you can't do g.tx().begin().tx() - no child transactions
-    if (this.remoteConnection) {
+    // If this GTS is already bound to a transaction, return that transaction.
+    if (this._boundTransaction) {
+      return this._boundTransaction;
+    }
+
+    if (!this.remoteConnection) {
+      throw new Error('Remote connection is required for transactions');
+    }
+
+    // If the DRC has a transactionId, it was created by a Transaction.begin().
+    // But we don't have the Transaction reference here (only _boundTransaction above).
+    if (this.remoteConnection instanceof DriverRemoteConnection && this.remoteConnection.transactionId) {
       throw new Error('This TraversalSource is already bound to a transaction - child transactions are not supported');
     }
 
-    return new Transaction(this);
+    // Extract the Client from the DriverRemoteConnection.
+    const client = (this.remoteConnection as DriverRemoteConnection)._client;
+    return new Transaction(client);
   }
 
   /**

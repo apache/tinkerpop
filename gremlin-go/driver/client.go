@@ -22,6 +22,7 @@ package gremlingo
 import (
 	"crypto/tls"
 	"reflect"
+	"sync"
 	"time"
 
 	"golang.org/x/text/language"
@@ -72,6 +73,7 @@ type Client struct {
 	logHandler         *logHandler
 	connectionSettings *connectionSettings
 	conn               *connection
+	transactions       sync.Map // tracks open transactions for cascade rollback on close
 }
 
 // NewClient creates a Client and configures it with the given parameters.
@@ -131,6 +133,13 @@ func NewClient(url string, configurations ...func(settings *ClientSettings)) (*C
 // This is idempotent due to the underlying close() methods being idempotent as well.
 func (client *Client) Close() {
 	client.logHandler.logf(Info, closeClient, client.url)
+	// Best-effort rollback of any open transactions before closing connections
+	client.transactions.Range(func(key, value interface{}) bool {
+		if tx, ok := value.(*Transaction); ok {
+			tx.Close()
+		}
+		return true
+	})
 	if client.conn != nil {
 		client.conn.close()
 	}
@@ -138,6 +147,22 @@ func (client *Client) Close() {
 
 func (client *Client) errorCallback() {
 	client.logHandler.log(Error, errorCallback)
+}
+
+// Transact creates a new Transaction for executing operations within an explicit
+// server-side transaction. Transactions are short-lived and single-use: after
+// commit or rollback, create a new Transaction for the next unit of work.
+// The traversal source (g alias) is inherited from this Client.
+func (client *Client) Transact() *Transaction {
+	return &Transaction{client: client}
+}
+
+func (client *Client) trackTransaction(tx *Transaction) {
+	client.transactions.Store(tx, tx)
+}
+
+func (client *Client) untrackTransaction(tx *Transaction) {
+	client.transactions.Delete(tx)
 }
 
 // SubmitWithOptions submits a Gremlin script to the server with specified RequestOptions and returns a ResultSet.
@@ -161,25 +186,31 @@ func (client *Client) Submit(traversalString string, bindings ...map[string]inte
 
 // submitGremlinLang submits GremlinLang to the server to execute and returns a ResultSet.
 func (client *Client) submitGremlinLang(gremlinLang *GremlinLang) (ResultSet, error) {
+	return client.submitGremlinLangWithBuilder(gremlinLang, new(RequestOptionsBuilder))
+}
+
+// submitGremlinLangWithBuilder is the core submission function. It extracts bindings
+// and options strategies from the GremlinLang, merges them into the provided builder,
+// then builds and sends the request.
+func (client *Client) submitGremlinLangWithBuilder(gremlinLang *GremlinLang, builder *RequestOptionsBuilder) (ResultSet, error) {
 	client.logHandler.logf(Debug, submitStartedString, *gremlinLang)
-	requestOptionsBuilder := new(RequestOptionsBuilder)
 
 	parametersString := gremlinLang.GetParametersAsString()
 	if parametersString != "[:]" {
-		requestOptionsBuilder.SetBindingsString(parametersString)
+		builder.SetBindingsString(parametersString)
 	}
 
 	if len(gremlinLang.optionsStrategies) > 0 {
-		requestOptionsBuilder = applyOptionsConfig(requestOptionsBuilder, gremlinLang.optionsStrategies[0].configuration)
+		builder = applyOptionsConfig(builder, gremlinLang.optionsStrategies[0].configuration)
 	}
 
 	// default bulkResults to true when using DRC through request options
 	// consistent with Java RequestOptions.getRequestOptions and Python extract_request_options
-	if requestOptionsBuilder.bulkResults == nil {
-		requestOptionsBuilder.SetBulkResults(true)
+	if builder.bulkResults == nil {
+		builder.SetBulkResults(true)
 	}
 
-	request := MakeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, requestOptionsBuilder.Create())
+	request := MakeStringRequest(gremlinLang.GetGremlin(), client.traversalSource, builder.Create())
 	return client.conn.submit(&request)
 }
 

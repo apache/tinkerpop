@@ -249,31 +249,31 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
     }
 
     @Test
-    public void shouldCommitOnCloseByDefault() throws Exception {
+    public void shouldRollbackOnCloseByDefault() throws Exception {
         final RemoteTransaction tx1 = cluster.transact(GTX);
         tx1.begin();
         tx1.submit("g.addV('person').property('name','close_test')");
-        // close() should trigger default COMMIT behavior
-        tx1.close();
-        assertFalse(tx1.isOpen());
-
-        final RemoteTransaction tx2 = cluster.transact(GTX);
-        tx2.begin();
-        assertEquals(1L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
-    }
-
-    @Test
-    public void shouldRollbackOnCloseWhenConfigured() throws Exception {
-        final RemoteTransaction tx1 = cluster.transact(GTX);
-        tx1.onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
-        tx1.begin();
-        tx1.submit("g.addV('person').property('name','rollback_close_test')");
+        // close() should trigger default ROLLBACK behavior
         tx1.close();
         assertFalse(tx1.isOpen());
 
         final RemoteTransaction tx2 = cluster.transact(GTX);
         tx2.begin();
         assertEquals(0L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
+    }
+
+    @Test
+    public void shouldCommitOnCloseWhenConfigured() throws Exception {
+        final RemoteTransaction tx1 = cluster.transact(GTX);
+        tx1.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
+        tx1.begin();
+        tx1.submit("g.addV('person').property('name','commit_close_test')");
+        tx1.close();
+        assertFalse(tx1.isOpen());
+
+        final RemoteTransaction tx2 = cluster.transact(GTX);
+        tx2.begin();
+        assertEquals(1L, tx2.submit("g.V().hasLabel('person').count()").one().getLong());
     }
 
     @Test
@@ -290,6 +290,10 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
         // close cluster without committing — should rollback open transactions
         cluster.close();
         cluster = null;
+
+        // verify transactions are marked closed on the driver side
+        assertFalse(tx1.isOpen());
+        assertFalse(tx2.isOpen());
 
         // reconnect and verify data was not persisted
         final Cluster cluster2 = TestClientFactory.open();
@@ -673,5 +677,30 @@ public class GremlinDriverTransactionIntegrateTest extends AbstractGremlinServer
 
         // verify nothing was persisted
         assertEquals(0L, client.submit("g.V().hasLabel('person').count()").all().get().get(0).getLong());
+    }
+
+    @Test
+    public void shouldRollbackOpenTransactionsOnTraversalClose() throws Exception {
+        final DriverRemoteConnection drc = DriverRemoteConnection.using(cluster, GTX);
+        final GraphTraversalSource g = traversal().with(drc);
+
+        final Transaction tx = g.tx();
+        final GraphTraversalSource gtx = tx.begin();
+        gtx.addV("drc-close").iterate();
+
+        // close the DriverRemoteConnection without committing
+        cluster.close();
+
+        // verify transaction is marked closed on the driver side
+        assertFalse(tx.isOpen());
+
+        // reconnect and verify data was not persisted
+        final Cluster cluster2 = TestClientFactory.open();
+        try {
+            final Client client2 = cluster2.connect().alias(GTX);
+            assertEquals(0L, client2.submit("g.V().hasLabel('drc-close').count()").all().get().get(0).getLong());
+        } finally {
+            cluster2.close();
+        }
     }
 }

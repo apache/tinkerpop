@@ -139,6 +139,15 @@ namespace Gremlin.Net.Driver
                 headers["bulkResults"] = "true";
             }
 
+            // Promote transactionId to HTTP header before serialization.
+            // The field remains in the serialized body as well (dual transmission
+            // per the HTTP transaction protocol specification).
+            if (requestMessage.Fields.TryGetValue(Tokens.ArgsTransactionId, out var txIdObj) &&
+                txIdObj is string txId && !string.IsNullOrEmpty(txId))
+            {
+                headers["X-Transaction-Id"] = txId;
+            }
+
             object body;
             if (_requestSerializer != null)
             {
