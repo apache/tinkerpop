@@ -61,6 +61,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * can use {@link #create(GqlPlanner, GqlExecutor)} to construct a per-instance strategy. That
  * strategy instance holds the supplied objects directly and does not interact with the shared
  * cache.</p>
+ *
+ * <h3>OLAP / GraphComputer limitation</h3>
+ * <p>{@code match(String)} is <strong>not supported</strong> in OLAP (GraphComputer) mode.
+ * The strategy's {@link #apply} method detects a graph-computer traversal context via
+ * {@link org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper#onGraphComputer}
+ * and returns immediately without replacing the placeholder step. Attempting to execute
+ * {@code match(String)} in OLAP mode will therefore result in an
+ * {@link UnsupportedOperationException} at traversal execution time.</p>
+ *
+ * <p>The limitation exists because TinkerGQL execution relies on direct, lazy vertex and edge
+ * iteration against an OLTP graph (seed scans, DFS backtracking), which has no equivalent in
+ * the scatter-gather message-passing model of OLAP. Providers seeking to support declarative
+ * pattern matching in OLAP would need to implement it as a
+ * {@link org.apache.tinkerpop.gremlin.process.computer.VertexProgram}.</p>
  */
 public final class GqlDeclarativeMatchStrategy
         extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy>
@@ -150,6 +164,8 @@ public final class GqlDeclarativeMatchStrategy
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        // match(String) is OLTP-only: TinkerGQL relies on direct vertex/edge iteration and DFS
+        // backtracking, which have no equivalent in the OLAP scatter-gather model.
         if (TraversalHelper.onGraphComputer(traversal)) return;
 
         for (final DeclarativeMatchStep step :

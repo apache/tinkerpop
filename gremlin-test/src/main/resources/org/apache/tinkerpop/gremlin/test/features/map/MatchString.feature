@@ -148,3 +148,119 @@ Feature: Step - match() (String form)
       | result |
       | m[{"a":"marko","b":"vadas"}] |
       | m[{"a":"marko","b":"josh"}]  |
+
+  Scenario: g_match_anonymousXknowsX_person_selectXbX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH ()-[:knows]->(b:person)").select("b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | vadas  |
+      | josh   |
+
+  Scenario: g_match_personXage_29iX_selectXpX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (p:person {age: 29i})").select("p").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+
+  Scenario: g_match_absentAgeProperty_selectXvX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (v {age: null})").select("v").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | lop    |
+      | ripple |
+
+  Scenario: g_match_personXname_marko_age_29iX_selectXpX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (p:person {name: 'marko', age: 29i})").select("p").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | marko  |
+
+  Scenario: g_match_personXknowsXeX_person_selectXeX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[e:knows]->(b:person)").select("e")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                |
+      | e[marko-knows->vadas] |
+      | e[marko-knows->josh]  |
+
+  Scenario: g_match_personXknowsXweight_1X_person_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows {weight: 1.0}]->(b:person)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                      |
+      | m[{"a":"marko","b":"josh"}] |
+
+  Scenario: g_match_personXanyEdgeX_software_selectXa_bX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[]->(b:software)").select("a","b").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                       |
+      | m[{"a":"marko","b":"lop"}]   |
+      | m[{"a":"josh","b":"ripple"}] |
+      | m[{"a":"josh","b":"lop"}]    |
+      | m[{"a":"peter","b":"lop"}]   |
+
+  Scenario: g_match_personXknowsX_anyXcreatedX_software_selectXa_sX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->()-[:created]->(s:software)").select("a","s").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                        |
+      | m[{"a":"marko","s":"ripple"}] |
+      | m[{"a":"marko","s":"lop"}]    |
+
+  Scenario: g_match_personXage_paramX_knowsPerson_selectXp_fX_byXnameX_integer
+    Given the modern graph
+    And the traversal of
+      """
+      g.match('MATCH (p:person {age: $age})-[:knows]->(f:person)', ["age": 29]).select("p","f").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result                       |
+      | m[{"p":"marko","f":"vadas"}] |
+      | m[{"p":"marko","f":"josh"}]  |
+
+  Scenario: g_match_noMatchPattern_emptyResult
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:software)-[:knows]->(b)").select("a","b")
+      """
+    When iterated to list
+    Then the result should be empty

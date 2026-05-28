@@ -2977,6 +2977,7 @@ TinkerGQL is a minimal subset of ISO GQL. The following ISO GQL `MATCH` features
 |Multiple labels per element |`(n:Person:Employee)` — more than one label per node pattern — is not supported.
 |`OPTIONAL MATCH` |Optional pattern matching (outer joins) is not supported.
 |Aggregation functions |`COUNT`, `SUM`, `AVG`, and similar functions are not part of the grammar.
+|OLAP / GraphComputer mode |`match(String)` does not execute in OLAP (GraphComputer) mode. `GqlDeclarativeMatchStrategy` detects a graph-computer traversal context and exits without replacing the placeholder step, resulting in an `UnsupportedOperationException` at execution time.
 |=========================================================
 
 Equivalent behaviour for `WHERE` and `RETURN` can be expressed using the standard Gremlin step vocabulary
