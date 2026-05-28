@@ -58,15 +58,19 @@ public final class DefaultGqlPlanner implements GqlPlanner {
     static final int PLAN_CACHE_MAX_SIZE = 1_000;
 
     private final Graph graph;
+
     // Cache only the parsed QueryGraph — mutation-independent, safe to reuse across calls.
     // Seed selection and step ordering are recomputed on every call using live label counts.
     // Bounded to PLAN_CACHE_MAX_SIZE entries via Caffeine LRU eviction.
-    private final Cache<String, QueryGraph> queryGraphCache = Caffeine.newBuilder()
-            .maximumSize(PLAN_CACHE_MAX_SIZE)
-            .build();
+    private final Cache<String, QueryGraph> queryGraphCache;
 
     public DefaultGqlPlanner(final Graph graph) {
+        this(graph, Caffeine.newBuilder().maximumSize(PLAN_CACHE_MAX_SIZE).build());
+    }
+
+    public DefaultGqlPlanner(final Graph graph, final Cache<String, QueryGraph> queryGraphCache) {
         this.graph = graph;
+        this.queryGraphCache = queryGraphCache;
     }
 
     /**
