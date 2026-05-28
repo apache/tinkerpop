@@ -41,6 +41,18 @@ services:
       retries: 30
       start_period: 30s
 
+  gremlin-socket-server-test-dotnet:
+    container_name: gremlin-socket-server-test-dotnet
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    build:
+      context: ../
+      dockerfile: gremlin-tools/gremlin-socket-server/Dockerfile
+      args:
+        - SOCKET_SERVER_DIR=gremlin-tools/gremlin-socket-server/target/
+        - SOCKET_SERVER_VERSION=${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"
+
   gremlin-dotnet-integration-tests:
     container_name: gremlin-dotnet-integration-tests
     image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -49,12 +61,12 @@ services:
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features:/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/test/features
       - ../gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io:/gremlin-test/src/main/resources/org/apache/tinkerpop/gremlin/structure/io
       - ../docker/gremlin-test-server:/gremlin-dotnet/gremlin-test-server
-      - ../gremlin-tools/gremlin-socket-server/conf:/gremlin-dotnet/gremlin-socket-server/conf/
     environment:
       - DOCKER_ENVIRONMENT=true
       - GREMLIN_SERVER_HOST=gremlin-server-test-dotnet
       - GREMLIN_SERVER_PORT=45940
       - GREMLIN_SECURE_SERVER_PORT=45941
+      - GREMLIN_SOCKET_SERVER_URL=http://gremlin-socket-server-test-dotnet:45943/gremlin
       - VERTEX_LABEL=dotnet-example
     working_dir: /gremlin-dotnet
     command: >
@@ -72,3 +84,5 @@ services:
     depends_on:
       gremlin-server-test-dotnet:
         condition: service_healthy
+      gremlin-socket-server-test-dotnet:
+        condition: service_started

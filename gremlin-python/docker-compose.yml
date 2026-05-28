@@ -41,6 +41,18 @@ services:
       retries: 30
       start_period: 30s
 
+  gremlin-socket-server-test-python:
+    container_name: gremlin-socket-server-test-python
+    image: tinkerpop/gremlin-socket-server:${GREMLIN_SERVER}
+    build:
+      context: ../
+      dockerfile: gremlin-tools/gremlin-socket-server/Dockerfile
+      args:
+        - SOCKET_SERVER_DIR=gremlin-tools/gremlin-socket-server/target/
+        - SOCKET_SERVER_VERSION=${GREMLIN_SERVER}
+    ports:
+      - "45943:45943"
+
   gremlin-python-integration-tests:
     container_name: gremlin-python-integration-tests
     image: python:${PYTHON_VERSION:-3.10}
@@ -53,6 +65,7 @@ services:
       - DEBIAN_FRONTEND=noninteractive
       - GREMLIN_SERVER_URL=http://gremlin-server-test-python:{}/gremlin
       - GREMLIN_SERVER_BASIC_AUTH_URL=https://gremlin-server-test-python:{}/gremlin
+      - GREMLIN_SOCKET_SERVER_URL=http://gremlin-socket-server-test-python:45943/gremlin
       - IO_TEST_DIRECTORY=/python_app/gremlin-test/graphbinary/
       - PYTEST_ARGS=${PYTEST_ARGS:-}
       - RADISH_ARGS=${RADISH_ARGS:-}
@@ -81,6 +94,8 @@ services:
     depends_on:
       gremlin-server-test-python:
         condition: service_healthy
+      gremlin-socket-server-test-python:
+        condition: service_started
 
   gremlin-python-package:
     container_name: gremlin-python-package
