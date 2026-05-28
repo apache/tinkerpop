@@ -26,9 +26,36 @@ import java.util.Map;
 /**
  * Executes a {@link GqlMatchPlan} against a graph and returns result rows.
  *
- * <p>Each result row is an {@code Element[]} whose indices correspond to the variable
- * indices defined in the plan; use {@link GqlMatchPlan#getVariables()} to map indices
- * back to variable names.</p>
+ * <p>Each result row is an {@code Element[]} whose indices correspond to the variable indices
+ * defined in the plan; use {@link GqlMatchPlan#getVariables()} to map indices back to variable
+ * names. The seed variable is always at index 0.</p>
+ *
+ * <p>{@link DefaultGqlExecutor} is the reference implementation. It iterates seed vertices via
+ * a full scan or an index lookup when
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph.Index} is available, then performs DFS
+ * backtracking over the plan's extension steps using the TinkerPop
+ * {@link org.apache.tinkerpop.gremlin.structure.Graph} API ({@code Vertex.edges()},
+ * {@code Edge.inVertex()}, etc.).</p>
+ *
+ * <h3>When to implement this interface</h3>
+ *
+ * <p>This is the primary customization point for providers with a native query or traversal
+ * engine. Such a provider can keep {@link DefaultGqlPlanner} — getting free GQL MATCH parsing
+ * and cardinality-guided join ordering driven by the {@code countVerticesByLabel},
+ * {@code countEdgesByLabel}, and {@link org.apache.tinkerpop.gremlin.structure.Graph.Index}
+ * overrides already on the graph — and replace only the executor to translate the resulting
+ * {@link GqlMatchPlan} into native operations instead of iterating {@code Graph.vertices()}.</p>
+ *
+ * <p>The contract for implementors:</p>
+ * <ul>
+ *   <li>Iterate seed vertex candidates matching the plan's seed label and predicates.</li>
+ *   <li>For each seed, extend the partial match through the plan's
+ *       {@link GqlMatchPlan#getSteps() extension steps} in an order that keeps every step's
+ *       anchor variable bound before that step executes.</li>
+ *   <li>Emit one {@code Element[]} per complete match, with each slot filled according to
+ *       {@link GqlMatchPlan#getVariables()}, seed variable at index 0.</li>
+ *   <li>Return results lazily — do not materialise the full result set in memory.</li>
+ * </ul>
  */
 public interface GqlExecutor {
 

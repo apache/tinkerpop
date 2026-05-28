@@ -692,11 +692,13 @@ For each result row the concrete step must:
 * Declare `TraverserRequirement.LABELED_PATH` in `getRequirements()`.
 
 Providers that want to use TinkerPop's built-in GQL engine rather than supplying their own step can add the
-`gql-gremlin` module and register `GqlDeclarativeMatchStrategy.create(graph)` as a `ProviderOptimizationStrategy`.
-`GqlDeclarativeMatchStrategy` wraps a `DefaultGqlPlanner` and `DefaultGqlExecutor` that work against any `Graph`
-through the standard interface, with optional performance hints via `countVerticesByLabel()`, `countEdgesByLabel()`,
-and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete reference
-implementation, and the link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
+`gql-gremlin` module and register `GqlDeclarativeMatchStrategy.instance()` in their graph's global strategy
+cache. The singleton lazily allocates a `DefaultGqlPlanner` and `DefaultGqlExecutor` per graph instance on
+first use and caches them for the lifetime of the graph, sharing the planner's query parse cache across all
+traversals. Optional performance hints are available via `countVerticesByLabel()`, `countEdgesByLabel()`,
+and `Graph.Index`. See `GqlMatchStep` and `GqlDeclarativeMatchStrategy` in `gql-gremlin` for the complete
+reference implementation, and the
+link:https://tinkerpop.apache.org/docs/x.y.z/dev/provider/#tinkerpop-providers-tinkergql[provider documentation]
 for wiring instructions.
 
 == TinkerPop 4.0.0-beta.2
