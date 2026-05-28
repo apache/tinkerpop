@@ -18,9 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.http.Consts;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.RequestOptions;
+import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -29,10 +37,14 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
 import org.apache.tinkerpop.gremlin.util.Tokens;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.gremlin.util.ser.AbstractMessageSerializer;
 import org.apache.tinkerpop.gremlin.util.ser.GraphBinaryMessageSerializerV4;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +54,7 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -255,6 +268,79 @@ public class GremlinServerSerializationIntegrateTest extends AbstractGremlinServ
 
         assertEquals(1, IteratorUtils.count(edge.properties()));
         assertEquals(0.5, edge.property("weight").value());
+    }
+
+    @Test
+    public void shouldRoundTripSimplePointPdt() throws Exception {
+        final List<Result> results = client.submit(
+                "g.inject(PDT(\"Point\", [\"x\":1, \"y\":2]))").all().get();
+
+        assertEquals(1, results.size());
+        final ProviderDefinedType pdt = (ProviderDefinedType) results.get(0).getObject();
+        assertEquals("Point", pdt.getName());
+        assertEquals(1, pdt.getProperties().get("x"));
+        assertEquals(2, pdt.getProperties().get("y"));
+    }
+
+    @Test
+    public void shouldRoundTripNestedPdt() throws Exception {
+        final List<Result> results = client.submit(
+                "g.inject(PDT(\"Person\", [\"name\":\"Alice\", \"age\":30, " +
+                "\"address\":PDT(\"Address\", [\"street\":\"123 Main St\", \"city\":\"Springfield\", \"zip\":\"12345\"])]))").all().get();
+
+        assertEquals(1, results.size());
+        final ProviderDefinedType person = (ProviderDefinedType) results.get(0).getObject();
+        assertEquals("Person", person.getName());
+        assertEquals("Alice", person.getProperties().get("name"));
+        assertEquals(30, person.getProperties().get("age"));
+
+        final ProviderDefinedType address = (ProviderDefinedType) person.getProperties().get("address");
+        assertEquals("Address", address.getName());
+        assertEquals("123 Main St", address.getProperties().get("street"));
+        assertEquals("Springfield", address.getProperties().get("city"));
+    }
+
+    @Test
+    public void shouldRoundTripPdtInCollection() throws Exception {
+        final List<Result> results = client.submit(
+                "g.inject([PDT(\"Point\", [\"x\":1, \"y\":2]), PDT(\"Point\", [\"x\":3, \"y\":4])])").all().get();
+
+        assertEquals(1, results.size());
+        final List<?> list = (List<?>) results.get(0).getObject();
+        assertEquals(2, list.size());
+
+        final ProviderDefinedType p1 = (ProviderDefinedType) list.get(0);
+        assertEquals("Point", p1.getName());
+        assertEquals(1, p1.getProperties().get("x"));
+        assertEquals(2, p1.getProperties().get("y"));
+
+        final ProviderDefinedType p2 = (ProviderDefinedType) list.get(1);
+        assertEquals("Point", p2.getName());
+        assertEquals(3, p2.getProperties().get("x"));
+        assertEquals(4, p2.getProperties().get("y"));
+    }
+
+    @Test
+    public void shouldReturnPdtAsGraphSONCompositePdtInHttpResponse() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost(TestClientFactory.createURLString());
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Accept", "application/json");
+        httppost.setEntity(new StringEntity(
+                "{\"gremlin\":\"g.inject(org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType.from(new org.apache.tinkerpop.gremlin.server.pdt.Point(1, 2)))\",\"language\":\"gremlin-groovy\"}",
+                Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            final JsonNode root = new ObjectMapper().readTree(EntityUtils.toString(response.getEntity()));
+            final JsonNode pdtNode = root.get("result").get("data").get(GraphSONTokens.VALUEPROP).get(0);
+
+            assertEquals("g:CompositePdt", pdtNode.get("@type").asText());
+            final JsonNode value = pdtNode.get(GraphSONTokens.VALUEPROP);
+            assertEquals("Point", value.get("type").asText());
+            assertEquals(1, value.get("fields").get("x").get(GraphSONTokens.VALUEPROP).intValue());
+            assertEquals(2, value.get("fields").get("y").get(GraphSONTokens.VALUEPROP).intValue());
+        }
     }
 
     private void assertPathElementsWithProperties(final Path p) {

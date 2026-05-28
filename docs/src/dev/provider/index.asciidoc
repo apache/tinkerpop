@@ -1389,8 +1389,10 @@ public class Point {
 }
 ----
 
-The `name` attribute is a unique identifier for the type, typically namespaced (e.g. `"x:Point"`). By default, all
-fields are included. Use `includedFields` or `excludedFields` to control which fields are serialized:
+The `name` attribute is a unique identifier for the type. It is strongly recommended to namespace type names using
+your graph's identifier as a prefix (e.g. `"mygraph:Point"`). This avoids collisions when clients interact with
+multiple providers and makes the origin of a type immediately clear. By default, all fields are included. Use
+`includedFields` or `excludedFields` to control which fields are serialized:
 
 [source,java]
 ----

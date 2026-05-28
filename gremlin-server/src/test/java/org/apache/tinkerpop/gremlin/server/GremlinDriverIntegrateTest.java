@@ -30,10 +30,17 @@ import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.NoHostAvailableException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.interceptor.PayloadSerializingInterceptor;
+import org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection;
 import org.apache.tinkerpop.gremlin.jsr223.ScriptFileGremlinPlugin;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
+import org.apache.tinkerpop.gremlin.structure.io.binary.TypeSerializerRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefined;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedType;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeAdapter;
+import org.apache.tinkerpop.gremlin.structure.io.pdt.ProviderDefinedTypeRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.ExceptionHelper;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -68,6 +75,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -1263,5 +1271,136 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } finally {
             cluster.close();
         }
+    }
+
+    @Test
+    public void shouldRoundTripRawPdtViaTraversal() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", new HashMap<String, Object>() {{ put("x", 1); put("y", 2); }});
+            final Object result = g.inject(pdt).next();
+
+            assertTrue(result instanceof ProviderDefinedType);
+            final ProviderDefinedType r = (ProviderDefinedType) result;
+            assertEquals("TestPoint", r.getName());
+            assertEquals(1, r.getProperties().get("x"));
+            assertEquals(2, r.getProperties().get("y"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripRegistryPdtViaTraversal() throws Exception {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(new TestPointAdapter());
+
+        final Cluster cluster = TestClientFactory.build()
+                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
+        try {
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
+
+            final Object result = g.inject(new TestPoint(5, 10)).next();
+
+            assertTrue("Expected TestPoint but got: " + result.getClass().getName(), result instanceof TestPoint);
+            assertEquals(5, ((TestPoint) result).x);
+            assertEquals(10, ((TestPoint) result).y);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldRoundTripAnnotatedPdtViaTraversal() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        try {
+            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+
+            final Object result = g.inject(new TestAnnotatedPoint(3, 7)).next();
+
+            // without a registry the result comes back as a raw ProviderDefinedType
+            assertTrue(result instanceof ProviderDefinedType);
+            final ProviderDefinedType pdt = (ProviderDefinedType) result;
+            assertEquals("TestAnnotatedPoint", pdt.getName());
+            assertEquals(3, pdt.getProperties().get("x"));
+            assertEquals(7, pdt.getProperties().get("y"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldHydratePdtViaRegistryFromDriverResult() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            final List<Result> results = client.submit(
+                    "g.inject(new org.apache.tinkerpop.gremlin.server.pdt.Point(9, 11))",
+                    groovyRequestOptions).all().get();
+
+            assertEquals(1, results.size());
+            final ProviderDefinedType raw = (ProviderDefinedType) results.get(0).getObject();
+
+            final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+            registry.register(new TestPointAdapter());
+            final Object hydrated = registry.hydrate(raw);
+
+            assertTrue(hydrated instanceof TestPoint);
+            assertEquals(9, ((TestPoint) hydrated).x);
+            assertEquals(11, ((TestPoint) hydrated).y);
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldStorePdtAsOriginalObjectInTinkerGraph() throws Exception {
+        final Cluster cluster = TestClientFactory.build().create();
+        final Client client = cluster.connect();
+        try {
+            client.submit(
+                    "g.addV('location').property('point', new org.apache.tinkerpop.gremlin.server.pdt.Point(3, 4)).iterate()",
+                    groovyRequestOptions).all().get();
+
+            final List<Result> results = client.submit(
+                    "g.V().hasLabel('location').values('point')",
+                    groovyRequestOptions).all().get();
+
+            assertEquals(1, results.size());
+            // The Groovy result here is a Map representation of the stored object
+            assertNotNull(results.get(0).getObject());
+        } finally {
+            // cleanup
+            client.submit("g.V().hasLabel('location').drop().iterate()", groovyRequestOptions).all().get();
+            cluster.close();
+        }
+    }
+
+    // --- PDT helper types ---
+
+    static class TestPoint {
+        final int x, y;
+        TestPoint(final int x, final int y) { this.x = x; this.y = y; }
+    }
+
+    static class TestPointAdapter implements ProviderDefinedTypeAdapter<TestPoint> {
+        @Override public String typeName() { return "TestPoint"; }
+        @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
+        @Override public Map<String, Object> toProperties(final TestPoint obj) {
+            return new HashMap<String, Object>() {{ put("x", obj.x); put("y", obj.y); }};
+        }
+        @Override public TestPoint fromProperties(final Map<String, Object> props) {
+            return new TestPoint(((Number) props.get("x")).intValue(), ((Number) props.get("y")).intValue());
+        }
+    }
+
+    @ProviderDefined(name = "TestAnnotatedPoint")
+    static class TestAnnotatedPoint {
+        public int x, y;
+        TestAnnotatedPoint(final int x, final int y) { this.x = x; this.y = y; }
     }
 }
