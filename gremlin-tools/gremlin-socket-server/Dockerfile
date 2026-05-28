@@ -28,7 +28,6 @@ RUN apk add --no-cache --update \
 
 COPY ${SOCKET_SERVER_DIR}/gremlin-socket-server-${SOCKET_SERVER_VERSION}.jar /opt/gremlin-socket-server/gremlin-socket-server.jar
 COPY ${SOCKET_SERVER_DIR}/libs/ /opt/gremlin-socket-server/libs/
-COPY ${SOCKET_SERVER_DIR}/../conf/ opt/gremlin-socket-server/conf/
 
 WORKDIR /opt/gremlin-socket-server
 

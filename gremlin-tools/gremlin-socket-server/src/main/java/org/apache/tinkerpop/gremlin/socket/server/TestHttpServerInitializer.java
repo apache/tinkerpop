@@ -18,18 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.socket.server;
 
-import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
 
 /**
- * A simple main class to create and run a SimpleTestServer
+ * Initializes the Netty pipeline for the test HTTP Gremlin server.
  */
-public class SocketServerRunner {
+public class TestHttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    public static void main(final String[] args) throws InterruptedException {
-        final SimpleTestServer server = new SimpleTestServer(SocketServerConstants.PORT);
-        final Channel channel = server.start(new TestHttpServerInitializer());
-        while (channel.isOpen()) {
-            Thread.sleep(1000);
-        }
+    @Override
+    protected void initChannel(final SocketChannel ch) {
+        ch.pipeline().addLast(new HttpServerCodec());
+        ch.pipeline().addLast(new HttpObjectAggregator(65536));
+        ch.pipeline().addLast(new TestHttpGremlinHandler());
     }
 }
