@@ -377,7 +377,7 @@ g.V().valueMap()
 === Declarative Pattern Matching (TinkerGQL)
 
 TinkerGraph ships with full support for the <<tinkergql,TinkerGQL>> dialect out of the box.
-`TinkerGraphDeclarativeMatchStrategy` is registered automatically when a `GraphTraversalSource` is created from
+`GqlDeclarativeMatchStrategy` is registered automatically when a `GraphTraversalSource` is created from
 a TinkerGraph instance, so no additional configuration is required:
 
 [gremlin-groovy,modern]
