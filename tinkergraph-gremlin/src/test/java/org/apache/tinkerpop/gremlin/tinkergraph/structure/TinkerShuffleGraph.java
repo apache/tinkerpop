@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,6 +34,14 @@ import java.util.List;
  * @author Cole Greer (https://github.com/Cole-Greer)
  */
 public class TinkerShuffleGraph extends TinkerGraph {
+
+    static {
+        // GlobalCache falls back to Graph.class (not TinkerGraph.class) for unregistered subclasses,
+        // so TinkerShuffleGraph must explicitly inherit TinkerGraph's strategies, including
+        // GqlDeclarativeMatchStrategy.
+        TraversalStrategies.GlobalCache.registerStrategies(TinkerShuffleGraph.class,
+                TraversalStrategies.GlobalCache.getStrategies(TinkerGraph.class).clone());
+    }
 
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, TinkerShuffleGraph.class.getName());
