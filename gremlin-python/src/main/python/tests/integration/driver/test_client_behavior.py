@@ -17,13 +17,16 @@
 # under the License.
 #
 
+import asyncio
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
+from aiohttp.client_exceptions import ClientPayloadError, ServerDisconnectedError
 
 from gremlin_python.driver.client import Client
+from gremlin_python.driver.connection import GremlinServerError
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
 from .socket_server_constants import (
@@ -67,7 +70,7 @@ def test_should_receive_single_vertex(socket_server_client):
 
 
 def test_should_handle_server_closing_connection_before_response(socket_server_client):
-    with pytest.raises(Exception):
+    with pytest.raises(ServerDisconnectedError, match="Server disconnected"):
         socket_server_client.submit(GREMLIN_CLOSE_CONNECTION).all().result()
 
     # Recovery
@@ -87,13 +90,14 @@ def test_should_handle_server_closing_connection_after_response(socket_server_cl
 
 
 def test_should_handle_server_error_after_delay(socket_server_client):
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(GremlinServerError) as exc_info:
         socket_server_client.submit(GREMLIN_FAIL_AFTER_DELAY).all().result()
-    assert exc_info.value is not None
+    assert exc_info.value.status_code == 500
+    assert "Server error" in str(exc_info.value)
 
 
 def test_should_handle_partial_content_close(socket_server_client):
-    with pytest.raises(Exception):
+    with pytest.raises(ClientPayloadError, match="payload is not completed"):
         socket_server_client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE).all().result()
 
     # Recovery
@@ -102,7 +106,9 @@ def test_should_handle_partial_content_close(socket_server_client):
 
 
 def test_should_handle_malformed_response(socket_server_client):
-    with pytest.raises(Exception):
+    # The driver surfaces a low-level ValueError from the GraphBinary deserializer
+    # rather than a Gremlin-aware exception (flagged in tinkerpop-1fn).
+    with pytest.raises(ValueError, match="not a valid DataType"):
         socket_server_client.submit(GREMLIN_MALFORMED_RESPONSE).all().result()
 
     # Recovery
@@ -112,7 +118,7 @@ def test_should_handle_malformed_response(socket_server_client):
 
 def test_should_handle_empty_response_body(fresh_client):
     # An empty HTTP response body should surface as an error rather than hang.
-    with pytest.raises(Exception):
+    with pytest.raises(asyncio.IncompleteReadError):
         fresh_client.submit(GREMLIN_EMPTY_BODY).all().result()
 
     # NOTE: Unlike the Java driver, the Python (aiohttp) driver does not recover
@@ -127,9 +133,15 @@ def test_should_handle_slow_response(socket_server_client):
     assert len(result) >= 1
 
 
-def test_should_timeout_when_server_never_responds(fresh_client):
-    with pytest.raises(Exception):
-        fresh_client.submit(GREMLIN_NO_RESPONSE).all().result(timeout=3)
+def test_should_timeout_when_server_never_responds():
+    # Use a short read_timeout so the test fails fast instead of waiting for
+    # aiohttp's 5-minute default. aiohttp surfaces this as asyncio.TimeoutError.
+    client = Client(url, 'g', read_timeout=2)
+    try:
+        with pytest.raises(asyncio.TimeoutError):
+            client.submit(GREMLIN_NO_RESPONSE).all().result()
+    finally:
+        client.close()
 
     # Recovery with a new client
     recovery_client = Client(url, 'g')

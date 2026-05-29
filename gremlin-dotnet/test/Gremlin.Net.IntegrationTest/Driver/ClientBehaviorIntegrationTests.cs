@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Gremlin.Net.Driver;
@@ -101,11 +102,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinCloseConnection);
                 await resultSet.ToListAsync();
             });
+            Assert.Contains("error occurred while sending the request", ex.Message);
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
@@ -153,11 +155,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            var ex = await Assert.ThrowsAsync<HttpIOException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinPartialContentClose);
                 await resultSet.ToListAsync();
             });
+            Assert.Contains("response ended prematurely", ex.Message);
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
@@ -170,11 +173,17 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            // NOTE: the driver surfaces a low-level exception (no Gremlin-aware wrapping,).
+            // The exact type is non-deterministic for malformed bytes: either an IOException
+            // at the stream layer or a KeyNotFoundException from the GraphBinary deserializer,
+            // depending on how the chunk is read.
+            var ex = await Assert.ThrowsAnyAsync<Exception>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinMalformedResponse);
                 await resultSet.ToListAsync();
             });
+            Assert.True(ex is System.IO.IOException or KeyNotFoundException,
+                $"Unexpected exception type: {ex.GetType().FullName}");
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
@@ -187,11 +196,12 @@ namespace Gremlin.Net.IntegrationTest.Driver
         {
             SkipIfServerUnavailable();
 
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            var ex = await Assert.ThrowsAsync<System.IO.IOException>(async () =>
             {
                 var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinEmptyBody);
                 await resultSet.ToListAsync();
             });
+            Assert.Contains("Unexpected end of stream", ex.Message);
 
             // Recovery
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);
@@ -220,12 +230,13 @@ namespace Gremlin.Net.IntegrationTest.Driver
             using var timeoutClient = CreateClient();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            var ex = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             {
                 var resultSet = await timeoutClient.SubmitAsync<dynamic>(
                     SocketServerConstants.GremlinNoResponse, cancellationToken: cts.Token);
                 await resultSet.ToListAsync(cts.Token);
             });
+            Assert.Contains("operation was canceled", ex.Message);
 
             // Recovery with main client
             var resultSet = await _client!.SubmitAsync<dynamic>(SocketServerConstants.GremlinSingleVertex);

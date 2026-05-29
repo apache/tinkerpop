@@ -67,7 +67,7 @@ describe('Client Behavior', function () {
   });
 
   it('should handle connection close before response and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION));
+    await assert.rejects(client.submit(GREMLIN_CLOSE_CONNECTION), /fetch failed/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
@@ -85,27 +85,28 @@ describe('Client Behavior', function () {
       await client.submit(GREMLIN_FAIL_AFTER_DELAY);
       assert.fail('Expected an error');
     } catch (err) {
-      assert.ok(err.statusCode || err.message);
+      assert.strictEqual(err.statusCode, 500);
+      assert.match(err.message, /HTTP 500/);
     }
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
 
   it('should handle partial content close and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE));
+    await assert.rejects(client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE), /terminated/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
 
   it('should handle malformed response and recover', async function () {
-    await assert.rejects(client.submit(GREMLIN_MALFORMED_RESPONSE));
+    await assert.rejects(client.submit(GREMLIN_MALFORMED_RESPONSE), /Unsupported version/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });
 
   it('should handle empty response body and recover', async function () {
     this.timeout(10000);
-    await assert.rejects(client.submit(GREMLIN_EMPTY_BODY));
+    await assert.rejects(client.submit(GREMLIN_EMPTY_BODY), /Buffer is empty/);
     const result = await client.submit(GREMLIN_SINGLE_VERTEX);
     assert.strictEqual(result.length, 1);
   });

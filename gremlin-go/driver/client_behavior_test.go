@@ -88,6 +88,7 @@ func TestShouldHandleServerClosingConnectionBeforeResponse(t *testing.T) {
 
 	err := submitExpectErr(client, gremlinCloseConnection)
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "EOF")
 
 	assertRecovery(t, client)
 }
@@ -124,6 +125,7 @@ func TestShouldHandlePartialContentClose(t *testing.T) {
 
 	err := submitExpectErr(client, gremlinPartialContentClose)
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unexpected EOF")
 
 	assertRecovery(t, client)
 }
@@ -134,6 +136,7 @@ func TestShouldHandleMalformedResponse(t *testing.T) {
 
 	err := submitExpectErr(client, gremlinMalformedResponse)
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "deserialize")
 
 	assertRecovery(t, client)
 }
