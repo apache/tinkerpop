@@ -284,7 +284,7 @@ limitations under the License.
                                     <executable>bash</executable>
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
+                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
                                     </arguments>
                                     <workingDirectory>.</workingDirectory>
                                 </configuration>

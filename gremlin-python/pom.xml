@@ -174,7 +174,7 @@ limitations under the License.
                                             <env key="PYTEST_ARGS" value="${pytestArgs}"/>
                                             <env key="RADISH_ARGS" value="${radishArgs}"/>
                                             <arg value="-c"/>
-                                            <arg value="docker compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests; EXIT=$?; docker compose down; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT"/>
+                                            <arg value="docker compose down; docker compose up --build --abort-on-container-exit gremlin-server-test-python gremlin-python-integration-tests; EXIT=$?; docker compose down; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT"/>
                                         </exec>
                                     </target>
                                 </configuration>
