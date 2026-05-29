@@ -633,6 +633,8 @@ public class GremlinTreeprocessor extends Treeprocessor {
             lazyConsole.close();
             lazyConsole = null;
             resolvedExecutor = null;
+            // Allow OS to reclaim resources from dead console and its children
+            try { Thread.sleep(2000); } catch (final InterruptedException e) { Thread.currentThread().interrupt(); }
         }
         currentGraph = null;
         ensureConsoleStarted();

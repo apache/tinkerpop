@@ -150,6 +150,16 @@ cp "${HADOOP_CONF_SRC}/hadoop-docs.properties" "${CONSOLE_HOME}/conf/"
 # 5. Start Gremlin Server
 echo "Starting Gremlin Server..."
 mkdir -p target
+
+# Fail fast if port 8182 is already in use (likely a stale server from a
+# previous run). Connecting to a stale/incompatible server causes WebSocket
+# handshake failures that dump large stacktraces into the docs.
+if nc -z localhost 8182 2>/dev/null; then
+  echo "ERROR: Port 8182 is already in use. A stale Gremlin Server may be running."
+  echo "       Find and stop it (e.g. 'lsof -i :8182') before running the docs build."
+  exit 1
+fi
+
 pushd "${SERVER_HOME}" > /dev/null
 bin/gremlin-server.sh conf/gremlin-server-modern.yaml > "${TP_HOME}/target/gremlin-server-docs.log" 2>&1 &
 GREMLIN_SERVER_PID=$!
@@ -158,6 +168,12 @@ popd > /dev/null
 # Wait for server to be ready (port 8182)
 echo -n "Waiting for Gremlin Server on port 8182..."
 for i in $(seq 1 30); do
+  # Detect early server failure (e.g. bind error) so we don't wait the full timeout
+  if ! kill -0 "${GREMLIN_SERVER_PID}" 2>/dev/null; then
+    echo " FAILED"
+    echo "ERROR: Gremlin Server process exited during startup. See target/gremlin-server-docs.log"
+    exit 1
+  fi
   if nc -z localhost 8182 2>/dev/null; then
     echo " ready."
     break
