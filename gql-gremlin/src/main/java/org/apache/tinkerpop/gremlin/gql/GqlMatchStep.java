@@ -24,9 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Element;
-
-
-
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -162,7 +159,27 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
             // Current row iterator exhausted — advance to the next incoming traverser.
             if (!this.starts.hasNext()) throw FastNoSuchElementException.instance();
             currentStart = this.starts.next();
+            checkNoPathLabelOverlap(currentStart, plan);
             rowIterator = executor.execute(plan, resolvedParams);
+        }
+    }
+
+    /**
+     * Detects overlap between pattern variable names and step labels already bound in the
+     * incoming traverser's path. When the two share a name the caller almost certainly intends
+     * the step-labeled element to seed the pattern — a capability (path-label pre-binding) that
+     * is not yet implemented. Failing loudly here prevents silently wrong results and creates a
+     * clean upgrade path: when pre-binding lands this method is replaced with binding logic.
+     */
+    private void checkNoPathLabelOverlap(final Traverser.Admin<S> start, final GqlMatchPlan plan) {
+        for (final String var : plan.getVariables()) {
+            if (!var.startsWith("$anon") && start.path().hasLabel(var)) {
+                throw new UnsupportedOperationException(
+                        "Pattern variable '" + var + "' in the match() query shares its name with " +
+                        "step label '" + var + "' already bound in the traverser path. " +
+                        "Binding traversal step labels into match() patterns (path-label pre-binding) " +
+                        "is not yet supported. Use distinct variable names until the feature is available.");
+            }
         }
     }
 
