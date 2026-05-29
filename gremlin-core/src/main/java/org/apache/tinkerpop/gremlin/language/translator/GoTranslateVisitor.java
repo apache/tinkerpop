@@ -425,6 +425,38 @@ public class GoTranslateVisitor extends AbstractTranslateVisitor {
         sb.append(GO_PACKAGE_NAME).append("T__.");
     }
 
+    @Override
+    public Void visitTraversalSourceSpawnMethod_match_string_map(final GremlinParser.TraversalSourceSpawnMethod_match_string_mapContext ctx) {
+        sb.append("MatchWithParams(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        visitGoParamsMap(ctx.genericMapArgument());
+        sb.append(")");
+        return null;
+    }
+
+    @Override
+    public Void visitTraversalMethod_match_string_map(final GremlinParser.TraversalMethod_match_string_mapContext ctx) {
+        sb.append("MatchGqlWithParams(");
+        visit(ctx.stringLiteral());
+        sb.append(", ");
+        visitGoParamsMap(ctx.genericMapArgument());
+        sb.append(")");
+        return null;
+    }
+
+    private void visitGoParamsMap(final GremlinParser.GenericMapArgumentContext mapArg) {
+        sb.append("map[string]interface{}{");
+        if (mapArg.genericMapLiteral() != null) {
+            final GremlinParser.GenericMapLiteralContext mapLiteral = mapArg.genericMapLiteral();
+            for (int i = 0; i < mapLiteral.mapEntry().size(); i++) {
+                visit(mapLiteral.mapEntry(i));
+                if (i < mapLiteral.mapEntry().size() - 1) sb.append(", ");
+            }
+        }
+        sb.append(" }");
+    }
+
     static final class SymbolHelper {
 
         private final static Map<String, String> TO_GO_MAP = new HashMap<>();

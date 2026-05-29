@@ -25361,7 +25361,7 @@
                 "groovy": "g.match(\"MATCH (p:person {name: 'marko'})-[:knows]->(f:person)\").select(\"p\", \"f\").by(\"name\")",
                 "java": "g.match(\"MATCH (p:person {name: 'marko'})-[:knows]->(f:person)\").select(\"p\", \"f\").by(\"name\")",
                 "javascript": "g.match(\"MATCH (p:person {name: 'marko'})-[:knows]->(f:person)\").select(\"p\", \"f\").by(\"name\")",
-                "python": "g.match('MATCH (p:person {name: 'marko'})-[:knows]->(f:person)').select('p', 'f').by('name')"
+                "python": "g.match(\"MATCH (p:person {name: 'marko'})-[:knows]->(f:person)\").select('p', 'f').by('name')"
             }
         ]
     },
@@ -25373,8 +25373,8 @@
                 "language": "g.match('MATCH (p:person {name: $who})-[:knows]->(f:person)', [\"who\":\"marko\"]).select(\"p\", \"f\").by(\"name\")",
                 "canonical": "g.match('MATCH (p:person {name: $who})-[:knows]->(f:person)', [\"who\":\"marko\"]).select(\"p\", \"f\").by(\"name\")",
                 "anonymized": "g.match(string0, map0).select(string1, string2).by(string3)",
-                "dotnet": "g.Match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", (IDictionary<string, object>) new Dictionary<object, object> {{ \"who\", \"marko\" }}).Select<object>(\"p\", \"f\").By(\"name\")",
-                "go": "g.Match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", map[interface{}]interface{}{\"who\": \"marko\" }).Select(\"p\", \"f\").By(\"name\")",
+                "dotnet": "g.Match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", (IDictionary<object, object>) new Dictionary<object, object> {{ \"who\", \"marko\" }}).Select<object>(\"p\", \"f\").By(\"name\")",
+                "go": "g.MatchWithParams(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", map[string]interface{}{\"who\": \"marko\" }).Select(\"p\", \"f\").By(\"name\")",
                 "groovy": "g.match('MATCH (p:person {name: \\$who})-[:knows]->(f:person)', [\"who\":\"marko\"]).select(\"p\", \"f\").by(\"name\")",
                 "java": "g.match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", new LinkedHashMap<Object, Object>() {{ put(\"who\", \"marko\"); }}).select(\"p\", \"f\").by(\"name\")",
                 "javascript": "g.match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\", new Map([[\"who\", \"marko\"]])).select(\"p\", \"f\").by(\"name\")",
@@ -25497,7 +25497,7 @@
                 "groovy": "g.match(\"MATCH (p:person {name: 'marko', age: 29i})\").select(\"p\").by(\"name\")",
                 "java": "g.match(\"MATCH (p:person {name: 'marko', age: 29i})\").select(\"p\").by(\"name\")",
                 "javascript": "g.match(\"MATCH (p:person {name: 'marko', age: 29i})\").select(\"p\").by(\"name\")",
-                "python": "g.match('MATCH (p:person {name: 'marko', age: 29i})').select('p').by('name')"
+                "python": "g.match(\"MATCH (p:person {name: 'marko', age: 29i})\").select('p').by('name')"
             }
         ]
     },
@@ -25577,8 +25577,8 @@
                 "language": "g.match('MATCH (p:person {age: $age})-[:knows]->(f:person)', [\"age\":29]).select(\"p\", \"f\").by(\"name\")",
                 "canonical": "g.match('MATCH (p:person {age: $age})-[:knows]->(f:person)', [\"age\":29]).select(\"p\", \"f\").by(\"name\")",
                 "anonymized": "g.match(string0, map0).select(string1, string2).by(string3)",
-                "dotnet": "g.Match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", (IDictionary<string, object>) new Dictionary<object, object> {{ \"age\", 29 }}).Select<object>(\"p\", \"f\").By(\"name\")",
-                "go": "g.Match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", map[interface{}]interface{}{\"age\": 29 }).Select(\"p\", \"f\").By(\"name\")",
+                "dotnet": "g.Match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", (IDictionary<object, object>) new Dictionary<object, object> {{ \"age\", 29 }}).Select<object>(\"p\", \"f\").By(\"name\")",
+                "go": "g.MatchWithParams(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", map[string]interface{}{\"age\": 29 }).Select(\"p\", \"f\").By(\"name\")",
                 "groovy": "g.match('MATCH (p:person {age: \\$age})-[:knows]->(f:person)', [\"age\":29]).select(\"p\", \"f\").by(\"name\")",
                 "java": "g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", new LinkedHashMap<Object, Object>() {{ put(\"age\", 29); }}).select(\"p\", \"f\").by(\"name\")",
                 "javascript": "g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\", new Map([[\"age\", 29]])).select(\"p\", \"f\").by(\"name\")",

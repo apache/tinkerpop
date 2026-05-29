@@ -42,9 +42,15 @@ export default class PythonTranslateVisitor extends TranslateVisitor {
     }
 
     protected override handleStringLiteralText(text: string): void {
-        this.sb.push("'");
-        this.sb.push(text);
-        this.sb.push("'");
+        if (text.includes("'")) {
+            this.sb.push('"');
+            this.sb.push(text);
+            this.sb.push('"');
+        } else {
+            this.sb.push("'");
+            this.sb.push(text);
+            this.sb.push("'");
+        }
     }
 
     visitBooleanLiteral(ctx: any): void {

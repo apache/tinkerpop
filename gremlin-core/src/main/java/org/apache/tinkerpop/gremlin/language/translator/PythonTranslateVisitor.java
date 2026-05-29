@@ -346,9 +346,15 @@ public class PythonTranslateVisitor extends AbstractTranslateVisitor {
     }
 
     protected void handleStringLiteralText(final String text) {
-        sb.append("'");
-        sb.append(text);
-        sb.append("'");
+        if (text.contains("'")) {
+            sb.append("\"");
+            sb.append(text);
+            sb.append("\"");
+        } else {
+            sb.append("'");
+            sb.append(text);
+            sb.append("'");
+        }
     }
 
     static final class SymbolHelper {
