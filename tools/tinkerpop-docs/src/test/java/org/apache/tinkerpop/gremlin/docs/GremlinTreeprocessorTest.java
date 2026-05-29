@@ -39,6 +39,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class GremlinTreeprocessorTest {
 
     @Test
+    public void shouldDetectSugarSyntax() {
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V"), is(true));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V.name"), is(true));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V.outE.weight"), is(true));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V[0..2]"), is(true));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V[0..<2]"), is(true));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.E"), is(true));
+        // Normal (non-sugar) statements
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V()"), is(false));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V().values('name')"), is(false));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.V(1).out()"), is(false));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("g.E().count()"), is(false));
+        assertThat(GremlinTreeprocessor.usesSugarSyntax("graph = TinkerFactory.createModern()"), is(false));
+    }
+
+    @Test
     public void shouldExecuteModernGraphBlock() {
         final RecordingExecutor executor = new RecordingExecutor("==>v[1]");
         final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
@@ -94,7 +110,9 @@ public class GremlinTreeprocessorTest {
     }
 
     @Test
-    public void shouldSkipGraphInitForConsecutiveSameGraph() {
+    public void shouldReInitGraphForEachBlock() {
+        // Each non-'existing' block must re-init graph and g, because a prior
+        // block may have mutated graph or reassigned g (e.g. withComputer()).
         final RecordingExecutor executor = new RecordingExecutor("==>result");
         final GremlinTreeprocessor processor = new GremlinTreeprocessor(executor);
 
@@ -109,7 +127,7 @@ public class GremlinTreeprocessorTest {
             assertThat(processor.getGremlinBlockCount(), is(2));
             final long modernInitCount = executor.statements.stream()
                     .filter(s -> s.equals("graph = TinkerFactory.createModern()")).count();
-            assertThat(modernInitCount, is(1L));
+            assertThat(modernInitCount, is(2L));
         }
     }
 

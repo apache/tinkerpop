@@ -116,6 +116,7 @@ public class GremlinTreeprocessor extends Treeprocessor {
     private GremlinConsole lazyConsole;
     private Path consoleHomePath;
     private boolean dryRun;
+    private boolean sugarLoaded;
 
     @Override
     public Document process(final Document document) {
@@ -463,20 +464,38 @@ public class GremlinTreeprocessor extends Treeprocessor {
         if (!dryRun) {
             ensureConsoleStarted();
         }
-        if (!dryRun && getActiveExecutor() != null) {
-            final String graphName = extractGraphName(block);
-            initGraphIfNeeded(graphName);
-        }
 
         final String source = block.getSource();
         if (source == null || source.isEmpty()) {
             return "";
         }
 
-        final StringBuilder output = new StringBuilder();
         final String[] lines = source.split("\\r?\\n");
         final List<String> displayStatements = buildDisplayStatements(lines);
         final List<String> execStatements = buildStatements(lines);
+
+        // Sugar syntax permanently mutates the Groovy metaclass, so run sugar
+        // blocks on a fresh console and mark it dirty to force a restart after.
+        final boolean needsSugar = !dryRun && execStatements.stream().anyMatch(GremlinTreeprocessor::usesSugarSyntax);
+        if (needsSugar && getActiveExecutor() != null) {
+            if (sugarLoaded) {
+                restartConsole();
+            }
+            final String graphName = extractGraphName(block);
+            initGraphIfNeeded(graphName);
+            executeSafely("org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader.load()");
+            sugarLoaded = true;
+        } else if (!dryRun && getActiveExecutor() != null) {
+            if (sugarLoaded) {
+                // Previous block loaded sugar; restart to get a clean metaclass.
+                restartConsole();
+                sugarLoaded = false;
+            }
+            final String graphName = extractGraphName(block);
+            initGraphIfNeeded(graphName);
+        }
+
+        final StringBuilder output = new StringBuilder();
         for (int s = 0; s < displayStatements.size(); s++) {
             // Show original lines with callouts for display
             final String[] displayLines = displayStatements.get(s).split("\\r?\\n");
@@ -573,6 +592,20 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     /**
+     * Detects sugar-syntax usage that requires SugarLoader: bare step properties
+     * (e.g. {@code g.V}, {@code g.V.name}) or range operators (e.g. {@code g.V[0..2]}).
+     */
+    static boolean usesSugarSyntax(final String statement) {
+        if (statement == null) return false;
+        // Range access: g.V[...] or g.E[...]
+        if (statement.matches(".*\\bg\\.[VE]\\s*\\[.*")) return true;
+        // Bare step property: g.V or g.E not immediately followed by '('
+        final java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\bg\\.[VE]([^(\\w]|$)").matcher(statement);
+        return m.find();
+    }
+
+    /**
      * Extracts the graph name from the second positional attribute of the block.
      */
     static String extractGraphName(final StructuralNode block) {
@@ -585,17 +618,13 @@ public class GremlinTreeprocessor extends Treeprocessor {
     }
 
     /**
-     * Initializes the graph in the console if the graph name has changed.
+     * Initializes the graph and traversal source for the block. Re-initializes for
+     * every non-{@code existing} block because prior blocks may have mutated
+     * {@code graph} or reassigned {@code g} (e.g. {@code g = ...withComputer()}),
+     * which would otherwise leak into subsequent blocks that expect a fresh source.
      */
     private void initGraphIfNeeded(final String graphName) {
         if (EXISTING.equals(graphName)) {
-            return;
-        }
-
-        if (graphName != null && graphName.equals(currentGraph)) {
-            return;
-        }
-        if (graphName == null && currentGraph == null && gremlinBlockCount > 1) {
             return;
         }
 
