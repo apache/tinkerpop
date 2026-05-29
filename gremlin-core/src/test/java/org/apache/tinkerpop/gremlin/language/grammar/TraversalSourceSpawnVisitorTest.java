@@ -25,9 +25,12 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+
 import java.util.HashMap;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.junit.Assert.assertEquals;
 
 public class TraversalSourceSpawnVisitorTest {
@@ -70,6 +73,20 @@ public class TraversalSourceSpawnVisitorTest {
         compare(g.E(4).values("name").inject("daniel"), eval("g.E(4).values('name').inject('daniel')"));
         compare(g.E(4, 5).values("name").inject("daniel"), eval("g.E(4, 5).values('name').inject('daniel')"));
 
+    }
+
+    @Test
+    public void shouldParseTraversalSourceSpawnMethod_match() {
+        compare(g.match("MATCH (p:person)"), eval("g.match(\"MATCH (p:person)\")"));
+        compare(g.match("MATCH (a:person)-[:knows]->(b:person)"),
+                eval("g.match(\"MATCH (a:person)-[:knows]->(b:person)\")"));
+        // match(String, Map) — params map is embedded inline; compare via GremlinLang equality
+        assertEquals(
+                ((DefaultGraphTraversal) g.match("MATCH (p:person {name: $who})-[:knows]->(f:person)", asMap("who", "marko"))).asAdmin().getGremlinLang(),
+                ((DefaultGraphTraversal) eval("g.match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\",[\"who\":\"marko\"])")).asAdmin().getGremlinLang());
+        assertEquals(
+                ((DefaultGraphTraversal) g.match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29))).asAdmin().getGremlinLang(),
+                ((DefaultGraphTraversal) eval("g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])")).asAdmin().getGremlinLang());
     }
 
     private Object eval(final String query) {

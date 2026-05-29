@@ -1296,6 +1296,8 @@ world.gremlins = {
     'g_match_personXknowsX_anyXcreatedX_software_selectXa_sX_byXnameX': [(lambda g:g.match('MATCH (a:person)-[:knows]->()-[:created]->(s:software)').select('a', 's').by('name'))], 
     'g_match_personXage_paramX_knowsPerson_selectXp_fX_byXnameX_integer': [(lambda g:g.match('MATCH (p:person {age: $age})-[:knows]->(f:person)', { 'age': 29 }).select('p', 'f').by('name'))], 
     'g_match_noMatchPattern_emptyResult': [(lambda g:g.match('MATCH (a:software)-[:knows]->(b)').select('a', 'b'))], 
+    'g_inject_match_midTraversal_noMatch_emptyResult': [(lambda g:g.inject(1).match('MATCH (a:software)-[:knows]->(b:person)').select('a', 'b'))], 
+    'g_match_cyclicPattern_personXknowsX_personXcreatedX_softwareXcreatedX_selectXa_b_sX_byXnameX': [(lambda g:g.match('MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)').select('a', 'b', 's').by('name'))], 
     'g_V_outE_mathX0_minus_itX_byXweightX': [(lambda g:g.V().out_e().math('0-_').by('weight'))], 
     'g_V_hasXageX_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX': [(lambda g:g.V().has('age').value_map().math('_+_').by(__.select('age').unfold()))], 
     'g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX': [(lambda g:g.V().as_('a').out('knows').as_('b').math('a + b').by('age'))], 

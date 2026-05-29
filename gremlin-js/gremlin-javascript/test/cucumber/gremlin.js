@@ -1322,6 +1322,8 @@ const gremlins = {
     g_match_personXknowsX_anyXcreatedX_software_selectXa_sX_byXnameX: [function({g}) { return g.match("MATCH (a:person)-[:knows]->()-[:created]->(s:software)").select("a", "s").by("name") }], 
     g_match_personXage_paramX_knowsPerson_selectXp_fX_byXnameX_integer: [function({g}) { return g.match("MATCH (p:person {age: $age})-[:knows]->(f:person)", new Map([["age", 29]])).select("p", "f").by("name") }], 
     g_match_noMatchPattern_emptyResult: [function({g}) { return g.match("MATCH (a:software)-[:knows]->(b)").select("a", "b") }], 
+    g_inject_match_midTraversal_noMatch_emptyResult: [function({g}) { return g.inject(1).match("MATCH (a:software)-[:knows]->(b:person)").select("a", "b") }], 
+    g_match_cyclicPattern_personXknowsX_personXcreatedX_softwareXcreatedX_selectXa_b_sX_byXnameX: [function({g}) { return g.match("MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)").select("a", "b", "s").by("name") }], 
     g_V_outE_mathX0_minus_itX_byXweightX: [function({g}) { return g.V().outE().math("0-_").by("weight") }], 
     g_V_hasXageX_valueMap_mathXit_plus_itXbyXselectXageX_unfoldXX: [function({g}) { return g.V().has("age").valueMap().math("_+_").by(__.select("age").unfold()) }], 
     g_V_asXaX_outXknowsX_asXbX_mathXa_plus_bX_byXageX: [function({g}) { return g.V().as("a").out("knows").as("b").math("a + b").by("age") }], 

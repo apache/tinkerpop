@@ -45,6 +45,7 @@ import java.util.LinkedHashMap;
 import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
+import static org.apache.tinkerpop.gremlin.util.CollectionUtil.asMap;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.gt;
 import static org.apache.tinkerpop.gremlin.process.traversal.SackFunctions.Barrier.normSack;
@@ -603,6 +604,20 @@ public class TraversalMethodVisitorTest {
     @Test
     public void shouldParseTraversalMethod_match() throws Exception {
         compare(g.V().match(as("a"), as("b")), eval("g.V().match(as(\"a\"), as(\"b\"))"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_match_string() throws Exception {
+        compare(g.V().match("MATCH (a:person)-[:knows]->(b:person)"),
+                eval("g.V().match(\"MATCH (a:person)-[:knows]->(b:person)\")"));
+    }
+
+    @Test
+    public void shouldParseTraversalMethod_match_string_map() throws Exception {
+        compare(g.V().match("MATCH (p:person {name: $who})-[:knows]->(f:person)", asMap("who", "marko")),
+                eval("g.V().match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\",[\"who\":\"marko\"])"));
+        compare(g.V().match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29)),
+                eval("g.V().match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])"));
     }
 
     @Test

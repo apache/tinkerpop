@@ -264,3 +264,24 @@ Feature: Step - match() (String form)
       """
     When iterated to list
     Then the result should be empty
+
+  @GraphComputerVerificationInjectionNotSupported
+  Scenario: g_inject_match_midTraversal_noMatch_emptyResult
+    Given the modern graph
+    And the traversal of
+      """
+      g.inject(1).match("MATCH (a:software)-[:knows]->(b:person)").select("a","b")
+      """
+    When iterated to list
+    Then the result should be empty
+
+  Scenario: g_match_cyclicPattern_personXknowsX_personXcreatedX_softwareXcreatedX_selectXa_b_sX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)").select("a","b","s").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"marko","b":"josh","s":"lop"}] |
