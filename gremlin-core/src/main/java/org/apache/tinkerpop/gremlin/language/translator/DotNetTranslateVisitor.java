@@ -474,7 +474,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         sb.append("(");
         visit(ctx.stringLiteral());
         sb.append(", ");
-        sb.append("(IDictionary<string, object>) ");
+        sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericMapArgument());
         sb.append(")");
         return null;
@@ -867,7 +867,7 @@ public class DotNetTranslateVisitor extends AbstractTranslateVisitor {
         sb.append("(");
         visit(ctx.stringLiteral());
         sb.append(", ");
-        sb.append("(IDictionary<string, object>) ");
+        sb.append("(IDictionary<object, object>) ");
         visit(ctx.genericMapArgument());
         sb.append(")");
         return null;

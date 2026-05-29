@@ -1009,7 +1009,7 @@ namespace Gremlin.Net.Process.Traversal
         /// </summary>
         /// <param name="matchQuery">The declarative query string.</param>
         /// <param name="parameters">The query parameters.</param>
-        public static GraphTraversal<object, object> Match(string matchQuery, IDictionary<string, object> parameters)
+        public static GraphTraversal<object, object> Match(string matchQuery, IDictionary<object, object> parameters)
         {
             return new GraphTraversal<object, object>().Match(matchQuery, parameters);
         }

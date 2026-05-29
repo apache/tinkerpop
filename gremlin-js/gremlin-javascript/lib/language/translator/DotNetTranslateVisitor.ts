@@ -416,7 +416,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(capitalize(ctx.getChild(0).getText()));
         this.sb.push('(');
         this.visit(ctx.stringLiteral());
-        this.sb.push(', (IDictionary<string, object>) ');
+        this.sb.push(', (IDictionary<object, object>) ');
         this.visit(ctx.genericMapArgument());
         this.sb.push(')');
     }
@@ -549,7 +549,7 @@ export default class DotNetTranslateVisitor extends TranslateVisitor {
         this.sb.push(capitalize(ctx.getChild(0).getText()));
         this.sb.push('(');
         this.visit(ctx.stringLiteral());
-        this.sb.push(', (IDictionary<string, object>) ');
+        this.sb.push(', (IDictionary<object, object>) ');
         this.visit(ctx.genericMapArgument());
         this.sb.push(')');
     }
