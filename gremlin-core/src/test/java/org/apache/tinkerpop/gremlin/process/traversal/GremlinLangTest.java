@@ -157,6 +157,13 @@ public class GremlinLangTest {
                 // Nested PDT
                 {g.inject(new ProviderDefinedType("Outer", asMap("inner", new ProviderDefinedType("Inner", asMap("v", 1))))),
                         "g.inject(PDT(\"Outer\",[\"inner\":PDT(\"Inner\",[\"v\":1])]))"},
+                // match(String) — declarative pattern match spawn, no params
+                {g.match("MATCH (p:person)"), "g.match(\"MATCH (p:person)\")"},
+                // match(String, Map) — string params map is serialised inline in the gremlin string
+                {g.match("MATCH (p:person {name: $who})-[:knows]->(f:person)", asMap("who", "marko")),
+                        "g.match(\"MATCH (p:person {name: $who})-[:knows]->(f:person)\",[\"who\":\"marko\"])"},
+                {g.match("MATCH (p:person {age: $age})-[:knows]->(f:person)", asMap("age", 29)),
+                        "g.match(\"MATCH (p:person {age: $age})-[:knows]->(f:person)\",[\"age\":29])"},
         });
     }
 

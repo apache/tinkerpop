@@ -25604,6 +25604,40 @@
         ]
     },
     {
+        "scenario": "g_inject_match_midTraversal_noMatch_emptyResult",
+        "traversals": [
+            {
+                "original": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\",\"b\")",
+                "language": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\", \"b\")",
+                "canonical": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\", \"b\")",
+                "anonymized": "g.inject(number0).match(string0).select(string1, string2)",
+                "dotnet": "g.Inject<object>(1).Match(\"MATCH (a:software)-[:knows]->(b:person)\").Select<object>(\"a\", \"b\")",
+                "go": "g.Inject(1).Match(\"MATCH (a:software)-[:knows]->(b:person)\").Select(\"a\", \"b\")",
+                "groovy": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\", \"b\")",
+                "java": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\", \"b\")",
+                "javascript": "g.inject(1).match(\"MATCH (a:software)-[:knows]->(b:person)\").select(\"a\", \"b\")",
+                "python": "g.inject(1).match('MATCH (a:software)-[:knows]->(b:person)').select('a', 'b')"
+            }
+        ]
+    },
+    {
+        "scenario": "g_match_cyclicPattern_personXknowsX_personXcreatedX_softwareXcreatedX_selectXa_b_sX_byXnameX",
+        "traversals": [
+            {
+                "original": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\",\"b\",\"s\").by(\"name\")",
+                "language": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "canonical": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "anonymized": "g.match(string0).select(string1, string2, string3).by(string4)",
+                "dotnet": "g.Match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").Select<object>(\"a\", \"b\", \"s\").By(\"name\")",
+                "go": "g.Match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").Select(\"a\", \"b\", \"s\").By(\"name\")",
+                "groovy": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "java": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "javascript": "g.match(\"MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)\").select(\"a\", \"b\", \"s\").by(\"name\")",
+                "python": "g.match('MATCH (a:person)-[:knows]->(b:person)-[:created]->(s:software)<-[:created]-(a)').select('a', 'b', 's').by('name')"
+            }
+        ]
+    },
+    {
         "scenario": "g_V_outE_mathX0_minus_itX_byXweightX",
         "traversals": [
             {
