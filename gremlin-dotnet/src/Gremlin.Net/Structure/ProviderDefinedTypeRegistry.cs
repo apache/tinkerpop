@@ -48,8 +48,11 @@ namespace Gremlin.Net.Structure
         }
 
         /// <summary>
-        /// Creates a registry populated by scanning loaded assemblies for types implementing
-        /// <see cref="IProviderDefinedTypeAdapter{T}"/> and registering them automatically.
+        /// Creates a registry populated by scanning loaded assemblies for:
+        /// <list type="bullet">
+        /// <item>Types implementing <see cref="IProviderDefinedTypeAdapter{T}"/> (adapter-based hydration)</item>
+        /// <item>Types annotated with <see cref="ProviderDefinedAttribute"/> (annotation-based round-trip)</item>
+        /// </list>
         /// </summary>
         public static ProviderDefinedTypeRegistry Build()
         {
@@ -61,6 +64,7 @@ namespace Gremlin.Net.Structure
                 {
                     foreach (var type in assembly.GetTypes())
                     {
+                        // Register adapter implementations
                         var adapterInterface = type.GetInterfaces()
                             .FirstOrDefault(i => i.IsGenericType &&
                                 i.GetGenericTypeDefinition() == typeof(IProviderDefinedTypeAdapter<>));
@@ -78,6 +82,14 @@ namespace Gremlin.Net.Structure
                             {
                                 // skip types that can't be instantiated
                             }
+                        }
+
+                        // Register annotated types for annotation-based round-trip hydration
+                        var pdtAttr = type.GetCustomAttribute<ProviderDefinedAttribute>();
+                        if (pdtAttr != null)
+                        {
+                            var typeName = !string.IsNullOrEmpty(pdtAttr.Name) ? pdtAttr.Name : type.Name;
+                            ProviderDefinedAttribute.RegisteredTypes.TryAdd(typeName, type);
                         }
                     }
                 }

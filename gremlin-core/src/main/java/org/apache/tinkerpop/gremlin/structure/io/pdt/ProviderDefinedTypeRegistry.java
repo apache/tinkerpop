@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.pdt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -66,6 +67,18 @@ public final class ProviderDefinedTypeRegistry {
     public void register(final ProviderDefinedTypeAdapter<?> adapter) {
         adaptersByName.put(adapter.typeName(), adapter);
         adaptersByClass.put(adapter.targetClass(), adapter);
+    }
+
+    /**
+     * Registers one or more classes annotated with {@link ProviderDefined} for automatic round-trip hydration.
+     * An adapter is synthesized from the annotation metadata using reflection.
+     *
+     * @throws IllegalArgumentException if any class is not annotated with {@link ProviderDefined}
+     */
+    public void register(final Class<?>... annotatedClasses) {
+        for (final Class<?> clazz : annotatedClasses) {
+            register(AnnotatedTypeAdapter.of(clazz));
+        }
     }
 
     public Optional<ProviderDefinedTypeAdapter<?>> getAdapterByName(final String name) {
@@ -126,5 +139,76 @@ public final class ProviderDefinedTypeRegistry {
             return result;
         }
         return value;
+    }
+
+    /**
+     * A reflective adapter synthesized from a {@link ProviderDefined}-annotated class.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static final class AnnotatedTypeAdapter<T> implements ProviderDefinedTypeAdapter<T> {
+        private final String typeName;
+        private final Class<T> targetClass;
+        private final Field[] fields;
+
+        private AnnotatedTypeAdapter(final String typeName, final Class<T> targetClass, final Field[] fields) {
+            this.typeName = typeName;
+            this.targetClass = targetClass;
+            this.fields = fields;
+        }
+
+        static <T> AnnotatedTypeAdapter<T> of(final Class<T> clazz) {
+            if (!clazz.isAnnotationPresent(ProviderDefined.class))
+                throw new IllegalArgumentException(clazz.getName() + " is not annotated with @ProviderDefined");
+            try {
+                clazz.getDeclaredConstructor();
+            } catch (final NoSuchMethodException e) {
+                throw new IllegalArgumentException(clazz.getName() +
+                        " must have a no-arg constructor for annotation-based hydration");
+            }
+            // reuse ProviderDefinedType's validated, cached field/name resolution
+            return new AnnotatedTypeAdapter<>(
+                    ProviderDefinedType.resolveTypeName(clazz),
+                    clazz,
+                    ProviderDefinedType.resolveFields(clazz));
+        }
+
+        @Override public String typeName() { return typeName; }
+        @Override public Class<T> targetClass() { return targetClass; }
+
+        @Override
+        public Map<String, Object> toProperties(final T obj) {
+            return ProviderDefinedType.from(obj).getProperties();
+        }
+
+        @Override
+        public T fromProperties(final Map<String, Object> properties) {
+            try {
+                final java.lang.reflect.Constructor<T> ctor = targetClass.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                final T obj = ctor.newInstance();
+                for (final Field field : fields) {
+                    final Object value = properties.get(field.getName());
+                    if (value != null)
+                        field.set(obj, coerce(value, field.getType()));
+                }
+                return obj;
+            } catch (final ReflectiveOperationException e) {
+                throw new RuntimeException("Failed to hydrate " + targetClass.getName() + ": " + e, e);
+            }
+        }
+
+        private static Object coerce(final Object value, final Class<?> targetType) {
+            if (targetType.isInstance(value)) return value;
+            if (value instanceof Number) {
+                final Number n = (Number) value;
+                if (targetType == int.class || targetType == Integer.class) return n.intValue();
+                if (targetType == long.class || targetType == Long.class) return n.longValue();
+                if (targetType == double.class || targetType == Double.class) return n.doubleValue();
+                if (targetType == float.class || targetType == Float.class) return n.floatValue();
+                if (targetType == short.class || targetType == Short.class) return n.shortValue();
+                if (targetType == byte.class || targetType == Byte.class) return n.byteValue();
+            }
+            return value;
+        }
     }
 }

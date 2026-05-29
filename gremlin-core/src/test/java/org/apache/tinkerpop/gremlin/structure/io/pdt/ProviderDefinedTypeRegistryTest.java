@@ -29,6 +29,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ProviderDefinedTypeRegistryTest {
 
@@ -289,5 +290,94 @@ public class ProviderDefinedTypeRegistryTest {
         final ProviderDefinedType pdt = new ProviderDefinedType("Unregistered", props);
         final Object result = registry.hydrate(pdt);
         assertSame(pdt, result);
+    }
+
+    // Annotated test types for register(Class<?>...)
+    @ProviderDefined(name = "AnnotatedPoint")
+    static class AnnotatedPoint {
+        public int x;
+        public int y;
+        public AnnotatedPoint() {}
+        public AnnotatedPoint(int x, int y) { this.x = x; this.y = y; }
+    }
+
+    @ProviderDefined(name = "Excluded", excludedFields = {"secret"})
+    static class ExcludedFields {
+        public int value;
+        public String secret;
+        public ExcludedFields() {}
+    }
+
+    @ProviderDefined(name = "NoCtor")
+    static class NoNoArgCtor {
+        public int x;
+        public NoNoArgCtor(int x) { this.x = x; }
+    }
+
+    static class NotAnnotated {
+        public int x;
+    }
+
+    @Test
+    public void shouldRegisterAndHydrateAnnotatedClass() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(AnnotatedPoint.class);
+
+        final Map<String, Object> props = new HashMap<>();
+        props.put("x", 3);
+        props.put("y", 7);
+        final Object result = registry.hydrate(new ProviderDefinedType("AnnotatedPoint", props));
+
+        assertTrue(result instanceof AnnotatedPoint);
+        assertEquals(3, ((AnnotatedPoint) result).x);
+        assertEquals(7, ((AnnotatedPoint) result).y);
+    }
+
+    @Test
+    public void shouldDehydrateAnnotatedClassViaAdapter() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(AnnotatedPoint.class);
+
+        final Optional<ProviderDefinedTypeAdapter<?>> adapter = registry.getAdapterByClass(AnnotatedPoint.class);
+        assertTrue(adapter.isPresent());
+        assertEquals("AnnotatedPoint", adapter.get().typeName());
+    }
+
+    @Test
+    public void shouldRespectExcludedFieldsWhenHydratingAnnotatedClass() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(ExcludedFields.class);
+
+        final Map<String, Object> props = new HashMap<>();
+        props.put("value", 42);
+        props.put("secret", "should-be-ignored");
+        final Object result = registry.hydrate(new ProviderDefinedType("Excluded", props));
+
+        assertTrue(result instanceof ExcludedFields);
+        assertEquals(42, ((ExcludedFields) result).value);
+        // secret is excluded from the field mapping, so it is not set
+        assertEquals(null, ((ExcludedFields) result).secret);
+    }
+
+    @Test
+    public void shouldThrowWhenRegisteringNonAnnotatedClass() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        try {
+            registry.register(NotAnnotated.class);
+            fail("Expected IllegalArgumentException for non-annotated class");
+        } catch (final IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("not annotated with @ProviderDefined"));
+        }
+    }
+
+    @Test
+    public void shouldThrowWhenRegisteringClassWithoutNoArgConstructor() {
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        try {
+            registry.register(NoNoArgCtor.class);
+            fail("Expected IllegalArgumentException for class without no-arg constructor");
+        } catch (final IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("no-arg constructor"));
+        }
     }
 }

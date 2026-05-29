@@ -1278,7 +1278,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = TestClientFactory.build().create();
         try {
             final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
-            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", new HashMap<String, Object>() {{ put("x", 1); put("y", 2); }});
+            final Map<String, Object> props = new HashMap<>();
+            props.put("x", 1);
+            props.put("y", 2);
+            final ProviderDefinedType pdt = new ProviderDefinedType("TestPoint", props);
             final Object result = g.inject(pdt).next();
 
             assertTrue(result instanceof ProviderDefinedType);
@@ -1316,18 +1319,23 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldRoundTripAnnotatedPdtViaTraversal() throws Exception {
-        final Cluster cluster = TestClientFactory.build().create();
+        final ProviderDefinedTypeRegistry registry = ProviderDefinedTypeRegistry.empty();
+        registry.register(TestAnnotatedPoint.class);
+
+        final Cluster cluster = TestClientFactory.build()
+                .serializer(new GraphBinaryMessageSerializerV4(TypeSerializerRegistry.INSTANCE, registry))
+                .create();
         try {
-            final GraphTraversalSource g = traversal().with(DriverRemoteConnection.using(cluster));
+            final DriverRemoteConnection connection = DriverRemoteConnection.using(cluster);
+            connection.setPdtRegistry(registry);
+            final GraphTraversalSource g = traversal().with(connection);
 
             final Object result = g.inject(new TestAnnotatedPoint(3, 7)).next();
 
-            // without a registry the result comes back as a raw ProviderDefinedType
-            assertTrue(result instanceof ProviderDefinedType);
-            final ProviderDefinedType pdt = (ProviderDefinedType) result;
-            assertEquals("TestAnnotatedPoint", pdt.getName());
-            assertEquals(3, pdt.getProperties().get("x"));
-            assertEquals(7, pdt.getProperties().get("y"));
+            assertTrue("Expected TestAnnotatedPoint but got: " + result.getClass().getName(),
+                    result instanceof TestAnnotatedPoint);
+            assertEquals(3, ((TestAnnotatedPoint) result).x);
+            assertEquals(7, ((TestAnnotatedPoint) result).y);
         } finally {
             cluster.close();
         }
@@ -1371,8 +1379,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     groovyRequestOptions).all().get();
 
             assertEquals(1, results.size());
-            // The Groovy result here is a Map representation of the stored object
-            assertNotNull(results.get(0).getObject());
+            // Point is @ProviderDefined, so GraphBinary serializes the stored object as a ProviderDefinedType
+            // on the wire. Without a client-side registry it is received as a raw ProviderDefinedType.
+            final Object value = results.get(0).getObject();
+            assertTrue("Expected ProviderDefinedType but got: " + value.getClass().getName(),
+                    value instanceof ProviderDefinedType);
+            final ProviderDefinedType pdt = (ProviderDefinedType) value;
+            assertEquals("Point", pdt.getName());
+            assertEquals(3, pdt.getProperties().get("x"));
+            assertEquals(4, pdt.getProperties().get("y"));
         } finally {
             // cleanup
             client.submit("g.V().hasLabel('location').drop().iterate()", groovyRequestOptions).all().get();
@@ -1388,10 +1403,15 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     static class TestPointAdapter implements ProviderDefinedTypeAdapter<TestPoint> {
-        @Override public String typeName() { return "TestPoint"; }
+        // TestPoint is the client-side representation of the server-side @ProviderDefined "Point" type,
+        // so the adapter's type name matches the server type name "Point".
+        @Override public String typeName() { return "Point"; }
         @Override public Class<TestPoint> targetClass() { return TestPoint.class; }
         @Override public Map<String, Object> toProperties(final TestPoint obj) {
-            return new HashMap<String, Object>() {{ put("x", obj.x); put("y", obj.y); }};
+            final Map<String, Object> m = new HashMap<>();
+            m.put("x", obj.x);
+            m.put("y", obj.y);
+            return m;
         }
         @Override public TestPoint fromProperties(final Map<String, Object> props) {
             return new TestPoint(((Number) props.get("x")).intValue(), ((Number) props.get("y")).intValue());
@@ -1401,6 +1421,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @ProviderDefined(name = "TestAnnotatedPoint")
     static class TestAnnotatedPoint {
         public int x, y;
+        public TestAnnotatedPoint() {}
         TestAnnotatedPoint(final int x, final int y) { this.x = x; this.y = y; }
     }
 }

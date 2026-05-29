@@ -72,6 +72,21 @@ public final class ProviderDefinedType {
         return new ProviderDefinedType(cache.name, props);
     }
 
+    /**
+     * Package-private access to the resolved type name for a {@link ProviderDefined}-annotated class.
+     * Validates the annotation and field configuration via the shared field cache.
+     */
+    static String resolveTypeName(final Class<?> clazz) {
+        return FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache).name;
+    }
+
+    /**
+     * Package-private access to the resolved serializable fields for a {@link ProviderDefined}-annotated class.
+     */
+    static Field[] resolveFields(final Class<?> clazz) {
+        return FIELD_CACHE.computeIfAbsent(clazz, ProviderDefinedType::buildCache).fields;
+    }
+
     private static FieldCache buildCache(final Class<?> clazz) {
         final ProviderDefined annotation = clazz.getAnnotation(ProviderDefined.class);
         if (annotation == null)
