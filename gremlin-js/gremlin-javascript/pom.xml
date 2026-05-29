@@ -281,50 +281,12 @@ limitations under the License.
                                         <HOST_UID>${host.uid}</HOST_UID>
                                         <HOST_GID>${host.gid}</HOST_GID>
                                     </environmentVariables>
-                                    <executable>docker</executable>
+                                    <executable>bash</executable>
                                     <arguments>
-                                        <argument>compose</argument>
-                                        <argument>up</argument>
-                                        <argument>--build</argument>
-                                        <argument>--exit-code-from</argument>
-                                        <argument>gremlin-js-integration-tests</argument>
+                                        <argument>-c</argument>
+                                        <argument>docker compose down; docker compose up --build --exit-code-from gremlin-js-integration-tests; EXIT=$?; docker compose down; docker image prune --filter label=maintainer=dev@tinkerpop.apache.org -f; exit $EXIT</argument>
                                     </arguments>
                                     <workingDirectory>.</workingDirectory>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>shutdown-container</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTests}</skip>
-                                    <!-- don't need to set env variables for container tear down -->
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>compose</argument>
-                                        <argument>down</argument>
-                                    </arguments>
-                                    <workingDirectory>.</workingDirectory>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>remove-dangling-images</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTests}</skip>
-                                    <executable>docker</executable>
-                                    <arguments>
-                                        <argument>image</argument>
-                                        <argument>prune</argument>
-                                        <argument>--filter</argument>
-                                        <argument>label=maintainer=dev@tinkerpop.apache.org</argument>
-                                        <argument>-f</argument>
-                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>
