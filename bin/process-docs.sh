@@ -151,12 +151,17 @@ cp "${HADOOP_CONF_SRC}/hadoop-docs.properties" "${CONSOLE_HOME}/conf/"
 echo "Starting Gremlin Server..."
 mkdir -p target
 
-# Fail fast if port 8182 is already in use (likely a stale server from a
-# previous run). Connecting to a stale/incompatible server causes WebSocket
-# handshake failures that dump large stacktraces into the docs.
+# Fail fast if port 8182 is already in use. The docs ':remote connect' blocks
+# target localhost:8182, so any other service on that port (a stale Gremlin
+# Server, or an unrelated process that happens to claim 8182) will cause our
+# server to fail binding while the readiness check still passes -- the console
+# then connects to the wrong service and WebSocket handshakes fail, dumping
+# large stacktraces into the rendered docs.
 if nc -z localhost 8182 2>/dev/null; then
-  echo "ERROR: Port 8182 is already in use. A stale Gremlin Server may be running."
-  echo "       Find and stop it (e.g. 'lsof -i :8182') before running the docs build."
+  echo "ERROR: Port 8182 is already in use by another process."
+  echo "       Gremlin Server needs this port for the docs ':remote' examples."
+  echo "       Identify the process with 'lsof -nP -iTCP:8182' and stop it,"
+  echo "       then re-run the docs build."
   exit 1
 fi
 
