@@ -80,6 +80,9 @@ With `match` redesigned in this way users have the opportunity to take advantage
 languages, where it makes sense, while equally retaining the power and feel that Gremlin has always had. The promise of
 Gremlin being both imperative and declarative offers a much more compelling story with this model.
 
+NOTE: The traversal-based form of `match` (e.g. `g.V().match(as("a").out().as("b"))`) is deprecated as of
+TinkerPop 4.0.0 and will be removed in a future release. Users should migrate to the new `match(String)` API.
+
 TinkerPop ships a reference GQL engine for `match()` via the optional `gql-gremlin` module. The engine implements the
 link:https://tinkerpop.apache.org/docs/x.y.z/reference/#tinkergql[TinkerGQL] dialect — a deliberate minimal subset of
 ISO GQL `MATCH` syntax — and works against any `Graph` implementation through a thin set of default interface methods.

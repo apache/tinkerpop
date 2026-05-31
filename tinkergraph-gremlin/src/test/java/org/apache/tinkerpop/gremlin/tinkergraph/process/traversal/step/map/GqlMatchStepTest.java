@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DeclarativeMatchS
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.After;
 import org.junit.Before;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for {@link GqlMatchStep}: path binding, multi-row output,
@@ -478,5 +480,49 @@ public class GqlMatchStepTest {
 
         assertEquals(1, results.size());
         assertNotEquals(results.get(0).get("a"), results.get(0).get("b"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Path-label pre-binding guard
+    // -------------------------------------------------------------------------
+
+    /**
+     * Path-label pre-binding is not yet implemented. When a pattern variable shares its name
+     * with a step label already bound in the incoming traverser's path, the step must fail
+     * loudly rather than silently producing wrong results (a full unanchored scan). This guard
+     * reserves the semantic space so the feature can land as a clean addition later.
+     * <p>
+     * These tests use the modern graph via {@link TinkerFactory#createModern()} so that
+     * {@code V(1)} returns a real vertex and the mid-traversal path actually carries the label.
+     */
+    @Test
+    public void shouldThrowWhenPatternVariableOverlapsWithStepLabel() {
+        try (final TinkerGraph modern = TinkerFactory.createModern()) {
+            modern.traversal().V(1).as("a")
+                  .match("MATCH (a:person)-[:knows]->(b:person)").toList();
+            fail("Expected UnsupportedOperationException for path-label/pattern-variable overlap");
+        } catch (final UnsupportedOperationException e) {
+            // expected — guard fires because 'a' is both a step label and a pattern variable
+        }
+    }
+
+    @Test
+    public void shouldThrowWhenEdgePatternVariableOverlapsWithStepLabel() {
+        try (final TinkerGraph modern = TinkerFactory.createModern()) {
+            modern.traversal().V(1).outE("knows").as("e")
+                  .match("MATCH (a:person)-[e:knows]->(b:person)").toList();
+            fail("Expected UnsupportedOperationException for path-label/pattern-variable overlap on edge");
+        } catch (final UnsupportedOperationException e) {
+            // expected — guard fires because 'e' is both a step label and a pattern variable
+        }
+    }
+
+    @Test
+    public void shouldNotThrowWhenStepLabelsAndPatternVariablesAreDisjoint() {
+        try (final TinkerGraph modern = TinkerFactory.createModern()) {
+            // 'x' is the step label; pattern uses 'a' and 'b' — no overlap, no guard fires
+            modern.traversal().V(1).as("x")
+                  .match("MATCH (a:person)-[:knows]->(b:person)").toList();
+        }
     }
 }

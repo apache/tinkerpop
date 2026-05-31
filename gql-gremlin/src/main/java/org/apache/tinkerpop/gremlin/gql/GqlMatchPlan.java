@@ -39,6 +39,14 @@ import java.util.Map;
  */
 public final class GqlMatchPlan {
 
+    /**
+     * Prefix used for synthetic variable names assigned to anonymous pattern nodes/edges
+     * (those written without an explicit variable, e.g. {@code ()-[:knows]->()} ).
+     * Variables with this prefix are internal bookkeeping and are never exposed in result
+     * binding maps or traverser paths.
+     */
+    public static final String ANON_VAR_PREFIX = "$anon";
+
     private final String seedVariable;
     private final String seedLabel;
     private final List<PropertyPredicate> seedPredicates;
