@@ -173,7 +173,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
      */
     private void checkNoPathLabelOverlap(final Traverser.Admin<S> start, final GqlMatchPlan plan) {
         for (final String var : plan.getVariables()) {
-            if (!var.startsWith("$anon") && start.path().hasLabel(var)) {
+            if (!var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX) && start.path().hasLabel(var)) {
                 throw new UnsupportedOperationException(
                         "Pattern variable '" + var + "' in the match() query shares its name with " +
                         "step label '" + var + "' already bound in the traverser path. " +
@@ -207,7 +207,7 @@ public final class GqlMatchStep<S> extends DeclarativeMatchStep<S> {
         final Map<String, Object> bindings = new LinkedHashMap<>();
         for (int i = 0; i < variables.length; i++) {
             final String var = variables[i];
-            if (!var.startsWith("$anon") && row[i] != null) {
+            if (!var.startsWith(GqlMatchPlan.ANON_VAR_PREFIX) && row[i] != null) {
                 traverser.set(row[i]);
                 traverser.addLabels(Collections.singleton(var));
                 bindings.put(var, row[i]);

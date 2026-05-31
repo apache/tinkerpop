@@ -194,7 +194,7 @@ public final class DefaultGqlPlanner implements GqlPlanner {
         }
         for (final QueryVertex node : nodes) {
             if (node.getVariable() == null) {
-                vars.put(node, "$anon" + anonCounter++);
+                vars.put(node, GqlMatchPlan.ANON_VAR_PREFIX + anonCounter++);
             }
         }
         return vars;

@@ -2672,7 +2672,9 @@ evaluated once and each result becomes a traverser:
 g.match("MATCH (a:person)-[:knows]->(b:person)")
 ----
 
-As a mid-traversal step, the pattern is applied in the context of each incoming traverser:
+As a mid-traversal step, the pattern is applied independently for each incoming traverser —
+the full graph is scanned against the pattern for every traverser rather than using the traverser's
+current element as a seed. Each result row is emitted as a separate output traverser:
 
 [gremlin-groovy,modern]
 ----
