@@ -285,3 +285,26 @@ Feature: Step - match() (String form)
     Then the result should be unordered
       | result |
       | m[{"a":"marko","b":"josh","s":"lop"}] |
+
+  Scenario: g_match_multiPattern_bridgeVariable_selectXa_b_sX_byXnameX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[:knows]->(b:person), (b:person)-[:created]->(s:software)").select("a","b","s").by("name")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"marko","b":"josh","s":"ripple"}] |
+      | m[{"a":"marko","b":"josh","s":"lop"}]    |
+
+  Scenario: g_match_personXknowsXeVar_weight_1X_person_selectXa_e_bX
+    Given the modern graph
+    And the traversal of
+      """
+      g.match("MATCH (a:person)-[e:knows {weight: 1.0}]->(b:person)").select("a","e","b")
+      """
+    When iterated to list
+    Then the result should be unordered
+      | result |
+      | m[{"a":"v[marko]","e":"e[marko-knows->josh]","b":"v[josh]"}] |
