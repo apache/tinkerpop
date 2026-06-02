@@ -37,6 +37,7 @@ import (
 type connectionSettings struct {
 	tlsConfig                *tls.Config
 	connectionTimeout        time.Duration
+	requestTimeout           time.Duration
 	maxConnsPerHost          int
 	maxIdleConnsPerHost      int
 	idleConnTimeout          time.Duration
@@ -98,11 +99,12 @@ func newConnection(handler *logHandler, url string, connSettings *connectionSett
 			Timeout:   connectionTimeout,
 			KeepAlive: keepAliveInterval,
 		}).DialContext,
-		TLSClientConfig:     connSettings.tlsConfig,
-		MaxConnsPerHost:     maxConnsPerHost,
-		MaxIdleConnsPerHost: maxIdleConnsPerHost,
-		IdleConnTimeout:     idleConnTimeout,
-		DisableCompression:  !connSettings.enableCompression,
+		TLSClientConfig:       connSettings.tlsConfig,
+		MaxConnsPerHost:       maxConnsPerHost,
+		MaxIdleConnsPerHost:   maxIdleConnsPerHost,
+		IdleConnTimeout:       idleConnTimeout,
+		DisableCompression:    !connSettings.enableCompression,
+		ResponseHeaderTimeout: connSettings.requestTimeout,
 	}
 
 	return &connection{
@@ -315,7 +317,11 @@ func (c *connection) getReader(resp *http.Response) (io.Reader, io.Closer, error
 func (c *connection) streamToResultSet(reader io.Reader, rs ResultSet) {
 	d := NewGraphBinaryDeserializer(reader)
 	if err := d.ReadHeader(); err != nil {
-		if err != io.EOF {
+		if err == io.EOF {
+			emptyBodyErr := fmt.Errorf("received empty response body from server")
+			c.logHandler.logf(Error, failedToReceiveResponse, emptyBodyErr.Error())
+			rs.setError(emptyBodyErr)
+		} else {
 			c.logHandler.logf(Error, failedToReceiveResponse, err.Error())
 			rs.setError(err)
 		}

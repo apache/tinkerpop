@@ -159,14 +159,10 @@ func TestShouldHandleEmptyResponseBody(t *testing.T) {
 		done <- submitExpectErr(client, gremlinEmptyBody)
 	}()
 
-	// The key requirement is that an empty response body does not hang.
-	// NOTE: Unlike the Java/Python/JS drivers (which raise an error), the Go
-	// driver currently treats an empty body as an empty (successful) result
-	// set rather than an error. This driver gap is flagged in the cross-GLV
-	// error-message audit (tinkerpop-8lw.6) for further consideration.
 	select {
-	case <-done:
-		// completed without hanging - acceptable for now
+	case submitErr := <-done:
+		require.Error(t, submitErr)
+		assert.Contains(t, submitErr.Error(), "empty response body")
 	case <-ctx.Done():
 		t.Fatal("request hung on empty response body")
 	}
@@ -186,11 +182,23 @@ func TestShouldHandleSlowResponse(t *testing.T) {
 }
 
 func TestShouldTimeoutWhenServerNeverResponds(t *testing.T) {
-	// The Go driver's ConnectionTimeout only governs connection establishment,
-	// not how long to wait for a response. With no client-side request/read
-	// timeout, a server that never responds causes an indefinite hang. Skipped
-	// until the driver supports a request timeout (flagged in tinkerpop-8lw.6).
-	t.Skip("Go driver lacks a client-side request/read timeout")
+	url := socketServerURL()
+	client, err := NewClient(url, func(settings *ClientSettings) {
+		settings.RequestTimeout = 2 * time.Second
+	})
+	if err != nil {
+		t.Skip("Socket server not available")
+	}
+	defer client.Close()
+
+	// Verify connectivity before testing the no-response scenario
+	if err := submitExpectErr(client, gremlinSingleVertex); err != nil {
+		t.Skip("Socket server not available")
+	}
+
+	err = submitExpectErr(client, gremlinNoResponse)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "timeout")
 }
 
 func TestShouldHandleAsyncRequestsDuringConnectionClose(t *testing.T) {
