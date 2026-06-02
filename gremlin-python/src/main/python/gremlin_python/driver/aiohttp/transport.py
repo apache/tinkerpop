@@ -171,6 +171,12 @@ class AiohttpHTTPTransport:
                 return await self._http_req_resp.read()
         return self._loop.run_until_complete(_read())
 
+    def release_response(self):
+        """Release the current HTTP response, returning its connection to aiohttp's pool."""
+        if self._http_req_resp is not None:
+            self._http_req_resp.close()
+            self._http_req_resp = None
+
     def close(self):
         # Inner function to perform async close.
         async def async_close():

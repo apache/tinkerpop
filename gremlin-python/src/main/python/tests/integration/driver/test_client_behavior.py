@@ -23,10 +23,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pytest
-from aiohttp.client_exceptions import ClientPayloadError, ServerDisconnectedError
 
 from gremlin_python.driver.client import Client
-from gremlin_python.driver.connection import GremlinServerError
+from gremlin_python.driver.connection import GremlinConnectionError, GremlinServerError
 from gremlin_python.driver.serializer import GraphBinarySerializersV4
 
 from .socket_server_constants import (
@@ -70,7 +69,7 @@ def test_should_receive_single_vertex(socket_server_client):
 
 
 def test_should_handle_server_closing_connection_before_response(socket_server_client):
-    with pytest.raises(ServerDisconnectedError, match="Server disconnected"):
+    with pytest.raises(GremlinConnectionError, match="Connection to server closed unexpectedly"):
         socket_server_client.submit(GREMLIN_CLOSE_CONNECTION).all().result()
 
     # Recovery
@@ -97,7 +96,7 @@ def test_should_handle_server_error_after_delay(socket_server_client):
 
 
 def test_should_handle_partial_content_close(socket_server_client):
-    with pytest.raises(ClientPayloadError, match="payload is not completed"):
+    with pytest.raises(GremlinConnectionError, match="Connection to server closed unexpectedly"):
         socket_server_client.submit(GREMLIN_PARTIAL_CONTENT_CLOSE).all().result()
 
     # Recovery
@@ -117,15 +116,15 @@ def test_should_handle_malformed_response(socket_server_client):
 
 
 def test_should_handle_empty_response_body(fresh_client):
-    # An empty HTTP response body should surface as an error rather than hang.
-    with pytest.raises(asyncio.IncompleteReadError):
+    # An empty HTTP response body should surface as a GremlinConnectionError
+    # wrapping the underlying IncompleteReadError.
+    with pytest.raises(GremlinConnectionError, match="Server returned an empty response body"):
         fresh_client.submit(GREMLIN_EMPTY_BODY).all().result()
 
-    # NOTE: Unlike the Java driver, the Python (aiohttp) driver does not recover
-    # on the same client after an empty response body - the half-closed connection
-    # is not evicted from the pool and a subsequent request fails with
-    # 'Cannot write to closing transport'. This driver gap is flagged in the
-    # cross-GLV error-message audit (tinkerpop-8lw.6) for further consideration.
+    # Recovery on the same client - the dead connection should be evicted from
+    # aiohttp's internal pool so subsequent requests get a fresh connection.
+    result = fresh_client.submit(GREMLIN_SINGLE_VERTEX).all().result()
+    assert len(result) == 1
 
 
 def test_should_handle_slow_response(socket_server_client):
