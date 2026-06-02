@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.io.binary.Marker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -95,11 +96,25 @@ public class GraphBinaryStreamResponseReader implements Runnable {
                 resultSet.markError(new ResponseException(HttpResponseStatus.valueOf(statusCode), message, exception));
             }
         } catch (Throwable t) {
-            logger.warn("Error reading streaming response", t);
-            resultSet.markError(t);
+            if (buffer.readerIndex() == 0 && hasCause(t, EOFException.class)) {
+                final RuntimeException empty = new RuntimeException(
+                        "Server returned an empty response body", t);
+                logger.warn("Error reading streaming response", empty);
+                resultSet.markError(empty);
+            } else {
+                logger.warn("Error reading streaming response", t);
+                resultSet.markError(t);
+            }
         } finally {
             pendingResultSet.compareAndSet(resultSet, null);
             buffer.release();
         }
+    }
+
+    private static boolean hasCause(final Throwable t, final Class<? extends Throwable> type) {
+        for (Throwable cause = t; cause != null; cause = cause.getCause()) {
+            if (type.isInstance(cause)) return true;
+        }
+        return false;
     }
 }
